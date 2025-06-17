@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Google.FlatBuffers;
+using Microsoft.Extensions.ObjectPool;
 using nullable;
 
 namespace Google.FlatBuffers
@@ -7,6 +11,48 @@ namespace Google.FlatBuffers
     {
         int ProtocolType { get; }
         byte[] Serialize();
+    }
+
+    public class FlatBufferBuilderPooledPolicy : PooledObjectPolicy<FlatBufferBuilder>
+    {
+        private readonly int _initialSize;
+
+        public FlatBufferBuilderPooledPolicy(int initialSize = 4096)
+        {
+            _initialSize = initialSize;
+        }
+
+        public override FlatBufferBuilder Create()
+        {
+            return new FlatBufferBuilder(_initialSize);
+        }
+
+        public override bool Return(FlatBufferBuilder builder)
+        {
+            builder.Clear();
+            return true;
+        }
+    }
+
+    public static class FlatBufferBuilderPool
+    {
+        private static readonly ObjectPool<FlatBufferBuilder> _pool;
+
+        static FlatBufferBuilderPool()
+        {
+            var policy = new FlatBufferBuilderPooledPolicy(initialSize: 4096);
+            _pool = new DefaultObjectPool<FlatBufferBuilder>(policy, maximumRetained: 256);
+        }
+
+        public static FlatBufferBuilder Get()
+        {
+            return _pool.Get();
+        }
+
+        public static void Return(FlatBufferBuilder builder)
+        {
+            _pool.Return(builder);
+        }
     }
 }
 
@@ -2883,10 +2929,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Position Deserialize(byte[] bytes)
@@ -2986,10 +3039,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Character Deserialize(byte[] bytes)
@@ -3029,10 +3089,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Item Deserialize(byte[] bytes)
@@ -3064,10 +3131,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Spell Deserialize(byte[] bytes)
@@ -3095,10 +3169,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Buff Deserialize(byte[] bytes)
@@ -3146,10 +3227,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Option Deserialize(byte[] bytes)
@@ -3183,10 +3271,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static ArticleSummary Deserialize(byte[] bytes)
@@ -3222,10 +3317,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Article Deserialize(byte[] bytes)
@@ -3263,10 +3365,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static MailSummary Deserialize(byte[] bytes)
@@ -3306,10 +3415,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Mail Deserialize(byte[] bytes)
@@ -3339,10 +3455,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Group Deserialize(byte[] bytes)
@@ -3372,10 +3495,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Achievement Deserialize(byte[] bytes)
@@ -3405,10 +3535,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Clan Deserialize(byte[] bytes)
@@ -3438,10 +3575,17 @@ namespace fb.protocol._internal
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static ClanMember Deserialize(byte[] bytes)
@@ -3494,10 +3638,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Shutdown Deserialize(byte[] bytes)
@@ -3527,10 +3678,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Login Deserialize(byte[] bytes)
@@ -3556,10 +3714,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Logout Deserialize(byte[] bytes)
@@ -3591,10 +3756,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Transfer Deserialize(byte[] bytes)
@@ -3624,10 +3796,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Whisper Deserialize(byte[] bytes)
@@ -3653,10 +3832,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static KickOut Deserialize(byte[] bytes)
@@ -3682,10 +3868,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Account Deserialize(byte[] bytes)
@@ -3717,10 +3910,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static ChangePw Deserialize(byte[] bytes)
@@ -3762,10 +3962,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static InitCharacter Deserialize(byte[] bytes)
@@ -3793,10 +4000,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Authenticate Deserialize(byte[] bytes)
@@ -3822,10 +4036,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Init Deserialize(byte[] bytes)
@@ -3859,10 +4080,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static MakeCharacter Deserialize(byte[] bytes)
@@ -3888,10 +4116,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static ReserveName Deserialize(byte[] bytes)
@@ -3923,10 +4158,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Save Deserialize(byte[] bytes)
@@ -3958,10 +4200,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static WriteArticle Deserialize(byte[] bytes)
@@ -3989,10 +4238,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static DeleteArticle Deserialize(byte[] bytes)
@@ -4026,10 +4282,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static WriteMail Deserialize(byte[] bytes)
@@ -4057,10 +4320,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static DeleteMail Deserialize(byte[] bytes)
@@ -4090,10 +4360,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static SetOption Deserialize(byte[] bytes)
@@ -4121,10 +4398,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static EnterGroup Deserialize(byte[] bytes)
@@ -4156,10 +4440,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static BroadcastGroup Deserialize(byte[] bytes)
@@ -4185,10 +4476,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static LeaveGroup Deserialize(byte[] bytes)
@@ -4216,10 +4514,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static CreateClan Deserialize(byte[] bytes)
@@ -4245,10 +4550,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static DestroyClan Deserialize(byte[] bytes)
@@ -4278,10 +4590,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static JoinClan Deserialize(byte[] bytes)
@@ -4313,10 +4632,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static LeaveClan Deserialize(byte[] bytes)
@@ -4346,10 +4672,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static SetClanTitle Deserialize(byte[] bytes)
@@ -4381,10 +4714,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static BroadcastClan Deserialize(byte[] bytes)
@@ -4414,10 +4754,17 @@ namespace fb.protocol._internal.request
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Broadcast Deserialize(byte[] bytes)
@@ -4485,10 +4832,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Shutdown Deserialize(byte[] bytes)
@@ -4516,10 +4870,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static KickOut Deserialize(byte[] bytes)
@@ -4551,10 +4912,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Login Deserialize(byte[] bytes)
@@ -4580,10 +4948,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Logout Deserialize(byte[] bytes)
@@ -4613,10 +4988,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Transfer Deserialize(byte[] bytes)
@@ -4650,10 +5032,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Whisper Deserialize(byte[] bytes)
@@ -4679,10 +5068,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static DeleteArticle Deserialize(byte[] bytes)
@@ -4712,10 +5108,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static GetArticle Deserialize(byte[] bytes)
@@ -4741,10 +5144,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static GetArticleList Deserialize(byte[] bytes)
@@ -4770,10 +5180,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static WriteArticle Deserialize(byte[] bytes)
@@ -4803,10 +5220,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static GetMail Deserialize(byte[] bytes)
@@ -4834,10 +5258,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static GetMailList Deserialize(byte[] bytes)
@@ -4869,10 +5300,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static WriteMail Deserialize(byte[] bytes)
@@ -4900,10 +5338,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static DeleteMail Deserialize(byte[] bytes)
@@ -4929,10 +5374,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static ChangePw Deserialize(byte[] bytes)
@@ -4960,10 +5412,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static GetUid Deserialize(byte[] bytes)
@@ -4989,10 +5448,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static InitCharacter Deserialize(byte[] bytes)
@@ -5020,10 +5486,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Authenticate Deserialize(byte[] bytes)
@@ -5063,10 +5536,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Init Deserialize(byte[] bytes)
@@ -5092,10 +5572,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static MakeCharacter Deserialize(byte[] bytes)
@@ -5123,10 +5610,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static ReserveName Deserialize(byte[] bytes)
@@ -5152,10 +5646,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Save Deserialize(byte[] bytes)
@@ -5181,10 +5682,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static SetOption Deserialize(byte[] bytes)
@@ -5212,10 +5720,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static GetGroup Deserialize(byte[] bytes)
@@ -5249,10 +5764,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static EnterGroup Deserialize(byte[] bytes)
@@ -5286,10 +5808,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static LeaveGroup Deserialize(byte[] bytes)
@@ -5323,10 +5852,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static BroadcastGroup Deserialize(byte[] bytes)
@@ -5356,10 +5892,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static GetClan Deserialize(byte[] bytes)
@@ -5389,10 +5932,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static CreateClan Deserialize(byte[] bytes)
@@ -5418,10 +5968,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static DestroyClan Deserialize(byte[] bytes)
@@ -5453,10 +6010,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static JoinClan Deserialize(byte[] bytes)
@@ -5492,10 +6056,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static LeaveClan Deserialize(byte[] bytes)
@@ -5527,10 +6098,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static SetClanTitle Deserialize(byte[] bytes)
@@ -5564,10 +6142,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static BroadcastClan Deserialize(byte[] bytes)
@@ -5599,10 +6184,17 @@ namespace fb.protocol._internal.response
 
         public byte[] Serialize()
         {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
         }
 
         public static Broadcast Deserialize(byte[] bytes)
