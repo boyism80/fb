@@ -820,7 +820,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     co_return true;
 }
 
-async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_reqs::board& request)
+async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const fb_reqs::bulletin& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -829,13 +829,13 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
     auto fd = ch->fd();
     switch (request.action)
     {
-    case BOARD_ACTION::SECTIONS:
+    case BULLETIN_ACTION::SECTIONS:
     {
-        ch->show_board();
+        ch->show_bulletin();
     }
     break;
 
-    case BOARD_ACTION::ARTICLES:
+    case BULLETIN_ACTION::ARTICLES:
     {
         auto mail = request.section == 0xFFFF;
         try
@@ -850,26 +850,26 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             else
             {
                 auto   section  = request.section;
-                auto&& articles = co_await this->board_list(request.section, request.offset);
+                auto&& articles = co_await this->bulletin_list(request.section, request.offset);
                 co_await this->switch_thread(*ch);
 
-                auto& model = this->model.board[section];
-                auto  flag  = BOARD_BUTTON_ENABLE::UP;
+                auto& model = this->model.bulletin[section];
+                auto  flag  = BULLETIN_BUTTON_ENABLE::UP;
                 if (ch->condition(model.condition))
-                    flag |= BOARD_BUTTON_ENABLE::WRITE;
+                    flag |= BULLETIN_BUTTON_ENABLE::WRITE;
 
-                ch->show_board(model, articles, flag);
+                ch->show_bulletin(model, articles, flag);
             }
         }
         catch (std::exception& e)
         {
             if (this->alive(*ch))
-                ch->show_board_message(e.what(), false, mail);
+                ch->show_bulletin_message(e.what(), false, mail);
         }
     }
     break;
 
-    case BOARD_ACTION::ARTICLE:
+    case BULLETIN_ACTION::ARTICLE:
     {
         auto mail = request.section == 0xFFFF;
         try
@@ -883,45 +883,45 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             }
             else
             {
-                auto&& article = co_await this->read_board(request.section, request.article);
+                auto&& article = co_await this->read_bulletin(request.section, request.article);
                 co_await this->switch_thread(*ch);
 
-                auto flag = BOARD_BUTTON_ENABLE::NONE;
+                auto flag = BULLETIN_BUTTON_ENABLE::NONE;
                 if (article.next)
-                    flag |= BOARD_BUTTON_ENABLE::NEXT;
+                    flag |= BULLETIN_BUTTON_ENABLE::NEXT;
 
-                if (ch->condition(this->model.board[article.section].condition) == false)
-                    flag |= BOARD_BUTTON_ENABLE::WRITE;
+                if (ch->condition(this->model.bulletin[article.section].condition) == false)
+                    flag |= BULLETIN_BUTTON_ENABLE::WRITE;
 
-                ch->show_board(article, flag);
+                ch->show_bulletin(article, flag);
             }
         }
         catch (std::exception& e)
         {
             if (this->alive(*ch))
-                ch->show_board_message(e.what(), false, mail);
+                ch->show_bulletin_message(e.what(), false, mail);
         }
     }
     break;
 
-    case BOARD_ACTION::WRITE:
+    case BULLETIN_ACTION::WRITE:
     {
         try
         {
-            co_await this->write_board(*ch, request.section, request.title, request.contents);
+            co_await this->write_bulletin(*ch, request.section, request.title, request.contents);
             co_await this->switch_thread(*ch);
 
-            ch->show_board_message(_TEXT(MESSAGE_BOARD_WRITE), true, true);
+            ch->show_bulletin_message(_TEXT(MESSAGE_BULLETIN_WRITE), true, false);
         }
         catch (std::exception& e)
         {
             if (this->alive(*ch))
-                ch->show_board_message(e.what(), false, false);
+                ch->show_bulletin_message(e.what(), false, false);
         }
     }
     break;
 
-    case BOARD_ACTION::DELETE:
+    case BULLETIN_ACTION::DELETE:
     {
         auto mail = request.section == 0xFFFF;
         try
@@ -930,25 +930,25 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             {
                 auto&& resp = co_await this->delete_mail(*ch, request.article);
                 co_await this->switch_thread(*ch);
-                ch->show_board_message(_TEXT(MESSAGE_BOARD_SUCCESS_DELETE), true, true);
+                ch->show_bulletin_message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, true);
             }
             else
             {
-                co_await this->delete_board(*ch, request.section, request.article);
+                co_await this->delete_bulletin(*ch, request.section, request.article);
                 co_await this->switch_thread(*ch);
 
-                ch->show_board_message(_TEXT(MESSAGE_BOARD_SUCCESS_DELETE), true, false);
+                ch->show_bulletin_message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, false);
             }
         }
         catch (std::exception& e)
         {
             if (this->alive(*ch))
-                ch->show_board_message(e.what(), false, mail);
+                ch->show_bulletin_message(e.what(), false, mail);
         }
     }
     break;
 
-    case BOARD_ACTION::MAIL:
+    case BULLETIN_ACTION::MAIL:
     {
         try
         {
@@ -961,23 +961,23 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         catch (std::exception& e)
         {
             if (this->alive(*ch))
-                ch->show_board_message(e.what(), false, true);
+                ch->show_bulletin_message(e.what(), false, true);
         }
     }
     break;
 
-    case BOARD_ACTION::SEND_MAIL:
+    case BULLETIN_ACTION::SEND_MAIL:
     {
         try
         {
             auto&& resp = co_await this->send_mail(*ch, request.user, request.title, request.contents);
             co_await this->switch_thread(*ch);
-            ch->show_board_message("우편을 보냈습니다.", true, true);
+            ch->show_bulletin_message("우편을 보냈습니다.", true, true);
         }
         catch (std::exception& e)
         {
             if (this->alive(*ch))
-                ch->show_board_message(e.what(), false, true);
+                ch->show_bulletin_message(e.what(), false, true);
         }
     }
     break;

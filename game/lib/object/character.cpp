@@ -1245,21 +1245,21 @@ void character::show_user_list()
     this->listener.on_show_user_list(*this);
 }
 
-void character::show_board()
+void character::show_bulletin()
 {
-    this->listener.on_show_board(*this);
+    this->listener.on_show_bulletin(*this);
 }
 
-void character::show_board(const fb::model::board&                    section,
-                           const std::list<fb::game::board::article>& articles,
-                           BOARD_BUTTON_ENABLE                        flag)
+void character::show_bulletin(const fb::model::bulletin&                    section,
+                              const std::list<fb::game::bulletin::article>& articles,
+                              BULLETIN_BUTTON_ENABLE                        flag)
 {
-    this->listener.on_show_board(*this, section, articles, flag);
+    this->listener.on_show_bulletin(*this, section, articles, flag);
 }
 
-void character::show_board(const fb::game::board::article& article, BOARD_BUTTON_ENABLE flag)
+void character::show_bulletin(const fb::game::bulletin::article& article, BULLETIN_BUTTON_ENABLE flag)
 {
-    this->listener.on_show_board(*this, article, flag);
+    this->listener.on_show_bulletin(*this, article, flag);
 }
 
 void character::show_mail_box(const std::vector<MailSummary>& mails, MAIL_BUTTON_ENABLE flag)
@@ -1272,9 +1272,9 @@ void character::show_mail_box(const Mail& mail, MAIL_BUTTON_ENABLE flag)
     this->listener.on_show_mail_box(*this, mail, flag);
 }
 
-void character::show_board_message(const std::string& message, bool success, bool mail)
+void character::show_bulletin_message(const std::string& message, bool success, bool mail)
 {
-    this->listener.on_show_board_message(*this, message, success, mail);
+    this->listener.on_show_bulletin_message(*this, message, success, mail);
 }
 
 void character::show_world_map(uint32_t id, uint16_t index)

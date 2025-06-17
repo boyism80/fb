@@ -1,13 +1,13 @@
-#include <fb/game/protocol/board/board_mails.h>
+#include <fb/game/protocol/bulletin/bulletin_mails.h>
 
 namespace fb::protocol::game::response {
 
-board_mails::board_mails(const std::vector<MailSummary>& mails, MAIL_BUTTON_ENABLE button_flags) :
+bulletin_mails::bulletin_mails(const std::vector<MailSummary>& mails, MAIL_BUTTON_ENABLE button_flags) :
     mails(mails),
     button_flags(button_flags)
 { }
 
-async::task<void> board_mails::serialize(fb::stream_writer<big_endian>& writer) const
+async::task<void> bulletin_mails::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);

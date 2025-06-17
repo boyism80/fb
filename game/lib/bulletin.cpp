@@ -1,6 +1,6 @@
-#include <fb/game/board.h>
+#include <fb/game/bulletin.h>
 
-bool fb::game::board::section::writable(uint8_t level, bool admin) const
+bool fb::game::bulletin::section::writable(uint8_t level, bool admin) const
 {
     if (admin)
         return true;

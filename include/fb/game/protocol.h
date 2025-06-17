@@ -7,12 +7,12 @@
  *
  *             This header file serves as a comprehensive include point for all
  *             game protocol message definitions used in client-server communication.
- *             It organizes protocol headers by functional categories such as board
+ *             It organizes protocol headers by functional categories such as bulletin
  *             operations, character management, item handling, spell casting, and
  *             dialog systems.
  *
  *             Protocol Categories:
- *             - Board: Bulletin board and mail system protocols
+ *             - Bulletin: Bulletin system and mail protocols
  *             - Character: Player character state and information protocols
  *             - Dialog: NPC interaction and menu system protocols
  *             - Item: Inventory, equipment, and item manipulation protocols
@@ -28,13 +28,13 @@
  */
 
 #include <fb/protocol/transfer.h>
-#include <fb/game/protocol/board/board.h>
-#include <fb/game/protocol/board/board_sections.h>
-#include <fb/game/protocol/board/board_articles.h>
-#include <fb/game/protocol/board/board_article.h>
-#include <fb/game/protocol/board/board_message.h>
-#include <fb/game/protocol/board/board_mails.h>
-#include <fb/game/protocol/board/board_mail.h>
+#include <fb/game/protocol/bulletin/bulletin.h>
+#include <fb/game/protocol/bulletin/bulletin_sections.h>
+#include <fb/game/protocol/bulletin/bulletin_articles.h>
+#include <fb/game/protocol/bulletin/bulletin_article.h>
+#include <fb/game/protocol/bulletin/bulletin_message.h>
+#include <fb/game/protocol/bulletin/bulletin_mails.h>
+#include <fb/game/protocol/bulletin/bulletin_mail.h>
 #include <fb/game/protocol/exit.h>
 #include <fb/game/protocol/update_move.h>
 #include <fb/game/protocol/attack.h>

@@ -39,16 +39,16 @@ Content-Type: application/json
 }
 
 ###
-GET {{host}}/board/1?offset=32767
+GET {{host}}/bulletin/1?offset=32767
 Content-Type: application/json
 
 ###
-GET {{host}}/board/1/308
+GET {{host}}/bulletin/1/308
 Content-Type: application/json
 
 
 ###
-POST {{host}}/board/write
+POST {{host}}/bulletin/write
 Content-Type: application/json
 
 {
@@ -59,7 +59,7 @@ Content-Type: application/json
 }
 
 ###
-POST {{host}}/board/delete
+POST {{host}}/bulletin/delete
 Content-Type: application/json
 
 {

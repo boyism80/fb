@@ -283,11 +283,11 @@ public:
     async::task<void> pattern_emotion();
 
     /**
-     * @brief      Automated pattern for browsing board sections.
+     * @brief      Automated pattern for browsing bulletin sections.
      *
-     * @return     An async task that completes when board browsing is finished.
+     * @return     An async task that completes when bulletin browsing is finished.
      */
-    async::task<void> pattern_board_sections();
+    async::task<void> pattern_bulletin_sections();
 };
 
 } // namespace fb::bot

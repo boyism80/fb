@@ -295,106 +295,6 @@ inline const char* enum_tostring<ACTION>(ACTION k)
     return i->second;
 }
 
-enum class BOARD_ACTION
-{
-    NONE = 0x00, 
-    SECTIONS = 0x01, 
-    ARTICLES = 0x02, 
-    ARTICLE = 0x03, 
-    WRITE = 0x04, 
-    DELETE = 0x05, 
-    SEND_MAIL = 0x06, 
-    MAIL = 0x09
-}; // end of enum 'BOARD_ACTION'
-
-template <>
-inline BOARD_ACTION enum_parse<BOARD_ACTION>(const std::string k)
-{
-    static const std::unordered_map<std::string, BOARD_ACTION> enums
-    {
-        { "NONE", BOARD_ACTION::NONE }, 
-        { "SECTIONS", BOARD_ACTION::SECTIONS }, 
-        { "ARTICLES", BOARD_ACTION::ARTICLES }, 
-        { "ARTICLE", BOARD_ACTION::ARTICLE }, 
-        { "WRITE", BOARD_ACTION::WRITE }, 
-        { "DELETE", BOARD_ACTION::DELETE }, 
-        { "SEND_MAIL", BOARD_ACTION::SEND_MAIL }, 
-        { "MAIL", BOARD_ACTION::MAIL }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error("no enum value");
-
-    return i->second;
-}
-
-template <>
-inline const char* enum_tostring<BOARD_ACTION>(BOARD_ACTION k)
-{
-    static const std::unordered_map<BOARD_ACTION, const char*> enums
-    {
-        { BOARD_ACTION::NONE, "NONE" }, 
-        { BOARD_ACTION::SECTIONS, "SECTIONS" }, 
-        { BOARD_ACTION::ARTICLES, "ARTICLES" }, 
-        { BOARD_ACTION::ARTICLE, "ARTICLE" }, 
-        { BOARD_ACTION::WRITE, "WRITE" }, 
-        { BOARD_ACTION::DELETE, "DELETE" }, 
-        { BOARD_ACTION::SEND_MAIL, "SEND_MAIL" }, 
-        { BOARD_ACTION::MAIL, "MAIL" }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error("no enum value");
-
-    return i->second;
-}
-
-enum class BOARD_BUTTON_ENABLE
-{
-    NONE = 0x00, 
-    NEXT = 0x01, 
-    UP = 0x01, 
-    WRITE = 0x02
-}; // end of enum 'BOARD_BUTTON_ENABLE'
-
-template <>
-inline BOARD_BUTTON_ENABLE enum_parse<BOARD_BUTTON_ENABLE>(const std::string k)
-{
-    static const std::unordered_map<std::string, BOARD_BUTTON_ENABLE> enums
-    {
-        { "NONE", BOARD_BUTTON_ENABLE::NONE }, 
-        { "NEXT", BOARD_BUTTON_ENABLE::NEXT }, 
-        { "UP", BOARD_BUTTON_ENABLE::UP }, 
-        { "WRITE", BOARD_BUTTON_ENABLE::WRITE }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error("no enum value");
-
-    return i->second;
-}
-
-template <>
-inline const char* enum_tostring<BOARD_BUTTON_ENABLE>(BOARD_BUTTON_ENABLE k)
-{
-    static const std::unordered_map<BOARD_BUTTON_ENABLE, const char*> enums
-    {
-        { BOARD_BUTTON_ENABLE::NONE, "NONE" }, 
-        { BOARD_BUTTON_ENABLE::NEXT, "NEXT" }, 
-        { BOARD_BUTTON_ENABLE::UP, "UP" }, 
-        { BOARD_BUTTON_ENABLE::WRITE, "WRITE" }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error("no enum value");
-
-    return i->second;
-}
-
 enum class BROADCAST_TYPE
 {
     WORLD = 1, 
@@ -424,6 +324,106 @@ inline const char* enum_tostring<BROADCAST_TYPE>(BROADCAST_TYPE k)
     {
         { BROADCAST_TYPE::WORLD, "WORLD" }, 
         { BROADCAST_TYPE::GLOBAL, "GLOBAL" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class BULLETIN_ACTION
+{
+    NONE = 0x00, 
+    SECTIONS = 0x01, 
+    ARTICLES = 0x02, 
+    ARTICLE = 0x03, 
+    WRITE = 0x04, 
+    DELETE = 0x05, 
+    SEND_MAIL = 0x06, 
+    MAIL = 0x09
+}; // end of enum 'BULLETIN_ACTION'
+
+template <>
+inline BULLETIN_ACTION enum_parse<BULLETIN_ACTION>(const std::string k)
+{
+    static const std::unordered_map<std::string, BULLETIN_ACTION> enums
+    {
+        { "NONE", BULLETIN_ACTION::NONE }, 
+        { "SECTIONS", BULLETIN_ACTION::SECTIONS }, 
+        { "ARTICLES", BULLETIN_ACTION::ARTICLES }, 
+        { "ARTICLE", BULLETIN_ACTION::ARTICLE }, 
+        { "WRITE", BULLETIN_ACTION::WRITE }, 
+        { "DELETE", BULLETIN_ACTION::DELETE }, 
+        { "SEND_MAIL", BULLETIN_ACTION::SEND_MAIL }, 
+        { "MAIL", BULLETIN_ACTION::MAIL }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<BULLETIN_ACTION>(BULLETIN_ACTION k)
+{
+    static const std::unordered_map<BULLETIN_ACTION, const char*> enums
+    {
+        { BULLETIN_ACTION::NONE, "NONE" }, 
+        { BULLETIN_ACTION::SECTIONS, "SECTIONS" }, 
+        { BULLETIN_ACTION::ARTICLES, "ARTICLES" }, 
+        { BULLETIN_ACTION::ARTICLE, "ARTICLE" }, 
+        { BULLETIN_ACTION::WRITE, "WRITE" }, 
+        { BULLETIN_ACTION::DELETE, "DELETE" }, 
+        { BULLETIN_ACTION::SEND_MAIL, "SEND_MAIL" }, 
+        { BULLETIN_ACTION::MAIL, "MAIL" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class BULLETIN_BUTTON_ENABLE
+{
+    NONE = 0x00, 
+    NEXT = 0x01, 
+    UP = 0x01, 
+    WRITE = 0x02
+}; // end of enum 'BULLETIN_BUTTON_ENABLE'
+
+template <>
+inline BULLETIN_BUTTON_ENABLE enum_parse<BULLETIN_BUTTON_ENABLE>(const std::string k)
+{
+    static const std::unordered_map<std::string, BULLETIN_BUTTON_ENABLE> enums
+    {
+        { "NONE", BULLETIN_BUTTON_ENABLE::NONE }, 
+        { "NEXT", BULLETIN_BUTTON_ENABLE::NEXT }, 
+        { "UP", BULLETIN_BUTTON_ENABLE::UP }, 
+        { "WRITE", BULLETIN_BUTTON_ENABLE::WRITE }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<BULLETIN_BUTTON_ENABLE>(BULLETIN_BUTTON_ENABLE k)
+{
+    static const std::unordered_map<BULLETIN_BUTTON_ENABLE, const char*> enums
+    {
+        { BULLETIN_BUTTON_ENABLE::NONE, "NONE" }, 
+        { BULLETIN_BUTTON_ENABLE::NEXT, "NEXT" }, 
+        { BULLETIN_BUTTON_ENABLE::UP, "UP" }, 
+        { BULLETIN_BUTTON_ENABLE::WRITE, "WRITE" }
     };
 
     auto i = enums.find(k);
@@ -2613,7 +2613,7 @@ public:
     inline static constexpr const char* MESSAGE_ASSET_NPC_SPAWN_LOADED = "* [{:0.2f}%] NPC 스폰 정보를 읽었습니다. ({})";
     inline static constexpr const char* MESSAGE_ASSET_MOB_SPAWN_LOADED = "* [{:0.2f}%] 몹 스폰 정보를 읽었습니다. ({})";
     inline static constexpr const char* MESSAGE_ASSET_CLASS_LOADED = "* [{:0.2f}%] 클래스 정보를 읽었습니다. ({})";
-    inline static constexpr const char* MESSAGE_ASSET_BOARD_LOADED = "* [{:0.2f}%] 게시판 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_BULLETIN_LOADED = "* [{:0.2f}%] 게시판 정보를 읽었습니다. ({})";
     inline static constexpr const char* MESSAGE_ASSET_MAP_ALL_LOADED = "* [100%] 총 %d개의 맵 정보를 읽었습니다.";
     inline static constexpr const char* MESSAGE_ASSET_REGEX_ALL_LOADED = "* [100%] 총 %d개의 정규표현식 정보를 읽었습니다.";
     inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_ALL_LOADED = "* [100%] 총 %d개의 월드맵 정보를 읽었습니다.";
@@ -2630,7 +2630,7 @@ public:
     inline static constexpr const char* MESSAGE_ASSET_NPC_SPAWN_ALL_LOADED = "* [100%] 총 %d개의 NPC 스폰 정보를 읽었습니다.";
     inline static constexpr const char* MESSAGE_ASSET_MOB_SPAWN_ALL_LOADED = "* [100%] 총 %d개의 몹 스폰 정보를 읽었습니다.";
     inline static constexpr const char* MESSAGE_ASSET_CLASS_ALL_LOADED = "* [100%] 총 %d개의 클래스 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_BOARD_ALL_LOADED = "* [100%] 총 %d개의 게시판 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_BULLETIN_ALL_LOADED = "* [100%] 총 %d개의 게시판 정보를 읽었습니다.";
     inline static constexpr const char* MESSAGE_ASSET_INVALID_SEX = "성별을 확인할 수 없습니다.";
     inline static constexpr const char* MESSAGE_ASSET_INVALID_DEATH_PENALTY = "아이템 데스 패널티를 확인할 수 없습니다.";
     inline static constexpr const char* MESSAGE_ASSET_INVALID_MOB_SIZE = "몹 크기 형식을 확인할 수 없습니다.";
@@ -2684,13 +2684,13 @@ public:
     inline static constexpr const char* MESSAGE_MONEY_DROP = "돈을 버렸습니다.";
     inline static constexpr const char* MESSAGE_MONEY_FULL = "더 이상 돈을 가질 수 없습니다.";
     inline static constexpr const char* MESSAGE_LEVEL_UP = "레벨이 올랐습니다";
-    inline static constexpr const char* MESSAGE_BOARD_WRITE = "글을 작성하였습니다";
-    inline static constexpr const char* MESSAGE_BOARD_ARTICLE_NOT_EXIST = "게시글이 존재하지 않습니다.";
-    inline static constexpr const char* MESSAGE_BOARD_SECTION_NOT_EXIST = "섹션이 존재하지 않습니다.";
-    inline static constexpr const char* MESSAGE_BOARD_NOT_AUTH = "권한이 없습니다.";
-    inline static constexpr const char* MESSAGE_BOARD_SUCCESS_DELETE = "글이 삭제되었습니다.";
-    inline static constexpr const char* MESSAGE_BOARD_TOO_LONG_TITLE = "게시글 제목이 너무 깁니다.";
-    inline static constexpr const char* MESSAGE_BOARD_TOO_LONG_CONTENTS = "게시글 내용이 너무 깁니다.";
+    inline static constexpr const char* MESSAGE_BULLETIN_WRITE = "글을 작성하였습니다";
+    inline static constexpr const char* MESSAGE_BULLETIN_ARTICLE_NOT_EXIST = "게시글이 존재하지 않습니다.";
+    inline static constexpr const char* MESSAGE_BULLETIN_SECTION_NOT_EXIST = "섹션이 존재하지 않습니다.";
+    inline static constexpr const char* MESSAGE_BULLETIN_NOT_AUTH = "권한이 없습니다.";
+    inline static constexpr const char* MESSAGE_BULLETIN_SUCCESS_DELETE = "글이 삭제되었습니다.";
+    inline static constexpr const char* MESSAGE_BULLETIN_TOO_LONG_TITLE = "게시글 제목이 너무 깁니다.";
+    inline static constexpr const char* MESSAGE_BULLETIN_TOO_LONG_CONTENTS = "게시글 내용이 너무 깁니다.";
     inline static constexpr const char* MESSAGE_DOOR_OPEN = "문을 열었습니다.";
     inline static constexpr const char* MESSAGE_DOOR_CLOSE = "문을 닫았습니다.";
     inline static constexpr const char* MESSAGE_DOOR_LOCK = "문을 잠궜습니다.";
@@ -2701,7 +2701,7 @@ public:
     inline static constexpr const char* MESSAGE_UNKNOWN_ERROR_WITH_CODE = "알 수 없는 에러가 발생했습니다. (에러코드 : {})";
     inline static constexpr const char* MESSAGE_NOT_FOUND_ITEM = "아이템이 없습니다.";
     inline static constexpr const char* MESSAGE_ITEM_FULL = "더 이상 가질 수 없습니다.";
-    inline static constexpr const char* MESSAGE_WRITE_BOARD_FAILED = "게시글 작성 실패";
+    inline static constexpr const char* MESSAGE_WRITE_BULLETIN_FAILED = "게시글 작성 실패";
     inline static constexpr const char* MESSAGE_INVALID_USER_NAME = "존재하지 않는 유저입니다.";
     inline static constexpr const char* MESSAGE_NOT_FOUND_MAIL = "메일이 없습니다.";
     inline static constexpr const char* MESSAGE_CANNOT_GROUP_SELF = "자기 자신과는 그룹할 수 없습니다.";
@@ -2780,34 +2780,34 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ACTION_EAT");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ACTION::EMOTION);
     lua_setglobal(lua, "ACTION_EMOTION");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::NONE);
-    lua_setglobal(lua, "BOARD_ACTION_NONE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::SECTIONS);
-    lua_setglobal(lua, "BOARD_ACTION_SECTIONS");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::ARTICLES);
-    lua_setglobal(lua, "BOARD_ACTION_ARTICLES");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::ARTICLE);
-    lua_setglobal(lua, "BOARD_ACTION_ARTICLE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::WRITE);
-    lua_setglobal(lua, "BOARD_ACTION_WRITE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::DELETE);
-    lua_setglobal(lua, "BOARD_ACTION_DELETE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::SEND_MAIL);
-    lua_setglobal(lua, "BOARD_ACTION_SEND_MAIL");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::MAIL);
-    lua_setglobal(lua, "BOARD_ACTION_MAIL");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_BUTTON_ENABLE::NONE);
-    lua_setglobal(lua, "BOARD_BUTTON_ENABLE_NONE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_BUTTON_ENABLE::NEXT);
-    lua_setglobal(lua, "BOARD_BUTTON_ENABLE_NEXT");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_BUTTON_ENABLE::UP);
-    lua_setglobal(lua, "BOARD_BUTTON_ENABLE_UP");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_BUTTON_ENABLE::WRITE);
-    lua_setglobal(lua, "BOARD_BUTTON_ENABLE_WRITE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BROADCAST_TYPE::WORLD);
     lua_setglobal(lua, "BROADCAST_TYPE_WORLD");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BROADCAST_TYPE::GLOBAL);
     lua_setglobal(lua, "BROADCAST_TYPE_GLOBAL");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BULLETIN_ACTION::NONE);
+    lua_setglobal(lua, "BULLETIN_ACTION_NONE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BULLETIN_ACTION::SECTIONS);
+    lua_setglobal(lua, "BULLETIN_ACTION_SECTIONS");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BULLETIN_ACTION::ARTICLES);
+    lua_setglobal(lua, "BULLETIN_ACTION_ARTICLES");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BULLETIN_ACTION::ARTICLE);
+    lua_setglobal(lua, "BULLETIN_ACTION_ARTICLE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BULLETIN_ACTION::WRITE);
+    lua_setglobal(lua, "BULLETIN_ACTION_WRITE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BULLETIN_ACTION::DELETE);
+    lua_setglobal(lua, "BULLETIN_ACTION_DELETE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BULLETIN_ACTION::SEND_MAIL);
+    lua_setglobal(lua, "BULLETIN_ACTION_SEND_MAIL");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BULLETIN_ACTION::MAIL);
+    lua_setglobal(lua, "BULLETIN_ACTION_MAIL");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BULLETIN_BUTTON_ENABLE::NONE);
+    lua_setglobal(lua, "BULLETIN_BUTTON_ENABLE_NONE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BULLETIN_BUTTON_ENABLE::NEXT);
+    lua_setglobal(lua, "BULLETIN_BUTTON_ENABLE_NEXT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BULLETIN_BUTTON_ENABLE::UP);
+    lua_setglobal(lua, "BULLETIN_BUTTON_ENABLE_UP");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BULLETIN_BUTTON_ENABLE::WRITE);
+    lua_setglobal(lua, "BULLETIN_BUTTON_ENABLE_WRITE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BUNDLE_TYPE::NONE);
     lua_setglobal(lua, "BUNDLE_TYPE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BUNDLE_TYPE::BUNDLE);
@@ -3999,13 +3999,13 @@ DECLARE_ANNOUNCE_INITIALIZER
 DECLARE_ANNOUNCE_EXTENSION
 #endif
 }; // end of class 'announce'
-class board
-#ifdef DECLARE_BOARD_INHERIT
-DECLARE_BOARD_INHERIT
+class bulletin
+#ifdef DECLARE_BULLETIN_INHERIT
+DECLARE_BULLETIN_INHERIT
 #endif
 {
-#ifdef DECLARE_BOARD_FIELDS
-DECLARE_BOARD_FIELDS
+#ifdef DECLARE_BULLETIN_FIELDS
+DECLARE_BULLETIN_FIELDS
 #else
 public:
     const uint32_t id;
@@ -4013,28 +4013,28 @@ public:
     const std::vector<fb::model::dsl> condition;
 #endif
 
-#ifdef DECLARE_BOARD_CUSTOM_CONSTRUCTOR
-DECLARE_BOARD_CUSTOM_CONSTRUCTOR
+#ifdef DECLARE_BULLETIN_CUSTOM_CONSTRUCTOR
+DECLARE_BULLETIN_CUSTOM_CONSTRUCTOR
 #else
 public:
-    board(const Json::Value& json) : 
-#ifdef DECLARE_BOARD_CONSTRUCTOR
-DECLARE_BOARD_CONSTRUCTOR
+    bulletin(const Json::Value& json) : 
+#ifdef DECLARE_BULLETIN_CONSTRUCTOR
+DECLARE_BULLETIN_CONSTRUCTOR
 #endif
         id(fb::model::build<uint32_t>(json["id"])),
         name(fb::model::build<std::string>(json["name"])),
         condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
-#ifdef DECLARE_BOARD_INITIALIZER
-DECLARE_BOARD_INITIALIZER
+#ifdef DECLARE_BULLETIN_INITIALIZER
+DECLARE_BULLETIN_INITIALIZER
 #endif
     { }
-    board(const board&) = delete;
-    virtual ~board() = default;
+    bulletin(const bulletin&) = delete;
+    virtual ~bulletin() = default;
 #endif
-#ifdef DECLARE_BOARD_EXTENSION
-DECLARE_BOARD_EXTENSION
+#ifdef DECLARE_BULLETIN_EXTENSION
+DECLARE_BULLETIN_EXTENSION
 #endif
-}; // end of class 'board'
+}; // end of class 'bulletin'
 class buy
 #ifdef DECLARE_BUY_INHERIT
 DECLARE_BUY_INHERIT
@@ -5715,19 +5715,19 @@ DECLARE_ANNOUNCE_CONTAINER_EXTENSION
 #endif
 };
 
-class __board : public fb::model::kv_container<uint32_t, fb::model::board>
+class __bulletin : public fb::model::kv_container<uint32_t, fb::model::bulletin>
 {
 public:
-#ifdef DECLARE_BOARD_CONTAINER_CUSTOM_CONSTRUCTOR
-DECLARE_BOARD_CONTAINER_CUSTOM_CONSTRUCTOR
+#ifdef DECLARE_BULLETIN_CONTAINER_CUSTOM_CONSTRUCTOR
+DECLARE_BULLETIN_CONTAINER_CUSTOM_CONSTRUCTOR
 #else
-    __board() : fb::model::kv_container<uint32_t, fb::model::board>(std::string("json/board.json"))
+    __bulletin() : fb::model::kv_container<uint32_t, fb::model::bulletin>(std::string("json/bulletin.json"))
     { }
-    __board(const __board&) = delete;
-    ~__board() = default;
+    __bulletin(const __bulletin&) = delete;
+    ~__bulletin() = default;
 #endif
-#ifdef DECLARE_BOARD_CONTAINER_EXTENSION
-DECLARE_BOARD_CONTAINER_EXTENSION
+#ifdef DECLARE_BULLETIN_CONTAINER_EXTENSION
+DECLARE_BULLETIN_CONTAINER_EXTENSION
 #endif
 };
 
@@ -6203,7 +6203,7 @@ public:
     fb::model::__ability_attribute ability_attribute;
     fb::model::__achievement achievement;
     fb::model::__announce announce;
-    fb::model::__board board;
+    fb::model::__bulletin bulletin;
     fb::model::__buy buy;
     fb::model::__buy_attribute buy_attribute;
     fb::model::__door door;
@@ -6241,7 +6241,7 @@ private:
         &ability_attribute,
         &achievement,
         &announce,
-        &board,
+        &bulletin,
         &buy,
         &buy_attribute,
         &door,

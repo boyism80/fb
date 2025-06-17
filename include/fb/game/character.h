@@ -12,7 +12,7 @@
 #include <fb/game/trade.h>
 #include <fb/game/achievement.h>
 #include <fb/game/clan.h>
-#include <fb/game/board.h>
+#include <fb/game/bulletin.h>
 #include <fb/game/stat.h>
 
 namespace fb::game {
@@ -923,28 +923,28 @@ public:
     void show_user_list();
 
     /**
-     * @brief      Shows the board.
+     * @brief      Shows the bulletin.
      */
-    void show_board();
+    void show_bulletin();
 
     /**
-     * @brief      Shows the board.
+     * @brief      Shows the bulletin.
      *
-     * @param[in]  section   The board section to display
+     * @param[in]  section   The bulletin section to display
      * @param[in]  articles  The list of articles in the section
-     * @param[in]  flag      The button enable flags for the board
+     * @param[in]  flag      The button enable flags for the bulletin
      */
-    void show_board(const fb::model::board&          section,
-                    const std::list<board::article>& articles,
-                    BOARD_BUTTON_ENABLE              flag);
+    void show_bulletin(const fb::model::bulletin&          section,
+                       const std::list<bulletin::article>& articles,
+                       BULLETIN_BUTTON_ENABLE              flag);
 
     /**
-     * @brief      Shows the board.
+     * @brief      Shows the bulletin.
      *
      * @param[in]  article  The specific article to display
      * @param[in]  flag     The button enable flags for the article view
      */
-    void show_board(const board::article& article, BOARD_BUTTON_ENABLE flag);
+    void show_bulletin(const bulletin::article& article, BULLETIN_BUTTON_ENABLE flag);
 
     /**
      * @brief      Shows the mail box.
@@ -963,13 +963,13 @@ public:
     void show_mail_box(const fb::protocol::internal::Mail& mail, MAIL_BUTTON_ENABLE flag);
 
     /**
-     * @brief      Shows the board message.
+     * @brief      Shows the bulletin message.
      *
      * @param[in]  message  The message text to display
      * @param[in]  success  Whether the operation was successful
      * @param[in]  mail     Whether this is a mail-related message
      */
-    void show_board_message(const std::string& message, bool success, bool mail);
+    void show_bulletin_message(const std::string& message, bool success, bool mail);
 
     /**
      * @brief      Shows the world map.
@@ -2237,33 +2237,33 @@ public:
     virtual void on_show_user_list(character& ch) = 0;
 
     /**
-     * @brief      Called when the main board interface should be shown to the character.
+     * @brief      Called when the main bulletin interface should be shown to the character.
      *
-     * @param      ch    The character who should see the board interface
+     * @param      ch    The character who should see the bulletin interface
      */
-    virtual void on_show_board(character& ch) = 0;
+    virtual void on_show_bulletin(character& ch) = 0;
 
     /**
-     * @brief      Called when a board section with articles should be displayed to the character.
+     * @brief      Called when a bulletin section with articles should be displayed to the character.
      *
-     * @param      ch        The character who should see the board section
-     * @param[in]  section   The board section to display
+     * @param      ch        The character who should see the bulletin section
+     * @param[in]  section   The bulletin section to display
      * @param[in]  articles  The list of articles in the section
-     * @param[in]  flag      The button enable flags for the board interface
+     * @param[in]  flag      The button enable flags for the bulletin interface
      */
-    virtual void on_show_board(character&                       ch,
-                               const fb::model::board&          section,
-                               const std::list<board::article>& articles,
-                               BOARD_BUTTON_ENABLE              flag) = 0;
+    virtual void on_show_bulletin(character&                          ch,
+                                  const fb::model::bulletin&          section,
+                                  const std::list<bulletin::article>& articles,
+                                  BULLETIN_BUTTON_ENABLE              flag) = 0;
 
     /**
-     * @brief      Called when a specific board article should be displayed to the character.
+     * @brief      Called when a specific bulletin article should be displayed to the character.
      *
      * @param      ch     The character who should see the article
      * @param[in]  value  The article to display
      * @param[in]  flag   The button enable flags for the article view
      */
-    virtual void on_show_board(character& ch, const board::article& value, BOARD_BUTTON_ENABLE flag) = 0;
+    virtual void on_show_bulletin(character& ch, const bulletin::article& value, BULLETIN_BUTTON_ENABLE flag) = 0;
 
     /**
      * @brief      Called when the mail box with mail list should be shown to the character.
@@ -2286,14 +2286,14 @@ public:
     virtual void on_show_mail_box(character& ch, const fb::protocol::internal::Mail& mail, MAIL_BUTTON_ENABLE flag) = 0;
 
     /**
-     * @brief      Called when a board/mail operation result message should be shown.
+     * @brief      Called when a bulletin/mail operation result message should be shown.
      *
      * @param      ch       The character who should see the message
      * @param[in]  message  The result message text to display
      * @param[in]  success  Whether the operation was successful
      * @param[in]  mail     Whether this is a mail-related message
      */
-    virtual void on_show_board_message(character& ch, const std::string& message, bool success, bool mail) = 0;
+    virtual void on_show_bulletin_message(character& ch, const std::string& message, bool success, bool mail) = 0;
 
     /**
      * @brief      Called when the world map interface should be shown to the character.

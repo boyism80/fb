@@ -58,10 +58,10 @@ public class Program
             cfg.CreateMap<Http.Model.Option, Option>()
             .ReverseMap();
 
-            cfg.CreateMap<Http.Model.Board, ArticleSummary>()
+            cfg.CreateMap<Http.Model.Bulletin, ArticleSummary>()
             .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
 
-            cfg.CreateMap<Http.Model.Board, Article>()
+            cfg.CreateMap<Http.Model.Bulletin, Article>()
             .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
 
             cfg.CreateMap<Http.Model.Mail, MailSummary>()

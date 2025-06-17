@@ -1,16 +1,16 @@
-#include <fb/game/protocol/board/board_article.h>
+#include <fb/game/protocol/bulletin/bulletin_article.h>
 
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-board_article::board_article(const fb::game::board::article& value, BOARD_BUTTON_ENABLE flag) :
+bulletin_article::bulletin_article(const fb::game::bulletin::article& value, BULLETIN_BUTTON_ENABLE flag) :
     value(value),
     flag(flag)
 { }
 #endif
 
 #ifndef BOT
-async::task<void> board_article::serialize(fb::stream_writer<big_endian>& writer) const
+async::task<void> bulletin_article::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);

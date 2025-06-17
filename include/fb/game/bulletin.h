@@ -1,17 +1,17 @@
-#ifndef __BOARD_H__
-#define __BOARD_H__
+#ifndef __BULLETIN_H__
+#define __BULLETIN_H__
 
 #include <ctime>
 #include <stdint.h>
 #include <optional>
 #include <string>
 
-namespace fb::game::board {
+namespace fb::game::bulletin {
 
 /**
  * @brief      Represents a bulletin board section with access control.
  *
- *             This class defines a section of a bulletin board system, containing
+ *             This class defines a section of a bulletin system, containing
  *             configuration for access permissions, level restrictions, and administrative
  *             controls. Each section can have different posting requirements and visibility
  *             settings based on player level and administrative status.
@@ -27,21 +27,21 @@ class section
 public:
     const uint32_t               id;        ///< Unique section identifier
     const std::string            title;     ///< Display title of the section
-    const std::optional<uint8_t> min_level; ///< Minimum level required to access
-    const std::optional<uint8_t> max_level; ///< Maximum level allowed to access
+    const std::optional<uint8_t> min_level; ///< Minimum level required for access
+    const std::optional<uint8_t> max_level; ///< Maximum level allowed for access
     const bool                   admin;     ///< Whether this is an admin-only section
 
 public:
     /**
-     * @brief      Constructs a new board section with specified parameters.
+     * @brief      Constructs a new bulletin section with specified parameters.
      *
-     *             Creates a bulletin board section with the given configuration,
+     *             Creates a bulletin section with the given configuration,
      *             including access restrictions and administrative settings.
      *
      * @param[in]  id         The unique identifier for this section.
      * @param[in]  title      The display title of the section.
-     * @param[in]  min_level  The minimum level required to access (optional).
-     * @param[in]  max_level  The maximum level allowed to access (optional).
+     * @param[in]  min_level  The minimum level required for access (optional).
+     * @param[in]  max_level  The maximum level allowed for access (optional).
      * @param[in]  admin      Whether this section requires admin privileges.
      */
     section(uint32_t                      id,
@@ -74,10 +74,10 @@ public:
 };
 
 /**
- * @brief      Represents a bulletin board article or post.
+ * @brief      Represents a bulletin article or post.
  *
  *             This class contains all the information for a single article posted
- *             to a bulletin board section. It includes metadata such as author
+ *             to a bulletin section. It includes metadata such as author
  *             information, posting date, and the article content. Articles are
  *             organized within sections and can be paginated for display.
  *
@@ -98,14 +98,14 @@ public:
     const std::string uname;      ///< Display name of the article author
     const std::string title;      ///< Article title
     const std::string contents;   ///< Article content text
-    const bool        next;       ///< Whether there are more articles in pagination
+    const bool        next;       ///< Whether there are more articles available for pagination
 
 public:
     /**
-     * @brief      Constructs a new bulletin board article.
+     * @brief      Constructs a new bulletin article.
      *
      *             Creates an article with the specified metadata and content,
-     *             ready for display in the bulletin board system.
+     *             ready for display in the bulletin system.
      *
      * @param[in]  id        The unique identifier for this article.
      * @param[in]  section   The section ID this article belongs to.
@@ -115,7 +115,7 @@ public:
      * @param[in]  month     The publication month.
      * @param[in]  day       The publication day.
      * @param[in]  contents  The article content text (optional).
-     * @param[in]  next      Whether there are more articles for pagination.
+     * @param[in]  next      Whether there are more articles available for pagination.
      */
     article(uint32_t           id,
             uint32_t           section,
@@ -139,6 +139,6 @@ public:
     ~article() = default;
 };
 
-} // namespace fb::game::board
+} // namespace fb::game::bulletin
 
-#endif // !__BOARD_H__
+#endif // !__BULLETIN_H__

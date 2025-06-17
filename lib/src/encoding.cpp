@@ -182,20 +182,44 @@ bool fb::assert_korean(const std::string& str)
     return true;
 }
 
-std::string fb::url_encode(std::string const& s)
+std::string fb::url_encode(const std::string& value)
 {
-    auto oss = std::ostringstream{};
-    for (unsigned char c : s)
+    auto escaped = std::ostringstream{};
+    escaped.fill('0');
+    escaped << std::hex;
+
+    for (auto i = value.begin(), n = value.end(); i != n; ++i)
     {
-        if (std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~' || c == '/')
+        auto c = (*i);
+
+        // Keep alphanumeric and other accepted characters intact
+        if (std::isalnum(static_cast<uint8_t>(c)))
         {
-            oss << c;
+            escaped << c;
+            continue;
         }
-        else
+
+        switch (c)
         {
-            oss << '%' << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << int(c) << std::dec
-                << std::nouppercase;
+        case '-':
+        case '_':
+        case '.':
+        case '~':
+        case '/':
+        case '?':
+        case '=':
+        case '&':
+        case ':':
+            escaped << c;
+            break;
+
+        default:
+            escaped << std::uppercase;
+            escaped << '%' << std::setw(2) << static_cast<int>(static_cast<uint8_t>(c));
+            escaped << std::nouppercase;
+            break;
         }
     }
-    return oss.str();
+
+    return escaped.str();
 }

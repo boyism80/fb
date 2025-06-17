@@ -218,37 +218,37 @@ void listener_impl::on_show_user_list(character& ch)
     });
 }
 
-void listener_impl::on_show_board(character& ch)
+void listener_impl::on_show_bulletin(character& ch)
 {
-    ch.send(fb_resp::board_sections(this->context.model));
+    ch.send(fb_resp::bulletin_sections(this->context.model));
 }
 
-void listener_impl::on_show_board(character&                       ch,
-                                  const fb::model::board&          section,
-                                  const std::list<board::article>& articles,
-                                  BOARD_BUTTON_ENABLE              flag)
+void listener_impl::on_show_bulletin(character&                          ch,
+                                     const fb::model::bulletin&          section,
+                                     const std::list<bulletin::article>& articles,
+                                     BULLETIN_BUTTON_ENABLE              flag)
 {
-    ch.send(fb_resp::board_articles(section, articles, flag));
+    ch.send(fb_resp::bulletin_articles(section, articles, flag));
 }
 
-void listener_impl::on_show_board(character& ch, const board::article& article, BOARD_BUTTON_ENABLE flag)
+void listener_impl::on_show_bulletin(character& ch, const bulletin::article& article, BULLETIN_BUTTON_ENABLE flag)
 {
-    ch.send(fb_resp::board_article(article, flag));
+    ch.send(fb_resp::bulletin_article(article, flag));
 }
 
 void listener_impl::on_show_mail_box(character& ch, const std::vector<MailSummary>& mails, MAIL_BUTTON_ENABLE flag)
 {
-    ch.send(fb_resp::board_mails(mails, flag));
+    ch.send(fb_resp::bulletin_mails(mails, flag));
 }
 
 void listener_impl::on_show_mail_box(character& ch, const Mail& mail, MAIL_BUTTON_ENABLE flag)
 {
-    ch.send(fb_resp::board_mail(mail, flag));
+    ch.send(fb_resp::bulletin_mail(mail, flag));
 }
 
-void listener_impl::on_show_board_message(character& ch, const std::string& message, bool success, bool mail)
+void listener_impl::on_show_bulletin_message(character& ch, const std::string& message, bool success, bool mail)
 {
-    ch.send(fb_resp::board_message(message, success, mail));
+    ch.send(fb_resp::bulletin_message(message, success, mail));
 }
 
 void listener_impl::on_show_world_map(character& ch, uint32_t id, uint16_t index)

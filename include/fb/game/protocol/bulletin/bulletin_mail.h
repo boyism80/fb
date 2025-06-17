@@ -10,7 +10,7 @@ using namespace fb::protocol::internal;
 
 namespace fb::protocol::game::response {
 
-class board_mail : public fb::protocol::header
+class bulletin_mail : public fb::protocol::header
 {
 public:
     inline static uint8_t header = 0x31;
@@ -20,7 +20,7 @@ public:
     const MAIL_BUTTON_ENABLE flag;
 
 public:
-    board_mail(const Mail& mail, MAIL_BUTTON_ENABLE flag);
+    bulletin_mail(const Mail& mail, MAIL_BUTTON_ENABLE flag);
 
 public:
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;

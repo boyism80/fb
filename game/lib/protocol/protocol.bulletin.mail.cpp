@@ -1,13 +1,13 @@
-#include <fb/game/protocol/board/board_mail.h>
+#include <fb/game/protocol/bulletin/bulletin_mail.h>
 
 namespace fb::protocol::game::response {
 
-board_mail::board_mail(const Mail& mail, MAIL_BUTTON_ENABLE flag) :
+bulletin_mail::bulletin_mail(const Mail& mail, MAIL_BUTTON_ENABLE flag) :
     mail(mail),
     flag(flag)
 { }
 
-async::task<void> board_mail::serialize(fb::stream_writer<big_endian>& writer) const
+async::task<void> bulletin_mail::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     auto dt = fb::model::datetime(mail.created_date);
