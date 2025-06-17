@@ -1,0 +1,73 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Common project rules and standards for FB 2D MMORPG game server
+alwaysApply: true
+globs:
+  - "**/*"
+---
+
+# FB Project Common Rules
+
+## Project Overview
+This is a 2D MMORPG game server project written in C++ with supporting tools in C# and Lua scripting. The project includes game server components, HTTP APIs, FlatBuffer protocol handling, Lua-based game logic scripting, and various utilities.
+
+## Auto-Generated Code Exclusions
+**ALWAYS IGNORE** the following directories as they contain auto-generated code:
+- `include/fb/model/*` - Auto-generated model files
+- `include/protocol/flatbuffer/*` - Auto-generated FlatBuffer protocol files
+
+Do not apply coding standards, documentation requirements, or perform code reviews on these auto-generated files.
+
+## General Principles
+- Write clean, readable, and maintainable code
+- Prefer explicit over implicit
+- Use meaningful names for variables, functions, and classes
+- Keep functions focused and single-purpose
+- Avoid premature optimization
+- Follow DRY, KISS, and YAGNI principles
+
+## Documentation Standards
+- **All comments must be written in English**
+- Use clear, concise English with proper grammar
+- Avoid Korean or other non-English comments
+- Document complex algorithms and business logic
+- **MANDATORY: ALL functions MUST have complete documentation**
+- **ZERO TOLERANCE for missing documentation on public functions, classes, and methods**
+
+## Git Workflow and Commit Standards
+
+### Commit Message Format
+**NO EMOJIS ALLOWED** - Keep commit messages clean and professional
+
+Format: `<type>: <description>`
+
+Types:
+- `feat`: New feature
+- `fix`: Bug fix
+- `refactor`: Code refactoring without feature changes
+- `docs`: Documentation updates (including Doxygen)
+- `style`: Code style changes (formatting, etc.)
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
+- `script`: Lua script additions or modifications
+
+### Pull Request Guidelines
+- **NO EMOJIS** in PR titles or descriptions
+- Use clear, descriptive titles
+- **Always create PRs against `origin/release` branch**
+- **MUST include ALL unreflected changes - verify comprehensively using git log comparison**
+
+## File Organization
+- Group related functionality in appropriate directories
+- Use consistent file naming within each language
+- Keep header files (.h) and implementation files (.cpp) separate
+- Place templates in dedicated Template/ directories
+- Organize Lua scripts by functionality:
+  - `/scripts/npc/` - NPC interaction scripts
+  - `/scripts/spell/` - Spell casting logic
+  - `/scripts/mob/` - Monster behavior scripts
+  - `/scripts/item/` - Item-specific logic 

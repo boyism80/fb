@@ -1,0 +1,76 @@
+---
+description: 
+globs: *.h,*.hpp,*.cpp
+alwaysApply: false
+---
+---
+description: C++ Coding Standards and Documentation
+globs: ["**/*.h", "**/*.hpp", "**/*.cpp", "**/*.cc", "**/*.cxx"]
+---
+
+# C++ Coding Standards
+
+## Naming Conventions
+- Use `snake_case` for ALL C++ code: variables, functions, classes, structs, namespaces
+- Use `UPPER_CASE` for constants and macros only
+- **Note: PascalCase may appear in auto-generated code only**
+
+## Modern C++ Guidelines
+- Use modern C++ features (C++17/20)
+- Follow RAII principles
+- Prefer `std::unique_ptr` and `std::shared_ptr` over raw pointers
+- Use `const` wherever possible
+- **Prefer `auto` for variable declarations when type is clear**
+- **Use `this->` keyword when accessing member variables/functions for clarity**
+
+## Example Preferred Style
+```cpp
+auto player = this->find_player(player_id);
+auto& inventory = this->get_inventory();
+```
+
+## Include Guards
+- **Use traditional `#ifndef`, `#define`, `#endif` pattern (NOT `#pragma once`)**
+
+## Doxygen Documentation (MANDATORY)
+- **MANDATORY: ALL C++ functions MUST have complete documentation**
+- **ZERO TOLERANCE for missing documentation on public functions, classes, and methods**
+- **Documentation MUST be 100% accurate and match function signature exactly**
+- **Grammar and syntax MUST be perfect - no awkward phrasing allowed**
+- **Parameter descriptions MUST match actual parameter names and types**
+- **Return value descriptions MUST accurately describe what is returned**
+- **Proper indentation is MANDATORY for all documentation comments**
+- **Always specify parameter direction (in/out/inout)**
+
+## Doxygen Format Example
+```cpp
+/**
+ * @brief   Handles client connection and message processing
+ * 
+ *          This function processes incoming messages from connected clients
+ *          and manages the game state accordingly.
+ * 
+ * @param[in]  client_id Unique identifier for the client
+ * @param[in]  message   Incoming message to process
+ * @param[out] result    Processing result status
+ * @return  true if processing succeeded, false otherwise
+ * 
+ * @note    This function is thread-safe
+ * @warning Ensure client_id is valid before calling
+ */
+bool process_client_message(uint32_t client_id, const message& message, process_result& result);
+```
+
+## Error Handling
+- Use exceptions for exceptional cases
+- Prefer error codes for expected failures
+- Always handle resource cleanup (RAII)
+- Use `auto` for exception handling when type is clear
+
+## Performance Guidelines
+- Profile before optimizing
+- Use object pooling for frequently allocated objects
+- Minimize memory allocations in hot paths
+- Cache expensive computations when appropriate
+
+

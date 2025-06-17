@@ -1,0 +1,94 @@
+---
+description: 
+globs: *.lua
+alwaysApply: false
+---
+---
+description: Lua Game Scripting Standards
+globs: ["**/*.lua"]
+---
+
+# Lua Game Scripting Standards
+
+## Naming Conventions
+- Use `snake_case` for variables and functions
+- Use descriptive function names that explain purpose
+- Use consistent naming patterns for event handlers:
+  - `ON_CAST_<spell_id>()` for spell casting
+  - `ON_MOB_ATTACK_<mob_id>()` for mob attacks
+  - `NPC_<npc_id>()` for NPC interactions
+
+## Language Usage
+- **Korean text is ALLOWED in Lua scripts** for game content, comments, and file names
+- This exception applies only to Lua game scripts due to their content-driven nature
+- Use Korean for: NPC dialogs, item names, spell descriptions, mob names, comments
+- English is still preferred for technical variable names and function names
+
+## Game Logic Patterns
+- Keep script functions focused on single game mechanics
+- Use proper error checking with `assert_alive()` for entity validation
+- Implement proper sleep delays for dramatic effects
+- Use `math.randomseed(seed())` for proper randomization
+- Structure NPC dialogs with goto labels for complex conversations
+
+## Example Patterns
+```lua
+function ON_CAST_3043(me, you, spell)
+    -- Spell implementation with proper validation
+    if me:is(OBJECT_TYPE_CHARACTER) then
+        local weapon = me:weapon()
+        -- Implementation logic
+    end
+end
+
+function npc_revive(me, npc, discourteous)
+    -- NPC interaction with proper state checking
+    if me:state() ~= STATE_GHOST then
+        return true
+    end
+    -- Implementation logic
+end
+```
+
+## Documentation Format
+```lua
+-- @brief   Handles spell casting for Hellfire spell
+-- @param[in]  me     The caster character
+-- @param[in]  you    The target character (can be nil)
+-- @param[in]  spell  The spell object being cast
+-- @note    Damage is calculated as 1.5 * caster's MP
+function ON_CAST_3043(me, you, spell)
+    -- Implementation
+end
+```
+
+## Error Handling
+- Always validate entity existence with `assert_alive()`
+- Check for nil values before using objects
+- Use proper return values to indicate success/failure
+- Handle edge cases gracefully in game logic
+
+## Script Organization
+- Keep individual spell/mob scripts focused and small
+- Use consistent function naming patterns
+- Implement proper game state validation
+- Use appropriate sleep delays for game timing
+- Handle player disconnection gracefully
+
+## Performance Guidelines
+- Avoid infinite loops in Lua scripts
+- Use efficient random number generation
+- Cache frequently accessed game objects
+- Minimize string concatenation in hot paths
+- Minimize heavy computations in frequently called scripts
+
+## Script Debugging
+- Use descriptive error messages
+- Log important game events for debugging
+- Implement proper fallback behavior
+
+
+
+
+
+- Test scripts with edge cases (player death, disconnection, etc.)

@@ -339,11 +339,11 @@ struct map::builtin
     static int builtin_doors(lua_State* L);
 
     /**
-     * @brief      Determines if builtin contains.
+     * @brief      Lua binding for checking if map contains specified object.
      *
      * @param[in]  L  The Lua state
      *
-     * @return     True if builtin contains, False otherwise.
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_contains(lua_State* L);
 

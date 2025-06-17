@@ -4,3 +4,6 @@
 [submodule "tools/data-converter"]
 	path = tools/data-converter
 	url = https://github.com/boyism80/data-converter
+[submodule "wiki"]
+	path = wiki
+	url = https://github.com/boyism80/fb.wiki.git
