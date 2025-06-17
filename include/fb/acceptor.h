@@ -268,23 +268,6 @@ private:
     /**
      * @brief      Performs an asynchronous HTTP GET request using boost::beast.
      *
-     *             This method implements a complete HTTP/1.1 GET request with the following features:
-     *             - Automatic hostname resolution (supports both hostnames and IP addresses)
-     *             - URL encoding for international characters (Windows platform specific)
-     *             - Configurable timeout with automatic connection cleanup
-     *             - Custom HTTP headers support
-     *             - Automatic HTTP/HTTPS protocol detection and stripping
-     *             - Graceful socket shutdown after response
-     *
-     *             The method handles the complete HTTP transaction:
-     *             1. Parses host:port from the host parameter
-     *             2. Resolves hostname to IP address using boost::asio resolver
-     *             3. Establishes TCP connection with timeout
-     *             4. Sends HTTP GET request with custom headers
-     *             5. Reads and parses HTTP response
-     *             6. Extracts response body as byte vector
-     *             7. Cleanly shuts down the connection
-     *
      * @param[in]  host      The target host in format "hostname:port" or "hostname" (defaults to port 80).
      *                       Supports http:// and https:// prefixes which are automatically stripped.
      * @param[in]  path      The target path including query parameters (will be URL encoded).
@@ -333,7 +316,6 @@ private:
 
         auto buffer = boost::beast::flat_buffer{};
         auto res    = boost::beast::http::response<boost::beast::http::dynamic_body>{};
-
         stream.expires_after(timeout);
         co_await boost::beast::http::async_read(stream, buffer, res, boost::asio::use_awaitable);
 
@@ -358,18 +340,6 @@ private:
 private:
     /**
      * @brief      Performs a typed HTTP GET request with automatic FlatBuffer deserialization.
-     *
-     *             This template method wraps the raw HTTP GET functionality and provides automatic
-     *             deserialization of FlatBuffer protocol responses. It handles the complete flow:
-     *             1. Performs HTTP GET request using boost_get_async()
-     *             2. Extracts protocol type and size from response header
-     *             3. Deserializes the response using FlatBuffer's Deserialize() method
-     *             4. Returns the strongly-typed response object
-     *
-     *             The response format is expected to be:
-     *             - 4 bytes: Protocol type identifier (big-endian uint32_t)
-     *             - 4 bytes: Protocol data size (big-endian uint32_t)
-     *             - N bytes: FlatBuffer serialized data
      *
      * @param[in]  host      The target host in "hostname:port" format.
      * @param[in]  path      The target path for the GET request.
@@ -424,69 +394,9 @@ private:
         return promise->task();
     }
 
-public:
-    /**
-     * @brief      Performs a configuration-based HTTP GET request to another service.
-     *
-     *             This method provides a high-level interface for making HTTP GET requests to
-     *             other services using configuration-based routing. It automatically constructs
-     *             the target URL from configuration parameters and handles the complete request
-     *             lifecycle with automatic response deserialization.
-     *
-     *             The method looks up the target service configuration using the route parameter
-     *             and constructs the full URL as "http://ip:port" + path. This enables
-     *             service-to-service communication without hardcoding endpoints.
-     *
-     *             Configuration format expected:
-     *             ```json
-     *             {
-     *               "route_name": {
-     *                 "ip": "service.hostname.com",
-     *                 "port": 8080
-     *               }
-     *             }
-     *             ```
-     *
-     * @param[in]  route     The configuration route name to look up service endpoint details.
-     * @param[in]  path      The target path to append to the service base URL.
-     *
-     * @tparam     Response  The FlatBuffer response type expected from the service.
-     *
-     * @return     An async task that completes with the deserialized response object.
-     *
-     * @throws     std::exception if route configuration is missing or request fails.
-     */
-    template <typename Response>
-    [[nodiscard]] async::task<Response> get(const std::string& route, const std::string& path)
-    {
-        auto& config = fb::config<>(route);
-        auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
-        co_return co_await this->boost_get_async<Response>(host, path);
-    }
-
 private:
     /**
      * @brief      Performs an asynchronous HTTP POST request using boost::beast with binary payload support.
-     *
-     *             This method implements a complete HTTP/1.1 POST request with the following features:
-     *             - Automatic hostname resolution (supports both hostnames and IP addresses)
-     *             - URL encoding for international characters (Windows platform specific)
-     *             - Configurable timeout with automatic connection cleanup
-     *             - Custom HTTP headers support with automatic payload preparation
-     *             - Automatic HTTP/HTTPS protocol detection and stripping
-     *             - Binary request body support for protocol data transmission
-     *             - Graceful socket shutdown after response
-     *
-     *             The method handles the complete HTTP transaction:
-     *             1. Parses host:port from the host parameter
-     *             2. Resolves hostname to IP address using boost::asio resolver
-     *             3. Establishes TCP connection with timeout
-     *             4. Constructs HTTP POST request with custom headers and binary body
-     *             5. Automatically sets Content-Length and prepares payload
-     *             6. Sends HTTP POST request with binary data
-     *             7. Reads and parses HTTP response
-     *             8. Extracts response body as byte vector
-     *             9. Cleanly shuts down the connection
      *
      * @param[in]  host      The target host in format "hostname:port" or "hostname" (defaults to port 80).
      *                       Supports http:// and https:// prefixes which are automatically stripped.
@@ -568,27 +478,6 @@ private:
     /**
      * @brief      Performs a typed HTTP POST request with automatic FlatBuffer serialization and deserialization.
      *
-     *             This template method wraps the raw HTTP POST functionality and provides automatic
-     *             serialization of FlatBuffer protocol requests and deserialization of responses.
-     *             It handles the complete flow for inter-service communication:
-     *
-     *             Request Processing:
-     *             1. Serializes the request object using FlatBuffer's Serialize() method
-     *             2. Constructs a protocol header with type and size information
-     *             3. Combines header and payload into a single binary stream
-     *             4. Performs HTTP POST request using boost_post_async()
-     *             5. Extracts protocol type and size from response header
-     *             6. Deserializes the response using FlatBuffer's Deserialize() method
-     *             7. Returns the strongly-typed response object
-     *
-     *             Protocol Format (both request and response):
-     *             - 4 bytes: Protocol type identifier (big-endian uint32_t)
-     *             - 4 bytes: Protocol data size (big-endian uint32_t)
-     *             - N bytes: FlatBuffer serialized data
-     *
-     *             This method is typically used for service-to-service communication where
-     *             both endpoints understand the FlatBuffer protocol format.
-     *
      * @param[in]  host     The target host in "hostname:port" format.
      * @param[in]  path     The target path for the POST request.
      * @param[in]  body     The request object to serialize and send.
@@ -645,6 +534,46 @@ private:
                               });
 
         return promise->task();
+    }
+
+public:
+    /**
+     * @brief      Performs a configuration-based HTTP GET request to another service.
+     *
+     *             This method provides a high-level interface for making HTTP GET requests to
+     *             other services using configuration-based routing. It automatically constructs
+     *             the target URL from configuration parameters and handles the complete request
+     *             lifecycle with automatic response deserialization.
+     *
+     *             The method looks up the target service configuration using the route parameter
+     *             and constructs the full URL as "http://ip:port" + path. This enables
+     *             service-to-service communication without hardcoding endpoints.
+     *
+     *             Configuration format expected:
+     *             ```json
+     *             {
+     *               "route_name": {
+     *                 "ip": "service.hostname.com",
+     *                 "port": 8080
+     *               }
+     *             }
+     *             ```
+     *
+     * @param[in]  route     The configuration route name to look up service endpoint details.
+     * @param[in]  path      The target path to append to the service base URL.
+     *
+     * @tparam     Response  The FlatBuffer response type expected from the service.
+     *
+     * @return     An async task that completes with the deserialized response object.
+     *
+     * @throws     std::exception if route configuration is missing or request fails.
+     */
+    template <typename Response>
+    [[nodiscard]] async::task<Response> get(const std::string& route, const std::string& path)
+    {
+        auto& config = fb::config<>(route);
+        auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
+        co_return co_await this->boost_get_async<Response>(host, path);
     }
 
 public:
