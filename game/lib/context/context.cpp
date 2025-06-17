@@ -252,7 +252,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         names.erase(name);
     });
 
-    fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
+    fb::logger::info("{} has disconnected.", ch->name());
 
     try
     {

@@ -791,11 +791,11 @@ private:
 
                 if (this->_deserializer.contains(cmd) == false)
                 {
-                    fb::logger::warn(std::format("정의되지 않은 프로토콜입니다. [{:#x}]", cmd));
+                    fb::logger::warn(std::format("Undefined protocol. [{:#x}]", cmd));
                 }
                 else if (this->_handler.contains(cmd) == false)
                 {
-                    fb::logger::warn(std::format("정의되지 않은 핸들러입니다. [{:#x}]", cmd));
+                    fb::logger::warn(std::format("Undefined handler. [{:#x}]", cmd));
                 }
                 else
                 {

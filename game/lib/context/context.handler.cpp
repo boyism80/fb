@@ -9,7 +9,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     socket.crt(request.enc_type, request.enc_key);
 
     ch->name(request.name);
-    fb::logger::info("{}님이 접속했습니다.", request.name);
+    fb::logger::info("{} has connected.", request.name);
 
     auto fd       = socket.fd();
     auto id       = request.id;
@@ -595,7 +595,7 @@ async::task<bool> context::handle_object_miss(fb::socket<character>& socket, con
         co_return true;
 
     obj->update_external(*ch, false);
-    fb::logger::info("{} 오브젝트 미스", obj->sequence());
+    fb::logger::info("Object miss for {}", obj->sequence());
 
     co_return true;
 }
