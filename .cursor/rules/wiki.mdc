@@ -1,8 +1,7 @@
 ---
 description: 
-globs: wiki/**/*.md
+globs: 
 alwaysApply: false
----
 ---
 description: Builtin Function Analysis Rules for Wiki Documentation
 globs: ["wiki/**/*.md"]
@@ -54,16 +53,22 @@ globs: ["wiki/**/*.md"]
 ## Documentation Format Standards
 
 ### Structure Requirements
-- **Title**: Each function gets a clear title
+- **Title**: Each function gets a clear title (without backticks)
 - **Description**: Simple, easy-to-understand explanations suitable for GitHub Wiki
-- **Parameters**: Detailed parameter documentation with types and descriptions
-- **Return values**: Clear return type and value documentation
-- **Examples**: Comprehensive examples for all usage patterns
+- **Parameters**: Detailed parameter documentation with types and descriptions using colon format
+- **Return values**: Clear return type and value documentation using colon format  
+- **Examples**: Comprehensive examples for all usage patterns with "-- This is a real usage example from game scripts" comments
+- **Section separators**: Use `---` (three dashes) to separate different functions clearly
 
 ### Example Code Guidelines
 - **Message output**: Use `me:message()` instead of `print`
 - **Naming conventions**: Use snake_case for script examples
 - **Language**: Code comments and messages in English, but parameter values can be in Korean when contextually appropriate
+- **String-based data retrieval**: When example scripts need model objects, use appropriate name2* functions:
+  - **Model objects needed**: Use `name2ch("운영자")`, `name2item("도토리")`, `name2map("국내성")`, `name2spell("비영사천문")`
+  - **Direct string parameters**: If builtin functions accept strings directly, prefer using strings for better readability
+  - **PREFERENCE**: String parameters are more intuitive and preferred when supported by the function
+  - **name2* usage**: Only use name2* functions when you specifically need the model object itself
 - **Context-specific names**:
   - **Buffs**: '무장' or '보호'
   - **Maps**: '국내성' or '부여성'
@@ -73,93 +78,147 @@ globs: ["wiki/**/*.md"]
   - **NPCs**: '낙랑'
   - **Spells**: '비영사천문', '누리의기원'
 
+### Parameter and Return Value Formatting Standards
+
+#### Colon Format Requirements
+- **Parameter descriptions**: Use colon format `parameter:type: Description text`
+- **Return value descriptions**: Use colon format `type: Description text`
+- **NO EM DASH USAGE**: Never use em dash (—) in parameter or return value descriptions
+- **Consistent spacing**: Always use proper spacing around colons
+
+#### Correct Format Examples:
+```markdown
+- **Parameters**:  
+  - `index:number`: Inventory slot index (0-based)
+  - `name:string`: Item name to search for
+- **Return Value**:  
+  - `fb.game.item|nil`: Item object or nil if slot is empty
+```
+
+#### AVOID These Formats:
+```markdown
+❌ - `number` — Current HP value
+❌ - `number`: — Current HP value  
+❌ - `number` ??Current HP value
+✅ - `number`: Current HP value
+```
+
 ### Documentation Format Examples
 
 #### Single Function Example:
 ```markdown
-### `rmitem`
-#### `rmitem(item_ref|model_ref|string|index:number, [count:number], [delete_type:ITEM_DELETE_TYPE])`
+### rmitem
+#### `rmitem(target, count:number, delete_type:number)`
 
 - **Description**:  
-  Removes (destroys) items from inventory.  
-  1. **`item_ref:fb.game.item`**: Removes the specific item object  
-  2. **`model_ref:fb.model.item`**: Removes items of the specified model type  
-  3. **`string`**: Removes items with the specified name  
-  4. **`index:number`**: Removes item from specified slot (1-based)  
-
+  Removes items from the character's inventory.
 - **Parameters**:  
-  - **`item_ref:fb.game.item`**, **`model_ref:fb.model.item`**, **`name:string`**, **`index:number`**: Item identifier  
-  - **`count:number`**: Number of items to remove (optional)  
-  - **`delete_type:ITEM_DELETE_TYPE`**: Removal method (optional)  
-
-- **Return Value**: None  
-
+  - `target`: Can be item object, model object, slot index, or item name
+  - `count:number`: Number of items to remove (default: 1)
+  - `delete_type:number`: Deletion type (default: REMOVED)
+- **Return Value**:  
+  - None
 - **Example**:  
   ```lua
-  -- Remove one item from slot 4
-  me:rmitem(4)
-  -- Remove 2 "목도" items
-  me:rmitem("목도", 2)
+  -- This is a real usage example from game scripts
+  me:rmitem(4)  -- Remove item from slot 4
+  me:rmitem("목도", 2)  -- Remove 2 "목도" items
   ```
+
+---
 ```
 
 #### Getter/Setter Function Example:
 ```markdown
-### `look`
-Character appearance management with getter and setter functionality.
+### look
+Provides functionality to get or set the character's appearance.
 
 #### `look()`
-- **Description**: Returns the character's current appearance ID
-- **Parameters**: None
-- **Return Value**: `number` - Current appearance ID
-- **Example**:
+- **Description**:  
+  Returns the character's current appearance ID.
+- **Parameters**:  
+  - None
+- **Return Value**:  
+  - `number`: Current appearance ID
+- **Example**:  
   ```lua
+  -- This is a real usage example from game scripts
   local current_look = me:look()
   me:message("Current look ID: " .. current_look)
   ```
 
 #### `look(value:number)`
-- **Description**: Sets the character's appearance to the specified ID
-- **Parameters**:
-  - **`value:number`**: Appearance ID to set
-- **Return Value**: None
-- **Example**:
+- **Description**:  
+  Sets the character's appearance to the specified ID.
+- **Parameters**:  
+  - `value:number`: Appearance ID to set
+- **Return Value**:  
+  - None
+- **Example**:  
   ```lua
+  -- This is a real usage example from game scripts
   me:look(45)
   me:message("Changed look to 45")
   ```
+
+---
 ```
 
 #### Multi-function Example:
 ```markdown
-### `item`
-Two main functionalities: inventory item retrieval and dialog-based item selection.
+### item
+Provides multiple ways to access items in the character's inventory.
 
-#### `item(target)`
-- **Description**: Retrieves an item from inventory based on various identifiers
-- **Parameters**:
-  - **`target`**: Can be index (number), name (string), or item object
-- **Return Value**: Item object or `nil`
-- **Example**:
+#### `item(index:number)`
+- **Description**:  
+  Returns the item at the specified inventory slot index.
+- **Parameters**:  
+  - `index:number`: Inventory slot index (0-based)
+- **Return Value**:  
+  - `fb.game.item|nil`: Item object or nil if slot is empty
+- **Example**:  
   ```lua
-  local item_obj = me:item("도토리")
-  if item_obj then
-    me:message("Found item: " .. item_obj:name())
+  -- This is a real usage example from game scripts
+  local item = me:item(0)
+  if item then
+      me:message("First slot item: " .. item:model():name())
   end
   ```
 
-#### `item(target, message:string, options:table)`
-- **Description**: Shows item selection dialog for NPCs/monsters
-- **Parameters**:
-  - **`target:fb.game.object`**: NPC/monster object
-  - **`message:string`**: Dialog message
-  - **`options:table`**: Item options in format `{{item_name, count}, ...}`
-- **Return Value**: Selected index (1-based) or `nil`
-- **Example**:
+#### `item(name:string)`
+- **Description**:  
+  Finds and returns the first item with the specified name.
+- **Parameters**:  
+  - `name:string`: Item name to search for
+- **Return Value**:  
+  - `fb.game.item|nil`: Item object or nil if not found
+- **Example**:  
   ```lua
-  local options = {{"도토리", 1}, {"토끼고기", 2}}
-  local choice = me:item(npc_obj, "Which item do you want?", options)
+  -- This is a real usage example from game scripts
+  local item = me:item("도토리")
+  if item then
+      me:message("Found acorn")
+  end
   ```
+
+#### `item(model:fb.model.item)`
+- **Description**:  
+  Finds and returns the first item matching the specified model.
+- **Parameters**:  
+  - `model:fb.model.item`: Item model to search for
+- **Return Value**:  
+  - `fb.game.item|nil`: Item object or nil if not found
+- **Example**:  
+  ```lua
+  -- This is a real usage example from game scripts
+  local model = name2item("도토리")  -- Use name2item when model object is needed
+  local item = me:item(model)
+  if item then
+      me:message("Found item with model")
+  end
+  ```
+
+---
 ```
 
 ## Quality Assurance
@@ -174,6 +233,13 @@ Two main functionalities: inventory item retrieval and dialog-based item selecti
 - **Real-World Testing**: Examples must reflect actual working code patterns
 
 ### **SCRIPT-BASED BULK EDITING REQUIREMENTS**
+- **POWERSHELL USAGE STRICTLY PROHIBITED**: Never use PowerShell commands for bulk text processing operations on Korean text files due to encoding corruption issues
+- **FORBIDDEN POWERSHELL OPERATIONS**: 
+  - `Get-Content` with `-replace` operations on Korean text
+  - `Set-Content` operations that may corrupt UTF-8 encoding
+  - Any PowerShell regex operations on files containing Korean characters
+  - Bulk find-and-replace operations via PowerShell cmdlets
+- **ALTERNATIVE APPROACHES REQUIRED**: Use individual `search_replace` tool calls instead of PowerShell bulk operations
 - **MANDATORY POST-SCRIPT REVIEW**: When using scripts for bulk changes (regex replacements, automated conversions, etc.), you MUST immediately perform a comprehensive review of the entire document
 - **REGEX OPERATIONS INCLUDED**: This requirement applies to ALL automated text operations including regex find-and-replace, pattern matching, and bulk text transformations
 - **FULL DOCUMENT INSPECTION**: After script/regex execution, read through the ENTIRE modified document to identify unintended changes
@@ -186,6 +252,10 @@ Two main functionalities: inventory item retrieval and dialog-based item selecti
   - Lost semantic meaning due to literal translations
   - Over-aggressive pattern matching that changed unintended text
   - Regex patterns that matched beyond intended scope
+  - **KOREAN TEXT CORRUPTION**: Corrupted Korean characters appearing as `??` or similar garbled text
+  - **ENCODING ISSUES**: Mixed encoding problems causing display corruption
+  - **EM DASH CORRUPTION**: Em dash (—) characters being corrupted to `??` in parameter descriptions
+  - **NAME2* FUNCTION USAGE**: Ensure name2* functions are used only when model objects are specifically needed, prefer direct strings when functions accept them
 - **IMMEDIATE CORRECTION REQUIRED**: Fix all script/regex-induced errors before considering the task complete
 - **NO EXCEPTIONS**: Script/regex convenience does not excuse poor output quality - manual review and correction is mandatory
 
@@ -196,12 +266,31 @@ Two main functionalities: inventory item retrieval and dialog-based item selecti
 - **Completeness**: Include all necessary examples and edge cases
 - **User Focus**: Write for users who don't have access to source code paths
 - **Evidence-Based**: Every claim must be backed by actual source code evidence
+- **Link Consistency**: All internal links must match actual file names without language suffixes (e.g., use `builtin-context` not `builtin-context-en`)
+- **Format Uniformity**: Use consistent colon format for all parameter and return value descriptions throughout all documentation
+- **Name2* Function Usage**: Use name2ch, name2item, name2map, name2spell functions only when model objects are specifically needed, prefer direct string parameters for better readability when functions support them
 
 ## Final Output
 - Create comprehensive markdown documentation suitable for GitHub Wiki
 - Focus on practical usage rather than internal implementation details
 - Ensure all documented functions are immediately usable by developers
 - Maintain consistency with existing documentation patterns while improving clarity
+
+---
+description: Example script generation rule for FB wiki documents
+globs:
+  - "wiki/**/*.md"
+---
+
+# Example Script Rule for FB Wiki
+
+- When adding example scripts to wiki documents,
+  always prioritize real usage examples of built-in Lua functions found in the `/game/scripts` directory (including all subdirectories).
+- Example code does not need to be identical to the actual script, but should clearly demonstrate the function's usage and context.
+- If a function is used in multiple places, choose the most representative and easy-to-understand example.
+- Keep example code concise and focused on the core logic, avoiding unnecessary complexity.
+- Example code should clearly show the function name, main parameters, and return values.
+- If the example code differs from the actual game logic, add a comment indicating it is for reference only.
 
 
 
