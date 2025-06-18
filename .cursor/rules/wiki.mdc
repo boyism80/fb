@@ -1,7 +1,8 @@
 ---
 description: 
-globs: 
+globs: wiki/**/*.md
 alwaysApply: false
+---
 ---
 description: Builtin Function Analysis Rules for Wiki Documentation
 globs: ["wiki/**/*.md"]
