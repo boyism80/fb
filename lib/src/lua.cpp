@@ -526,7 +526,7 @@ void root::revoke(context& ctx)
     context_pool::ist().unrecord(ctx);
 }
 
-async::task<void> fb::lua::root::switching()
+async::task<void> fb::lua::context::switching()
 {
     co_await this->_initial_thread.switching();
 }

@@ -1128,34 +1128,29 @@ int character::builtin::builtin_group(lua_State* L)
 
     if (argc < 2)
     {
-        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+        static auto fn = [](fb::game::context* ctx, character* ch, fb::lua::context* lua) -> async::task<void> {
             auto group_ptr = ch->_group;
-
             if (group_ptr == nullptr)
             {
-                lua->ensure_resume(
-                    *ctx,
-                    *ch,
-                    [=]() {
-                        lua->pushnil();
-                        return 1;
-                    },
-                    true);
+                co_await lua->switching();
+                lua->pushnil();
+                lua->resume(1);
             }
             else
             {
                 group_ptr->read([=](const auto& group) {
-                    lua->ensure_resume(
-                        *ctx,
-                        *ch,
-                        [=, &group]() {
-                            lua->pushobject(group);
-                            return 1;
-                        },
-                        true);
+                    async::awaitable_then(lua->switching(), [lua, &group](auto result) {
+                        result();
+                        lua->pushobject(group);
+                        lua->resume(1);
+                    });
                 });
             }
             co_return;
+        };
+
+        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+            co_await fn(ctx, ch, lua);
         });
         return lua->yield(1);
     }
@@ -1207,18 +1202,27 @@ int character::builtin::builtin_create_group(lua_State* L)
 
     auto name = lua->tostring(2);
 
-    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-        auto success = co_await ctx->create_group(*ch, name);
+    static auto fn =
+        [](fb::game::context* ctx, character* ch, fb::lua::context* lua, std::string target) -> async::task<void> {
+        try
+        {
+            co_await ctx->create_group(*ch, target);
+            co_await lua->switching();
+            lua->pushboolean(true);
+            lua->resume(1);
+        }
+        catch (std::exception& e)
+        {
+            async::awaitable_then(lua->switching(), [lua](auto result) {
+                result();
+                lua->pushboolean(false);
+                lua->resume(1);
+            });
+        }
+    };
 
-        lua->ensure_resume(
-            *ctx,
-            *ch,
-            [=]() {
-                lua->pushboolean(success);
-                return 1;
-            },
-            true);
-        co_return;
+    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+        co_await fn(ctx, ch, lua, name);
     });
 
     return lua->yield(1);
@@ -1238,64 +1242,59 @@ int character::builtin::builtin_clan(lua_State* L)
 
     if (argc < 2)
     {
-        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+        static auto fn = [](fb::game::context* ctx, character* ch, fb::lua::context* lua) -> async::task<void> {
             auto clan_ptr = ch->_clan;
-
             if (clan_ptr == nullptr)
             {
-                lua->ensure_resume(
-                    *ctx,
-                    *ch,
-                    [=]() {
-                        lua->pushnil();
-                        return 1;
-                    },
-                    true);
+                co_await lua->switching();
+                lua->pushnil();
+                lua->resume(1);
             }
             else
             {
-                clan_ptr->read([=](const auto& clan) {
-                    lua->ensure_resume(
-                        *ctx,
-                        *ch,
-                        [=, &clan]() {
-                            lua->pushobject(clan);
-                            return 1;
-                        },
-                        true);
+                async::awaitable_then(lua->switching(), [lua, clan_ptr](auto result) {
+                    result();
+                    clan_ptr->read([=](const auto& clan) {
+                        lua->pushobject(clan);
+                        lua->resume(1);
+                    });
                 });
             }
             co_return;
+        };
+
+        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+            co_await fn(ctx, ch, lua);
         });
         return lua->yield(1);
     }
     else if (lua->is_function(2))
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        static auto fn = [](fb::game::context* ctx, character* ch, fb::lua::context* lua) -> async::task<void> {
             auto clan_ptr = ch->_clan;
-
-            return lua->ensure_resume(*ctx, *ch, [=]() {
-                static auto static_func = [](fb::lua::context* ctx) {
-                    lua_call(*ctx, 2, LUA_MULTRET);
-                    ctx->remove(-ctx->argc());
-                    return ctx->argc();
-                };
-
-                lua->pushobject(ch);
-                if (clan_ptr == nullptr)
-                {
-                    lua->pushnil();
-                    return static_func(lua);
-                }
-                else
-                {
-                    return clan_ptr->template read<int>([=](const auto& clan) {
+            if (clan_ptr == nullptr)
+            {
+                co_await lua->switching();
+                lua->pushnil();
+                lua->resume(1);
+            }
+            else
+            {
+                async::awaitable_then(lua->switching(), [lua, clan_ptr](auto result) {
+                    result();
+                    clan_ptr->read([=](const auto& clan) {
                         lua->pushobject(clan);
-                        return static_func(lua);
+                        lua->resume(1);
                     });
-                }
-            });
+                });
+            }
+        };
+
+        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+            co_await fn(ctx, ch, lua);
         });
+
+        return lua->yield(1);
     }
     else
     {
@@ -1317,34 +1316,29 @@ int character::builtin::builtin_create_clan(lua_State* L)
 
     auto name = lua->tostring(2);
 
-    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+    static auto fn =
+        [](fb::game::context* ctx, character* ch, fb::lua::context* lua, const std::string& name) -> async::task<void> {
         try
         {
             co_await ctx->create_clan(*ch, name);
-
-            lua->ensure_resume(
-                *ctx,
-                *ch,
-                [=]() {
-                    lua->pushnil();
-                    return 1;
-                },
-                true);
+            co_await lua->switching();
+            lua->pushnil();
+            lua->resume(1);
         }
         catch (std::exception& e)
         {
-            auto error_msg = std::string(e.what());
-
-            lua->ensure_resume(
-                *ctx,
-                *ch,
-                [=]() {
-                    lua->pushstring(error_msg.c_str());
-                    return 1;
-                },
-                true);
+            auto what = std::string(e.what());
+            async::awaitable_then(lua->switching(), [lua, what](auto result) {
+                result();
+                lua->pushstring(what.c_str());
+                lua->resume(1);
+            });
         }
+        co_return;
+    };
 
+    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+        co_await fn(ctx, ch, lua, name);
         co_return;
     });
 
@@ -1363,35 +1357,31 @@ int character::builtin::builtin_destroy_clan(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+    // Static function to isolate async operation and ensure parameter lifetime safety
+    static auto static_func = [](fb::game::context* ctx, character* ch, fb::lua::context* lua) -> async::task<bool> {
         try
         {
             co_await ctx->destroy_clan(*ch);
-
-            lua->ensure_resume(
-                *ctx,
-                *ch,
-                [=]() {
-                    lua->pushnil();
-                    return 1;
-                },
-                true);
+            co_await lua->switching();
+            lua->pushnil();
+            lua->resume(1);
+            co_return true;
         }
         catch (std::exception& e)
         {
-            auto error_msg = std::string(e.what());
-
-            lua->ensure_resume(
-                *ctx,
-                *ch,
-                [=]() {
-                    lua->pushstring(error_msg.c_str());
-                    return 1;
-                },
-                true);
+            auto what = std::string(e.what());
+            async::awaitable_then(lua->switching(), [lua, what](auto result) {
+                result();
+                lua->pushstring(what.c_str());
+                lua->resume(1);
+            });
+            co_return false;
         }
+    };
 
-        co_return;
+    ctx->threads.enqueue(*ch, [ctx, ch, lua](auto&) -> async::task<void> {
+        // Call static_func with explicit parameters for lifetime safety
+        co_await static_func(ctx, ch, lua);
     });
 
     return lua->yield(1);
