@@ -43,7 +43,24 @@ Do not apply coding standards, documentation requirements, or perform code revie
 ### Commit Message Format
 **NO EMOJIS ALLOWED** - Keep commit messages clean and professional
 
-Format: `<type>: <description>`
+Format: `<type>: <short description>`
+
+**Message Structure**:
+- **Subject line**: 50 characters or less, imperative mood
+- **Blank line**: Separate subject from description
+- **Description**: Detailed explanation if needed (wrap at 72 characters)
+
+**Example**:
+```
+feat: add user authentication system
+
+- Implement JWT token validation
+- Add password hashing with bcrypt
+- Create login/logout endpoints
+- Add session management middleware
+
+Note: Integration testing required before deployment
+```
 
 Types:
 - `feat`: New feature

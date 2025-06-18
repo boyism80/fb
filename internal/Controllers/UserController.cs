@@ -5,6 +5,7 @@ using Http;
 using Http.Model;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
+using System.Buffers;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
@@ -29,6 +30,9 @@ namespace Internal.Controllers
         private readonly RedisService _redisService;
         private readonly RedisDistributedLockService _distributedLock;
         private readonly ILogger<UserController> _logger;
+        
+        // Reuse SHA256 instance to reduce allocations
+        private static readonly SHA256 _sha256 = SHA256.Create();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserController"/> class.
@@ -90,14 +94,23 @@ namespace Internal.Controllers
         /// <returns>A hexadecimal string representation of the SHA256 hash.</returns>
         private static string SHA256Hash(string value)
         {
-            var sha = new SHA256Managed();
-            var hash = sha.ComputeHash(Encoding.ASCII.GetBytes(value));
-            var builder = new StringBuilder();
-            foreach (byte b in hash)
+            var hash = _sha256.ComputeHash(Encoding.ASCII.GetBytes(value));
+            
+            // Use ArrayPool to reduce allocations for StringBuilder buffer
+            var buffer = ArrayPool<char>.Shared.Rent(hash.Length * 2);
+            try
             {
-                builder.AppendFormat("{0:x2}", b);
+                var span = buffer.AsSpan(0, hash.Length * 2);
+                for (int i = 0; i < hash.Length; i++)
+                {
+                    hash[i].TryFormat(span.Slice(i * 2, 2), out _, "x2");
+                }
+                return new string(span);
             }
-            return builder.ToString();
+            finally
+            {
+                ArrayPool<char>.Shared.Return(buffer);
+            }
         }
 
         /// <summary>
