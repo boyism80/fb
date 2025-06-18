@@ -5,7 +5,7 @@ function ON_CAST_4011(me, spell)
     local sound = 84
     local buff_time = 12
 
-    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    local error = me:assert(STATE_GHOST, STATE_RIDING)
     if error ~= nil then
         return me:message(error)
     end

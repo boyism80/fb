@@ -122,9 +122,47 @@ int wrong_builtin(lua_State* L) {
 
 ### **Special Case: Async Operations**
 For async operations (like map transitions), combine coroutines with the 3-stage pattern:
+
+#### **CRITICAL: Variable Lifetime Management**
+**WARNING: Direct `co_await` in lambda captures causes SERVER CRASHES due to variable lifetime issues!**
+
 ```cpp
+// WRONG - CAUSES CRASHES!
 ctx->threads.enqueue(*obj, [=](mdc:auto& thread) -> async::task<void> {
-    async::awaitable_then(async_operation(obj, params), [=](mdc:auto result) {
+    async::awaitable_then(
+        co_await obj->map(map, position),  // CRASH RISK!
+        //       ^^^^^^^^^^^^^^^^^^^^^^^^
+        //       When coroutine suspends here, lambda-captured variables
+        //       (map, position, etc.) may be destroyed before resume!
+        [=](mdc:auto result) {
+            // Accessing destroyed variables = SERVER CRASH
+            auto success = result();
+            lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushboolean(success);
+                return 1;
+            }, true);
+        }
+    );
+});
+```
+
+#### **CORRECT: Use static_func for Lifetime Safety**
+```cpp
+// Isolate async operation in separate function with explicit parameters
+static auto static_func = [](object* obj, fb::game::map* map, 
+                           const std::optional<fb::model::point16_t>& position) -> async::task<bool> {
+    // Function scope ensures parameter lifetime safety
+    // Independent of outer lambda captures
+    if (position.has_value())
+        co_return co_await obj->map(map, position.value());
+    else
+        co_return co_await obj->map(map);
+};
+
+ctx->threads.enqueue(*obj, [=](mdc:auto& thread) -> async::task<void> {
+    // Pass parameters explicitly to static_func
+    async::awaitable_then(static_func(obj, map, position), [=](mdc:auto result) {
+        // Only receive result value - lifetime safe!
         auto success = result();
         lua->ensure_resume(*ctx, *obj, [=]() {
             lua->pushboolean(success);
@@ -136,6 +174,22 @@ ctx->threads.enqueue(*obj, [=](mdc:auto& thread) -> async::task<void> {
 return lua->yield(0);  // Suspend Lua coroutine immediately
 ```
 
+#### **Why static_func is Mandatory for Async Operations**
+
+1. **Lifetime Safety**: Function parameters have guaranteed lifetime within function scope
+2. **Lambda Capture Independence**: Avoids dangerous dependency on captured variables  
+3. **Crash Prevention**: Eliminates use-after-free scenarios in MMO server environment
+4. **Clear Separation**: Isolates async logic from thread transition logic
+
+**Scenario that causes crashes:**
+1. Lambda captures variables with `[=]` (copies made)
+2. `co_await` suspends coroutine, waiting for async operation
+3. During wait time, original objects may be destroyed (player logout, map unload, etc.)
+4. When coroutine resumes, it accesses destroyed captured variables
+5. **Result: SERVER CRASH**
+
+**Remember: In MMO servers with thousands of concurrent players, async operations happen constantly. Variable lifetime issues are the #1 cause of server instability.**
+
 ### **Performance Note**
 Yes, this pattern causes value copying between stages. This is **unavoidable and necessary** for thread safety. The alternative is server crashes.
 
@@ -145,6 +199,97 @@ Yes, this pattern causes value copying between stages. This is **unavoidable and
 - Use `snake_case` for ALL C++ code: variables, functions, classes, structs, namespaces
 - Use `UPPER_CASE` for constants and macros only
 - **Note: PascalCase may appear in auto-generated code only**
+
+## Control Flow and Code Style
+
+### **Single-Line if-else Statements**
+For simple if-else statements where all blocks are single-line, omit braces:
+```cpp
+// Preferred
+if (condition)
+    single_statement();
+else if (other_condition)
+    another_statement();
+else
+    default_statement();
+
+// Avoid
+if (condition)
+{
+    single_statement();
+}
+else
+{
+    another_statement();
+}
+```
+
+### **Loop Statements**
+Always use braces for loop statements, even if single-line:
+```cpp
+// Preferred
+for (auto i = 0; i < size; i++)
+{
+    process_item(i);
+}
+
+while (condition)
+{
+    single_operation();
+}
+
+// Avoid
+for (auto i = 0; i < size; i++)
+    process_item(i);
+
+while (condition)
+    single_operation();
+```
+
+### **Variable Initialization Patterns**
+Prefer initializing variables with default values and updating conditionally:
+```cpp
+// Preferred
+auto success = false;
+if (index != 0xFF)
+    success = ch->items.store(index, count);
+
+// Alternative (for simple cases)
+auto success = (index == 0xFF) ? false : ch->items.store(index, count);
+
+// Avoid
+bool success;
+if (index == 0xFF)
+{
+    success = false;
+}
+else
+{
+    success = ch->items.store(index, count);
+}
+```
+
+### **auto with Pointer Types**
+When using `auto` with pointer initialization, use `static_cast` to specify the correct pointer type:
+```cpp
+// Preferred
+auto returned = static_cast<fb::game::item*>(nullptr);
+auto player   = static_cast<character*>(nullptr);
+
+// Avoid (type becomes std::nullptr_t)
+auto returned = nullptr;
+auto player   = nullptr;
+
+// Also acceptable when type is clear from context
+auto returned = some_function_returning_item_ptr();
+auto player   = find_character(id);
+```
+
+### **Benefits of This Style**
+- Reduces visual clutter
+- Emphasizes the main logic flow
+- Prevents uninitialized variable usage
+- More readable for simple conditional assignments
 
 ## Modern C++ Guidelines
 - Use modern C++ features (C++17/20)

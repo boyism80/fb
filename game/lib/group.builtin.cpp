@@ -17,13 +17,20 @@ int group::builtin::builtin_master(lua_State* L)
     if (lua == nullptr)
         return 0;
 
+    auto ctx   = lua->env<fb::game::context>("context");
     auto argc  = lua->argc();
     auto group = lua->touserdata<fb::game::group>(1);
     if (group == nullptr)
         return 0;
 
-    lua->pushstring(group->_master);
-    return 1;
+    return lua->ensure_yield(*ctx, *group, [=]() {
+        auto master_name = group->_master;
+
+        return lua->ensure_resume(*ctx, *group, [=]() {
+            lua->pushstring(master_name);
+            return 1;
+        });
+    });
 }
 
 int group::builtin::builtin_members(lua_State* L)
@@ -32,19 +39,25 @@ int group::builtin::builtin_members(lua_State* L)
     if (lua == nullptr)
         return 0;
 
+    auto ctx   = lua->env<fb::game::context>("context");
     auto argc  = lua->argc();
     auto group = lua->touserdata<fb::game::group>(1);
     if (group == nullptr)
         return 0;
 
-    lua->new_table();
-    for (int i = 0, n = group->_members.size(); i < n; i++)
-    {
-        lua->pushstring(group->_members[i]);
-        lua_rawseti(L, -2, i + 1);
-    }
+    return lua->ensure_yield(*ctx, *group, [=]() {
+        auto members_copy = group->_members;
 
-    return 1;
+        return lua->ensure_resume(*ctx, *group, [=]() {
+            lua->new_table();
+            for (int i = 0, n = members_copy.size(); i < n; i++)
+            {
+                lua->pushstring(members_copy[i]);
+                lua_rawseti(L, -2, i + 1);
+            }
+            return 1;
+        });
+    });
 }
 
 int group::builtin::builtin_nears(lua_State* L)
@@ -53,6 +66,7 @@ int group::builtin::builtin_nears(lua_State* L)
     if (lua == nullptr)
         return 0;
 
+    auto ctx   = lua->env<fb::game::context>("context");
     auto argc  = lua->argc();
     auto group = lua->touserdata<fb::game::group>(1);
     if (group == nullptr)
@@ -73,15 +87,19 @@ int group::builtin::builtin_nears(lua_State* L)
     y = (uint16_t)lua->tointeger(-1);
     lua->remove(-1);
 
-    auto nears = group->nears(*map, fb::model::point16_t{x, y});
-    lua->new_table();
-    for (int i = 0; i < nears.size(); i++)
-    {
-        lua->pushobject(nears[i]);
-        lua_rawseti(L, -2, i + 1);
-    }
+    return lua->ensure_yield(*ctx, *group, [=]() {
+        auto nears = group->nears(*map, fb::model::point16_t{x, y});
 
-    return 1;
+        return lua->ensure_resume(*ctx, *group, [=]() {
+            lua->new_table();
+            for (int i = 0; i < nears.size(); i++)
+            {
+                lua->pushobject(nears[i]);
+                lua_rawseti(L, -2, i + 1);
+            }
+            return 1;
+        });
+    });
 }
 
 int group::builtin::builtin_message(lua_State* L)

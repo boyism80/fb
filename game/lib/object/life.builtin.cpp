@@ -98,14 +98,25 @@ int life::builtin::builtin_hp(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(obj->hp());
-        return 1;
+        return lua->ensure_yield(*ctx, *obj, [=]() {
+            auto hp_value = obj->hp();
+
+            return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(hp_value);
+                return 1;
+            });
+        });
     }
     else
     {
         auto value = (uint32_t)lua->tointeger(2);
-        obj->hp(value);
-        return 0;
+        return lua->ensure_yield(*ctx, *obj, [=]() {
+            obj->hp(value);
+
+            return lua->ensure_resume(*ctx, *obj, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -123,14 +134,25 @@ int life::builtin::builtin_mp(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(obj->mp());
-        return 1;
+        return lua->ensure_yield(*ctx, *obj, [=]() {
+            auto mp_value = obj->mp();
+
+            return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(mp_value);
+                return 1;
+            });
+        });
     }
     else
     {
         auto value = (uint32_t)lua->tointeger(2);
-        obj->mp(value);
-        return 0;
+        return lua->ensure_yield(*ctx, *obj, [=]() {
+            obj->mp(value);
+
+            return lua->ensure_resume(*ctx, *obj, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -412,20 +434,23 @@ int life::builtin::builtin_cc(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto cc = static_cast<CROWD_CONTROL>(lua->tointeger(2));
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(static_cast<uint32_t>(obj->crowd_control()));
+            auto cc_value = static_cast<uint32_t>(obj->crowd_control());
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(cc_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto cc = static_cast<CROWD_CONTROL>(lua->tointeger(2));
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->crowd_control(cc);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -448,8 +473,10 @@ int life::builtin::builtin_add_cc(lua_State* L)
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(static_cast<uint32_t>(obj->crowd_control()));
+            auto cc_value = static_cast<uint32_t>(obj->crowd_control());
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(cc_value);
                 return 1;
             });
         });
@@ -459,6 +486,7 @@ int life::builtin::builtin_add_cc(lua_State* L)
         auto cc = static_cast<CROWD_CONTROL>(lua->tointeger(2));
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->add_cc(cc);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -523,8 +551,10 @@ int life::builtin::builtin_damage_rate(lua_State* L)
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(obj->damage_rate());
+            auto damage_rate_value = obj->damage_rate();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(damage_rate_value);
                 return 1;
             });
         });
@@ -534,6 +564,7 @@ int life::builtin::builtin_damage_rate(lua_State* L)
         auto value = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->damage_rate(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -553,20 +584,23 @@ int life::builtin::builtin_damage_derate(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->tointeger(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(obj->damage_derate());
+            auto damage_derate_value = obj->damage_derate();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(damage_derate_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->damage_derate(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -586,20 +620,23 @@ int life::builtin::builtin_skill_damage_rate(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->tointeger(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(obj->skill_damage_rate());
+            auto skill_damage_rate_value = obj->skill_damage_rate();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(skill_damage_rate_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->skill_damage_rate(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -619,20 +656,23 @@ int life::builtin::builtin_paralysis(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->toboolean(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushboolean(obj->paralysis());
+            auto paralysis_value = obj->paralysis();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushboolean(paralysis_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->toboolean(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->paralysis(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -652,20 +692,23 @@ int life::builtin::builtin_invincible(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->toboolean(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushboolean(obj->invincible());
+            auto invincible_value = obj->invincible();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushboolean(invincible_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->toboolean(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->invincible(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -685,20 +728,23 @@ int life::builtin::builtin_cover(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->toboolean(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushboolean(obj->cover());
+            auto cover_value = obj->cover();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushboolean(cover_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->toboolean(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->cover(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -739,20 +785,23 @@ int life::builtin::builtin_buff_hp(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->tointeger(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(obj->buff_hp());
+            auto buff_hp_value = obj->buff_hp();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(buff_hp_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->buff_hp(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -772,8 +821,10 @@ int life::builtin::builtin_maxhp(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->maxhp());
+        auto maxhp_value = obj->maxhp();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(maxhp_value);
             return 1;
         });
     });
@@ -791,8 +842,10 @@ int life::builtin::builtin_base_mp(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->base_mp());
+        auto base_mp_value = obj->base_mp();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(base_mp_value);
             return 1;
         });
     });
@@ -810,20 +863,23 @@ int life::builtin::builtin_buff_mp(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->tointeger(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(obj->buff_mp());
+            auto buff_mp_value = obj->buff_mp();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(buff_mp_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->buff_mp(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -843,8 +899,10 @@ int life::builtin::builtin_maxmp(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->maxmp());
+        auto maxmp_value = obj->maxmp();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(maxmp_value);
             return 1;
         });
     });
@@ -862,8 +920,10 @@ int life::builtin::builtin_base_str(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->base_str());
+        auto base_str_value = obj->base_str();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(base_str_value);
             return 1;
         });
     });
@@ -881,20 +941,23 @@ int life::builtin::builtin_buff_str(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->tointeger(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(obj->buff_str());
+            auto buff_str_value = obj->buff_str();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(buff_str_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->buff_str(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -914,8 +977,10 @@ int life::builtin::builtin_str(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->str());
+        auto str_value = obj->str();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(str_value);
             return 1;
         });
     });
@@ -933,8 +998,10 @@ int life::builtin::builtin_base_dex(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->base_dex());
+        auto base_dex_value = obj->base_dex();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(base_dex_value);
             return 1;
         });
     });
@@ -952,20 +1019,23 @@ int life::builtin::builtin_buff_dex(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->tointeger(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(obj->buff_dex());
+            auto buff_dex_value = obj->buff_dex();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(buff_dex_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->buff_dex(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -985,8 +1055,10 @@ int life::builtin::builtin_dex(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->dex());
+        auto dex_value = obj->dex();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(dex_value);
             return 1;
         });
     });
@@ -1004,8 +1076,10 @@ int life::builtin::builtin_base_int(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->base_int());
+        auto base_int_value = obj->base_int();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(base_int_value);
             return 1;
         });
     });
@@ -1023,20 +1097,23 @@ int life::builtin::builtin_buff_int(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->tointeger(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(obj->buff_int());
+            auto buff_int_value = obj->buff_int();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(buff_int_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->buff_int(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -1056,8 +1133,10 @@ int life::builtin::builtin_intelligence(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->intelligence());
+        auto intelligence_value = obj->intelligence();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(intelligence_value);
             return 1;
         });
     });
@@ -1075,8 +1154,10 @@ int life::builtin::builtin_base_phydef(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->base_phydef());
+        auto base_phydef_value = obj->base_phydef();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(base_phydef_value);
             return 1;
         });
     });
@@ -1094,20 +1175,23 @@ int life::builtin::builtin_buff_phydef(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->tointeger(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(obj->buff_phydef());
+            auto buff_phydef_value = obj->buff_phydef();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(buff_phydef_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->buff_phydef(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
@@ -1127,8 +1211,10 @@ int life::builtin::builtin_phydef(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->phydef());
+        auto phydef_value = obj->phydef();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(phydef_value);
             return 1;
         });
     });
@@ -1146,8 +1232,10 @@ int life::builtin::builtin_base_magdef(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->base_magdef());
+        auto base_magdef_value = obj->base_magdef();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(base_magdef_value);
             return 1;
         });
     });
@@ -1165,25 +1253,28 @@ int life::builtin::builtin_buff_magdef(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->tointeger(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(obj->buff_magdef());
+            auto buff_magdef_value = obj->buff_magdef();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(buff_magdef_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->buff_magdef(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
         });
-    };
+    }
 }
 
 int life::builtin::builtin_magdef(lua_State* L)
@@ -1198,8 +1289,10 @@ int life::builtin::builtin_magdef(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->magdef());
+        auto magdef_value = obj->magdef();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(magdef_value);
             return 1;
         });
     });
@@ -1217,8 +1310,10 @@ int life::builtin::builtin_base_dam(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->base_dam());
+        auto base_dam_value = obj->base_dam();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(base_dam_value);
             return 1;
         });
     });
@@ -1236,25 +1331,28 @@ int life::builtin::builtin_buff_dam(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->tointeger(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(obj->buff_dam());
+            auto buff_dam_value = obj->buff_dam();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(buff_dam_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->buff_dam(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
         });
-    };
+    }
 }
 
 int life::builtin::builtin_dam(lua_State* L)
@@ -1269,8 +1367,10 @@ int life::builtin::builtin_dam(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->dam());
+        auto dam_value = obj->dam();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(dam_value);
             return 1;
         });
     });
@@ -1288,8 +1388,10 @@ int life::builtin::builtin_base_hit(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->base_hit());
+        auto base_hit_value = obj->base_hit();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(base_hit_value);
             return 1;
         });
     });
@@ -1307,25 +1409,28 @@ int life::builtin::builtin_buff_hit(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = lua->tointeger(2);
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *obj, [=]() {
-            lua->pushinteger(obj->buff_hit());
+            auto buff_hit_value = obj->buff_hit();
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(buff_hit_value);
                 return 1;
             });
         });
     }
     else
     {
+        auto value = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->buff_hit(value);
+
             return lua->ensure_resume(*ctx, *obj, [=]() {
                 return 0;
             });
         });
-    };
+    }
 }
 
 int life::builtin::builtin_hit(lua_State* L)
@@ -1340,8 +1445,10 @@ int life::builtin::builtin_hit(lua_State* L)
         return 0;
 
     return lua->ensure_yield(*ctx, *obj, [=]() {
-        lua->pushinteger(obj->hit());
+        auto hit_value = obj->hit();
+
         return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(hit_value);
             return 1;
         });
     });

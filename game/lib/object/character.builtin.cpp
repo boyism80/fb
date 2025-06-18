@@ -38,7 +38,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"erase_achievement",   character::builtin::builtin_erase_achievement},
 {"whisper",             character::builtin::builtin_whisper},
 {"send_mail",           character::builtin::builtin_send_mail},
-{"assert_state",        character::builtin::builtin_assert_state},
 {"nation",              character::builtin::builtin_nation},
 {"weapon",              character::builtin::builtin_weapon},
 {"title",               character::builtin::builtin_title},
@@ -66,7 +65,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"super_hide",          character::builtin::builtin_super_hide},
 {"creature",            character::builtin::builtin_creature},
 {"teleport",            character::builtin::builtin_teleport},
-{"summon",              character::builtin::builtin_summon},
 {"dialog",              character::builtin::builtin_dialog},
 {"list",                character::builtin::builtin_list},
 {"input",               character::builtin::builtin_input},
@@ -374,18 +372,27 @@ int character::builtin::builtin_items(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    lua->new_table();
-    for (int i = 0; i < CONTAINER_CAPACITY; i++)
-    {
-        if (ch->items[i] == nullptr)
-            continue;
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto buffer = std::vector<std::pair<uint8_t, fb::game::item*>>();
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            if (ch->items[i] == nullptr)
+                continue;
 
-        lua->pushinteger(i + 1);
-        lua->pushobject(ch->items[i]);
-        lua_settable(L, -3);
-    }
+            buffer.push_back({i, ch->items[i]});
+        }
 
-    return 1;
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            lua->new_table();
+            for (auto& [index, item] : buffer)
+            {
+                lua->pushinteger(index + 1);
+                lua->pushobject(item);
+                lua_settable(L, -3);
+            }
+            return 1;
+        });
+    });
 }
 
 int character::builtin::builtin_equipments(lua_State* L)
@@ -399,18 +406,27 @@ int character::builtin::builtin_equipments(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    lua->new_table();
-    for (auto& [parts, equipment] : ch->items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto buffer = std::vector<std::pair<EQUIPMENT_PARTS, fb::game::item*>>();
+        for (auto& [parts, equipment] : ch->items.equipments())
+        {
+            if (equipment == nullptr)
+                continue;
 
-        lua->pushinteger(parts);
-        lua->pushobject(equipment);
-        lua_settable(L, -3);
-    }
+            buffer.push_back({parts, equipment});
+        }
 
-    return 1;
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            lua->new_table();
+            for (auto& [parts, equipment] : buffer)
+            {
+                lua->pushinteger(parts);
+                lua->pushobject(equipment);
+                lua_settable(L, -3);
+            }
+            return 1;
+        });
+    });
 }
 
 int character::builtin::builtin_item_drop(lua_State* L)
@@ -423,16 +439,21 @@ int character::builtin::builtin_item_drop(lua_State* L)
     auto ch  = lua->touserdata<character>(1);
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
-    auto index    = (uint8_t)lua->tointeger(2);
+
+    auto index    = static_cast<uint8_t>(lua->tointeger(2));
     auto drop_all = lua->toboolean(3);
 
-    auto dropped = ch->items.drop(index - 1, drop_all ? 1 : -1);
-    if (dropped != nullptr)
-        lua->pushobject(dropped);
-    else
-        lua->pushnil();
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto dropped = ch->items.drop(index - 1, drop_all ? 1 : -1);
 
-    return 1;
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            if (dropped != nullptr)
+                lua->pushobject(dropped);
+            else
+                lua->pushnil();
+            return 1;
+        });
+    });
 }
 
 int character::builtin::builtin_mkitem(lua_State* L)
@@ -446,6 +467,7 @@ int character::builtin::builtin_mkitem(lua_State* L)
     auto ch   = lua->touserdata<character>(1);
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
+
     auto name  = lua->tostring(2);
     auto count = lua->tointeger(3, 1);
     auto store = lua->toboolean(4, true);
@@ -453,26 +475,25 @@ int character::builtin::builtin_mkitem(lua_State* L)
     if (store == false)
         return object::builtin::builtin_mkitem(L);
 
-    auto model = ctx->model.item.name2item(name);
-    if (model == nullptr)
-    {
-        lua->pushnil();
-    }
-    else
-    {
-        auto ctx  = lua->env<fb::game::context>("context");
-        auto item = model->make(*ctx, count);
-        auto slot = ch->items.add(item);
-        if (slot == 0xFF)
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto model = ctx->model.item.name2item(name);
+        auto item  = static_cast<fb::game::item*>(nullptr);
+        auto slot  = static_cast<uint8_t>(0xFF);
+
+        if (model != nullptr)
         {
-            lua->pushnil();
-            return 1;
+            item = model->make(*ctx, count);
+            slot = ch->items.add(item);
         }
 
-        lua->pushobject(ch->items[slot]);
-    }
-
-    return 1;
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            if (model == nullptr || slot == 0xFF)
+                lua->pushnil();
+            else
+                lua->pushobject(ch->items[slot]);
+            return 1;
+        });
+    });
 }
 
 int character::builtin::builtin_rmitem(lua_State* L)
@@ -482,62 +503,109 @@ int character::builtin::builtin_rmitem(lua_State* L)
         return 0;
 
     auto ctx = lua->env<fb::game::context>("context");
-    try
+    auto ch  = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
+        return 0;
+
+    auto count       = static_cast<uint8_t>(lua->tointeger(3, 1));
+    auto delete_attr = lua->toenum(4, ITEM_DELETE_TYPE::REMOVED);
+
+    if (lua->is_userdata<fb::game::item>(2))
     {
-        auto argc = lua->argc();
-        auto ch   = lua->touserdata<character>(1);
-        if (ch == nullptr || ctx->alive(*ch) == false)
+        auto item = lua->touserdata<fb::game::item>(2);
+        if (item == nullptr)
             return 0;
 
-        auto index       = uint8_t(0);
-        auto count       = (uint8_t)lua->tointeger(3, 1);
-        auto delete_attr = lua->toenum(4, ITEM_DELETE_TYPE::REMOVED);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            try
+            {
+                auto index   = ch->items.index(item->based<fb::model::item>());
+                auto dropped = ch->items.remove(index, count, delete_attr);
+                if (dropped != nullptr)
+                    std::ignore = dropped->destroy();
+            }
+            catch (...)
+            { }
 
-        if (lua->is_userdata<fb::game::item>(2))
-        {
-            auto item = lua->touserdata<fb::game::item>(2);
-            if (item == nullptr)
+            return lua->ensure_resume(*ctx, *ch, [=]() {
                 return 0;
-
-            index = ch->items.index(item->based<fb::model::item>());
-        }
-        else if (lua->is_userdata<fb::model::item>(2))
-        {
-            auto model = lua->touserdata<fb::model::item>(2);
-            if (model == nullptr)
-                return 0;
-
-            index = ch->items.index(*model);
-        }
-        else if (lua->is_number(2))
-        {
-            index = (uint8_t)lua->tointeger(2) - 1;
-        }
-        else if (lua->is_string(2))
-        {
-            auto name = lua->tostring(2);
-            if (name.empty())
-                throw std::exception();
-
-            auto model = ctx->model.item.name2item(name);
-            if (model == nullptr)
-                throw std::exception();
-
-            index = ch->items.index(*model);
-        }
-        else
-        {
-            throw std::exception();
-        }
-
-        auto dropped = ch->items.remove(index, count, delete_attr);
-        if (dropped != nullptr)
-            std::ignore = dropped->destroy();
+            });
+        });
     }
-    catch (...)
-    { }
+    else if (lua->is_userdata<fb::model::item>(2))
+    {
+        auto model = lua->touserdata<fb::model::item>(2);
+        if (model == nullptr)
+            return 0;
 
-    return 0;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            try
+            {
+                auto index   = ch->items.index(*model);
+                auto dropped = ch->items.remove(index, count, delete_attr);
+                if (dropped != nullptr)
+                    std::ignore = dropped->destroy();
+            }
+            catch (...)
+            { }
+
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
+    }
+    else if (lua->is_number(2))
+    {
+        auto raw_index = lua->tointeger(2);
+
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            try
+            {
+                auto index   = static_cast<uint8_t>(raw_index) - 1;
+                auto dropped = ch->items.remove(index, count, delete_attr);
+                if (dropped != nullptr)
+                    std::ignore = dropped->destroy();
+            }
+            catch (...)
+            { }
+
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
+    }
+    else if (lua->is_string(2))
+    {
+        auto name = lua->tostring(2);
+        if (name.empty())
+            return 0;
+
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            try
+            {
+                auto model = ctx->model.item.name2item(name);
+                if (model == nullptr)
+                    return lua->ensure_resume(*ctx, *ch, [=]() {
+                        return 0;
+                    });
+
+                auto index   = ch->items.index(*model);
+                auto dropped = ch->items.remove(index, count, delete_attr);
+                if (dropped != nullptr)
+                    std::ignore = dropped->destroy();
+            }
+            catch (...)
+            { }
+
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 int character::builtin::builtin_state(lua_State* L)
@@ -551,6 +619,7 @@ int character::builtin::builtin_state(lua_State* L)
     auto ch   = lua->touserdata<character>(1);
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
+
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *ch, [=]() {
@@ -585,10 +654,6 @@ int character::builtin::builtin_disguise(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto value = std::optional<uint16_t>{};
-    if (argc >= 2 && lua_type(L, 2) == LUA_TNUMBER)
-        value = static_cast<uint16_t>(lua->tointeger(2));
-
     if (argc == 1)
     {
         return lua->ensure_yield(*ctx, *ch, [=]() {
@@ -608,15 +673,20 @@ int character::builtin::builtin_disguise(lua_State* L)
             });
         });
     }
-    else
+    else if (lua->is_number(2))
     {
-        auto value = static_cast<uint16_t>(lua->tointeger(2));
+        auto value = lua->tointeger(2);
+
         return lua->ensure_yield(*ctx, *ch, [=]() {
             ch->disguise(value);
             return lua->ensure_resume(*ctx, *ch, [=]() {
                 return 0;
             });
         });
+    }
+    else
+    {
+        return 0;
     }
 }
 
@@ -728,15 +798,52 @@ int character::builtin::builtin_assert(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto               argc = lua->argc();
-    auto               ch   = lua->touserdata<character>(1);
-    auto               size = lua->rawlen(2);
-    std::vector<STATE> values;
-    for (int i = 0; i < size; i++)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    auto size = lua->rawlen(2);
+
+    if (argc == 1)
     {
-        lua->rawgeti(2, i + 1);
-        values.push_back((STATE)lua->tointeger(-1));
+        lua->pushboolean(true);
+        return 1;
     }
+
+    auto values = std::vector<STATE>();
+    if (lua->is_table(2))
+    {
+        for (int i = 0; i < size; i++)
+        {
+            lua->rawgeti(2, i + 1);
+            if (lua->is_number(-1))
+                values.push_back((STATE)lua->tointeger(-1));
+        }
+    }
+    else
+    {
+        for (auto i = 1; i < argc; i++)
+        {
+            if (lua->is_number(i + 1))
+                values.push_back(static_cast<STATE>(lua->tointeger(i + 1)));
+        }
+    }
+
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        try
+        {
+            ch->assert_state(values);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        }
+        catch (std::runtime_error& e)
+        {
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushstring(e.what());
+                return 1;
+            });
+        }
+    });
 
     try
     {
@@ -830,86 +937,117 @@ int character::builtin::builtin_stored_item(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    const auto& stored_items = ch->items.stored();
     if (argc == 1)
     {
-        lua->new_table();
-        for (int i = 0; i < stored_items.size(); i++)
-        {
-            lua->pushinteger(i + 1);
-            lua->pushobject(stored_items.at(i));
-            lua_settable(L, -3);
-        }
+        // Get all stored items
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            const auto& stored_items = ch->items.stored();
+
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->new_table();
+                for (int i = 0; i < stored_items.size(); i++)
+                {
+                    lua->pushinteger(i + 1);
+                    lua->pushobject(stored_items.at(i));
+                    lua_settable(L, -3);
+                }
+                return 1;
+            });
+        });
     }
-    else if (argc >= 2)
+    else if (lua->is_number(2))
     {
-        try
-        {
-            if (lua->is_number(2))
-            {
-                auto index = lua->tointeger(2);
-                if (index > stored_items.size() - 1)
-                    throw std::exception();
+        // Search by index
+        auto index = lua->tointeger(2);
 
-                auto stored_item = stored_items.at(index);
-                lua->pushobject(stored_item);
-            }
-            else if (lua->is_string(2))
-            {
-                auto name = lua->tostring(2);
-                auto found =
-                    std::find_if(stored_items.cbegin(), stored_items.cend(), [&name](fb::game::item* stored_item) {
-                        return stored_item->based<fb::model::item>().name == name;
-                    });
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            const auto& stored_items = ch->items.stored();
+            auto        stored_item  = static_cast<fb::game::item*>(nullptr);
 
-                if (found == stored_items.cend())
-                    throw std::exception();
+            if (index <= stored_items.size() - 1)
+                stored_item = stored_items.at(index);
 
-                lua->pushobject(*found);
-            }
-            else if (lua->is_userdata<fb::game::item>(2))
-            {
-                auto  item  = lua->touserdata<fb::game::item>(2);
-                auto& model = item->based<fb::model::item>();
-                auto  found =
-                    std::find_if(stored_items.cbegin(), stored_items.cend(), [&model](fb::game::item* stored_item) {
-                        return stored_item->based<fb::model::item>() == model;
-                    });
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                if (stored_item == nullptr)
+                    lua->pushnil();
+                else
+                    lua->pushobject(stored_item);
+                return 1;
+            });
+        });
+    }
+    else if (lua->is_string(2))
+    {
+        // Search by name
+        auto name = lua->tostring(2);
 
-                if (found == stored_items.cend())
-                    throw std::exception();
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            const auto& stored_items = ch->items.stored();
+            auto found = std::find_if(stored_items.cbegin(), stored_items.cend(), [&name](fb::game::item* stored_item) {
+                return stored_item->based<fb::model::item>().name == name;
+            });
 
-                lua->pushobject(*found);
-            }
-            else if (lua->is_userdata<fb::model::item>(2))
-            {
-                auto model = lua->touserdata<fb::model::item>(2);
-                auto found =
-                    std::find_if(stored_items.cbegin(), stored_items.cend(), [model](fb::game::item* stored_item) {
-                        return stored_item->based<fb::model::item>() == *model;
-                    });
+            auto stored_item = (found != stored_items.cend()) ? *found : nullptr;
 
-                if (found == stored_items.cend())
-                    throw std::exception();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                if (stored_item == nullptr)
+                    lua->pushnil();
+                else
+                    lua->pushobject(stored_item);
+                return 1;
+            });
+        });
+    }
+    else if (lua->is_userdata<fb::game::item>(2))
+    {
+        // Search by game item
+        auto item = lua->touserdata<fb::game::item>(2);
 
-                lua->pushobject(*found);
-            }
-            else
-            {
-                throw std::exception();
-            }
-        }
-        catch (std::exception&)
-        {
-            lua->pushnil();
-        }
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            const auto& stored_items = ch->items.stored();
+            auto&       model        = item->based<fb::model::item>();
+            auto        found =
+                std::find_if(stored_items.cbegin(), stored_items.cend(), [&model](fb::game::item* stored_item) {
+                    return stored_item->based<fb::model::item>() == model;
+                });
+
+            auto stored_item = (found != stored_items.cend()) ? *found : nullptr;
+
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                if (stored_item == nullptr)
+                    lua->pushnil();
+                else
+                    lua->pushobject(stored_item);
+                return 1;
+            });
+        });
+    }
+    else if (lua->is_userdata<fb::model::item>(2))
+    {
+        // Search by model item
+        auto model = lua->touserdata<fb::model::item>(2);
+
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            const auto& stored_items = ch->items.stored();
+            auto found = std::find_if(stored_items.cbegin(), stored_items.cend(), [model](fb::game::item* stored_item) {
+                return stored_item->based<fb::model::item>() == *model;
+            });
+
+            auto stored_item = (found != stored_items.cend()) ? *found : nullptr;
+
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                if (stored_item == nullptr)
+                    lua->pushnil();
+                else
+                    lua->pushobject(stored_item);
+                return 1;
+            });
+        });
     }
     else
     {
-        lua->pushnil();
+        return 0;
     }
-
-    return 1;
 }
 
 int character::builtin::builtin_store_item(lua_State* L)
@@ -927,16 +1065,17 @@ int character::builtin::builtin_store_item(lua_State* L)
     auto item  = lua->touserdata<fb::game::item>(2);
     auto count = lua->tointeger(3, 1);
     auto index = ch->items.index(*item);
-    if (index == 0xFF)
-    {
-        lua->pushboolean(false);
-    }
-    else
-    {
-        lua->pushboolean(ch->items.store(index, count));
-    }
 
-    return 1;
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto success = false;
+        if (index != 0xFF)
+            success = ch->items.store(index, count);
+
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            lua->pushboolean(success);
+            return 1;
+        });
+    });
 }
 
 int character::builtin::builtin_retrieve_item(lua_State* L)
@@ -951,22 +1090,28 @@ int character::builtin::builtin_retrieve_item(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto  item         = lua->touserdata<fb::game::item>(2);
-    auto  count        = lua->tointeger(3, 1);
-    auto& stored_items = ch->items.stored();
-    auto  found        = std::find(stored_items.cbegin(), stored_items.cend(), item);
-    if (found == stored_items.cend())
-    {
-        lua->pushnil();
-    }
-    else
-    {
-        auto index    = std::distance(stored_items.cbegin(), found);
-        auto returned = ch->items.retrieve(index, count);
-        lua->pushobject(returned);
-    }
+    auto item  = lua->touserdata<fb::game::item>(2);
+    auto count = lua->tointeger(3, 1);
 
-    return 1;
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto& stored_items = ch->items.stored();
+        auto  found        = std::find(stored_items.cbegin(), stored_items.cend(), item);
+        auto  returned     = static_cast<fb::game::item*>(nullptr);
+
+        if (found != stored_items.cend())
+        {
+            auto index = std::distance(stored_items.cbegin(), found);
+            returned   = ch->items.retrieve(index, count);
+        }
+
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            if (returned == nullptr)
+                lua->pushnil();
+            else
+                lua->pushobject(returned);
+            return 1;
+        });
+    });
 }
 
 int character::builtin::builtin_group(lua_State* L)
@@ -983,47 +1128,64 @@ int character::builtin::builtin_group(lua_State* L)
 
     if (argc < 2)
     {
-        // 그룹 Lock scope는 스크립트 내의 다음 yield를
-        // 만나기 전까지 유효
         ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-            if (ch->_group == nullptr)
+            auto group_ptr = ch->_group;
+
+            if (group_ptr == nullptr)
             {
-                lua->pushnil();
-                lua->resume(1);
+                lua->ensure_resume(
+                    *ctx,
+                    *ch,
+                    [=]() {
+                        lua->pushnil();
+                        return 1;
+                    },
+                    true);
             }
             else
             {
-                ch->_group->read([=](const auto& group) {
-                    lua->pushobject(group);
-                    lua->resume(1);
+                group_ptr->read([=](const auto& group) {
+                    lua->ensure_resume(
+                        *ctx,
+                        *ch,
+                        [=, &group]() {
+                            lua->pushobject(group);
+                            return 1;
+                        },
+                        true);
                 });
             }
             co_return;
         });
         return lua->yield(1);
     }
-    else if (lua_type(L, 2) == LUA_TFUNCTION)
+    else if (lua->is_function(2))
     {
-        static auto static_func = [](fb::lua::context* ctx) {
-            lua_call(*ctx, 2, LUA_MULTRET);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto group_ptr = ch->_group;
 
-            ctx->remove(-ctx->argc());
-            return ctx->argc();
-        };
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                static auto static_func = [](fb::lua::context* ctx) {
+                    lua_call(*ctx, 2, LUA_MULTRET);
+                    ctx->remove(-ctx->argc());
+                    return ctx->argc();
+                };
 
-        lua->pushobject(ch);
-        if (ch->_group == nullptr)
-        {
-            lua->pushnil();
-            return static_func(lua);
-        }
-        else
-        {
-            return ch->_group->template read<uint32_t>([=](const auto& group) {
-                lua->pushobject(group);
-                return static_func(lua);
+                lua->pushobject(ch);
+                if (group_ptr == nullptr)
+                {
+                    lua->pushnil();
+                    return static_func(lua);
+                }
+                else
+                {
+                    return group_ptr->template read<int>([=](const auto& group) {
+                        lua->pushobject(group);
+                        return static_func(lua);
+                    });
+                }
             });
-        }
+        });
     }
     else
     {
@@ -1045,14 +1207,18 @@ int character::builtin::builtin_create_group(lua_State* L)
 
     auto name = lua->tostring(2);
 
-    static auto fn =
-        [](fb::game::context* ctx, fb::lua::context* lua, character& ch, const std::string& name) -> async::task<void> {
-        lua->pushboolean(co_await ctx->create_group(ch, name));
-        lua->resume(1);
-    };
-
     ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-        co_await fn(ctx, lua, *ch, name);
+        auto success = co_await ctx->create_group(*ch, name);
+
+        lua->ensure_resume(
+            *ctx,
+            *ch,
+            [=]() {
+                lua->pushboolean(success);
+                return 1;
+            },
+            true);
+        co_return;
     });
 
     return lua->yield(1);
@@ -1072,47 +1238,64 @@ int character::builtin::builtin_clan(lua_State* L)
 
     if (argc < 2)
     {
-        // 그룹 Lock scope는 스크립트 내의 다음 yield를
-        // 만나기 전까지 유효
         ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-            if (ch->_clan == nullptr)
+            auto clan_ptr = ch->_clan;
+
+            if (clan_ptr == nullptr)
             {
-                lua->pushnil();
-                lua->resume(1);
+                lua->ensure_resume(
+                    *ctx,
+                    *ch,
+                    [=]() {
+                        lua->pushnil();
+                        return 1;
+                    },
+                    true);
             }
             else
             {
-                ch->_clan->read([=](const auto& clan) {
-                    lua->pushobject(clan);
-                    lua->resume(1);
+                clan_ptr->read([=](const auto& clan) {
+                    lua->ensure_resume(
+                        *ctx,
+                        *ch,
+                        [=, &clan]() {
+                            lua->pushobject(clan);
+                            return 1;
+                        },
+                        true);
                 });
             }
             co_return;
         });
         return lua->yield(1);
     }
-    else if (lua_type(L, 2) == LUA_TFUNCTION)
+    else if (lua->is_function(2))
     {
-        static auto static_func = [](fb::lua::context* ctx) {
-            lua_call(*ctx, 2, LUA_MULTRET);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto clan_ptr = ch->_clan;
 
-            ctx->remove(-ctx->argc());
-            return ctx->argc();
-        };
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                static auto static_func = [](fb::lua::context* ctx) {
+                    lua_call(*ctx, 2, LUA_MULTRET);
+                    ctx->remove(-ctx->argc());
+                    return ctx->argc();
+                };
 
-        lua->pushobject(ch);
-        if (ch->_clan == nullptr)
-        {
-            lua->pushnil();
-            return static_func(lua);
-        }
-        else
-        {
-            return ch->_clan->template read<uint32_t>([=](const auto& clan) {
-                lua->pushobject(clan);
-                return static_func(lua);
+                lua->pushobject(ch);
+                if (clan_ptr == nullptr)
+                {
+                    lua->pushnil();
+                    return static_func(lua);
+                }
+                else
+                {
+                    return clan_ptr->template read<int>([=](const auto& clan) {
+                        lua->pushobject(clan);
+                        return static_func(lua);
+                    });
+                }
             });
-        }
+        });
     }
     else
     {
@@ -1134,22 +1317,35 @@ int character::builtin::builtin_create_clan(lua_State* L)
 
     auto name = lua->tostring(2);
 
-    static auto fn =
-        [](fb::game::context* ctx, fb::lua::context* lua, character& ch, const std::string& name) -> async::task<void> {
+    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
         try
         {
-            co_await ctx->create_clan(ch, name);
-            lua->pushnil();
+            co_await ctx->create_clan(*ch, name);
+
+            lua->ensure_resume(
+                *ctx,
+                *ch,
+                [=]() {
+                    lua->pushnil();
+                    return 1;
+                },
+                true);
         }
         catch (std::exception& e)
         {
-            lua->pushstring(e.what());
-        }
-        lua->resume(1);
-    };
+            auto error_msg = std::string(e.what());
 
-    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-        co_await fn(ctx, lua, *ch, name);
+            lua->ensure_resume(
+                *ctx,
+                *ch,
+                [=]() {
+                    lua->pushstring(error_msg.c_str());
+                    return 1;
+                },
+                true);
+        }
+
+        co_return;
     });
 
     return lua->yield(1);
@@ -1167,21 +1363,35 @@ int character::builtin::builtin_destroy_clan(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    static auto fn = [](fb::game::context* ctx, fb::lua::context* lua, character& ch) -> async::task<void> {
+    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
         try
         {
-            co_await ctx->destroy_clan(ch);
-            lua->pushnil();
+            co_await ctx->destroy_clan(*ch);
+
+            lua->ensure_resume(
+                *ctx,
+                *ch,
+                [=]() {
+                    lua->pushnil();
+                    return 1;
+                },
+                true);
         }
         catch (std::exception& e)
         {
-            lua->pushstring(e.what());
-        }
-        lua->resume(1);
-    };
+            auto error_msg = std::string(e.what());
 
-    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-        co_await fn(ctx, lua, *ch);
+            lua->ensure_resume(
+                *ctx,
+                *ch,
+                [=]() {
+                    lua->pushstring(error_msg.c_str());
+                    return 1;
+                },
+                true);
+        }
+
+        co_return;
     });
 
     return lua->yield(1);
@@ -1198,16 +1408,27 @@ int character::builtin::builtin_achievements(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    lua->new_table();
-    int i = 0;
-    for (auto& [id, achievement] : ch->achievements)
-    {
-        lua->pushinteger(i + 1);
-        lua->pushobject(*achievement);
-        lua_settable(L, -3);
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto buffer = std::vector<std::pair<uint32_t, fb::game::achievement*>>();
+        for (auto& [id, achievement] : ch->achievements)
+        {
+            buffer.push_back({id, achievement.get()});
+        }
 
-        i++;
-    }
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            lua->new_table();
+            auto i = 0;
+            for (auto& [id, achievement] : buffer)
+            {
+                lua->pushinteger(i + 1);
+                lua->pushobject(*achievement);
+                lua_settable(L, -3);
+                i++;
+            }
+            return 1;
+        });
+    });
+
     return 1;
 }
 
@@ -1223,15 +1444,20 @@ int character::builtin::builtin_achievement(lua_State* L)
         return 0;
 
     auto i = lua->tointeger(2);
-    if (ch->achievements.contains(i) == false)
-    {
-        lua->pushnil();
-    }
-    else
-    {
-        lua->pushobject(*ch->achievements.at(i));
-    }
-    return 1;
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto achievement = static_cast<fb::game::achievement*>(nullptr);
+        if (ch->achievements.contains(i))
+            achievement = ch->achievements.at(i).get();
+
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            if (achievement == nullptr)
+                lua->pushnil();
+            else
+                lua->pushobject(*achievement);
+
+            return 1;
+        });
+    });
 }
 
 int character::builtin::builtin_push_achievement(lua_State* L)
@@ -1245,34 +1471,42 @@ int character::builtin::builtin_push_achievement(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    const fb::model::achievement* model = nullptr;
+    auto model = static_cast<const fb::model::achievement*>(nullptr);
 
     if (lua->is_number(2))
     {
         auto id = lua->tointeger(2);
-        if (ctx->model.achievement.contains(id) == false)
-        {
-            lua->pushnil();
-            return 1;
-        }
+        if (!ctx->model.achievement.contains(id))
+            return 0;
 
         model = &ctx->model.achievement[id];
     }
     else if (lua->is_userdata<fb::game::achievement>(2))
     {
-        model = (const fb::model::achievement*)lua->touserdata<fb::game::achievement>(2);
+        model = (const fb::model::achievement*)(lua->touserdata<fb::game::achievement>(2));
     }
-
-    if (ch->achievements.contains(model->id))
+    else
     {
-        lua->pushnil();
-        return 1;
+        return 0;
     }
 
-    auto text = lua->argc() < 3 ? std::optional<std::string>{std::nullopt} : lua->tostring(3);
-    ch->achievements.insert({model->id, std::make_unique<fb::game::achievement>(*model, text)});
-    lua->pushobject(*ch->achievements[model->id]);
-    return 1;
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto already_has = ch->achievements.contains(model->id);
+        auto text        = lua->argc() < 3 ? std::optional<std::string>{std::nullopt} : lua->tostring(3);
+
+        if (!already_has)
+        {
+            ch->achievements.insert({model->id, std::make_unique<fb::game::achievement>(*model, text)});
+        }
+
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            if (already_has)
+                lua->pushnil();
+            else
+                lua->pushobject(*ch->achievements[model->id]);
+            return 1;
+        });
+    });
 }
 
 int character::builtin::builtin_erase_achievement(lua_State* L)
@@ -1287,16 +1521,19 @@ int character::builtin::builtin_erase_achievement(lua_State* L)
         return 0;
 
     auto i = lua->tointeger(2);
-    if (ch->achievements.contains(i) == false)
-    {
-        lua->pushboolean(false);
-    }
-    else
-    {
-        ch->achievements.erase(i);
-        lua->pushboolean(true);
-    }
-    return 1;
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto success = false;
+        if (ch->achievements.contains(i))
+        {
+            ch->achievements.erase(i);
+            success = true;
+        }
+
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            lua->pushboolean(success);
+            return 1;
+        });
+    });
 }
 
 int character::builtin::builtin_whisper(lua_State* L)
@@ -1336,37 +1573,6 @@ int character::builtin::builtin_whisper(lua_State* L)
     });
 
     return lua->yield(1);
-}
-
-int character::builtin::builtin_assert_state(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ctx = lua->env<fb::game::context>("context");
-    auto ch  = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
-        return 0;
-
-    auto argc   = lua->argc();
-    auto values = std::vector<STATE>{};
-    for (int i = 1; i < argc; i++)
-    {
-        values.push_back(static_cast<STATE>(lua->tointeger(i + 1)));
-    }
-
-    try
-    {
-        ch->assert_state(values);
-        lua->pushnil();
-        return 1;
-    }
-    catch (std::exception& e)
-    {
-        lua->pushstring(e.what());
-        return 1;
-    }
 }
 
 int character::builtin::builtin_nation(lua_State* L)
@@ -1654,6 +1860,7 @@ int character::builtin::builtin_spawned_mobs(lua_State* L)
 
     return lua->ensure_yield(*ctx, *ch, [=]() {
         auto& spawned_mobs = ch->spawned_mobs();
+
         return lua->ensure_resume(*ctx, *ch, [=]() {
             lua->new_table();
             for (int i = 0; i < spawned_mobs.size(); i++)
@@ -2109,7 +2316,7 @@ int character::builtin::builtin_script(lua_State* L)
         new_lua->pushobject(ch);
         lua_xmove(L, *new_lua, argc - 3);
 
-        int n       = 0;
+        auto n      = 0;
         std::ignore = new_lua->call(argc - 2, true, &n);
         switch (new_lua->state())
         {
@@ -2416,11 +2623,6 @@ int fb::game::character::builtin::builtin_teleport(lua_State* L)
         lua->yield(0);
         return 0;
     }
-}
-
-int fb::game::character::builtin::builtin_summon(lua_State* L)
-{
-    return 0;
 }
 
 int fb::game::character::builtin::builtin_dialog(lua_State* L)
