@@ -97,10 +97,10 @@ globs: ["wiki/**/*.md"]
 
 #### AVOID These Formats:
 ```markdown
-❌ - `number` — Current HP value
-❌ - `number`: — Current HP value  
-❌ - `number` ??Current HP value
-✅ - `number`: Current HP value
+WRONG - `number` — Current HP value
+WRONG - `number`: — Current HP value
+WRONG - `number` ??Current HP value
+CORRECT - `number`: Current HP value
 ```
 
 ### Documentation Format Examples

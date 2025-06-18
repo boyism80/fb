@@ -10,6 +10,137 @@ globs: ["**/*.h", "**/*.hpp", "**/*.cpp", "**/*.cc", "**/*.cxx"]
 
 # C++ Coding Standards
 
+## CRITICAL: Thread Safety with thread_switchable Objects
+
+### **MANDATORY 3-Stage Thread Pattern for Builtin Functions**
+
+**WARNING: VIOLATION OF THIS PATTERN CAUSES SERVER CRASHES**
+
+When implementing Lua builtin functions that access `thread_switchable` objects (character, map, life, session, etc.), you **MUST** follow the 3-stage thread transition pattern:
+
+#### **Stage 1: Lua Thread (Parameter Parsing)**
+```cpp
+int example_builtin(lua_State* L) {
+    auto lua = fb::lua::get(L);
+    auto ctx = lua->env<fb::game::context>("context");
+    auto obj = lua->touserdata<fb::game::character>(1);  // Get object reference
+    
+    // ALLOWED: Parameter parsing, basic validation
+    auto param = lua->tointeger(2);
+    if (obj == nullptr || ctx->alive(*obj) == false)
+        return 0;
+    
+    // FORBIDDEN: obj->data() access, object state modification
+}
+```
+
+#### **Stage 2: Object Thread (Data Access via ensure_yield)**
+```cpp
+return lua->ensure_yield(*ctx, *obj, [=]() {
+    // ALLOWED: Object data access, business logic
+    auto value = obj->get_data();
+    obj->set_data(new_value);
+    
+    // FORBIDDEN: lua->pushinteger(), lua stack operations
+    
+    return lua->ensure_resume(*ctx, *obj, [=]() {
+        // Stage 3 code here...
+    });
+});
+```
+
+#### **Stage 3: Lua Thread (Result Return via ensure_resume)**
+```cpp
+return lua->ensure_resume(*ctx, *obj, [=]() {
+    // ALLOWED: Lua stack operations, result return
+    lua->pushinteger(value);
+    lua->pushstring(result.c_str());
+    
+    // FORBIDDEN: obj->data() access, object modification
+    return 1;  // Return count
+});
+```
+
+### **Complete Example (Correct Implementation)**
+```cpp
+int character::builtin::builtin_hp(lua_State* L) {
+    auto lua = fb::lua::get(L);
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
+        return 0;
+
+    if (lua->argc() == 1) {  // Getter
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto hp_value = ch->hp();  // Object thread: safe access
+            
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(hp_value);  // Lua thread: safe return
+                return 1;
+            });
+        });
+    } else {  // Setter
+        auto new_hp = lua->tointeger(2);  // Lua thread: parameter parsing
+        
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->hp(new_hp);  // Object thread: safe modification
+            
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;  // Lua thread: no return value
+            });
+        });
+    }
+}
+```
+
+### **WRONG Implementation (Causes Crashes)**
+```cpp
+// DON'T DO THIS - CAUSES CRASHES!
+int wrong_builtin(lua_State* L) {
+    auto obj = lua->touserdata<fb::game::character>(1);
+    
+    // WRONG: Direct access without ensure_yield
+    auto value = obj->hp();  // Race condition, potential crash
+    lua->pushinteger(value);
+    return 1;
+    
+    // WRONG: Lua operations in object thread
+    return lua->ensure_yield(*ctx, *obj, [=]() {
+        auto value = obj->hp();
+        lua->pushinteger(value);  // CRASH: Wrong thread for Lua ops
+        return 1;
+    });
+}
+```
+
+### **Why This Pattern Is Mandatory**
+
+1. **Object Lifetime Safety**: `ctx->alive(*obj)` checks prevent use-after-free
+2. **Thread Safety**: Each object lives in specific thread, concurrent access causes crashes
+3. **Lua State Safety**: Lua state is not thread-safe, must access from correct thread
+4. **Memory Consistency**: Prevents race conditions and memory corruption
+
+### **Special Case: Async Operations**
+For async operations (like map transitions), combine coroutines with the 3-stage pattern:
+```cpp
+ctx->threads.enqueue(*obj, [=](mdc:auto& thread) -> async::task<void> {
+    async::awaitable_then(async_operation(obj, params), [=](mdc:auto result) {
+        auto success = result();
+        lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushboolean(success);
+            return 1;
+        }, true);  // force_resume = true
+    });
+    co_return;
+});
+return lua->yield(0);  // Suspend Lua coroutine immediately
+```
+
+### **Performance Note**
+Yes, this pattern causes value copying between stages. This is **unavoidable and necessary** for thread safety. The alternative is server crashes.
+
+---
+
 ## Naming Conventions
 - Use `snake_case` for ALL C++ code: variables, functions, classes, structs, namespaces
 - Use `UPPER_CASE` for constants and macros only
