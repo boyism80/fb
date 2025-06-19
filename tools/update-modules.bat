@@ -107,7 +107,7 @@ PUSHD boost
 git checkout boost-1.84.0
 git submodule update --init --recursive
 CALL bootstrap.bat
-CALL b2.exe --build-type=complete --layout=tagged runtime-link=static threading=multi variant=debug,release
+CALL b2.exe --build-type=complete --layout=versioned runtime-link=static threading=multi variant=debug,release
 POPD
 ROBOCOPY boost\boost\ %DEST%\include\boost\ /E
 ROBOCOPY boost\stage\lib\ %DEST%\lib\boost\ /E *.lib

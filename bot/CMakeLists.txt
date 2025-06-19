@@ -34,6 +34,14 @@ file(GLOB_RECURSE LOGIN_PROTOCOL_FILES "${ROOT_DIR}/login/lib/protocol/*.cpp")
 file(GLOB_RECURSE GAME_PROTOCOL_FILES "${ROOT_DIR}/game/lib/protocol/*.cpp")
 add_executable(${DEST} ${BOT_SOURCE_FILES} ${GATEWAY_PROTOCOL_FILES} ${LOGIN_PROTOCOL_FILES} ${GAME_PROTOCOL_FILES} main.cpp)
 
+# Set debug command arguments for Visual Studio
+IF(WIN32)
+  set_target_properties(${DEST} PROPERTIES
+    VS_DEBUGGER_COMMAND_ARGUMENTS "-c config/config.dev.json"
+    VS_DEBUGGER_WORKING_DIRECTORY "${ROOT_DIR}"
+  )
+ENDIF(WIN32)
+
 include_directories("${ROOT_DIR}/include")
 include_directories("${PROJECT_SOURCE_DIR}")
 

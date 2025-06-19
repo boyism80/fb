@@ -34,6 +34,14 @@ IF(WIN32)
 ENDIF(WIN32)
 add_executable(${DEST} ${SOURCE_FILES} main.cpp)
 
+# Set debug command arguments for Visual Studio
+IF(WIN32)
+  set_target_properties(${DEST} PROPERTIES
+    VS_DEBUGGER_COMMAND_ARGUMENTS "-c config/config.dev.json"
+    VS_DEBUGGER_WORKING_DIRECTORY "${ROOT_DIR}"
+  )
+ENDIF(WIN32)
+
 include_directories("${ROOT_DIR}/include")
 include_directories("${PROJECT_SOURCE_DIR}")
 IF(WIN32)

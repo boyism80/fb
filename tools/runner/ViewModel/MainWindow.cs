@@ -698,6 +698,17 @@ namespace Runner.ViewModel
                 if (Directory.Exists(confDir) == false)
                     Directory.CreateDirectory(confDir);
 
+                var loginDir = Path.Combine(confDir, "login");
+                var gatewayDir = Path.Combine(confDir, "gateway");
+                var gameDir = Path.Combine(confDir, "game");
+
+                if (Directory.Exists(loginDir) == false)
+                    Directory.CreateDirectory(loginDir);
+                if (Directory.Exists(gatewayDir) == false)
+                    Directory.CreateDirectory(gatewayDir);
+                if (Directory.Exists(gameDir) == false)
+                    Directory.CreateDirectory(gameDir);
+
                 for (int i = 0; i < Login.Count; i++)
                 {
                     var setting = Login[i];
@@ -758,7 +769,7 @@ namespace Runner.ViewModel
                         min = MinPwLength,
                         max = MaxPwLength
                     });
-                    File.WriteAllText(Path.Combine([confDir, $"config.login-{i}.json"]), conf.ToString(Formatting.Indented));
+                    File.WriteAllText(Path.Combine([loginDir, $"config_login_{i}.json"]), conf.ToString(Formatting.Indented));
                 }
 
                 for (int i = 0; i < Game.Count; i++)
@@ -797,7 +808,7 @@ namespace Runner.ViewModel
                         pwd = RabbitMq.PW
                     });
                     conf["log"] = new JArray("debug", "info", "warn", "fatal");
-                    File.WriteAllText(Path.Combine([confDir, $"config.game-{setting.ID}.json"]), conf.ToString(Formatting.Indented));
+                    File.WriteAllText(Path.Combine([gameDir, $"config_game_{setting.ID}.json"]), conf.ToString(Formatting.Indented));
                 }
 
                 if (Gateway.Port == 0)
@@ -827,7 +838,7 @@ namespace Runner.ViewModel
                     }));
                 }
 
-                File.WriteAllText(Path.Combine([confDir, $"config.gateway.json"]), gatewayConf.ToString(Formatting.Indented));
+                File.WriteAllText(Path.Combine([gatewayDir, $"config_gateway.json"]), gatewayConf.ToString(Formatting.Indented));
 
                 var internalConf = new JObject();
                 internalConf["Logging"] = new JObject();
@@ -886,20 +897,21 @@ namespace Runner.ViewModel
                 File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "write-back", "appsettings.write-back.json"]), wbConf.ToString(Formatting.Indented));
 
                 var gateway = new ProcessGroup { Type = ServerType.Gateway };
-                gateway.Processes.Add(ExecCPP("gateway.exe", "gateway"));
+                gateway.Processes.Add(ExecCPP("gateway.exe", "gateway", "config_gateway"));
                 Servers.Add(gateway);
 
                 var login = new ProcessGroup { Type = ServerType.Login };
                 for (int i = 0; i < Login.Count; i++)
                 {
-                    login.Processes.Add(ExecCPP("login.exe", $"login-{i}"));
+                    login.Processes.Add(ExecCPP("login.exe", $"login-{i}", $"config_login_{i}"));
                 }
                 Servers.Add(login);
 
                 var game = new ProcessGroup { Type = ServerType.Game };
                 for (int i = 0; i < Game.Count; i++)
                 {
-                    game.Processes.Add(ExecCPP("game.exe", $"game-{i}"));
+                    var setting = Game[i];
+                    game.Processes.Add(ExecCPP("game.exe", $"game-{i}", $"config_game_{setting.ID}"));
                 }
                 Servers.Add(game);
 
@@ -922,8 +934,9 @@ namespace Runner.ViewModel
             }
         }
 
-        private ServerProcess ExecCPP(string file, string env)
+        private ServerProcess ExecCPP(string file, string env, string configFileName)
         {
+            var serverType = env.Split('-')[0]; // gateway, login, game
             var process = new Process
             {
                 EnableRaisingEvents = true,
@@ -936,10 +949,7 @@ namespace Runner.ViewModel
                     UseShellExecute = false,
                     WorkingDirectory = Path.Combine([WorkingDirectory, "build", "dist"]),
                     FileName = Path.Combine(WorkingDirectory, "build", "dist", file),
-                    EnvironmentVariables =
-                    {
-                        ["KINGDOM_OF_WIND_ENVIRONMENT"] = env,
-                    }
+                    Arguments = $"-c config/{serverType}/{configFileName}.json"
                 }
             };
 
