@@ -61,6 +61,23 @@ globs: ["wiki/**/*.md"]
 - **Examples**: Comprehensive examples for all usage patterns with "-- This is a real usage example from game scripts" comments
 - **Section separators**: Use `---` (three dashes) to separate different functions clearly
 
+### Anchor Link Format (NEW)
+- **Namespace-style anchors**: Use fully qualified anchor names to avoid conflicts
+- **Format pattern**: `#namespace::function` (e.g., `#fb-model-spell::type`)
+- **Table of Contents links**: Link to namespace-qualified anchors
+- **HTML anchor tags**: Include explicit HTML anchor before each function header
+- **Example format**:
+  ```markdown
+  - [fb.model.spell](mdc:#fb-model-spell)
+    - [type](mdc:#fb-model-spell::type)
+    - [name](mdc:#fb-model-spell::name)
+  
+  ## fb.model.spell
+  <a id="fb-model-spell::type"></a>
+  ### type
+  #### `type()`
+  ```
+
 ### Example Code Guidelines
 - **Message output**: Use `me:message()` instead of `print`
 - **Naming conventions**: Use snake_case for script examples
@@ -108,6 +125,7 @@ CORRECT - `number`: Current HP value
 
 #### Single Function Example:
 ```markdown
+<a id="builtin-character::rmitem"></a>
 ### rmitem
 #### `rmitem(target, count:number, delete_type:number)`
 
@@ -131,6 +149,7 @@ CORRECT - `number`: Current HP value
 
 #### Getter/Setter Function Example:
 ```markdown
+<a id="builtin-character::look"></a>
 ### look
 Provides functionality to get or set the character's appearance.
 
@@ -167,6 +186,7 @@ Provides functionality to get or set the character's appearance.
 
 #### Multi-function Example:
 ```markdown
+<a id="builtin-character::item"></a>
 ### item
 Provides multiple ways to access items in the character's inventory.
 
@@ -222,6 +242,29 @@ Provides multiple ways to access items in the character's inventory.
 ---
 ```
 
+#### Model-specific Function Example:
+```markdown
+<a id="fb-model-spell::type"></a>
+### type
+#### `type()`
+
+- **Description**:  
+  Returns the type of the spell.
+- **Parameters**:  
+  - None
+- **Return Value**:  
+  - `number`: Spell type value
+- **Example**:  
+  ```lua
+  -- This is a real usage example from game scripts
+  local spell_model = name2spell("비영사천문")
+  local spell_type = spell_model:type()
+  me:message("Spell type: " .. spell_type)
+  ```
+
+---
+```
+
 ## Quality Assurance
 
 ### **MANDATORY SOURCE CODE VERIFICATION CHECKLIST**
@@ -270,12 +313,14 @@ Provides multiple ways to access items in the character's inventory.
 - **Link Consistency**: All internal links must match actual file names without language suffixes (e.g., use `builtin-context` not `builtin-context-en`)
 - **Format Uniformity**: Use consistent colon format for all parameter and return value descriptions throughout all documentation
 - **Name2* Function Usage**: Use name2ch, name2item, name2map, name2spell functions only when model objects are specifically needed, prefer direct string parameters for better readability when functions support them
+- **Anchor Link Consistency**: Use namespace-style anchors (`#namespace::function`) consistently to avoid conflicts between different files
 
 ## Final Output
 - Create comprehensive markdown documentation suitable for GitHub Wiki
 - Focus on practical usage rather than internal implementation details
 - Ensure all documented functions are immediately usable by developers
 - Maintain consistency with existing documentation patterns while improving clarity
+- Use namespace-style anchor links to prevent conflicts between documents
 
 ---
 description: Example script generation rule for FB wiki documents

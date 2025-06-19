@@ -72,6 +72,21 @@ Types:
 - `chore`: Maintenance tasks
 - `script`: Lua script additions or modifications
 
+### User Preferences for Commit Messages
+**IMPORTANT**: When user requests to commit changes, follow these guidelines:
+- **Subject line**: Keep concise and focused on the main change
+- **Multiple changes**: List what was done in description section (not detailed how)
+- **Format**: Simple bullet points naming each task/area changed
+- **Verification**: Always check git status and diff before committing
+- **Example**:
+  ```
+  docs: update function documentation
+  
+  - Add missing item() function variants
+  - Fix anchor link format
+  - Update wiki sorter script
+  ```
+
 ### Pull Request Guidelines
 - **NO EMOJIS** in PR titles or descriptions
 - Use clear, descriptive titles
