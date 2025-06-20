@@ -46,10 +46,7 @@ async::task<void> context::whisper(character& from, std::string to, std::string 
     }
     else
     {
-        auto&& resp = co_await this->http.post<internal_reqs::Whisper, internal_resp::Whisper>(
-            "internal",
-            "/in-game/whisper",
-            internal_reqs::Whisper{from_name, to, message});
+        auto&& resp = co_await this->http.post("internal", "/in-game/whisper", Whisper{from_name, to, message});
         co_await this->switch_thread(from);
 
         this->on_whisper(resp);

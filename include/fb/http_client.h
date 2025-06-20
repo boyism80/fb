@@ -15,6 +15,15 @@
 #include <fb/stream_writer.h>
 #include <fb/config.h>
 
+#define REGISTER_RESPONSE(Request, Response) \
+    template <> struct response_of<Request>  \
+    {                                        \
+        using type = Response;               \
+    };
+
+template <typename Request>
+struct response_of;
+
 using namespace std::chrono_literals;
 
 namespace fb {
@@ -258,7 +267,7 @@ public:
      * @throws     std::runtime_error  If response deserialization fails
      */
     template <typename T>
-    boost::asio::awaitable<T> get(const std::string& service, const std::string& path)
+    async::task<T> get(const std::string& service, const std::string& path)
     {
         auto& config = fb::config<>(service);
         auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
@@ -335,12 +344,14 @@ public:
      * @throws     std::runtime_error  If connection fails
      * @throws     std::runtime_error  If response deserialization fails
      */
-    template <typename Req, typename Resp>
-    boost::asio::awaitable<Resp> post(const std::string& service, const std::string& path, const Req& request)
+    template <typename Request>
+    [[nodiscard]] async::task<typename response_of<Request>::type> post(const std::string& service,
+                                                                        const std::string& path,
+                                                                        const Request&     request)
     {
         auto& config = fb::config<>(service);
         auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
-        co_return co_await this->boost_post_async<Req, Resp>(host, path, request);
+        co_return co_await this->boost_post_async<Request>(host, path, request);
     }
 
 private:
@@ -358,10 +369,10 @@ private:
      *
      * @throws     std::exception on network errors, serialization/deserialization failures.
      */
-    template <typename Request, typename Response>
-    [[nodiscard]] async::task<Response> boost_post_async(std::string const& host,
-                                                         std::string const& path,
-                                                         Request const&     body)
+    template <typename Request>
+    [[nodiscard]] async::task<typename response_of<Request>::type> boost_post_async(std::string const& host,
+                                                                                    std::string const& path,
+                                                                                    Request const&     body)
     {
         auto const serialized_payload = body.Serialize();
         auto       stream_req         = fb::stream();
@@ -371,7 +382,7 @@ private:
         writer.write<uint32_t>(serialized_payload.size());
         writer.write(serialized_payload.data(), serialized_payload.size());
 
-        auto promise = std::make_shared<async::task_completion_source<Response>>();
+        auto promise = std::make_shared<async::task_completion_source<typename response_of<Request>::type>>();
         auto headers = std::map<std::string, std::string>{
             {"Content-Type", "application/octet-stream"}
         };
@@ -391,7 +402,7 @@ private:
                                       auto protocol_len  = reader.read<uint32_t>();
                                       auto offset        = bytes.data() + sizeof(uint32_t) * 2;
 
-                                      promise->set_value(Response::Deserialize(offset));
+                                      promise->set_value(response_of<Request>::type::Deserialize(offset));
                                   }
                                   catch (...)
                                   {

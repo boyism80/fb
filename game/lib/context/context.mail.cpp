@@ -40,10 +40,9 @@ async::task<internal_resp::WriteMail>
 context::send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents)
 {
     auto   thread = ch.thread();
-    auto&& resp   = co_await this->http.post<internal_reqs::WriteMail, internal_resp::WriteMail>(
-        "internal",
-        "/mail/write",
-        internal_reqs::WriteMail{ch.id(), to, title, contents, config<uint32_t>("id")});
+    auto&& resp   = co_await this->http.post("internal",
+                                           "/mail/write",
+                                           WriteMail{ch.id(), to, title, contents, config<uint32_t>("id")});
     co_await this->switch_thread(ch);
 
     this->assert_mail(resp.error);
@@ -75,10 +74,7 @@ async::task<internal_resp::GetMail> context::read_mail(character& ch, uint16_t i
 async::task<internal_resp::DeleteMail> context::delete_mail(character& ch, uint16_t id)
 {
     auto   thread = ch.thread();
-    auto&& resp   = co_await this->http.post<internal_reqs::DeleteMail, internal_resp::DeleteMail>(
-        "internal",
-        "/mail/delete",
-        internal_reqs::DeleteMail{ch.id(), id});
+    auto&& resp   = co_await this->http.post("internal", "/mail/delete", DeleteMail{ch.id(), id});
     co_await this->switch_thread(ch);
     this->assert_mail(resp.error);
     ch.unread_mail(resp.unread);

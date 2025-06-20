@@ -137,10 +137,7 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
 
         this->assert_account(name, pw);
 
-        auto&& response1 = co_await this->http.post<internal::request::ReserveName, internal::response::ReserveName>(
-            "internal",
-            "/user/reserve-name",
-            internal::request::ReserveName{name});
+        auto&& response1 = co_await this->http.post("internal", "/user/reserve-name", ReserveName{name});
 
         co_await this->switch_thread(socket);
 
@@ -152,25 +149,24 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
         static auto gen    = std::mt19937{device()};
         static auto dist   = std::uniform_int_distribution<uint32_t>{0, 0xFFFFFFFF};
 
-        auto   i      = dist(gen) % config<>("init:position").size();
-        auto   init_x = static_cast<uint16_t>(config<>("init:position")[i]["x"].asUInt());
-        auto   init_y = static_cast<uint16_t>(config<>("init:position")[i]["y"].asUInt());
-        auto   admin  = fb::config<bool>("admin_mode");
-        auto&& response2 =
-            co_await this->http.post<internal::request::InitCharacter, internal::response::InitCharacter>(
-                "internal",
-                "/user/init-ch",
-                internal::request::InitCharacter{
-                    uid,
-                    name,
-                    pw,
-                    fb::config<uint32_t>("init:hp:base") + dist(gen) % fb::config<uint32_t>("init:hp:range"), // hp
-                    fb::config<uint32_t>("init:mp:base") + dist(gen) % fb::config<uint32_t>("init:mp:range"), // mp
-                    fb::config<uint16_t>("init:map"),                                                         // map
-                    init_x,                                                 // position_x
-                    init_y,                                                 // position_y
-                    static_cast<uint8_t>(admin ? ROLE::ADMIN : ROLE::USER), // admin
-                });
+        auto   i         = dist(gen) % config<>("init:position").size();
+        auto   init_x    = static_cast<uint16_t>(config<>("init:position")[i]["x"].asUInt());
+        auto   init_y    = static_cast<uint16_t>(config<>("init:position")[i]["y"].asUInt());
+        auto   admin     = fb::config<bool>("admin_mode");
+        auto&& response2 = co_await this->http.post(
+            "internal",
+            "/user/init-ch",
+            InitCharacter{
+                uid,
+                name,
+                pw,
+                fb::config<uint32_t>("init:hp:base") + dist(gen) % fb::config<uint32_t>("init:hp:range"), // hp
+                fb::config<uint32_t>("init:mp:base") + dist(gen) % fb::config<uint32_t>("init:mp:range"), // mp
+                fb::config<uint16_t>("init:map"),                                                         // map
+                init_x,                                                                                   // position_x
+                init_y,                                                                                   // position_y
+                static_cast<uint8_t>(admin ? ROLE::ADMIN : ROLE::USER),                                   // admin
+            });
 
         // 여기서 새로운 promise handler
         co_await this->switch_thread(socket);
@@ -208,10 +204,10 @@ async::task<bool> context::handle_complete(fb::socket<session>& socket, const re
         if (session->pk == -1)
             throw std::exception();
 
-        auto&& response = co_await this->http.post<internal::request::MakeCharacter, internal::response::MakeCharacter>(
+        auto&& response = co_await this->http.post(
             "internal",
             "/user/mk-ch",
-            internal::request::MakeCharacter{session->pk, request.hair, request.sex, request.nation, request.creature});
+            MakeCharacter{session->pk, request.hair, request.sex, request.nation, request.creature});
         co_await this->switch_thread(socket);
 
         if (response.success == false)
@@ -256,10 +252,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
         auto   uid       = response.uid;
-        auto&& response2 = co_await this->http.post<internal::request::Authenticate, internal::response::Authenticate>(
-            "internal",
-            "/user/authenticate",
-            internal::request::Authenticate{uid, pw});
+        auto&& response2 = co_await this->http.post("internal", "/user/authenticate", Authenticate{uid, pw});
         co_await this->switch_thread(socket);
 
         switch (response2.error_code)
@@ -272,10 +265,10 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
         }
 
         auto   map       = response2.map;
-        auto&& response3 = co_await this->http.post<internal::request::Transfer, internal::response::Transfer>(
+        auto&& response3 = co_await this->http.post(
             "internal",
             "/in-game/transfer",
-            internal::request::Transfer{fb::protocol::internal::Service ::Game, this->model.map[map].host, name, true});
+            Transfer{fb::protocol::internal::Service ::Game, this->model.map[map].host, name, true});
         co_await this->switch_thread(socket);
 
         switch (static_cast<ERROR_CODE>(response3.error))
@@ -366,10 +359,7 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
 
         auto uid = response.uid;
 
-        auto&& response2 = co_await this->http.post<internal::request::ChangePw, internal::response::ChangePw>(
-            "internal",
-            "/user/change-pw",
-            internal::request::ChangePw{uid, pw, new_pw, birthday});
+        auto&& response2 = co_await this->http.post("internal", "/user/change-pw", ChangePw{uid, pw, new_pw, birthday});
 
         co_await this->switch_thread(socket);
 

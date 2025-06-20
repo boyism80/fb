@@ -90,10 +90,7 @@ async::task<void> context::create_clan(character& me, const std::string& name)
         throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_CLAN));
 
     auto   fd   = me.fd();
-    auto&& resp = co_await this->http.post<internal_reqs::CreateClan, internal_resp::CreateClan>(
-        "internal",
-        "/clan/create",
-        internal_reqs::CreateClan{me.id(), name});
+    auto&& resp = co_await this->http.post("internal", "/clan/create", CreateClan{me.id(), name});
 
     this->assert_clan(resp.error);
 
@@ -135,10 +132,7 @@ async::task<void> context::destroy_clan(character& me)
     });
 
     auto   fd   = me.fd();
-    auto&& resp = co_await this->http.post<internal_reqs::DestroyClan, internal_resp::DestroyClan>(
-        "internal",
-        "/clan/destroy",
-        internal_reqs::DestroyClan{me.id()});
+    auto&& resp = co_await this->http.post("internal", "/clan/destroy", DestroyClan{me.id()});
 
     this->assert_clan(resp.error);
     this->_shard[clan_id]->clans.write([this, clan_id](auto& clans) {
@@ -166,40 +160,34 @@ async::task<void> context::destroy_clan(character& me)
 async::task<void> context::set_clan_title(const clan& clan, std::string title)
 {
     auto   name = std::string{clan.name()};
-    auto&& resp = co_await this->http.post<internal_reqs::SetClanTitle, internal_resp::SetClanTitle>(
-        "internal",
-        "/clan/title",
-        internal_reqs::SetClanTitle{config<uint32_t>("host"), clan.id(), title});
+    auto&& resp =
+        co_await this->http.post("internal", "/clan/title", SetClanTitle{config<uint32_t>("host"), clan.id(), title});
 
     this->on_clan_title_changed(resp);
 }
 
 async::task<void> context::join_clan_member(const clan& clan, character& ch)
 {
-    auto&& resp = co_await this->http.post<internal_reqs::JoinClan, internal_resp::JoinClan>(
-        "internal",
-        "/clan/join",
-        internal_reqs::JoinClan{config<uint32_t>("host"), clan.id(), ch.id()});
+    auto&& resp =
+        co_await this->http.post("internal", "/clan/join", JoinClan{config<uint32_t>("host"), clan.id(), ch.id()});
 
     this->on_clan_join_member(resp);
 }
 
 async::task<void> context::leave_clan_member(const clan& clan, const std::string& name, bool kick)
 {
-    auto&& resp = co_await this->http.post<internal_reqs::LeaveClan, internal_resp::LeaveClan>(
-        "internal",
-        "/clan/leave",
-        internal_reqs::LeaveClan{config<uint32_t>("host"), clan.id(), name, kick});
+    auto&& resp =
+        co_await this->http.post("internal", "/clan/leave", LeaveClan{config<uint32_t>("host"), clan.id(), name, kick});
 
     this->on_clan_leave_member(resp);
 }
 
 async::task<void> context::broadcast(const clan& clan, const std::string& message, MESSAGE_TYPE type)
 {
-    auto&& resp = co_await this->http.post<internal_reqs::BroadcastClan, internal_resp::BroadcastClan>(
+    auto&& resp = co_await this->http.post(
         "internal",
         "/clan/broadcast",
-        internal_reqs::BroadcastClan{config<uint32_t>("host"), clan.id(), message, static_cast<uint8_t>(type)});
+        BroadcastClan{config<uint32_t>("host"), clan.id(), message, static_cast<uint8_t>(type)});
 
     this->on_clan_broadcast(resp);
 }

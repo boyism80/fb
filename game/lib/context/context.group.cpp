@@ -75,10 +75,7 @@ async::task<bool> context::create_group(character& me, const std::string& target
         if (me.option(OPTION::GROUP) == false)
             throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
-        auto&& resp = co_await this->http.post<internal_reqs::EnterGroup, internal_resp::EnterGroup>(
-            "internal",
-            "/group/create",
-            internal_reqs::EnterGroup{me.id(), target});
+        auto&& resp = co_await this->http.post("internal", "/group/create", EnterGroup{me.id(), target});
 
         this->on_enter_group(resp);
         co_return true;
@@ -236,10 +233,10 @@ void context::on_leave_group(const internal_resp::LeaveGroup& resp)
 
 async::task<void> context::broadcast(const group& group, const std::string& message, MESSAGE_TYPE type)
 {
-    auto&& resp = co_await this->http.post<internal_reqs::BroadcastGroup, internal_resp::BroadcastGroup>(
+    auto&& resp = co_await this->http.post(
         "internal",
         "/group/broadcast",
-        internal_reqs::BroadcastGroup{config<uint32_t>("host"), group.id(), message, static_cast<uint8_t>(type)});
+        BroadcastGroup{config<uint32_t>("host"), group.id(), message, static_cast<uint8_t>(type)});
 
     this->on_group_broadcast(resp);
 }

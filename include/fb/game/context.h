@@ -15,11 +15,34 @@
 #include <fb/redis.h>
 
 using namespace fb::protocol::internal;
+using namespace fb::protocol::internal::request;
 namespace fb_reqs       = fb::protocol::game::request;
 namespace fb_resp       = fb::protocol::game::response;
 namespace internal      = fb::protocol::internal;
 namespace internal_reqs = fb::protocol::internal::request;
 namespace internal_resp = fb::protocol::internal::response;
+
+REGISTER_RESPONSE(fb::protocol::internal::request::Shutdown, fb::protocol::internal::response::Shutdown)
+REGISTER_RESPONSE(fb::protocol::internal::request::WriteArticle, fb::protocol::internal::response::WriteArticle)
+REGISTER_RESPONSE(fb::protocol::internal::request::DeleteArticle, fb::protocol::internal::response::DeleteArticle)
+REGISTER_RESPONSE(fb::protocol::internal::request::CreateClan, fb::protocol::internal::response::CreateClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::DestroyClan, fb::protocol::internal::response::DestroyClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetClanTitle, fb::protocol::internal::response::SetClanTitle)
+REGISTER_RESPONSE(fb::protocol::internal::request::JoinClan, fb::protocol::internal::response::JoinClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::LeaveClan, fb::protocol::internal::response::LeaveClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastClan, fb::protocol::internal::response::BroadcastClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout)
+REGISTER_RESPONSE(fb::protocol::internal::request::Save, fb::protocol::internal::response::Save)
+REGISTER_RESPONSE(fb::protocol::internal::request::Broadcast, fb::protocol::internal::response::Broadcast)
+REGISTER_RESPONSE(fb::protocol::internal::request::EnterGroup, fb::protocol::internal::response::EnterGroup)
+REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastGroup, fb::protocol::internal::response::BroadcastGroup)
+REGISTER_RESPONSE(fb::protocol::internal::request::Login, fb::protocol::internal::response::Login)
+REGISTER_RESPONSE(fb::protocol::internal::request::LeaveGroup, fb::protocol::internal::response::LeaveGroup)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetOption, fb::protocol::internal::response::SetOption)
+REGISTER_RESPONSE(fb::protocol::internal::request::WriteMail, fb::protocol::internal::response::WriteMail)
+REGISTER_RESPONSE(fb::protocol::internal::request::DeleteMail, fb::protocol::internal::response::DeleteMail)
+REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper)
+REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
 
 namespace fb::game {
 

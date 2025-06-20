@@ -19,10 +19,8 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     auto delay    = fb::config<uint32_t>("delay");
     co_await this->sleep(std::chrono::seconds(delay));
 
-    auto&& login_resp = co_await this->http.post<internal_reqs::Login, internal_resp::Login>(
-        "internal",
-        "/in-game/login",
-        internal_reqs::Login{id, name, fb::config<uint8_t>("id")});
+    auto&& login_resp =
+        co_await this->http.post("internal", "/in-game/login", Login{id, name, fb::config<uint8_t>("id")});
     if (login_resp.error != (uint32_t)ERROR_CODE::NONE)
         co_return false;
 
@@ -359,19 +357,15 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
         auto enabled = ch->option_toggle(option);
         if (option == OPTION::GROUP && !enabled)
         {
-            auto&& response = co_await this->http.post<internal_reqs::LeaveGroup, internal_resp::LeaveGroup>(
-                "internal",
-                "/group/leave",
-                internal_reqs::LeaveGroup{ch->name()});
+            auto&& response = co_await this->http.post("internal", "/group/leave", LeaveGroup{ch->name()});
             co_await this->switch_thread(*ch);
 
             this->on_leave_group(response);
         }
 
-        auto&& response = co_await this->http.post<internal_reqs::SetOption, internal_resp::SetOption>(
-            "internal",
-            "/user/option",
-            internal_reqs::SetOption{ch->id(), static_cast<uint8_t>(option), enabled});
+        auto&& response = co_await this->http.post("internal",
+                                                   "/user/option",
+                                                   SetOption{ch->id(), static_cast<uint8_t>(option), enabled});
         co_await this->switch_thread(*ch);
 
         if (response.success == false)
