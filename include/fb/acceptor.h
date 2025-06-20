@@ -6,6 +6,7 @@
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/protocol/transfer.h>
 #include <fb/protocol_handler_registry.h>
+#include <fb/amqp_handler_registry.h>
 #include <fb/socket.h>
 #include <iomanip>
 #include <fb/amqp.h>
@@ -23,6 +24,16 @@ namespace fb {
 /**
  * @brief      A high-performance network acceptor that manages client connections and protocol handling.
  *
+ *             Core functionality:
+ *             - TCP socket accept/close operations
+ *             - Protocol handler registration and dispatch
+ *             - AMQP message queue integration
+ *             - Thread pool management for I/O and logic
+ *
+ *             The acceptor provides thread-safe operations and uses boost::asio for asynchronous I/O.
+ *             Derived classes must implement handle_accepted() for session initialization and
+ *             handle_init_amqp() for AMQP setup.
+ *
  * @tparam     T    The session type for socket connections
  */
 template <typename T>
@@ -31,34 +42,36 @@ class acceptor : public fb::acceptable
 public:
     using socket_container      = std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>;
     using socket_container_lock = fb::locker<socket_container>;
-    using amqp_handler_func     = std::function<async::task<void>(const uint8_t*)>;
-    using amqp_handler_type     = std::unordered_map<std::string, std::unordered_map<uint32_t, amqp_handler_func>>;
     using boost_timers          = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
 
     /**
-     * @brief      Handler container for protocol handlers.
+     * @brief      Handler container for protocol and AMQP handlers.
      *             This struct is intentionally non-copyable and non-assignable to prevent accidental copies.
      */
     struct handler
     {
         fb::protocol_handler_registry<T> protocol; ///< Registry for client protocol handlers
+        fb::amqp_handler_registry<T>     amqp;     ///< Registry for AMQP message handlers
+
+        /**
+         * @brief      Constructs a new handler container.
+         *
+         * @param[in]  owner  Reference to the owner acceptor instance
+         */
+        explicit handler(fb::acceptor<T>& owner) :
+            protocol(owner),
+            amqp(owner)
+        { }
 
         // Delete copy constructor and assignment operator
         handler(const handler&)             = delete;
         handler& operator= (const handler&) = delete;
-
-        // Default constructor
-        handler(fb::acceptor<T>& owner) :
-            protocol(owner)
-        { }
     };
 
     handler handler; ///< Public handler container for protocol handlers
 
 private:
-    amqp_handler_type                 _amqp_handler; ///< AMQP message handlers organized by route and command type
-    std::unique_ptr<fb::amqp::socket> _amqp;         ///< AMQP connection for inter-service communication
-    boost_timers                      _timers;       ///< Collection of boost::asio timers for periodic tasks
+    boost_timers _timers; ///< Collection of boost::asio timers for periodic tasks
 
 protected:
     socket_container_lock _sockets; ///< Thread-safe container holding all active socket connections
@@ -102,7 +115,7 @@ protected:
      *
      * @param      amqp  The AMQP socket to use for queue declaration.
      */
-    virtual void handle_declare_amqp_queue(fb::amqp::socket& amqp) = 0;
+    virtual void handle_init_amqp(fb::amqp::socket& amqp) = 0;
 
 protected:
     /**
@@ -135,67 +148,6 @@ protected:
     }
 
 private:
-    /**
-     * @brief      Main AMQP thread loop that manages inter-service message queue communication.
-     *
-     *             This method runs in a dedicated thread and handles the complete lifecycle of
-     *             AMQP connections. It implements automatic reconnection logic with exponential
-     *             backoff on connection failures. The loop performs the following operations:
-     *
-     *             1. Establishes AMQP connection using configuration parameters
-     *             2. Calls the derived class's handle_declare_amqp_queue() to set up queues
-     *             3. Enters a select() loop to process incoming AMQP messages
-     *             4. Automatically reconnects on connection failures
-     *             5. Continues until the acceptor is shutting down
-     *
-     *             Connection parameters are loaded from configuration:
-     *             - amqp:ip - AMQP broker IP address
-     *             - amqp:port - AMQP broker port
-     *             - amqp:uid - Authentication username
-     *             - amqp:pwd - Authentication password
-     */
-    void amqp_thread_loop()
-    {
-        auto timeout = timeval{5, 0}; // 5 second timeout for select operations
-        while (this->_running)
-        {
-            try
-            {
-                // Create new AMQP connection
-                this->_amqp = std::make_unique<fb::amqp::socket>();
-                this->_amqp->connect(fb::config<std::string>("amqp:ip"),
-                                     fb::config<uint16_t>("amqp:port"),
-                                     fb::config<std::string>("amqp:uid"),
-                                     fb::config<std::string>("amqp:pwd"),
-                                     "/");
-
-                // Let derived class declare its required queues
-                this->handle_declare_amqp_queue(*this->_amqp);
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal(e.what());
-                std::this_thread::sleep_for(1s); // Wait before retry
-                continue;
-            }
-
-            // Message processing loop
-            while (this->_running)
-            {
-                try
-                {
-                    // Check for incoming messages with timeout
-                    if (this->_amqp->select(&timeout) == false)
-                        continue; // No messages, continue polling
-                }
-                catch (std::exception&)
-                {
-                    break; // Connection error, reconnect
-                }
-            }
-        }
-    }
-
     /**
      * @brief      Performs an asynchronous HTTP GET request using boost::beast.
      *
@@ -1165,47 +1117,6 @@ protected:
      */
     virtual fb::protocol::internal::Service service() const = 0;
 
-protected:
-    /**
-     * @brief      Binds an AMQP handler function to a route and response type.
-     *
-     * @param[in]  route  The AMQP route to bind to.
-     * @param[in]  fn     The member function to handle the AMQP message.
-     *
-     * @tparam     Class         The class containing the handler function.
-     * @tparam     ResponseType  The type of the response to handle.
-     */
-    template <typename Class, typename ResponseType>
-    void bind_amqp(const std::string& route, async::task<void> (Class::*fn)(const ResponseType&))
-    {
-        if (this->_amqp_handler.contains(route) == false)
-            this->_amqp_handler.insert({route, std::unordered_map<uint32_t, amqp_handler_func>{}});
-
-        auto c_func = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1);
-        auto cmd    = static_cast<uint32_t>(ResponseType::FlatBufferProtocolType);
-        this->_amqp_handler[route].insert({cmd, [c_func](const uint8_t* ptr) -> async::task<void> {
-                                               auto protocol = ResponseType::Deserialize(ptr);
-                                               co_await c_func(protocol);
-                                           }});
-    }
-
-    /**
-     * @brief      Binds AMQP handlers to a queue.
-     *
-     * @param      queue  The AMQP queue to bind handlers to.
-     */
-    void bind_amqp(fb::amqp::queue& queue)
-    {
-        auto& route = queue.route();
-        if (this->_amqp_handler.contains(route))
-        {
-            for (auto& [cmd, fn] : this->_amqp_handler.at(route))
-            {
-                queue.handler(cmd, fn);
-            }
-        }
-    }
-
 public:
     /**
      * @brief      Sends a stream over a socket.
@@ -1292,7 +1203,11 @@ public:
         async::awaitable_get(this->handle_start());
 
         threads.push_back(std::thread([this]() {
-            this->amqp_thread_loop();
+            this->handler.amqp.on_initialize = [this](fb::amqp::socket& amqp) {
+                this->handle_init_amqp(amqp);
+            };
+
+            this->handler.amqp.thread_loop();
         }));
 
         for (auto& thread : threads)
