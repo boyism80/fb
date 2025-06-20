@@ -19,6 +19,8 @@ This is a 2D MMORPG game server project written in C++ with supporting tools in 
 **ALWAYS IGNORE** the following directories as they contain auto-generated code:
 - `include/fb/model/*` - Auto-generated model files
 - `include/protocol/flatbuffer/*` - Auto-generated FlatBuffer protocol files
+- `include/fb/protocol/flatbuffer/*` - Auto-generated FlatBuffer protocol files
+- `include/fb/login/protocol/flatbuffer/*` - Auto-generated FlatBuffer protocol files
 
 Do not apply coding standards, documentation requirements, or perform code reviews on these auto-generated files.
 

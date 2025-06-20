@@ -28,9 +28,9 @@ namespace fb {
  */
 enum class PLATFORM
 {
-    Windows,
-    Linux,
-    Both
+    WINDOWS,
+    LINUX,
+    BOTH
 };
 
 /**
@@ -66,7 +66,7 @@ std::string utf8(const std::string& cp949);
  *
  * @return     The string converted to CP949 encoding, or unchanged depending on the platform.
  */
-std::string CP949(const std::string& utf8, PLATFORM p = PLATFORM::Linux);
+std::string CP949(const std::string& utf8, PLATFORM p = PLATFORM::LINUX);
 /**
  * @brief      Converts a CP949 encoded string to UTF-8 encoding, depending on the platform.
  *
@@ -78,7 +78,7 @@ std::string CP949(const std::string& utf8, PLATFORM p = PLATFORM::Linux);
  *
  * @return     The string converted to UTF-8 encoding, or unchanged depending on the platform.
  */
-std::string UTF8(const std::string& cp949, PLATFORM p = PLATFORM::Linux);
+std::string UTF8(const std::string& cp949, PLATFORM p = PLATFORM::LINUX);
 
 /**
  * @brief      Converts a multibyte string to a wide string.

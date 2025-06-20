@@ -196,9 +196,27 @@ Yes, this pattern causes value copying between stages. This is **unavoidable and
 ---
 
 ## Naming Conventions
-- Use `snake_case` for ALL C++ code: variables, functions, classes, structs, namespaces
-- Use `UPPER_CASE` for constants and macros only
+- Use `snake_case` for variables, functions, classes, structs, namespaces, and enum class names
+- Use `UPPER_CASE` for constants, macros, and enum values
 - **Note: PascalCase may appear in auto-generated code only**
+
+### **Enum Naming Convention**
+```cpp
+// Preferred - Follow fb project standard
+enum class trade::state : uint8_t
+{
+    REQUEST    = 0x00,
+    UP_ITEM    = 0x01,
+    ITEM_COUNT = 0x02,
+    UP_MONEY   = 0x03,
+    CANCEL     = 0x04,
+    LOCK       = 0x05,
+};
+
+// Pattern:
+// - enum class name: snake_case
+// - enum values: UPPER_CASE with underscores
+```
 
 ## Control Flow and Code Style
 

@@ -305,7 +305,7 @@ private:
 
             auto req =
                 boost::beast::http::request<boost::beast::http::empty_body>{boost::beast::http::verb::get,
-                                                                            url_encode(UTF8(path, PLATFORM::Windows)),
+                                                                            url_encode(UTF8(path, PLATFORM::WINDOWS)),
                                                                             11};
             req.set(boost::beast::http::field::host, host_name);
             req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
@@ -448,7 +448,7 @@ private:
 
             auto req = boost::beast::http::request<boost::beast::http::vector_body<uint8_t>>{
                 boost::beast::http::verb::post,
-                url_encode(UTF8(path, PLATFORM::Windows)),
+                url_encode(UTF8(path, PLATFORM::WINDOWS)),
                 11};
 
             req.set(boost::beast::http::field::host, host_name);

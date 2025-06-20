@@ -34,3 +34,5 @@ game/table*
 *.vcxproj
 *.user
 *.filters
+
+.fake

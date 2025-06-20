@@ -20,7 +20,7 @@ int main(int argc, const char** argv)
         //_CrtSetBreakAlloc(7997394);
 
 #ifdef _WIN32
-        ::SetConsoleIcon(IDI_BARAM);
+        ::set_console_icon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
         fb::model::option::decoding(cp949);
         flatbuffers::option::encoding(utf8);

@@ -84,7 +84,7 @@ context::context(lua_State* ctx, context& owner, context* parent) :
 
 context& context::pushstring(const std::string& value)
 {
-    lua_pushstring(*this, UTF8(value, PLATFORM::Windows).c_str());
+    lua_pushstring(*this, UTF8(value, PLATFORM::WINDOWS).c_str());
     return *this;
 }
 
@@ -180,7 +180,7 @@ std::string context::tostring(int offset, const std::string& default_value)
     if (x == nullptr)
         return std::string();
 
-    return CP949(x, PLATFORM::Windows);
+    return CP949(x, PLATFORM::WINDOWS);
 }
 
 void fb::lua::context::parent(context* parent)

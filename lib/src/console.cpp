@@ -6,7 +6,7 @@
 using namespace fb;
 
 #ifdef _WIN32
-bool ::SetConsoleIcon(int id)
+bool ::set_console_icon(int id)
 {
     auto hwnd = ::GetConsoleWindow();
     if (hwnd == nullptr)

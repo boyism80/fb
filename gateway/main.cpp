@@ -22,7 +22,7 @@ int main(int argc, const char** argv)
         //_CrtSetBreakAlloc(165);
 
 #ifdef _WIN32
-        ::SetConsoleIcon(IDI_BARAM);
+        ::set_console_icon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
         flatbuffers::option::encoding(utf8);
         flatbuffers::option::decoding(cp949);
