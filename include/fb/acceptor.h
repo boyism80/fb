@@ -98,7 +98,7 @@ protected:
     acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
         fb::acceptable(context, name, config<uint32_t>("thread:logic"), port),
         handler(*this),
-        http(context)
+        http(*this)
     { }
 
 public:
