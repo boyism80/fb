@@ -67,7 +67,31 @@ public:                                                                         
     struct point<T>& forward(fb::model::enum_value::DIRECTION direction, T step = 1);  \
     struct point<T>& backward(fb::model::enum_value::DIRECTION direction, T step = 1); \
     struct point<T>& left(fb::model::enum_value::DIRECTION direction, T step = 1);     \
-    struct point<T>& right(fb::model::enum_value::DIRECTION direction, T step = 1);
+    struct point<T>& right(fb::model::enum_value::DIRECTION direction, T step = 1);    \
+                                                                                       \
+    /**                                                                                \
+     * @brief      Calculates the Manhattan distance to another point.                 \
+     *                                                                                 \
+     * @param[in]  r  The point to calculate distance to                               \
+     * @return     The Manhattan distance between the points                           \
+     */                                                                                \
+    T manhattan_distance(const point<T>& r) const                                      \
+    {                                                                                  \
+        return std::abs(this->x - r.x) + std::abs(this->y - r.y);                      \
+    }                                                                                  \
+                                                                                       \
+    /**                                                                                \
+     * @brief      Calculates the Euclidean distance to another point.                 \
+     *                                                                                 \
+     * @param[in]  r  The point to calculate distance to                               \
+     * @return     The Euclidean distance between the points                           \
+     */                                                                                \
+    float distance(const point<T>& r) const                                            \
+    {                                                                                  \
+        auto dx = static_cast<float>(this->x - r.x);                                   \
+        auto dy = static_cast<float>(this->y - r.y);                                   \
+        return std::sqrt(dx * dx + dy * dy);                                           \
+    }
 
 #define DECLARE_SIZE_EXTENSION                        \
                                                       \
