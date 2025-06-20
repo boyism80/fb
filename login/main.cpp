@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 #endif
 
         auto io_context = boost::asio::io_context{};
-        auto context    = std::make_unique<fb::login::context>(io_context, fb::config<uint16_t>("port"));
+        auto context    = std::make_shared<fb::login::context>(io_context, fb::config<uint16_t>("port"));
         auto signals    = boost::asio::signal_set(io_context, SIGINT, SIGTERM);
         signals.async_wait([&context](const boost::system::error_code& ec, int signal_number) {
             context->exit();

@@ -25,7 +25,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         co_return false;
 
     auto&& response = co_await this->http.get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
-    auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
+    auto   map      = transfer.has_value() ? transfer->map : response.character.map;
     ch->thread(this->maps[map].thread());
     co_await this->switch_thread(*ch);
 

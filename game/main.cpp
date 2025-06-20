@@ -12,7 +12,7 @@
 using namespace fb;
 using namespace fb::model::enum_value;
 
-int main(int argc, const char** argv)
+int main(int argc, char* argv[])
 {
     // Initialize config system
     if (!fb::init_config(argc, argv))
@@ -31,7 +31,7 @@ int main(int argc, const char** argv)
 #endif
 
         auto io_context = boost::asio::io_context{};
-        auto context    = std::make_unique<fb::game::context>(io_context, fb::config<uint16_t>("port"));
+        auto context    = std::make_shared<fb::game::context>(io_context, fb::config<uint16_t>("port"));
         auto signals    = boost::asio::signal_set(io_context, SIGINT, SIGTERM);
         signals.async_wait([&context](const boost::system::error_code& ec, int signal_number) {
             context->exit();

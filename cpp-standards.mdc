@@ -58,6 +58,122 @@ private:
 - **Prefer `auto` for variable declarations when type is clear**
 - **Use `this->` keyword when accessing member variables/functions for clarity**
 
+## Parent Class Access Pattern
+When inheriting from a parent class, follow these rules:
+
+### **Class Layout Order**
+1. **Public Constants (Required at the top)**:
+```cpp
+class derived : public base_class
+{
+public:
+    static constexpr auto CONSTANT_ONE   = value1;  ///< Comment
+    static constexpr auto CONSTANT_TWO   = value2;  ///< Comment
+    static constexpr auto CONSTANT_THREE = value3;  ///< Comment
+
+private:
+    using super = base_class;
+    // ... rest of the class
+};
+```
+
+2. **Parent Class Alias (Required in private section)**:
+```cpp
+private:
+    using super = base_class;  // MUST be in private section
+
+private:
+    // Type aliases and member variables follow
+    using local_type = some_type;
+    some_type _member;
+```
+
+3. **Benefits of this pattern**:
+   - Constants are publicly accessible for configuration and debugging
+   - Parent class access is encapsulated (private)
+   - Clear separation between public interface and implementation details
+   - Consistent layout across all derived classes
+
+### **Examples**
+
+#### **Standard Class**:
+```cpp
+class derived : public base_class
+{
+public:
+    static constexpr auto TIMEOUT = std::chrono::seconds(30);
+    static constexpr auto RETRIES = 3;
+
+private:
+    using super = base_class;
+
+private:
+    using callback_type = std::function<void()>;
+    callback_type _callback;
+
+public:
+    void method() override;
+};
+```
+
+#### **Template Class**:
+```cpp
+template<typename T>
+class derived : public base_class<T>
+{
+public:
+    static constexpr auto BUFFER_SIZE = 1024;
+    static constexpr auto MAX_ITEMS   = 100;
+
+private:
+    using super = base_class<T>;
+
+private:
+    using value_type = typename base_class<T>::value_type;
+    value_type _value;
+
+public:
+    void process(const T& item) override;
+};
+```
+
+#### **Container Inheritance**:
+```cpp
+class container : private std::vector<int>
+{
+public:
+    static constexpr auto GROWTH_FACTOR = 1.5;
+    static constexpr auto INITIAL_SIZE  = 16;
+
+private:
+    using super = std::vector<int>;
+
+private:
+    using size_type = typename super::size_type;
+    size_type _cached_size;
+
+public:
+    void add(int value);
+};
+```
+
+### **When to use**:
+- ALWAYS use this exact pattern when inheriting from any class
+- ALWAYS place constants in public section at the top
+- ALWAYS place `using super` in private section
+- ALWAYS follow with other private type aliases and members
+- NO EXCEPTIONS to this layout pattern
+
+### **Parent Class Method Calls**:
+When calling parent class methods, use `super::` to make the call explicit:
+```cpp
+void derived::method()
+{
+    super::method();  // Call parent method
+    // ... derived implementation
+}
+```
+
 ## Virtual Function Override Rules
 - **MANDATORY: All overridden functions MUST be marked with `override`**
 - **MANDATORY: Leaf class overrides MUST be marked with `override final`**
@@ -95,5 +211,124 @@ public:
   - `*_registry` for registration/lookup systems
   - `*_context` for context objects
   - `*_builder` for builder pattern implementations
+
+## Member Variable Naming
+- **Private member variables MUST be prefixed with underscore (_)**
+- Use descriptive names that indicate purpose
+- Follow snake_case convention after the underscore
+- **Example**:
+```cpp
+class example
+{
+private:
+    int32_t     _count;        // Good
+    std::string _player_name;  // Good
+    bool        count;         // Bad - missing underscore
+    std::string PlayerName;    // Bad - wrong case and missing underscore
+};
+```
+
+## Class Member Ordering
+**MANDATORY: All classes MUST follow this exact ordering of members:**
+
+1. **Constants and Static Members**
+   ```cpp
+   static constexpr int32_t MAX_PLAYERS = 100;
+   static const std::string DEFAULT_NAME;
+   ```
+
+2. **Using Declarations**
+   ```cpp
+   using callback_t = std::function<void()>;
+   using pointer = std::shared_ptr<type>;
+   ```
+
+3. **Friend Declarations**
+   ```cpp
+   friend class related_class;
+   friend void external_function();
+   ```
+
+4. **Private Member Variables**
+   ```cpp
+   private:
+       int32_t     _count;
+       std::string _name;
+   ```
+
+5. **Protected Member Variables**
+   ```cpp
+   protected:
+       bool _is_active;
+   ```
+
+6. **Public Member Variables**
+   ```cpp
+   public:
+       uint32_t id;  // Avoid public variables when possible
+   ```
+
+7. **Constructors and Destructor**
+   ```cpp
+   public:
+       example();
+       example(const example& other);
+       ~example();
+   ```
+
+8. **All Other Methods**
+   - Grouped by access level (public, protected, private)
+   - Virtual methods first within each access level
+   - Related functionality grouped together
+
+**Example of Correct Ordering:**
+```cpp
+class player
+{
+    // 1. Constants
+    static constexpr uint32_t MAX_HEALTH = 100;
+    static const std::string DEFAULT_NAME;
+
+    // 2. Using declarations
+    using pointer = std::shared_ptr<player>;
+    using weak_ptr = std::weak_ptr<player>;
+
+    // 3. Friend declarations
+    friend class game_manager;
+
+    // 4. Private member variables
+    private:
+        int32_t     _health;
+        std::string _name;
+        bool        _is_alive;
+
+    // 5. Protected member variables
+    protected:
+        uint32_t _level;
+
+    // 6. Public member variables
+    public:
+        const uint32_t id;  // Only if absolutely necessary
+
+    // 7. Constructors
+    public:
+        player();
+        explicit player(const std::string& name);
+        ~player();
+
+    // 8. Other methods
+    public:
+        virtual void update();
+        void heal(int32_t amount);
+
+    protected:
+        virtual void on_level_up();
+
+    private:
+        void validate_health();
+};
+```
+
+**CRITICAL: This ordering is MANDATORY and will be enforced in code reviews**
 
 
