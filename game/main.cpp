@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
     }
     catch (std::exception& e)
     {
-        fb::logger::fatal(std::format("unhandled exception catched in main : {}", e.what()));
+        std::cerr << "unhandled exception catched in main : " << e.what() << std::endl;
     }
 
     // Release

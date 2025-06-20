@@ -274,7 +274,6 @@ inline static typename config_value_type<T>::type config(const std::string& k)
             if (ifstream.is_open())
                 ifstream.close();
 
-            fb::console::puts(e.what());
             throw e;
         }
     });

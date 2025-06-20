@@ -1,6 +1,7 @@
 #include <fb/login/context.h>
 #include <fb/config.h>
 #include <fb/console.h>
+// #include <vld.h>
 #include <fb/leak.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/model/loader.h>
@@ -40,7 +41,7 @@ int main(int argc, char** argv)
     }
     catch (std::exception& e)
     {
-        fb::logger::fatal(std::format("unhandled exception catched in main : {}", e.what()));
+        std::cerr << "unhandled exception catched in main : " << e.what() << std::endl;
     }
 
     // Clean up
