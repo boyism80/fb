@@ -13,7 +13,7 @@ void context::upsert_group_then(uint32_t gid, const std::function<void(shared_gr
         if (groups.contains(gid) == false)
         {
             groups.insert({gid, std::make_shared<fb::locker<fb::game::group>>(*this, gid)});
-            async::awaitable_then(this->get<internal_resp::GetGroup>("internal", std::format("/group/{}", gid)),
+            async::awaitable_then(this->http.get<internal_resp::GetGroup>("internal", std::format("/group/{}", gid)),
                                   [this, gid](auto result) {
                                       try
                                       {
@@ -75,7 +75,7 @@ async::task<bool> context::create_group(character& me, const std::string& target
         if (me.option(OPTION::GROUP) == false)
             throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
-        auto&& resp = co_await this->post<internal_reqs::EnterGroup, internal_resp::EnterGroup>(
+        auto&& resp = co_await this->http.post<internal_reqs::EnterGroup, internal_resp::EnterGroup>(
             "internal",
             "/group/create",
             internal_reqs::EnterGroup{me.id(), target});
@@ -236,7 +236,7 @@ void context::on_leave_group(const internal_resp::LeaveGroup& resp)
 
 async::task<void> context::broadcast(const group& group, const std::string& message, MESSAGE_TYPE type)
 {
-    auto&& resp = co_await this->post<internal_reqs::BroadcastGroup, internal_resp::BroadcastGroup>(
+    auto&& resp = co_await this->http.post<internal_reqs::BroadcastGroup, internal_resp::BroadcastGroup>(
         "internal",
         "/group/broadcast",
         internal_reqs::BroadcastGroup{config<uint32_t>("host"), group.id(), message, static_cast<uint8_t>(type)});

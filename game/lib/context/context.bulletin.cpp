@@ -8,8 +8,8 @@ async::task<std::list<bulletin::article>> context::bulletin_list(uint16_t sectio
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_SECTION_NOT_EXIST));
 
     auto&& resp =
-        co_await this->get<internal_resp::GetArticleList>("internal",
-                                                          std::format("/bulletin/{}?offset={}", section, offset));
+        co_await this->http.get<internal_resp::GetArticleList>("internal",
+                                                               std::format("/bulletin/{}?offset={}", section, offset));
 
     auto& model    = this->model.bulletin[section];
     auto  articles = std::list<bulletin::article>();
@@ -34,7 +34,7 @@ async::task<bulletin::article> context::read_bulletin(uint16_t section, uint16_t
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_SECTION_NOT_EXIST));
 
     auto&& resp =
-        co_await this->get<internal_resp::GetArticle>("internal", std::format("/bulletin/{}/{}", section, id));
+        co_await this->http.get<internal_resp::GetArticle>("internal", std::format("/bulletin/{}/{}", section, id));
     if (resp.success == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_ARTICLE_NOT_EXIST));
 
@@ -65,7 +65,7 @@ context::write_bulletin(character& ch, uint16_t section, const std::string& titl
     if (contents.length() > 256)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_TOO_LONG_CONTENTS));
 
-    auto&& resp = co_await this->post<internal_reqs::WriteArticle, internal_resp::WriteArticle>(
+    auto&& resp = co_await this->http.post<internal_reqs::WriteArticle, internal_resp::WriteArticle>(
         "internal",
         "/bulletin/write",
         internal_reqs::WriteArticle{section, ch.id(), title, contents});
@@ -82,7 +82,7 @@ async::task<void> context::delete_bulletin(character& ch, uint16_t section, uint
     if (ch.condition(this->model.bulletin[section].condition) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_NOT_AUTH));
 
-    auto&& resp = co_await this->post<internal_reqs::DeleteArticle, internal_resp::DeleteArticle>(
+    auto&& resp = co_await this->http.post<internal_reqs::DeleteArticle, internal_resp::DeleteArticle>(
         "internal",
         "/bulletin/delete",
         internal_reqs::DeleteArticle{id, ch.id()});

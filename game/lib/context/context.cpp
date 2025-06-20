@@ -258,9 +258,9 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     {
         co_await this->save(*ch);
         std::ignore =
-            co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
-                                                                              "/in-game/logout",
-                                                                              internal_reqs::Logout{ch->name()});
+            co_await this->http.post<internal_reqs::Logout, internal_resp::Logout>("internal",
+                                                                                   "/in-game/logout",
+                                                                                   internal_reqs::Logout{ch->name()});
     }
     catch (std::exception& e)
     {
@@ -670,7 +670,7 @@ async::task<void> context::save(character& ch)
     }
 
     auto fd     = ch.fd();
-    std::ignore = co_await this->post<internal_reqs::Save, internal_resp::Save>(
+    std::ignore = co_await this->http.post<internal_reqs::Save, internal_resp::Save>(
         "internal",
         "/user/save",
         internal_reqs::Save{ch.to_protocol(), items, spells, achievements});
@@ -742,7 +742,7 @@ async::task<void> context::broadcast(const std::string& message, MESSAGE_TYPE ty
     {
     case BROADCAST_TYPE::GLOBAL:
     {
-        auto&& resp = co_await this->post<internal_reqs::Broadcast, internal_resp::Broadcast>(
+        auto&& resp = co_await this->http.post<internal_reqs::Broadcast, internal_resp::Broadcast>(
             "internal",
             "/in-game/broadcast",
             internal_reqs::Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});

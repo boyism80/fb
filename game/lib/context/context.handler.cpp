@@ -19,14 +19,14 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     auto delay    = fb::config<uint32_t>("delay");
     co_await this->sleep(std::chrono::seconds(delay));
 
-    auto&& login_resp = co_await this->post<internal_reqs::Login, internal_resp::Login>(
+    auto&& login_resp = co_await this->http.post<internal_reqs::Login, internal_resp::Login>(
         "internal",
         "/in-game/login",
         internal_reqs::Login{id, name, fb::config<uint8_t>("id")});
     if (login_resp.error != (uint32_t)ERROR_CODE::NONE)
         co_return false;
 
-    auto&& response = co_await this->get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
+    auto&& response = co_await this->http.get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
     auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
     ch->thread(this->maps[map].thread());
     co_await this->switch_thread(*ch);
@@ -359,7 +359,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
         auto enabled = ch->option_toggle(option);
         if (option == OPTION::GROUP && !enabled)
         {
-            auto&& response = co_await this->post<internal_reqs::LeaveGroup, internal_resp::LeaveGroup>(
+            auto&& response = co_await this->http.post<internal_reqs::LeaveGroup, internal_resp::LeaveGroup>(
                 "internal",
                 "/group/leave",
                 internal_reqs::LeaveGroup{ch->name()});
@@ -368,7 +368,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
             this->on_leave_group(response);
         }
 
-        auto&& response = co_await this->post<internal_reqs::SetOption, internal_resp::SetOption>(
+        auto&& response = co_await this->http.post<internal_reqs::SetOption, internal_resp::SetOption>(
             "internal",
             "/user/option",
             internal_reqs::SetOption{ch->id(), static_cast<uint8_t>(option), enabled});

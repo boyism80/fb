@@ -40,7 +40,7 @@ async::task<internal_resp::WriteMail>
 context::send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents)
 {
     auto   thread = ch.thread();
-    auto&& resp   = co_await this->post<internal_reqs::WriteMail, internal_resp::WriteMail>(
+    auto&& resp   = co_await this->http.post<internal_reqs::WriteMail, internal_resp::WriteMail>(
         "internal",
         "/mail/write",
         internal_reqs::WriteMail{ch.id(), to, title, contents, config<uint32_t>("id")});
@@ -53,7 +53,7 @@ context::send_mail(const character& ch, const std::string& to, const std::string
 
 async::task<internal_resp::GetMailList> context::mail_list(const character& ch, uint16_t offset, uint16_t count)
 {
-    auto&& resp = co_await this->get<internal_resp::GetMailList>(
+    auto&& resp = co_await this->http.get<internal_resp::GetMailList>(
         "internal",
         std::format("/mail/{}?offset={}&count={}", ch.id(), offset, count));
     this->assert_mail(resp.error);
@@ -64,7 +64,7 @@ async::task<internal_resp::GetMail> context::read_mail(character& ch, uint16_t i
 {
     auto   url    = std::format("/mail/{}/{}", ch.id(), id);
     auto   thread = ch.thread();
-    auto&& resp   = co_await this->get<internal_resp::GetMail>("internal", url);
+    auto&& resp   = co_await this->http.get<internal_resp::GetMail>("internal", url);
     co_await this->switch_thread(ch);
 
     this->assert_mail(resp.error);
@@ -75,7 +75,7 @@ async::task<internal_resp::GetMail> context::read_mail(character& ch, uint16_t i
 async::task<internal_resp::DeleteMail> context::delete_mail(character& ch, uint16_t id)
 {
     auto   thread = ch.thread();
-    auto&& resp   = co_await this->post<internal_reqs::DeleteMail, internal_resp::DeleteMail>(
+    auto&& resp   = co_await this->http.post<internal_reqs::DeleteMail, internal_resp::DeleteMail>(
         "internal",
         "/mail/delete",
         internal_reqs::DeleteMail{ch.id(), id});
