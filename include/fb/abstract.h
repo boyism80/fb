@@ -6,6 +6,7 @@
 #include <fb/hash.h>
 #include <fb/locker.h>
 #include <async/awaitable_get.h>
+#include <memory>
 
 namespace fb {
 
@@ -17,7 +18,7 @@ namespace fb {
  *             collections of switchable objects and provides timer binding capabilities
  *             for both thread-based and coroutine-based execution.
  */
-class context
+class context : public std::enable_shared_from_this<context>
 {
 public:
     using hash_switchable = fb::hash<fb::locker<std::unordered_set<fb::thread_switchable*>>>;
@@ -58,11 +59,16 @@ protected:
     }
 
     /**
-     * @brief      Binds a member function as a coroutine-based timer callback.
+     * @brief      Binds a member function as a coroutine-based timer callback with improved safety.
      *
      *             Creates a coroutine-based timer that executes the specified member function
      *             at regular intervals using Boost.Asio's coroutine support. The timer runs
      *             asynchronously and continues until the context is stopped.
+     *
+     *             Safety improvements:
+     *             - Uses weak_ptr to prevent dangling pointer issues
+     *             - Thread-safe running flag access
+     *             - Proper exception handling
      *
      * @tparam     Class     The class type containing the member function
      * @param[in]  fn        The member function to execute as timer callback
@@ -71,22 +77,47 @@ protected:
     template <typename Class>
     void bind_timer(async::task<void> (Class::*fn)(void), std::chrono::steady_clock::duration interval)
     {
-        // 멤버 함수 바인딩
-        auto cfunc = std::bind(fn, static_cast<Class*>(this));
+        // Use weak_ptr for safe object reference
+        auto weak_this = std::weak_ptr<Class>(std::static_pointer_cast<Class>(this->shared_from_this()));
 
-        // executor 얻기
+        // Get executor
         auto exec = this->_boost_context.get_executor();
 
-        // 코루틴 스폰
+        // Spawn coroutine with improved safety
         boost::asio::co_spawn(
             exec,
-            [this, cfunc, interval]() -> boost::asio::awaitable<void> {
+            [weak_this, fn, interval]() -> boost::asio::awaitable<void> {
                 boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
-                while (this->_running)
+
+                while (true)
                 {
                     timer.expires_after(interval);
                     co_await timer.async_wait(boost::asio::use_awaitable);
-                    async::awaitable_get(cfunc());
+
+                    // Check if object is still alive
+                    auto shared_this = weak_this.lock();
+                    if (!shared_this)
+                        break; // Object has been destroyed, stop timer
+
+                    // Check if context is still running
+                    if (!shared_this->_running)
+                        break;
+
+                    try
+                    {
+                        // Execute the timer callback
+                        async::awaitable_get((shared_this.get()->*fn)());
+                    }
+                    catch (const std::exception& e)
+                    {
+                        // Log timer callback errors but don't stop the timer
+                        fb::logger::warn(std::format("Timer callback error: {}", e.what()));
+                    }
+                    catch (...)
+                    {
+                        // Log unknown errors
+                        fb::logger::warn("Timer callback error: Unknown exception");
+                    }
                 }
             },
             boost::asio::detached);

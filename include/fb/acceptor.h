@@ -5,6 +5,7 @@
 #include <fb/mutex.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/protocol/transfer.h>
+#include <fb/protocol_handler_registry.h>
 #include <fb/socket.h>
 #include <iomanip>
 #include <fb/amqp.h>
@@ -22,115 +23,44 @@ namespace fb {
 /**
  * @brief      A high-performance network acceptor that manages client connections and protocol handling.
  *
- *             This template class provides a complete server framework for handling multiple client
- *             connections with automatic protocol parsing, encryption support, rate limiting, and
- *             inter-service communication via AMQP. It manages socket lifecycle, thread distribution,
- *             and provides both HTTP client capabilities and socket transfer functionality.
- *
- *             Key features:
- *             - Asynchronous socket connection handling with boost::asio
- *             - Automatic protocol deserialization and handler dispatch
- *             - Built-in encryption/decryption support with configurable policies
- *             - Rate limiting (TPS) protection at both socket and handler levels
- *             - Thread-safe socket container management
- *             - AMQP message queue integration for inter-service communication
- *             - HTTP client functionality for REST API calls
- *             - Socket transfer capability between services
- *             - Configurable packet size limits and validation
- *
- * @tparam     T     The session data type associated with each socket connection.
- *                   This type represents the per-connection state/context.
+ * @tparam     T    The session type for socket connections
  */
 template <typename T>
 class acceptor : public fb::acceptable
 {
 public:
-    using handle_func           = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::header&)>;
-    using deserilze_func        = std::function<async::task<fb::protocol::header*>(fb::stream_reader<big_endian>&)>;
     using socket_container      = std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>;
     using socket_container_lock = fb::locker<socket_container>;
     using amqp_handler_func     = std::function<async::task<void>(const uint8_t*)>;
     using amqp_handler_type     = std::unordered_map<std::string, std::unordered_map<uint32_t, amqp_handler_func>>;
     using boost_timers          = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
 
-private:
     /**
-     * @brief      Internal handler structure that manages protocol command handlers with rate limiting.
-     *
-     *             Each protocol command has an associated handler that includes the actual handler
-     *             function and rate limiting parameters. The rate limiting is implemented using a
-     *             sliding window approach that tracks the number of transitions (calls) within a
-     *             specified time duration.
+     * @brief      Handler container for protocol handlers.
+     *             This struct is intentionally non-copyable and non-assignable to prevent accidental copies.
      */
     struct handler
     {
-    private:
-        fb::model::datetime last        = fb::model::datetime(); ///< Last reset time for rate limiting window
-        uint32_t            transitions = 0;                     ///< Current number of transitions in the window
+        fb::protocol_handler_registry<T> protocol; ///< Registry for client protocol handlers
 
-    public:
-        /// The actual handler function to execute
-        const handle_func fn;
-        /// Time window for rate limiting (default: 1s)
-        const std::chrono::steady_clock::duration duration = 1s;
-        /// Maximum transitions allowed per window (default: unlimited)
-        const uint32_t limit = 0xFFFFFFFF;
+        // Delete copy constructor and assignment operator
+        handler(const handler&)             = delete;
+        handler& operator= (const handler&) = delete;
 
-    public:
-        handler() = default;
-
-        /**
-         * @brief      Constructs a handler with rate limiting parameters.
-         *
-         * @param[in]  fn        The handler function to execute for this protocol command.
-         * @param[in]  duration  The time window for rate limiting calculations.
-         * @param[in]  limit     Maximum number of calls allowed within the duration window.
-         */
-        handler(const handle_func&                         fn,
-                const std::chrono::steady_clock::duration& duration,
-                uint32_t                                   limit = 0xFFFFFFFF) :
-            fn(fn),
-            duration(duration),
-            limit(limit)
+        // Default constructor
+        handler(fb::acceptor<T>& owner) :
+            protocol(owner)
         { }
-
-        /**
-         * @brief      Updates and checks the rate limiting state for this handler.
-         *
-         *             Implements a sliding window rate limiter. If the elapsed time since
-         *             the last reset exceeds the configured duration, the transition counter
-         *             is reset. Then increments the transition count and checks if it exceeds
-         *             the configured limit.
-         *
-         * @return     True if the handler can be executed (within rate limits), false if rate limited.
-         */
-        bool update_tps()
-        {
-            auto elapsed_time = fb::model::datetime() - this->last;
-            if (elapsed_time > duration)
-            {
-                this->last        = fb::model::datetime();
-                this->transitions = 0;
-            }
-
-            if (++this->transitions > this->limit)
-                return false;
-
-            return true;
-        }
     };
 
+    handler handler; ///< Public handler container for protocol handlers
+
 private:
-    std::unordered_map<uint8_t, handler> _handler; ///< Maps protocol command bytes to their handlers with rate limiting
-    std::unordered_map<uint8_t, deserilze_func>
-                                      _deserializer; ///< Maps protocol command bytes to deserialization functions
     amqp_handler_type                 _amqp_handler; ///< AMQP message handlers organized by route and command type
     std::unique_ptr<fb::amqp::socket> _amqp;         ///< AMQP connection for inter-service communication
-    std::mutex                        _mutex_exit;   ///< Mutex for thread-safe exit operations
     boost_timers                      _timers;       ///< Collection of boost::asio timers for periodic tasks
 
 protected:
-    fb::mutex             _mutex;   ///< Thread synchronization mutex for acceptor operations
     socket_container_lock _sockets; ///< Thread-safe container holding all active socket connections
 
 protected:
@@ -148,7 +78,7 @@ protected:
      */
     acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
         fb::acceptable(context, name, config<uint32_t>("thread:logic"), port),
-        _mutex(*this)
+        handler(*this)
     { }
 
 public:
@@ -674,39 +604,6 @@ public:
 private:
     /**
      * @brief      Executes protocol handlers for received packets with comprehensive validation and rate limiting.
-     *
-     *             This is the core packet processing method that handles the complete packet parsing
-     *             and handler dispatch pipeline. It implements a robust packet processing system with:
-     *
-     *             Packet Format Validation:
-     *             - Magic code validation (0xAA header)
-     *             - Packet size validation against MAX_BUFFER_SIZE
-     *             - Command byte extraction and validation
-     *
-     *             Security Features:
-     *             - Per-socket TPS (Transactions Per Second) limiting (100 TPS max)
-     *             - Per-handler rate limiting with configurable windows
-     *             - Automatic decryption based on decrypt_policy()
-     *             - Buffer overflow protection
-     *
-     *             Processing Pipeline:
-     *             1. Validates packet magic code (0xAA)
-     *             2. Reads packet size and validates against limits
-     *             3. Checks socket and handler TPS limits
-     *             4. Applies decryption if required by policy
-     *             5. Deserializes packet using registered deserializer
-     *             6. Dispatches to appropriate thread for handler execution
-     *             7. Continues processing remaining packets in stream
-     *
-     *             Error Handling:
-     *             - Logs undefined protocols and handlers as warnings
-     *             - Closes socket on critical parsing errors
-     *             - Handles exceptions gracefully without crashing
-     *
-     * @param      socket  The socket that received the packet data.
-     * @param      stream  The stream containing one or more packets to process.
-     *
-     * @return     An async task that completes when all packets in the stream are processed.
      */
     async::task<void> execute_handler(fb::socket<T>& socket, fb::stream& stream)
     {
@@ -741,18 +638,19 @@ private:
 
                 reader.flush(); // remove magic code and size
 
-                if (this->_deserializer.contains(cmd) == false)
+                if (!this->handler.protocol.has_deserializer(cmd))
                 {
                     fb::logger::warn(std::format("Undefined protocol. [{:#x}]", cmd));
                 }
-                else if (this->_handler.contains(cmd) == false)
+                else if (!this->handler.protocol.has_handler(cmd))
                 {
                     fb::logger::warn(std::format("Undefined handler. [{:#x}]", cmd));
                 }
                 else
                 {
-                    auto protocol = std::shared_ptr<fb::protocol::header>(co_await this->_deserializer[cmd](reader));
-                    auto fd       = socket.fd();
+                    auto protocol = std::shared_ptr<fb::protocol::header>(
+                        co_await this->handler.protocol.get_deserializer(cmd)(reader));
+                    auto fd = socket.fd();
                     this->threads.enqueue(socket,
                                           [this, protocol, &socket, fd, cmd](auto& thread) -> async::task<void> {
                                               try
@@ -760,7 +658,7 @@ private:
                                                   if (this->connected(fd) == false)
                                                       co_return;
 
-                                                  auto& handler = this->_handler[cmd];
+                                                  auto& handler = this->handler.protocol.get_handler(cmd);
                                                   if (this->assert_tps(socket) && handler.update_tps() == false)
                                                       co_return;
 
@@ -1266,58 +1164,6 @@ protected:
      * @return     The service type of the acceptor.
      */
     virtual fb::protocol::internal::Service service() const = 0;
-
-protected:
-    /**
-     * @brief      Binds a handler function to a protocol command with default parameters.
-     *
-     * @param[in]  fn        The member function to bind.
-     * @param[in]  header    The header of the request.
-     * @param[in]  duration  The time window for rate limiting.
-     * @param[in]  limit     The maximum number of requests allowed in the time window.
-     *
-     * @tparam     Class      The class containing the handler function.
-     * @tparam     Request    The type of the request to handle.
-     */
-    template <typename Class, typename Request>
-    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
-              uint8_t                                    header,
-              const std::chrono::steady_clock::duration& duration = 1s,
-              uint32_t                                   limit    = 10)
-    {
-        this->_deserializer.insert({header, [](auto& reader) -> async::task<fb::protocol::header*> {
-                                        auto protocol = new Request();
-                                        co_await protocol->deserialize(reader);
-                                        co_return protocol;
-                                    }});
-
-        auto func_bound = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2);
-        auto handler_fn = [func_bound](auto& socket, auto& header) -> async::task<bool> {
-            auto protocol = static_cast<Request&>(header);
-            co_return co_await func_bound(socket, protocol);
-        };
-
-        this->_handler.insert({header, handler(handler_fn, duration, limit)});
-    }
-
-protected:
-    /**
-     * @brief      Binds a handler function to a protocol command with default parameters.
-     *
-     * @param[in]  fn        The member function to bind.
-     * @param[in]  duration  The time window for rate limiting.
-     * @param[in]  limit     The maximum number of requests allowed in the time window.
-     *
-     * @tparam     Class      The class containing the handler function.
-     * @tparam     Request    The type of the request to handle.
-     */
-    template <typename Class, typename Request>
-    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
-              const std::chrono::steady_clock::duration& duration = 1s,
-              uint32_t                                   limit    = 10)
-    {
-        this->bind(fn, Request::header, duration, limit);
-    }
 
 protected:
     /**

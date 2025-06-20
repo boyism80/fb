@@ -7,8 +7,8 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<session>(context, "GATEWAY", port)
 {
     // Register event handler
-    this->bind(&context::handle_check_version);
-    this->bind(&context::handle_entry_list);
+    this->handler.protocol.bind(&context::handle_check_version);
+    this->handler.protocol.bind(&context::handle_entry_list);
 }
 
 context::~context()

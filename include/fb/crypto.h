@@ -164,7 +164,7 @@ public:
      *
      * @return     A pointer to the encryption key data.
      */
-    uint8_t* key() const;
+    const uint8_t* key() const;
 
 public:
     /**

@@ -12,11 +12,11 @@ context::context(boost::asio::io_context& context, uint16_t port) :
         this->_forbiddens.push_back(x.asString());
 
     // Register event handler
-    this->bind(&context::handle_login);
-    this->bind(&context::handle_agreement);
-    this->bind(&context::handle_create_account);
-    this->bind(&context::handle_complete);
-    this->bind(&context::handle_change_password);
+    this->handler.protocol.bind(&context::handle_login);
+    this->handler.protocol.bind(&context::handle_agreement);
+    this->handler.protocol.bind(&context::handle_create_account);
+    this->handler.protocol.bind(&context::handle_complete);
+    this->handler.protocol.bind(&context::handle_change_password);
 }
 
 context::~context()
