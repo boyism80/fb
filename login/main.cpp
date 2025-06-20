@@ -12,21 +12,25 @@
 
 using namespace fb;
 
-int main(int argc, const char** argv)
+int main(int argc, char** argv)
 {
+    // Initialize config system
+    if (!fb::init_config(argc, argv))
+        return -1;
+
     try
     {
         //_CrtSetBreakAlloc(80);
 
 #ifdef _WIN32
-        ::SetConsoleIcon(IDI_BARAM);
+        ::set_console_icon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
         flatbuffers::option::encoding(utf8);
         flatbuffers::option::decoding(cp949);
 #endif
 
         auto io_context = boost::asio::io_context{};
-        auto context    = std::make_unique<fb::login::context>(io_context, config<uint16_t>("port"));
+        auto context    = std::make_shared<fb::login::context>(io_context, fb::config<uint16_t>("port"));
         auto signals    = boost::asio::signal_set(io_context, SIGINT, SIGTERM);
         signals.async_wait([&context](const boost::system::error_code& ec, int signal_number) {
             context->exit();
@@ -36,7 +40,7 @@ int main(int argc, const char** argv)
     }
     catch (std::exception& e)
     {
-        fb::logger::fatal(std::format("unhandled exception catched in main : {}", e.what()));
+        std::cerr << "unhandled exception catched in main : " << e.what() << std::endl;
     }
 
     // Clean up

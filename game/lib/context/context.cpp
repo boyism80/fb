@@ -127,43 +127,43 @@ async::task<void> context::handle_start()
         async::awaitable_get(async_task);
     }
 
-    this->bind(&context::handle_login);            // 게임서버 접속 핸들러
-    this->bind(&context::handle_direction);        // 방향전환 핸들러
-    this->bind(&context::handle_logout);           // 접속 종료
-    this->bind(&context::handle_update_move);      // 이동과 맵 데이터 업데이트 핸들러
-    this->bind(&context::handle_move, 1s, 6);      // 이동 핸들러
-    this->bind(&context::handle_attack, 500ms, 2); // 공격 핸들러
-    this->bind(&context::handle_pickup);           // 아이템 줍기 핸들러
-    this->bind(&context::handle_emotion);          // 감정표현 핸들러
-    this->bind(&context::handle_update_map);       // 맵 데이터 업데이트 핸들러
-    this->bind(&context::handle_update_screen);    // 새로고침 핸들러
-    this->bind(&context::handle_active_item);      // 아이템 사용 핸들러
-    this->bind(&context::handle_inactive_item);    // 아이템 장착 해제 핸들러
-    this->bind(&context::handle_drop_item);        // 아이템 버리기 핸들러
-    this->bind(&context::handle_drop_money);       // 금전 버리기 핸들러
-    this->bind(&context::handle_front_info);       // 앞방향 정보 핸들러
-    this->bind(&context::handle_self_info);        // 나 자신의 정보 핸들러
-    this->bind(&context::handle_option_changed);   // 옵션 설정 핸들러
-    this->bind(&context::handle_click_object);     // 오브젝트 클릭 핸들러
-    this->bind(&context::handle_item_info);        // 인벤토리 우클릭 핸들러
-    this->bind(&context::handle_itemmix);          // 아이템 조합 핸들러
-    this->bind(&context::handle_trade);            // 교환 핸들러
-    this->bind(&context::handle_group);            // 그룹 핸들러
-    this->bind(&context::handle_user_list);        // 유저 리스트 핸들러
-    this->bind(&context::handle_chat);             // 유저 채팅 핸들러
-    this->bind(&context::handle_bulletin);         // 게시판 섹션 리스트 핸들러
-    this->bind(&context::handle_swap);             // 스펠 순서 변경
-    this->bind(&context::handle_dialog);           // 다이얼로그
-    this->bind(&context::handle_dialog, 0x39);     // 다이얼로그
-    this->bind(&context::handle_throw_item);       // 아이템 던지기 핸들러
-    this->bind(&context::handle_spell, 500ms, 3);  // 스펠 핸들러
-    this->bind(&context::handle_door);             // 도어 핸들러
-    this->bind(&context::handle_whisper);          // 귓속말 핸들러
-    this->bind(&context::handle_world);            // 월드맵 핸들러
-    this->bind(&context::handle_object_miss);
-    this->bind(&context::handle_give_item);
-    this->bind(&context::handle_give_money);
-    this->bind(&context::handle_post);
+    this->handler.protocol.bind(&context::handle_login);            // 게임서버 접속 핸들러
+    this->handler.protocol.bind(&context::handle_direction);        // 방향전환 핸들러
+    this->handler.protocol.bind(&context::handle_logout);           // 접속 종료
+    this->handler.protocol.bind(&context::handle_update_move);      // 이동과 맵 데이터 업데이트 핸들러
+    this->handler.protocol.bind(&context::handle_move, 1s, 6);      // 이동 핸들러
+    this->handler.protocol.bind(&context::handle_attack, 500ms, 2); // 공격 핸들러
+    this->handler.protocol.bind(&context::handle_pickup);           // 아이템 줍기 핸들러
+    this->handler.protocol.bind(&context::handle_emotion);          // 감정표현 핸들러
+    this->handler.protocol.bind(&context::handle_update_map);       // 맵 데이터 업데이트 핸들러
+    this->handler.protocol.bind(&context::handle_update_screen);    // 새로고침 핸들러
+    this->handler.protocol.bind(&context::handle_active_item);      // 아이템 사용 핸들러
+    this->handler.protocol.bind(&context::handle_inactive_item);    // 아이템 장착 해제 핸들러
+    this->handler.protocol.bind(&context::handle_drop_item);        // 아이템 버리기 핸들러
+    this->handler.protocol.bind(&context::handle_drop_money);       // 금전 버리기 핸들러
+    this->handler.protocol.bind(&context::handle_front_info);       // 앞방향 정보 핸들러
+    this->handler.protocol.bind(&context::handle_self_info);        // 나 자신의 정보 핸들러
+    this->handler.protocol.bind(&context::handle_option_changed);   // 옵션 설정 핸들러
+    this->handler.protocol.bind(&context::handle_click_object);     // 오브젝트 클릭 핸들러
+    this->handler.protocol.bind(&context::handle_item_info);        // 인벤토리 우클릭 핸들러
+    this->handler.protocol.bind(&context::handle_itemmix);          // 아이템 조합 핸들러
+    this->handler.protocol.bind(&context::handle_trade);            // 교환 핸들러
+    this->handler.protocol.bind(&context::handle_group);            // 그룹 핸들러
+    this->handler.protocol.bind(&context::handle_user_list);        // 유저 리스트 핸들러
+    this->handler.protocol.bind(&context::handle_chat);             // 유저 채팅 핸들러
+    this->handler.protocol.bind(&context::handle_bulletin);         // 게시판 섹션 리스트 핸들러
+    this->handler.protocol.bind(&context::handle_swap);             // 스펠 순서 변경
+    this->handler.protocol.bind(&context::handle_dialog);           // 다이얼로그
+    this->handler.protocol.bind(&context::handle_dialog, 0x39);     // 다이얼로그
+    this->handler.protocol.bind(&context::handle_throw_item);       // 아이템 던지기 핸들러
+    this->handler.protocol.bind(&context::handle_spell, 500ms, 3);  // 스펠 핸들러
+    this->handler.protocol.bind(&context::handle_door);             // 도어 핸들러
+    this->handler.protocol.bind(&context::handle_whisper);          // 귓속말 핸들러
+    this->handler.protocol.bind(&context::handle_world);            // 월드맵 핸들러
+    this->handler.protocol.bind(&context::handle_object_miss);
+    this->handler.protocol.bind(&context::handle_give_item);
+    this->handler.protocol.bind(&context::handle_give_money);
+    this->handler.protocol.bind(&context::handle_post);
 
     this->bind_timer(&context::handle_heart_beat, 1s);
     this->bind_timer(&context::handle_announce,
@@ -194,17 +194,17 @@ async::task<void> context::handle_start()
     this->bind_npc_interaction(&context::npc_interaction_revive);
     this->bind_npc_interaction(&context::npc_interaction_appreciate);
 
-    this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_KickOut);
-    this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Whisper);
-    this->bind_amqp("fb.system", &context::handle_amqp_shutdown);
-    this->bind_amqp("fb.global", &context::handle_amqp_Broadcast);
-    this->bind_amqp("fb.group", &context::handle_amqp_EnterGroup);
-    this->bind_amqp("fb.group", &context::handle_amqp_LeaveGroup);
-    this->bind_amqp("fb.clan", &context::handle_amqp_SetClanTitle);
-    this->bind_amqp("fb.clan", &context::handle_amqp_JoinClan);
-    this->bind_amqp("fb.clan", &context::handle_amqp_LeaveClan);
-    this->bind_amqp("fb.clan", &context::handle_amqp_BroadcastClan);
-    this->bind_amqp("fb.mail", &context::handle_amqp_WriteMail);
+    this->handler.amqp.bind(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_KickOut);
+    this->handler.amqp.bind(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Whisper);
+    this->handler.amqp.bind("fb.system", &context::handle_amqp_shutdown);
+    this->handler.amqp.bind("fb.global", &context::handle_amqp_Broadcast);
+    this->handler.amqp.bind("fb.group", &context::handle_amqp_EnterGroup);
+    this->handler.amqp.bind("fb.group", &context::handle_amqp_LeaveGroup);
+    this->handler.amqp.bind("fb.clan", &context::handle_amqp_SetClanTitle);
+    this->handler.amqp.bind("fb.clan", &context::handle_amqp_JoinClan);
+    this->handler.amqp.bind("fb.clan", &context::handle_amqp_LeaveClan);
+    this->handler.amqp.bind("fb.clan", &context::handle_amqp_BroadcastClan);
+    this->handler.amqp.bind("fb.mail", &context::handle_amqp_WriteMail);
 }
 
 bool context::decrypt_policy(uint8_t cmd) const
@@ -257,10 +257,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     try
     {
         co_await this->save(*ch);
-        std::ignore =
-            co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
-                                                                              "/in-game/logout",
-                                                                              internal_reqs::Logout{ch->name()});
+        std::ignore = co_await this->http.post("internal", "/in-game/logout", Logout{ch->name()});
     }
     catch (std::exception& e)
     {
@@ -669,11 +666,9 @@ async::task<void> context::save(character& ch)
         achievements.push_back(internal::Achievement{ch.id(), model, achievement->text});
     }
 
-    auto fd     = ch.fd();
-    std::ignore = co_await this->post<internal_reqs::Save, internal_resp::Save>(
-        "internal",
-        "/user/save",
-        internal_reqs::Save{ch.to_protocol(), items, spells, achievements});
+    auto fd = ch.fd();
+    std::ignore =
+        co_await this->http.post("internal", "/user/save", Save{ch.to_protocol(), items, spells, achievements});
 
     co_await this->switch_thread(ch);
     ch.send(fb_resp::save());
@@ -701,31 +696,14 @@ fb::thread* context::thread(const map& map)
     return this->threads.at(map.model.id % count);
 }
 
-void context::handle_declare_amqp_queue(fb::amqp::socket& amqp)
+void context::handle_init_amqp(fb::amqp::socket& amqp)
 {
-    auto& queue0 = amqp.declare_queue();
-    queue0.bind("amq.direct", "fb.system");
-    this->bind_amqp(queue0);
-
-    auto& queue1 = amqp.declare_queue();
-    queue1.bind("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
-    this->bind_amqp(queue1);
-
-    auto& queue2 = amqp.declare_queue();
-    queue2.bind("amq.direct", "fb.global");
-    this->bind_amqp(queue2);
-
-    auto& queue3 = amqp.declare_queue();
-    queue3.bind("amq.direct", "fb.group");
-    this->bind_amqp(queue3);
-
-    auto& queue4 = amqp.declare_queue();
-    queue4.bind("amq.direct", "fb.clan");
-    this->bind_amqp(queue4);
-
-    auto& queue5 = amqp.declare_queue();
-    queue5.bind("amq.direct", "fb.mail");
-    this->bind_amqp(queue5);
+    this->handler.amqp.declare_queue("amq.direct", "fb.system");
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
+    this->handler.amqp.declare_queue("amq.direct", "fb.global");
+    this->handler.amqp.declare_queue("amq.direct", "fb.group");
+    this->handler.amqp.declare_queue("amq.direct", "fb.clan");
+    this->handler.amqp.declare_queue("amq.direct", "fb.mail");
 }
 
 // TODO : 클릭도 인터페이스로
@@ -759,10 +737,10 @@ async::task<void> context::broadcast(const std::string& message, MESSAGE_TYPE ty
     {
     case BROADCAST_TYPE::GLOBAL:
     {
-        auto&& resp = co_await this->post<internal_reqs::Broadcast, internal_resp::Broadcast>(
-            "internal",
-            "/in-game/broadcast",
-            internal_reqs::Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
+        auto&& resp =
+            co_await this->http.post("internal",
+                                     "/in-game/broadcast",
+                                     Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
         this->on_broadcast(resp);
     }
     break;

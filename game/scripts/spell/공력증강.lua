@@ -4,7 +4,7 @@ function ON_CAST_4002(me, spell)
     local effect = 11
     local sound = 65
 
-    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    local error = me:assert(STATE_GHOST, STATE_RIDING)
     if error ~= nil then
         return me:message(error)
     end

@@ -12,6 +12,7 @@ namespace fb::game {
  * @brief      Forward declaration of the character class.
  */
 class character;
+class ai; // Forward declaration for AI
 
 /**
  * @brief      Manages mob respawn (regen) functionality for a specific spawn point.
@@ -136,6 +137,7 @@ private:
     std::vector<item*>  _items;
     bool                _hidden = false;
     character*          _owner  = nullptr;
+    std::unique_ptr<ai> _ai_strategy;
 
 public:
     character* const owner = nullptr;
@@ -187,6 +189,27 @@ private:
     fb::game::life* find_target();
 
     /**
+     * @brief      Executes the mob's Lua AI script asynchronously.
+     *
+     *             Calls the mob's custom AI script if available, allowing for
+     *             complex scripted behaviors and decision-making processes.
+     *
+     * @return     Async task that completes when script execution finishes.
+     */
+    [[nodiscard]] async::task<bool> call_script();
+
+    /**
+     * @brief      Executes the mob's AI behavior for the current time step.
+     *
+     *             Processes AI logic including target acquisition, movement,
+     *             combat decisions, and state transitions based on current conditions.
+     *
+     * @param[in]  now   The current game time for AI processing.
+     */
+    void AI(const fb::model::datetime& now);
+
+public:
+    /**
      * @brief      Checks if the mob is adjacent to the specified target.
      *
      *             Determines if the mob is close enough to the target for melee
@@ -211,27 +234,6 @@ private:
      */
     bool move_step(const fb::model::point16_t& position);
 
-    /**
-     * @brief      Executes the mob's Lua AI script asynchronously.
-     *
-     *             Calls the mob's custom AI script if available, allowing for
-     *             complex scripted behaviors and decision-making processes.
-     *
-     * @return     Async task that completes when script execution finishes.
-     */
-    [[nodiscard]] async::task<bool> call_script();
-
-    /**
-     * @brief      Executes the mob's AI behavior for the current time step.
-     *
-     *             Processes AI logic including target acquisition, movement,
-     *             combat decisions, and state transitions based on current conditions.
-     *
-     * @param[in]  now   The current game time for AI processing.
-     */
-    void AI(const fb::model::datetime& now);
-
-public:
     /**
      * @brief      Gets the mob's base hit points from the model.
      *
@@ -473,24 +475,25 @@ public:
     void action_time(const fb::model::datetime& dt);
 
     /**
-     * @brief      Gets the mob's current target.
+     * @brief   Gets the current target of this mob
      *
-     *             Returns the life entity that this mob is currently targeting
-     *             for combat or other AI behaviors.
+     *          Validates the target before returning:
+     *          - Must not be null
+     *          - Must be alive in context
+     *          - Must be alive in game
+     *          - Must be within sight
+     *          - Must not be hidden from this mob
      *
-     * @return     Pointer to the current target, or nullptr if no target.
+     * @return  Valid target pointer, nullptr if target is invalid or non-existent
      */
-    fb::game::life* target() const;
+    life* target() const;
 
     /**
-     * @brief      Sets the mob's current target.
+     * @brief   Sets the current target for this mob
      *
-     *             Assigns a new target for this mob's AI behavior, typically
-     *             for combat or pursuit actions.
-     *
-     * @param      value  The new target to assign.
+     * @param[in]  value  New target to set, can be nullptr to clear target
      */
-    void target(fb::game::life* value);
+    void target(life* value);
 
     /**
      * @brief      Gets the mob's oblivion target (last attacker).

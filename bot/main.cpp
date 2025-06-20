@@ -1,12 +1,16 @@
 #include <thread>
 #include <fb/bot/bot.container.h>
+#include <fb/config.h>
 
 using namespace std;
 using namespace boost::asio;
 using namespace std::chrono_literals;
 
-int main(int, char**)
+int main(int argc, char** argv)
 {
+    // Initialize config system
+    if (!fb::init_config(argc, argv))
+        return -1;
     using guard_type = executor_work_guard<io_context::executor_type>;
 
     auto io_size        = fb::config<uint32_t>("io_size");

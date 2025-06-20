@@ -112,15 +112,10 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
     auto  p      = fb::model::point16_t{position};
     try
     {
-        auto&& response =
-            co_await this->context
-                .post<fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer>(
-                    "internal",
-                    "/in-game/transfer",
-                    fb::protocol::internal::request::Transfer{fb::protocol::internal::Service::Game,
-                                                              map.model.host,
-                                                              me.name(),
-                                                              false});
+        auto&& response = co_await this->context.http.post(
+            "internal",
+            "/in-game/transfer",
+            Transfer{fb::protocol::internal::Service::Game, map.model.host, me.name(), false});
         co_await this->context.switch_thread(me);
         switch (static_cast<ERROR_CODE>(response.error))
         {

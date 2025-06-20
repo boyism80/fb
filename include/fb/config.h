@@ -9,6 +9,8 @@
 #include <sstream>
 #include <mutex>
 #include <format>
+#include <filesystem>
+#include <boost/program_options.hpp>
 #include <fb/console.h>
 
 namespace fb {
@@ -139,13 +141,109 @@ typename config_value_type<std::string>::type json_value<std::string>(const Json
 }
 
 /**
+ * @brief      Gets or sets the global config file path.
+ *
+ * @param[in]  path     Optional path to set. If empty, returns current path.
+ * @param[in]  set_mode If true, sets the path. If false, gets the path.
+ *
+ * @return     The current config file path
+ */
+inline std::string& config_path_storage(const std::string& path = "", bool set_mode = false)
+{
+    static std::string stored_path;
+
+    if (set_mode && !path.empty())
+        stored_path = path;
+
+    return stored_path;
+}
+
+/**
+ * @brief      Gets the configured config file path.
+ *
+ * @return     The path to the config file as a string
+ *
+ * @note       Returns empty string if init_config() hasn't been called
+ */
+inline std::string get_config_path()
+{
+    return config_path_storage();
+}
+
+/**
+ * @brief      Sets the config file path manually.
+ *
+ *             Alternative to init_config() for cases where command line parsing
+ *             is not available or desired.
+ *
+ * @param[in]  path  The path to the config file
+ */
+inline void set_config_path(const std::string& path)
+{
+    config_path_storage(path, true);
+}
+
+/**
+ * @brief      Initializes the configuration system with command line arguments.
+ *
+ *             This function must be called from main() before using config() function.
+ *             It parses command line arguments to determine the config file path.
+ *
+ * @param[in]  argc  Command line argument count
+ * @param[in]  argv  Command line argument values
+ *
+ * @return     true if initialization succeeded, false otherwise
+ *
+ * @note       If no config file is specified, defaults to config.json in executable directory
+ */
+inline bool init_config(int argc, char* argv[])
+{
+    namespace po = boost::program_options;
+
+    try
+    {
+        po::options_description desc("Configuration options");
+        desc.add_options()("config,c", po::value<std::string>(), "Path to configuration file");
+
+        po::variables_map vm;
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+
+        // Preferred initialization pattern with default value
+        auto config_path_value = std::string{};
+        if (vm.count("config"))
+            config_path_value = vm["config"].as<std::string>();
+        else
+        {
+            auto exe_path     = std::filesystem::path(argv[0]).parent_path();
+            config_path_value = (exe_path / "config.json").string();
+        }
+
+        set_config_path(config_path_value);
+
+        return true;
+    }
+    catch (const std::exception& e)
+    {
+        fb::console::puts("Config initialization failed: " + std::string(e.what()));
+        return false;
+    }
+}
+
+/**
  * @brief      Gets a configuration value by key path.
+ *
+ *             This function loads the configuration file specified by init_config()
+ *             or set_config_path() and retrieves the value at the given key path.
  *
  * @param[in]  k     The key path (e.g., "database:host" for nested values).
  *
  * @tparam     T     The type of the configuration value to retrieve.
  *
  * @return     The configuration value of the specified type.
+ *
+ * @note       init_config() or set_config_path() must be called before using this function
+ * @warning    Throws std::runtime_error if config file cannot be loaded or parsed
  */
 template <typename T = Json::Value>
 inline static typename config_value_type<T>::type config(const std::string& k)
@@ -154,27 +252,20 @@ inline static typename config_value_type<T>::type config(const std::string& k)
     static Json::Value    ist;
 
     std::call_once(flag, [] {
-        const char* env = std::getenv("KINGDOM_OF_WIND_ENVIRONMENT");
-#if defined DEBUG || defined _DEBUG
-        if (env == nullptr)
-            env = "dev";
-#endif
+        auto config_path = get_config_path();
+        if (config_path.empty())
+            throw std::runtime_error("Config system not initialized. Call init_config() or set_config_path() first.");
 
         auto ifstream = std::ifstream{};
         try
         {
-            auto path = env != nullptr ? std::format("config/config.{}.json", env) : "config/config.json";
-            ifstream.open(path);
+            ifstream.open(config_path);
             if (ifstream.is_open() == false)
-            {
-                throw std::runtime_error(std::format("cannot load file {}", path));
-            }
+                throw std::runtime_error("cannot load config file " + config_path);
 
             Json::Reader reader;
             if (reader.parse(ifstream, ist) == false)
-            {
-                throw std::runtime_error(std::format("cannot parse json file {}", path));
-            }
+                throw std::runtime_error("cannot parse json config file " + config_path);
 
             ifstream.close();
         }
@@ -183,7 +274,6 @@ inline static typename config_value_type<T>::type config(const std::string& k)
             if (ifstream.is_open())
                 ifstream.close();
 
-            fb::console::puts(e.what());
             throw e;
         }
     });

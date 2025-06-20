@@ -417,6 +417,11 @@ public:
     }
 
     /**
+     * @brief      Switches to another thread context.
+     */
+    async::task<void> switching();
+
+    /**
      * @brief      Converts the value at the specified offset to an integer.
      *
      * @param[in]  offset         The stack offset.
@@ -569,6 +574,32 @@ public:
         return lua_isuserdata(*this, offset);
     }
 
+    /**
+     * @brief      Checks if the value at the specified offset is a function.
+     *
+     * @param[in]  offset  The stack offset.
+     *
+     * @return     True if the value is a function, false otherwise.
+     */
+    bool is_function(int offset)
+    {
+        if (this->argc() < offset)
+            return false;
+        else if (lua_type(*this, offset) != LUA_TFUNCTION)
+            return false;
+        else
+            return true;
+    }
+
+    /**
+     * @brief      Checks if the value at the specified offset is a userdata.
+     *
+     * @param[in]  offset  The stack offset.
+     *
+     * @tparam     T       The C++ type to check.
+     *
+     * @return     True if the value is a userdata, false otherwise.
+     */
     template <typename T>
     bool is_userdata(int offset)
     {
@@ -911,11 +942,6 @@ public:
      * @param      ctx   The context to revoke.
      */
     void revoke(context& ctx);
-
-    /**
-     * @brief      Switches to another thread context.
-     */
-    async::task<void> switching();
 
     /**
      * @brief      Gets the initial thread.

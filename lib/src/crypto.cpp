@@ -217,7 +217,7 @@ uint8_t fb::crypto::type() const
     return this->_type;
 }
 
-uint8_t* fb::crypto::key() const
+const uint8_t* fb::crypto::key() const
 {
     return this->_key;
 }

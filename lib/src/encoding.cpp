@@ -75,17 +75,17 @@ std::string fb::CP949(const std::string& utf8, PLATFORM p)
 {
     switch (p)
     {
-    case PLATFORM::Both:
+    case PLATFORM::BOTH:
         return cp949(utf8);
 
-    case PLATFORM::Windows:
+    case PLATFORM::WINDOWS:
 #ifdef _WIN32
         return cp949(utf8);
 #else
         return utf8;
 #endif
 
-    case PLATFORM::Linux:
+    case PLATFORM::LINUX:
 #ifdef __linux__
         return cp949(utf8);
 #else
@@ -101,17 +101,17 @@ std::string fb::UTF8(const std::string& cp949, PLATFORM p)
 {
     switch (p)
     {
-    case PLATFORM::Both:
+    case PLATFORM::BOTH:
         return utf8(cp949);
 
-    case PLATFORM::Windows:
+    case PLATFORM::WINDOWS:
 #ifdef _WIN32
         return utf8(cp949);
 #else
         return cp949;
 #endif
 
-    case PLATFORM::Linux:
+    case PLATFORM::LINUX:
 #ifdef __linux__
         return utf8(cp949);
 #else

@@ -73,7 +73,6 @@ namespace Http.Service
     /// </summary>
     public class RedisService
     {
-        private readonly RedisConfiguration _configuration;
         private readonly Dictionary<int, Redis> _redis = new Dictionary<int, Redis>();
 
         /// <summary>

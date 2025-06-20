@@ -12,11 +12,11 @@ context::context(boost::asio::io_context& context, uint16_t port) :
         this->_forbiddens.push_back(x.asString());
 
     // Register event handler
-    this->bind(&context::handle_login);
-    this->bind(&context::handle_agreement);
-    this->bind(&context::handle_create_account);
-    this->bind(&context::handle_complete);
-    this->bind(&context::handle_change_password);
+    this->handler.protocol.bind(&context::handle_login);
+    this->handler.protocol.bind(&context::handle_agreement);
+    this->handler.protocol.bind(&context::handle_create_account);
+    this->handler.protocol.bind(&context::handle_complete);
+    this->handler.protocol.bind(&context::handle_change_password);
 }
 
 context::~context()
@@ -39,7 +39,7 @@ async::task<void> context::handle_start()
     co_await fb::acceptor<session>::handle_start();
 
     this->bind_timer(&context::handle_heart_beat, 1s);
-    this->bind_amqp("fb.system", &context::handle_amqp_shutdown);
+    this->handler.amqp.bind("fb.system", &context::handle_amqp_shutdown);
 }
 
 async::task<void> context::handle_heart_beat()
@@ -137,10 +137,7 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
 
         this->assert_account(name, pw);
 
-        auto&& response1 = co_await this->post<internal::request::ReserveName, internal::response::ReserveName>(
-            "internal",
-            "/user/reserve-name",
-            internal::request::ReserveName{name});
+        auto&& response1 = co_await this->http.post("internal", "/user/reserve-name", ReserveName{name});
 
         co_await this->switch_thread(socket);
 
@@ -156,10 +153,10 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
         auto   init_x    = static_cast<uint16_t>(config<>("init:position")[i]["x"].asUInt());
         auto   init_y    = static_cast<uint16_t>(config<>("init:position")[i]["y"].asUInt());
         auto   admin     = fb::config<bool>("admin_mode");
-        auto&& response2 = co_await this->post<internal::request::InitCharacter, internal::response::InitCharacter>(
+        auto&& response2 = co_await this->http.post(
             "internal",
             "/user/init-ch",
-            internal::request::InitCharacter{
+            InitCharacter{
                 uid,
                 name,
                 pw,
@@ -207,10 +204,10 @@ async::task<bool> context::handle_complete(fb::socket<session>& socket, const re
         if (session->pk == -1)
             throw std::exception();
 
-        auto&& response = co_await this->post<internal::request::MakeCharacter, internal::response::MakeCharacter>(
+        auto&& response = co_await this->http.post(
             "internal",
             "/user/mk-ch",
-            internal::request::MakeCharacter{session->pk, request.hair, request.sex, request.nation, request.creature});
+            MakeCharacter{session->pk, request.hair, request.sex, request.nation, request.creature});
         co_await this->switch_thread(socket);
 
         if (response.success == false)
@@ -247,17 +244,15 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
     {
         this->assert_account(name, pw);
 
-        auto&& response = co_await this->get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
+        auto&& response =
+            co_await this->http.get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
         co_await this->switch_thread(socket);
 
         if (response.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
         auto   uid       = response.uid;
-        auto&& response2 = co_await this->post<internal::request::Authenticate, internal::response::Authenticate>(
-            "internal",
-            "/user/authenticate",
-            internal::request::Authenticate{uid, pw});
+        auto&& response2 = co_await this->http.post("internal", "/user/authenticate", Authenticate{uid, pw});
         co_await this->switch_thread(socket);
 
         switch (response2.error_code)
@@ -270,10 +265,10 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
         }
 
         auto   map       = response2.map;
-        auto&& response3 = co_await this->post<internal::request::Transfer, internal::response::Transfer>(
+        auto&& response3 = co_await this->http.post(
             "internal",
             "/in-game/transfer",
-            internal::request::Transfer{fb::protocol::internal::Service ::Game, this->model.map[map].host, name, true});
+            Transfer{fb::protocol::internal::Service ::Game, this->model.map[map].host, name, true});
         co_await this->switch_thread(socket);
 
         switch (static_cast<ERROR_CODE>(response3.error))
@@ -355,7 +350,8 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
         if (pw == new_pw)
             throw newpw_exception(_TEXT(MESSAGE_ACCOUNT_NEW_PW_EQUALIZATION));
 
-        auto&& response = co_await this->get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
+        auto&& response =
+            co_await this->http.get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
         co_await this->switch_thread(socket);
 
         if (response.success == false)
@@ -363,10 +359,7 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
 
         auto uid = response.uid;
 
-        auto&& response2 = co_await this->post<internal::request::ChangePw, internal::response::ChangePw>(
-            "internal",
-            "/user/change-pw",
-            internal::request::ChangePw{uid, pw, new_pw, birthday});
+        auto&& response2 = co_await this->http.post("internal", "/user/change-pw", ChangePw{uid, pw, new_pw, birthday});
 
         co_await this->switch_thread(socket);
 
@@ -399,9 +392,7 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
     co_return true;
 }
 
-void context::handle_declare_amqp_queue(fb::amqp::socket& amqp)
+void context::handle_init_amqp(fb::amqp::socket& amqp)
 {
-    auto& queue = amqp.declare_queue();
-    queue.bind("amq.direct", "fb.system");
-    this->bind_amqp(queue);
+    this->handler.amqp.declare_queue("amq.direct", "fb.system");
 }

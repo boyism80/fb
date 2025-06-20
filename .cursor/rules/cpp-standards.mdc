@@ -1,0 +1,370 @@
+---
+description: 
+globs: *.h,*.hpp,*.cpp
+alwaysApply: false
+---
+---
+description: C++ Coding Standards and Documentation
+globs: ["**/*.h", "**/*.hpp", "**/*.cpp", "**/*.cc", "**/*.cxx"]
+---
+
+# C++ Coding Standards
+
+## CRITICAL: Thread Safety with thread_switchable Objects
+
+### **MANDATORY 3-Stage Thread Pattern for Builtin Functions**
+
+**WARNING: VIOLATION OF THIS PATTERN CAUSES SERVER CRASHES**
+
+When implementing Lua builtin functions that access `thread_switchable` objects (character, map, life, session, etc.), you **MUST** follow the 3-stage thread transition pattern:
+
+#### **Stage 1: Lua Thread (Parameter Parsing)**
+```cpp
+int example_builtin(lua_State* L) {
+    auto lua = fb::lua::get(L);
+    auto ctx = lua->env<fb::game::context>("context");
+    auto obj = lua->touserdata<fb::game::character>(1);  // Get object reference
+    
+    // ALLOWED: Parameter parsing, basic validation
+    auto param = lua->tointeger(2);
+    if (obj == nullptr || ctx->alive(*obj) == false)
+        return 0;
+    
+    // FORBIDDEN: obj->data() access, object state modification
+}
+```
+
+#### **Stage 2: Object Thread (Data Access via ensure_yield)**
+```cpp
+return lua->ensure_yield(*ctx, *obj, [=]() {
+    // ALLOWED: Object data access, business logic
+    auto value = obj->get_data();
+    obj->set_data(new_value);
+    
+    // FORBIDDEN: lua->pushinteger(), lua stack operations
+    
+    return lua->ensure_resume(*ctx, *obj, [=]() {
+        // Stage 3 code here...
+    });
+});
+```
+
+#### **Stage 3: Lua Thread (Result Return via ensure_resume)**
+```cpp
+return lua->ensure_resume(*ctx, *obj, [=]() {
+    // ALLOWED: Lua stack operations, result return
+    lua->pushinteger(value);
+    lua->pushstring(result.c_str());
+    
+    // FORBIDDEN: obj->data() access, object modification
+    return 1;  // Return count
+});
+```
+
+### **Complete Example (Correct Implementation)**
+```cpp
+int character::builtin::builtin_hp(lua_State* L) {
+    auto lua = fb::lua::get(L);
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
+        return 0;
+
+    if (lua->argc() == 1) {  // Getter
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto hp_value = ch->hp();  // Object thread: safe access
+            
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(hp_value);  // Lua thread: safe return
+                return 1;
+            });
+        });
+    } else {  // Setter
+        auto new_hp = lua->tointeger(2);  // Lua thread: parameter parsing
+        
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->hp(new_hp);  // Object thread: safe modification
+            
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;  // Lua thread: no return value
+            });
+        });
+    }
+}
+```
+
+### **WRONG Implementation (Causes Crashes)**
+```cpp
+// DON'T DO THIS - CAUSES CRASHES!
+int wrong_builtin(lua_State* L) {
+    auto obj = lua->touserdata<fb::game::character>(1);
+    
+    // WRONG: Direct access without ensure_yield
+    auto value = obj->hp();  // Race condition, potential crash
+    lua->pushinteger(value);
+    return 1;
+    
+    // WRONG: Lua operations in object thread
+    return lua->ensure_yield(*ctx, *obj, [=]() {
+        auto value = obj->hp();
+        lua->pushinteger(value);  // CRASH: Wrong thread for Lua ops
+        return 1;
+    });
+}
+```
+
+### **Why This Pattern Is Mandatory**
+
+1. **Object Lifetime Safety**: `ctx->alive(*obj)` checks prevent use-after-free
+2. **Thread Safety**: Each object lives in specific thread, concurrent access causes crashes
+3. **Lua State Safety**: Lua state is not thread-safe, must access from correct thread
+4. **Memory Consistency**: Prevents race conditions and memory corruption
+
+### **Special Case: Async Operations**
+For async operations (like map transitions), combine coroutines with the 3-stage pattern:
+
+#### **CRITICAL: Variable Lifetime Management**
+**WARNING: Direct `co_await` in lambda captures causes SERVER CRASHES due to variable lifetime issues!**
+
+```cpp
+// WRONG - CAUSES CRASHES!
+ctx->threads.enqueue(*obj, [=](mdc:auto& thread) -> async::task<void> {
+    async::awaitable_then(
+        co_await obj->map(map, position),  // CRASH RISK!
+        //       ^^^^^^^^^^^^^^^^^^^^^^^^
+        //       When coroutine suspends here, lambda-captured variables
+        //       (map, position, etc.) may be destroyed before resume!
+        [=](mdc:auto result) {
+            // Accessing destroyed variables = SERVER CRASH
+            auto success = result();
+            lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushboolean(success);
+                return 1;
+            }, true);
+        }
+    );
+});
+```
+
+#### **CORRECT: Use static_func for Lifetime Safety**
+```cpp
+// Isolate async operation in separate function with explicit parameters
+static auto static_func = [](object* obj, fb::game::map* map, 
+                           const std::optional<fb::model::point16_t>& position) -> async::task<bool> {
+    // Function scope ensures parameter lifetime safety
+    // Independent of outer lambda captures
+    if (position.has_value())
+        co_return co_await obj->map(map, position.value());
+    else
+        co_return co_await obj->map(map);
+};
+
+ctx->threads.enqueue(*obj, [=](mdc:auto& thread) -> async::task<void> {
+    // Pass parameters explicitly to static_func
+    async::awaitable_then(static_func(obj, map, position), [=](mdc:auto result) {
+        // Only receive result value - lifetime safe!
+        auto success = result();
+        lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushboolean(success);
+            return 1;
+        }, true);  // force_resume = true
+    });
+    co_return;
+});
+return lua->yield(0);  // Suspend Lua coroutine immediately
+```
+
+#### **Why static_func is Mandatory for Async Operations**
+
+1. **Lifetime Safety**: Function parameters have guaranteed lifetime within function scope
+2. **Lambda Capture Independence**: Avoids dangerous dependency on captured variables  
+3. **Crash Prevention**: Eliminates use-after-free scenarios in MMO server environment
+4. **Clear Separation**: Isolates async logic from thread transition logic
+
+**Scenario that causes crashes:**
+1. Lambda captures variables with `[=]` (copies made)
+2. `co_await` suspends coroutine, waiting for async operation
+3. During wait time, original objects may be destroyed (player logout, map unload, etc.)
+4. When coroutine resumes, it accesses destroyed captured variables
+5. **Result: SERVER CRASH**
+
+**Remember: In MMO servers with thousands of concurrent players, async operations happen constantly. Variable lifetime issues are the #1 cause of server instability.**
+
+### **Performance Note**
+Yes, this pattern causes value copying between stages. This is **unavoidable and necessary** for thread safety. The alternative is server crashes.
+
+---
+
+## Naming Conventions
+- Use `snake_case` for variables, functions, classes, structs, namespaces, and enum class names
+- Use `UPPER_CASE` for constants, macros, and enum values
+- **Note: PascalCase may appear in auto-generated code only**
+
+### **Enum Naming Convention**
+```cpp
+// Preferred - Follow fb project standard
+enum class trade::state : uint8_t
+{
+    REQUEST    = 0x00,
+    UP_ITEM    = 0x01,
+    ITEM_COUNT = 0x02,
+    UP_MONEY   = 0x03,
+    CANCEL     = 0x04,
+    LOCK       = 0x05,
+};
+
+// Pattern:
+// - enum class name: snake_case
+// - enum values: UPPER_CASE with underscores
+```
+
+## Control Flow and Code Style
+
+### **Single-Line if-else Statements**
+For simple if-else statements where all blocks are single-line, omit braces:
+```cpp
+// Preferred
+if (condition)
+    single_statement();
+else if (other_condition)
+    another_statement();
+else
+    default_statement();
+
+// Avoid
+if (condition)
+{
+    single_statement();
+}
+else
+{
+    another_statement();
+}
+```
+
+### **Loop Statements**
+Always use braces for loop statements, even if single-line:
+```cpp
+// Preferred
+for (auto i = 0; i < size; i++)
+{
+    process_item(i);
+}
+
+while (condition)
+{
+    single_operation();
+}
+
+// Avoid
+for (auto i = 0; i < size; i++)
+    process_item(i);
+
+while (condition)
+    single_operation();
+```
+
+### **Variable Initialization Patterns**
+Prefer initializing variables with default values and updating conditionally:
+```cpp
+// Preferred
+auto success = false;
+if (index != 0xFF)
+    success = ch->items.store(index, count);
+
+// Alternative (for simple cases)
+auto success = (index == 0xFF) ? false : ch->items.store(index, count);
+
+// Avoid
+bool success;
+if (index == 0xFF)
+{
+    success = false;
+}
+else
+{
+    success = ch->items.store(index, count);
+}
+```
+
+### **auto with Pointer Types**
+When using `auto` with pointer initialization, use `static_cast` to specify the correct pointer type:
+```cpp
+// Preferred
+auto returned = static_cast<fb::game::item*>(nullptr);
+auto player   = static_cast<character*>(nullptr);
+
+// Avoid (type becomes std::nullptr_t)
+auto returned = nullptr;
+auto player   = nullptr;
+
+// Also acceptable when type is clear from context
+auto returned = some_function_returning_item_ptr();
+auto player   = find_character(id);
+```
+
+### **Benefits of This Style**
+- Reduces visual clutter
+- Emphasizes the main logic flow
+- Prevents uninitialized variable usage
+- More readable for simple conditional assignments
+
+## Modern C++ Guidelines
+- Use modern C++ features (C++17/20)
+- Follow RAII principles
+- Prefer `std::unique_ptr` and `std::shared_ptr` over raw pointers
+- Use `const` wherever possible
+- **Prefer `auto` for variable declarations when type is clear**
+- **Use `this->` keyword when accessing member variables/functions for clarity**
+
+## Example Preferred Style
+```cpp
+auto player = this->find_player(player_id);
+auto& inventory = this->get_inventory();
+```
+
+## Include Guards
+- **Use traditional `#ifndef`, `#define`, `#endif` pattern (NOT `#pragma once`)**
+
+## Doxygen Documentation (MANDATORY)
+- **MANDATORY: ALL C++ functions MUST have complete documentation**
+- **ZERO TOLERANCE for missing documentation on public functions, classes, and methods**
+- **Documentation MUST be 100% accurate and match function signature exactly**
+- **Grammar and syntax MUST be perfect - no awkward phrasing allowed**
+- **Parameter descriptions MUST match actual parameter names and types**
+- **Return value descriptions MUST accurately describe what is returned**
+- **Proper indentation is MANDATORY for all documentation comments**
+- **Always specify parameter direction (in/out/inout)**
+
+## Doxygen Format Example
+```cpp
+/**
+ * @brief   Handles client connection and message processing
+ * 
+ *          This function processes incoming messages from connected clients
+ *          and manages the game state accordingly.
+ * 
+ * @param[in]  client_id Unique identifier for the client
+ * @param[in]  message   Incoming message to process
+ * @param[out] result    Processing result status
+ * @return  true if processing succeeded, false otherwise
+ * 
+ * @note    This function is thread-safe
+ * @warning Ensure client_id is valid before calling
+ */
+bool process_client_message(uint32_t client_id, const message& message, process_result& result);
+```
+
+## Error Handling
+- Use exceptions for exceptional cases
+- Prefer error codes for expected failures
+- Always handle resource cleanup (RAII)
+- Use `auto` for exception handling when type is clear
+
+## Performance Guidelines
+- Profile before optimizing
+- Use object pooling for frequently allocated objects
+- Minimize memory allocations in hot paths
+- Cache expensive computations when appropriate
+
+

@@ -5,14 +5,11 @@
 #include <fb/mutex.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/protocol/transfer.h>
+#include <fb/protocol_handler_registry.h>
+#include <fb/amqp_handler_registry.h>
+#include <fb/http_client.h>
 #include <fb/socket.h>
 #include <iomanip>
-#include <fb/amqp.h>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include <boost/beast/version.hpp>
 #include <boost/stacktrace.hpp>
 
 using namespace std::chrono_literals;
@@ -20,117 +17,69 @@ using namespace std::chrono_literals;
 namespace fb {
 
 /**
- * @brief      A high-performance network acceptor that manages client connections and protocol handling.
+ * @brief      High-performance network acceptor with integrated protocol handling and HTTP client capabilities
  *
- *             This template class provides a complete server framework for handling multiple client
- *             connections with automatic protocol parsing, encryption support, rate limiting, and
- *             inter-service communication via AMQP. It manages socket lifecycle, thread distribution,
- *             and provides both HTTP client capabilities and socket transfer functionality.
+ *             Core functionality:
+ *             - TCP socket accept/close operations
+ *             - Protocol handler management
+ *             - AMQP integration
+ *             - Thread pool management
+ *             - HTTP client operations with FlatBuffer serialization
+ *             - Rate limiting and DDoS protection
  *
- *             Key features:
- *             - Asynchronous socket connection handling with boost::asio
- *             - Automatic protocol deserialization and handler dispatch
- *             - Built-in encryption/decryption support with configurable policies
- *             - Rate limiting (TPS) protection at both socket and handler levels
- *             - Thread-safe socket container management
- *             - AMQP message queue integration for inter-service communication
- *             - HTTP client functionality for REST API calls
- *             - Socket transfer capability between services
- *             - Configurable packet size limits and validation
+ *             Thread Safety:
+ *             - Socket operations are thread-safe via internal mutex
+ *             - Protocol handlers use thread-local storage
+ *             - HTTP operations are handled in dedicated thread pool
+ *             - AMQP operations use separate connection pool
  *
- * @tparam     T     The session data type associated with each socket connection.
- *                   This type represents the per-connection state/context.
+ *             Performance Features:
+ *             - Asynchronous I/O via boost::asio
+ *             - Zero-copy packet processing
+ *             - Efficient memory management
+ *             - Connection pooling for HTTP and AMQP
+ *
+ * @tparam     T     The type of data associated with each socket connection
  */
 template <typename T>
 class acceptor : public fb::acceptable
 {
 public:
-    using handle_func           = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::header&)>;
-    using deserilze_func        = std::function<async::task<fb::protocol::header*>(fb::stream_reader<big_endian>&)>;
     using socket_container      = std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>;
     using socket_container_lock = fb::locker<socket_container>;
-    using amqp_handler_func     = std::function<async::task<void>(const uint8_t*)>;
-    using amqp_handler_type     = std::unordered_map<std::string, std::unordered_map<uint32_t, amqp_handler_func>>;
     using boost_timers          = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
 
-private:
     /**
-     * @brief      Internal handler structure that manages protocol command handlers with rate limiting.
-     *
-     *             Each protocol command has an associated handler that includes the actual handler
-     *             function and rate limiting parameters. The rate limiting is implemented using a
-     *             sliding window approach that tracks the number of transitions (calls) within a
-     *             specified time duration.
+     * @brief      Handler container for protocol and AMQP handlers.
+     *             This struct is intentionally non-copyable and non-assignable to prevent accidental copies.
      */
     struct handler
     {
-    private:
-        fb::model::datetime last        = fb::model::datetime(); ///< Last reset time for rate limiting window
-        uint32_t            transitions = 0;                     ///< Current number of transitions in the window
-
-    public:
-        /// The actual handler function to execute
-        const handle_func fn;
-        /// Time window for rate limiting (default: 1s)
-        const std::chrono::steady_clock::duration duration = 1s;
-        /// Maximum transitions allowed per window (default: unlimited)
-        const uint32_t limit = 0xFFFFFFFF;
-
-    public:
-        handler() = default;
+        fb::protocol_handler_registry<T> protocol; ///< Registry for client protocol handlers
+        fb::amqp_handler_registry<T>     amqp;     ///< Registry for AMQP message handlers
 
         /**
-         * @brief      Constructs a handler with rate limiting parameters.
+         * @brief      Constructs a new handler container.
          *
-         * @param[in]  fn        The handler function to execute for this protocol command.
-         * @param[in]  duration  The time window for rate limiting calculations.
-         * @param[in]  limit     Maximum number of calls allowed within the duration window.
+         * @param[in]  owner  Reference to the owner acceptor instance
          */
-        handler(const handle_func&                         fn,
-                const std::chrono::steady_clock::duration& duration,
-                uint32_t                                   limit = 0xFFFFFFFF) :
-            fn(fn),
-            duration(duration),
-            limit(limit)
+        explicit handler(fb::acceptor<T>& owner) :
+            protocol(owner),
+            amqp(owner)
         { }
 
-        /**
-         * @brief      Updates and checks the rate limiting state for this handler.
-         *
-         *             Implements a sliding window rate limiter. If the elapsed time since
-         *             the last reset exceeds the configured duration, the transition counter
-         *             is reset. Then increments the transition count and checks if it exceeds
-         *             the configured limit.
-         *
-         * @return     True if the handler can be executed (within rate limits), false if rate limited.
-         */
-        bool update_tps()
-        {
-            auto elapsed_time = fb::model::datetime() - this->last;
-            if (elapsed_time > duration)
-            {
-                this->last        = fb::model::datetime();
-                this->transitions = 0;
-            }
-
-            if (++this->transitions > this->limit)
-                return false;
-
-            return true;
-        }
+        // Delete copy constructor and assignment operator
+        handler(const handler&)             = delete;
+        handler& operator= (const handler&) = delete;
     };
 
+    handler         handler; ///< Public handler container for protocol handlers
+    fb::http_client http;    ///< HTTP client for making requests to other services
+
 private:
-    std::unordered_map<uint8_t, handler> _handler; ///< Maps protocol command bytes to their handlers with rate limiting
-    std::unordered_map<uint8_t, deserilze_func>
-                                      _deserializer; ///< Maps protocol command bytes to deserialization functions
-    amqp_handler_type                 _amqp_handler; ///< AMQP message handlers organized by route and command type
-    std::unique_ptr<fb::amqp::socket> _amqp;         ///< AMQP connection for inter-service communication
-    std::mutex                        _mutex_exit;   ///< Mutex for thread-safe exit operations
-    boost_timers                      _timers;       ///< Collection of boost::asio timers for periodic tasks
+    boost_timers _timers; ///< Collection of boost::asio timers for periodic tasks
 
 protected:
-    fb::mutex             _mutex;   ///< Thread synchronization mutex for acceptor operations
     socket_container_lock _sockets; ///< Thread-safe container holding all active socket connections
 
 protected:
@@ -148,7 +97,8 @@ protected:
      */
     acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
         fb::acceptable(context, name, config<uint32_t>("thread:logic"), port),
-        _mutex(*this)
+        handler(*this),
+        http(*this)
     { }
 
 public:
@@ -172,7 +122,7 @@ protected:
      *
      * @param      amqp  The AMQP socket to use for queue declaration.
      */
-    virtual void handle_declare_amqp_queue(fb::amqp::socket& amqp) = 0;
+    virtual void handle_init_amqp(fb::amqp::socket& amqp) = 0;
 
 protected:
     /**
@@ -204,458 +154,6 @@ protected:
         }
     }
 
-private:
-    /**
-     * @brief      Main AMQP thread loop that manages inter-service message queue communication.
-     *
-     *             This method runs in a dedicated thread and handles the complete lifecycle of
-     *             AMQP connections. It implements automatic reconnection logic with exponential
-     *             backoff on connection failures. The loop performs the following operations:
-     *
-     *             1. Establishes AMQP connection using configuration parameters
-     *             2. Calls the derived class's handle_declare_amqp_queue() to set up queues
-     *             3. Enters a select() loop to process incoming AMQP messages
-     *             4. Automatically reconnects on connection failures
-     *             5. Continues until the acceptor is shutting down
-     *
-     *             Connection parameters are loaded from configuration:
-     *             - amqp:ip - AMQP broker IP address
-     *             - amqp:port - AMQP broker port
-     *             - amqp:uid - Authentication username
-     *             - amqp:pwd - Authentication password
-     */
-    void amqp_thread_loop()
-    {
-        auto timeout = timeval{5, 0}; // 5 second timeout for select operations
-        while (this->_running)
-        {
-            try
-            {
-                // Create new AMQP connection
-                this->_amqp = std::make_unique<fb::amqp::socket>();
-                this->_amqp->connect(fb::config<std::string>("amqp:ip"),
-                                     fb::config<uint16_t>("amqp:port"),
-                                     fb::config<std::string>("amqp:uid"),
-                                     fb::config<std::string>("amqp:pwd"),
-                                     "/");
-
-                // Let derived class declare its required queues
-                this->handle_declare_amqp_queue(*this->_amqp);
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal(e.what());
-                std::this_thread::sleep_for(1s); // Wait before retry
-                continue;
-            }
-
-            // Message processing loop
-            while (this->_running)
-            {
-                try
-                {
-                    // Check for incoming messages with timeout
-                    if (this->_amqp->select(&timeout) == false)
-                        continue; // No messages, continue polling
-                }
-                catch (std::exception&)
-                {
-                    break; // Connection error, reconnect
-                }
-            }
-        }
-    }
-
-    /**
-     * @brief      Performs an asynchronous HTTP GET request using boost::beast.
-     *
-     * @param[in]  host      The target host in format "hostname:port" or "hostname" (defaults to port 80).
-     *                       Supports http:// and https:// prefixes which are automatically stripped.
-     * @param[in]  path      The target path including query parameters (will be URL encoded).
-     * @param[in]  headers   Custom HTTP headers to include in the request.
-     * @param[in]  timeout   Maximum time to wait for connection, request, and response operations.
-     *
-     * @return     A coroutine task that completes with the response body as a byte vector.
-     *
-     * @throws     std::exception on network errors, timeout, or invalid response.
-     */
-    boost::asio::awaitable<std::vector<uint8_t>> boost_get_async(std::string                         host,
-                                                                 std::string                         path,
-                                                                 std::map<std::string, std::string>  headers,
-                                                                 std::chrono::steady_clock::duration timeout)
-    {
-        try
-        {
-            auto raw_host = host;
-            if (raw_host.rfind("http://", 0) == 0)
-                raw_host.erase(0, 7);
-            else if (raw_host.rfind("https://", 0) == 0)
-                raw_host.erase(0, 8);
-
-            auto const colon_pos = raw_host.find(':');
-            auto const host_name = (colon_pos == std::string::npos ? raw_host : raw_host.substr(0, colon_pos));
-            auto const port = (colon_pos == std::string::npos ? std::string("80") : raw_host.substr(colon_pos + 1));
-
-            auto resolver = boost::asio::ip::tcp::resolver{this->_boost_context};
-            auto stream   = boost::beast::tcp_stream{this->_boost_context};
-
-            stream.expires_after(timeout);
-            auto const results = co_await resolver.async_resolve(host_name, port, boost::asio::use_awaitable);
-            co_await stream.async_connect(results, boost::asio::use_awaitable);
-
-            auto req =
-                boost::beast::http::request<boost::beast::http::empty_body>{boost::beast::http::verb::get,
-                                                                            url_encode(UTF8(path, PLATFORM::Windows)),
-                                                                            11};
-            req.set(boost::beast::http::field::host, host_name);
-            req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-            for (auto const& h : headers)
-            {
-                req.set(h.first, h.second);
-            }
-
-            stream.expires_after(timeout);
-            co_await boost::beast::http::async_write(stream, req, boost::asio::use_awaitable);
-
-            auto buffer = boost::beast::flat_buffer{};
-            auto res    = boost::beast::http::response<boost::beast::http::dynamic_body>{};
-            stream.expires_after(timeout);
-            co_await boost::beast::http::async_read(stream, buffer, res, boost::asio::use_awaitable);
-
-            auto body_bytes = std::vector<uint8_t>{};
-            if (res.body().size() > 0)
-            {
-                body_bytes.reserve(res.body().size());
-            }
-            for (auto const& seq : res.body().data())
-            {
-                auto buf      = seq; // boost::asio::const_buffer
-                auto data_ptr = static_cast<const uint8_t*>(buf.data());
-                body_bytes.insert(body_bytes.end(), data_ptr, data_ptr + buf.size());
-            }
-
-            auto ec = boost::beast::error_code{};
-            stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-
-            co_return body_bytes;
-        }
-        catch (const std::exception& e)
-        {
-            throw std::runtime_error(std::format("HTTP GET request failed: {}", e.what()));
-        }
-        catch (...)
-        {
-            throw std::runtime_error("HTTP GET request failed: Unknown error occurred");
-        }
-    }
-
-private:
-    /**
-     * @brief      Performs a typed HTTP GET request with automatic FlatBuffer deserialization.
-     *
-     * @param[in]  host      The target host in "hostname:port" format.
-     * @param[in]  path      The target path for the GET request.
-     *
-     * @tparam     Response  The FlatBuffer response type that implements Deserialize() method.
-     *
-     * @return     An async task that completes with the deserialized response object.
-     *
-     * @throws     std::exception on network errors or deserialization failures.
-     */
-    template <typename Response>
-    [[nodiscard]] async::task<Response> boost_get_async(const std::string& host, const std::string& path)
-    {
-        auto promise = std::make_shared<async::task_completion_source<Response>>();
-        auto headers = std::map<std::string, std::string>{
-            {"Content-Type", "application/octet-stream"},
-        };
-
-        auto thread = this->threads.current();
-        boost::asio::co_spawn(this->_boost_context,
-                              this->boost_get_async(host, path, headers, 5s),
-                              [this, promise, thread](std::exception_ptr ep, std::vector<uint8_t> bytes) {
-                                  async::awaitable_then(thread->switching(), [promise, ep, bytes](auto result) mutable {
-                                      if (ep)
-                                      {
-                                          try
-                                          {
-                                              std::rethrow_exception(ep);
-                                          }
-                                          catch (...)
-                                          {
-                                              promise->set_exception(std::current_exception());
-                                              return;
-                                          }
-                                      }
-
-                                      try
-                                      {
-                                          auto reader        = fb::stream_reader<big_endian>(bytes);
-                                          auto protocol_type = reader.read<uint32_t>();
-                                          auto protocol_size = reader.read<uint32_t>();
-                                          auto offset        = bytes.data() + sizeof(uint32_t) + sizeof(uint32_t);
-                                          promise->set_value(Response::Deserialize(offset));
-                                      }
-                                      catch (std::exception& e)
-                                      {
-                                          promise->set_exception(std::make_exception_ptr(e));
-                                      }
-                                  });
-                              });
-
-        return promise->task();
-    }
-
-private:
-    /**
-     * @brief      Performs an asynchronous HTTP POST request using boost::beast with binary payload support.
-     *
-     * @param[in]  host      The target host in format "hostname:port" or "hostname" (defaults to port 80).
-     *                       Supports http:// and https:// prefixes which are automatically stripped.
-     * @param[in]  path      The target path including query parameters (will be URL encoded).
-     * @param[in]  headers   Custom HTTP headers to include in the request.
-     * @param[in]  timeout   Maximum time to wait for connection, request, and response operations.
-     * @param[in]  body      The binary request body data to send in the POST request.
-     *
-     * @return     A coroutine task that completes with the response body as a byte vector.
-     *
-     * @throws     std::exception on network errors, timeout, or invalid response.
-     */
-    boost::asio::awaitable<std::vector<uint8_t>> boost_post_async(std::string                         host,
-                                                                  std::string                         path,
-                                                                  std::map<std::string, std::string>  headers,
-                                                                  std::chrono::steady_clock::duration timeout,
-                                                                  std::vector<uint8_t>                body)
-    {
-        try
-        {
-            auto raw_host = host;
-            if (raw_host.rfind("http://", 0) == 0)
-                raw_host.erase(0, 7);
-            else if (raw_host.rfind("https://", 0) == 0)
-                raw_host.erase(0, 8);
-
-            auto const colon_pos = raw_host.find(':');
-            auto const host_name = (colon_pos == std::string::npos ? raw_host : raw_host.substr(0, colon_pos));
-            auto const port = (colon_pos == std::string::npos ? std::string("80") : raw_host.substr(colon_pos + 1));
-
-            auto resolver = boost::asio::ip::tcp::resolver{this->_boost_context};
-            auto stream   = boost::beast::tcp_stream{this->_boost_context};
-
-            stream.expires_after(timeout);
-            auto const results = co_await resolver.async_resolve(host_name, port, boost::asio::use_awaitable);
-            co_await stream.async_connect(results, boost::asio::use_awaitable);
-
-            auto req = boost::beast::http::request<boost::beast::http::vector_body<uint8_t>>{
-                boost::beast::http::verb::post,
-                url_encode(UTF8(path, PLATFORM::Windows)),
-                11};
-
-            req.set(boost::beast::http::field::host, host_name);
-            req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
-            for (auto const& h : headers)
-            {
-                req.set(h.first, h.second);
-            }
-
-            req.body() = body;
-            req.prepare_payload();
-
-            stream.expires_after(timeout);
-            co_await boost::beast::http::async_write(stream, req, boost::asio::use_awaitable);
-
-            auto buffer = boost::beast::flat_buffer{};
-            auto res    = boost::beast::http::response<boost::beast::http::dynamic_body>{};
-            stream.expires_after(timeout);
-            co_await boost::beast::http::async_read(stream, buffer, res, boost::asio::use_awaitable);
-
-            auto body_bytes = std::vector<uint8_t>{};
-            if (res.body().size() > 0)
-            {
-                body_bytes.reserve(res.body().size());
-            }
-            for (auto const& seq : res.body().data())
-            {
-                auto const buf      = seq;
-                auto const data_ptr = static_cast<const uint8_t*>(buf.data());
-                body_bytes.insert(body_bytes.end(), data_ptr, data_ptr + buf.size());
-            }
-
-            auto ec = boost::beast::error_code{};
-            stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-
-            co_return body_bytes;
-        }
-        catch (const std::exception& e)
-        {
-            throw std::runtime_error(std::format("HTTP request failed: {}", e.what()));
-        }
-        catch (...)
-        {
-            throw std::runtime_error("HTTP request failed: Unknown error occurred");
-        }
-    }
-
-private:
-    /**
-     * @brief      Performs a typed HTTP POST request with automatic FlatBuffer serialization and deserialization.
-     *
-     * @param[in]  host     The target host in "hostname:port" format.
-     * @param[in]  path     The target path for the POST request.
-     * @param[in]  body     The request object to serialize and send.
-     *
-     * @tparam     Request   The FlatBuffer request type that implements Serialize() method.
-     * @tparam     Response  The FlatBuffer response type that implements Deserialize() method.
-     *
-     * @return     An async task that completes with the deserialized response object.
-     *
-     * @throws     std::exception on network errors, serialization/deserialization failures.
-     */
-    template <typename Request, typename Response>
-    [[nodiscard]] async::task<Response> boost_post_async(std::string const& host,
-                                                         std::string const& path,
-                                                         Request const&     body)
-    {
-        auto const serialized_payload = body.Serialize();
-        auto       stream_req         = fb::stream();
-        auto       writer             = fb::stream_writer<>(stream_req);
-
-        writer.write<uint32_t>(static_cast<uint32_t>(Request::FlatBufferProtocolType));
-        writer.write<uint32_t>(serialized_payload.size());
-        writer.write(serialized_payload.data(), serialized_payload.size());
-
-        auto promise = std::make_shared<async::task_completion_source<Response>>();
-        auto headers = std::map<std::string, std::string>{
-            {"Content-Type", "application/octet-stream"}
-        };
-
-        auto thread = this->threads.current();
-        boost::asio::co_spawn(this->_boost_context,
-                              this->boost_post_async(host, path, headers, std::chrono::seconds{5}, stream_req),
-                              [promise, thread](std::exception_ptr ep, std::vector<uint8_t> bytes) {
-                                  async::awaitable_then(thread->switching(), [promise, ep, bytes](auto result) mutable {
-                                      if (ep)
-                                      {
-                                          promise->set_exception(ep);
-                                          return;
-                                      }
-                                      try
-                                      {
-                                          auto reader        = fb::stream_reader<big_endian>(bytes);
-                                          auto protocol_type = reader.read<uint32_t>();
-                                          auto protocol_len  = reader.read<uint32_t>();
-                                          auto offset        = bytes.data() + sizeof(uint32_t) * 2;
-
-                                          promise->set_value(Response::Deserialize(offset));
-                                      }
-                                      catch (...)
-                                      {
-                                          promise->set_exception(std::current_exception());
-                                      }
-                                  });
-                              });
-
-        return promise->task();
-    }
-
-public:
-    /**
-     * @brief      Performs a configuration-based HTTP GET request to another service.
-     *
-     *             This method provides a high-level interface for making HTTP GET requests to
-     *             other services using configuration-based routing. It automatically constructs
-     *             the target URL from configuration parameters and handles the complete request
-     *             lifecycle with automatic response deserialization.
-     *
-     *             The method looks up the target service configuration using the route parameter
-     *             and constructs the full URL as "http://ip:port" + path. This enables
-     *             service-to-service communication without hardcoding endpoints.
-     *
-     *             Configuration format expected:
-     *             ```json
-     *             {
-     *               "route_name": {
-     *                 "ip": "service.hostname.com",
-     *                 "port": 8080
-     *               }
-     *             }
-     *             ```
-     *
-     * @param[in]  route     The configuration route name to look up service endpoint details.
-     * @param[in]  path      The target path to append to the service base URL.
-     *
-     * @tparam     Response  The FlatBuffer response type expected from the service.
-     *
-     * @return     An async task that completes with the deserialized response object.
-     *
-     * @throws     std::exception if route configuration is missing or request fails.
-     */
-    template <typename Response>
-    [[nodiscard]] async::task<Response> get(const std::string& route, const std::string& path)
-    {
-        auto& config = fb::config<>(route);
-        auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
-        co_return co_await this->boost_get_async<Response>(host, path);
-    }
-
-public:
-    /**
-     * @brief      Performs a configuration-based HTTP POST request to another service with typed request/response.
-     *
-     *             This method provides a high-level interface for making HTTP POST requests to
-     *             other services using configuration-based routing. It automatically constructs
-     *             the target URL from configuration parameters and handles the complete request
-     *             lifecycle with automatic serialization and response deserialization.
-     *
-     *             The method looks up the target service configuration using the route parameter
-     *             and constructs the full URL as "http://ip:port" + path. This enables
-     *             service-to-service communication without hardcoding endpoints, making the
-     *             system more maintainable and configurable.
-     *
-     *             Request Flow:
-     *             1. Looks up service endpoint from configuration using route name
-     *             2. Constructs full URL from configuration IP and port
-     *             3. Serializes the request body using FlatBuffer protocol
-     *             4. Sends HTTP POST request with binary payload
-     *             5. Receives and deserializes the response
-     *             6. Returns strongly-typed response object
-     *
-     *             Configuration format expected:
-     *             ```json
-     *             {
-     *               "route_name": {
-     *                 "ip": "service.hostname.com",
-     *                 "port": 8080
-     *               }
-     *             }
-     *             ```
-     *
-     *             This method is commonly used for:
-     *             - User authentication requests to auth service
-     *             - Database operations via data service
-     *             - Inter-service state synchronization
-     *             - Distributed transaction coordination
-     *
-     * @param[in]  route     The configuration route name to look up service endpoint details.
-     * @param[in]  path      The target path to append to the service base URL.
-     * @param[in]  body      The request object to serialize and send to the target service.
-     *
-     * @tparam     Request   The FlatBuffer request type that implements Serialize() method.
-     * @tparam     Response  The FlatBuffer response type expected from the target service.
-     *
-     * @return     An async task that completes with the deserialized response object.
-     *
-     * @throws     std::exception if route configuration is missing or request fails.
-     */
-    template <typename Request, typename Response>
-    [[nodiscard]] async::task<Response> post(const std::string& route, const std::string& path, const Request& body)
-    {
-        auto& config = fb::config<>(route);
-        auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
-        co_return co_await this->boost_post_async<Request, Response>(host, path, body);
-    }
-
 public:
     /**
      * @brief      Checks if a socket with the given file descriptor is currently connected.
@@ -674,39 +172,6 @@ public:
 private:
     /**
      * @brief      Executes protocol handlers for received packets with comprehensive validation and rate limiting.
-     *
-     *             This is the core packet processing method that handles the complete packet parsing
-     *             and handler dispatch pipeline. It implements a robust packet processing system with:
-     *
-     *             Packet Format Validation:
-     *             - Magic code validation (0xAA header)
-     *             - Packet size validation against MAX_BUFFER_SIZE
-     *             - Command byte extraction and validation
-     *
-     *             Security Features:
-     *             - Per-socket TPS (Transactions Per Second) limiting (100 TPS max)
-     *             - Per-handler rate limiting with configurable windows
-     *             - Automatic decryption based on decrypt_policy()
-     *             - Buffer overflow protection
-     *
-     *             Processing Pipeline:
-     *             1. Validates packet magic code (0xAA)
-     *             2. Reads packet size and validates against limits
-     *             3. Checks socket and handler TPS limits
-     *             4. Applies decryption if required by policy
-     *             5. Deserializes packet using registered deserializer
-     *             6. Dispatches to appropriate thread for handler execution
-     *             7. Continues processing remaining packets in stream
-     *
-     *             Error Handling:
-     *             - Logs undefined protocols and handlers as warnings
-     *             - Closes socket on critical parsing errors
-     *             - Handles exceptions gracefully without crashing
-     *
-     * @param      socket  The socket that received the packet data.
-     * @param      stream  The stream containing one or more packets to process.
-     *
-     * @return     An async task that completes when all packets in the stream are processed.
      */
     async::task<void> execute_handler(fb::socket<T>& socket, fb::stream& stream)
     {
@@ -741,18 +206,19 @@ private:
 
                 reader.flush(); // remove magic code and size
 
-                if (this->_deserializer.contains(cmd) == false)
+                if (!this->handler.protocol.has_deserializer(cmd))
                 {
                     fb::logger::warn(std::format("Undefined protocol. [{:#x}]", cmd));
                 }
-                else if (this->_handler.contains(cmd) == false)
+                else if (!this->handler.protocol.has_handler(cmd))
                 {
                     fb::logger::warn(std::format("Undefined handler. [{:#x}]", cmd));
                 }
                 else
                 {
-                    auto protocol = std::shared_ptr<fb::protocol::header>(co_await this->_deserializer[cmd](reader));
-                    auto fd       = socket.fd();
+                    auto protocol = std::shared_ptr<fb::protocol::header>(
+                        co_await this->handler.protocol.get_deserializer(cmd)(reader));
+                    auto fd = socket.fd();
                     this->threads.enqueue(socket,
                                           [this, protocol, &socket, fd, cmd](auto& thread) -> async::task<void> {
                                               try
@@ -760,7 +226,7 @@ private:
                                                   if (this->connected(fd) == false)
                                                       co_return;
 
-                                                  auto& handler = this->_handler[cmd];
+                                                  auto& handler = this->handler.protocol.get_handler(cmd);
                                                   if (this->assert_tps(socket) && handler.update_tps() == false)
                                                       co_return;
 
@@ -1267,99 +733,6 @@ protected:
      */
     virtual fb::protocol::internal::Service service() const = 0;
 
-protected:
-    /**
-     * @brief      Binds a handler function to a protocol command with default parameters.
-     *
-     * @param[in]  fn        The member function to bind.
-     * @param[in]  header    The header of the request.
-     * @param[in]  duration  The time window for rate limiting.
-     * @param[in]  limit     The maximum number of requests allowed in the time window.
-     *
-     * @tparam     Class      The class containing the handler function.
-     * @tparam     Request    The type of the request to handle.
-     */
-    template <typename Class, typename Request>
-    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
-              uint8_t                                    header,
-              const std::chrono::steady_clock::duration& duration = 1s,
-              uint32_t                                   limit    = 10)
-    {
-        this->_deserializer.insert({header, [](auto& reader) -> async::task<fb::protocol::header*> {
-                                        auto protocol = new Request();
-                                        co_await protocol->deserialize(reader);
-                                        co_return protocol;
-                                    }});
-
-        auto func_bound = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2);
-        auto handler_fn = [func_bound](auto& socket, auto& header) -> async::task<bool> {
-            auto protocol = static_cast<Request&>(header);
-            co_return co_await func_bound(socket, protocol);
-        };
-
-        this->_handler.insert({header, handler(handler_fn, duration, limit)});
-    }
-
-protected:
-    /**
-     * @brief      Binds a handler function to a protocol command with default parameters.
-     *
-     * @param[in]  fn        The member function to bind.
-     * @param[in]  duration  The time window for rate limiting.
-     * @param[in]  limit     The maximum number of requests allowed in the time window.
-     *
-     * @tparam     Class      The class containing the handler function.
-     * @tparam     Request    The type of the request to handle.
-     */
-    template <typename Class, typename Request>
-    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
-              const std::chrono::steady_clock::duration& duration = 1s,
-              uint32_t                                   limit    = 10)
-    {
-        this->bind(fn, Request::header, duration, limit);
-    }
-
-protected:
-    /**
-     * @brief      Binds an AMQP handler function to a route and response type.
-     *
-     * @param[in]  route  The AMQP route to bind to.
-     * @param[in]  fn     The member function to handle the AMQP message.
-     *
-     * @tparam     Class         The class containing the handler function.
-     * @tparam     ResponseType  The type of the response to handle.
-     */
-    template <typename Class, typename ResponseType>
-    void bind_amqp(const std::string& route, async::task<void> (Class::*fn)(const ResponseType&))
-    {
-        if (this->_amqp_handler.contains(route) == false)
-            this->_amqp_handler.insert({route, std::unordered_map<uint32_t, amqp_handler_func>{}});
-
-        auto c_func = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1);
-        auto cmd    = static_cast<uint32_t>(ResponseType::FlatBufferProtocolType);
-        this->_amqp_handler[route].insert({cmd, [c_func](const uint8_t* ptr) -> async::task<void> {
-                                               auto protocol = ResponseType::Deserialize(ptr);
-                                               co_await c_func(protocol);
-                                           }});
-    }
-
-    /**
-     * @brief      Binds AMQP handlers to a queue.
-     *
-     * @param      queue  The AMQP queue to bind handlers to.
-     */
-    void bind_amqp(fb::amqp::queue& queue)
-    {
-        auto& route = queue.route();
-        if (this->_amqp_handler.contains(route))
-        {
-            for (auto& [cmd, fn] : this->_amqp_handler.at(route))
-            {
-                queue.handler(cmd, fn);
-            }
-        }
-    }
-
 public:
     /**
      * @brief      Sends a stream over a socket.
@@ -1446,7 +819,11 @@ public:
         async::awaitable_get(this->handle_start());
 
         threads.push_back(std::thread([this]() {
-            this->amqp_thread_loop();
+            this->handler.amqp.on_initialize = [this](fb::amqp::socket& amqp) {
+                this->handle_init_amqp(amqp);
+            };
+
+            this->handler.amqp.thread_loop();
         }));
 
         for (auto& thread : threads)

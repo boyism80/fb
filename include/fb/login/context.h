@@ -22,9 +22,17 @@
 
 using namespace fb::protocol::login;
 using namespace fb::model::enum_value;
+using namespace fb::protocol::internal::request;
 
 namespace internal      = fb::protocol::internal;
 namespace internal_resp = fb::protocol::internal::response;
+
+REGISTER_RESPONSE(fb::protocol::internal::request::ReserveName, fb::protocol::internal::response::ReserveName)
+REGISTER_RESPONSE(fb::protocol::internal::request::InitCharacter, fb::protocol::internal::response::InitCharacter)
+REGISTER_RESPONSE(fb::protocol::internal::request::MakeCharacter, fb::protocol::internal::response::MakeCharacter)
+REGISTER_RESPONSE(fb::protocol::internal::request::Authenticate, fb::protocol::internal::response::Authenticate)
+REGISTER_RESPONSE(fb::protocol::internal::request::ChangePw, fb::protocol::internal::response::ChangePw)
+REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
 
 namespace fb { namespace login {
 
@@ -154,7 +162,7 @@ public:
     using unique_session = std::unique_ptr<fb::login::session>;
 
 private:
-    fb::protocol::login::response::agreement _agreement = CP949(fb::config<std::string>("agreement"), PLATFORM::Both);
+    fb::protocol::login::response::agreement _agreement = CP949(fb::config<std::string>("agreement"), PLATFORM::BOTH);
     std::vector<std::string>                 _forbiddens;
     std::vector<unique_session>              _sessions;
     std::vector<boost::asio::deadline_timer> _timers;
@@ -215,7 +223,7 @@ protected:
      *
      * @param      amqp  The AMQP socket for message queue operations.
      */
-    void handle_declare_amqp_queue(fb::amqp::socket& amqp) override final;
+    void handle_init_amqp(fb::amqp::socket& amqp) override final;
 
     /**
      * @brief      Handles server startup initialization.

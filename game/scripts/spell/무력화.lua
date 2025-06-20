@@ -3,7 +3,7 @@ function ON_CAST_4012(me, you, spell)
     local mp = 500
     local sound = 85
     local effect = 10
-    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    local error = me:assert(STATE_GHOST, STATE_RIDING)
     if error ~= nil then
         return me:message(error)
     end

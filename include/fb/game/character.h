@@ -1719,15 +1719,6 @@ public:
     static int builtin_send_mail(lua_State* L);
 
     /**
-     * @brief      Lua builtin function to assert the character's current state.
-     *
-     * @param      L     The Lua state containing function arguments.
-     *
-     * @return     Number of return values pushed to the Lua stack.
-     */
-    static int builtin_assert_state(lua_State* L);
-
-    /**
      * @brief      Lua builtin function to get the character's nation affiliation.
      *
      * @param      L     The Lua state containing function arguments.
@@ -1978,15 +1969,6 @@ public:
      * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_teleport(lua_State* L);
-
-    /**
-     * @brief      Lua builtin function to summon another character or object.
-     *
-     * @param      L     The Lua state containing function arguments.
-     *
-     * @return     Number of return values pushed to the Lua stack.
-     */
-    static int builtin_summon(lua_State* L);
 
     /**
      * @brief      Lua builtin function to display a dialog to the character.

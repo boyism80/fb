@@ -44,34 +44,38 @@ namespace Http.Formatter
             var sp = context.HttpContext.RequestServices;
             var logger = sp.GetRequiredService<ILogger<FlatBufferInputFormatter>>();
 
-            using var ms = new MemoryStream(bufferLength);
-            await context.HttpContext.Request.Body.CopyToAsync(ms);
-            ms.Position = 0;
-
-            switch (context.HttpContext.Request.ContentType)
+            using (var ms = new MemoryStream(bufferLength))
             {
-                case "application/json":
-                    {
-                        var protocol = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(ms.ToArray()), context.ModelType) as IFlatBufferEx;
-                        var log = OnLog(protocol);
-                        if (log != null)
-                            logger.LogInformation(log);
+                await context.HttpContext.Request.Body.CopyToAsync(ms);
+                ms.Position = 0;
 
-                        return await InputFormatterResult.SuccessAsync(protocol);
-                    }
+                switch (context.HttpContext.Request.ContentType)
+                {
+                    case "application/json":
+                        {
+                            var protocol = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(ms.ToArray()), context.ModelType) as IFlatBufferEx;
+                            var log = OnLog(protocol);
+                            if (log != null)
+                                logger.LogInformation(log);
 
-                case "application/octet-stream":
-                    {
-                        using var reader = new BinaryReader(ms);
-                        var protocol = GetProtocol(reader);
-                        var log = OnLog(protocol);
-                        if (log != null)
-                            logger.LogInformation(log);
-                        return await InputFormatterResult.SuccessAsync(protocol);
-                    }
+                            return await InputFormatterResult.SuccessAsync(protocol);
+                        }
 
-                default:
-                    throw new InvalidOperationException();
+                    case "application/octet-stream":
+                        {
+                            using (var reader = new BinaryReader(ms))
+                            {
+                                var protocol = GetProtocol(reader);
+                                var log = OnLog(protocol);
+                                if (log != null)
+                                    logger.LogInformation(log);
+                                return await InputFormatterResult.SuccessAsync(protocol);
+                            }
+                        }
+
+                    default:
+                        throw new InvalidOperationException();
+                }
             }
         }
 

@@ -7,9 +7,9 @@ function ON_CAST_4014(me, you, spell)
     
     local error = nil
     if me == you then
-        error = me:assert_state(STATE_RIDING)
+        error = me:assert(STATE_RIDING)
     else
-        error = me:assert_state(STATE_RIDING, STATE_GHOST)
+        error = me:assert(STATE_RIDING, STATE_GHOST)
     end
     if error ~= nil then
         return me:message(error)

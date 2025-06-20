@@ -228,7 +228,7 @@ function assert_map_debuff(me, you)
             return false
         end
 
-        if you:assert_state(STATE_GHOST) then
+        if you:assert(STATE_GHOST) then
             me:message('대상이 올바르지 않습니다.')
             return false
         end
@@ -256,7 +256,7 @@ function assert_map_damage(me, you)
             return false
         end
 
-        if you:assert_state(STATE_GHOST) then
+        if you:assert(STATE_GHOST) then
             me:message('대상이 올바르지 않습니다.')
             return false
         end
@@ -275,7 +275,7 @@ function spell_cast(me, you, spell, opts)
     local default_action = (opts.default_action == nil) and true or opts.default_action
 
     if not no_assert and me:is(OBJECT_TYPE_CHARACTER) then
-        local err = me:assert_state(STATE_GHOST, STATE_RIDING)
+        local err = me:assert(STATE_GHOST, STATE_RIDING)
         if err then
             me:message(err)
             return false
@@ -319,7 +319,7 @@ function buff_cast(me, you, spell, opts)
     local default_action = (opts.default_action == nil) and true or opts.default_action
 
     if me:is(OBJECT_TYPE_CHARACTER) then
-        local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+        local error = me:assert(STATE_GHOST, STATE_RIDING)
         if error ~= nil then
             me:message(error)
             return false
@@ -367,7 +367,7 @@ function debuff_cast(me, you, spell, opts)
     local default_action = (opts.default_action == nil) and true or opts.default_action
 
     if me:is(OBJECT_TYPE_CHARACTER) then
-        local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+        local error = me:assert(STATE_GHOST, STATE_RIDING)
         if error ~= nil then
             me:message(error)
             return false
@@ -434,7 +434,7 @@ function attack_cast(me, you, spell, opts)
     end
 
     if me:is(OBJECT_TYPE_CHARACTER) then
-        local err = me:assert_state(STATE_GHOST, STATE_RIDING)
+        local err = me:assert(STATE_GHOST, STATE_RIDING)
         if err then
             me:message(err)
             return false
@@ -507,7 +507,7 @@ function spell_damage(me, you, spell, opts)
     local effect = opts.effect
 
     if me:is(OBJECT_TYPE_CHARACTER) then
-        local err = me:assert_state(STATE_GHOST, STATE_RIDING)
+        local err = me:assert(STATE_GHOST, STATE_RIDING)
         if err then
             me:message(err)
             return false
@@ -610,7 +610,7 @@ function spell_damage_area(me, you, spell, opts)
     local effect     = opts.effect or {}
 
     if me:is(OBJECT_TYPE_CHARACTER) then
-        local err = me:assert_state(STATE_GHOST, STATE_RIDING)
+        local err = me:assert(STATE_GHOST, STATE_RIDING)
         if err then
             me:message(err)
             return false
@@ -653,7 +653,7 @@ function spell_heal(me, you, spell, opts)
     local sound = opts.sound
     local effect = opts.effect
     if me:is(OBJECT_TYPE_CHARACTER) then
-        local err = me:assert_state(STATE_GHOST, STATE_RIDING)
+        local err = me:assert(STATE_GHOST, STATE_RIDING)
         if err then
             me:message(err)
             return false
@@ -677,7 +677,7 @@ function spell_heal_near(me, you, spell, opts)
     local sound = opts.sound
     local effect = opts.effect
     if me:is(OBJECT_TYPE_CHARACTER) then
-        local err = me:assert_state(STATE_GHOST, STATE_RIDING)
+        local err = me:assert(STATE_GHOST, STATE_RIDING)
         if err then
             me:message(err)
             return false
@@ -714,7 +714,7 @@ function spell_heal_group(me, spell, opts)
     local sound = opts.sound
     local effect = opts.effect
     if me:is(OBJECT_TYPE_CHARACTER) then
-        local err = me:assert_state(STATE_GHOST, STATE_RIDING)
+        local err = me:assert(STATE_GHOST, STATE_RIDING)
         if err then
             me:message(err)
             return false
@@ -769,7 +769,7 @@ function spell_disguise(me, mobs, name, spell, opts)
     local buff_time = opts.buff_time or 0
 
     if me:is(OBJECT_TYPE_CHARACTER) then
-        local err = me:assert_state(STATE_GHOST, STATE_RIDING)
+        local err = me:assert(STATE_GHOST, STATE_RIDING)
         if err then
             me:message(err)
             return false

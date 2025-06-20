@@ -107,18 +107,10 @@ PUSHD boost
 git checkout boost-1.84.0
 git submodule update --init --recursive
 CALL bootstrap.bat
-CALL b2.exe headers
-if not exist build mkdir build
-PUSHD build
-cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DCMAKE_CXX_FLAGS="/utf-8" -DCMAKE_CXX_FLAGS="/EHsc"
-cmake --build . --config Debug --parallel
-cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DCMAKE_CXX_FLAGS="/utf-8" -DCMAKE_CXX_FLAGS="/EHsc"
-cmake --build . --config Release --parallel
-POPD
+CALL b2.exe --build-type=complete --layout=versioned runtime-link=static threading=multi variant=debug,release
 POPD
 ROBOCOPY boost\boost\ %DEST%\include\boost\ /E
-ROBOCOPY boost\build\stage\lib\Debug\ %DEST%\lib\boost\ /E *.lib
-ROBOCOPY boost\build\stage\lib\Release\ %DEST%\lib\boost\ /E *.lib
+ROBOCOPY boost\stage\lib\ %DEST%\lib\boost\ /E *.lib
 
 POPD
 exit /b 0

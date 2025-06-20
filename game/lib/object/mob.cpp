@@ -3,6 +3,7 @@
 #include <fb/thread.h>
 #include <fb/game/map.h>
 #include <fb/game/mob.h>
+#include <fb/game/ai.h>
 
 using namespace fb::game;
 
@@ -89,6 +90,9 @@ mob::mob(fb::game::context& context, const fb::model::mob& model, const initial_
     _rezen(params.rezen),
     owner(params.owner)
 {
+    // Initialize AI strategy based on mob's attack type
+    this->_ai_strategy = ai::create(model.attack_type);
+
     this->hidden(!params.alive);
     if (params.alive)
     {
@@ -175,7 +179,13 @@ life* mob::target() const
 {
     this->assert_thread();
 
-    return this->_target;
+    if (this->_target == nullptr)
+        return nullptr;
+
+    bool lost_target = !this->context.alive(*this->_target) || !this->_target->alive() ||
+                       !this->sight(*this->_target) || this->_target->hidden(*this);
+
+    return lost_target ? nullptr : this->_target;
 }
 
 void mob::target(life* value)
@@ -312,31 +322,11 @@ void mob::AI(const fb::model::datetime& now)
     if (now < this->_action_time + model.speed)
         return;
 
-    // 유효한 타겟이 없으면 고쳐준다.
-    auto direction = DIRECTION::BOTTOM;
-    if (this->update_target() == nullptr)
+    // Execute AI strategy if available
+    if (this->_ai_strategy)
     {
-        if (this->owner == nullptr || this->owner->map() != this->map())
-            this->move(DIRECTION(std::rand() % 4));
-        else if (this->near_target(*this->owner, direction))
-            this->direction(direction);
-        else
-            this->move_step(this->owner->position());
-    }
-    else if (this->near_target(*this->_target, direction))
-    {
-        this->direction(direction);
-        this->attack();
-    }
-    else if (this->move_step(this->_target->position()) == false)
-    {
-        // 이동할 수 있는 방향으로 일단 이동한다.
-        auto random_direction = std::rand() % 4;
-        for (int i = 0; i < 4; i++)
-        {
-            if (this->move(DIRECTION((random_direction + i) % 4)))
-                break;
-        }
+        this->_ai_strategy->execute(*this, now);
+        this->_action_time = now;
     }
 
     this->_action_time = now;
@@ -360,34 +350,10 @@ uint32_t mob::damage(uint32_t value, object* from, bool critical)
         return result;
     }
 
-    if (this->owner != nullptr && this->owner == from)
-        return result;
-
-    auto& model = this->based<fb::model::mob>();
-    switch (model.attack_type)
+    // Handle damage in AI strategy
+    if (this->_ai_strategy && from && from->is(OBJECT_TYPE::LIFE))
     {
-    case MOB_ATTACK_TYPE::NONE:
-        break;
-
-    case MOB_ATTACK_TYPE::RUN_AWAY:
-        break;
-
-    default:
-    {
-        if (from != nullptr && from->is(OBJECT_TYPE::LIFE))
-        {
-            if (this->_target == nullptr)
-            {
-                this->target(static_cast<life*>(from));
-            }
-            else
-            {
-                // TODO: 가장 최근에 공격한 대상이 일정 시간 이상 공격하지 않았으면
-                // 타겟을 변경한다.
-            }
-        }
-    }
-    break;
+        this->_ai_strategy->on_damage(*this, static_cast<life*>(from), fb::model::datetime());
     }
 
     return result;

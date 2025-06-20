@@ -7,8 +7,8 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<session>(context, "GATEWAY", port)
 {
     // Register event handler
-    this->bind(&context::handle_check_version);
-    this->bind(&context::handle_entry_list);
+    this->handler.protocol.bind(&context::handle_check_version);
+    this->handler.protocol.bind(&context::handle_entry_list);
 }
 
 context::~context()
@@ -62,7 +62,7 @@ async::task<void> context::handle_start()
 {
     static constexpr const char* message = "CONNECTED SERVER\n";
 
-    this->bind_amqp("fb.system", &context::handle_amqp_shutdown);
+    this->handler.amqp.bind("fb.system", &context::handle_amqp_shutdown);
 
     auto writer = fb::stream_writer<big_endian>(this->_connection_cache);
     writer.write<uint8_t>(0x7E);
@@ -139,9 +139,7 @@ async::task<bool> context::handle_entry_list(fb::socket<session>&               
     }
 }
 
-void context::handle_declare_amqp_queue(fb::amqp::socket& amqp)
+void context::handle_init_amqp(fb::amqp::socket& amqp)
 {
-    auto& queue = amqp.declare_queue();
-    queue.bind("amq.direct", "fb.system");
-    this->bind_amqp(queue);
+    this->handler.amqp.declare_queue("amq.direct", "fb.system");
 }

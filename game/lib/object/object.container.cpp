@@ -6,12 +6,20 @@ object_container::object_container(fb::game::map& map) :
     owner(map)
 { }
 
-uint32_t object_container::empty_seq()
+uint32_t object_container::allocate_seq()
 {
+    // Use reusable sequence if available
+    if (!this->_available_seq.empty())
+    {
+        auto seq = this->_available_seq.front();
+        this->_available_seq.pop();
+        return seq;
+    }
 
+    // Generate new sequence if no reusable sequence available
     for (int i = this->_sequence; i < 0xFFFF; i++)
     {
-        if (this->_refs.contains(i))
+        if (this->_refs.find(i) != this->_refs.end())
             continue;
 
         this->_sequence = i + 1;
@@ -20,7 +28,7 @@ uint32_t object_container::empty_seq()
 
     for (int i = 1; i < this->_sequence; i++)
     {
-        if (this->_refs.contains(i))
+        if (this->_refs.find(i) != this->_refs.end())
             continue;
 
         this->_sequence = i + 1;
@@ -62,7 +70,7 @@ fb::game::object& object_container::at(uint32_t i)
 
 void object_container::push(fb::game::object& obj)
 {
-    auto seq = this->empty_seq();
+    auto seq = this->allocate_seq();
     obj.sequence(seq);
 
     this->_ptrs.insert({seq, std::unique_ptr<fb::game::object>(&obj)});
@@ -85,7 +93,7 @@ fb::game::object& object_container::pop(fb::game::object& obj)
 
 fb::game::object* object_container::try_pop(uint32_t seq)
 {
-    if (this->_ptrs.contains(seq) == false)
+    if (this->_ptrs.find(seq) == this->_ptrs.end())
         return nullptr;
 
     auto& ptr = this->_ptrs.at(seq);
@@ -94,6 +102,10 @@ fb::game::object* object_container::try_pop(uint32_t seq)
     ptr.release();
     this->_ptrs.erase(seq);
     this->_refs.erase(seq);
+
+    // Add removed sequence to reuse queue
+    this->_available_seq.push(seq);
+
     return raw;
 }
 
@@ -104,7 +116,7 @@ fb::game::object* object_container::try_pop(fb::game::object& obj)
 
 fb::game::object* object_container::operator[] (uint32_t seq)
 {
-    if (this->_ptrs.contains(seq) == false)
+    if (this->_ptrs.find(seq) == this->_ptrs.end())
         return nullptr;
 
     auto& ptr = this->_ptrs.at(seq);

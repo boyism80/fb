@@ -20,7 +20,7 @@
 
 #ifdef _WIN32
 #define CONSOLE_TITLE "Private kingdom of the wind - http://cshyeon.com"
-bool SetConsoleIcon(int id);
+bool set_console_icon(int id);
 #endif
 
 namespace fb {

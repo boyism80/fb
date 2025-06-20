@@ -538,31 +538,31 @@ public:
     virtual uint32_t auto_attack_damage(MOB_SIZE size) const = 0;
 
     /**
-     * @brief      Calculates the critical.
+     * @brief      Calculates critical hit chance against a target.
      *
-     * @param      you   You
+     * @param[in]  you   Target entity for critical hit calculation
      *
-     * @return     The critical.
+     * @return     True if critical hit occurs, false otherwise
      */
     virtual bool calculate_critical(life& you) const;
 
     /**
-     * @brief      Calculates the damage.
+     * @brief      Calculates final damage after applying modifiers and target defenses.
      *
-     * @param[in]  damage    The damage
-     * @param[in]  you       You
-     * @param[in]  critical  The critical
+     * @param[in]  damage    Base damage amount before calculations
+     * @param[in]  you       Target entity receiving the damage
+     * @param[in]  critical  Whether this is a critical hit
      *
-     * @return     The damage.
+     * @return     Final calculated damage amount
      */
     virtual uint32_t calculate_damage(uint32_t damage, const life& you, bool critical) const;
 
     /**
-     * @brief      Calculates the miss.
+     * @brief      Calculates miss chance when attacking a target.
      *
-     * @param      you   You
+     * @param[in]  you   Target entity for miss calculation
      *
-     * @return     The miss.
+     * @return     True if attack misses, false if attack hits
      */
     virtual bool calculate_miss(life& you) const;
 

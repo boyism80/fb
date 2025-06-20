@@ -1,0 +1,158 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Common project rules and standards for FB 2D MMORPG game server
+alwaysApply: true
+globs:
+  - "**/*"
+---
+
+# FB Project Common Rules
+
+## Project Overview
+This is a 2D MMORPG game server project written in C++ with supporting tools in C# and Lua scripting. The project includes game server components, HTTP APIs, FlatBuffer protocol handling, Lua-based game logic scripting, and various utilities.
+
+## Auto-Generated Code Exclusions
+**ALWAYS IGNORE** the following directories as they contain auto-generated code:
+- `include/fb/model/*` - Auto-generated model files
+- `include/protocol/flatbuffer/*` - Auto-generated FlatBuffer protocol files
+- `include/fb/protocol/flatbuffer/*` - Auto-generated FlatBuffer protocol files
+- `include/fb/login/protocol/flatbuffer/*` - Auto-generated FlatBuffer protocol files
+
+Do not apply coding standards, documentation requirements, or perform code reviews on these auto-generated files.
+
+## General Principles
+- Write clean, readable, and maintainable code
+- Prefer explicit over implicit
+- Use meaningful names for variables, functions, and classes
+- Keep functions focused and single-purpose
+- Avoid premature optimization
+- Follow DRY, KISS, and YAGNI principles
+
+## Documentation Standards
+- **All comments must be written in English**
+- Use clear, concise English with proper grammar
+- Avoid Korean or other non-English comments
+- Document complex algorithms and business logic
+- **MANDATORY: ALL functions MUST have complete documentation**
+- **ZERO TOLERANCE for missing documentation on public functions, classes, and methods**
+
+## Git Workflow and Commit Standards
+
+### Commit Message Format
+**NO EMOJIS ALLOWED** - Keep commit messages clean and professional
+
+Format: `<type>: <short description>`
+
+**Message Structure**:
+- **Subject line**: 50 characters or less, imperative mood
+- **Blank line**: Separate subject from description
+- **Description**: Detailed explanation if needed (wrap at 72 characters)
+
+**Example**:
+```
+feat: add user authentication system
+
+- Implement JWT token validation
+- Add password hashing with bcrypt
+- Create login/logout endpoints
+- Add session management middleware
+
+Note: Integration testing required before deployment
+```
+
+Types:
+- `feat`: New feature
+- `fix`: Bug fix
+- `refactor`: Code refactoring without feature changes
+- `docs`: Documentation updates (including Doxygen)
+- `style`: Code style changes (formatting, etc.)
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
+- `script`: Lua script additions or modifications
+
+### User Preferences for Commit Messages
+**IMPORTANT**: When user requests to commit changes, follow these guidelines:
+- **Subject line**: Keep concise and focused on the main change
+- **Multiple changes**: List what was done in description section (not detailed how)
+- **Format**: Simple bullet points naming each task/area changed
+- **Verification**: Always check git status and diff before committing
+- **Example**:
+  ```
+  docs: update function documentation
+  
+  - Add missing item() function variants
+  - Fix anchor link format
+  - Update wiki sorter script
+  ```
+
+### Pull Request Guidelines
+- **NO EMOJIS** in PR titles or descriptions
+- Use clear, descriptive titles
+- **Always create PRs against `origin/release` branch**
+- **MUST include ALL unreflected changes - verify comprehensively using git log comparison**
+
+## Terminal and PowerShell Workflow
+
+### Non-Interactive Command Execution
+**CRITICAL: ALL terminal commands MUST execute without user interaction**
+
+**Common Issues and Solutions**:
+
+#### 1. Pager Interruption Prevention
+```powershell
+# Always append | cat to prevent paging interruption
+git log --oneline | cat
+git diff --staged | cat
+git status | cat
+```
+
+#### 2. Non-Interactive Flags
+```powershell
+# Use non-interactive flags for commands requiring confirmation
+npm install --yes
+apt-get install -y package_name
+docker build --no-cache .
+```
+
+#### 3. Git Configuration for Automation
+```powershell
+# Disable pager globally for automation
+git config --global core.pager cat
+git config --global pager.log false
+git config --global pager.diff false
+```
+
+#### 4. PowerShell Environment Variables
+```powershell
+# Set environment variables to prevent interaction
+$env:GIT_PAGER = "cat"
+$env:PAGER = "cat"
+```
+
+#### 5. Long-Running Commands
+```powershell
+# Use timeouts for potentially hanging commands
+Invoke-Command -ScriptBlock { command } -TimeoutSec 30
+# Or add explicit termination conditions
+```
+
+**Mandatory Practices**:
+- **Test all commands in non-interactive mode before automation**
+- **Always provide fallback options for interactive prompts**
+- **Use timeouts for potentially hanging commands**
+- **Verify command completion with appropriate status checks**
+
+## File Organization
+- Group related functionality in appropriate directories
+- Use consistent file naming within each language
+- Keep header files (.h) and implementation files (.cpp) separate
+- Place templates in dedicated Template/ directories
+- Organize Lua scripts by functionality:
+  - `/scripts/npc/` - NPC interaction scripts
+  - `/scripts/spell/` - Spell casting logic
+  - `/scripts/mob/` - Monster behavior scripts
+  - `/scripts/item/` - Item-specific logic 

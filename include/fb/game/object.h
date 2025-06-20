@@ -130,6 +130,11 @@ public:
 
 private:
     /**
+     * @brief      Updates the object's sector information on the current map.
+     */
+    void update_sector();
+
+    /**
      * @brief      Removes the object from its current map and cleans up references.
      */
     void leave();
@@ -402,11 +407,6 @@ public:
      * @return     Pointer to the current map, or nullptr if not on any map
      */
     fb::game::map* map() const;
-
-    /**
-     * @brief      Updates the object's sector information on the current map.
-     */
-    void update_sector();
 
     /**
      * @brief      Checks if this object can see a specific position.

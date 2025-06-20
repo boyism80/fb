@@ -5,7 +5,7 @@ function ON_CAST_1(me, spell, message)
         return
     end
 
-    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    local error = me:assert(STATE_GHOST, STATE_RIDING)
     if error ~= nil then
         me:message(error)
         return

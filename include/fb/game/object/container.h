@@ -7,6 +7,7 @@
 #include <sstream>
 #include <zlib.h>
 #include <memory>
+#include <queue>
 #include <fb/game/door.h>
 #include <fb/game/sector.h>
 #include <fb/stream.h>
@@ -47,9 +48,10 @@ public:
     using handle_predicate_type = std::function<bool(object&)>; ///< Function type for object filtering predicates
 
 private:
-    ptrs     _ptrs;         ///< Storage for object unique pointers
-    refs     _refs;         ///< Fast lookup map for object references
-    uint32_t _sequence = 1; ///< Next available sequence ID for new objects
+    ptrs                 _ptrs;          ///< Storage for object unique pointers
+    refs                 _refs;          ///< Fast lookup map for object references
+    uint32_t             _sequence = 1;  ///< Next available sequence ID for new objects
+    std::queue<uint32_t> _available_seq; ///< Queue for reusing sequence IDs
 
 public:
     fb::game::map& owner; ///< Reference to the map that owns this container
@@ -72,14 +74,15 @@ public:
 
 private:
     /**
-     * @brief      Finds the next available sequence ID for a new object.
+     * @brief      Allocates the next available sequence ID for a new object.
      *
-     *             Searches for an unused sequence ID that can be assigned to
-     *             a new object being added to the container.
+     *             Returns a reusable sequence ID from the queue if available,
+     *             otherwise generates a new unused sequence ID for assignment
+     *             to a new object being added to the container.
      *
-     * @return     The next available sequence ID.
+     * @return     The allocated sequence ID.
      */
-    uint32_t empty_seq();
+    uint32_t allocate_seq();
 
 public:
     /**
