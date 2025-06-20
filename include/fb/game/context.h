@@ -19,7 +19,6 @@ using namespace fb::protocol::internal::request;
 namespace fb_reqs       = fb::protocol::game::request;
 namespace fb_resp       = fb::protocol::game::response;
 namespace internal      = fb::protocol::internal;
-namespace internal_reqs = fb::protocol::internal::request;
 namespace internal_resp = fb::protocol::internal::response;
 
 REGISTER_RESPONSE(fb::protocol::internal::request::Shutdown, fb::protocol::internal::response::Shutdown)

@@ -1,0 +1,99 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+## Class Member Ordering
+
+### Member Declaration Order
+**MANDATORY**: Class members MUST be ordered as follows:
+1. Type aliases and constants (`using`, `static const`)
+2. Member variables (grouped by access level)
+3. Constructors and destructor
+4. Member functions (grouped by access level)
+
+**Example**:
+```cpp
+class example
+{
+public:
+    using value_type = int;
+    static const size_t MAX_SIZE = 100;
+
+private:
+    int _value;
+    std::string _name;
+    
+public:
+    example(int value, std::string name);
+    ~example();
+    
+    int get_value() const;
+    void set_value(int value);
+    
+private:
+    void validate_value(int value);
+};
+```
+
+### Benefits of This Order
+- Improves code readability and maintainability
+- Makes class structure immediately clear
+- Groups related members together
+- Separates data (variables) from behavior (functions)
+
+### Additional Guidelines
+- Keep member variables at the top of their access level section
+- Group related member functions together
+- Consider adding comments to separate major sections
+- Use consistent ordering across all classes in the project
+
+## Naming Conventions
+
+## Modern C++ Guidelines
+- Use modern C++ features (C++17/20)
+- Follow RAII principles
+- Prefer `std::unique_ptr` and `std::shared_ptr` over raw pointers
+- Use `const` wherever possible
+- **Prefer `auto` for variable declarations when type is clear**
+- **Use `this->` keyword when accessing member variables/functions for clarity**
+
+## Virtual Function Override Rules
+- **MANDATORY: All overridden functions MUST be marked with `override`**
+- **MANDATORY: Leaf class overrides MUST be marked with `override final`**
+- **Example**:
+```cpp
+class base {
+public:
+    virtual void process() = 0;
+};
+
+class intermediate : public base {
+public:
+    void process() override;  // Intermediate class - override only
+};
+
+class leaf : public intermediate {
+public:
+    void process() override final;  // Leaf class - override final
+};
+```
+
+## Class Naming Conventions
+- Use `snake_case` for class names
+- **NEVER use `*_manager` suffix for class names**
+  - Instead, use more specific and descriptive names
+  - Example: `connection_pool` instead of `connection_manager`
+  - Example: `resource_allocator` instead of `resource_manager`
+  - Example: `object_factory` instead of `object_manager`
+- **Preferred suffixes**:
+  - `*_factory` for factory classes
+  - `*_pool` for resource pools
+  - `*_cache` for caching mechanisms
+  - `*_allocator` for memory/resource allocation
+  - `*_controller` for control flow classes
+  - `*_registry` for registration/lookup systems
+  - `*_context` for context objects
+  - `*_builder` for builder pattern implementations
+
+
