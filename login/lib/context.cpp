@@ -39,7 +39,7 @@ async::task<void> context::handle_start()
     co_await fb::acceptor<session>::handle_start();
 
     this->bind_timer(&context::handle_heart_beat, 1s);
-    this->bind_amqp("fb.system", &context::handle_amqp_shutdown);
+    this->handler.amqp.bind("fb.system", &context::handle_amqp_shutdown);
 }
 
 async::task<void> context::handle_heart_beat()
@@ -399,9 +399,7 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
     co_return true;
 }
 
-void context::handle_declare_amqp_queue(fb::amqp::socket& amqp)
+void context::handle_init_amqp(fb::amqp::socket& amqp)
 {
-    auto& queue = amqp.declare_queue();
-    queue.bind("amq.direct", "fb.system");
-    this->bind_amqp(queue);
+    this->handler.amqp.declare_queue("amq.direct", "fb.system");
 }

@@ -194,17 +194,17 @@ async::task<void> context::handle_start()
     this->bind_npc_interaction(&context::npc_interaction_revive);
     this->bind_npc_interaction(&context::npc_interaction_appreciate);
 
-    this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_KickOut);
-    this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Whisper);
-    this->bind_amqp("fb.system", &context::handle_amqp_shutdown);
-    this->bind_amqp("fb.global", &context::handle_amqp_Broadcast);
-    this->bind_amqp("fb.group", &context::handle_amqp_EnterGroup);
-    this->bind_amqp("fb.group", &context::handle_amqp_LeaveGroup);
-    this->bind_amqp("fb.clan", &context::handle_amqp_SetClanTitle);
-    this->bind_amqp("fb.clan", &context::handle_amqp_JoinClan);
-    this->bind_amqp("fb.clan", &context::handle_amqp_LeaveClan);
-    this->bind_amqp("fb.clan", &context::handle_amqp_BroadcastClan);
-    this->bind_amqp("fb.mail", &context::handle_amqp_WriteMail);
+    this->handler.amqp.bind(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_KickOut);
+    this->handler.amqp.bind(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Whisper);
+    this->handler.amqp.bind("fb.system", &context::handle_amqp_shutdown);
+    this->handler.amqp.bind("fb.global", &context::handle_amqp_Broadcast);
+    this->handler.amqp.bind("fb.group", &context::handle_amqp_EnterGroup);
+    this->handler.amqp.bind("fb.group", &context::handle_amqp_LeaveGroup);
+    this->handler.amqp.bind("fb.clan", &context::handle_amqp_SetClanTitle);
+    this->handler.amqp.bind("fb.clan", &context::handle_amqp_JoinClan);
+    this->handler.amqp.bind("fb.clan", &context::handle_amqp_LeaveClan);
+    this->handler.amqp.bind("fb.clan", &context::handle_amqp_BroadcastClan);
+    this->handler.amqp.bind("fb.mail", &context::handle_amqp_WriteMail);
 }
 
 bool context::decrypt_policy(uint8_t cmd) const
@@ -701,31 +701,14 @@ fb::thread* context::thread(const map& map)
     return this->threads.at(map.model.id % count);
 }
 
-void context::handle_declare_amqp_queue(fb::amqp::socket& amqp)
+void context::handle_init_amqp(fb::amqp::socket& amqp)
 {
-    auto& queue0 = amqp.declare_queue();
-    queue0.bind("amq.direct", "fb.system");
-    this->bind_amqp(queue0);
-
-    auto& queue1 = amqp.declare_queue();
-    queue1.bind("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
-    this->bind_amqp(queue1);
-
-    auto& queue2 = amqp.declare_queue();
-    queue2.bind("amq.direct", "fb.global");
-    this->bind_amqp(queue2);
-
-    auto& queue3 = amqp.declare_queue();
-    queue3.bind("amq.direct", "fb.group");
-    this->bind_amqp(queue3);
-
-    auto& queue4 = amqp.declare_queue();
-    queue4.bind("amq.direct", "fb.clan");
-    this->bind_amqp(queue4);
-
-    auto& queue5 = amqp.declare_queue();
-    queue5.bind("amq.direct", "fb.mail");
-    this->bind_amqp(queue5);
+    this->handler.amqp.declare_queue("amq.direct", "fb.system");
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
+    this->handler.amqp.declare_queue("amq.direct", "fb.global");
+    this->handler.amqp.declare_queue("amq.direct", "fb.group");
+    this->handler.amqp.declare_queue("amq.direct", "fb.clan");
+    this->handler.amqp.declare_queue("amq.direct", "fb.mail");
 }
 
 // TODO : 클릭도 인터페이스로

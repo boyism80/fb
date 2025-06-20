@@ -97,7 +97,7 @@ protected:
      *
      * @param      amqp  The AMQP socket to use for queue declaration.
      */
-    void handle_declare_amqp_queue(fb::amqp::socket& amqp) override final;
+    void handle_init_amqp(fb::amqp::socket& amqp) override final;
 
     /**
      * @brief      Handles gateway server startup initialization.

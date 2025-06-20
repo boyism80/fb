@@ -91,16 +91,19 @@ private:
     };
 
 private:
+    fb::acceptor<T>&                                  _owner;    ///< Reference to the owner acceptor
     std::unordered_map<uint8_t, rate_limited_command> _handlers; ///< Maps protocol command bytes to their handlers
     std::unordered_map<uint8_t, deserialize_func>
         _deserializers; ///< Maps protocol command bytes to deserialization functions
 
 public:
-    fb::acceptor<T>& owner;
-
-public:
+    /**
+     * @brief      Constructs a new protocol handler registry.
+     *
+     * @param[in]  owner  Reference to the owner acceptor instance
+     */
     protocol_handler_registry(fb::acceptor<T>& owner) :
-        owner(owner)
+        _owner(owner)
     { }
 
     protocol_handler_registry(const protocol_handler_registry&)             = delete;
@@ -138,7 +141,7 @@ public:
              rate_limited_command(
                  [this, fn](fb::socket<T>& socket, fb::protocol::header& header) -> async::task<bool> {
                      auto* protocol = static_cast<Request*>(&header);
-                     return (static_cast<Class&>(this->owner).*fn)(socket, *protocol);
+                     return (static_cast<Class&>(this->_owner).*fn)(socket, *protocol);
                  },
                  duration,
                  limit)});
