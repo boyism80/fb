@@ -62,6 +62,7 @@ module.exports = function () {
                                                 add: ["SYS_PTRACE"]
                                             }
                                         },
+                                        command: ["./app"],
                                         args: ["-c", "config.json"],
                                         volumeMounts: [{
                                             name: "config-volume",

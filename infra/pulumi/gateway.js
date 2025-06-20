@@ -77,6 +77,7 @@ module.exports = function () {
                                     ports: [
                                         { containerPort: conf.gateway.port, name: `gateway` },
                                     ],
+                                    command: ["./app"],
                                     args: ["-c", "config.json"],
                                     volumeMounts: [{
                                         name: "config-volume",

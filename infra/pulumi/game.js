@@ -83,6 +83,7 @@ module.exports = function () {
                                             ports: [
                                                 { containerPort: container.port, name: `game-${index}` },
                                             ],
+                                            command: ["./app"],
                                             args: ["-c", "config.json"],
                                             volumeMounts: [{
                                                 name: "config-volume",

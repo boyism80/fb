@@ -110,6 +110,7 @@ module.exports = function () {
                                         ports: [
                                             { containerPort: sectionConf.port, name: `login-${index}` },
                                         ],
+                                        command: ["./app"],
                                         args: ["-c", "config.json"],
                                         volumeMounts: [{
                                             name: "config-volume",
