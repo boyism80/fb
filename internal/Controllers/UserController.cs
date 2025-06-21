@@ -1,3 +1,4 @@
+using Http.Util;
 using AutoMapper;
 using Dapper;
 using Fb.Model.EnumValue;
@@ -30,7 +31,7 @@ namespace Internal.Controllers
         private readonly RedisService _redisService;
         private readonly RedisDistributedLockService _distributedLock;
         private readonly ILogger<UserController> _logger;
-        
+
         // Reuse SHA256 instance to reduce allocations
         private static readonly SHA256 _sha256 = SHA256.Create();
 
@@ -95,7 +96,7 @@ namespace Internal.Controllers
         private static string SHA256Hash(string value)
         {
             var hash = _sha256.ComputeHash(Encoding.ASCII.GetBytes(value));
-            
+
             // Use ArrayPool to reduce allocations for StringBuilder buffer
             var buffer = ArrayPool<char>.Shared.Rent(hash.Length * 2);
             try
@@ -221,6 +222,14 @@ namespace Internal.Controllers
                 ch.Nation = request.Nation;
                 ch.Creature = request.Creature;
                 _dbContext.Character.Set(ch);
+
+                var baramTime = DateTime.Now.ToBaramTime();
+                _dbContext.Achievement.Set(new Achievement
+                {
+                    Uid = request.Uid,
+                    Model = 0,
+                    Text = $"{baramTime} 생"
+                });
 
                 await _dbContext.SaveChangesAsync();
                 return new Response.MakeCharacter

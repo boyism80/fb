@@ -50,5 +50,17 @@ namespace Http.Model
         /// </summary>
         /// <value>Custom text describing the achievement or player notes.</value>
         public string Text { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon of the achievement.
+        /// </summary>
+        /// <value>The icon of the achievement.</value>
+        public byte? Icon { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color of the achievement.
+        /// </summary>
+        /// <value>The color of the achievement.</value>
+        public ushort? Color { get; set; }
     }
 }

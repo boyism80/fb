@@ -96,6 +96,8 @@ namespace Http.Reepository
                         `uid`,
                         `model`,
                         `text`,
+                        `icon`,
+                        `color`,
                         `deleted`,
                         `created_date`,
                         `updated_date`)
@@ -103,11 +105,15 @@ namespace Http.Reepository
                         {value.Uid.Escape()},
                         {value.Model.Escape()},
                         {value.Text.Escape()},
+                        {value.Icon.Escape()},
+                        {value.Color.Escape()},
                         {value.Deleted.Escape()},
                         {value.CreatedDate.Escape()},
                         {value.UpdatedDate.Escape()})
                     ON DUPLICATE KEY UPDATE
                         `text`=VALUES(`text`),
+                        `icon`=VALUES(`icon`),
+                        `color`=VALUES(`color`),
                         `deleted`=VALUES(`deleted`),
                         `updated_date`=VALUES(`updated_date`);
                     """;
@@ -128,6 +134,8 @@ namespace Http.Reepository
                         ({achievement.Uid.Escape()},
                          {achievement.Model.Escape()},
                          {achievement.Text.Escape()},
+                         {achievement.Icon.Escape()},
+                         {achievement.Color.Escape()},
                          {achievement.Deleted.Escape()},
                          {achievement.CreatedDate.Escape()},
                          {achievement.UpdatedDate.Escape()})
@@ -139,12 +147,16 @@ namespace Http.Reepository
                         `uid`,
                         `model`,
                         `text`,
+                        `icon`,
+                        `color`,
                         `deleted`,
                         `created_date`,
                         `updated_date`)
                     VALUES {string.Join(',', args)}
                     ON DUPLICATE KEY UPDATE
                         `text`=VALUES(`text`),
+                        `icon`=VALUES(`icon`),
+                        `color`=VALUES(`color`),
                         `deleted`=VALUES(`deleted`),
                         `created_date`=VALUES(`created_date`),
                         `updated_date`=VALUES(`updated_date`);

@@ -13,6 +13,9 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "nullable_ubyte_generated.h"
+#include "nullable_ushort_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -26,7 +29,9 @@ struct Achievement FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_USER = 4,
     VT_MODEL = 6,
-    VT_TEXT = 8
+    VT_TEXT = 8,
+    VT_ICON = 10,
+    VT_COLOR = 12
   };
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
@@ -37,12 +42,22 @@ struct Achievement FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *text() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TEXT);
   }
+  const nullable::nullable_ubyte *icon() const {
+    return GetPointer<const nullable::nullable_ubyte *>(VT_ICON);
+  }
+  const nullable::nullable_ushort *color() const {
+    return GetPointer<const nullable::nullable_ushort *>(VT_COLOR);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyField<uint32_t>(verifier, VT_MODEL, 4) &&
            VerifyOffset(verifier, VT_TEXT) &&
            verifier.VerifyString(text()) &&
+           VerifyOffset(verifier, VT_ICON) &&
+           verifier.VerifyTable(icon()) &&
+           VerifyOffset(verifier, VT_COLOR) &&
+           verifier.VerifyTable(color()) &&
            verifier.EndTable();
   }
 };
@@ -60,6 +75,12 @@ struct AchievementBuilder {
   void add_text(::flatbuffers::Offset<::flatbuffers::String> text) {
     fbb_.AddOffset(Achievement::VT_TEXT, text);
   }
+  void add_icon(::flatbuffers::Offset<nullable::nullable_ubyte> icon) {
+    fbb_.AddOffset(Achievement::VT_ICON, icon);
+  }
+  void add_color(::flatbuffers::Offset<nullable::nullable_ushort> color) {
+    fbb_.AddOffset(Achievement::VT_COLOR, color);
+  }
   explicit AchievementBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -75,8 +96,12 @@ inline ::flatbuffers::Offset<Achievement> CreateAchievement(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
     uint32_t model = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> text = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> text = 0,
+    ::flatbuffers::Offset<nullable::nullable_ubyte> icon = 0,
+    ::flatbuffers::Offset<nullable::nullable_ushort> color = 0) {
   AchievementBuilder builder_(_fbb);
+  builder_.add_color(color);
+  builder_.add_icon(icon);
   builder_.add_text(text);
   builder_.add_model(model);
   builder_.add_user(user);
@@ -87,13 +112,17 @@ inline ::flatbuffers::Offset<Achievement> CreateAchievementDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
     uint32_t model = 0,
-    const char *text = nullptr) {
+    const char *text = nullptr,
+    ::flatbuffers::Offset<nullable::nullable_ubyte> icon = 0,
+    ::flatbuffers::Offset<nullable::nullable_ushort> color = 0) {
   auto text__ = text ? _fbb.CreateString(text) : 0;
   return fb::protocol::internal::raw::CreateAchievement(
       _fbb,
       user,
       model,
-      text__);
+      text__,
+      icon,
+      color);
 }
 
 inline const fb::protocol::internal::raw::Achievement *GetAchievement(const void *buf) {

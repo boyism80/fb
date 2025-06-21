@@ -31,6 +31,8 @@ public:
 public:
     const fb::model::achievement&    model; ///< Reference to the achievement model configuration
     const std::optional<std::string> text;  ///< Optional custom text description for the achievement
+    const std::optional<uint8_t>     icon;  ///< Optional custom icon for the achievement
+    const std::optional<uint16_t>    color; ///< Optional custom color for the achievement
 
 public:
     /**
@@ -42,8 +44,13 @@ public:
      *
      * @param[in]  model  The achievement model containing configuration data.
      * @param[in]  text   Optional custom text description for this achievement instance.
+     * @param[in]  icon   Optional custom icon for this achievement instance.
+     * @param[in]  color  Optional custom color for this achievement instance.
      */
-    achievement(const fb::model::achievement& model, const std::optional<std::string>& text = std::nullopt);
+    achievement(const fb::model::achievement&     model,
+                const std::optional<std::string>& text  = std::nullopt,
+                const std::optional<uint8_t>&     icon  = std::nullopt,
+                const std::optional<uint16_t>&    color = std::nullopt);
 
     /**
      * @brief      Destroys the achievement instance.

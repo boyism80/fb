@@ -106,8 +106,8 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
     for (auto& [_, achievement] : this->ch.achievements)
     {
         auto& model = achievement->model;
-        writer.write<uint8_t>(model.look);
-        writer.write<uint8_t>(model.color);
+        writer.write<uint8_t>(achievement->icon.value_or(model.look));
+        writer.write<uint8_t>(achievement->color.value_or(model.color));
         writer.write<std::string>(achievement->text.value_or(model.text));
     }
     writer.write<uint8_t>(0x00);

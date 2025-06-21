@@ -1075,20 +1075,22 @@ public:
     uint32_t user = 0;
     uint32_t model = 0;
     std::optional<std::string> text = std::nullopt;
+    std::optional<uint8_t> icon = std::nullopt;
+    std::optional<uint16_t> color = std::nullopt;
 
 public:
     Achievement() = default;
 
     Achievement(const Achievement& x)
-        : user(x.user), model(x.model), text(x.text)
+        : user(x.user), model(x.model), text(x.text), icon(x.icon), color(x.color)
     { }
 
-    Achievement(uint32_t user, uint32_t model, const std::optional<std::string>& text)
-        : user(user), model(model), text(text)
+    Achievement(uint32_t user, uint32_t model, const std::optional<std::string>& text, const std::optional<uint8_t>& icon, const std::optional<uint16_t>& color)
+        : user(user), model(model), text(text), icon(icon), color(color)
     { }
 
     Achievement(const fb::protocol::internal::raw::Achievement& raw)
-        : user(raw.user()), model(raw.model()), text(raw.text() != nullptr ? flatbuffers::option::decode(raw.text()->c_str()) : std::optional<std::string>())
+        : user(raw.user()), model(raw.model()), text(raw.text() != nullptr ? flatbuffers::option::decode(raw.text()->c_str()) : std::optional<std::string>()), icon(raw.icon() != nullptr ? raw.icon()->value() : std::optional<uint8_t>()), color(raw.color() != nullptr ? raw.color()->value() : std::optional<uint16_t>())
     { }
 
 public:
@@ -4090,7 +4092,9 @@ flatbuffers::Offset<fb::protocol::internal::raw::Achievement> build<fb::protocol
     return fb::protocol::internal::raw::CreateAchievement(builder,
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<uint32_t>(builder, value.model),
-            flatbuffers::build<std::optional<std::string>>(builder, value.text));
+            flatbuffers::build<std::optional<std::string>>(builder, value.text),
+            flatbuffers::build<std::optional<uint8_t>>(builder, value.icon),
+            flatbuffers::build<std::optional<uint16_t>>(builder, value.color));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Clan> build<fb::protocol::internal::Clan>(FlatBufferBuilder& builder, const fb::protocol::internal::Clan& value)
