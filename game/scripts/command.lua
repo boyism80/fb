@@ -372,6 +372,22 @@ command_funcs = {
         return true
     end,
 
+    ['업적'] = 
+    function (me, args)
+        local id, text, icon, color = table.unpack(args)
+        me:push_achievement(tonumber(id), text, tonumber(icon), tonumber(color))
+        return true
+    end,
+
+    ['업적초기화'] = 
+    function (me, args)
+        local achievements = me:achievements()
+        for id, achievement in pairs(achievements) do
+            me:erase_achievement(id-1)
+        end
+        return true
+    end,
+
     ['서버종료'] = 
     function (me, args)
         local delay = table.unpack(args)

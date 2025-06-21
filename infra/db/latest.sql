@@ -36,6 +36,8 @@ CREATE TABLE `achievement` (
   `uid` int unsigned NOT NULL,
   `model` int unsigned NOT NULL,
   `text` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `icon` smallint DEFAULT NULL,
+  `color` smallint DEFAULT NULL,
   `deleted` tinyint DEFAULT NULL,
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
@@ -666,4 +668,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-17 21:14:48
+-- Dump completed on 2025-06-21 18:11:28

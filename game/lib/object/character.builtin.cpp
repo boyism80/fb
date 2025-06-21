@@ -1456,13 +1456,13 @@ int character::builtin::builtin_push_achievement(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto ctx = lua->env<fb::game::context>("context");
-    auto ch  = lua->touserdata<character>(1);
+    auto argc = lua->argc();
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto ch   = lua->touserdata<character>(1);
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto model = static_cast<const fb::model::achievement*>(nullptr);
-
     if (lua->is_number(2))
     {
         auto id = lua->tointeger(2);
@@ -1480,14 +1480,24 @@ int character::builtin::builtin_push_achievement(lua_State* L)
         return 0;
     }
 
+    auto text = std::optional<std::string>{std::nullopt};
+    if (lua->is_string(3))
+        text = lua->tostring(3);
+
+    auto icon = std::optional<uint8_t>{std::nullopt};
+    if (lua->is_number(4))
+        icon = lua->tointeger(4);
+
+    auto color = std::optional<uint16_t>{std::nullopt};
+    if (lua->is_number(5))
+        color = lua->tointeger(5);
+
     return lua->ensure_yield(*ctx, *ch, [=]() {
         auto already_has = ch->achievements.contains(model->id);
-        auto text        = lua->argc() < 3 ? std::optional<std::string>{std::nullopt} : lua->tostring(3);
-
         if (!already_has)
-        {
-            ch->achievements.insert({model->id, std::make_unique<fb::game::achievement>(*model, text)});
-        }
+            ch->achievements.insert({model->id, std::make_unique<fb::game::achievement>(*model, text, icon, color)});
+        else
+            ch->achievements[model->id] = std::make_unique<fb::game::achievement>(*model, text, icon, color);
 
         return lua->ensure_resume(*ctx, *ch, [=]() {
             if (already_has)

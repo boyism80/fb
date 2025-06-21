@@ -42,6 +42,16 @@ int context::builtin::builtin_sleep(lua_State* L)
     return lua->yield(0);
 }
 
+int context::builtin::builtin_baram_time(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    lua->pushstring(baram_time());
+    return 1;
+}
+
 int context::builtin::builtin_name2mob(lua_State* L)
 {
     auto lua = fb::lua::get(L);

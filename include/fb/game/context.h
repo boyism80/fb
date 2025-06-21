@@ -1602,6 +1602,17 @@ struct context::builtin
     static int builtin_sleep(lua_State* L);
 
     /**
+     * @brief      Lua builtin function to get current Baram calendar time.
+     *             Baram calendar starts from 1996-03-31 00:00:00,
+     *             where 1 Baram day equals 3 real hours.
+     *
+     * @param      L   The Lua state containing no arguments.
+     *
+     * @return     Number of return values pushed to Lua stack (Baram calendar time).
+     */
+    static int builtin_baram_time(lua_State* L);
+
+    /**
      * @brief      Lua builtin function to find a mob by name.
      *
      * @param      L   The Lua state containing mob name argument.

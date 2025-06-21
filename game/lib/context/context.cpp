@@ -40,6 +40,7 @@ context::context(boost::asio::io_context& context, uint16_t port) :
 
     lua::build("seed", builtin::builtin_seed);
     lua::build("sleep", builtin::builtin_sleep);
+    lua::build("baram_time", builtin::builtin_baram_time);
     lua::build("name2mob", builtin::builtin_name2mob);
     lua::build("name2spell", builtin::builtin_name2spell);
     lua::build("name2item", builtin::builtin_name2item);
@@ -525,13 +526,16 @@ void context::init_spells(const std::vector<internal::Spell>& response, characte
 void context::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response,
                                 fb::game::character&                                    ch)
 {
-    for (auto& x : response)
+    for (auto& achievement : response)
     {
-        if (this->model.achievement.contains(x.model) == false)
+        if (this->model.achievement.contains(achievement.model) == false)
             continue;
 
-        ch.achievements.insert(
-            {x.model, std::make_unique<fb::game::achievement>(this->model.achievement[x.model], x.text)});
+        auto ptr = std::make_unique<fb::game::achievement>(this->model.achievement[achievement.model],
+                                                           achievement.text,
+                                                           achievement.icon,
+                                                           achievement.color);
+        ch.achievements.insert({achievement.model, std::move(ptr)});
     }
 }
 
@@ -663,7 +667,8 @@ async::task<void> context::save(character& ch)
     auto achievements = std::vector<internal::Achievement>();
     for (auto& [model, achievement] : ch.achievements)
     {
-        achievements.push_back(internal::Achievement{ch.id(), model, achievement->text});
+        achievements.push_back(
+            internal::Achievement{ch.id(), model, achievement->text, achievement->icon, achievement->color});
     }
 
     auto fd = ch.fd();

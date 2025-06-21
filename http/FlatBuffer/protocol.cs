@@ -13,6 +13,10 @@ namespace Google.FlatBuffers
         byte[] Serialize();
     }
 
+    /// <summary>
+    /// Pooled policy for FlatBufferBuilder objects
+    /// Manages creation and cleanup of FlatBufferBuilder instances for object pooling
+    /// </summary>
     public class FlatBufferBuilderPooledPolicy : PooledObjectPolicy<FlatBufferBuilder>
     {
         private readonly int _initialSize;
@@ -22,11 +26,17 @@ namespace Google.FlatBuffers
             _initialSize = initialSize;
         }
 
+        /// <summary>
+        /// Creates a new FlatBufferBuilder with specified initial buffer size
+        /// </summary>
         public override FlatBufferBuilder Create()
         {
             return new FlatBufferBuilder(_initialSize);
         }
 
+        /// <summary>
+        /// Resets the builder's internal state for reuse
+        /// </summary>
         public override bool Return(FlatBufferBuilder builder)
         {
             builder.Clear();
@@ -34,6 +44,10 @@ namespace Google.FlatBuffers
         }
     }
 
+    /// <summary>
+    /// Static object pool manager for FlatBufferBuilder instances
+    /// Provides thread-safe access to pooled FlatBufferBuilder objects
+    /// </summary>
     public static class FlatBufferBuilderPool
     {
         private static readonly ObjectPool<FlatBufferBuilder> _pool;
@@ -44,11 +58,17 @@ namespace Google.FlatBuffers
             _pool = new DefaultObjectPool<FlatBufferBuilder>(policy, maximumRetained: 256);
         }
 
+        /// <summary>
+        /// Gets a FlatBufferBuilder from the pool
+        /// </summary>
         public static FlatBufferBuilder Get()
         {
             return _pool.Get();
         }
 
+        /// <summary>
+        /// Returns a FlatBufferBuilder to the pool
+        /// </summary>
         public static void Return(FlatBufferBuilder builder)
         {
             _pool.Return(builder);
@@ -271,7 +291,9 @@ namespace fb.protocol._internal
             return fb.protocol._internal.raw.Achievement.CreateAchievement(builder,
                 builder.Build(value.User),
                 builder.Build(value.Model),
-                builder.Build(value.Text));
+                builder.Build(value.Text),
+                builder.Build(value.Icon),
+                builder.Build(value.Color));
         }
         public static Offset<fb.protocol._internal.raw.Clan> Build(this FlatBufferBuilder builder, fb.protocol._internal.Clan value)
         {
@@ -1204,7 +1226,9 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.raw.Achievement.CreateAchievement(builder,
                 builder.Build(value.User),
                 builder.Build(value.Model),
-                builder.Build(value.Text));
+                builder.Build(value.Text),
+                builder.Build(value.Icon),
+                builder.Build(value.Color));
         }
         public static Offset<fb.protocol._internal.raw.Clan> Build(this FlatBufferBuilder builder, fb.protocol._internal.Clan value)
         {
@@ -2152,7 +2176,9 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.raw.Achievement.CreateAchievement(builder,
                 builder.Build(value.User),
                 builder.Build(value.Model),
-                builder.Build(value.Text));
+                builder.Build(value.Text),
+                builder.Build(value.Icon),
+                builder.Build(value.Color));
         }
         public static Offset<fb.protocol._internal.raw.Clan> Build(this FlatBufferBuilder builder, fb.protocol._internal.Clan value)
         {
@@ -3479,6 +3505,8 @@ namespace fb.protocol._internal
         public uint User { get; set; } = 0;
         public uint Model { get; set; } = 0;
         public string Text { get; set; } = null;
+        public byte? Icon { get; set; } = null;
+        public ushort? Color { get; set; } = null;
 
         public Achievement()
         { }
@@ -3488,6 +3516,8 @@ namespace fb.protocol._internal
             User = raw.User;
             Model = raw.Model;
             Text = raw.Text;
+            Icon = raw.Icon != null ? (byte?)raw.Icon.Value.Value : null;
+            Color = raw.Color != null ? (ushort?)raw.Color.Value.Value : null;
         }
 
         public Achievement(byte[] bytes) : this(fb.protocol._internal.raw.Achievement.GetRootAsAchievement(new ByteBuffer(bytes)))

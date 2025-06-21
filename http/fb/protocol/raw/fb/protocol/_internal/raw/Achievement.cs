@@ -29,22 +29,30 @@ public struct Achievement : IFlatbufferObject
   public ArraySegment<byte>? GetTextBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
   public byte[] GetTextArray() { return __p.__vector_as_array<byte>(8); }
+  public nullable.nullable_ubyte? Icon { get { int o = __p.__offset(10); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ushort? Color { get { int o = __p.__offset(12); return o != 0 ? (nullable.nullable_ushort?)(new nullable.nullable_ushort()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol._internal.raw.Achievement> CreateAchievement(FlatBufferBuilder builder,
       uint user = 0,
       uint model = 0,
-      StringOffset textOffset = default(StringOffset)) {
-    builder.StartTable(3);
+      StringOffset textOffset = default(StringOffset),
+      Offset<nullable.nullable_ubyte> iconOffset = default(Offset<nullable.nullable_ubyte>),
+      Offset<nullable.nullable_ushort> colorOffset = default(Offset<nullable.nullable_ushort>)) {
+    builder.StartTable(5);
+    Achievement.AddColor(builder, colorOffset);
+    Achievement.AddIcon(builder, iconOffset);
     Achievement.AddText(builder, textOffset);
     Achievement.AddModel(builder, model);
     Achievement.AddUser(builder, user);
     return Achievement.EndAchievement(builder);
   }
 
-  public static void StartAchievement(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartAchievement(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
   public static void AddModel(FlatBufferBuilder builder, uint model) { builder.AddUint(1, model, 0); }
   public static void AddText(FlatBufferBuilder builder, StringOffset textOffset) { builder.AddOffset(2, textOffset.Value, 0); }
+  public static void AddIcon(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> iconOffset) { builder.AddOffset(3, iconOffset.Value, 0); }
+  public static void AddColor(FlatBufferBuilder builder, Offset<nullable.nullable_ushort> colorOffset) { builder.AddOffset(4, colorOffset.Value, 0); }
   public static Offset<fb.protocol._internal.raw.Achievement> EndAchievement(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Achievement>(o);
@@ -62,6 +70,8 @@ static public class AchievementVerify
       && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Model*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 8 /*Text*/, false)
+      && verifier.VerifyTable(tablePos, 10 /*Icon*/, nullable.nullable_ubyteVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 12 /*Color*/, nullable.nullable_ushortVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

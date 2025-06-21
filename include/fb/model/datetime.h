@@ -44,7 +44,14 @@ public:
      */
     timespan(const std::string& f)
     {
-        static const auto regex = boost::xpressive::sregex::compile("(?P<ne>-)?((?P<day>\\d+).)?(?P<hour>\\d{1,2}):(?P<min>\\d{1,2}):(?P<sec>\\d{1,2})(?:.(?P<ms>\\d+))?");
+        static const auto regex = boost::xpressive::sregex::compile(
+            "(?P<ne>-)?"
+            "((?P<day>\\d+)\\.)?"
+            "(?P<hour>\\d+):"
+            "(?P<min>\\d{2}):"
+            "(?P<sec>\\d{2})"
+            "(?:\\.(?P<ms>\\d+))?");
+
         auto what = boost::xpressive::smatch();
         if (boost::xpressive::regex_match(f, what, regex) == false)
             throw std::runtime_error(std::format("cannot parse timespan. value : {}", f));
