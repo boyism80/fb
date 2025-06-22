@@ -22,7 +22,8 @@ public:
     const fb::game::spell& spell;
     const uint32_t         delay;
 #else
-
+    std::string spell_name;
+    uint32_t    delay;
 #endif
 
 public:

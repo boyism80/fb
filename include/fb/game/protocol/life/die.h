@@ -20,7 +20,7 @@ public:
 #ifndef BOT
     const uint32_t id;
 #else
-
+    uint32_t id;
 #endif
 
 public:

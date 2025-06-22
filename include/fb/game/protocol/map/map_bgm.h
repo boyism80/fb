@@ -21,7 +21,8 @@ public:
     const uint16_t bgm;
     const uint8_t  volume;
 #else
-
+    uint16_t bgm;
+    uint8_t  volume;
 #endif
 
 public:

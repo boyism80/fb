@@ -63,6 +63,7 @@ async::task<void> gateway_bot::handle_transfer(const fb::protocol::response::tra
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     bot->connect(endpoint);
+
     co_return;
 }
 

@@ -2,13 +2,29 @@
 
 namespace fb::protocol::game::request {
 
-#ifdef BOT
+#ifdef BOT // bot only
 async::task<void> trade::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    // TODO: serialize bytes
+    writer.write<uint8_t>(this->action);
+    writer.write<uint32_t>(this->fd);
+
+    switch (this->action)
+    {
+    case 1: // fb::game::trade::state::UP_ITEM
+        writer.write<uint8_t>(this->parameter.index);
+        break;
+
+    case 2: // fb::game::trade::state::ITEM_COUNT
+        writer.write<uint16_t>(this->parameter.count);
+        break;
+
+    case 3: // fb::game::trade::state::UP_MONEY
+        writer.write<uint32_t>(this->parameter.money);
+        break;
+    }
 }
-#else
+#else // server only
 async::task<void> trade::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);

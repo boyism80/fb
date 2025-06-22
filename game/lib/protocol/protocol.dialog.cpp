@@ -2,13 +2,7 @@
 
 namespace fb::protocol::game::request {
 
-#ifdef BOT
-async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
-{
-    co_await header::serialize(writer);
-    // TODO: serialize bytes
-}
-#else
+#ifndef BOT
 async::task<void> dialog::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
@@ -82,6 +76,75 @@ async::task<void> dialog::deserialize(fb::stream_reader<big_endian>& reader)
         this->index   = reader.read<uint8_t>();
         break;
     }
+    }
+}
+#else
+async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    co_await header::serialize(writer);
+    writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
+
+    switch (this->interaction)
+    {
+    case 0:                          // NORMAL
+        writer.write<uint8_t>(0x00); // 7바이트 패딩
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(this->action);
+        break;
+
+    case 1:                                 // INPUT
+        writer.write<uint16_t>(0x0000);     // unknown1
+        writer.write<uint32_t>(0x00000000); // unknown2
+        writer.write<std::string, uint16_t>(this->message);
+        break;
+
+    case 2:                          // INPUT_EX
+        writer.write<uint8_t>(0x00); // 7바이트 패딩
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(this->action);
+        if (this->action == 0x02)
+        {
+            writer.write<uint8_t>(0x00); // unknown1
+            writer.write<std::string, uint8_t>(this->message);
+        }
+        break;
+
+    case 3:                                 // MENU
+        writer.write<uint32_t>(0x00000000); // unknown
+        writer.write<uint16_t>(this->index);
+        break;
+
+    case 4:                                 // LIST
+        writer.write<uint32_t>(0x00000000); // unknown1
+        writer.write<uint32_t>(static_cast<uint32_t>(this->button));
+        if (this->button == DIALOG_RESULT::NEXT)
+        {
+            writer.write<uint8_t>(0x00); // unknown2
+            writer.write<uint8_t>(this->index + 1);
+        }
+        break;
+
+    case 5:                                 // SLOT
+        writer.write<uint32_t>(0x00000000); // unknown
+        writer.write<uint16_t>(this->pursuit);
+        writer.write<std::string, uint8_t>(this->name);
+        break;
+
+    case 6:                                 // ITEM
+        writer.write<uint32_t>(0x00000000); // unknown
+        writer.write<uint16_t>(this->pursuit);
+        writer.write<uint8_t>(this->index);
+        break;
     }
 }
 #endif

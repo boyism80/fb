@@ -16,12 +16,15 @@ int main(int argc, char** argv)
     auto io_size        = fb::config<uint32_t>("io_size");
     auto ios            = std::vector<std::unique_ptr<io_context>>{};
     auto guards         = vector<unique_ptr<guard_type>>();
-    auto bot_containers = vector<unique_ptr<fb::bot::bot_container>>();
+    auto bot_containers = vector<shared_ptr<fb::bot::bot_container>>();
+
     for (int i = 0; i < io_size; i++)
     {
         auto io = std::make_unique<io_context>();
         guards.push_back(std::make_unique<guard_type>(io->get_executor()));
-        bot_containers.push_back(make_unique<fb::bot::bot_container>(*io.get()));
+        auto container = std::make_shared<fb::bot::bot_container>(*io.get());
+        container->initialize();
+        bot_containers.push_back(container);
         ios.push_back(std::move(io));
     }
 

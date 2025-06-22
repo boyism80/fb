@@ -19,7 +19,24 @@ public:
     const fb::game::object&    to;
     const bool                 light;
 #else
-
+    bool        is_light;
+    uint16_t    x;
+    uint16_t    y;
+    uint8_t     direction;
+    uint32_t    sequence;
+    uint8_t     disguised;
+    uint8_t     sex;
+    uint8_t     state;
+    uint16_t    look;
+    uint8_t     color;
+    uint8_t     armor_dress;
+    uint8_t     armor_color;
+    uint16_t    weapon_dress;
+    uint8_t     weapon_color;
+    uint8_t     shield_dress;
+    uint8_t     shield_color;
+    uint8_t     head_marker;
+    std::string name;
 #endif
 
 public:

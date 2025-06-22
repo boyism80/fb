@@ -47,18 +47,123 @@ public:
      */
     using handler_event = std::function<async::task<void>(fb::socket<T>&)>;
 
+    /**
+     * @brief      Rate limiter for managing TPS (Transactions Per Second) limits.
+     *
+     *             This nested class handles both global socket TPS and per-command TPS limiting
+     *             using a unified tracking structure. It provides overloaded update() methods
+     *             for different use cases and tracks request counts with timestamps to enforce
+     *             rate limits effectively. This class is non-copyable and non-movable to ensure
+     *             data integrity.
+     */
+    class rate_limiter
+    {
+    private:
+        /**
+         * @brief      Structure for tracking TPS measurements per command.
+         */
+        struct tracker
+        {
+            fb::model::datetime last        = fb::model::datetime(); ///< Last reset time for rate limiting window
+            uint32_t            transitions = 0;                     ///< Current number of transitions in the window
+        };
+
+        tracker                              _global;   ///< Global TPS tracker for all requests
+        std::unordered_map<uint8_t, tracker> _commands; ///< Per-command TPS trackers
+
+    public:
+        /**
+         * @brief      Default constructor.
+         */
+        rate_limiter() = default;
+
+        /**
+         * @brief      Destructor.
+         */
+        ~rate_limiter() = default;
+
+        // Delete copy constructor and copy assignment operator
+        rate_limiter(const rate_limiter&)             = delete;
+        rate_limiter& operator= (const rate_limiter&) = delete;
+
+        // Delete move constructor and move assignment operator
+        rate_limiter(rate_limiter&&)             = delete;
+        rate_limiter& operator= (rate_limiter&&) = delete;
+
+        /**
+         * @brief      Updates and checks the global TPS limit for all requests.
+         *
+         * @param[in]  limit  The maximum number of requests allowed per second.
+         *
+         * @return     True if within limits, false if rate limited.
+         */
+        bool update(uint32_t limit)
+        {
+            auto elapsed_time = fb::model::datetime() - this->_global.last;
+            if (elapsed_time > 1s)
+            {
+                this->_global.last        = fb::model::datetime();
+                this->_global.transitions = 0;
+            }
+
+            if (++this->_global.transitions > limit)
+                return false;
+
+            return true;
+        }
+
+        /**
+         * @brief      Updates and checks the TPS limit for a specific command.
+         *
+         * @param[in]  cmd       The command byte to track.
+         * @param[in]  duration  The time window for rate limiting.
+         * @param[in]  limit     The maximum transitions allowed in the window.
+         *
+         * @return     True if within limits, false if rate limited.
+         */
+        bool update(uint8_t cmd, const std::chrono::steady_clock::duration& duration, uint32_t limit)
+        {
+            if (!this->_commands.contains(cmd))
+                this->_commands[cmd] = tracker{};
+
+            auto& tracker = this->_commands[cmd];
+
+            auto elapsed_time = fb::model::datetime() - tracker.last;
+            if (elapsed_time > duration)
+            {
+                tracker.last        = fb::model::datetime();
+                tracker.transitions = 0;
+            }
+
+            if (++tracker.transitions > limit)
+                return false;
+
+            return true;
+        }
+    };
+
 private:
-    context&            _context;
-    fb::crypto          _crypto;
-    handle_read_event   _handle_received;
-    handler_event       _handle_closed;
-    fb::stream          _stream;
-    uint32_t            _tps = 0;
-    fb::model::datetime _last_tps_time;
+    context&          _context;
+    fb::crypto        _crypto;
+    handle_read_event _handle_received;
+    handler_event     _handle_closed;
+    fb::stream        _stream;
 
 protected:
     std::array<char, MAX_BUFFER_SIZE> _buffer;
     T*                                _data;
+
+public:
+    /**
+     * @brief      Rate limiter instance for this socket.
+     *
+     *             Provides direct access to rate limiting functionality with two update methods:
+     *             - update(limit): Global TPS limiting for all requests
+     *             - update(cmd, duration, limit): Per-command TPS limiting with custom windows
+     *
+     *             This instance is unique per socket and cannot be copied or moved.
+     */
+    rate_limiter limiter;
 
 public:
     /**
@@ -273,7 +378,7 @@ public:
             }
             else
             {
-                fb::logger::debug("recv error: {}", ec.message());
+                // fb::logger::debug("recv error: {}", ec.message());
             }
         }
         catch (std::exception& e)
@@ -360,40 +465,6 @@ public:
     void crt(uint8_t enctype, const uint8_t* enckey)
     {
         this->_crypto = fb::crypto(enctype, enckey);
-    }
-
-public:
-    /**
-     * @brief      Updates the TPS.
-     *
-     * @param[in]  limit  The limit.
-     *
-     * @return     True if the TPS was updated successfully, false otherwise.
-     */
-    bool update_tps(uint32_t limit)
-    {
-        auto elapsed_time = fb::model::datetime() - this->_last_tps_time;
-        if (elapsed_time.total_milliseconds() > 1000)
-        {
-            this->_last_tps_time = fb::model::datetime();
-            this->_tps           = 0;
-        }
-
-        if (++this->_tps > limit)
-            return false;
-
-        return true;
-    }
-
-public:
-    /**
-     * @brief      Casts the socket to a crypto reference.
-     *
-     * @return     The crypto reference.
-     */
-    operator fb::crypto& ()
-    {
-        return this->_crypto;
     }
 
 public:

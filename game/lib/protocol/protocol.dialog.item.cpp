@@ -52,7 +52,32 @@ async::task<void> dialog_item::serialize(fb::stream_writer<big_endian>& writer) 
 async::task<void> dialog_item::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    reader.read<uint8_t>(); // 0x04
+    this->interaction = reader.read<uint8_t>();
+    this->sequence    = reader.read<uint32_t>();
+    reader.read<uint8_t>(); // obj type flag
+    reader.read<uint8_t>(); // 0x01
+    this->look  = reader.read<uint16_t>();
+    this->color = reader.read<uint8_t>();
+    reader.read<uint8_t>();  // obj type flag
+    reader.read<uint16_t>(); // look (duplicate)
+    reader.read<uint8_t>();  // color (duplicate)
+    this->message       = reader.read<std::string, uint16_t>();
+    this->pursuit       = reader.read<uint16_t>();
+    uint16_t item_count = reader.read<uint16_t>();
+
+    this->items.clear();
+    for (int i = 0; i < item_count; i++)
+    {
+        item_data item;
+        item.look  = reader.read<uint16_t>();
+        item.color = reader.read<uint8_t>();
+        item.value = reader.read<uint32_t>();
+        item.name  = reader.read<std::string, uint8_t>();
+        item.desc  = reader.read<std::string, uint8_t>();
+        this->items.push_back(item);
+    }
+    reader.read<uint8_t>(); // 0x00
 }
 #endif
 

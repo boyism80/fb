@@ -65,7 +65,9 @@ async::task<void> item_update_slot::serialize(fb::stream_writer<big_endian>& wri
 async::task<void> item_update_slot::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    this->look  = reader.read<uint16_t>();
+    this->color = reader.read<uint8_t>();
+    this->name  = reader.read<std::string, uint8_t>();
 }
 #endif
 

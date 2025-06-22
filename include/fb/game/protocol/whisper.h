@@ -11,7 +11,7 @@ public:
     inline static uint8_t header = 0x19;
 
 public:
-#ifdef BOT
+#ifdef BOT // bot only
     const std::string name;
     const std::string message;
 #else
@@ -20,7 +20,7 @@ public:
 #endif
 
 public:
-#ifdef BOT
+#ifdef BOT // bot only
     whisper(const std::string& name, const std::string& message) :
         name(name),
         message(message)
@@ -30,7 +30,7 @@ public:
 #endif
 
 public:
-#ifdef BOT
+#ifdef BOT // bot only
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;
 #else
     [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);

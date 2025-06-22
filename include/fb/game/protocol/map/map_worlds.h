@@ -13,13 +13,32 @@ class map_worlds : public fb::protocol::header
 public:
     inline static uint8_t header = 0x2E;
 
+#ifdef BOT
+
+public:
+    struct world_point
+    {
+        uint16_t              offset_x;
+        uint16_t              offset_y;
+        std::string           name;
+        uint16_t              unknown1;
+        uint16_t              world_id;
+        uint16_t              index;
+        uint16_t              point_id;
+        std::vector<uint16_t> group_points;
+    };
+#endif
+
 public:
 #ifndef BOT
     const fb::model::model& model;
     const uint32_t          id;
     const uint16_t          index;
 #else
-
+    std::string              key;
+    uint8_t                  world_count;
+    uint16_t                 index;
+    std::vector<world_point> points;
 #endif
 
 public:

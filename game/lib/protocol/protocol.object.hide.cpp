@@ -23,7 +23,8 @@ async::task<void> hide::serialize(fb::stream_writer<big_endian>& writer) const
 async::task<void> hide::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    this->id = reader.read<uint32_t>();
+    reader.read<uint8_t>(); // 0x00
 }
 #endif
 

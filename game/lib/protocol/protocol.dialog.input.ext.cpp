@@ -50,7 +50,24 @@ async::task<void> dialog_input_ext::serialize(fb::stream_writer<big_endian>& wri
 async::task<void> dialog_input_ext::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    reader.read<uint8_t>(); // 0x04
+    this->interaction = reader.read<uint8_t>();
+    this->sequence    = reader.read<uint32_t>();
+    reader.read<uint8_t>(); // obj type flag
+    reader.read<uint8_t>(); // 0x01
+    this->look  = reader.read<uint16_t>();
+    this->color = reader.read<uint8_t>();
+    reader.read<uint8_t>();  // obj type flag
+    reader.read<uint16_t>(); // look (duplicate)
+    reader.read<uint8_t>();  // color (duplicate)
+    reader.read<uint32_t>(); // 0x00000001
+    this->button_prev = reader.read<uint8_t>();
+    reader.read<uint8_t>(); // 0x00
+    this->message = reader.read<std::string, uint16_t>();
+    this->top     = reader.read<std::string, uint8_t>();
+    this->maxlen  = reader.read<uint8_t>();
+    this->bottom  = reader.read<std::string, uint8_t>();
+    reader.read<uint8_t>(); // 0x00
 }
 #endif
 

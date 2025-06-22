@@ -53,7 +53,33 @@ async::task<void> map_worlds::serialize(fb::stream_writer<big_endian>& writer) c
 async::task<void> map_worlds::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    this->key         = reader.read<std::string, uint8_t>();
+    this->world_count = reader.read<uint8_t>();
+    this->index       = reader.read<uint8_t>();
+
+    // Fully implement world point structure
+    this->points.clear();
+    for (int i = 0; i < this->world_count; i++)
+    {
+        world_point point;
+        point.offset_x = reader.read<uint16_t>();
+        point.offset_y = reader.read<uint16_t>();
+        point.name     = reader.read<std::string, uint8_t>();
+        point.unknown1 = reader.read<uint16_t>(); // 0x0000
+        point.world_id = reader.read<uint16_t>();
+        point.index    = reader.read<uint16_t>();
+        point.point_id = reader.read<uint16_t>();
+
+        uint16_t group_count = reader.read<uint16_t>();
+        point.group_points.clear();
+        for (int j = 0; j < group_count; j++)
+        {
+            uint16_t group_point_id = reader.read<uint16_t>();
+            point.group_points.push_back(group_point_id);
+        }
+
+        this->points.push_back(point);
+    }
 }
 #endif
 

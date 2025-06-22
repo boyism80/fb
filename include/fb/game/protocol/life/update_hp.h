@@ -22,7 +22,10 @@ public:
     const uint32_t        damage;
     const bool            critical;
 #else
-
+    uint32_t sequence;
+    uint32_t damage;
+    uint8_t  critical;
+    uint8_t  percent;
 #endif
 
 public:

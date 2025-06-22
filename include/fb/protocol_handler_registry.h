@@ -48,10 +48,6 @@ private:
      */
     struct rate_limited_command
     {
-    private:
-        fb::model::datetime last        = fb::model::datetime(); ///< Last reset time for rate limiting window
-        uint32_t            transitions = 0;                     ///< Current number of transitions in the window
-
     public:
         /// The actual handler function to execute
         const handle_func fn;
@@ -72,22 +68,6 @@ private:
             duration(duration),
             limit(limit)
         { }
-
-        /**
-         * @brief      Updates and checks the rate limiting state.
-         */
-        bool update_tps() const
-        {
-            auto elapsed_time = fb::model::datetime() - this->last;
-            if (elapsed_time > this->duration)
-            {
-                const_cast<rate_limited_command*>(this)->last        = fb::model::datetime();
-                const_cast<rate_limited_command*>(this)->transitions = 0;
-            }
-            if (++const_cast<rate_limited_command*>(this)->transitions > this->limit)
-                return false;
-            return true;
-        }
     };
 
 private:

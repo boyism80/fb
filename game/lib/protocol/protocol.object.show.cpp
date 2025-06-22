@@ -62,7 +62,44 @@ async::task<void> update::serialize(fb::stream_writer<big_endian>& writer) const
 async::task<void> update::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+
+    // 첫 번째 바이트로 타입 구분
+    uint8_t type = reader.read<uint8_t>();
+    if (type == 0x07)
+    {
+        // 다중 오브젝트
+        this->object_count = reader.read<uint16_t>();
+        this->objects_data.clear();
+
+        for (int i = 0; i < this->object_count; i++)
+        {
+            object_data obj;
+            obj.x         = reader.read<uint16_t>();
+            obj.y         = reader.read<uint16_t>();
+            obj.sequence  = reader.read<uint32_t>();
+            obj.look      = reader.read<uint16_t>();
+            obj.color     = reader.read<uint8_t>();
+            obj.direction = reader.read<uint8_t>();
+            this->objects_data.push_back(obj);
+        }
+    }
+    else
+    {
+        // 단일 오브젝트 (type은 count의 상위 바이트)
+        uint16_t count = (type << 8) | reader.read<uint8_t>();
+        if (count == 1)
+        {
+            this->object_count = 1;
+            object_data obj;
+            obj.x         = reader.read<uint16_t>();
+            obj.y         = reader.read<uint16_t>();
+            obj.sequence  = reader.read<uint32_t>();
+            obj.look      = reader.read<uint16_t>();
+            obj.color     = reader.read<uint8_t>();
+            obj.direction = reader.read<uint8_t>();
+            this->objects_data.push_back(obj);
+        }
+    }
 }
 #endif
 

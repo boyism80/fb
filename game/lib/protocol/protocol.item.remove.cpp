@@ -23,7 +23,9 @@ async::task<void> item_remove::serialize(fb::stream_writer<big_endian>& writer) 
 async::task<void> item_remove::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    this->index = reader.read<uint8_t>() - 1; // index + 1이므로 -1
+    this->type  = static_cast<ITEM_DELETE_TYPE>(reader.read<uint8_t>());
+    this->count = reader.read<uint16_t>();
 }
 #endif
 

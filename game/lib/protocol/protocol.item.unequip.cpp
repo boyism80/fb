@@ -20,7 +20,8 @@ async::task<void> item_unequip::serialize(fb::stream_writer<big_endian>& writer)
 async::task<void> item_unequip::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    this->parts = static_cast<EQUIPMENT_PARTS>(reader.read<uint8_t>());
+    reader.read<uint8_t>(); // 0x00
 }
 #endif
 

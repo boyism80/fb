@@ -3,12 +3,6 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-time::time(uint8_t hours) :
-    hours(hours)
-{ }
-#endif
-
-#ifndef BOT
 async::task<void> time::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);

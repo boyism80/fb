@@ -56,7 +56,34 @@ async::task<void> dialog_ch_list::serialize(fb::stream_writer<big_endian>& write
 async::task<void> dialog_ch_list::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    reader.read<uint8_t>(); // 2
+    this->interaction = static_cast<fb::game::dialog::interaction>(reader.read<uint8_t>());
+    this->sequence    = reader.read<uint32_t>();
+    reader.read<uint8_t>(); // 0x01
+    reader.read<uint8_t>(); // 0x00
+    this->sex          = reader.read<uint8_t>();
+    this->state        = reader.read<uint8_t>();
+    this->face         = reader.read<uint16_t>();
+    this->hair_color   = reader.read<uint8_t>();
+    this->armor        = reader.read<uint8_t>();
+    this->armor_color  = reader.read<uint8_t>();
+    this->weapon       = reader.read<uint16_t>();
+    this->weapon_color = reader.read<uint8_t>();
+    this->shield       = reader.read<uint16_t>();
+    this->shield_color = reader.read<uint8_t>();
+    reader.read<uint32_t>(); // 0
+    reader.read<uint16_t>(); // 0
+    reader.read<uint8_t>();  // 1
+    reader.read<uint16_t>(); // 0
+    this->message      = reader.read<std::string, uint16_t>();
+    uint8_t list_count = reader.read<uint8_t>();
+
+    this->list.clear();
+    for (int i = 0; i < list_count; i++)
+    {
+        this->list.push_back(reader.read<std::string, uint8_t>());
+    }
+    reader.read<uint8_t>(); // 0x00
 }
 #endif
 

@@ -42,7 +42,17 @@ async::task<void> item_throws::serialize(fb::stream_writer<big_endian>& writer) 
 async::task<void> item_throws::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    this->ch_sequence   = reader.read<uint32_t>();
+    this->look          = reader.read<uint16_t>();
+    this->color         = reader.read<uint8_t>();
+    this->item_sequence = reader.read<uint32_t>();
+    this->from_x        = reader.read<uint16_t>();
+    this->from_y        = reader.read<uint16_t>();
+    this->to_x          = reader.read<uint16_t>();
+    this->to_y          = reader.read<uint16_t>();
+    reader.read<uint32_t>(); // 0x00000000
+    reader.read<uint8_t>();  // 0x02
+    reader.read<uint8_t>();  // 0x00
 }
 #endif
 

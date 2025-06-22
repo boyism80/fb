@@ -51,7 +51,7 @@ public:
             "(?P<min>\\d{2}):"
             "(?P<sec>\\d{2})"
             "(?:\\.(?P<ms>\\d+))?");
-
+            
         auto what = boost::xpressive::smatch();
         if (boost::xpressive::regex_match(f, what, regex) == false)
             throw std::runtime_error(std::format("cannot parse timespan. value : {}", f));

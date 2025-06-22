@@ -2,6 +2,7 @@
 
 namespace fb::protocol::game::response {
 
+#ifndef BOT
 async::task<void> init::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
@@ -9,7 +10,7 @@ async::task<void> init::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(0x06);
     writer.write<uint8_t>(0x00);
 }
-#ifdef BOT
+#else
 async::task<void> init::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);

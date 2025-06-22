@@ -2,16 +2,23 @@
 
 namespace fb::protocol::login::request {
 
-#ifdef BOT
+#ifndef BOT
+async::task<void> complete::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    co_await header::deserialize(reader);
+    this->hair     = reader.read<uint8_t>();
+    this->sex      = reader.read<uint8_t>();
+    this->nation   = reader.read<uint8_t>();
+    this->creature = reader.read<uint8_t>();
+}
+#else
 complete::complete(uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature) :
     hair(hair),
     sex(sex),
     nation(nation),
     creature(creature)
 { }
-#endif
 
-#ifdef BOT
 async::task<void> complete::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
@@ -20,15 +27,6 @@ async::task<void> complete::serialize(fb::stream_writer<big_endian>& writer) con
     writer.write<uint8_t>(this->sex);
     writer.write<uint8_t>(this->nation);
     writer.write<uint8_t>(this->creature);
-}
-#else
-async::task<void> complete::deserialize(fb::stream_reader<big_endian>& reader)
-{
-    co_await header::deserialize(reader);
-    this->hair     = reader.read<uint8_t>();
-    this->sex      = reader.read<uint8_t>();
-    this->nation   = reader.read<uint8_t>();
-    this->creature = reader.read<uint8_t>();
 }
 #endif
 

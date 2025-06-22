@@ -108,7 +108,41 @@ async::task<void> update_external::serialize(fb::stream_writer<big_endian>& writ
 async::task<void> update_external::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+
+    uint8_t id     = reader.read<uint8_t>();
+    this->is_light = (id == 0x1D);
+
+    if (!this->is_light)
+    {
+        this->x         = reader.read<uint16_t>();
+        this->y         = reader.read<uint16_t>();
+        this->direction = reader.read<uint8_t>();
+    }
+
+    this->sequence  = reader.read<uint32_t>();
+    this->disguised = reader.read<uint8_t>();
+    this->sex       = reader.read<uint8_t>();
+    this->state     = reader.read<uint8_t>();
+
+    if (this->disguised)
+    {
+        this->look  = reader.read<uint16_t>();
+        this->color = reader.read<uint8_t>();
+    }
+    else
+    {
+        this->look         = reader.read<uint16_t>();
+        this->color        = reader.read<uint8_t>();
+        this->armor_dress  = reader.read<uint8_t>();
+        this->armor_color  = reader.read<uint8_t>();
+        this->weapon_dress = reader.read<uint16_t>();
+        this->weapon_color = reader.read<uint8_t>();
+        this->shield_dress = reader.read<uint8_t>();
+        this->shield_color = reader.read<uint8_t>();
+    }
+
+    this->head_marker = reader.read<uint8_t>();
+    this->name        = reader.read<std::string, uint8_t>();
 }
 #endif
 }; // namespace fb::protocol::game::response

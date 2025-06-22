@@ -23,21 +23,27 @@ public:
     const fb::game::bulletin::article& value;
     const BULLETIN_BUTTON_ENABLE       flag;
 #else
-
+    BULLETIN_BUTTON_ENABLE flag;
+    uint16_t               id;
+    std::string            uname;
+    uint8_t                month;
+    uint8_t                day;
+    std::string            title;
+    std::string            contents;
 #endif
 
 public:
 #ifndef BOT
     bulletin_article(const fb::game::bulletin::article& value, BULLETIN_BUTTON_ENABLE flag);
 #else
-
+    bulletin_article() = default;
 #endif
 
 public:
 #ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;
 #else
-
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
 #endif
 };
 

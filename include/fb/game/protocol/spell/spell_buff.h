@@ -21,7 +21,8 @@ public:
     const std::string               name;
     const std::chrono::milliseconds time;
 #else
-
+    std::string               name;
+    std::chrono::milliseconds time;
 #endif
 
 public:

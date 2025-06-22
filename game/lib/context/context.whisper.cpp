@@ -36,13 +36,14 @@ async::task<void> context::whisper(character& from, std::string to, std::string 
     if (target != nullptr)
     {
         co_await this->switch_thread(*target);
+        auto target_name = target->name();
         if (target->option(OPTION::WHISPER) == false)
             throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), to));
 
         target->message(std::format("{}> {}", from_name, message), MESSAGE_TYPE::NOTIFY);
 
         co_await this->switch_thread(from);
-        from.message(std::format("{}< {}", target->name(), message), MESSAGE_TYPE::NOTIFY);
+        from.message(std::format("{}< {}", target_name, message), MESSAGE_TYPE::NOTIFY);
     }
     else
     {

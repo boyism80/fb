@@ -2,7 +2,7 @@
 
 namespace fb::protocol::game::request {
 
-#ifdef BOT
+#ifdef BOT // bot only
 async::task<void> whisper::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
@@ -10,7 +10,7 @@ async::task<void> whisper::serialize(fb::stream_writer<big_endian>& writer) cons
     writer.write<std::string, uint8_t>(this->name);
     writer.write<std::string, uint8_t>(this->message);
 }
-#else
+#else // server only
 async::task<void> whisper::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);

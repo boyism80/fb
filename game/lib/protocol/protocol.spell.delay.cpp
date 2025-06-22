@@ -22,7 +22,9 @@ async::task<void> spell_delay::serialize(fb::stream_writer<big_endian>& writer) 
 async::task<void> spell_delay::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    this->spell_name = reader.read<std::string, uint8_t>();
+    this->delay      = reader.read<uint32_t>();
+    reader.read<uint8_t>(); // 0
 }
 #endif
 

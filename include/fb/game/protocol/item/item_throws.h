@@ -46,7 +46,14 @@ public:
     const fb::game::item&            item;
     const fb::model::point<uint16_t> to;
 #else
-
+    uint32_t ch_sequence;
+    uint16_t look;
+    uint8_t  color;
+    uint32_t item_sequence;
+    uint16_t from_x;
+    uint16_t from_y;
+    uint16_t to_x;
+    uint16_t to_y;
 #endif
 
 public:

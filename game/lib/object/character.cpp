@@ -101,6 +101,9 @@ uint32_t character::damage(uint32_t value, object* from, bool critical)
 {
     this->assert_thread();
 
+    if (this->alive() == false)
+        return 0;
+
     auto result = life::damage(value, from, critical);
     if (from == nullptr)
         return result;

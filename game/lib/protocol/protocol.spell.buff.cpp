@@ -25,7 +25,8 @@ async::task<void> spell_buff::serialize(fb::stream_writer<big_endian>& writer) c
 async::task<void> spell_buff::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    this->name = reader.read<std::string, uint8_t>();
+    this->time = std::chrono::milliseconds(reader.read<uint32_t>() * 1000);
 }
 #endif
 

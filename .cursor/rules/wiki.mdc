@@ -44,6 +44,11 @@ globs: ["wiki/**/*.md"]
 - **Self parameter**: Exclude `self` from parameter descriptions, only show usage in examples like `me:position()`, `item:name()`
 - **Default values**: Check for default values and document them. Mark optional parameters with brackets `[parameter]` in function signatures
 - **IMPLEMENTATION VALIDATION**: Every parameter type, count, and behavior MUST match the actual C++ implementation exactly
+- **Enum Type Documentation**: When documenting parameters that use enum types:
+  - ALWAYS use the actual enum type name from C++ implementation (e.g., `SEX`, `STATE`, `CLASS`)
+  - NEVER use generic `number` type for enum parameters
+  - Include example enum values in parentheses after the type
+  - Format: `parameter:ENUM_TYPE: Description (ENUM_VALUE_1, ENUM_VALUE_2)`
 
 ### Function Organization
 - **Getter/Setter distinction**: Clearly distinguish and provide examples for both cases

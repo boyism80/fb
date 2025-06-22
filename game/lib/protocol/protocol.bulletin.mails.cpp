@@ -2,6 +2,7 @@
 
 namespace fb::protocol::game::response {
 
+#ifndef BOT
 bulletin_mails::bulletin_mails(const std::vector<MailSummary>& mails, MAIL_BUTTON_ENABLE button_flags) :
     mails(mails),
     button_flags(button_flags)
@@ -30,4 +31,32 @@ async::task<void> bulletin_mails::serialize(fb::stream_writer<big_endian>& write
     }
     writer.write<uint8_t>(0x00);
 }
+#else
+async::task<void> bulletin_mails::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    co_await header::deserialize(reader);
+    reader.read<uint8_t>(); // 0x04
+    this->button_flags = static_cast<MAIL_BUTTON_ENABLE>(reader.read<uint8_t>());
+    reader.read<uint16_t>(); // 0xFFFF
+    this->mail_name = reader.read<std::string, uint8_t>();
+
+    uint8_t count = reader.read<uint8_t>();
+    this->mails.clear();
+
+    for (int i = 0; i < count; i++)
+    {
+        mail_data mail;
+        mail.unread      = reader.read<bool>();
+        mail.id          = reader.read<uint16_t>();
+        mail.sender_name = reader.read<std::string, uint8_t>();
+        mail.month       = reader.read<uint8_t>();
+        mail.day         = reader.read<uint8_t>();
+        mail.title       = reader.read<std::string, uint8_t>();
+        this->mails.push_back(mail);
+    }
+
+    reader.read<uint8_t>(); // 0x00
+}
+#endif
+
 } // namespace fb::protocol::game::response

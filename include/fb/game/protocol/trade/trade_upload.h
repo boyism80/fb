@@ -22,7 +22,11 @@ public:
     const fb::game::item& item;
     const bool            mine;
 #else
-
+    uint8_t     index;
+    uint16_t    look;
+    uint8_t     color;
+    std::string name;
+    bool        mine;
 #endif
 
 public:

@@ -46,7 +46,26 @@ async::task<void> dialog_menu::serialize(fb::stream_writer<big_endian>& writer) 
 async::task<void> dialog_menu::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    reader.read<uint8_t>(); // 0x01
+    this->interaction = reader.read<uint8_t>();
+    this->sequence    = reader.read<uint32_t>();
+    reader.read<uint8_t>(); // obj type flag
+    reader.read<uint8_t>(); // 0x01
+    this->look  = reader.read<uint16_t>();
+    this->color = reader.read<uint8_t>();
+    reader.read<uint8_t>();  // obj type flag
+    reader.read<uint16_t>(); // look (duplicate)
+    reader.read<uint8_t>();  // color (duplicate)
+    this->message = reader.read<std::string, uint16_t>();
+
+    uint16_t menu_count = reader.read<uint16_t>();
+    this->menus.clear();
+    for (int i = 0; i < menu_count; i++)
+    {
+        this->menus.push_back(reader.read<std::string, uint8_t>());
+        reader.read<uint16_t>(); // menu index
+    }
+    reader.read<uint8_t>(); // 0x00
 }
 #endif
 

@@ -29,7 +29,16 @@ async::task<void> sound::serialize(fb::stream_writer<big_endian>& writer) const
 async::task<void> sound::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    reader.read<uint8_t>(); // 0x00
+    reader.read<uint8_t>(); // 0x03
+    this->value = static_cast<SOUND>(reader.read<uint16_t>());
+    reader.read<uint8_t>();  // 100
+    reader.read<uint16_t>(); // 0x0004
+    this->sequence = reader.read<uint32_t>();
+    reader.read<uint16_t>(); // 0x0100
+    reader.read<uint16_t>(); // 0x0202
+    reader.read<uint16_t>(); // 0x0004
+    reader.read<uint16_t>(); // 0xCCCC
 }
 #endif
 

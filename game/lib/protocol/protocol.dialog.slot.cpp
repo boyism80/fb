@@ -43,7 +43,26 @@ async::task<void> dialog_slot::serialize(fb::stream_writer<big_endian>& writer) 
 async::task<void> dialog_slot::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    reader.read<uint8_t>(); // 0x05
+    this->interaction = reader.read<uint8_t>();
+    this->sequence    = reader.read<uint32_t>();
+    reader.read<uint8_t>(); // obj type flag
+    reader.read<uint8_t>(); // 0x01
+    this->look  = reader.read<uint16_t>();
+    this->color = reader.read<uint8_t>();
+    reader.read<uint8_t>();  // obj type flag
+    reader.read<uint16_t>(); // look (duplicate)
+    reader.read<uint8_t>();  // color (duplicate)
+    this->message = reader.read<std::string, uint16_t>();
+    reader.read<uint16_t>(); // 0xFFFF
+    uint8_t slot_count = reader.read<uint8_t>();
+
+    this->slots.clear();
+    for (int i = 0; i < slot_count; i++)
+    {
+        this->slots.push_back(reader.read<uint8_t>());
+    }
+    reader.read<uint8_t>(); // 0x00
 }
 #endif
 

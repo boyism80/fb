@@ -21,7 +21,8 @@ public:
     const fb::game::character& me;
     const fb::model::model&    model;
 #else
-
+    uint32_t    sequence;
+    std::string name;
 #endif
 
 public:

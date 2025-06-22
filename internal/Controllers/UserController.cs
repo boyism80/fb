@@ -6,6 +6,7 @@ using Http;
 using Http.Model;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.ObjectPool;
 using System.Buffers;
 using System.Data;
 using System.Security.Cryptography;
@@ -32,8 +33,9 @@ namespace Internal.Controllers
         private readonly RedisDistributedLockService _distributedLock;
         private readonly ILogger<UserController> _logger;
 
-        // Reuse SHA256 instance to reduce allocations
-        private static readonly SHA256 _sha256 = SHA256.Create();
+        // Object pool for SHA256 instances to reduce GC pressure
+        // Limit pool size to 16 instances (reasonable for most scenarios)
+        private static readonly ObjectPool<SHA256> _sha256Pool = new DefaultObjectPool<SHA256>(new Sha256PooledObjectPolicy(), 64);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserController"/> class.
@@ -90,27 +92,77 @@ namespace Internal.Controllers
         /// <summary>
         /// Computes a SHA256 hash of the input string.
         /// Used for password hashing and security operations.
+        /// Thread-safe implementation using object pooling to reduce GC pressure.
         /// </summary>
         /// <param name="value">The string value to hash.</param>
         /// <returns>A hexadecimal string representation of the SHA256 hash.</returns>
         private static string SHA256Hash(string value)
         {
-            var hash = _sha256.ComputeHash(Encoding.ASCII.GetBytes(value));
-
-            // Use ArrayPool to reduce allocations for StringBuilder buffer
-            var buffer = ArrayPool<char>.Shared.Rent(hash.Length * 2);
+            var sha256 = _sha256Pool.Get();
             try
             {
-                var span = buffer.AsSpan(0, hash.Length * 2);
-                for (int i = 0; i < hash.Length; i++)
+                var hash = sha256.ComputeHash(Encoding.ASCII.GetBytes(value));
+
+                // Use ArrayPool to reduce allocations for StringBuilder buffer
+                var buffer = ArrayPool<char>.Shared.Rent(hash.Length * 2);
+                try
                 {
-                    hash[i].TryFormat(span.Slice(i * 2, 2), out _, "x2");
+                    var span = buffer.AsSpan(0, hash.Length * 2);
+
+                    // Clear the buffer to ensure no leftover data from previous uses
+                    span.Clear();
+
+                    for (int i = 0; i < hash.Length; i++)
+                    {
+                        // Check if TryFormat succeeds and handle failure
+                        if (!hash[i].TryFormat(span.Slice(i * 2, 2), out _, "x2"))
+                        {
+                            throw new InvalidOperationException($"Failed to format byte {hash[i]} at index {i}");
+                        }
+                    }
+                    return new string(span);
                 }
-                return new string(span);
+                finally
+                {
+                    ArrayPool<char>.Shared.Return(buffer);
+                }
             }
             finally
             {
-                ArrayPool<char>.Shared.Return(buffer);
+                _sha256Pool.Return(sha256);
+            }
+        }
+
+        /// <summary>
+        /// Object pool policy for SHA256 instances.
+        /// Handles creation and reset of SHA256 objects for reuse.
+        /// </summary>
+        private class Sha256PooledObjectPolicy : PooledObjectPolicy<SHA256>
+        {
+            public override SHA256 Create()
+            {
+                return SHA256.Create();
+            }
+
+            public override bool Return(SHA256 obj)
+            {
+                if (obj == null)
+                    return false;
+
+                // Reset the SHA256 instance state for reuse
+                // SHA256 doesn't have a Reset method, but we can ensure it's in a clean state
+                // by creating a small dummy computation to clear any internal state
+                try
+                {
+                    obj.ComputeHash(Array.Empty<byte>());
+                    return true;
+                }
+                catch
+                {
+                    // If there's any issue with the instance, don't return it to the pool
+                    obj.Dispose();
+                    return false;
+                }
             }
         }
 

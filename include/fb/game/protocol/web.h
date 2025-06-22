@@ -14,15 +14,33 @@ public:
     inline static uint8_t header = 0x66;
 
 public:
+#ifndef BOT
     const uint8_t     type;
     const std::string address;
     const std::string message;
+#else
+    uint8_t     type;
+    std::string address;
+    std::string message;
+#endif
 
 public:
-    web(uint8_t type, std::string address, std::string message);
+#ifndef BOT
+    web(uint8_t type, std::string address, std::string message) :
+        type(type),
+        address(address),
+        message(message)
+    { }
+#else
+    web() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
+#endif
 };
 
 } // namespace fb::protocol::game::response

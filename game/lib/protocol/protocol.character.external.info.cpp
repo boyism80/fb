@@ -116,7 +116,75 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
 async::task<void> external_info::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    this->title      = reader.read<std::string, uint8_t>();
+    this->clan_name  = reader.read<std::string, uint8_t>();
+    this->clan_title = reader.read<std::string, uint8_t>();
+    this->class_name = reader.read<std::string, uint8_t>();
+    this->name       = reader.read<std::string, uint8_t>();
+
+    this->disguised = reader.read<uint8_t>();
+    this->sex       = reader.read<uint8_t>();
+    this->state     = reader.read<uint8_t>();
+
+    this->look  = reader.read<uint16_t>();
+    this->color = reader.read<uint8_t>();
+
+    // Read equipment information
+    if (this->disguised)
+    {
+        // In disguise state, only read armor_color
+        this->armor_color = reader.read<uint8_t>();
+    }
+    else
+    {
+        // In normal state, read all equipment information
+        this->armor_dress = reader.read<uint8_t>();
+        this->armor_color = reader.read<uint8_t>();
+
+        this->weapon_dress = reader.read<uint16_t>();
+        this->weapon_color = reader.read<uint8_t>();
+
+        this->shield_dress = reader.read<uint8_t>();
+        this->shield_color = reader.read<uint8_t>();
+    }
+
+    // Additional equipment information (helmet, rings, auxiliary equipment)
+    this->helmet.look  = reader.read<uint16_t>();
+    this->helmet.color = reader.read<uint8_t>();
+
+    this->ring_left.look  = reader.read<uint16_t>();
+    this->ring_left.color = reader.read<uint8_t>();
+
+    this->ring_right.look  = reader.read<uint16_t>();
+    this->ring_right.color = reader.read<uint8_t>();
+
+    this->aux_left.look  = reader.read<uint16_t>();
+    this->aux_left.color = reader.read<uint8_t>();
+
+    this->aux_right.look  = reader.read<uint16_t>();
+    this->aux_right.color = reader.read<uint8_t>();
+
+    // Equipment information text
+    this->equipment_text = reader.read<std::string, uint8_t>();
+
+    // Additional information
+    this->sequence     = reader.read<uint32_t>();
+    this->group_option = reader.read<uint8_t>();
+    this->trade_option = reader.read<uint8_t>();
+    this->unknown      = reader.read<uint32_t>();
+
+    // Achievement information
+    uint8_t achievement_count = reader.read<uint8_t>();
+    this->achievements.clear();
+    for (int i = 0; i < achievement_count; i++)
+    {
+        achievement_data achievement;
+        achievement.icon  = reader.read<uint8_t>();
+        achievement.color = reader.read<uint8_t>();
+        achievement.text  = reader.read<std::string, uint8_t>();
+        this->achievements.push_back(achievement);
+    }
+    reader.read<uint8_t>(); // Final 0x00
 }
 #endif
 } // namespace fb::protocol::game::response

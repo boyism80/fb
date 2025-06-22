@@ -22,7 +22,7 @@ public:
     const fb::game::life& me;
     const uint8_t         index;
 #else
-
+    uint8_t index;
 #endif
 
 public:
