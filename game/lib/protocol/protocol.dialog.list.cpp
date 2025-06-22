@@ -50,7 +50,7 @@ async::task<void> dialog_list::deserialize(fb::stream_reader<big_endian>& reader
 {
     co_await header::deserialize(reader);
     reader.read<uint8_t>(); // 2
-    this->interaction = static_cast<fb::game::dialog::interaction>(reader.read<uint8_t>());
+    this->interaction = reader.read<uint8_t>();
     this->sequence    = reader.read<uint32_t>();
     reader.read<uint8_t>(); // obj type flag
     reader.read<uint8_t>(); // 0x01
