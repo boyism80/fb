@@ -118,10 +118,10 @@ async::task<void> game_bot::handle_option(const fb::protocol::game::response::op
 
 async::task<void> game_bot::handle_message(const fb::protocol::game::response::message& response)
 {
-    if (response.text == fb::model::const_value::string::MESSAGE_NOT_READY_GAME_SERVER)
-    {
-        this->send(fb::protocol::game::request::chat(false, "/랜덤이동"));
-    }
+    // if (response.text == fb::model::const_value::string::MESSAGE_NOT_READY_GAME_SERVER)
+    //{
+    //     this->send(fb::protocol::game::request::chat(false, "/랜덤이동"));
+    // }
 
     if (response.type == MESSAGE_TYPE::NOTIFY)
     {
@@ -171,12 +171,12 @@ async::task<void> game_bot::handle_map(const fb::protocol::game::response::map_c
 {
     if (response.id == 1)
     {
-        this->send(fb::protocol::game::request::chat(false, "/랜덤이동"));
+        // this->send(fb::protocol::game::request::chat(false, "/랜덤이동"));
     }
     else
     {
-        this->_inited = true;
     }
+    this->_inited = true;
     co_return;
 }
 

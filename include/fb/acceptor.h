@@ -197,7 +197,7 @@ private:
                 if (reader.readable_size() < size)
                     break;
 
-                if (this->assert_tps(socket) && socket.update_tps(MAX_TPS) == false)
+                if (this->assert_tps(socket) && socket.limiter.update(MAX_TPS) == false)
                     throw std::runtime_error("tps limit exceeded");
 
                 auto cmd = reader.read<uint8_t>();
@@ -227,7 +227,10 @@ private:
                                                       co_return;
 
                                                   auto& handler = this->handler.protocol.get_handler(cmd);
-                                                  if (this->assert_tps(socket) && handler.update_tps() == false)
+                                                  // Check both global socket TPS and per-command TPS limits
+                                                  // If either limit is exceeded, ignore the packet
+                                                  if (this->assert_tps(socket) &&
+                                                      !socket.limiter.update(cmd, handler.duration, handler.limit))
                                                       co_return;
 
                                                   std::ignore = co_await handler.fn(socket, *protocol.get());

@@ -18,7 +18,11 @@ bot_container::bot_container(boost::asio::io_context& context) :
             co_return;
         });
     }
+}
 
+void bot_container::initialize()
+{
+    this->_running = true;
     this->bind_thread_timer(&bot_container::handle_timer, 100ms);
     this->bind_timer(&bot_container::handle_bot_spawn, std::chrono::milliseconds(fb::config<uint32_t>("interval")));
 }
@@ -79,8 +83,8 @@ void bot_container::display_spawned_bots()
     auto _2 = std::shared_lock<std::shared_mutex>(login_bot::_mutex);
     auto _3 = std::shared_lock<std::shared_mutex>(game_bot::_mutex);
 
-    fb::console::put("gateway\t\t{}", gateway_bot::_count);
-    fb::console::put("login\t\t{}", login_bot::_count);
-    fb::console::put("game\t\t{}", game_bot::_count);
-    fb::console::up(2);
+    fb::console::puts("gateway\t\t{}", gateway_bot::_count);
+    fb::console::puts("login\t\t{}", login_bot::_count);
+    fb::console::puts("game\t\t{}", game_bot::_count);
+    fb::console::up(3);
 }

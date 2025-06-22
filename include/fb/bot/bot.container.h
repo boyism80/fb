@@ -49,6 +49,14 @@ public:
     bot_container(boost::asio::io_context& context);
 
     /**
+     * @brief      Initializes the bot container after construction.
+     *
+     *             This method must be called after the object is fully constructed
+     *             and managed by a shared_ptr. It sets up timers and begins bot spawning.
+     */
+    void initialize();
+
+    /**
      * @brief      Destroys the bot container and cleans up all bots.
      */
     ~bot_container();
@@ -100,13 +108,12 @@ public:
      */
     async::task<void> on_closed(fb::socket<>& socket)
     {
-        auto& bot   = static_cast<base_bot&>(socket);
-        std::ignore = bot.thread()->dispatch([&bot](auto& thread) -> async::task<void> {
-            co_await bot.on_closed();
-            auto params = thread.template data<bot_thread_params>();
-            params->bots.erase(bot.id);
-        });
-        co_return;
+        auto& bot    = static_cast<base_bot&>(socket);
+        auto  thread = bot.thread();
+        co_await thread->switching();
+        co_await bot.on_closed();
+        auto params = thread->template data<bot_thread_params>();
+        params->bots.erase(bot.id);
     }
 
     /**
