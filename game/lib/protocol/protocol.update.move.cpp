@@ -2,6 +2,19 @@
 
 namespace fb::protocol::game::request {
 
+#ifdef BOT
+async::task<void> update_move::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    co_await header::serialize(writer);
+    writer.write<uint8_t>(header);
+    co_await move::serialize(writer);
+    writer.write<uint16_t>(this->begin.x);
+    writer.write<uint16_t>(this->begin.y);
+    writer.write<uint8_t>(this->size.width);
+    writer.write<uint8_t>(this->size.height);
+    writer.write<uint16_t>(this->crc);
+}
+#else
 async::task<void> update_move::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
@@ -13,5 +26,5 @@ async::task<void> update_move::deserialize(fb::stream_reader<big_endian>& reader
     this->size.height = reader.read<uint8_t>();
     this->crc         = reader.read<uint16_t>();
 }
-
+#endif
 } // namespace fb::protocol::game::request

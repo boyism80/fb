@@ -2,11 +2,7 @@
 
 namespace fb::protocol::game::response {
 
-timer::timer(uint32_t time, TIMER_TYPE type) :
-    time(time),
-    type(type)
-{ }
-
+#ifndef BOT
 async::task<void> timer::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
@@ -15,5 +11,14 @@ async::task<void> timer::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint32_t>(this->time);
     writer.write<uint8_t>(0x00);
 }
+#else
+async::task<void> timer::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    co_await header::deserialize(reader);
+    this->type = static_cast<TIMER_TYPE>(reader.read<uint8_t>());
+    this->time = reader.read<uint32_t>();
+    reader.read<uint8_t>(); // 0x00
+}
+#endif
 
 } // namespace fb::protocol::game::response

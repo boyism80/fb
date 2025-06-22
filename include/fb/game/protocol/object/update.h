@@ -21,7 +21,18 @@ private:
     const fb::game::object*               object;
     const std::vector<fb::game::object*>* objects;
 #else
+    struct object_data
+    {
+        uint16_t x;
+        uint16_t y;
+        uint32_t sequence;
+        uint16_t look;
+        uint8_t  color;
+        uint8_t  direction;
+    };
 
+    uint16_t                 object_count;
+    std::vector<object_data> objects_data;
 #endif
 
 public:

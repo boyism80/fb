@@ -20,7 +20,8 @@ async::task<void> spell_unbuff::serialize(fb::stream_writer<big_endian>& writer)
 async::task<void> spell_unbuff::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    this->buff_name = reader.read<std::string, uint8_t>();
+    reader.read<uint32_t>(); // 0x00
 }
 #endif
 

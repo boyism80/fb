@@ -25,6 +25,21 @@ async::task<void> bulletin_article::serialize(fb::stream_writer<big_endian>& wri
     writer.write<std::string, uint16_t>(this->value.contents);
     writer.write<uint8_t>(0x00);
 }
+#else
+async::task<void> bulletin_article::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    co_await header::deserialize(reader);
+    reader.read<uint8_t>(); // 0x03
+    this->flag = static_cast<BULLETIN_BUTTON_ENABLE>(reader.read<uint8_t>());
+    reader.read<uint8_t>(); // 0x00
+    this->id       = reader.read<uint16_t>();
+    this->uname    = reader.read<std::string, uint8_t>();
+    this->month    = reader.read<uint8_t>();
+    this->day      = reader.read<uint8_t>();
+    this->title    = reader.read<std::string, uint8_t>();
+    this->contents = reader.read<std::string, uint16_t>();
+    reader.read<uint8_t>(); // 0x00
+}
 #endif
 
 } // namespace fb::protocol::game::response

@@ -21,7 +21,8 @@ public:
     const fb::game::object& me;
     const SOUND             value;
 #else
-
+    uint32_t sequence;
+    SOUND    value;
 #endif
 
 public:

@@ -27,7 +27,20 @@ public:
     const fb::game::dialog::interaction interaction;
     const uint32_t                      sequence;
 #else
-
+    uint8_t                  interaction;
+    uint32_t                 sequence;
+    uint8_t                  sex;
+    uint8_t                  state;
+    uint16_t                 face;
+    uint8_t                  hair_color;
+    uint8_t                  armor;
+    uint8_t                  armor_color;
+    uint16_t                 weapon;
+    uint8_t                  weapon_color;
+    uint16_t                 shield;
+    uint8_t                  shield_color;
+    std::string              message;
+    std::vector<std::string> list;
 #endif
 
 public:

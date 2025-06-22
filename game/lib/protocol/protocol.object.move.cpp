@@ -4,15 +4,22 @@ using namespace fb::model;
 
 namespace fb::protocol::game::request {
 
-#ifdef BOT
+#ifndef BOT
+async::task<void> move::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    co_await header::deserialize(reader);
+    this->direction  = DIRECTION(reader.read<uint8_t>());
+    this->sequence   = reader.read<uint8_t>();
+    this->position.x = reader.read<uint16_t>();
+    this->position.y = reader.read<uint16_t>();
+}
+#else
 move::move(DIRECTION direction, uint32_t sequence, fb::model::point<uint16_t> position) :
     direction(direction),
     sequence(sequence),
     position(position)
 { }
-#endif
 
-#ifdef BOT
 async::task<void> move::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
@@ -21,15 +28,6 @@ async::task<void> move::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(this->sequence);
     writer.write<uint16_t>(this->position.x);
     writer.write<uint16_t>(this->position.y);
-}
-#else
-async::task<void> move::deserialize(fb::stream_reader<big_endian>& reader)
-{
-    co_await header::deserialize(reader);
-    this->direction  = DIRECTION(reader.read<uint8_t>());
-    this->sequence   = reader.read<uint8_t>();
-    this->position.x = reader.read<uint16_t>();
-    this->position.y = reader.read<uint16_t>();
 }
 #endif
 

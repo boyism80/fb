@@ -42,7 +42,20 @@ async::task<void> user_list::serialize(fb::stream_writer<big_endian>& writer) co
 async::task<void> user_list::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    this->user_count = reader.read<uint16_t>();
+    reader.read<uint16_t>(); // user_count (duplicate)
+    reader.read<uint8_t>();  // 0x00
+
+    this->users.clear();
+    for (int i = 0; i < this->user_count; i++)
+    {
+        user_data user;
+        user.nation    = reader.read<uint8_t>() / 0x10;
+        user.promotion = reader.read<uint8_t>() / 0x10;
+        user.flags     = reader.read<uint8_t>();
+        user.name      = reader.read<std::string, uint8_t>();
+        this->users.push_back(user);
+    }
 }
 #endif
 

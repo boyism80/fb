@@ -14,17 +14,19 @@ public:
     inline static uint8_t header = 0x20;
 
 public:
-#ifdef BOT
-    uint8_t hours;
-#else
+#ifndef BOT
     const uint8_t hours;
+#else
+    uint8_t hours;
 #endif
 
 public:
-#ifdef BOT
-    time() = default;
+#ifndef BOT
+    time(uint8_t hours) :
+        hours(hours)
+    { }
 #else
-    time(uint8_t hours);
+    time() = default;
 #endif
 
 public:

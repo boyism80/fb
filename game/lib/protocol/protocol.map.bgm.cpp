@@ -30,7 +30,16 @@ async::task<void> map_bgm::serialize(fb::stream_writer<big_endian>& writer) cons
 async::task<void> map_bgm::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    reader.read<uint8_t>(); // 0x01
+    reader.read<uint8_t>(); // 0x05
+    this->bgm = reader.read<uint16_t>();
+    reader.read<uint16_t>(); // bgm (duplicate)
+    this->volume = reader.read<uint8_t>();
+    reader.read<uint16_t>(); // 512
+    reader.read<uint16_t>(); // 512
+    reader.read<uint8_t>();  // 0x00
+    reader.read<uint8_t>();  // 0x00
+    reader.read<uint8_t>();  // 0x00
 }
 #endif
 

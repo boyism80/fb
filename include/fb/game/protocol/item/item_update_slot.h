@@ -22,7 +22,9 @@ public:
     const fb::game::character& me;
     const EQUIPMENT_PARTS      parts;
 #else
-
+    uint16_t    look;
+    uint8_t     color;
+    std::string name;
 #endif
 
 public:

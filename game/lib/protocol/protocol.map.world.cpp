@@ -2,19 +2,21 @@
 
 namespace fb::protocol::game::request {
 
-#ifdef BOT
-async::task<void> map_world::serialize(fb::stream_writer<big_endian>& writer) const
-{
-    co_await header::serialize(writer);
-    // TODO: serialize bytes
-}
-#else
+#ifndef BOT // server only
 async::task<void> map_world::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
     this->value  = reader.read<uint16_t>();
     this->before = reader.read<uint16_t>();
     this->after  = reader.read<uint16_t>();
+}
+#else // bot only
+async::task<void> map_world::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    co_await header::serialize(writer);
+    writer.write<uint16_t>(this->value);
+    writer.write<uint16_t>(this->before);
+    writer.write<uint16_t>(this->after);
 }
 #endif
 

@@ -25,7 +25,22 @@ public:
     const fb::game::dialog::interaction interaction;
     const uint32_t                      sequence;
 #else
+    struct item_data
+    {
+        uint16_t    look;
+        uint8_t     color;
+        uint32_t    value;
+        std::string name;
+        std::string desc;
+    };
 
+    uint16_t               look;
+    uint8_t                color;
+    std::string            message;
+    uint16_t               pursuit;
+    uint8_t                interaction;
+    uint32_t               sequence;
+    std::vector<item_data> items;
 #endif
 
 public:

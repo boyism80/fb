@@ -36,6 +36,16 @@ public:
 
 public:
 #ifdef BOT
+    struct user_data
+    {
+        uint8_t     nation;
+        uint8_t     promotion;
+        uint8_t     flags;
+        std::string name;
+    };
+
+    uint16_t               user_count;
+    std::vector<user_data> users;
 #else
     const character&        me;
     std::vector<character*> users;

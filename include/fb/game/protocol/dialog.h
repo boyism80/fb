@@ -17,16 +17,22 @@ public:
     inline static uint8_t header = 0x3A;
 
 public:
-#ifndef BOT
-    fb::game::dialog::interaction interaction;
-    uint8_t                       action;  // NORMAL
-    std::string                   message; // INPUT
-    uint16_t                      index;   // MENU
-    uint16_t                      pursuit; // SELL
-    std::string                   name;    // SELL
-    DIALOG_RESULT                 button;  // LIST
+#ifdef BOT
+    const uint8_t       interaction;
+    const uint8_t       action;
+    const std::string   message;
+    const uint16_t      index;
+    const uint16_t      pursuit;
+    const std::string   name;
+    const DIALOG_RESULT button;
 #else
-
+    fb::game::dialog::interaction interaction;
+    uint8_t                       action;
+    std::string                   message;
+    uint16_t                      index;
+    uint16_t                      pursuit;
+    std::string                   name;
+    DIALOG_RESULT                 button;
 #endif
 
 public:

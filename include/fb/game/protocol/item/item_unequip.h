@@ -17,13 +17,14 @@ public:
 #ifndef BOT
     const EQUIPMENT_PARTS parts;
 #else
+    EQUIPMENT_PARTS parts;
 #endif
 
 public:
 #ifndef BOT
     item_unequip(EQUIPMENT_PARTS parts);
 #else
-
+    item_unequip() = default;
 #endif
 
 public:

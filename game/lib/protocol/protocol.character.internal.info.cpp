@@ -97,7 +97,43 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
 async::task<void> internal_info::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    this->phydef       = reader.read<int8_t>();
+    this->dam          = reader.read<uint8_t>();
+    this->hit          = reader.read<uint8_t>();
+    this->clan_name    = reader.read<std::string, uint8_t>();
+    this->clan_title   = reader.read<std::string, uint8_t>();
+    this->title        = reader.read<std::string, uint8_t>();
+    this->group_info   = reader.read<std::string, uint8_t>();
+    this->group_option = reader.read<uint8_t>();
+    this->remained_exp = reader.read<uint32_t>();
+    this->class_name   = reader.read<std::string, uint8_t>();
+
+    // Equipment information (5 slots)
+    this->equipments.clear();
+    for (int i = 0; i < 5; i++)
+    {
+        equipment_data equip;
+        equip.look  = reader.read<uint16_t>();
+        equip.color = reader.read<uint8_t>();
+        this->equipments.push_back(equip);
+    }
+
+    reader.read<uint8_t>(); // fixed 0x00
+    this->trade_option      = reader.read<uint8_t>();
+    this->pk_protect_option = reader.read<uint8_t>();
+
+    // Fully implement achievement information
+    uint8_t achievement_count = reader.read<uint8_t>();
+    this->achievements.clear();
+    for (int i = 0; i < achievement_count; i++)
+    {
+        achievement_data achievement;
+        achievement.look  = reader.read<uint8_t>();
+        achievement.color = reader.read<uint8_t>();
+        achievement.text  = reader.read<std::string, uint8_t>();
+        this->achievements.push_back(achievement);
+    }
+    reader.read<uint8_t>(); // Final 0x00
 }
 #endif
 

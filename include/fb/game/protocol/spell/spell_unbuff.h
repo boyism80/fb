@@ -20,7 +20,7 @@ public:
 #ifndef BOT
     const fb::game::buff& buff;
 #else
-
+    std::string buff_name;
 #endif
 
 public:

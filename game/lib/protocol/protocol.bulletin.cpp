@@ -2,53 +2,7 @@
 
 namespace fb::protocol::game::request {
 
-#ifdef BOT
-bulletin::bulletin(BULLETIN_ACTION    action,
-                   uint16_t           section,
-                   uint16_t           article,
-                   uint16_t           offset,
-                   const std::string& title,
-                   const std::string& contents) :
-    action(action),
-    section(section),
-    article(article),
-    offset(offset),
-    title(title),
-    contents(contents)
-{ }
-#endif
-
-#ifdef BOT
-async::task<void> bulletin::serialize(fb::stream_writer<big_endian>& writer) const
-{
-    co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
-    writer.write<uint8_t>((uint8_t)this->action);
-    switch (this->action)
-    {
-    case BULLETIN_ACTION::ARTICLES:
-        writer.write<uint16_t>(this->section);
-        writer.write<uint16_t>(this->offset);
-        break;
-
-    case BULLETIN_ACTION::ARTICLE:
-        writer.write<uint16_t>(this->section);
-        writer.write<uint16_t>(this->article);
-        break;
-
-    case BULLETIN_ACTION::WRITE:
-        writer.write<uint16_t>(this->section);
-        writer.write<std::string, uint8_t>(this->title);
-        writer.write<std::string, uint16_t>(this->contents);
-        break;
-
-    case BULLETIN_ACTION::DELETE:
-        writer.write<uint16_t>(this->section);
-        writer.write<uint16_t>(this->article);
-        break;
-    }
-}
-#else
+#ifndef BOT
 async::task<void> bulletin::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
@@ -82,6 +36,50 @@ async::task<void> bulletin::deserialize(fb::stream_reader<big_endian>& reader)
         this->user     = reader.read<std::string>();
         this->title    = reader.read<std::string>();
         this->contents = reader.read<std::string, uint16_t>();
+        break;
+    }
+}
+#else
+bulletin::bulletin(BULLETIN_ACTION    action,
+                   uint16_t           section,
+                   uint16_t           article,
+                   uint16_t           offset,
+                   const std::string& title,
+                   const std::string& contents) :
+    action(action),
+    section(section),
+    article(article),
+    offset(offset),
+    title(title),
+    contents(contents)
+{ }
+
+async::task<void> bulletin::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    co_await header::serialize(writer);
+    writer.write<uint8_t>(header);
+    writer.write<uint8_t>((uint8_t)this->action);
+    switch (this->action)
+    {
+    case BULLETIN_ACTION::ARTICLES:
+        writer.write<uint16_t>(this->section);
+        writer.write<uint16_t>(this->offset);
+        break;
+
+    case BULLETIN_ACTION::ARTICLE:
+        writer.write<uint16_t>(this->section);
+        writer.write<uint16_t>(this->article);
+        break;
+
+    case BULLETIN_ACTION::WRITE:
+        writer.write<uint16_t>(this->section);
+        writer.write<std::string, uint8_t>(this->title);
+        writer.write<std::string, uint16_t>(this->contents);
+        break;
+
+    case BULLETIN_ACTION::DELETE:
+        writer.write<uint16_t>(this->section);
+        writer.write<uint16_t>(this->article);
         break;
     }
 }

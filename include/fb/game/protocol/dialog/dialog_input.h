@@ -24,7 +24,11 @@ public:
     const fb::game::dialog::interaction interaction;
     const uint32_t                      sequence;
 #else
-
+    uint16_t    look;
+    uint8_t     color;
+    std::string message;
+    uint8_t     interaction;
+    uint32_t    sequence;
 #endif
 
 public:

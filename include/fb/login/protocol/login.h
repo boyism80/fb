@@ -26,7 +26,10 @@ public:
 #ifndef BOT
     login() = default;
 #else
-    login(const std::string& id, const std::string& pw);
+    login(const std::string& id, const std::string& pw) :
+        id(id),
+        pw(pw)
+    { }
 #endif
 
 public:

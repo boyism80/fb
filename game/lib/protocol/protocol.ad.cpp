@@ -2,13 +2,7 @@
 
 namespace fb::protocol::game::response {
 
-ad::ad(uint32_t width, uint32_t height, std::string url, uint8_t time) :
-    width(width),
-    height(height),
-    url(url),
-    time(time)
-{ }
-
+#ifndef BOT
 async::task<void> ad::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
@@ -19,5 +13,16 @@ async::task<void> ad::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(this->time);
     writer.write<uint8_t>(0x00);
 }
+#else
+async::task<void> ad::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    co_await header::deserialize(reader);
+    this->url    = reader.read<std::string, uint16_t>();
+    this->width  = reader.read<uint16_t>();
+    this->height = reader.read<uint16_t>();
+    this->time   = reader.read<uint8_t>();
+    reader.read<uint8_t>(); // 0x00
+}
+#endif
 
 } // namespace fb::protocol::game::response

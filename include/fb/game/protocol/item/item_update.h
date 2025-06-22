@@ -21,14 +21,18 @@ public:
     const fb::game::character& me;
     const uint8_t              index;
 #else
-
+    uint8_t     index;
+    uint16_t    look;
+    uint8_t     color;
+    std::string name;
+    uint32_t    count;
 #endif
 
 public:
 #ifndef BOT
     item_update(const fb::game::character& me, uint8_t index);
 #else
-
+    item_update() = default;
 #endif
 
 public:

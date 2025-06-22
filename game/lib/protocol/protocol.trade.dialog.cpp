@@ -28,7 +28,10 @@ async::task<void> trade_dialog::serialize(fb::stream_writer<big_endian>& writer)
 async::task<void> trade_dialog::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    // TODO: deserialize bytes
+    reader.read<uint8_t>(); // 0x00
+    this->sequence = reader.read<uint32_t>();
+    this->name     = reader.read<std::string, uint8_t>();
+    reader.read<uint8_t>(); // 0x00
 }
 #endif
 

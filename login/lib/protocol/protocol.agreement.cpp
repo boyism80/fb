@@ -2,16 +2,22 @@
 
 namespace fb::protocol::login::request {
 
-#ifdef BOT
+#ifndef BOT
+async::task<void> agreement::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    co_await header::deserialize(reader);
+    this->enc_type     = reader.read<uint8_t>();
+    this->enc_key_size = reader.read<uint8_t>();
+    reader.read(this->enc_key, this->enc_key_size);
+}
+#else
 agreement::agreement(uint8_t type, uint8_t ksize, const uint8_t* key) :
     enc_type(type),
     enc_key_size(ksize)
 {
     memcpy(this->enc_key, key, ksize);
 }
-#endif
 
-#ifdef BOT
 async::task<void> agreement::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
@@ -19,14 +25,6 @@ async::task<void> agreement::serialize(fb::stream_writer<big_endian>& writer) co
     writer.write<uint8_t>(this->enc_type);
     writer.write<uint8_t>(this->enc_key_size);
     writer.write((const void*)this->enc_key, this->enc_key_size);
-}
-#else
-async::task<void> agreement::deserialize(fb::stream_reader<big_endian>& reader)
-{
-    co_await header::deserialize(reader);
-    this->enc_type     = reader.read<uint8_t>();
-    this->enc_key_size = reader.read<uint8_t>();
-    reader.read(this->enc_key, this->enc_key_size);
 }
 #endif
 

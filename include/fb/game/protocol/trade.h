@@ -31,7 +31,9 @@ public:
     uint32_t fd;
     params   parameter;
 #else
-
+    const uint8_t  action;
+    const uint32_t fd;
+    const params   parameter;
 #endif
 
 public:

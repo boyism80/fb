@@ -19,14 +19,16 @@ public:
     const uint32_t         index;
     const uint16_t         count;
 #else
-
+    ITEM_DELETE_TYPE type;
+    uint32_t         index;
+    uint16_t         count;
 #endif
 
 public:
 #ifndef BOT
     item_remove(ITEM_DELETE_TYPE type, uint32_t index, uint16_t count = 0);
 #else
-
+    item_remove() = default;
 #endif
 
 public:

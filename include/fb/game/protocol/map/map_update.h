@@ -43,7 +43,11 @@ public:
     fb::model::size8_t   size;
     uint16_t             crc;
 #else
-
+    uint16_t position_x;
+    uint16_t position_y;
+    uint8_t  width;
+    uint8_t  height;
+    uint16_t crc;
 #endif
 
 public:
@@ -66,6 +70,17 @@ class map_update : public fb::protocol::header
 public:
     inline static uint8_t header = 0x06;
 
+#ifdef BOT
+
+public:
+    struct tile_data
+    {
+        uint16_t id;
+        uint16_t blocked;
+        uint16_t object;
+    };
+#endif
+
 public:
 #ifndef BOT
     const fb::game::map&       map;
@@ -73,7 +88,12 @@ public:
     const fb::model::size8_t   size;
     const uint16_t             crc;
 #else
-
+    uint8_t                effect;
+    uint16_t               position_x;
+    uint16_t               position_y;
+    uint8_t                width;
+    uint8_t                height;
+    std::vector<tile_data> tiles;
 #endif
 
 public:

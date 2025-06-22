@@ -2,6 +2,20 @@
 
 namespace fb::protocol::game::request {
 
+#ifdef BOT
+async::task<void> spell_cast::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    co_await header::serialize(writer);
+    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(this->slot + 1);
+
+    // Write the buffer data
+    if (this->buffer.size() > 0)
+    {
+        writer.write(this->buffer.data(), this->buffer.size());
+    }
+}
+#else
 async::task<void> spell_cast::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
@@ -40,4 +54,5 @@ void spell_cast::parse(SPELL_TYPE type)
     break;
     }
 }
+#endif
 } // namespace fb::protocol::game::request

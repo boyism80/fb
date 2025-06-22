@@ -4,8 +4,11 @@
 #include <chrono>
 #include <fb/game/inventory.h>
 #include <fb/model/model.h>
+#include <fb/lua.h>
 
 namespace fb::game {
+
+class context;
 
 /**
  * @brief      Forward declaration of the object class.

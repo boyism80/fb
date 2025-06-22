@@ -21,7 +21,8 @@ public:
     const uint32_t money;
     const bool     mine;
 #else
-
+    uint32_t money;
+    bool     mine;
 #endif
 
 public:

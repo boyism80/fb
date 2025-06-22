@@ -17,7 +17,7 @@ public:
 #ifndef BOT
     const std::string& message;
 #else
-
+    std::string message;
 #endif
 
 public:
