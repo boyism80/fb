@@ -31,11 +31,7 @@ int context::builtin::builtin_sleep(lua_State* L)
     lua->pending(true);
 
     auto context = lua->env<fb::game::context>("context");
-    async::awaitable_then(context->sleep(std::chrono::milliseconds(ms)), [L](auto result) {
-        auto lua = fb::lua::get(L);
-        if (lua == nullptr)
-            return;
-
+    async::awaitable_then(context->sleep(std::chrono::milliseconds(ms)), [lua](auto result) {
         lua->pending(false);
         lua->resume(0);
     });

@@ -464,13 +464,6 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         // and set default map(id = 0) and position(1, 1)
         if (map == nullptr)
         {
-            auto thread = this->_map->thread();
-            if (this->is(OBJECT_TYPE::CHARACTER))
-            {
-                auto params = thread->template data<thread_params>();
-                params->characters.erase(static_cast<character*>(this)->id());
-            }
-
             // broadcast near characters
             for (auto x : this->_map->nears(this->_position))
             {
@@ -489,6 +482,9 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
                 this->_sector.reset();
             }
 
+            this->listener.on_map_changed(*this,
+                                          this->_map != nullptr ? this->_map.get() : nullptr,
+                                          map != nullptr ? map.get() : nullptr);
             this->_map = nullptr;
             co_await this->context.switch_thread(weak);
             this->_position = fb::model::point16_t(1, 1);
@@ -517,15 +513,9 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         co_await this->context.switch_thread(weak);
         this->_position = before_position;
 
-        // switch thread of destination map
-        // and insert character into thread cache.
-        auto thread = this->thread();
-        if (this->is(OBJECT_TYPE::CHARACTER))
-        {
-            auto params = thread->template data<thread_params>();
-            params->characters.insert(
-                {this->sequence(), std::static_pointer_cast<character>(this->shared_from_this())});
-        }
+        this->listener.on_map_changed(*this,
+                                      this->_map != nullptr ? this->_map.get() : nullptr,
+                                      map != nullptr ? map.get() : nullptr);
 
         this->update_sector();
 

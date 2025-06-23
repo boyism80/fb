@@ -200,6 +200,15 @@ public:
     void on_effect(fb::game::object& ch, uint8_t value) override final;
 
     /**
+     * @brief      Called when an object's map has changed.
+     *
+     * @param      me    The object whose map has changed
+     * @param      before  The previous map
+     * @param      after   The new map
+     */
+    void on_map_changed(fb::game::object& me, const fb::game::map* before, const fb::game::map* after) override final;
+
+    /**
      * @brief      Called when a life entity performs an attack action.
      *
      * @param      me    The life entity performing the attack

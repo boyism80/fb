@@ -266,60 +266,6 @@ class luable
 public:
     LUA_PROTOTYPE
 
-public:
-    /**
-     * @brief      Pushes this luable object onto the Lua stack.
-     *
-     * @param      ctx   The Lua context.
-     */
-    void to_lua(lua_State* ctx) const;
-
-    /**
-     * @brief      Pushes a shared_ptr object onto the Lua stack with automatic type detection.
-     *
-     *             This template overload handles shared_ptr objects and automatically
-     *             selects the appropriate storage method based on whether the element
-     *             type inherits from thread_switchable.
-     *
-     * @param      ctx        The Lua context
-     * @param[in]  shared_obj The shared_ptr to push
-     *
-     * @tparam     T          The object type
-     */
-    template <typename T>
-    void to_lua(lua_State* ctx, const std::shared_ptr<T>& shared_obj) const
-    {
-        static_assert(std::is_base_of_v<luable, T>, "T must inherit from luable");
-
-        if (const auto context = fb::lua::get(ctx); context == nullptr)
-            return;
-
-        if (!shared_obj)
-        {
-            lua_pushnil(ctx);
-            return;
-        }
-
-        if constexpr (std::is_base_of_v<fb::thread_switchable, T>)
-        {
-            // Use shared_ptr storage for thread_switchable objects
-            auto allocated =
-                static_cast<std::shared_ptr<T>*>(lua_newuserdata(ctx, sizeof(std::shared_ptr<T>))); // [val]
-            new (allocated) std::shared_ptr<T>(shared_obj); // Placement new to construct shared_ptr
-
-            auto& metaname = this->metaname();
-            luaL_getmetatable(ctx, metaname.c_str());      // [val, mt]
-            lua_pushcfunction(ctx, luable::builtin_gc<T>); // [val, mt, gc]
-            lua_setfield(ctx, -2, "__gc");                 // [val, mt]
-            lua_setmetatable(ctx, -2);                     // [val]
-        }
-        else
-        {
-            // Use traditional pointer storage for non-thread_switchable objects
-            shared_obj->to_lua(ctx);
-        }
-    }
-
 protected:
     /**
      * @brief      Constructs a new instance.
@@ -362,8 +308,6 @@ public:
     template <typename T>
     static int builtin_gc(lua_State* ctx)
     {
-        fb::logger::debug("builtin_gc called");
-
         if constexpr (is_shared_ptr_v<T> || is_weak_ptr_v<T>)
         {
             using element_type = typename T::element_type;
@@ -372,14 +316,12 @@ public:
             // Handle weak_ptr stored in userdata
             if constexpr (is_weak_ptr_v<T>)
             {
-                fb::logger::debug("Handling weak_ptr GC\n");
                 auto allocated = static_cast<T*>(lua_touserdata(ctx, 1));
                 if (allocated != nullptr)
                     allocated->~T(); // Explicitly call destructor for weak_ptr
             }
             else // shared_ptr case
             {
-                fb::logger::debug("Handling shared_ptr case (storing as weak_ptr)\n");
                 auto allocated = static_cast<std::weak_ptr<element_type>*>(lua_touserdata(ctx, 1));
                 if (allocated != nullptr)
                     allocated->~weak_ptr<element_type>(); // Explicitly call destructor
