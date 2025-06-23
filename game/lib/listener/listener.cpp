@@ -188,6 +188,7 @@ void listener_impl::on_effect(object& me, uint8_t value)
 
 void listener_impl::on_map_changed(object& me, const fb::game::map* before, const fb::game::map* after)
 {
+    // TODO: thread mismatch
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
         auto& ch = static_cast<character&>(me);
