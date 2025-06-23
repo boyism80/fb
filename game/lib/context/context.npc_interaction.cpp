@@ -2,11 +2,12 @@
 
 using namespace fb::game;
 
-async::task<bool> context::npc_interaction_sell(character&                         ch,
-                                                const std::string&                 message,
-                                                const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_sell(character&                                         ch,
+                                                const std::string&                                 message,
+                                                const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
+    auto weak = ch.weak_from_this();
 
     auto count = std::optional<uint16_t>();
     auto name  = std::string();
@@ -38,10 +39,10 @@ async::task<bool> context::npc_interaction_sell(character&                      
         if (co_await lua->call(4, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -56,12 +57,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_buy(character&                         ch,
-                                               const std::string&                 message,
-                                               const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_buy(character&                                         ch,
+                                               const std::string&                                 message,
+                                               const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak  = ch.weak_from_this();
     auto name  = std::string();
     auto count = uint16_t(0);
     if (fb::model::const_value::regex::match_buy_message(message, name, count) == false)
@@ -88,10 +89,10 @@ async::task<bool> context::npc_interaction_buy(character&                       
         if (co_await lua->call(4, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -106,12 +107,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_repair(character&                         ch,
-                                                  const std::string&                 message,
-                                                  const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_repair(character&                                         ch,
+                                                  const std::string&                                 message,
+                                                  const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak = ch.weak_from_this();
     auto name = std::string();
     if (fb::model::const_value::regex::match_repair_message(message, name) == false)
         co_return false;
@@ -136,10 +137,10 @@ async::task<bool> context::npc_interaction_repair(character&                    
         if (co_await lua->call(3, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -154,12 +155,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_deposit_money(character&                         ch,
-                                                         const std::string&                 message,
-                                                         const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_deposit_money(character&                                         ch,
+                                                         const std::string&                                 message,
+                                                         const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak  = ch.weak_from_this();
     auto money = std::optional<uint32_t>();
     if (fb::model::const_value::regex::match_deposit_money_message(message, money) == false)
         co_return false;
@@ -187,10 +188,10 @@ async::task<bool> context::npc_interaction_deposit_money(character&             
         if (co_await lua->call(3, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -205,12 +206,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_withdraw_money(character&                         ch,
-                                                          const std::string&                 message,
-                                                          const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_withdraw_money(character&                                         ch,
+                                                          const std::string&                                 message,
+                                                          const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak  = ch.weak_from_this();
     auto money = std::optional<uint32_t>();
     if (fb::model::const_value::regex::match_withdraw_money_message(message, money) == false)
         co_return false;
@@ -238,10 +239,10 @@ async::task<bool> context::npc_interaction_withdraw_money(character&            
         if (co_await lua->call(3, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -256,12 +257,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_store_item(character&                         ch,
-                                                      const std::string&                 message,
-                                                      const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_store_item(character&                                         ch,
+                                                      const std::string&                                 message,
+                                                      const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak  = ch.weak_from_this();
     auto name  = std::string();
     auto count = std::optional<uint16_t>(0);
     if (fb::model::const_value::regex::match_store_item_message(message, name, count) == false)
@@ -291,10 +292,10 @@ async::task<bool> context::npc_interaction_store_item(character&                
         if (co_await lua->call(4, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -309,12 +310,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_retrieve_item(character&                         ch,
-                                                         const std::string&                 message,
-                                                         const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_retrieve_item(character&                                         ch,
+                                                         const std::string&                                 message,
+                                                         const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak  = ch.weak_from_this();
     auto name  = std::string();
     auto count = std::optional<uint16_t>(0);
     if (fb::model::const_value::regex::match_retrieve_item_message(message, name, count) == false)
@@ -344,10 +345,10 @@ async::task<bool> context::npc_interaction_retrieve_item(character&             
         if (co_await lua->call(4, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -362,12 +363,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_sell_list(character&                         ch,
-                                                     const std::string&                 message,
-                                                     const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_sell_list(character&                                         ch,
+                                                     const std::string&                                 message,
+                                                     const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak = ch.weak_from_this();
     if (fb::model::const_value::regex::match_sell_list(message) == false)
         co_return false;
 
@@ -390,10 +391,10 @@ async::task<bool> context::npc_interaction_sell_list(character&                 
         if (co_await lua->call(2, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -408,12 +409,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_buy_list(character&                         ch,
-                                                    const std::string&                 message,
-                                                    const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_buy_list(character&                                         ch,
+                                                    const std::string&                                 message,
+                                                    const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak = ch.weak_from_this();
     if (fb::model::const_value::regex::match_buy_list(message) == false)
         co_return false;
 
@@ -436,10 +437,10 @@ async::task<bool> context::npc_interaction_buy_list(character&                  
         if (co_await lua->call(2, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -454,12 +455,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_sell_price(character&                         ch,
-                                                      const std::string&                 message,
-                                                      const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_sell_price(character&                                         ch,
+                                                      const std::string&                                 message,
+                                                      const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak = ch.weak_from_this();
     auto name = std::string();
     if (fb::model::const_value::regex::match_sell_price(message, name) == false)
         co_return false;
@@ -484,10 +485,10 @@ async::task<bool> context::npc_interaction_sell_price(character&                
         if (co_await lua->call(3, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -502,12 +503,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_buy_price(character&                         ch,
-                                                     const std::string&                 message,
-                                                     const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_buy_price(character&                                         ch,
+                                                     const std::string&                                 message,
+                                                     const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak = ch.weak_from_this();
     auto name = std::string();
     if (fb::model::const_value::regex::match_buy_price(message, name) == false)
         co_return false;
@@ -532,10 +533,10 @@ async::task<bool> context::npc_interaction_buy_price(character&                 
         if (co_await lua->call(3, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -550,12 +551,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_show_deposited_money(character&                         ch,
-                                                                const std::string&                 message,
-                                                                const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_show_deposited_money(character&         ch,
+                                                                const std::string& message,
+                                                                const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak = ch.weak_from_this();
     if (fb::model::const_value::regex::match_deposited_money(message) == false)
         co_return false;
 
@@ -578,10 +579,10 @@ async::task<bool> context::npc_interaction_show_deposited_money(character&      
         if (co_await lua->call(2, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -596,12 +597,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_rename_weapon(character&                         ch,
-                                                         const std::string&                 message,
-                                                         const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_rename_weapon(character&                                         ch,
+                                                         const std::string&                                 message,
+                                                         const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto        weak = ch.weak_from_this();
     std::string model_name, custom_name;
     if (fb::model::const_value::regex::match_rename_weapon(message, model_name, custom_name) == false)
         co_return false;
@@ -627,10 +628,10 @@ async::task<bool> context::npc_interaction_rename_weapon(character&             
         if (co_await lua->call(4, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -645,12 +646,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_store_item_list(character&                         ch,
-                                                           const std::string&                 message,
-                                                           const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_store_item_list(character&                                         ch,
+                                                           const std::string&                                 message,
+                                                           const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak = ch.weak_from_this();
     if (fb::model::const_value::regex::match_store_item_list(message) == false)
         co_return false;
 
@@ -673,10 +674,10 @@ async::task<bool> context::npc_interaction_store_item_list(character&           
         if (co_await lua->call(2, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -691,12 +692,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_store_item_count(character&                         ch,
-                                                            const std::string&                 message,
-                                                            const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_store_item_count(character&                                         ch,
+                                                            const std::string&                                 message,
+                                                            const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak = ch.weak_from_this();
     auto name = std::string();
     if (fb::model::const_value::regex::match_store_item_count(message, name) == false)
         co_return false;
@@ -721,10 +722,10 @@ async::task<bool> context::npc_interaction_store_item_count(character&          
         if (co_await lua->call(3, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -739,12 +740,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_revive(character&                         ch,
-                                                  const std::string&                 message,
-                                                  const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_revive(character&                                         ch,
+                                                  const std::string&                                 message,
+                                                  const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak         = ch.weak_from_this();
     auto discourteous = false;
     if (fb::model::const_value::regex::match_revive(message, discourteous) == false)
         co_return false;
@@ -769,10 +770,10 @@ async::task<bool> context::npc_interaction_revive(character&                    
         if (co_await lua->call(3, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->pending())
             goto release_true;
@@ -790,12 +791,12 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_appreciate(character&                         ch,
-                                                      const std::string&                 message,
-                                                      const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_appreciate(character&                                         ch,
+                                                      const std::string&                                 message,
+                                                      const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
-
+    auto weak = ch.weak_from_this();
     if (fb::model::const_value::regex::match_appreciate(message) == false)
         co_return false;
 
@@ -818,10 +819,10 @@ async::task<bool> context::npc_interaction_appreciate(character&                
         if (co_await lua->call(2, false) == false)
             goto release_false;
 
-        if (!this->alive(ch))
+        if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(ch);
+        co_await this->switch_thread(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -836,9 +837,9 @@ release_true:
     co_return true;
 }
 
-async::task<bool> context::npc_interaction(character&                         ch,
-                                           const std::string&                 message,
-                                           const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction(character&                                         ch,
+                                           const std::string&                                 message,
+                                           const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
 

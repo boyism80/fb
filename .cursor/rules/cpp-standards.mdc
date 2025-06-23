@@ -67,7 +67,7 @@ int character::builtin::builtin_hp(lua_State* L) {
     auto lua = fb::lua::get(L);
     auto ctx = lua->env<fb::game::context>("context");
     auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (lua->argc() == 1) {  // Getter

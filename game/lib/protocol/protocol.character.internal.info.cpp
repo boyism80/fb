@@ -60,11 +60,11 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     auto& class_name = model.promotion[this->ch.cls()][this->ch.promotion()].name;
     writer.write<std::string>(class_name);
 
-    fb::game::equipment* equipments[] = {this->ch.items.helmet(),
-                                         this->ch.items.ring(EQUIPMENT_POSITION::LEFT),
-                                         this->ch.items.ring(EQUIPMENT_POSITION::RIGHT),
-                                         this->ch.items.auxiliary(EQUIPMENT_POSITION::LEFT),
-                                         this->ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT)};
+    std::shared_ptr<fb::game::equipment> equipments[] = {this->ch.items.helmet(),
+                                                         this->ch.items.ring(EQUIPMENT_POSITION::LEFT),
+                                                         this->ch.items.ring(EQUIPMENT_POSITION::RIGHT),
+                                                         this->ch.items.auxiliary(EQUIPMENT_POSITION::LEFT),
+                                                         this->ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT)};
     for (int i = 0, size = sizeof(equipments) / sizeof(fb::game::equipment*); i < size; i++)
     {
         if (equipments[i] == nullptr)

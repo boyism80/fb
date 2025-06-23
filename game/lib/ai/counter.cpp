@@ -23,7 +23,7 @@ bool counter_ai::execute(mob& mob_obj, const datetime& now)
 
     // If target is in range, attack
     DIRECTION attack_dir;
-    if (mob_obj.near_target(*target, attack_dir))
+    if (mob_obj.near_target(target, attack_dir))
     {
         mob_obj.direction(attack_dir);
         mob_obj.attack();

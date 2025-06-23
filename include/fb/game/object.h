@@ -80,14 +80,14 @@ public:
     friend fb::game::items;
 
 private:
-    fb::game::sector* _sector = nullptr;
+    std::shared_ptr<fb::game::sector> _sector;
 
 protected:
-    uint32_t                 _sequence = 0;
-    const fb::model::object& _model;
-    fb::model::point16_t     _position  = fb::model::point16_t(0, 0);
-    DIRECTION                _direction = DIRECTION::BOTTOM;
-    fb::game::map*           _map       = nullptr;
+    uint32_t                       _sequence = 0;
+    const fb::model::object&       _model;
+    fb::model::point16_t           _position  = fb::model::point16_t(0, 0);
+    DIRECTION                      _direction = DIRECTION::BOTTOM;
+    std::shared_ptr<fb::game::map> _map       = nullptr;
 
 public:
     listener_t&        listener;
@@ -148,7 +148,9 @@ private:
      *
      * @return     True if positions have line of sight, false otherwise
      */
-    static bool sight(const fb::model::point16_t me, const fb::model::point16_t you, const fb::game::map* map);
+    static bool sight(const fb::model::point16_t            me,
+                      const fb::model::point16_t            you,
+                      const std::shared_ptr<fb::game::map>& map);
 
 public:
     /**
@@ -386,7 +388,8 @@ public:
      *
      * @return     True if the map change was successful, false otherwise
      */
-    virtual async::task<bool> map(fb::game::map* map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual async::task<bool> map(std::shared_ptr<fb::game::map> map,
+                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT);
 
     /**
      * @brief      Moves the object to a different map at a specific position.
@@ -397,16 +400,16 @@ public:
      *
      * @return     True if the map change was successful, false otherwise
      */
-    virtual async::task<bool> map(fb::game::map*              map,
-                                  const fb::model::point16_t& position,
-                                  DESTROY_TYPE                destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual async::task<bool> map(std::shared_ptr<fb::game::map> map,
+                                  const fb::model::point16_t&    position,
+                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT);
 
     /**
      * @brief      Gets the map that this object is currently on.
      *
      * @return     Pointer to the current map, or nullptr if not on any map
      */
-    fb::game::map* map() const;
+    std::shared_ptr<fb::game::map> map() const;
 
     /**
      * @brief      Checks if this object can see a specific position.
@@ -453,7 +456,7 @@ public:
      *
      * @return     Pointer to the first object found, or nullptr if none
      */
-    object* side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::shared_ptr<fb::game::object> side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Gets all objects at the specified side direction.
@@ -463,7 +466,8 @@ public:
      *
      * @return     Vector of pointers to all objects found in that direction
      */
-    std::vector<object*> sides(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<std::shared_ptr<fb::game::object>> sides(DIRECTION   direction,
+                                                         OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Gets the first object directly in front of this object.
@@ -472,7 +476,7 @@ public:
      *
      * @return     Pointer to the first object found in front, or nullptr if none
      */
-    object* forward(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::shared_ptr<fb::game::object> forward(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Gets all objects directly in front of this object.
@@ -481,7 +485,7 @@ public:
      *
      * @return     Vector of pointers to all objects found in front
      */
-    std::vector<object*> forwards(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<std::shared_ptr<fb::game::object>> forwards(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Calculates the exact distance to another object.
@@ -539,7 +543,7 @@ public:
      *
      * @return     Vector of pointers to all visible objects
      */
-    std::vector<object*> sight_in(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<std::shared_ptr<fb::game::object>> sight_in(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Gets all nearby objects within the same sector.
@@ -549,7 +553,8 @@ public:
      *
      * @return     Vector of pointers to all nearby objects
      */
-    std::vector<object*> nears(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN, bool contains_super_hide = false) const;
+    std::vector<std::shared_ptr<fb::game::object>> nears(OBJECT_TYPE type                = OBJECT_TYPE::UNKNOWN,
+                                                         bool        contains_super_hide = false) const;
 
     /**
      * @brief      Gets the thread that this object belongs to.
@@ -928,15 +933,6 @@ public:
     static int builtin_thread(lua_State* L);
 
     /**
-     * @brief      Lua binding to get the object's pointer address.
-     *
-     * @param      L     The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_ptr(lua_State* L);
-
-    /**
      * @brief      Lua binding to get the nearest object of a specific type.
      *
      * @param      L     The Lua state
@@ -975,10 +971,10 @@ public:
 struct object::initial_params
 {
 public:
-    uint32_t                   id; ///< Unique object identifier (0xFFFFFFFF for auto-assignment)
-    const fb::model::point16_t position  = fb::model::point16_t(); ///< Initial position coordinates on the map
-    DIRECTION                  direction = DIRECTION::BOTTOM;      ///< Initial facing direction
-    fb::game::map*             map       = nullptr; ///< Pointer to the map where the object will be placed
+    uint32_t                       id; ///< Unique object identifier (0xFFFFFFFF for auto-assignment)
+    const fb::model::point16_t     position  = fb::model::point16_t(); ///< Initial position coordinates on the map
+    DIRECTION                      direction = DIRECTION::BOTTOM;      ///< Initial facing direction
+    std::shared_ptr<fb::game::map> map       = nullptr; ///< Pointer to the map where the object will be placed
 };
 
 } // namespace fb::game

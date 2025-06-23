@@ -32,109 +32,6 @@ thread_container::~thread_container()
     }
 }
 
-void thread_container::enqueue(thread_switchable&                          pivot,
-                               const std::function<bool(fb::thread&)>&     condition,
-                               const thread::handle_func_type<void>&       fn,
-                               const std::function<void(std::exception&)>& error,
-                               const std::function<void()>&                callback)
-{
-    auto thread = pivot.thread();
-    if (thread == nullptr)
-        throw std::runtime_error("no matched thread");
-
-    thread->enqueue(
-        [=, &pivot, this](auto& thread) -> async::task<void> {
-            if (condition(thread) == false)
-                throw std::runtime_error("condition not satisfied");
-
-            if (this->_context.alive(pivot) == false)
-                throw std::runtime_error("pivot is not alive");
-
-            auto active_thread = pivot.thread();
-            if (active_thread != &thread)
-            {
-                this->enqueue(pivot, condition, fn);
-            }
-            else
-            {
-                co_await fn(*active_thread);
-            }
-        },
-        error,
-        callback);
-}
-
-void thread_container::enqueue(thread_switchable&                      pivot,
-                               const std::function<bool(fb::thread&)>& condition,
-                               const thread::handle_func_type<void>&   fn)
-{
-    return this->enqueue(
-        pivot,
-        condition,
-        fn,
-        [](std::exception& e) {
-        },
-        []() {
-        });
-}
-
-void thread_container::enqueue(thread_switchable& pivot, const thread::handle_func_type<void>& fn)
-{
-    return this->enqueue(
-        pivot,
-        [](auto& thread) -> bool {
-            return true;
-        },
-        fn,
-        [](std::exception& e) {
-        },
-        []() {
-        });
-}
-
-async::task<void> thread_container::dispatch(thread_switchable&                      pivot,
-                                             const std::function<bool(fb::thread&)>& condition,
-                                             const thread::handle_func_type<void>&   fn)
-{
-    auto promise = std::make_shared<async::task_completion_source<void>>();
-    this->enqueue(
-        pivot,
-        condition,
-        fn,
-        [promise](std::exception& e) {
-            promise->set_exception(std::make_exception_ptr(e));
-        },
-        [promise]() {
-            promise->set_value();
-        });
-    return promise->task();
-}
-
-async::task<void> thread_container::dispatch(thread_switchable& pivot, const thread::handle_func_type<void>& fn)
-{
-    auto promise = std::make_shared<async::task_completion_source<void>>();
-    this->enqueue(
-        pivot,
-        [](auto& thread) -> bool {
-            return true;
-        },
-        fn,
-        [promise](std::exception& e) {
-            promise->set_exception(std::make_exception_ptr(e));
-        },
-        [promise]() {
-            promise->set_value();
-        });
-    return promise->task();
-}
-
-async::task<void> thread_container::switching(thread_switchable& pivot)
-{
-    co_await this->dispatch(pivot, [](auto&) -> async::task<void> {
-        co_return;
-    });
-}
-
 thread* thread_container::at(uint8_t index) const
 {
     if (this->_thread_container.size() == 0)
@@ -197,8 +94,18 @@ bool thread_container::empty() const
 
 bool thread_container::valid(uint8_t index) const
 {
-    auto current = this->current();
-    return current->index() == index;
+    auto current_thread = this->current();
+    if (current_thread == nullptr)
+        return false;
+    return current_thread->index() == index;
+}
+
+bool thread_container::valid(const fb::thread& thread) const
+{
+    auto current_thread = this->current();
+    if (current_thread == nullptr)
+        return false;
+    return current_thread->id() == thread.id();
 }
 
 bool thread_container::valid(thread* thread) const
@@ -209,18 +116,12 @@ bool thread_container::valid(thread* thread) const
     return this->valid(*thread);
 }
 
-bool thread_container::valid(thread& thread) const
-{
-    auto current = this->current();
-    return current != nullptr && current->id() == thread.id();
-}
-
 size_t thread_container::size() const
 {
     return this->_thread_container.size();
 }
 
-void thread_container::settimer(const timer::handle_callback_type& fn, const model::timespan& duration)
+void thread_container::settimer(const fb::timer::handle_callback_type& fn, const fb::model::timespan& duration)
 {
     if (this->_thread_container.empty())
     {

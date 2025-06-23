@@ -77,43 +77,43 @@ public:
     struct builtin;
 
 private:
-    uint32_t                _id;
-    fb::socket<character>&  _socket;
-    fb::thread*             _thread = nullptr;
-    std::string             _name;
-    ROLE                    _role;
-    std::string             _pw;
-    std::optional<uint32_t> _birthday;
-    fb::model::datetime     _updated_date;
-    uint16_t                _look        = 0;
-    uint8_t                 _color       = 0;
-    std::optional<uint8_t>  _armor_color = 0;
-    stat_value<uint32_t>    _max_hp, _max_mp;
-    stat_value<uint8_t>     _str, _dex, _int;
-    stat_value<int32_t>     _phydef, _magdef;
-    stat_value<int32_t>     _dam, _hit;
-    uint32_t                _experience   = 0;
-    uint8_t                 _regenerative = 0; // 재생력
-    NATION                  _nation       = NATION::GOGURYEO;
-    CREATURE                _creature     = CREATURE::DRAGON;
-    SEX                     _sex          = SEX::MAN;
-    STATE                   _state        = STATE::NORMAL;
-    uint8_t                 _level        = 1;
-    CLASS                   _class        = CLASS::NONE;
-    uint8_t                 _promotion    = 0;
-    uint32_t                _money        = 0;
-    std::optional<uint16_t> _disguise     = 0;
-    std::string             _title;
-    shared_group_lock       _group         = nullptr;
-    shared_clan_lock        _clan          = nullptr;
-    uint16_t                _unread_mail   = 0;
-    uint16_t                _weapon_damage = 0;
-    bool                    _detect        = false;
-    std::vector<mob*>       _spawned_mobs  = {};
-    fb::model::datetime     _last_spell_cast;
-    bool                    _super_hide        = false;
-    uint8_t                 _spell_cast_count  = 0;
-    bool                    _options[0x0B + 1] = {
+    uint32_t                                    _id;
+    fb::socket<character>&                      _socket;
+    fb::thread*                                 _thread = nullptr;
+    std::string                                 _name;
+    ROLE                                        _role;
+    std::string                                 _pw;
+    std::optional<uint32_t>                     _birthday;
+    fb::model::datetime                         _updated_date;
+    uint16_t                                    _look        = 0;
+    uint8_t                                     _color       = 0;
+    std::optional<uint8_t>                      _armor_color = 0;
+    stat_value<uint32_t>                        _max_hp, _max_mp;
+    stat_value<uint8_t>                         _str, _dex, _int;
+    stat_value<int32_t>                         _phydef, _magdef;
+    stat_value<int32_t>                         _dam, _hit;
+    uint32_t                                    _experience   = 0;
+    uint8_t                                     _regenerative = 0; // 재생력
+    NATION                                      _nation       = NATION::GOGURYEO;
+    CREATURE                                    _creature     = CREATURE::DRAGON;
+    SEX                                         _sex          = SEX::MAN;
+    STATE                                       _state        = STATE::NORMAL;
+    uint8_t                                     _level        = 1;
+    CLASS                                       _class        = CLASS::NONE;
+    uint8_t                                     _promotion    = 0;
+    uint32_t                                    _money        = 0;
+    std::optional<uint16_t>                     _disguise     = 0;
+    std::string                                 _title;
+    shared_group_lock                           _group         = nullptr;
+    shared_clan_lock                            _clan          = nullptr;
+    uint16_t                                    _unread_mail   = 0;
+    uint16_t                                    _weapon_damage = 0;
+    bool                                        _detect        = false;
+    std::vector<std::shared_ptr<fb::game::mob>> _spawned_mobs  = {};
+    fb::model::datetime                         _last_spell_cast;
+    bool                                        _super_hide        = false;
+    uint8_t                                     _spell_cast_count  = 0;
+    bool                                        _options[0x0B + 1] = {
         1,
     };
 
@@ -207,8 +207,8 @@ public:
      *
      * @return     True if the map change was successful, false otherwise
      */
-    [[nodiscard]] async::task<bool> map(fb::game::map*              map,
-                                        const fb::model::point16_t& position,
+    [[nodiscard]] async::task<bool> map(std::shared_ptr<fb::game::map> map,
+                                        const fb::model::point16_t&    position,
                                         DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
 
 public:
@@ -289,7 +289,9 @@ public:
      *
      * @return     The actual damage dealt after calculations
      */
-    uint32_t damage(uint32_t value, fb::game::object* from = nullptr, bool critical = false) override final;
+    uint32_t damage(uint32_t                          value,
+                    std::shared_ptr<fb::game::object> from     = nullptr,
+                    bool                              critical = false) override final;
 
     /**
      * @brief      Performs a character action with visual and audio effects.
@@ -1043,14 +1045,16 @@ public:
      *
      * @return     Pointer to the spawned mob, or nullptr if failed
      */
-    mob* spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned = true);
+    std::shared_ptr<fb::game::mob> spawn_mob(const fb::model::mob&       model,
+                                             const fb::model::point16_t& position,
+                                             bool                        owned = true);
 
     /**
      * @brief      Gets the list of mobs spawned by this character.
      *
      * @return     Const reference to the vector of spawned mobs
      */
-    const std::vector<fb::game::mob*>& spawned_mobs() const;
+    const std::vector<std::shared_ptr<fb::game::mob>>& spawned_mobs() const;
 
     /**
      * @brief      Detaches the spawned mob.
@@ -1414,7 +1418,7 @@ public:
      *
      * @return     True if this character is hidden from the target, false otherwise
      */
-    bool hidden(const object& target) const override final;
+    bool hidden(const fb::game::object& target) const override final;
 #pragma endregion
 };
 
@@ -2024,10 +2028,10 @@ public:
  *             members, or other character collections with specific access
  *             patterns and management requirements.
  */
-class character::container : private std::vector<character*>
+class character::container : private std::unordered_map<std::string, std::shared_ptr<character>>
 {
 private:
-    using super = std::vector<character*>;
+    using super = std::unordered_map<std::string, std::shared_ptr<character>>;
 
 public:
     using super::begin;
@@ -2046,7 +2050,7 @@ public:
      *
      * @param[in]  right  The right
      */
-    container(const std::vector<character*>& right);
+    container(const std::unordered_map<std::string, std::shared_ptr<character>>& right);
 
     /**
      * @brief      Destroys the object.
@@ -2061,7 +2065,7 @@ public:
      *
      * @return     Reference to this container for method chaining
      */
-    container& push(character& ch);
+    container& push(std::shared_ptr<character> ch);
 
     /**
      * @brief      Removes a character from the container.
@@ -2070,7 +2074,16 @@ public:
      *
      * @return     Reference to this container for method chaining
      */
-    container& erase(character& ch);
+    container& erase(std::shared_ptr<character> ch);
+
+    /**
+     * @brief      Removes a character from the container.
+     *
+     * @param      name  The name of the character to remove
+     *
+     * @return     Reference to this container for method chaining
+     */
+    container& erase(const std::string& name);
 
 public:
     /**
@@ -2080,7 +2093,7 @@ public:
      *
      * @return     Pointer to the found character, or nullptr if not found
      */
-    character* find(const std::string& name);
+    std::shared_ptr<character> find(const std::string& name);
 
     /**
      * @brief      Checks if the container contains a specific character.
@@ -2089,7 +2102,7 @@ public:
      *
      * @return     True if the character is in the container, false otherwise
      */
-    bool contains(const character& ch) const;
+    bool contains(const std::string& name) const;
 
 public:
     /**
@@ -2099,7 +2112,7 @@ public:
      *
      * @return     The result of the array indexer
      */
-    character* operator[] (const std::string& name);
+    std::shared_ptr<character> operator[] (const std::string& name);
 };
 
 /**

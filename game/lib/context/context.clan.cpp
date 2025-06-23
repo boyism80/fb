@@ -89,13 +89,15 @@ async::task<void> context::create_clan(character& me, const std::string& name)
     if (me.clan() != nullptr)
         throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_CLAN));
 
+    auto   weak = me.weak_from_this_as<character>();
     auto   fd   = me.fd();
     auto&& resp = co_await this->http.post("internal", "/clan/create", CreateClan{me.id(), name});
+    this->switch_thread(weak);
 
     this->assert_clan(resp.error);
 
     auto id = resp.clan.id;
-    this->_shard[id]->clans.write([this, id = resp.clan.id, fd, &resp, &me](auto& clans) {
+    this->_shard[id]->clans.write([this, id = resp.clan.id, fd, &resp, weak](auto& clans) {
         auto id = resp.clan.id;
         if (clans.contains(id) == false)
         {
@@ -108,11 +110,12 @@ async::task<void> context::create_clan(character& me, const std::string& name)
         }
 
         auto& clan_lock_ptr = clans.at(id);
-        if (this->alive(me))
+        if (weak.expired() == false)
         {
-            me.clan(clan_lock_ptr);
-            clan_lock_ptr->write([this, &me](auto& clan) {
-                clan.attach_character(me);
+            auto me = weak.lock();
+            me->clan(clan_lock_ptr);
+            clan_lock_ptr->write([this, weak](auto& clan) {
+                clan.attach_character(weak);
             });
         }
     });
@@ -120,6 +123,7 @@ async::task<void> context::create_clan(character& me, const std::string& name)
 
 async::task<void> context::destroy_clan(character& me)
 {
+    auto  weak      = me.weak_from_this_as<character>();
     auto& clan_lock = me.clan();
     if (clan_lock == nullptr)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
@@ -133,19 +137,21 @@ async::task<void> context::destroy_clan(character& me)
 
     auto   fd   = me.fd();
     auto&& resp = co_await this->http.post("internal", "/clan/destroy", DestroyClan{me.id()});
+    this->switch_thread(weak);
 
     this->assert_clan(resp.error);
     this->_shard[clan_id]->clans.write([this, clan_id](auto& clans) {
         if (clans.contains(clan_id))
         {
             clans.at(clan_id)->read([this](auto& clan) {
-                auto characters = std::vector<character*>{};
+                auto characters = std::vector<std::shared_ptr<character>>{};
                 for (auto& [uid, ch] : clan.characters())
-                    characters.push_back(ch);
+                    characters.push_back(ch.lock());
 
                 for (auto& ch : characters)
                 {
-                    std::ignore = this->threads.dispatch(*ch, [ch](auto&) -> async::task<void> {
+                    auto weak   = ch->weak_from_this_as<character>();
+                    std::ignore = this->threads.dispatch(weak, [ch](auto&) -> async::task<void> {
                         ch->clan().reset();
                         co_return;
                     });
@@ -208,17 +214,18 @@ void context::on_clan_join_member(const internal_resp::JoinClan& resp)
     this->assert_clan(resp.error);
 
     this->upsert_clan_then(resp.clan, [this, resp](auto& clan_lock) {
-        auto ch =
-            this->_shard[resp.member.name]->names.template read<character*>([&resp](auto& ch_names) -> character* {
+        auto ch = this->_shard[resp.member.name]->names.template read<std::shared_ptr<fb::game::character>>(
+            [&resp](auto& ch_names) -> std::shared_ptr<fb::game::character> {
                 if (ch_names.contains(resp.member.name) == false)
                     return nullptr;
 
                 return ch_names.at(resp.member.name);
             });
+        auto weak = ch->weak_from_this_as<character>();
 
         if (ch != nullptr)
         {
-            std::ignore = this->threads.dispatch(*ch, [this, resp, ch, &clan_lock](auto&) -> async::task<void> {
+            std::ignore = this->threads.dispatch(weak, [this, resp, weak, &clan_lock](auto&) -> async::task<void> {
                 clan_lock->write([=, this, &clan_lock](auto& clan) {
                     this->foreach_ch(clan, [resp](auto& ch) {
                         ch.message(std::format("{}님이 문파에 가입했습니다.", resp.member.name), MESSAGE_TYPE::NOTIFY);
@@ -226,7 +233,12 @@ void context::on_clan_join_member(const internal_resp::JoinClan& resp)
 
                     auto cm = clan_member{resp.member.name, static_cast<CLAN_POSITION>(resp.member.position)};
                     clan.join(cm);
-                    clan.attach_character(*ch);
+                    clan.attach_character(weak);
+
+                    auto ch = weak.lock();
+                    if (ch == nullptr)
+                        return;
+
                     ch->clan(clan_lock);
                     ch->update_external(true);
                     ch->message(std::format("{} 문파에 가입되었습니다.", clan.name()), MESSAGE_TYPE::NOTIFY);
@@ -242,19 +254,23 @@ void context::on_clan_leave_member(const internal_resp::LeaveClan& resp)
     this->assert_clan(resp.error);
 
     this->upsert_clan_then(resp.clan, [this, resp](auto& clan_lock) {
-        auto ch = this->_shard[resp.uname]->names.template write<character*>([&resp](auto& ch_names) -> character* {
-            if (ch_names.contains(resp.uname) == false)
-                return nullptr;
+        auto ch = this->_shard[resp.uname]->names.template write<std::shared_ptr<fb::game::character>>(
+            [&resp](auto& ch_names) -> std::shared_ptr<fb::game::character> {
+                if (ch_names.contains(resp.uname) == false)
+                    return nullptr;
 
-            return ch_names.at(resp.uname);
-        });
+                return ch_names.at(resp.uname);
+            });
 
         if (ch != nullptr)
         {
-            std::ignore = this->threads.dispatch(*ch, [this, ch, resp, &clan_lock](auto&) -> async::task<void> {
-                clan_lock->write([this, ch, &resp](auto& clan) {
+            auto weak   = ch->weak_from_this_as<character>();
+            std::ignore = this->threads.dispatch(weak, [this, weak, resp, &clan_lock](auto&) -> async::task<void> {
+                clan_lock->write([this, weak, &resp](auto& clan) {
+                    auto ch = weak.lock();
                     clan.leave(ch->name());
-                    clan.detach_character(*ch);
+                    clan.detach_character(weak);
+
                     ch->clan().reset();
                     ch->update_external(true);
 

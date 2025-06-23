@@ -63,7 +63,7 @@ void fb::game::weapon::custom_name(const std::string& name)
     this->_custom_name = name;
 
     auto& owner = this->_container->owner;
-    auto  index = this->_container->index(*this);
+    auto  index = this->_container->index(this->shared_from_this_as<fb::game::item>());
     if (index != 0xFF)
         owner.listener.on_item_update(owner, index);
 }
@@ -76,7 +76,7 @@ void fb::game::weapon::reset_custom_name()
     this->_custom_name.reset();
 
     auto& owner = this->_container->owner;
-    auto  index = this->_container->index(*this);
+    auto  index = this->_container->index(this->shared_from_this_as<fb::game::item>());
     if (index != 0xFF)
         owner.listener.on_item_update(owner, index);
 }

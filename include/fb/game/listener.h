@@ -212,7 +212,7 @@ public:
      * @param      me    The life entity that died
      * @param      you   The object that caused the death (optional)
      */
-    void on_dead(life& me, object* you) override final;
+    void on_dead(life& me, std::shared_ptr<object> you) override final;
 
     /**
      * @brief      Called when a life entity's HP changes and needs visual update.

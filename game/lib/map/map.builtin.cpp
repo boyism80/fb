@@ -184,9 +184,10 @@ int map::builtin::builtin_movable(lua_State* L)
         return 1;
     }
 
-    return lua->ensure_yield(*ctx, *map, [=]() {
+    auto weak = obj->weak_from_this_as<object>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto result = map->movable(*obj, position);
-        return lua->ensure_resume(*ctx, *map, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushboolean(result);
             return 1;
         });
@@ -255,7 +256,7 @@ int map::builtin::builtin_contains(lua_State* L)
 
     for (auto& [fd, obj] : map->objects)
     {
-        if (obj == *you)
+        if (obj == you)
         {
             lua->pushboolean(true);
             return 1;
@@ -319,7 +320,7 @@ int map::builtin::builtin_tile(lua_State* L)
         auto position = fb::model::point16_t{x, y};
         for (auto obj : map->nears(position, OBJECT_TYPE::CHARACTER))
         {
-            auto ch = static_cast<character*>(obj);
+            auto ch = std::static_pointer_cast<character>(obj);
             ch->update_map(*map, position, fb::model::size8_t{1, 1});
         }
         return 0;
@@ -350,9 +351,10 @@ int map::builtin::builtin_at(lua_State* L)
     auto type     = lua->toenum(4, OBJECT_TYPE::UNKNOWN);
     auto position = fb::model::point16_t{x, y};
 
-    return lua->ensure_yield(*ctx, *map, [=]() {
+    auto weak = map->weak_from_this_as<fb::game::map>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto nears  = map->nears(fb::model::point16_t{x, y}, type);
-        auto result = static_cast<object*>(nullptr);
+        auto result = std::shared_ptr<object>(nullptr);
         for (auto obj : nears)
         {
             if (obj->position() == position)
@@ -362,7 +364,7 @@ int map::builtin::builtin_at(lua_State* L)
             }
         }
 
-        return lua->ensure_resume(*ctx, *map, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             if (result == nullptr)
                 lua->pushnil();
             else

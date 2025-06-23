@@ -106,6 +106,7 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
     if (me.map() == nullptr)
         co_return false;
 
+    auto  weak   = me.weak_from_this_as<character>();
     auto& socket = static_cast<fb::socket<character>&>(me);
     auto  fd     = static_cast<uint32_t>(socket.native_handle());
     auto  error  = std::string();
@@ -116,7 +117,7 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
             "internal",
             "/in-game/transfer",
             Transfer{fb::protocol::internal::Service::Game, map.model.host, me.name(), false});
-        co_await this->context.switch_thread(me);
+        co_await this->context.switch_thread(weak);
         switch (static_cast<ERROR_CODE>(response.error))
         {
         case ERROR_CODE::NONE:
@@ -145,20 +146,22 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
     }
     catch (std::exception& e)
     {
-        if (this->context.alive(me))
+        auto shared = weak.lock();
+        if (shared != nullptr)
         {
-            me.update_map();
-            me.update_external(false);
+            shared->update_map();
+            shared->update_external(false);
             this->on_message(me, e.what(), MESSAGE_TYPE::STATE);
         }
         co_return false;
     }
     catch (boost::system::error_code& /*e*/)
     {
-        if (this->context.alive(me))
+        auto shared = weak.lock();
+        if (shared != nullptr)
         {
-            me.update_map();
-            me.update_external(false);
+            shared->update_map();
+            shared->update_external(false);
             this->on_message(me, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
         }
         co_return false;
@@ -203,7 +206,7 @@ void listener_impl::on_item_tooltip(character& ch, const item& item, uint16_t po
 void listener_impl::on_show_user_list(character& ch)
 {
     this->context.access_sockets([this, &ch](const auto& sockets) {
-        auto users = std::vector<character*>{};
+        auto users = std::vector<std::shared_ptr<fb::game::character>>{};
         for (auto& [_, socket] : sockets)
         {
             users.push_back(socket->data());

@@ -37,7 +37,9 @@ OBJECT_TYPE character::what() const
     return OBJECT_TYPE::CHARACTER;
 }
 
-async::task<bool> character::map(fb::game::map* map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type)
+async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
+                                 const fb::model::point16_t&    position,
+                                 DESTROY_TYPE                   destroy_type)
 {
     if (this->_thread == nullptr)
         co_return true;
@@ -97,7 +99,7 @@ uint32_t character::auto_attack_damage(MOB_SIZE size) const
     }
 }
 
-uint32_t character::damage(uint32_t value, object* from, bool critical)
+uint32_t character::damage(uint32_t value, std::shared_ptr<fb::game::object> from, bool critical)
 {
     this->assert_thread();
 
@@ -116,7 +118,7 @@ uint32_t character::damage(uint32_t value, object* from, bool critical)
         if (from->is(OBJECT_TYPE::LIFE) == false)
             continue;
 
-        mob->target(static_cast<fb::game::life*>(from));
+        mob->target(std::static_pointer_cast<fb::game::life>(from));
     }
 
     if (this->_hp == 0)
@@ -139,7 +141,7 @@ uint32_t character::damage(uint32_t value, object* from, bool critical)
         {
             auto equipment = this->items.equipment_off(parts);
             this->message(std::format("{} 깨졌습니다.", equipment->name()));
-            delete equipment;
+            equipment.reset();
         }
     }
     return result;
@@ -720,7 +722,10 @@ fb::game::cash* character::money_drop(uint32_t value)
         value = std::min(this->_money, value);
         this->money_reduce(value);
 
-        auto cash = this->context.make<fb::game::cash>(value);
+        // TODO: Phase 3 - Convert to smart pointer return type
+        // For now, use make_shared but return raw pointer for compatibility
+        auto cash_shared = this->context.make<fb::game::cash>(value);
+        auto cash        = cash_shared.get();
         cash->map(this->_map, this->_position);
         this->action(ACTION::PICKUP, DURATION::PICKUP);
         this->message(_TEXT(MESSAGE_MONEY_DROP));
@@ -1005,7 +1010,9 @@ void character::unride()
             throw std::runtime_error(_TEXT(MESSAGE_RIDE_UNRIDE));
 
         auto& model = this->context.model.mob[fb::model::const_value::mob::horse];
-        auto  horse = this->context.make<mob>(model, mob::initial_params{.alive = true});
+        // Use smart pointer for horse creation
+        auto horse_shared = this->context.make<mob>(model, mob::initial_params{.alive = true});
+        auto horse        = horse_shared.get(); // For compatibility with existing code
         horse->map(this->_map, this->front_position());
 
         this->state(STATE::NORMAL);
@@ -1187,32 +1194,37 @@ fb::protocol::internal::Character character::to_protocol() const
 character::container::container()
 { }
 
-character::container::container(const std::vector<character*>& right)
+character::container::container(const std::unordered_map<std::string, std::shared_ptr<character>>& right)
 {
-    this->insert(this->begin(), right.begin(), right.end());
+    for (auto& [_, ch] : right)
+        this->insert({ch->name(), ch});
 }
 
 character::container::~container()
 { }
 
-character::container& character::container::push(character& ch)
+character::container& character::container::push(std::shared_ptr<character> ch)
 {
-    this->push_back(&ch);
+    super::insert({ch->name(), ch});
     return *this;
 }
 
-character::container& character::container::erase(character& ch)
+character::container& character::container::erase(std::shared_ptr<character> ch)
 {
-    super::erase(std::find(this->begin(), this->end(), &ch));
+    this->erase(ch->name());
     return *this;
 }
 
-character* character::container::find(const std::string& name)
+character::container& character::container::erase(const std::string& name)
 {
-    auto i = std::find_if(this->begin(), this->end(), [&name](auto x) {
-        return x->name() == name;
-    });
-    return i != this->end() ? *i : nullptr;
+    super::erase(name);
+    return *this;
+}
+
+std::shared_ptr<character> character::container::find(const std::string& name)
+{
+    auto it = super::find(name);
+    return it != super::end() ? it->second : nullptr;
 }
 
 uint16_t character::unread_mail() const
@@ -1316,9 +1328,9 @@ void character::detect(bool value)
     this->assert_thread();
     this->_detect = value;
 
-    for (auto obj : this->nears(OBJECT_TYPE::CHARACTER))
+    for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
     {
-        auto ch = static_cast<character*>(obj);
+        auto ch = std::static_pointer_cast<fb::game::character>(obj);
         if (ch->state() != STATE::HALF_CLOACK)
             continue;
 
@@ -1331,15 +1343,17 @@ bool character::detect() const
     return this->_detect;
 }
 
-fb::game::mob* character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned)
+std::shared_ptr<fb::game::mob> character::spawn_mob(const fb::model::mob&       model,
+                                                    const fb::model::point16_t& position,
+                                                    bool                        owned)
 {
     auto map = this->_map;
     if (map == nullptr)
         return nullptr;
 
-    auto owner  = owned ? this : nullptr;
-    auto params = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr};
-    auto mob    = model.make<fb::game::mob>(this->context, params);
+    auto  params    = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr};
+    auto& mob_model = static_cast<const fb::model::mob&>(model);
+    auto  mob       = std::make_shared<fb::game::mob>(this->context, mob_model, params);
     mob->map(map, position);
 
     if (owned)
@@ -1348,25 +1362,32 @@ fb::game::mob* character::spawn_mob(const fb::model::mob& model, const fb::model
     return mob;
 }
 
-const std::vector<fb::game::mob*>& character::spawned_mobs() const
+const std::vector<std::shared_ptr<fb::game::mob>>& character::spawned_mobs() const
 {
     return this->_spawned_mobs;
 }
 
 bool character::detach_spawned_mob(fb::game::mob& mob)
 {
-    if (mob.owner != this)
+    auto owner = mob.owner.lock();
+    if (owner == nullptr)
+        return false;
+
+    if (owner.get() != this)
         return false;
 
     if (this->_spawned_mobs.size() == 0)
         return false;
 
-    auto i = std::find(this->_spawned_mobs.begin(), this->_spawned_mobs.end(), &mob);
-    if (i == this->_spawned_mobs.end())
-        return false;
-
-    this->_spawned_mobs.erase(i);
-    return true;
+    for (auto it = this->_spawned_mobs.begin(); it != this->_spawned_mobs.end(); ++it)
+    {
+        if (it->get() == &mob)
+        {
+            this->_spawned_mobs.erase(it);
+            return true;
+        }
+    }
+    return false;
 }
 
 void character::bright(uint8_t value)
@@ -1374,14 +1395,14 @@ void character::bright(uint8_t value)
     this->listener.on_bright(*this, value);
 }
 
-bool character::container::contains(const character& ch) const
+bool character::container::contains(const std::string& name) const
 {
-    return std::find(this->cbegin(), this->cend(), &ch) != this->end();
+    return super::find(name) != super::end();
 }
 
-character* character::container::operator[] (const std::string& name)
+std::shared_ptr<character> character::container::operator[] (const std::string& name)
 {
-    return this->find(name);
+    return super::find(name)->second;
 }
 
 uint32_t character::base_hp() const
@@ -1812,7 +1833,7 @@ void character::super_hide(bool enabled)
     }
 }
 
-bool character::hidden(const object& target) const
+bool character::hidden(const fb::game::object& target) const
 {
     if (this->super_hide() == false)
         return false;
@@ -1820,7 +1841,7 @@ bool character::hidden(const object& target) const
     if (target.is(OBJECT_TYPE::CHARACTER) == false)
         return true;
 
-    auto& ch = static_cast<const character&>(target);
+    auto& ch = static_cast<const fb::game::character&>(target);
     return this->role() > ch.role();
 }
 
@@ -1840,7 +1861,9 @@ async::task<void> character::death_penalty()
     if (money > 0)
     {
         this->money_reduce(money);
-        auto cash = this->context.make<fb::game::cash>(money);
+        // TODO: Phase 3 - Convert to smart pointer return type
+        auto cash_shared = this->context.make<fb::game::cash>(money);
+        auto cash        = cash_shared.get();
         cash->death_cid(this->id());
         std::ignore = co_await cash->map(this->map(), this->position());
     }
@@ -1854,12 +1877,12 @@ async::task<void> character::death_penalty()
         auto& model = item->based<fb::model::item>();
         if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT))
         {
-            auto  equipment       = static_cast<fb::game::equipment*>(item);
+            auto  equipment       = std::static_pointer_cast<fb::game::equipment>(item);
             auto& equipment_model = equipment->based<fb::model::equipment>();
             auto  penalty         = equipment_model.durability * fb::model::const_value::death_penalty::durability;
             if (equipment->durability_down(penalty))
             {
-                delete this->items.remove(i, 1, ITEM_DELETE_TYPE::DESTROY);
+                this->items.remove(i, 1, ITEM_DELETE_TYPE::DESTROY);
                 continue;
             }
         }
@@ -1883,7 +1906,7 @@ async::task<void> character::death_penalty()
         {
             this->items.equipment_off(parts);
             this->message(std::format("{} 깨졌습니다.", equipment->name()));
-            delete equipment;
+            equipment.reset();
             continue;
         }
 

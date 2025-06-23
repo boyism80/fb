@@ -13,7 +13,7 @@ item_update_slot::item_update_slot(const fb::game::character& me, EQUIPMENT_PART
 async::task<void> item_update_slot::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    fb::game::item* item;
+    std::shared_ptr<fb::game::item> item;
 
     switch (parts)
     {

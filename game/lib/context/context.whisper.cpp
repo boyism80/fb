@@ -25,30 +25,33 @@ async::task<void> context::whisper(character& from, std::string to, std::string 
     if (from.option(OPTION::WHISPER) == false)
         throw std::runtime_error(_TEXT(MESSAGE_WHISPER_DISABLED_MINE));
 
-    auto target = this->_shard[to]->names.template read<character*>([&to](auto& names) -> character* {
-        if (names.contains(to) == false)
-            return nullptr;
+    auto target = this->_shard[to]->names.template read<std::shared_ptr<fb::game::character>>(
+        [&to](auto& names) -> std::shared_ptr<fb::game::character> {
+            if (names.contains(to) == false)
+                return nullptr;
 
-        return names.at(to);
-    });
+            return names.at(to);
+        });
+
+    auto weak = from.weak_from_this();
 
     auto from_name = from.name();
     if (target != nullptr)
     {
-        co_await this->switch_thread(*target);
+        co_await this->switch_thread(weak);
         auto target_name = target->name();
         if (target->option(OPTION::WHISPER) == false)
             throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), to));
 
         target->message(std::format("{}> {}", from_name, message), MESSAGE_TYPE::NOTIFY);
 
-        co_await this->switch_thread(from);
+        co_await this->switch_thread(weak);
         from.message(std::format("{}< {}", target_name, message), MESSAGE_TYPE::NOTIFY);
     }
     else
     {
         auto&& resp = co_await this->http.post("internal", "/in-game/whisper", Whisper{from_name, to, message});
-        co_await this->switch_thread(from);
+        co_await this->switch_thread(weak);
 
         this->on_whisper(resp);
         from.message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);

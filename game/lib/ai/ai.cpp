@@ -35,7 +35,7 @@ std::unique_ptr<ai> ai::create(MOB_ATTACK_TYPE attack_type)
 
 bool ai::execute(mob& mob_obj, const datetime& now)
 {
-    auto owner = mob_obj.owner;
+    auto owner = mob_obj.owner.lock();
     if (owner == nullptr || owner->map() != mob_obj.map())
         return false;
 
@@ -43,7 +43,7 @@ bool ai::execute(mob& mob_obj, const datetime& now)
     if (target != nullptr)
     {
         DIRECTION direction;
-        if (mob_obj.near_target(*target, direction))
+        if (mob_obj.near_target(target, direction))
         {
             mob_obj.direction(direction);
             mob_obj.attack();
@@ -57,7 +57,7 @@ bool ai::execute(mob& mob_obj, const datetime& now)
     else
     {
         DIRECTION direction;
-        if (mob_obj.near_target(*owner, direction))
+        if (mob_obj.near_target(owner, direction))
         {
             mob_obj.direction(direction);
         }
@@ -71,7 +71,7 @@ bool ai::execute(mob& mob_obj, const datetime& now)
     return owner != nullptr;
 }
 
-void ai::on_damage(mob& mob_obj, life* attacker, const datetime& now)
+void ai::on_damage(mob& mob_obj, std::shared_ptr<life> attacker, const datetime& now)
 {
     if (attacker == nullptr || this->should_ignore_attacker(mob_obj, attacker))
         return;
@@ -87,18 +87,19 @@ void ai::on_damage(mob& mob_obj, life* attacker, const datetime& now)
     }
 }
 
-life* ai::find_target_in_sight(mob& mob_obj, const datetime& now)
+std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now)
 {
     auto map = mob_obj.map();
     if (map == nullptr)
         return nullptr;
 
     // Skip targeting if mob has an owner
-    if (mob_obj.owner != nullptr)
+    auto owner = mob_obj.owner.lock();
+    if (owner != nullptr)
         return nullptr;
 
-    life*    best_target = nullptr;
-    uint32_t best_damage = 0;
+    std::shared_ptr<life> best_target = nullptr;
+    uint32_t              best_damage = 0;
 
     // First check recent attackers that are in sight
     for (const auto& [attacker, record] : this->_recent_damage)
@@ -121,9 +122,9 @@ life* ai::find_target_in_sight(mob& mob_obj, const datetime& now)
     // Otherwise check for any target in sight
     for (auto obj : mob_obj.sight_in(OBJECT_TYPE::CHARACTER))
     {
-        auto potential_target = static_cast<life*>(obj);
+        auto potential_target = std::static_pointer_cast<life>(obj);
 
-        if (potential_target == mob_obj.oblivion())
+        if (potential_target.get() == mob_obj.oblivion().get())
             continue;
         if (!potential_target->alive())
             continue;
@@ -138,18 +139,19 @@ life* ai::find_target_in_sight(mob& mob_obj, const datetime& now)
     return best_target;
 }
 
-life* ai::find_target_in_range(mob& mob_obj, const datetime& now)
+std::shared_ptr<life> ai::find_target_in_range(mob& mob_obj, const datetime& now)
 {
     auto map = mob_obj.map();
     if (map == nullptr)
         return nullptr;
 
     // Skip targeting if mob has an owner
-    if (mob_obj.owner != nullptr)
+    auto owner = mob_obj.owner.lock();
+    if (owner != nullptr)
         return nullptr;
 
-    life*    best_target = nullptr;
-    uint32_t best_damage = 0;
+    std::shared_ptr<life> best_target = nullptr;
+    uint32_t              best_damage = 0;
 
     // First check recent attackers that are in range
     for (const auto& [attacker, record] : this->_recent_damage)
@@ -158,7 +160,7 @@ life* ai::find_target_in_range(mob& mob_obj, const datetime& now)
             continue;
 
         DIRECTION attack_dir;
-        if (!mob_obj.near_target(*attacker, attack_dir))
+        if (!mob_obj.near_target(attacker, attack_dir))
             continue; // Skip if not in attack range
 
         // Select the attacker that dealt the most damage recently
@@ -176,7 +178,7 @@ life* ai::find_target_in_range(mob& mob_obj, const datetime& now)
     // Otherwise check for any target in range
     for (auto obj : mob_obj.sight_in(OBJECT_TYPE::CHARACTER))
     {
-        auto potential_target = static_cast<life*>(obj);
+        auto potential_target = std::static_pointer_cast<life>(obj);
 
         if (potential_target == mob_obj.oblivion())
             continue;
@@ -186,7 +188,7 @@ life* ai::find_target_in_range(mob& mob_obj, const datetime& now)
             continue;
 
         DIRECTION attack_dir;
-        if (!mob_obj.near_target(*potential_target, attack_dir))
+        if (!mob_obj.near_target(potential_target, attack_dir))
             continue; // Skip if not in attack range
 
         // Take the first valid target in range
@@ -208,14 +210,15 @@ void ai::cleanup_expired_damage(const datetime& now)
     }
 }
 
-bool ai::should_ignore_attacker(const mob& mob_obj, life* attacker) const
+bool ai::should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attacker) const
 {
     // Ignore null attackers
     if (attacker == nullptr)
         return true;
 
     // Ignore if attacker is our owner
-    if (attacker == static_cast<life*>(mob_obj.owner))
+    auto owner = mob_obj.owner.lock();
+    if (attacker == owner)
         return true;
 
     // Check if attacker is a character
@@ -240,14 +243,14 @@ bool ai::should_maintain_target(const mob& mob_obj, const datetime& now) const
     return (now - this->_target_lock_time) <= TARGET_LOCK_DURATION;
 }
 
-void ai::record_damage(life* attacker, const datetime& now)
+void ai::record_damage(std::shared_ptr<life> attacker, const datetime& now)
 {
     auto& record   = this->_recent_damage[attacker];
     record.first  += 1; // Could be enhanced to track actual damage amount
     record.second  = now;
 }
 
-void ai::run_from_target(mob& mob_obj, life* target)
+void ai::run_from_target(mob& mob_obj, std::shared_ptr<life> target)
 {
     if (target == nullptr)
         return;

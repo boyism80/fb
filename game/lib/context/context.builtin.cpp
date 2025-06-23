@@ -146,12 +146,13 @@ int context::builtin::builtin_name2ch(lua_State* L)
     auto argc    = lua->argc();
     auto name    = lua->tostring(1);
 
-    auto ch = context->_shard[name]->names.template read<character*>([&name](const auto& names) -> character* {
-        if (names.contains(name) == false)
-            return nullptr;
+    auto ch = context->_shard[name]->names.template read<std::shared_ptr<character>>(
+        [&name](const auto& names) -> std::shared_ptr<character> {
+            if (names.contains(name) == false)
+                return nullptr;
 
-        return names.at(name);
-    });
+            return names.at(name);
+        });
 
     if (ch == nullptr)
     {
@@ -159,8 +160,9 @@ int context::builtin::builtin_name2ch(lua_State* L)
         return 1;
     }
 
-    return lua->ensure_yield(*context, *ch, [=]() {
-        return lua->ensure_resume(*context, *ch, [=]() {
+    auto weak = ch->weak_from_this();
+    return lua->ensure_yield(*context, weak, [=]() {
+        return lua->ensure_resume(*context, weak, [=]() {
             lua->pushobject(ch);
             return 1;
         });
@@ -487,7 +489,7 @@ int context::builtin::builtin_mknpc(lua_State* L)
     if (model == nullptr)
         return 0;
 
-    auto map = static_cast<fb::game::map*>(nullptr);
+    std::shared_ptr<fb::game::map> map = nullptr;
     if (lua->is_string(2))
     {
         auto name      = lua->tostring(2);
@@ -498,7 +500,7 @@ int context::builtin::builtin_mknpc(lua_State* L)
         if (context->maps.contains(map_model->id) == false)
             return 0;
 
-        map = &context->maps[map_model->id];
+        map = context->maps[map_model->id];
     }
     else if (lua->is_userdata<fb::game::map>(2))
     {
@@ -515,7 +517,7 @@ int context::builtin::builtin_mknpc(lua_State* L)
         if (context->maps.contains(map_model->id) == false)
             return 0;
 
-        map = &context->maps[map_model->id];
+        map = context->maps[map_model->id];
     }
     else
     {
@@ -552,12 +554,15 @@ int context::builtin::builtin_mknpc(lua_State* L)
 
     if (map->thread()->id() == std::this_thread::get_id())
     {
-        return lua->ensure_yield(*context, *map, [=]() {
-            auto npc = model->make<fb::game::npc>(*context);
+        auto weak = map->weak_from_this();
+        return lua->ensure_yield(*context, weak, [=]() {
+            // Use smart pointer for NPC creation
+            auto npc = context->make<fb::game::npc>(*model);
             npc->direction(direction);
             npc->map(map, fb::model::point16_t{x, y});
 
-            return lua->ensure_resume(*context, *npc, [=]() {
+            auto weak = npc->weak_from_this();
+            return lua->ensure_resume(*context, weak, [=]() {
                 lua->pushobject(npc);
                 return 1;
             });
@@ -565,12 +570,15 @@ int context::builtin::builtin_mknpc(lua_State* L)
     }
     else
     {
-        return lua->ensure_yield(*context, *map, [=]() {
-            auto npc = model->make<fb::game::npc>(*context);
+        auto weak = map->weak_from_this();
+        return lua->ensure_yield(*context, weak, [=]() {
+            // Use smart pointer for NPC creation
+            auto npc = context->make<fb::game::npc>(*model);
             npc->direction(direction);
             npc->map(map, fb::model::point16_t{x, y});
 
-            return lua->ensure_resume(*context, *npc, [=]() {
+            auto weak = npc->weak_from_this();
+            return lua->ensure_resume(*context, weak, [=]() {
                 lua->pushobject(npc);
                 return 1;
             });
@@ -642,6 +650,6 @@ int context::builtin::builtin_assert_alive(lua_State* L)
     auto argc    = lua->argc();
     auto obj     = lua->touserdata<fb::game::object>(1);
 
-    lua->pushboolean(context->alive(*obj));
+    lua->pushboolean(obj != nullptr);
     return 1;
 }

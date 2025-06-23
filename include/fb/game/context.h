@@ -86,11 +86,11 @@ public:
     struct builtin;
 
 public:
-    using object_set         = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
-    using transfer_param     = fb_reqs::login::transfer_param;
-    using protocol_generator = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
-    using npc_interaction_func =
-        std::function<async::task<bool>(character&, const std::string&, const std::vector<fb::game::npc*>&)>;
+    using object_set           = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
+    using transfer_param       = fb_reqs::login::transfer_param;
+    using protocol_generator   = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
+    using npc_interaction_func = std::function<
+        async::task<bool>(character&, const std::string&, const std::vector<std::shared_ptr<fb::game::npc>>&)>;
 
 private:
     fb::model::datetime               _time;
@@ -362,19 +362,55 @@ private:
 
 public:
     /**
-     * @brief      Creates a new game object with the context as first parameter.
+     * @brief      Creates a new game object managed by shared_ptr with the context as first parameter.
+     *
+     *             This is the new preferred method for creating objects that supports
+     *             automatic lifetime management and safe async operations.
      *
      * @param      args  The constructor arguments for the object.
      *
      * @tparam     T     The type of object to create.
      * @tparam     Args  Variadic template arguments for object construction.
      *
-     * @return     Pointer to the newly created object.
+     * @return     Shared pointer to the newly created object.
      */
     template <typename T, typename... Args>
-    T* make(Args&&... args)
+    std::shared_ptr<T> make(Args&&... args)
     {
-        return new T(*this, std::forward<Args>(args)...);
+        return std::make_shared<T>(*this, std::forward<Args>(args)...);
+    }
+
+    /**
+     * @brief      Safely checks if an object is alive using smart pointer semantics.
+     *
+     *             This method provides a more efficient alternative to hash-based alive() checks
+     *             by using weak pointer expiration checking.
+     *
+     * @param[in]  weak_obj  A weak pointer to the object to check
+     *
+     * @tparam     T         The type of object to check
+     *
+     * @return     True if the object is still alive, false otherwise
+     */
+    template <typename T>
+    bool alive_smart(const std::weak_ptr<T>& weak_obj) const
+    {
+        return !weak_obj.expired();
+    }
+
+    /**
+     * @brief      Safely checks if an object is alive using shared pointer.
+     *
+     * @param[in]  shared_obj  A shared pointer to the object to check
+     *
+     * @tparam     T           The type of object to check
+     *
+     * @return     True if the object is not null, false otherwise
+     */
+    template <typename T>
+    bool alive_smart(const std::shared_ptr<T>& shared_obj) const
+    {
+        return shared_obj != nullptr;
     }
 
 public:
@@ -395,7 +431,6 @@ public:
         {
             std::ignore = co_await obj.map(nullptr, fb::model::point16_t{0, 0}, destroy_type);
         }
-        delete &obj;
         co_return;
     }
 
@@ -760,7 +795,7 @@ protected:
      *
      * @return     Pointer to the created character object, or nullptr if failed.
      */
-    fb::game::character* handle_accepted(fb::socket<fb::game::character>& socket) override final;
+    std::shared_ptr<fb::game::character> handle_accepted(fb::socket<fb::game::character>& socket) override final;
 
 protected:
     /**
@@ -1355,9 +1390,9 @@ public:
      *
      * @return     True if the sell interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_sell(character&                         ch,
-                                           const std::string&                 message,
-                                           const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_sell(character&                                         ch,
+                                           const std::string&                                 message,
+                                           const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for buying items from NPCs.
@@ -1368,9 +1403,9 @@ public:
      *
      * @return     True if the buy interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_buy(character&                         ch,
-                                          const std::string&                 message,
-                                          const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_buy(character&                                         ch,
+                                          const std::string&                                 message,
+                                          const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for repairing items.
@@ -1381,9 +1416,9 @@ public:
      *
      * @return     True if the repair interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_repair(character&                         ch,
-                                             const std::string&                 message,
-                                             const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_repair(character&                                         ch,
+                                             const std::string&                                 message,
+                                             const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for depositing money.
@@ -1394,9 +1429,9 @@ public:
      *
      * @return     True if the deposit interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_deposit_money(character&                         ch,
-                                                    const std::string&                 message,
-                                                    const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_deposit_money(character&                                         ch,
+                                                    const std::string&                                 message,
+                                                    const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for withdrawing money.
@@ -1407,9 +1442,9 @@ public:
      *
      * @return     True if the withdraw interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_withdraw_money(character&                         ch,
-                                                     const std::string&                 message,
-                                                     const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_withdraw_money(character&                                         ch,
+                                                     const std::string&                                 message,
+                                                     const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for storing items in storage.
@@ -1420,9 +1455,9 @@ public:
      *
      * @return     True if the store interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_store_item(character&                         ch,
-                                                 const std::string&                 message,
-                                                 const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_store_item(character&                                         ch,
+                                                 const std::string&                                 message,
+                                                 const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for retrieving items from storage.
@@ -1433,9 +1468,9 @@ public:
      *
      * @return     True if the retrieve interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_retrieve_item(character&                         ch,
-                                                    const std::string&                 message,
-                                                    const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_retrieve_item(character&                                         ch,
+                                                    const std::string&                                 message,
+                                                    const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for displaying items available for sale.
@@ -1446,9 +1481,9 @@ public:
      *
      * @return     True if the sell list interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_sell_list(character&                         ch,
-                                                const std::string&                 message,
-                                                const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_sell_list(character&                                         ch,
+                                                const std::string&                                 message,
+                                                const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for displaying items available for purchase.
@@ -1459,9 +1494,9 @@ public:
      *
      * @return     True if the buy list interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_buy_list(character&                         ch,
-                                               const std::string&                 message,
-                                               const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_buy_list(character&                                         ch,
+                                               const std::string&                                 message,
+                                               const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for checking item sell prices.
@@ -1472,9 +1507,9 @@ public:
      *
      * @return     True if the sell price interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_sell_price(character&                         ch,
-                                                 const std::string&                 message,
-                                                 const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_sell_price(character&                                         ch,
+                                                 const std::string&                                 message,
+                                                 const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for checking item buy prices.
@@ -1485,9 +1520,9 @@ public:
      *
      * @return     True if the buy price interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_buy_price(character&                         ch,
-                                                const std::string&                 message,
-                                                const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_buy_price(character&                                         ch,
+                                                const std::string&                                 message,
+                                                const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for displaying deposited money balance.
@@ -1498,9 +1533,9 @@ public:
      *
      * @return     True if the balance check interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_show_deposited_money(character&                         ch,
-                                                           const std::string&                 message,
-                                                           const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_show_deposited_money(character&                                         ch,
+                                                           const std::string&                                 message,
+                                                           const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for renaming weapons.
@@ -1511,9 +1546,9 @@ public:
      *
      * @return     True if the weapon rename interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_rename_weapon(character&                         ch,
-                                                    const std::string&                 message,
-                                                    const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_rename_weapon(character&                                         ch,
+                                                    const std::string&                                 message,
+                                                    const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for displaying stored items list.
@@ -1524,9 +1559,9 @@ public:
      *
      * @return     True if the storage list interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_store_item_list(character&                         ch,
-                                                      const std::string&                 message,
-                                                      const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_store_item_list(character&                                         ch,
+                                                      const std::string&                                 message,
+                                                      const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for checking stored item count.
@@ -1537,9 +1572,9 @@ public:
      *
      * @return     True if the storage count interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_store_item_count(character&                         ch,
-                                                       const std::string&                 message,
-                                                       const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_store_item_count(character&                                         ch,
+                                                       const std::string&                                 message,
+                                                       const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for character revival.
@@ -1550,9 +1585,9 @@ public:
      *
      * @return     True if the revive interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_revive(character&                         ch,
-                                             const std::string&                 message,
-                                             const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_revive(character&                                         ch,
+                                             const std::string&                                 message,
+                                             const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for appreciation/gratitude expressions.
@@ -1563,9 +1598,9 @@ public:
      *
      * @return     True if the appreciation interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_appreciate(character&                         ch,
-                                                 const std::string&                 message,
-                                                 const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_appreciate(character&                                         ch,
+                                                 const std::string&                                 message,
+                                                 const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      General NPC interaction handler that processes player messages.
@@ -1576,9 +1611,9 @@ public:
      *
      * @return     True if any NPC interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction(character&                         ch,
-                                      const std::string&                 message,
-                                      const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction(character&                                         ch,
+                                      const std::string&                                 message,
+                                      const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 };
 
 struct context::builtin
@@ -1841,21 +1876,22 @@ struct context::builtin
 } // namespace fb::game
 
 /**
- * @brief      Creates a game object instance using the model and game context.
+ * @brief      Creates a new game object managed by shared_ptr with the context as first parameter.
  *
- * @param      context  The game context to use for object creation.
- * @param      args     Additional constructor arguments for the object.
+ *             This is the new preferred method for creating objects that supports
+ *             automatic lifetime management and safe async operations.
  *
- * @tparam     T        The type of game object to create.
- * @tparam     Args     Variadic template arguments for object construction.
+ * @param      args  The constructor arguments for the object.
  *
- * @return     Pointer to the newly created game object.
+ * @tparam     T     The type of object to create.
+ * @tparam     Args  Variadic template arguments for object construction.
+ *
+ * @return     Shared pointer to the newly created object.
  */
 template <typename T, typename... Args>
-T* fb::model::object::make(fb::game::context& context, Args&&... args) const
+std::shared_ptr<T> fb::model::object::make(fb::game::context& context, Args&&... args) const
 {
-    auto& model = static_cast<const typename T::model_type&>(*this);
-    return context.template make<T>(model, std::forward<Args>(args)...);
+    return context.template make<T>(*this, std::forward<Args>(args)...);
 }
 
 #endif // !__FB_GAME_H__

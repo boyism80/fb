@@ -33,8 +33,9 @@ public:
     using group_container = std::unordered_map<uint32_t, shared_group_lock>; ///< Container for groups with shared locks
     using clan_container  = std::unordered_map<uint32_t, shared_clan_lock>;  ///< Container for clans with shared locks
     using character_name_container =
-        std::unordered_map<std::string, fb::game::character*>;                         ///< Character lookup by name
-    using character_id_container = std::unordered_map<uint32_t, fb::game::character*>; ///< Character lookup by ID
+        std::unordered_map<std::string, std::shared_ptr<fb::game::character>>; ///< Character lookup by name
+    using character_id_container =
+        std::unordered_map<uint32_t, std::shared_ptr<fb::game::character>>; ///< Character lookup by ID
 
 public:
     fb::locker<group_container>          groups; ///< Thread-safe container for active groups

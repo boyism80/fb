@@ -66,38 +66,46 @@ void clan::leave(const std::string& member)
     this->_members.erase(member);
 }
 
-const std::unordered_map<uint32_t, fb::game::character*>& clan::characters() const
+const std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>>& clan::characters() const
 {
     return this->_characters;
 }
 
-void clan::attach_character(character& ch)
+void clan::attach_character(std::weak_ptr<character> ch)
 {
-    if (this->_characters.contains(ch.id()))
+    auto shared = ch.lock();
+    if (shared == nullptr)
         return;
 
-    this->_characters.insert({ch.id(), &ch});
-}
-
-void clan::detach_character(character& ch)
-{
-    if (!this->_characters.contains(ch.id()))
+    if (this->_characters.contains(shared->id()))
         return;
 
-    this->_characters.erase(ch.id());
+    this->_characters.insert({shared->id(), ch});
 }
 
-std::vector<character*> clan::nears(const fb::game::map& map, const point16_t& position) const
+void clan::detach_character(std::weak_ptr<character> ch)
+{
+    auto shared = ch.lock();
+    if (shared == nullptr)
+        return;
+
+    if (!this->_characters.contains(shared->id()))
+        return;
+
+    this->_characters.erase(shared->id());
+}
+
+std::vector<std::shared_ptr<fb::game::character>> clan::nears(const fb::game::map& map, const point16_t& position) const
 {
     auto nears  = map.nears(position, OBJECT_TYPE::CHARACTER); // same thread
-    auto result = std::vector<character*>();
+    auto result = std::vector<std::shared_ptr<fb::game::character>>();
 
     for (auto obj : nears)
     {
         if (obj->is(OBJECT_TYPE::CHARACTER) == false)
             continue;
 
-        auto ch = static_cast<character*>(obj);
+        auto ch = std::static_pointer_cast<fb::game::character>(obj);
         if (ch->clan() == nullptr)
             continue;
 

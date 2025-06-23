@@ -32,7 +32,7 @@ public:
 private:
     using datetime      = fb::model::datetime;
     using damage_record = std::pair<uint32_t, datetime>; ///< Pair of (damage, time)
-    using damage_map    = std::unordered_map<life*, damage_record>;
+    using damage_map    = std::unordered_map<std::shared_ptr<life>, damage_record>;
 
 private:
     damage_map _recent_damage;    ///< Tracks recent damage from each attacker
@@ -70,7 +70,7 @@ public:
      * @param[in]  attacker   The life object that dealt the damage
      * @param[in]  now        Current game time
      */
-    virtual void on_damage(mob& mob_obj, life* attacker, const datetime& now);
+    virtual void on_damage(mob& mob_obj, std::shared_ptr<life> attacker, const datetime& now);
 
     /**
      * @brief   Creates appropriate AI strategy for given attack type
@@ -95,7 +95,7 @@ protected:
      * @param[in]  now      Current game time
      * @return     Pointer to the best target, nullptr if none found
      */
-    life* find_target_in_sight(mob& mob_obj, const datetime& now);
+    std::shared_ptr<life> find_target_in_sight(mob& mob_obj, const datetime& now);
 
     /**
      * @brief   Finds a target for the mob within its attack range
@@ -107,7 +107,7 @@ protected:
      * @param[in]  now      Current game time
      * @return     Pointer to the best target, nullptr if none found
      */
-    life* find_target_in_range(mob& mob_obj, const datetime& now);
+    std::shared_ptr<life> find_target_in_range(mob& mob_obj, const datetime& now);
 
     /**
      * @brief   Cleans up expired damage records
@@ -123,7 +123,7 @@ protected:
      * @param[in]  attacker  The attacking character
      * @return     true if the attacker should be ignored
      */
-    bool should_ignore_attacker(const mob& mob_obj, life* attacker) const;
+    bool should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attacker) const;
 
     /**
      * @brief   Checks if the current target should be maintained
@@ -140,7 +140,7 @@ protected:
      * @param[in]  attacker  The life object that dealt damage
      * @param[in]  now       Current game time
      */
-    void record_damage(life* attacker, const datetime& now);
+    void record_damage(std::shared_ptr<life> attacker, const datetime& now);
 
     /**
      * @brief   Makes the mob run away from its target
@@ -148,7 +148,7 @@ protected:
      * @param[in,out]  mob_obj  The mob that should run away
      * @param[in]      target   The target to run from
      */
-    void run_from_target(mob& mob_obj, life* target);
+    void run_from_target(mob& mob_obj, std::shared_ptr<life> target);
 };
 
 } // namespace fb::game

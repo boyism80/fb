@@ -41,12 +41,12 @@ public:
 
 public:
     using unique_tiles  = std::unique_ptr<tile[]>;
-    using unique_sector = std::unique_ptr<sectors>;
+    using shared_sector = std::shared_ptr<sectors>;
 
 private:
     fb::model::size16_t _size  = fb::model::size16_t(0, 0);
     unique_tiles        _tiles = nullptr;
-    unique_sector       _sectors;
+    shared_sector       _sectors;
 
 public:
     const fb::game::context& context;
@@ -214,7 +214,7 @@ public:
      *
      * @return     Pointer to the sector containing the position, or nullptr if invalid
      */
-    sector* sector_at(const fb::model::point16_t& position);
+    std::shared_ptr<fb::game::sector> sector_at(const fb::model::point16_t& position);
 
     /**
      * @brief      Finds all objects near a pivot point within interaction range.
@@ -224,7 +224,8 @@ public:
      *
      * @return     Vector of object pointers within range of the pivot point
      */
-    std::vector<object*> nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<std::shared_ptr<fb::game::object>> nears(const fb::model::point16_t& pivot,
+                                                         OBJECT_TYPE                 type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Finds all objects at or below a specific position on the map.
@@ -234,7 +235,8 @@ public:
      *
      * @return     Vector of object pointers at or below the specified position
      */
-    std::vector<object*> belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<std::shared_ptr<fb::game::object>> belows(const fb::model::point16_t& pivot,
+                                                          OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Gets the thread that manages this map's execution context.

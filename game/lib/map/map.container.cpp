@@ -61,17 +61,16 @@ void map_container::load(const fb::model::map& model)
 
     {
         auto _ = std::lock_guard(this->_mutex);
-        this->push(model.id, map);
-        this->context.push_alive(*map);
+        this->push(model.id, std::shared_ptr<fb::game::map>(map));
     }
 }
 
-fb::game::map* map_container::name2map(const std::string& name) const
+std::shared_ptr<fb::game::map> map_container::name2map(const std::string& name) const
 {
     for (const auto& [id, map] : *this)
     {
-        if (map.model.name == name)
-            return &map;
+        if (map->model.name == name)
+            return map;
     }
 
     return nullptr;

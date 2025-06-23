@@ -106,11 +106,17 @@ std::vector<character*> group::nears(const fb::game::map& map, const fb::model::
     auto nears  = map.nears(position, OBJECT_TYPE::CHARACTER); // same thread
     auto result = std::vector<character*>();
 
-    for (auto ch : nears)
+    for (auto obj : nears)
     {
-        auto i = std::find(this->_active_members.begin(), this->_active_members.end(), ch);
-        if (i != this->_active_members.end())
-            result.push_back(*i);
+        auto ch = std::static_pointer_cast<fb::game::character>(obj);
+        for (auto active_ch : this->_active_members)
+        {
+            if (active_ch == ch.get())
+            {
+                result.push_back(active_ch);
+                break;
+            }
+        }
     }
 
     return result;

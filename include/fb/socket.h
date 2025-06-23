@@ -151,7 +151,7 @@ private:
 
 protected:
     std::array<char, MAX_BUFFER_SIZE> _buffer;
-    T*                                _data;
+    std::shared_ptr<T>                _data;
 
 public:
     /**
@@ -406,7 +406,7 @@ public:
      *
      * @param[in]  value  The data.
      */
-    void data(T* value)
+    void data(std::shared_ptr<T> value)
     {
         this->_data = value;
     }
@@ -417,9 +417,9 @@ public:
      *
      * @return     The data.
      */
-    T* data() const
+    std::shared_ptr<T> data() const
     {
-        return _data;
+        return this->_data;
     }
 
 public:

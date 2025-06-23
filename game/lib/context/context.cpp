@@ -89,17 +89,17 @@ async::task<void> context::handle_start()
 
     co_await fb::acceptor<character>::handle_start();
 
-    auto maps_division = std::unordered_map<fb::thread*, std::vector<fb::game::map*>>{};
+    auto maps_division = std::unordered_map<fb::thread*, std::vector<std::shared_ptr<fb::game::map>>>{};
     for (int i = 0; i < this->threads.count(); i++)
     {
         auto thread = this->threads.at(i);
-        maps_division.insert({thread, std::vector<fb::game::map*>{}});
+        maps_division.insert({thread, std::vector<std::shared_ptr<fb::game::map>>{}});
     }
 
     for (auto& [id, map] : this->maps)
     {
         auto thread = this->threads.modular(id);
-        maps_division[thread].push_back(&map);
+        maps_division[thread].push_back(map);
     }
 
     auto async_tasks = std::vector<async::task<void>>();
@@ -239,6 +239,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     auto ch = socket.data();
     if (ch == nullptr)
         co_return false;
+    auto weak = ch->weak_from_this_as<character>();
 
     if (ch->trade.trading())
         ch->trade.cancel();
@@ -265,7 +266,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         fb::logger::fatal(e.what());
     }
 
-    co_await this->switch_thread(*ch);
+    co_await this->switch_thread(weak);
 
     auto& group_lock = ch->group();
     if (group_lock != nullptr)
@@ -279,8 +280,8 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     auto& clan_lock = ch->clan();
     if (clan_lock != nullptr)
     {
-        clan_lock->write([ch](auto& clan) {
-            clan.detach_character(*ch);
+        clan_lock->write([weak](auto& clan) {
+            clan.detach_character(weak);
         });
         clan_lock.reset();
     }
@@ -356,10 +357,11 @@ void context::foreach_ch(const std::vector<std::string>&                     nam
                 }
 
                 auto ch = ch_names.at(name);
-                if (ch == nullptr || this->alive(*ch) == false)
+                if (ch == nullptr)
                     continue;
 
-                this->threads.enqueue(*ch, [=, this](auto& thread) -> async::task<void> {
+                auto weak = ch->weak_from_this_as<character>();
+                this->threads.enqueue(weak, [=, this](auto& thread) -> async::task<void> {
                     fn(*ch);
                     co_return;
                 });
@@ -396,7 +398,8 @@ async::task<bool> context::init_ch(const internal::Character&           response
                                    std::optional<uint32_t>              clan,
                                    const std::optional<transfer_param>& transfer)
 {
-    auto map = response.map;
+    auto map  = response.map;
+    auto weak = ch.weak_from_this_as<character>();
     ch.id(response.id);
     ch.name(response.name);
     ch.pw(response.pw);
@@ -457,15 +460,15 @@ async::task<bool> context::init_ch(const internal::Character&           response
 
     if (clan.has_value())
     {
-        this->upsert_clan_then(clan.value(), [&ch](auto& lock) {
-            lock->write([&ch](auto& clan) {
-                clan.attach_character(ch);
+        this->upsert_clan_then(clan.value(), [weak, &ch](auto& lock) {
+            lock->write([weak](auto& clan) {
+                clan.attach_character(weak);
             });
             ch.clan(lock);
         });
     }
 
-    co_return co_await ch.map(&this->maps[map], fb::model::point16_t(position_x, position_y));
+    co_return co_await ch.map(this->maps[map], fb::model::point16_t(position_x, position_y));
 }
 
 void context::init_option(const internal::Option& response, fb::game::character& ch)
@@ -487,6 +490,7 @@ void context::init_items(const std::vector<internal::Item>& response, character&
 {
     for (auto& x : response)
     {
+        // Use smart pointer for item creation
         auto item = this->model.item[x.model].make(*this);
         item->count(x.count);
 
@@ -494,14 +498,14 @@ void context::init_items(const std::vector<internal::Item>& response, character&
             item->durability(x.durability.value());
 
         if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
-            static_cast<weapon*>(item)->custom_name(x.custom_name.value());
+            static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
 
         if (x.stored != -1)
-            ch.items.store(*item);
+            ch.items.store(item); // Use smart pointer version
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
-            ch.items.add(*item, x.index);
+            ch.items.add(item, x.index); // Use smart pointer version
         else
-            ch.items.wear((EQUIPMENT_PARTS)x.parts, static_cast<equipment*>(item));
+            ch.items.wear((EQUIPMENT_PARTS)x.parts, std::static_pointer_cast<fb::game::equipment>(item));
     }
 }
 
@@ -539,9 +543,9 @@ void context::init_achievements(const std::vector<fb::protocol::internal::Achiev
     }
 }
 
-character* context::handle_accepted(fb::socket<character>& socket)
+std::shared_ptr<fb::game::character> context::handle_accepted(fb::socket<character>& socket)
 {
-    return this->make<character>(socket);
+    return std::make_shared<character>(*this, socket);
 }
 
 async::task<void> context::send(object&                     object,
@@ -599,12 +603,12 @@ async::task<void> context::send(object&                     object,
         if (map == nullptr)
             co_return;
 
-        for (const auto& [seq, obj] : object.map()->objects)
+        for (const auto& [seq, obj] : map->objects)
         {
-            if (exclude_self && obj == object)
+            if (exclude_self && obj->sequence() == object.sequence())
                 continue;
 
-            obj.send(stream, encrypt);
+            obj->send(stream, encrypt);
         }
     }
     break;
@@ -625,6 +629,7 @@ async::task<void> context::save(character& ch)
     if (ch.inited() == false)
         co_return;
 
+    auto weak  = ch.weak_from_this();
     auto items = std::vector<internal::Item>();
     for (auto i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -675,7 +680,7 @@ async::task<void> context::save(character& ch)
     std::ignore =
         co_await this->http.post("internal", "/user/save", Save{ch.to_protocol(), items, spells, achievements});
 
-    co_await this->switch_thread(ch);
+    co_await this->switch_thread(weak);
     ch.send(fb_resp::save());
 }
 

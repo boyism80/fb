@@ -138,7 +138,7 @@ public:
      *
      * @return     Pointer to the found spell, or nullptr if not found
      */
-    fb::game::spell* find(const std::string& name) const;
+    std::shared_ptr<fb::game::spell> find(const std::string& name) const;
 
     /**
      * @brief      Searches for a spell by model in the collection.
@@ -147,7 +147,7 @@ public:
      *
      * @return     Pointer to the found spell, or nullptr if not found
      */
-    fb::game::spell* find(const fb::model::spell& model) const;
+    std::shared_ptr<fb::game::spell> find(const fb::model::spell& model) const;
 
 public:
     /**
@@ -157,7 +157,7 @@ public:
      *
      * @return     The slot index where the spell was added, or invalid index if failed
      */
-    uint8_t add(fb::game::spell& element) override;
+    uint8_t add(std::shared_ptr<fb::game::spell> element) override;
 
     /**
      * @brief      Adds a spell to the collection at a specific slot index.
@@ -167,7 +167,7 @@ public:
      *
      * @return     The slot index where the spell was added, or invalid index if failed
      */
-    uint8_t add(fb::game::spell& element, uint8_t index) override;
+    uint8_t add(std::shared_ptr<fb::game::spell> element, uint8_t index) override;
 
     /**
      * @brief      Adds a spell from model data to a specific slot with delay.
@@ -349,10 +349,10 @@ public:
  *             automatic duration management, and event notifications for buff
  *             application and removal.
  */
-class buffs : private std::unordered_map<uint32_t, buff*>
+class buffs : private std::unordered_map<uint32_t, std::shared_ptr<buff>>
 {
 private:
-    using super = std::unordered_map<uint32_t, buff*>;
+    using super = std::unordered_map<uint32_t, std::shared_ptr<buff>>;
 
 private:
     fb::game::object& _owner;
@@ -387,7 +387,7 @@ private:
      *
      * @return     True if the buff was successfully added, false otherwise
      */
-    bool push_back(buff& buff);
+    bool push_back(std::shared_ptr<buff>&& buff);
 
 public:
     /**
@@ -408,7 +408,9 @@ public:
      *
      * @return     Pointer to the created buff, or nullptr if failed
      */
-    buff* push_back(const fb::model::spell& spell, uint32_t seconds, const fb::game::object* caster = nullptr);
+    std::shared_ptr<buff> push_back(const fb::model::spell&                  spell,
+                                    uint32_t                                 seconds,
+                                    const std::shared_ptr<fb::game::object>& caster = nullptr);
 
     /**
      * @brief      Removes a buff by its spell ID.
@@ -436,7 +438,7 @@ public:
      *
      * @return     The result of the array indexer
      */
-    buff* operator[] (uint32_t id) const;
+    std::shared_ptr<buff> operator[] (uint32_t id) const;
 };
 
 /**

@@ -19,12 +19,12 @@ template <typename K, typename V>
 class kv_container
 {
 public:
-    using iterator       = std::unordered_map<K, V&>::iterator;
-    using const_iterator = std::unordered_map<K, V&>::const_iterator;
+    using iterator       = std::unordered_map<K, std::shared_ptr<V>>::iterator;
+    using const_iterator = std::unordered_map<K, std::shared_ptr<V>>::const_iterator;
 
 private:
-    std::vector<std::unique_ptr<V>> _ptrs;
-    std::unordered_map<K, V&>       _pairs;
+    std::vector<std::shared_ptr<V>>           _ptrs;
+    std::unordered_map<K, std::shared_ptr<V>> _pairs;
 
 public:
     kv_container()  = default;
@@ -51,13 +51,13 @@ public:
      *
      * @return     A pointer to the value if found, nullptr otherwise.
      */
-    V* find(const K& k) const
+    std::shared_ptr<V> find(const K& k) const
     {
         auto i = this->_pairs.find(k);
         if (i == this->_pairs.cend())
             return nullptr;
 
-        return &i->second;
+        return i->second;
     }
 
 public:
@@ -67,10 +67,10 @@ public:
      * @param[in]  key    The key to associate with the value.
      * @param      value  The value to store (ownership is transferred).
      */
-    void push(K key, V* value)
+    void push(K key, std::shared_ptr<V> value)
     {
-        this->_ptrs.push_back(std::unique_ptr<V>(value));
-        this->_pairs.insert({key, *value});
+        this->_ptrs.push_back(value);
+        this->_pairs.insert({key, this->_ptrs.back()});
     }
 
 public:
@@ -94,7 +94,7 @@ public:
      *
      * @throws     std::runtime_error if the key does not exist.
      */
-    V& operator[] (const K& k)
+    std::shared_ptr<V> operator[] (const K& k)
     {
         auto found = this->find(k);
         if (found == nullptr)
@@ -112,7 +112,7 @@ public:
             throw std::runtime_error(sstream.str());
         }
 
-        return *found;
+        return found;
     }
 
 public:

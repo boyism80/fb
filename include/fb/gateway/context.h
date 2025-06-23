@@ -23,15 +23,11 @@ using namespace fb::protocol::gateway;
  */
 class context : public fb::acceptor<fb::gateway::session>
 {
-public:
-    using unique_session = std::unique_ptr<fb::gateway::session>;
-
 private:
-    std::vector<endpoint>       _entrypoints;
-    fb::stream                  _endpoint_bytes;
-    uint32_t                    _endpoint_crc = 0;
-    fb::stream                  _connection_cache;
-    std::vector<unique_session> _sessions;
+    std::vector<endpoint> _entrypoints;
+    fb::stream            _endpoint_bytes;
+    uint32_t              _endpoint_crc = 0;
+    fb::stream            _connection_cache;
 
 public:
     /**
@@ -121,7 +117,7 @@ protected:
      *
      * @return     A pointer to the newly created session object.
      */
-    fb::gateway::session* handle_accepted(fb::socket<fb::gateway::session>& socket) final;
+    std::shared_ptr<fb::gateway::session> handle_accepted(fb::socket<fb::gateway::session>& socket) final;
     /**
      * @brief      Handles successful client connection establishment.
      *

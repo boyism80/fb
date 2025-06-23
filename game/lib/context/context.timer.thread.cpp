@@ -17,17 +17,17 @@ async::task<void> context::handle_mob_action(const fb::model::datetime& now, std
 
         for (auto& [_, obj] : map->objects)
         {
-            if (obj.is(OBJECT_TYPE::MOB) == false)
+            if (obj->is(OBJECT_TYPE::MOB) == false)
                 continue;
 
-            auto& mob = static_cast<fb::game::mob&>(obj);
-            if (mob.alive() == false)
+            auto mob = std::static_pointer_cast<fb::game::mob>(obj);
+            if (mob->alive() == false)
                 continue;
 
-            if (mob.paralysis())
+            if (mob->paralysis())
                 continue;
 
-            std::ignore = mob.action(now);
+            std::ignore = mob->action(now);
         }
     }
     co_return;
@@ -61,15 +61,15 @@ async::task<void> context::handle_buff_timer(const fb::model::datetime& now, std
         auto concast = std::vector<fb::game::object*>{};
         for (auto& [fd, obj] : map->objects)
         {
-            if (obj.buffs.size() == 0)
+            if (obj->buffs.size() == 0)
                 continue;
 
-            concast.push_back(&obj);
+            concast.push_back(obj.get());
         }
 
         for (auto obj : concast)
         {
-            auto ended_buffs = std::vector<buff*>();
+            auto ended_buffs = std::vector<std::shared_ptr<fb::game::buff>>();
             for (auto& [id, buff] : obj->buffs)
             {
                 buff->time_dec(1s);
@@ -116,17 +116,17 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
         if (map->objects.size() == 0)
             continue;
 
-        auto concast = std::unordered_map<fb::game::character*, std::vector<fb::game::equipment*>>{};
+        auto concast = std::unordered_map<fb::game::character*, std::vector<std::shared_ptr<fb::game::equipment>>>{};
         for (auto& [fd, obj] : map->objects)
         {
-            if (obj.is(OBJECT_TYPE::CHARACTER) == false)
+            if (obj->is(OBJECT_TYPE::CHARACTER) == false)
                 continue;
 
-            auto& ch = static_cast<fb::game::character&>(obj);
-            if (ch.state() == STATE::GHOST)
+            auto ch = std::static_pointer_cast<fb::game::character>(obj);
+            if (ch->state() == STATE::GHOST)
                 continue;
 
-            for (auto& [part, equipment] : ch.items.equipments())
+            for (auto& [part, equipment] : ch->items.equipments())
             {
                 if (equipment == nullptr)
                     continue;
@@ -135,26 +135,33 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
                 if (model.on_concast.empty())
                     continue;
 
-                if (concast.contains(&ch) == false)
-                    concast.insert({&ch, {}});
-
-                concast[&ch].push_back(equipment);
+                if (concast.contains(ch.get()) == false)
+                    concast.insert({ch.get(), {}});
+                concast[ch.get()].push_back(equipment);
             }
         }
 
         for (auto& [ch, equipments] : concast)
         {
+            auto weak = ch->weak_from_this();
             for (auto equipment : equipments)
             {
-                auto& model = equipment->based<fb::model::equipment>();
-                if (lua != nullptr)
+                try
                 {
-                    lua->func(model.on_concast);
-                    lua->pushobject(ch);
-                    lua->pushobject(equipment);
+                    auto& model = equipment->based<fb::model::equipment>();
+                    if (lua != nullptr)
+                    {
+                        lua->func(model.on_concast);
+                        lua->pushobject(ch);
+                        lua->pushobject(equipment);
+                    }
+                    co_await lua->call(2, false);
+                    co_await this->switch_thread(weak);
                 }
-                co_await lua->call(2, false);
-                co_await this->switch_thread(*ch);
+                catch (std::exception& e)
+                {
+                    fb::logger::warn("handle_gear_timer: {}", e.what());
+                }
             }
         }
     }
@@ -179,11 +186,11 @@ async::task<void> fb::game::context::handle_soliloquy_timer(const fb::model::dat
 
         for (auto& [_, obj] : map->objects)
         {
-            if (obj.is(OBJECT_TYPE::NPC) == false)
+            if (obj->is(OBJECT_TYPE::NPC) == false)
                 continue;
 
-            auto& npc = static_cast<fb::game::npc&>(obj);
-            npc.soliloquy();
+            auto npc = std::static_pointer_cast<fb::game::npc>(obj);
+            npc->soliloquy();
         }
     }
 

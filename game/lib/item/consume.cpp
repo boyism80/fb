@@ -27,10 +27,10 @@ bool fb::game::consume::active()
 
     owner.action(ACTION::EAT, DURATION::EAT);
     owner.sound(SOUND::EAT);
-    owner.listener.on_item_update(owner, owner.items.index(*this));
+    owner.listener.on_item_update(owner, owner.items.index(this->shared_from_this_as<fb::game::item>()));
 
     if (this->empty())
-        std::ignore = owner.items.remove(*this, -1, ITEM_DELETE_TYPE::EAT);
+        std::ignore = owner.items.remove(this->shared_from_this_as<fb::game::item>(), -1, ITEM_DELETE_TYPE::EAT);
 
     return true;
 }

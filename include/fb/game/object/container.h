@@ -41,15 +41,13 @@ class context;
 class object_container
 {
 public:
-    using ptrs     = std::unordered_map<uint32_t, std::unique_ptr<object>>; ///< Map of object IDs to unique pointers
-    using refs     = std::unordered_map<uint32_t, object&>;                 ///< Map of object IDs to references
-    using iterator = refs::iterator;                                        ///< Iterator type for object references
-    using const_iterator        = refs::const_iterator;         ///< Const iterator type for object references
+    using ptrs     = std::unordered_map<uint32_t, std::shared_ptr<object>>; ///< Map of object IDs to shared pointers
+    using iterator = ptrs::iterator;                            ///< Iterator type for object shared pointers
+    using const_iterator        = ptrs::const_iterator;         ///< Const iterator type for object shared pointers
     using handle_predicate_type = std::function<bool(object&)>; ///< Function type for object filtering predicates
 
 private:
-    ptrs                 _ptrs;          ///< Storage for object unique pointers
-    refs                 _refs;          ///< Fast lookup map for object references
+    ptrs                 _ptrs;          ///< Storage for object shared pointers
     uint32_t             _sequence = 1;  ///< Next available sequence ID for new objects
     std::queue<uint32_t> _available_seq; ///< Queue for reusing sequence IDs
 
@@ -144,7 +142,7 @@ public:
      *
      * @return     Reference to the object with the specified ID.
      */
-    object& at(uint32_t i);
+    std::shared_ptr<object> at(uint32_t i);
 
     /**
      * @brief      Adds an object to the container.
@@ -224,7 +222,7 @@ public:
      *
      * @return     True if the object is in the container, false otherwise.
      */
-    bool contains(const object& obj) const;
+    bool contains(const std::shared_ptr<object>& obj) const;
 
     /**
      * @brief      Checks if the container contains an object with the specified ID.

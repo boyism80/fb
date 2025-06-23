@@ -32,7 +32,7 @@ inline fb::game::inventory<T>::~inventory()
  * @return     The previously stored element at that position, or nullptr if empty
  */
 template <typename T>
-inline T* fb::game::inventory<T>::set(T* element, int position)
+inline std::shared_ptr<T> fb::game::inventory<T>::set(std::shared_ptr<T> element, int position)
 {
     auto before               = this->_elements[position];
     this->_elements[position] = element;
@@ -94,7 +94,7 @@ inline const fb::game::life& fb::game::inventory<T>::owner() const
  * @return     Pointer to the element at the index, or nullptr if empty or invalid index
  */
 template <typename T>
-inline T* fb::game::inventory<T>::at(uint8_t index) const
+inline std::shared_ptr<T> fb::game::inventory<T>::at(uint8_t index) const
 {
     if (index > CONTAINER_CAPACITY - 1)
         return nullptr;
@@ -112,12 +112,12 @@ inline T* fb::game::inventory<T>::at(uint8_t index) const
  * @return     The index where the element was placed, or 0xFF if inventory is full
  */
 template <typename T>
-inline uint8_t fb::game::inventory<T>::add(T& element)
+inline uint8_t fb::game::inventory<T>::add(std::shared_ptr<T> element)
 {
     auto next = this->next();
     if (next != 0xFF)
     {
-        this->_elements[next] = &element;
+        this->_elements[next] = element;
     }
 
     return next;
@@ -134,12 +134,12 @@ inline uint8_t fb::game::inventory<T>::add(T& element)
  * @return     The index where the element was placed, or 0xFF if slot is occupied
  */
 template <typename T>
-inline uint8_t fb::game::inventory<T>::add(T& element, uint8_t index)
+inline uint8_t fb::game::inventory<T>::add(std::shared_ptr<T> element, uint8_t index)
 {
     if (this->_elements[index] != nullptr)
         return 0xFF;
 
-    this->_elements[index] = &element;
+    this->_elements[index] = element;
     return index;
 }
 
@@ -287,7 +287,7 @@ fb::game::inventory<T>::const_iterator fb::game::inventory<T>::cend() const
  * @return     Pointer to the element at the specified index
  */
 template <typename T>
-inline T* fb::game::inventory<T>::operator[] (int index)
+inline std::shared_ptr<T> fb::game::inventory<T>::operator[] (int index)
 {
     return this->at(index);
 }
@@ -302,7 +302,7 @@ inline T* fb::game::inventory<T>::operator[] (int index)
  * @return     Const pointer to the element at the specified index
  */
 template <typename T>
-inline const T* fb::game::inventory<T>::operator[] (int index) const
+inline const std::shared_ptr<T> fb::game::inventory<T>::operator[] (int index) const
 {
     return this->at(index);
 }

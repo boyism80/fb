@@ -35,7 +35,7 @@ template <typename T>
 class inventory
 {
 public:
-    using array_type     = std::array<T*, CONTAINER_CAPACITY>;
+    using array_type     = std::array<std::shared_ptr<T>, CONTAINER_CAPACITY>;
     using iterator       = array_type::iterator;
     using const_iterator = array_type::const_iterator;
 
@@ -72,7 +72,7 @@ protected:
      *
      * @return     The element that was previously at this position, or nullptr.
      */
-    T* set(T* element, int position);
+    std::shared_ptr<T> set(std::shared_ptr<T> element, int position);
 
 public:
     /**
@@ -115,7 +115,7 @@ public:
      *
      * @return     Pointer to the element at the specified slot, or nullptr if empty/invalid.
      */
-    virtual T* at(uint8_t index) const;
+    virtual std::shared_ptr<T> at(uint8_t index) const;
     /**
      * @brief      Adds an element to the first available slot.
      *
@@ -126,7 +126,7 @@ public:
      *
      * @return     The slot index where the element was placed, or 0xFF if failed.
      */
-    virtual uint8_t add(T& element);
+    virtual uint8_t add(std::shared_ptr<T> element);
 
     /**
      * @brief      Adds an element to a specific slot.
@@ -139,7 +139,7 @@ public:
      *
      * @return     The slot index where the element was placed, or 0xFF if failed.
      */
-    virtual uint8_t add(T& element, uint8_t index);
+    virtual uint8_t add(std::shared_ptr<T> element, uint8_t index);
 
     /**
      * @brief      Removes the element at the specified slot.
@@ -233,7 +233,7 @@ public:
      *
      * @return     The result of the array indexer
      */
-    T* operator[] (int index);
+    std::shared_ptr<T> operator[] (int index);
     /**
      * @brief      Array indexer operator.
      *
@@ -241,7 +241,7 @@ public:
      *
      * @return     The result of the array indexer
      */
-    const T* operator[] (int index) const;
+    const std::shared_ptr<T> operator[] (int index) const;
 };
 
 #include "inventory.hpp"

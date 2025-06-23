@@ -21,14 +21,13 @@ namespace fb {
 class context : public std::enable_shared_from_this<context>
 {
 public:
-    using hash_switchable = fb::hash<fb::locker<std::unordered_set<fb::thread_switchable*>>>;
-    using boost_timers    = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
+    using boost_timers = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
 
 private:
-    hash_switchable _hash_switchable;
-    boost_timers    _timers;
+    using super = std::enable_shared_from_this<context>;
 
 protected:
+    boost_timers             _timers;
     boost::asio::io_context& _boost_context;
     bool                     _running = false;
 
@@ -129,11 +128,68 @@ public:
 public:
     virtual void exit();
 
-public:
-    void              push_alive(const fb::thread_switchable& obj);
-    void              pop_alive(const fb::thread_switchable& obj);
-    bool              alive(const fb::thread_switchable& obj) const;
-    async::task<void> switch_thread(const fb::thread_switchable& obj);
+    template <typename T>
+    async::task<void> switch_thread(std::weak_ptr<T> weak)
+    {
+        static_assert(std::is_base_of_v<fb::thread_switchable, T>, "T must inherit from thread_switchable");
+
+        while (true)
+        {
+            auto shared_ptr = weak.lock();
+            if (shared_ptr == nullptr)
+                throw std::runtime_error("object not alive");
+
+            auto thread = shared_ptr->thread();
+            if (thread->id() == std::this_thread::get_id())
+                break;
+
+            co_await thread->switching();
+        }
+    }
+
+    // New smart pointer-based methods
+    /**
+     * @brief      Checks if a thread-switchable object is alive using smart pointer semantics.
+     *
+     *             This is a more efficient alternative to the hash-based alive() check.
+     *             Uses weak_ptr to determine if the object is still valid without locking.
+     *
+     * @param[in]  weak_obj  A weak pointer to the object to check
+     *
+     * @return     True if the object is still alive, false otherwise
+     */
+    bool alive_smart(const std::weak_ptr<fb::thread_switchable>& weak_obj) const
+    {
+        return !weak_obj.expired();
+    }
+
+    /**
+     * @brief      Safely switches to the thread associated with the given object.
+     *
+     *             Uses smart pointer semantics to ensure the object is still alive
+     *             during the thread switching operation. More efficient than the
+     *             hash-based version as it doesn't require locking.
+     *
+     * @param[in]  weak_obj  A weak pointer to the thread-switchable object
+     *
+     * @return     An async task that completes when the thread switch is done
+     * @throws     std::runtime_error if the object is no longer alive
+     */
+    async::task<void> switch_thread_smart(const std::weak_ptr<fb::thread_switchable>& weak_obj)
+    {
+        while (true)
+        {
+            auto shared_obj = weak_obj.lock();
+            if (!shared_obj)
+                throw std::runtime_error("object not alive");
+
+            auto thread = shared_obj->thread();
+            if (thread->id() == std::this_thread::get_id())
+                break;
+
+            co_await thread->switching();
+        }
+    }
 
 public:
     operator boost::asio::io_context& () const;
@@ -149,6 +205,10 @@ public:
  */
 class acceptable : public context, public boost::asio::ip::tcp::acceptor
 {
+private:
+    using super_context  = context;
+    using super_acceptor = boost::asio::ip::tcp::acceptor;
+
 protected:
     /**
      * @brief      Constructs a new TCP acceptor context.

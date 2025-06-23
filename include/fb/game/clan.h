@@ -32,12 +32,12 @@ public:
     struct builtin;
 
 private:
-    context&                                           _context;
-    uint32_t                                           _id;
-    std::string                                        _name;
-    std::optional<std::string>                         _title;
-    std::unordered_map<std::string, clan_member>       _members;
-    std::unordered_map<uint32_t, fb::game::character*> _characters;
+    context&                                                         _context;
+    uint32_t                                                         _id;
+    std::string                                                      _name;
+    std::optional<std::string>                                       _title;
+    std::unordered_map<std::string, clan_member>                     _members;
+    std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>> _characters;
 
 public:
     /**
@@ -141,20 +141,20 @@ public:
      *
      * @return     Reference to the map of character IDs to character pointers
      */
-    const std::unordered_map<uint32_t, fb::game::character*>& characters() const;
+    const std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>>& characters() const;
 
     /**
      * @brief      Attaches a character to the clan as an active member.
      *
      * @param      ch    The character to attach to the clan
      */
-    void attach_character(character& ch);
+    void attach_character(std::weak_ptr<character> ch);
     /**
      * @brief      Detaches a character from the clan's active members.
      *
      * @param      ch    The character to detach from the clan
      */
-    void detach_character(character& ch);
+    void detach_character(std::weak_ptr<character> ch);
 
     /**
      * @brief      Finds clan members near a specific position on a map.
@@ -164,7 +164,8 @@ public:
      *
      * @return     Vector of character pointers for nearby clan members
      */
-    std::vector<character*> nears(const fb::game::map& map, const fb::model::point16_t& position) const;
+    std::vector<std::shared_ptr<fb::game::character>> nears(const fb::game::map&        map,
+                                                            const fb::model::point16_t& position) const;
 };
 
 struct clan::builtin

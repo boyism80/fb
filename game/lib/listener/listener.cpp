@@ -66,7 +66,7 @@ void listener_impl::on_update_external(object& me, bool light)
             if (me.hidden(*obj))
                 continue;
 
-            auto you = static_cast<character*>(obj);
+            auto you = std::static_pointer_cast<fb::game::character>(obj);
             you->send(fb_resp::update_external(static_cast<character&>(me), *you, light));
         }
     }

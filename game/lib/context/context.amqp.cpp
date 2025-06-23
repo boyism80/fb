@@ -18,17 +18,18 @@ async::task<void> context::handle_amqp_Broadcast(const internal_resp::Broadcast&
 
 async::task<void> context::handle_amqp_KickOut(const internal_resp::KickOut& resp)
 {
-    auto ch = this->_shard[resp.name]->names.template read<character*>([&name = resp.name](auto& names) -> character* {
-        if (!names.contains(name))
-            return nullptr;
+    auto ch = this->_shard[resp.name]->names.template read<std::shared_ptr<fb::game::character>>(
+        [&name = resp.name](auto& names) -> std::shared_ptr<fb::game::character> {
+            if (!names.contains(name))
+                return nullptr;
 
-        return names.at(name);
-    });
+            return names.at(name);
+        });
 
     if (ch == nullptr)
         co_return;
 
-    auto& socket = static_cast<fb::socket<character>&>(*ch);
+    auto& socket = static_cast<fb::socket<fb::game::character>&>(*ch);
     socket.close();
     co_return;
 }

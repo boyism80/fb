@@ -91,7 +91,7 @@ private:
      *
      * @return     Pointer to the found item, or nullptr if not found
      */
-    fb::game::item* find(const fb::model::item& item) const;
+    std::shared_ptr<fb::game::item> find(const fb::model::item& item) const;
     /**
      * @brief      Validates that both trades can be completed successfully.
      *
@@ -179,7 +179,7 @@ public:
      *
      * @return     Vector of pointers to items being offered in the trade
      */
-    const std::vector<fb::game::item*> items() const;
+    const std::vector<std::shared_ptr<fb::game::item>> items() const;
 
     /**
      * @brief      Gets a specific item from the trade by slot index.
@@ -188,7 +188,7 @@ public:
      *
      * @return     Pointer to the item at the specified slot, or nullptr if empty
      */
-    const fb::game::item* item(uint8_t index) const;
+    const std::shared_ptr<fb::game::item> item(uint8_t index) const;
 };
 
 /**

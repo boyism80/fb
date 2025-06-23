@@ -158,13 +158,9 @@ public:
  */
 class context : public fb::acceptor<fb::login::session>
 {
-public:
-    using unique_session = std::unique_ptr<fb::login::session>;
-
 private:
     fb::protocol::login::response::agreement _agreement = CP949(fb::config<std::string>("agreement"), PLATFORM::BOTH);
     std::vector<std::string>                 _forbiddens;
-    std::vector<unique_session>              _sessions;
     std::vector<boost::asio::deadline_timer> _timers;
     fb::redis                                _redis;
 
@@ -249,7 +245,7 @@ protected:
      *
      * @return     A pointer to the created session object.
      */
-    fb::login::session* handle_accepted(fb::socket<fb::login::session>& socket) final;
+    std::shared_ptr<fb::login::session> handle_accepted(fb::socket<fb::login::session>& socket) override final;
 
     /**
      * @brief      Handles client connection establishment.

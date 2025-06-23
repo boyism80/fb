@@ -64,15 +64,6 @@ public:
 
 public:
     /**
-     * @brief      Creates a copy of this NPC in the specified context.
-     *
-     * @param      context  The game context to create the NPC copy in
-     *
-     * @return     Pointer to the newly created NPC instance
-     */
-    npc* make(fb::game::context& context);
-
-    /**
      * @brief      Performs a soliloquy (random speech) action.
      *
      *             Makes the NPC speak a random message from their dialogue pool,

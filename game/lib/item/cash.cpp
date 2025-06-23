@@ -50,7 +50,9 @@ fb::game::cash* fb::game::cash::replace(uint32_t value)
     }
     else
     {
-        result = this->context.make<fb::game::cash>(value);
+        // TODO: Phase 3 - Convert to smart pointer return type
+        auto result_shared = this->context.make<fb::game::cash>(value);
+        result             = result_shared.get();
     }
     std::ignore = this->destroy();
     return result;

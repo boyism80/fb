@@ -182,57 +182,57 @@ int fb::model::item::builtin_storage_fee(lua_State* L)
     return 1;
 }
 
-fb::game::item* fb::model::item::make(fb::game::context& context, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::item::make(fb::game::context& context, uint16_t count) const
 {
     return context.make<fb::game::item>(*this, fb::game::item::initial_params{.count = count});
 }
 
-fb::game::item* fb::model::cash::make(fb::game::context& context, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::cash::make(fb::game::context& context, uint16_t count) const
 {
     return context.make<fb::game::cash>(count);
 }
 
-fb::game::item* fb::model::consume::make(fb::game::context& context, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::consume::make(fb::game::context& context, uint16_t count) const
 {
     return context.make<fb::game::consume>(*this, count);
 }
 
-fb::game::item* fb::model::pack::make(fb::game::context& context, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::pack::make(fb::game::context& context, uint16_t count) const
 {
     return context.make<fb::game::pack>(*this);
 }
 
-fb::game::item* fb::model::weapon::make(fb::game::context& context, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::weapon::make(fb::game::context& context, uint16_t count) const
 {
     return context.make<fb::game::weapon>(*this);
 }
 
-fb::game::item* fb::model::armor::make(fb::game::context& context, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::armor::make(fb::game::context& context, uint16_t count) const
 {
     return context.make<fb::game::armor>(*this);
 }
 
-fb::game::item* fb::model::helmet::make(fb::game::context& context, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::helmet::make(fb::game::context& context, uint16_t count) const
 {
     return context.make<fb::game::helmet>(*this);
 }
 
-fb::game::item* fb::model::shield::make(fb::game::context& context, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::shield::make(fb::game::context& context, uint16_t count) const
 {
     return context.make<fb::game::shield>(*this);
 }
 
-fb::game::item* fb::model::ring::make(fb::game::context& context, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::ring::make(fb::game::context& context, uint16_t count) const
 {
     return context.make<fb::game::ring>(*this);
 }
 
-fb::game::item* fb::model::auxiliary::make(fb::game::context& context, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::auxiliary::make(fb::game::context& context, uint16_t count) const
 {
     return context.make<fb::game::auxiliary>(*this);
 }
 
-fb::game::item* fb::model::bow::make(fb::game::context& context, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::bow::make(fb::game::context& context, uint16_t count) const
 {
     return context.make<fb::game::bow>(*this);
 }

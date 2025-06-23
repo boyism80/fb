@@ -45,7 +45,7 @@ template <typename T>
 class acceptor : public fb::acceptable
 {
 public:
-    using socket_container      = std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>;
+    using socket_container      = std::unordered_map<uint32_t, std::shared_ptr<fb::socket<T>>>;
     using socket_container_lock = fb::locker<socket_container>;
     using boost_timers          = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
 
@@ -218,32 +218,37 @@ private:
                 {
                     auto protocol = std::shared_ptr<fb::protocol::header>(
                         co_await this->handler.protocol.get_deserializer(cmd)(reader));
-                    auto fd = socket.fd();
-                    this->threads.enqueue(socket,
-                                          [this, protocol, &socket, fd, cmd](auto& thread) -> async::task<void> {
-                                              try
-                                              {
-                                                  if (this->connected(fd) == false)
-                                                      co_return;
+                    auto fd   = socket.fd();
+                    auto weak = socket.weak_from_this_as<fb::socket<T>>();
+                    this->threads.enqueue(weak, [this, protocol, weak, fd, cmd](auto& thread) -> async::task<void> {
+                        try
+                        {
+                            if (weak.expired())
+                                co_return;
 
-                                                  auto& handler = this->handler.protocol.get_handler(cmd);
-                                                  // Check both global socket TPS and per-command TPS limits
-                                                  // If either limit is exceeded, ignore the packet
-                                                  if (this->assert_tps(socket) &&
-                                                      !socket.limiter.update(cmd, handler.duration, handler.limit))
-                                                      co_return;
+                            auto shared = weak.lock();
+                            if (shared == nullptr)
+                                co_return;
 
-                                                  std::ignore = co_await handler.fn(socket, *protocol.get());
-                                              }
-                                              catch (std::exception& e)
-                                              {
-                                                  fb::logger::fatal(e.what());
-                                              }
-                                              catch (...)
-                                              {
-                                                  fb::logger::fatal("unhandled exception");
-                                              }
-                                          });
+                            auto  socket  = shared.get();
+                            auto& handler = this->handler.protocol.get_handler(cmd);
+                            // Check both global socket TPS and per-command TPS limits
+                            // If either limit is exceeded, ignore the packet
+                            if (this->assert_tps(*socket) &&
+                                !socket->limiter.update(cmd, handler.duration, handler.limit))
+                                co_return;
+
+                            std::ignore = co_await handler.fn(*socket, *protocol.get());
+                        }
+                        catch (std::exception& e)
+                        {
+                            fb::logger::fatal(e.what());
+                        }
+                        catch (...)
+                        {
+                            fb::logger::fatal("unhandled exception");
+                        }
+                    });
                 }
 
                 reader.seek(size - sizeof(uint8_t));
@@ -292,8 +297,6 @@ private:
         {
             fb::logger::fatal(e.what());
         }
-        this->pop_alive(socket);
-
         auto fd = socket.fd();
         this->_sockets.write([fd](auto& v) -> void {
             v.erase(fd);
@@ -334,9 +337,9 @@ private:
             if (socket.data() == nullptr)
                 co_return;
 
-            co_await this->threads.dispatch(socket, [this, &socket](auto&) -> async::task<void> {
-                co_await this->erase(socket);
-            });
+            auto weak = socket.weak_from_this_as<fb::socket<T>>();
+            co_await this->switch_thread(weak);
+            co_await this->erase(socket);
         }
         catch (std::exception& e)
         {
@@ -374,11 +377,10 @@ private:
      */
     void accept()
     {
-        auto socket = std::make_unique<fb::socket<T>>(*this,
-                                                      std::bind_front(&acceptor::on_socket_received, this),
-                                                      std::bind_front(&acceptor::on_socket_closed, this));
-        auto ptr    = socket.get();
-        this->async_accept(*ptr, [this, socket = std::move(socket), ptr](boost::system::error_code error) mutable {
+        auto shared_socket_ptr = std::make_shared<fb::socket<T>>(*this,
+                                                                 std::bind_front(&acceptor::on_socket_received, this),
+                                                                 std::bind_front(&acceptor::on_socket_closed, this));
+        this->async_accept(*shared_socket_ptr, [this, shared_socket_ptr](boost::system::error_code error) mutable {
             try
             {
                 if (error)
@@ -387,31 +389,30 @@ private:
                 if (this->_running == false)
                     throw std::runtime_error("cannot accept socket. acceptor is cleaning now.");
 
-                ptr->data(this->handle_accepted(*ptr));
+                shared_socket_ptr->data(this->handle_accepted(*shared_socket_ptr));
 
                 {
-                    auto fd = socket->fd();
-                    this->_sockets.write([fd, &socket](auto& v) -> void {
+                    auto fd = shared_socket_ptr->fd();
+                    this->_sockets.write([fd, &shared_socket_ptr](auto& v) -> void {
                         if (v.contains(fd))
                         {
                             fb::logger::warn(std::format("socket already exists. fd: {}", fd));
                             v.erase(fd); // remove old socket if exists
                         }
 
-                        v.insert({fd, std::move(socket)});
+                        v.insert({fd, shared_socket_ptr});
                     });
                 }
 
-                this->push_alive(*ptr);
-                async::awaitable_get(this->handle_connected(*ptr));
+                async::awaitable_get(this->handle_connected(*shared_socket_ptr));
 
-                boost::asio::co_spawn(*this, ptr->recv(), boost::asio::detached);
+                boost::asio::co_spawn(*this, shared_socket_ptr->recv(), boost::asio::detached);
                 this->accept();
             }
             catch (std::exception& e)
             {
                 fb::logger::fatal(e.what());
-                socket->close();
+                shared_socket_ptr->close();
             }
         });
     }
@@ -639,7 +640,7 @@ protected:
      *
      * @return     A pointer to the data associated with the socket.
      */
-    virtual T* handle_accepted(fb::socket<T>& socket) = 0;
+    virtual std::shared_ptr<T> handle_accepted(fb::socket<T>& socket) = 0;
 
 protected:
     /**
@@ -886,7 +887,7 @@ private:
             {
                 try
                 {
-                    co_await this->handle_disconnected(*socket);
+                    std::ignore = co_await this->handle_disconnected(*socket);
                 }
                 catch (std::exception& e)
                 {

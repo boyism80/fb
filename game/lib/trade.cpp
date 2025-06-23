@@ -265,7 +265,7 @@ void fb::game::trade::restore()
     this->_owner.update(STATE_LEVEL::EXP_MONEY);
 }
 
-fb::game::item* fb::game::trade::find(const fb::model::item& item) const
+std::shared_ptr<fb::game::item> fb::game::trade::find(const fb::model::item& item) const
 {
     for (auto& [index, order] : this->_items)
     {
@@ -275,7 +275,7 @@ fb::game::item* fb::game::trade::find(const fb::model::item& item) const
 
         auto& model = x->based<fb::model::item>();
         if (&model == &item)
-            return x;
+            return std::static_pointer_cast<fb::game::item>(x);
     }
 
     return nullptr;
@@ -313,7 +313,7 @@ void fb::game::trade::assert_exchange(const fb::game::trade& trade) const
 
 void fb::game::trade::exchange(trade& trade1, trade& trade2)
 {
-    static auto push_buffer = [](trade& trade, std::vector<fb::game::item*>& buffer) {
+    static auto push_buffer = [](trade& trade, std::vector<std::shared_ptr<fb::game::item>>& buffer) {
         for (auto& [index, order] : trade._items)
         {
             auto item = trade._owner.items[index];
@@ -325,7 +325,7 @@ void fb::game::trade::exchange(trade& trade1, trade& trade2)
 
             auto split = item->split(trade_count);
             if (split == item)
-                trade._owner.items.remove(*item);
+                trade._owner.items.remove(item);
 
             buffer.push_back(split);
         }
@@ -339,10 +339,10 @@ void fb::game::trade::exchange(trade& trade1, trade& trade2)
     trade1.assert_exchange(trade2);
     trade2.assert_exchange(trade1);
 
-    auto buffer1 = std::vector<fb::game::item*>();
+    auto buffer1 = std::vector<std::shared_ptr<fb::game::item>>();
     auto money1  = push_buffer(trade1, buffer1);
 
-    auto buffer2 = std::vector<fb::game::item*>();
+    auto buffer2 = std::vector<std::shared_ptr<fb::game::item>>();
     auto money2  = push_buffer(trade2, buffer2);
 
     for (auto& item : buffer2)
@@ -390,9 +390,9 @@ bool fb::game::trade::lock()
     }
 }
 
-const std::vector<fb::game::item*> fb::game::trade::items() const
+const std::vector<std::shared_ptr<fb::game::item>> fb::game::trade::items() const
 {
-    auto result = std::vector<fb::game::item*>();
+    auto result = std::vector<std::shared_ptr<fb::game::item>>();
     for (auto& [index, order] : this->_items)
     {
         auto item = this->_owner.items[index];
@@ -404,7 +404,7 @@ const std::vector<fb::game::item*> fb::game::trade::items() const
     return result;
 }
 
-const fb::game::item* fb::game::trade::item(uint8_t index) const
+const std::shared_ptr<fb::game::item> fb::game::trade::item(uint8_t index) const
 {
     if (this->_items.contains(index) == false)
         return nullptr;

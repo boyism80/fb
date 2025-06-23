@@ -95,7 +95,7 @@ public:
      *
      * @return     Pointer to the map with the specified name, or nullptr if not found.
      */
-    map* name2map(const std::string& name) const;
+    std::shared_ptr<map> name2map(const std::string& name) const;
 };
 
 } // namespace fb::game

@@ -70,9 +70,10 @@ int item::builtin::builtin_rename(lua_State* L)
     auto  argc   = lua->argc();
     auto  item   = lua->touserdata<fb::game::item>(1);
     auto& model  = item->based<fb::model::item>();
-    auto  weapon = model.attr(ITEM_ATTRIBUTE::WEAPON) ? static_cast<fb::game::weapon*>(item) : nullptr;
+    auto  weapon = model.attr(ITEM_ATTRIBUTE::WEAPON) ? item->weak_from_this_as<fb::game::weapon>()
+                                                      : std::weak_ptr<fb::game::weapon>();
 
-    if (weapon == nullptr)
+    if (weapon.expired())
     {
         lua->pushboolean(false);
         return 1;
@@ -83,12 +84,12 @@ int item::builtin::builtin_rename(lua_State* L)
         if (lua->is_string(2))
         {
             auto name = lua->tostring(2);
-            weapon->custom_name(name);
+            weapon.lock()->custom_name(name);
             return 0;
         }
         else if (lua->is_nil(2))
         {
-            weapon->reset_custom_name();
+            weapon.lock()->reset_custom_name();
             return 0;
         }
         else
@@ -99,7 +100,7 @@ int item::builtin::builtin_rename(lua_State* L)
     }
     else
     {
-        auto& custom_name = weapon->custom_name();
+        auto& custom_name = weapon.lock()->custom_name();
         if (custom_name.has_value())
             lua->pushstring(custom_name.value());
         else

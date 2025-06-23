@@ -386,7 +386,7 @@ public:
      *
      * @return     The actual damage dealt
      */
-    virtual uint32_t damage(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
+    virtual uint32_t damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false);
 
     /**
      * @brief      Increases MP by the specified amount.
@@ -429,7 +429,8 @@ public:
      * @param      from          The object that caused the death (optional)
      * @param[in]  destroy_type  How the entity should be destroyed
      */
-    virtual void kill(fb::game::object* from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual void kill(std::shared_ptr<fb::game::object> from         = nullptr,
+                      DESTROY_TYPE                      destroy_type = DESTROY_TYPE::DEFAULT);
 
     /**
      * @brief      Gets the current crowd control effects.
@@ -1127,7 +1128,7 @@ struct life::listener_t : public virtual fb::game::object::listener_t, public vi
      * @param      me    The life entity that died
      * @param      you   The object that caused the death (optional)
      */
-    virtual void on_dead(life& me, object* you) = 0;
+    virtual void on_dead(life& me, std::shared_ptr<fb::game::object> you) = 0;
 
     /**
      * @brief      Called when a life entity's HP changes and needs visual update.

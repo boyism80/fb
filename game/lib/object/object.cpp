@@ -16,7 +16,6 @@ object::object(fb::game::context& context, const fb::model::object& model, const
     _map(params.map),
     buffs(*this)
 {
-    this->context.push_alive(*this);
     this->listener.on_create(*this);
 }
 
@@ -31,7 +30,6 @@ object::object(const object& right) :
 
 object::~object()
 {
-    this->context.pop_alive(*this);
     this->listener.on_destroy(*this);
 }
 
@@ -181,7 +179,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
 
     for (auto obj : this->_map->nears(before))
     {
-        if (this == obj)
+        if (this == obj.get())
             continue;
 
         // 상대 시야에서 내가 사라짐
@@ -199,7 +197,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
 
     for (auto obj : this->_map->nears(this->_position))
     {
-        if (this == obj)
+        if (this == obj.get())
             continue;
 
         if (this->hidden(*obj) == false)
@@ -319,7 +317,7 @@ bool object::direction(DIRECTION value)
     return true;
 }
 
-map* object::map() const
+std::shared_ptr<fb::game::map> object::map() const
 {
     this->assert_thread();
 
@@ -336,15 +334,15 @@ void object::update_sector()
         return;
 
     if (before)
-        before->erase(*this);
+        before->erase(std::static_pointer_cast<fb::game::object>(this->shared_from_this()));
 
-    this->_sector = nullptr;
+    this->_sector.reset();
     if (this->_map == nullptr)
         return;
 
     this->_sector = after;
-    if (after != nullptr)
-        after->push(*this);
+    if (after)
+        after->push(std::static_pointer_cast<fb::game::object>(this->shared_from_this()));
 }
 
 bool object::sight(const fb::model::point16_t& position) const
@@ -367,7 +365,9 @@ bool object::sight(const object& object) const
     return this->sight(object._position);
 }
 
-bool object::sight(const fb::model::point16_t me, const fb::model::point16_t you, const fb::game::map* map)
+bool object::sight(const fb::model::point16_t            me,
+                   const fb::model::point16_t            you,
+                   const std::shared_ptr<fb::game::map>& map)
 {
     fb::model::point16_t begin, end;
 
@@ -406,7 +406,7 @@ bool object::sight(const fb::model::point16_t me, const fb::model::point16_t you
     return begin.x <= you.x && end.x >= you.x && begin.y <= you.y && end.y >= you.y;
 }
 
-async::task<bool> object::map(fb::game::map* map, DESTROY_TYPE destroy_type)
+async::task<bool> object::map(std::shared_ptr<fb::game::map> map, DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
 
@@ -443,10 +443,13 @@ async::task<bool> object::map(fb::game::map* map, DESTROY_TYPE destroy_type)
     }
 }
 
-async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type)
+async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
+                              const fb::model::point16_t&    position,
+                              DESTROY_TYPE                   destroy_type)
 {
     this->assert_thread();
 
+    auto  weak    = this->weak_from_this_as<object>();
     auto& context = this->context;
     try
     {
@@ -471,7 +474,7 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
             // broadcast near characters
             for (auto x : this->_map->nears(this->_position))
             {
-                if (x != this)
+                if (x.get() != this)
                     this->hide(*x, destroy_type);
             }
 
@@ -482,12 +485,12 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
             // when object's map has changed, active thread is changed too.
             if (this->_sector != nullptr)
             {
-                this->_sector->erase(*this);
-                this->_sector = nullptr;
+                this->_sector->erase(this->shared_from_this_as<object>());
+                this->_sector.reset();
             }
 
             this->_map = nullptr;
-            co_await this->context.switch_thread(*this);
+            co_await this->context.switch_thread(weak);
             this->_position = fb::model::point16_t(1, 1);
             co_return true;
         }
@@ -511,7 +514,7 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
         if (this->is(OBJECT_TYPE::CHARACTER))
             static_cast<character*>(this)->thread(map->thread());
 
-        co_await this->context.switch_thread(*this);
+        co_await this->context.switch_thread(weak);
         this->_position = before_position;
 
         // switch thread of destination map
@@ -520,8 +523,8 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
         if (this->is(OBJECT_TYPE::CHARACTER))
         {
             auto params = thread->template data<thread_params>();
-            auto ch     = static_cast<character*>(this);
-            params->characters.insert({ch->id(), ch});
+            params->characters.insert(
+                {this->sequence(), std::static_pointer_cast<character>(this->shared_from_this())});
         }
 
         this->update_sector();
@@ -536,7 +539,7 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
 
         for (auto obj : map->nears(this->_position))
         {
-            if (obj == this)
+            if (obj.get() == this)
                 continue;
 
             obj->update_external(*this, false);
@@ -584,7 +587,7 @@ fb::model::point16_t object::front_position(int step) const
     return this->side_position(this->_direction, step);
 }
 
-object* object::side(DIRECTION direction, OBJECT_TYPE type) const
+std::shared_ptr<fb::game::object> object::side(DIRECTION direction, OBJECT_TYPE type) const
 {
     this->assert_thread();
 
@@ -607,11 +610,11 @@ object* object::side(DIRECTION direction, OBJECT_TYPE type) const
     return found != nears.end() ? *found : nullptr;
 }
 
-std::vector<object*> object::sides(DIRECTION direction, OBJECT_TYPE type) const
+std::vector<std::shared_ptr<fb::game::object>> object::sides(DIRECTION direction, OBJECT_TYPE type) const
 {
     this->assert_thread();
 
-    auto result = std::vector<object*>();
+    auto result = std::vector<std::shared_ptr<fb::game::object>>();
     try
     {
         auto map = this->_map;
@@ -655,23 +658,23 @@ std::vector<object*> object::sides(DIRECTION direction, OBJECT_TYPE type) const
     return std::move(result);
 }
 
-object* object::forward(OBJECT_TYPE type) const
+std::shared_ptr<fb::game::object> object::forward(OBJECT_TYPE type) const
 {
     this->assert_thread();
 
     return this->side(this->_direction, type);
 }
 
-std::vector<object*> object::forwards(OBJECT_TYPE type) const
+std::vector<std::shared_ptr<fb::game::object>> object::forwards(OBJECT_TYPE type) const
 {
     this->assert_thread();
 
     return this->sides(this->_direction, type);
 }
 
-std::vector<object*> object::sight_in(OBJECT_TYPE type) const
+std::vector<std::shared_ptr<fb::game::object>> object::sight_in(OBJECT_TYPE type) const
 {
-    auto result = std::vector<object*>{};
+    auto result = std::vector<std::shared_ptr<fb::game::object>>{};
     for (auto obj : this->nears())
     {
         if (obj->is(type) == false)
@@ -683,21 +686,21 @@ std::vector<object*> object::sight_in(OBJECT_TYPE type) const
         if (this->sight(*obj) == false && obj->sight(*this))
             continue;
 
-        result.push_back(obj);
+        result.push_back(std::static_pointer_cast<fb::game::object>(obj));
     }
 
     return std::move(result);
 }
 
-std::vector<object*> object::nears(OBJECT_TYPE type, bool contains_super_hide) const
+std::vector<std::shared_ptr<fb::game::object>> object::nears(OBJECT_TYPE type, bool contains_super_hide) const
 {
     if (this->_map == nullptr)
         return {};
 
-    auto result = std::vector<object*>{};
+    auto result = std::vector<std::shared_ptr<fb::game::object>>{};
     for (auto obj : this->_map->nears(this->_position))
     {
-        if (this == obj)
+        if (this == obj.get())
             continue;
 
         if (!contains_super_hide && obj->hidden(*this))
@@ -706,7 +709,7 @@ std::vector<object*> object::nears(OBJECT_TYPE type, bool contains_super_hide) c
         if (type != OBJECT_TYPE::UNKNOWN && obj->is(type) == false)
             continue;
 
-        result.push_back(obj);
+        result.push_back(std::static_pointer_cast<fb::game::object>(obj));
     }
 
     return std::move(result);
