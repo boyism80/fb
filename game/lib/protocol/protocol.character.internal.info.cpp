@@ -30,23 +30,16 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     }
     writer.write<std::string>(this->ch.title());
 
-    auto& shared_group_lock = this->ch.group();
-    if (shared_group_lock != nullptr)
+    auto& group_id = this->ch.group_id();
+    if (group_id.has_value())
     {
-        shared_group_lock->read([&writer](auto& group) {
-            if (group.inited())
-            {
-                auto sstream = std::stringstream();
-                sstream << "그룹원" << std::endl << "  * " << group.master() << std::endl;
+        this->ch.context.groups.read(group_id.value(), [&writer](auto& group) {
+            auto sstream = std::stringstream();
+            sstream << "그룹원" << std::endl << "  * " << group->master() << std::endl;
 
-                for (auto& member : group.members())
-                    sstream << "    " << member << std::endl;
-                writer.write<std::string>(sstream.str());
-            }
-            else
-            {
-                writer.write<std::string>("그룹 정보 가져오는중.");
-            }
+            for (auto& member : group->members())
+                sstream << "    " << member << std::endl;
+            writer.write<std::string>(sstream.str());
         });
     }
     else

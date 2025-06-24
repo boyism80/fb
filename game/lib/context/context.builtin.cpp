@@ -142,21 +142,14 @@ int context::builtin::builtin_name2ch(lua_State* L)
     auto argc    = lua->argc();
     auto name    = lua->tostring(1);
 
-    auto ch = context->_shard[name]->names.template read<std::shared_ptr<character>>(
-        [&name](const auto& names) -> std::shared_ptr<character> {
-            if (names.contains(name) == false)
-                return nullptr;
-
-            return names.at(name);
-        });
-
+    auto ch = context->characters.find(name);
     if (ch == nullptr)
     {
         lua->pushnil();
         return 1;
     }
 
-    auto weak = ch->weak_from_this();
+    auto weak = ch->weak_from_this_as<character>();
     return lua->ensure_yield(*context, weak, [=]() {
         return lua->ensure_resume(*context, weak, [=]() {
             lua->pushobject(ch);
@@ -315,9 +308,8 @@ int context::builtin::builtin_timer(lua_State* L)
     auto decrease = lua->toboolean(2);
 
     auto type = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
-    context->foreach_ch([value, type](auto& ch) -> async::task<void> {
-        ch.timer(value, type);
-        co_return;
+    context->characters.foreach ([value, type](auto& ch) {
+        ch->timer(value, type);
     });
     return 0;
 }
@@ -331,9 +323,8 @@ int context::builtin::builtin_weather(lua_State* L)
     auto context = lua->env<fb::game::context>("context");
     auto value   = (uint32_t)lua->tointeger(1);
 
-    context->foreach_ch([weather = WEATHER_TYPE(value)](auto& ch) -> async::task<void> {
-        ch.weather(weather);
-        co_return;
+    context->characters.foreach ([weather = WEATHER_TYPE(value)](auto& ch) {
+        ch->weather(weather);
     });
     return 0;
 }
@@ -347,9 +338,8 @@ int context::builtin::builtin_bright(lua_State* L)
     auto context = lua->env<fb::game::context>("context");
     auto value   = (uint32_t)lua->tointeger(1);
 
-    context->foreach_ch([value](auto& ch) -> async::task<void> {
-        ch.bright(value);
-        co_return;
+    context->characters.foreach ([value](auto& ch) {
+        ch->bright(value);
     });
     return 0;
 }

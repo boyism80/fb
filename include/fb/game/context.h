@@ -11,7 +11,6 @@
 #include <fb/game/thread_params.h>
 #include <fb/game/map/container.h>
 #include <fb/hash.h>
-#include <fb/game/shard.h>
 #include <fb/redis.h>
 #include <fb/shard_container.h>
 #include <fb/game/clan.h>
@@ -93,11 +92,11 @@ public:
     using protocol_generator   = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
     using npc_interaction_func = std::function<
         async::task<bool>(character&, const std::string&, const std::vector<std::shared_ptr<fb::game::npc>>&)>;
-    using clan_ptr = std::shared_ptr<fb::game::clan>;
+    using clan_ptr  = std::shared_ptr<fb::game::clan>;
+    using group_ptr = std::shared_ptr<fb::game::group>;
 
 private:
     fb::model::datetime               _time;
-    fb::hash<shard_params>            _shard;
     std::vector<npc_interaction_func> _npc_interaction_funcs;
     fb::redis                         _redis;
 
@@ -105,10 +104,11 @@ public:
     fb::game::listener_impl listener;
 
 public:
-    fb::model::model                    model;
-    fb::game::map_container             maps;
-    fb::game::character::container      characters;
-    fb::sharded_container<clan_ptr, 16> clans;
+    fb::model::model                     model;
+    fb::game::map_container              maps;
+    fb::game::character::container       characters;
+    fb::sharded_container<clan_ptr, 16>  clans;
+    fb::sharded_container<group_ptr, 16> groups;
 
 public:
     /**
@@ -163,7 +163,7 @@ private:
      * @param[in]  gid   The group ID to create or access.
      * @param[in]  fn    The callback function to execute with the group lock.
      */
-    void upsert_group_then(uint32_t gid, const std::function<void(shared_group_lock&)>& fn);
+    async::task<void> upsert_group_then(uint32_t gid, const std::function<void(group_ptr&)>& fn);
 
     /**
      * @brief      Creates or updates a group with specific members and executes a callback.
@@ -177,10 +177,10 @@ private:
      * @param[in]  members  The list of member names in the group.
      * @param[in]  fn       The callback function to execute with the group lock.
      */
-    void upsert_group_then(uint32_t                                       gid,
-                           const std::string&                             master,
-                           const std::vector<std::string>&                members,
-                           const std::function<void(shared_group_lock&)>& fn);
+    async::task<void> upsert_group_then(uint32_t                               gid,
+                                        const std::string&                     master,
+                                        const std::vector<std::string>&        members,
+                                        const std::function<void(group_ptr&)>& fn);
 
     /**
      * @brief      Updates clan information with data from internal protocol.
@@ -301,14 +301,14 @@ private:
      *
      * @param[in]  resp  The group entry response containing group information.
      */
-    void on_enter_group(internal_resp::EnterGroup resp);
+    async::task<void> on_enter_group(const internal_resp::EnterGroup& resp);
 
     /**
      * @brief      Called when a character leaves a group.
      *
      * @param[in]  resp  The group leave response containing departure details.
      */
-    void on_leave_group(const internal_resp::LeaveGroup& resp);
+    async::task<void> on_leave_group(const internal_resp::LeaveGroup& resp);
 
     /**
      * @brief      Called when a server-wide broadcast message is received.
@@ -466,67 +466,6 @@ public:
      * @return     An async task that completes when the character is saved.
      */
     [[nodiscard]] async::task<void> save(fb::game::character& ch);
-
-    /**
-     * @brief      Executes a function on a character by name with miss callback.
-     *
-     * @param[in]  name  The name of the character to find.
-     * @param[in]  fn    The function to execute on the found character.
-     * @param[in]  miss  The callback to execute if the character is not found.
-     */
-    void foreach_ch(const std::string&                                  name,
-                    const std::function<void(fb::game::character&)>&    fn,
-                    const std::function<void(const std::string& name)>& miss);
-
-    /**
-     * @brief      Executes a function on a character by name.
-     *
-     * @param[in]  name  The name of the character to find.
-     * @param[in]  fn    The function to execute on the found character.
-     */
-    void foreach_ch(const std::string& name, const std::function<void(fb::game::character&)>& fn);
-
-    /**
-     * @brief      Executes a function on multiple characters by names with miss callback.
-     *
-     * @param[in]  names  The list of character names to find.
-     * @param[in]  fn     The function to execute on each found character.
-     * @param[in]  miss   The callback to execute for each character not found.
-     */
-    void foreach_ch(const std::vector<std::string>&                     names,
-                    const std::function<void(fb::game::character&)>&    fn,
-                    const std::function<void(const std::string& name)>& miss);
-
-    /**
-     * @brief      Executes a function on multiple characters by names.
-     *
-     * @param[in]  names  The list of character names to find.
-     * @param[in]  fn     The function to execute on each found character.
-     */
-    void foreach_ch(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn);
-
-    /**
-     * @brief      Executes a function on all characters in a clan.
-     *
-     * @param[in]  clan  The clan whose members to iterate over.
-     * @param[in]  fn    The function to execute on each clan member.
-     */
-    void foreach_ch(const clan& clan, const std::function<void(fb::game::character&)>& fn);
-
-    /**
-     * @brief      Executes a function on all characters in a group.
-     *
-     * @param[in]  group  The group whose members to iterate over.
-     * @param[in]  fn     The function to execute on each group member.
-     */
-    void foreach_ch(const group& group, const std::function<void(fb::game::character&)>& fn);
-
-    /**
-     * @brief      Executes a function on all online characters.
-     *
-     * @param[in]  fn    The function to execute on each online character.
-     */
-    void foreach_ch(const std::function<void(fb::game::character&)>& fn);
 
 public:
     /**
@@ -735,13 +674,13 @@ public:
     /**
      * @brief      Sends a private whisper message between characters.
      *
-     * @param      from     The character sending the whisper.
-     * @param[in]  to       The name of the character to send the whisper to.
-     * @param[in]  message  The whisper message content.
+     * @param[in]  sender        The character sending the whisper.
+     * @param[in]  receiver_name The name of the character to send the whisper to.
+     * @param[in]  message       The whisper message content.
      *
      * @return     An async task that completes when the whisper is sent.
      */
-    [[nodiscard]] async::task<void> whisper(character& from, std::string to, std::string message);
+    [[nodiscard]] async::task<void> whisper(character& sender, std::string receiver_name, std::string message);
 
 protected:
     /**

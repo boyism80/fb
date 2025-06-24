@@ -17,17 +17,6 @@ void context::assert_clan(uint32_t error) const
     }
 }
 
-void context::foreach_ch(const clan& clan, const std::function<void(fb::game::character&)>& fn)
-{
-    auto names = std::vector<std::string>();
-    for (auto& [name, _] : clan.members())
-    {
-        names.push_back(name);
-    }
-
-    this->foreach_ch(names, fn);
-}
-
 async::task<void> context::upsert_clan_then(uint32_t                                                           id,
                                             std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn)
 {

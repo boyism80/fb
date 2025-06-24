@@ -467,9 +467,9 @@ STATE character::state_to(const fb::game::object& to) const
         if (ch.detect())
             return STATE::HALF_CLOACK;
 
-        auto& g1 = this->_group;
-        auto& g2 = ch._group;
-        if (g1 != nullptr && g2 != nullptr && g1.get() == g2.get())
+        auto& g1 = this->_group_id;
+        auto& g2 = ch._group_id;
+        if (g1 != std::nullopt && g2 != std::nullopt && g1.value() == g2.value())
             return STATE::HALF_CLOACK;
 
         return STATE::CLOACK;
@@ -860,25 +860,32 @@ void character::title(const std::string& value)
     this->_title = value;
 }
 
-const shared_group_lock& character::group() const
+const std::optional<uint32_t>& character::group_id() const
 {
     this->assert_thread();
 
-    return this->_group;
+    return this->_group_id;
 }
 
-shared_group_lock& character::group()
+std::optional<uint32_t>& character::group_id()
 {
     this->assert_thread();
 
-    return this->_group;
+    return this->_group_id;
 }
 
-void character::group(shared_group_lock& value)
+void character::group_id(uint32_t gid)
 {
     this->assert_thread();
 
-    this->_group = value;
+    this->_group_id = gid;
+}
+
+void character::group_reset()
+{
+    this->assert_thread();
+
+    this->_group_id.reset();
 }
 
 const std::optional<uint32_t>& character::clan_id() const

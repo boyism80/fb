@@ -10,6 +10,9 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     characters(*this),
     clans([](const std::shared_ptr<clan>& clan) -> uint32_t {
         return clan->id();
+    }),
+    groups([](const std::shared_ptr<group>& group) -> uint32_t {
+        return group->id();
     })
 {
     auto& ist = fb::lua::context_pool::ist();
@@ -248,16 +251,6 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     if (ch->trade.trading())
         ch->trade.cancel();
 
-    auto id = ch->id();
-    this->_shard[id]->ids.write([&id](auto& ids) {
-        ids.erase(id);
-    });
-
-    auto& name = ch->name();
-    this->_shard[name]->names.write([&name](auto& names) {
-        names.erase(name);
-    });
-
     fb::logger::info("{} has disconnected.", ch->name());
 
     try
@@ -272,13 +265,13 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
 
     co_await this->switch_thread(weak);
 
-    auto& group_lock = ch->group();
-    if (group_lock != nullptr)
+    auto& group_id = ch->group_id();
+    if (group_id.has_value())
     {
-        group_lock->write([this, ch](auto& group) {
-            group.leave(*ch);
+        this->groups.write(group_id.value(), [weak](auto& group) {
+            group->leave(weak);
         });
-        group_lock.reset();
+        ch->group_reset();
     }
 
     auto& clan_id = ch->clan_id();
@@ -320,81 +313,6 @@ std::string context::elapsed_message(const std::string& dt)
     else
     {
         return std::string();
-    }
-}
-
-void context::foreach_ch(const std::string&                                  name,
-                         const std::function<void(fb::game::character&)>&    fn,
-                         const std::function<void(const std::string& name)>& miss)
-{
-    this->foreach_ch(std::vector<std::string>{name}, fn, miss);
-}
-
-void context::foreach_ch(const std::string& name, const std::function<void(fb::game::character&)>& fn)
-{
-    this->foreach_ch({name}, fn, [](auto&) {
-    });
-}
-
-void context::foreach_ch(const std::vector<std::string>&                     names,
-                         const std::function<void(fb::game::character&)>&    fn,
-                         const std::function<void(const std::string& name)>& miss)
-{
-    auto g = std::unordered_map<uint32_t, std::vector<std::string>>{};
-    for (auto& name : names)
-    {
-        auto mod = this->_shard.mod(name);
-
-        if (!g.contains(mod))
-            g.insert({mod, std::vector<std::string>{}});
-
-        g[mod].push_back(name);
-    }
-
-    for (auto& [mod, names] : g)
-    {
-        this->_shard[mod]->names.read([this, &names, &fn, &miss](auto& ch_names) {
-            for (auto& name : names)
-            {
-                if (!ch_names.contains(name))
-                {
-                    miss(name);
-                    continue;
-                }
-
-                auto ch = ch_names.at(name);
-                if (ch == nullptr)
-                    continue;
-
-                auto weak = ch->weak_from_this_as<character>();
-                this->threads.enqueue(weak, [=, this](auto& thread) -> async::task<void> {
-                    fn(*ch);
-                    co_return;
-                });
-            }
-        });
-    }
-}
-
-void context::foreach_ch(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn)
-{
-    this->foreach_ch(names, fn, [](auto&) {
-    });
-}
-
-void context::foreach_ch(const std::function<void(fb::game::character&)>& fn)
-{
-    for (int i = 0, n = this->threads.size(); i < n; i++)
-    {
-        auto thread = this->threads.at(i);
-        std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
-            auto params = thread.template data<thread_params>();
-            for (auto& [_, ch] : params->characters)
-            {
-                fn(*ch);
-            }
-            co_return;
-        });
     }
 }
 
@@ -456,11 +374,9 @@ async::task<bool> context::init_ch(const internal::Character&           response
 
     if (group.has_value())
     {
-        this->upsert_group_then(group.value(), [&ch](auto& lock) {
-            lock->write([&ch](auto& group) {
-                group.enter(ch);
-            });
-            ch.group(lock);
+        this->upsert_group_then(group.value(), [&ch](auto& group) {
+            group->enter(ch.weak_from_this_as<character>());
+            ch.group_id(group->id());
         });
     }
 
@@ -592,15 +508,15 @@ async::task<void> context::send(object&                     object,
         if (object.is(OBJECT_TYPE::CHARACTER) == false)
             co_return;
 
-        auto& ch                = static_cast<const character&>(object);
-        auto& shared_group_lock = ch.group();
-        if (shared_group_lock == nullptr)
+        auto& ch       = static_cast<const character&>(object);
+        auto& group_id = ch.group_id();
+        if (group_id.has_value() == false)
             co_return;
 
-        shared_group_lock->read([&stream, encrypt](auto& group) {
-            for (auto ch : group.characters())
+        this->groups.read(group_id.value(), [&stream, encrypt](auto& group) {
+            for (auto& shared_ptr : group->characters())
             {
-                ch->send(stream, encrypt);
+                shared_ptr->send(stream, encrypt);
             }
         });
     }
@@ -624,9 +540,8 @@ async::task<void> context::send(object&                     object,
 
     case fb::game::scope::WORLD:
     {
-        this->foreach_ch([stream, encrypt](auto& ch) -> async::task<void> {
-            ch.send(stream, encrypt);
-            co_return;
+        co_await this->characters.foreach ([stream, encrypt](auto& ch) {
+            ch->send(stream, encrypt);
         });
     }
     break;
@@ -766,8 +681,8 @@ async::task<void> context::broadcast(const std::string& message, MESSAGE_TYPE ty
 
     case BROADCAST_TYPE::WORLD:
     {
-        this->foreach_ch([message, type](auto& ch) {
-            ch.message(message, type);
+        co_await this->characters.foreach ([message, type](auto& ch) {
+            ch->message(message, type);
         });
     }
     break;

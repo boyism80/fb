@@ -20,48 +20,44 @@ void context::assert_whisper(const internal_resp::Whisper& response) const
     }
 }
 
-async::task<void> context::whisper(character& from, std::string to, std::string message)
+async::task<void> context::whisper(character& sender, std::string receiver_name, std::string message)
 {
-    if (from.option(OPTION::WHISPER) == false)
+    if (sender.option(OPTION::WHISPER) == false)
         throw std::runtime_error(_TEXT(MESSAGE_WHISPER_DISABLED_MINE));
 
-    auto target = this->_shard[to]->names.template read<std::shared_ptr<fb::game::character>>(
-        [&to](auto& names) -> std::shared_ptr<fb::game::character> {
-            if (names.contains(to) == false)
-                return nullptr;
+    auto sender_weak = sender.weak_from_this_as<character>();
+    auto sender_name = sender.name();
 
-            return names.at(to);
-        });
-
-    auto weak = from.weak_from_this();
-
-    auto from_name = from.name();
-    if (target != nullptr)
+    auto receiver = this->characters.find(receiver_name);
+    if (receiver != nullptr)
     {
-        co_await this->switch_thread(weak);
-        auto target_name = target->name();
-        if (target->option(OPTION::WHISPER) == false)
-            throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), to));
+        auto target_weak = receiver->weak_from_this_as<character>();
+        co_await this->switch_thread(target_weak);
+        auto target_name = receiver->name();
 
-        target->message(std::format("{}> {}", from_name, message), MESSAGE_TYPE::NOTIFY);
+        if (receiver->option(OPTION::WHISPER) == false)
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), receiver_name));
 
-        co_await this->switch_thread(weak);
-        from.message(std::format("{}< {}", target_name, message), MESSAGE_TYPE::NOTIFY);
+        receiver->message(std::format("{}> {}", sender_name, message), MESSAGE_TYPE::NOTIFY);
+
+        co_await this->switch_thread(sender_weak);
+        sender.message(std::format("{}< {}", target_name, message), MESSAGE_TYPE::NOTIFY);
     }
     else
     {
-        auto&& resp = co_await this->http.post("internal", "/in-game/whisper", Whisper{from_name, to, message});
-        co_await this->switch_thread(weak);
+        auto&& resp =
+            co_await this->http.post("internal", "/in-game/whisper", Whisper{sender_name, receiver_name, message});
+        co_await this->switch_thread(sender_weak);
 
         this->on_whisper(resp);
-        from.message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);
+        sender.message(std::format("{}< {}", receiver_name, message), MESSAGE_TYPE::NOTIFY);
     }
 }
 
 void context::on_whisper(const internal_resp::Whisper& resp)
 {
     this->assert_whisper(resp);
-    this->foreach_ch(resp.to, [resp](auto& ch) {
-        ch.message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
+    this->characters.invoke(resp.to, [resp](auto& ch) {
+        ch->message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
     });
 }

@@ -1201,8 +1201,8 @@ int character::builtin::builtin_group(lua_State* L)
                 co_return;
             }
 
-            auto group_ptr = shared->_group;
-            if (group_ptr == nullptr)
+            auto group_id = shared->group_id();
+            if (group_id.has_value() == false)
             {
                 co_await lua->switching();
                 lua->pushnil();
@@ -1210,12 +1210,10 @@ int character::builtin::builtin_group(lua_State* L)
             }
             else
             {
-                group_ptr->read([=](const auto& group) {
-                    async::awaitable_then(lua->switching(), [lua, &group](auto result) {
-                        result();
-                        lua->pushobject(group);
-                        lua->resume(1);
-                    });
+                ctx->groups.async_read(group_id.value(), [=](const auto& group) -> async::task<void> {
+                    co_await lua->switching();
+                    lua->pushobject(group);
+                    lua->resume(1);
                 });
             }
             co_return;
@@ -1231,7 +1229,7 @@ int character::builtin::builtin_group(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*ctx, weak, [=]() {
-            auto group_ptr = ch->_group;
+            auto group_id = ch->group_id();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
                 static auto static_func = [](fb::lua::context* ctx) {
@@ -1241,16 +1239,17 @@ int character::builtin::builtin_group(lua_State* L)
                 };
 
                 lua->pushobject(ch);
-                if (group_ptr == nullptr)
+                if (group_id.has_value() == false)
                 {
                     lua->pushnil();
                     return static_func(lua);
                 }
                 else
                 {
-                    return group_ptr->template read<int>([=](const auto& group) {
+                    ctx->groups.async_read(group_id.value(), [=](const auto& group) -> async::task<void> {
+                        co_await lua->switching();
                         lua->pushobject(group);
-                        return static_func(lua);
+                        lua->resume(1);
                     });
                 }
             });

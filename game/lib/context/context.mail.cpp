@@ -24,16 +24,14 @@ void context::on_write_mail(const internal_resp::WriteMail& resp)
 {
     assert_mail(resp.error);
 
-    this->_shard[resp.mail.user]->ids.read([this, &resp](auto& ids) {
-        if (ids.contains(resp.mail.user) == false)
-            return;
+    auto ch = this->characters.find(resp.mail.user);
+    if (ch == nullptr)
+        return;
 
-        auto ch   = ids.at(resp.mail.user);
-        auto weak = ch->weak_from_this_as<character>();
-        this->threads.enqueue(weak, [ch, unread = resp.unread](auto& thread) -> async::task<void> {
-            ch->unread_mail(unread);
-            co_return;
-        });
+    auto weak = ch->weak_from_this_as<character>();
+    this->threads.enqueue(weak, [ch, unread = resp.unread](auto& thread) -> async::task<void> {
+        ch->unread_mail(unread);
+        co_return;
     });
 }
 

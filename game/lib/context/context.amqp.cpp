@@ -18,14 +18,7 @@ async::task<void> context::handle_amqp_Broadcast(const internal_resp::Broadcast&
 
 async::task<void> context::handle_amqp_KickOut(const internal_resp::KickOut& resp)
 {
-    auto ch = this->_shard[resp.name]->names.template read<std::shared_ptr<fb::game::character>>(
-        [&name = resp.name](auto& names) -> std::shared_ptr<fb::game::character> {
-            if (!names.contains(name))
-                return nullptr;
-
-            return names.at(name);
-        });
-
+    auto ch = this->characters.find(resp.name);
     if (ch == nullptr)
         co_return;
 
@@ -47,14 +40,14 @@ async::task<void> context::handle_amqp_EnterGroup(const internal_resp::EnterGrou
     if (resp.host == fb::config<uint32_t>("id"))
         co_return;
 
-    this->on_enter_group(resp);
+    co_await this->on_enter_group(resp);
 };
 async::task<void> context::handle_amqp_LeaveGroup(const internal_resp::LeaveGroup& resp)
 {
     if (resp.host == fb::config<uint32_t>("id"))
         co_return;
 
-    this->on_leave_group(resp);
+    co_await this->on_leave_group(resp);
 };
 async::task<void> context::handle_amqp_SetClanTitle(const internal_resp::SetClanTitle& resp)
 {

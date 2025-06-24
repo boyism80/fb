@@ -109,5 +109,78 @@ character::container::foreach_async(std::function<async::task<void>(std::shared_
         }
     }
 
-    co_await thread->switching();
+    if (thread != nullptr)
+        co_await thread->switching();
+}
+
+async::task<void> character::container::foreach (const std::vector<std::string>& names,
+                                                 std::function<void(std::shared_ptr<character>&)> && fn,
+                                                 std::function<void(const std::string& name)> miss)
+{
+    co_await this->foreach_async(
+        std::move(names),
+        [fn, miss](std::shared_ptr<character>& ch) -> async::task<void> {
+            fn(ch);
+            co_return;
+        },
+        std::move(miss));
+}
+
+async::task<void>
+character::container::foreach_async(const std::vector<std::string>&                                 names,
+                                    std::function<async::task<void>(std::shared_ptr<character>&)>&& fn,
+                                    std::function<void(const std::string& name)>                    miss)
+{
+    auto targets = std::vector<std::shared_ptr<character>>();
+    for (auto& name : names)
+    {
+        auto ch = this->find(name);
+        if (ch == nullptr)
+        {
+            miss(name);
+            continue;
+        }
+
+        targets.push_back(ch);
+    }
+
+    co_await this->foreach_async(std::move(fn), std::move(targets));
+}
+
+async::task<void> character::container::invoke(const std::string&                                 name,
+                                               std::function<void(std::shared_ptr<character>&)>&& fn,
+                                               std::function<void(const std::string& name)>       miss)
+{
+    auto ch = this->find(name);
+    if (ch == nullptr)
+    {
+        miss(name);
+        co_return;
+    }
+
+    auto before = this->_context.threads.current();
+    auto weak   = ch->weak_from_this_as<character>();
+    co_await this->_context.switch_thread(weak);
+    fn(ch);
+    if (before != nullptr)
+        co_await before->switching();
+}
+
+async::task<void> character::container::invoke_async(const std::string& name,
+                                                     std::function<async::task<void>(std::shared_ptr<character>&)>&& fn,
+                                                     std::function<void(const std::string& name)> miss)
+{
+    auto ch = this->find(name);
+    if (ch == nullptr)
+    {
+        miss(name);
+        co_return;
+    }
+
+    auto before = this->_context.threads.current();
+    auto weak   = ch->weak_from_this_as<character>();
+    co_await this->_context.switch_thread(weak);
+    co_await fn(ch);
+    if (before != nullptr)
+        co_await before->switching();
 }

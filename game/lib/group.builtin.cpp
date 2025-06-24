@@ -95,10 +95,17 @@ int group::builtin::builtin_nears(lua_State* L)
 
         return lua->ensure_resume(*ctx, weak, [=]() {
             lua->new_table();
-            for (int i = 0; i < nears.size(); i++)
+
+            int i = 0;
+            for (auto& weak_ptr : nears)
             {
-                lua->pushobject(nears[i]);
+                auto shared_ptr = weak_ptr.lock();
+                if (shared_ptr == nullptr)
+                    continue;
+
+                lua->pushobject(shared_ptr);
                 lua_rawseti(L, -2, i + 1);
+                i++;
             }
             return 1;
         });

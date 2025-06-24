@@ -3,9 +3,11 @@
 
 using namespace fb::game;
 
-group::group(context& context, uint32_t id) :
+group::group(context& context, uint32_t id, const std::string& master, const std::vector<std::string>& members) :
     _context(context),
-    _id(id)
+    _id(id),
+    _master(master),
+    _members(members)
 { }
 
 group::group(group&& g) :
@@ -16,22 +18,28 @@ group::group(group&& g) :
     _active_members(std::move(g._active_members))
 { }
 
-void group::enter(character& ch)
+void group::enter(std::weak_ptr<character> ch)
 {
-    auto i = std::find(this->_active_members.begin(), this->_active_members.end(), &ch);
-    if (i != this->_active_members.end())
+    auto ptr = ch.lock();
+    if (ptr == nullptr)
         return;
 
-    this->_active_members.push_back(&ch);
+    if (this->_active_members.contains(ptr))
+        return;
+
+    this->_active_members.insert(ptr);
 }
 
-void group::leave(character& ch)
+void group::leave(std::weak_ptr<character> ch)
 {
-    auto i = std::find(this->_active_members.begin(), _active_members.end(), &ch);
-    if (i == this->_active_members.end())
+    auto ptr = ch.lock();
+    if (ptr == nullptr)
         return;
 
-    this->_active_members.erase(i);
+    if (this->_active_members.contains(ptr) == false)
+        return;
+
+    this->_active_members.erase(ptr);
 }
 
 async::task<void> group::update(const std::string& master, const std::vector<std::string>& members)
@@ -81,17 +89,12 @@ uint32_t group::id() const
     return this->_id;
 }
 
-bool group::inited() const
-{
-    return !this->_master.empty();
-}
-
 const std::string& group::master() const
 {
     return this->_master;
 }
 
-std::vector<character*> group::characters() const
+std::unordered_set<std::shared_ptr<character>> group::characters() const
 {
     return this->_active_members;
 }
@@ -101,22 +104,16 @@ std::vector<std::string> group::members() const
     return std::vector<std::string>(this->_members);
 }
 
-std::vector<character*> group::nears(const fb::game::map& map, const fb::model::point16_t& position) const
+std::vector<std::weak_ptr<character>> group::nears(const fb::game::map& map, const fb::model::point16_t& position) const
 {
     auto nears  = map.nears(position, OBJECT_TYPE::CHARACTER); // same thread
-    auto result = std::vector<character*>();
+    auto result = std::vector<std::weak_ptr<character>>();
 
-    for (auto obj : nears)
+    for (auto& obj : nears)
     {
         auto ch = std::static_pointer_cast<fb::game::character>(obj);
-        for (auto active_ch : this->_active_members)
-        {
-            if (active_ch == ch.get())
-            {
-                result.push_back(active_ch);
-                break;
-            }
-        }
+        if (this->_active_members.contains(ch))
+            result.push_back(ch);
     }
 
     return result;

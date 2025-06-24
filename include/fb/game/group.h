@@ -3,6 +3,7 @@
 
 #include <fb/game/character.h>
 #include <async/task.h>
+#include <unordered_set>
 
 namespace fb::game {
 
@@ -31,11 +32,11 @@ public:
     struct builtin;
 
 private:
-    context&                 _context;
-    uint32_t                 _id;
-    std::string              _master;
-    std::vector<std::string> _members;
-    std::vector<character*>  _active_members;
+    context&                                       _context;
+    uint32_t                                       _id;
+    std::string                                    _master;
+    std::vector<std::string>                       _members;
+    std::unordered_set<std::shared_ptr<character>> _active_members;
 
 public:
     /**
@@ -48,7 +49,7 @@ public:
      * @param[in]  context  The game context that manages this group
      * @param[in]  id       The unique identifier for this group
      */
-    group(context& context, uint32_t id);
+    group(context& context, uint32_t id, const std::string& master, const std::vector<std::string>& members);
 
     /**
      * @brief      Copy constructor (deleted).
@@ -82,14 +83,14 @@ public:
      *
      * @param      ch    The character to add to the group
      */
-    void enter(character& ch);
+    void enter(std::weak_ptr<character> ch);
 
     /**
      * @brief      Removes a character from the group's active members.
      *
      * @param      ch    The character to remove from the group
      */
-    void leave(character& ch);
+    void leave(std::weak_ptr<character> ch);
 
     /**
      * @brief      Updates the group's master and member list from external data.
@@ -109,13 +110,6 @@ public:
     uint32_t id() const;
 
     /**
-     * @brief      Checks if the group has been fully initialized.
-     *
-     * @return     True if the group is initialized, false otherwise
-     */
-    bool inited() const;
-
-    /**
      * @brief      Gets the name of the group master/leader.
      *
      * @return     Reference to the master's name string
@@ -127,7 +121,7 @@ public:
      *
      * @return     Vector of pointers to active character members
      */
-    std::vector<character*> characters() const;
+    std::unordered_set<std::shared_ptr<character>> characters() const;
 
     /**
      * @brief      Gets the names of all group members (active and inactive).
@@ -144,7 +138,7 @@ public:
      *
      * @return     Vector of character pointers for nearby group members
      */
-    std::vector<character*> nears(const fb::game::map& map, const fb::model::point16_t& position) const;
+    std::vector<std::weak_ptr<character>> nears(const fb::game::map& map, const fb::model::point16_t& position) const;
 
     /**
      * @brief      Gets the thread that manages this group's execution context.

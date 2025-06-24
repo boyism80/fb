@@ -20,13 +20,6 @@ namespace fb::game {
  * @brief      Forward declaration of the map class.
  */
 class map;
-/**
- * @brief      Forward declaration of the group class.
- */
-class group;
-
-using group_lock        = fb::locker<group>;
-using shared_group_lock = std::shared_ptr<group_lock>;
 
 /**
  * @brief      Represents a player character in the game world.
@@ -95,7 +88,7 @@ private:
     uint32_t                                    _money        = 0;
     std::optional<uint16_t>                     _disguise     = 0;
     std::string                                 _title;
-    shared_group_lock                           _group         = nullptr;
+    std::optional<uint32_t>                     _group_id      = std::nullopt;
     std::optional<uint32_t>                     _clan_id       = std::nullopt;
     uint16_t                                    _unread_mail   = 0;
     uint16_t                                    _weapon_damage = 0;
@@ -744,21 +737,26 @@ public:
      *
      * @return     Const reference to the character's group lock
      */
-    const shared_group_lock& group() const;
+    const std::optional<uint32_t>& group_id() const;
 
     /**
      * @brief      Gets the character's group (modifiable).
      *
      * @return     Reference to the character's group lock
      */
-    shared_group_lock& group();
+    std::optional<uint32_t>& group_id();
 
     /**
-     * @brief      Sets the character's group.
+     * @brief      Sets the character's group id.
      *
-     * @param      value  The group lock to assign to the character
+     * @param      gid  The group id to assign to the character
      */
-    void group(shared_group_lock& value);
+    void group_id(uint32_t gid);
+
+    /**
+     * @brief      Resets the character's group.
+     */
+    void group_reset();
 
     /**
      * @brief      Gets the character's clan id (modifiable).
@@ -2130,6 +2128,50 @@ public:
      */
     async::task<void> foreach_async(std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
                                     const std::vector<std::shared_ptr<fb::game::character>>& characters);
+
+    /**
+     * @brief      Executes a function for each character in the container.
+     *
+     * @param[in]  names     The names of the characters to iterate over
+     * @param[in]  fn        The function to execute for each character
+     * @param[in]  miss      The function to call if a character is not found
+     */
+    async::task<void> foreach (const std::vector<std::string>& names,
+                               std::function<void(std::shared_ptr<fb::game::character>&)> && fn,
+                               std::function<void(const std::string& name)> miss = nullptr);
+
+    /**
+     * @brief      Executes a function for each character in the container.
+     *
+     * @param[in]  names     The names of the characters to iterate over
+     * @param[in]  fn        The function to execute for each character
+     * @param[in]  miss      The function to call if a character is not found
+     */
+    async::task<void> foreach_async(const std::vector<std::string>&                                           names,
+                                    std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
+                                    std::function<void(const std::string& name)> miss = nullptr);
+
+    /**
+     * @brief      Invokes a function for a specific character.
+     *
+     * @param[in]  name  The name of the character to invoke the function for
+     * @param[in]  fn    The function to invoke
+     * @param[in]  miss  The function to call if a character is not found
+     */
+    async::task<void> invoke(const std::string&                                           name,
+                             std::function<void(std::shared_ptr<fb::game::character>&)>&& fn,
+                             std::function<void(const std::string& name)>                 miss = nullptr);
+
+    /**
+     * @brief      Invokes a function for a specific character asynchronously.
+     *
+     * @param[in]  name  The name of the character to invoke the function for
+     * @param[in]  fn    The function to invoke
+     * @param[in]  miss  The function to call if a character is not found
+     */
+    async::task<void> invoke_async(const std::string&                                                        name,
+                                   std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
+                                   std::function<void(const std::string& name)> miss = nullptr);
 
 public:
     /**

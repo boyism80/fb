@@ -1,11 +1,11 @@
 function sample_group(me, npc)
-    local name = me:input(npc, '그룹 초대할 유저')
-    local selected = me:menu(npc, '선택', {'그룹 액션', '그룹 메시지'})
+    local selected = me:menu(npc, '선택', {'그룹 초대/추방', '그룹 메시지'})
     if selected == nil then
         return
     end
 
-    if selected == 1 then
+    if selected == 0 then
+        local name = me:input(npc, '그룹 초대할 유저')
         local group = me:group()
         if group == nil then
             if me:create_group(name) then
@@ -30,7 +30,7 @@ function sample_group(me, npc)
                 me:dialog(npc, '그룹에 초대할 수 없습니다.')
             end
         end
-    elseif selected == 2 then
+    elseif selected == 1 then
         local group = me:group()
         if group == nil then
             me:dialog(npc, '그룹 없음')
@@ -45,6 +45,8 @@ function sample_group(me, npc)
         end
 
         group:messagee(message, MESSAGE_TYPE_NOTIFY)
+    else
+        me:chat('invalid selected')
     end
 end
 

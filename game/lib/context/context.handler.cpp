@@ -42,13 +42,6 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     this->init_items(response.items, *ch);
     this->init_spells(response.spells, *ch);
     this->init_achievements(response.achievements, *ch);
-    this->_shard[name]->names.write([&name, ch](auto& names) {
-        names.insert({name, ch});
-    });
-    this->_shard[id]->ids.write([id, ch](auto& ids) {
-        ids.insert({id, ch});
-    });
-
     this->init_option(response.option, *ch);
     ch->init();
     ch->update_time(this->_time.hours());
@@ -367,7 +360,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
             auto&& response = co_await this->http.post("internal", "/group/leave", LeaveGroup{ch->name()});
             co_await this->switch_thread(weak);
 
-            this->on_leave_group(response);
+            co_await this->on_leave_group(response);
         }
 
         auto&& response = co_await this->http.post("internal",

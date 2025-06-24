@@ -99,19 +99,23 @@ void listener_impl::on_dead(life& me, std::shared_ptr<object> you)
 
         if (owner == nullptr && you->is(OBJECT_TYPE::CHARACTER))
         {
-            auto& ch    = static_cast<character&>(*you);
-            auto& group = ch.group();
-            auto  map   = ch.map();
-            auto  exp   = mob.based<fb::model::mob>().exp;
-            if (group != nullptr && map != nullptr)
+            auto& ch       = static_cast<character&>(*you);
+            auto& group_id = ch.group_id();
+            auto  map      = ch.map();
+            auto  exp      = mob.based<fb::model::mob>().exp;
+            if (group_id.has_value() && map != nullptr)
             {
-                group->read([this, &ch, map, exp](auto& group) {
-                    auto nears      = group.nears(*map, ch.position());
+                this->context.groups.read(group_id.value(), [this, &ch, map, exp](auto& group) {
+                    auto nears      = group->nears(*map, ch.position());
                     auto size       = nears.size();
                     auto divide_exp = exp / size;
-                    for (auto member : nears)
+                    for (auto& member : nears)
                     {
-                        member->add_exp(divide_exp, true, true);
+                        auto shared_ptr = member.lock();
+                        if (shared_ptr == nullptr)
+                            continue;
+
+                        shared_ptr->add_exp(divide_exp, true, true);
                     }
                 });
             }
