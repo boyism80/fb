@@ -1,6 +1,32 @@
 #ifndef __SPELL_H__
 #define __SPELL_H__
 
+/**
+ * @file    spell.h
+ * @brief   Spell casting and magic system for the FB 2D MMORPG game server
+ * @author  FB Development Team
+ *
+ * @details This file implements the magic and spell system that handles all aspects
+ *          of spell casting, magic effects, and temporary buffs/debuffs in the game.
+ *          The system provides cooldown management, spell collections, and buff
+ *          tracking for living entities.
+ *
+ *          Key features:
+ *          - Spell instance management with cooldown and delay mechanics
+ *          - Spell collection system for character spell books
+ *          - Comprehensive buff/debuff system with timing and stacking
+ *          - Integration with Lua scripting for dynamic spell effects
+ *          - Model-based spell configuration and properties
+ *          - Thread-safe operations for multi-threaded server environment
+ *          - Event-driven architecture with listener pattern for spell events
+ *          - Automatic buff expiration and cleanup mechanisms
+ *          - Support for both beneficial and harmful magical effects
+ *          - Spell learning and forgetting mechanics
+ *
+ * @note    The spell system is tightly integrated with the life entity system
+ *          and provides the foundation for all magical interactions in the game.
+ */
+
 #include <chrono>
 #include <fb/game/inventory.h>
 #include <fb/model/model.h>
@@ -138,7 +164,7 @@ public:
      *
      * @return     Pointer to the found spell, or nullptr if not found
      */
-    fb::game::spell* find(const std::string& name) const;
+    std::shared_ptr<fb::game::spell> find(const std::string& name) const;
 
     /**
      * @brief      Searches for a spell by model in the collection.
@@ -147,7 +173,7 @@ public:
      *
      * @return     Pointer to the found spell, or nullptr if not found
      */
-    fb::game::spell* find(const fb::model::spell& model) const;
+    std::shared_ptr<fb::game::spell> find(const fb::model::spell& model) const;
 
 public:
     /**
@@ -157,7 +183,7 @@ public:
      *
      * @return     The slot index where the spell was added, or invalid index if failed
      */
-    uint8_t add(fb::game::spell& element) override;
+    uint8_t add(std::shared_ptr<fb::game::spell> element) override;
 
     /**
      * @brief      Adds a spell to the collection at a specific slot index.
@@ -167,7 +193,7 @@ public:
      *
      * @return     The slot index where the spell was added, or invalid index if failed
      */
-    uint8_t add(fb::game::spell& element, uint8_t index) override;
+    uint8_t add(std::shared_ptr<fb::game::spell> element, uint8_t index) override;
 
     /**
      * @brief      Adds a spell from model data to a specific slot with delay.
@@ -349,10 +375,10 @@ public:
  *             automatic duration management, and event notifications for buff
  *             application and removal.
  */
-class buffs : private std::unordered_map<uint32_t, buff*>
+class buffs : private std::unordered_map<uint32_t, std::shared_ptr<buff>>
 {
 private:
-    using super = std::unordered_map<uint32_t, buff*>;
+    using super = std::unordered_map<uint32_t, std::shared_ptr<buff>>;
 
 private:
     fb::game::object& _owner;
@@ -387,7 +413,7 @@ private:
      *
      * @return     True if the buff was successfully added, false otherwise
      */
-    bool push_back(buff& buff);
+    bool push_back(std::shared_ptr<buff>&& buff);
 
 public:
     /**
@@ -408,7 +434,9 @@ public:
      *
      * @return     Pointer to the created buff, or nullptr if failed
      */
-    buff* push_back(const fb::model::spell& spell, uint32_t seconds, const fb::game::object* caster = nullptr);
+    std::shared_ptr<buff> push_back(const fb::model::spell&                  spell,
+                                    uint32_t                                 seconds,
+                                    const std::shared_ptr<fb::game::object>& caster = nullptr);
 
     /**
      * @brief      Removes a buff by its spell ID.
@@ -436,7 +464,7 @@ public:
      *
      * @return     The result of the array indexer
      */
-    buff* operator[] (uint32_t id) const;
+    std::shared_ptr<buff> operator[] (uint32_t id) const;
 };
 
 /**

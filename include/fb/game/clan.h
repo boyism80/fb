@@ -1,6 +1,32 @@
 #ifndef __CLAN_H__
 #define __CLAN_H__
 
+/**
+ * @file    clan.h
+ * @brief   Player clan (guild) system for long-term cooperative gameplay
+ * @author  FB Development Team
+ *
+ * @details This file implements the clan (guild) system that allows players to form
+ *          permanent organizations for long-term cooperative gameplay and social
+ *          interaction. Clans provide persistent group identity, hierarchical
+ *          structure, and various social and gameplay benefits.
+ *
+ *          Key features:
+ *          - Persistent clan membership with hierarchical roles and ranks
+ *          - Clan naming and title/motto system for identity and recognition
+ *          - Real-time member tracking and online status management
+ *          - Cross-server member synchronization for distributed game architecture
+ *          - Proximity-based member queries for area effects and clan spells
+ *          - Clan-wide communication and messaging systems
+ *          - Member management with join/leave functionality
+ *          - Integration with character system for persistent clan associations
+ *          - Lua scripting integration for clan-based game logic and events
+ *          - Thread-safe operations for multi-threaded server environment
+ *
+ * @note    Clans are permanent organizations that persist beyond individual
+ *          play sessions, unlike groups which are temporary associations.
+ */
+
 #include <fb/game/character.h>
 #include <fb/game/clan.member.h>
 
@@ -32,12 +58,12 @@ public:
     struct builtin;
 
 private:
-    context&                                           _context;
-    uint32_t                                           _id;
-    std::string                                        _name;
-    std::optional<std::string>                         _title;
-    std::unordered_map<std::string, clan_member>       _members;
-    std::unordered_map<uint32_t, fb::game::character*> _characters;
+    context&                                                         _context;
+    uint32_t                                                         _id;
+    std::string                                                      _name;
+    std::optional<std::string>                                       _title;
+    std::unordered_map<std::string, clan_member>                     _members;
+    std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>> _characters;
 
 public:
     /**
@@ -50,7 +76,7 @@ public:
      * @param[in]  context  The game context that manages this clan
      * @param[in]  id       The unique identifier for this clan
      */
-    clan(context& context, uint32_t id);
+    clan(context& context, uint32_t id, const std::string& name, const std::optional<std::string>& title);
 
     /**
      * @brief      Copy constructor (deleted).
@@ -141,20 +167,20 @@ public:
      *
      * @return     Reference to the map of character IDs to character pointers
      */
-    const std::unordered_map<uint32_t, fb::game::character*>& characters() const;
+    const std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>>& characters() const;
 
     /**
      * @brief      Attaches a character to the clan as an active member.
      *
      * @param      ch    The character to attach to the clan
      */
-    void attach_character(character& ch);
+    void attach_character(std::weak_ptr<character> ch);
     /**
      * @brief      Detaches a character from the clan's active members.
      *
      * @param      ch    The character to detach from the clan
      */
-    void detach_character(character& ch);
+    void detach_character(std::weak_ptr<character> ch);
 
     /**
      * @brief      Finds clan members near a specific position on a map.
@@ -164,7 +190,8 @@ public:
      *
      * @return     Vector of character pointers for nearby clan members
      */
-    std::vector<character*> nears(const fb::game::map& map, const fb::model::point16_t& position) const;
+    std::vector<std::shared_ptr<fb::game::character>> nears(const fb::game::map&        map,
+                                                            const fb::model::point16_t& position) const;
 };
 
 struct clan::builtin

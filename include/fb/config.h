@@ -1,6 +1,33 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+/**
+ * @file    config.h
+ * @brief   Configuration management system for the FB 2D MMORPG server
+ * @author  FB Development Team
+ *
+ * @details This file implements a comprehensive configuration management system that
+ *          provides JSON-based configuration loading and type-safe value retrieval
+ *          for the FB 2D MMORPG server. The system supports command line argument
+ *          parsing, automatic type conversion, and thread-safe configuration access.
+ *
+ *          Key features:
+ *          - JSON-based configuration file support with automatic parsing
+ *          - Type-safe configuration value retrieval with template specializations
+ *          - Command line argument parsing for configuration file path specification
+ *          - Thread-safe configuration access with proper synchronization
+ *          - Support for all fundamental data types (bool, integers, floats, strings)
+ *          - Automatic type conversion from JSON values to C++ types
+ *          - Error handling for missing configuration keys and invalid values
+ *          - Configuration path management with flexible initialization options
+ *          - Integration with Boost.Program_Options for advanced command line parsing
+ *          - Console integration for configuration-related logging and debugging
+ *
+ * @note    The configuration system must be initialized with init_config() or
+ *          set_config_path() before using the config() template function to
+ *          retrieve configuration values.
+ */
+
 #include <string>
 #include <iostream>
 #include <memory>

@@ -81,14 +81,15 @@ int character::builtin::builtin_look(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto look = ch->look();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(look);
                 return 1;
             });
@@ -97,9 +98,10 @@ int character::builtin::builtin_look(lua_State* L)
     else
     {
         auto value = (uint16_t)lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->look(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -115,14 +117,15 @@ int character::builtin::builtin_color(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto color = ch->color();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(color);
                 return 1;
             });
@@ -131,9 +134,10 @@ int character::builtin::builtin_color(lua_State* L)
     else
     {
         auto value = (uint8_t)lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->color(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -149,14 +153,15 @@ int character::builtin::builtin_sex(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto sex = ch->sex();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(sex);
                 return 1;
             });
@@ -164,10 +169,11 @@ int character::builtin::builtin_sex(lua_State* L)
     }
     else
     {
-        auto sex = static_cast<SEX>(lua->tointeger(2));
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto sex  = static_cast<SEX>(lua->tointeger(2));
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->sex(sex);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -183,14 +189,15 @@ int character::builtin::builtin_money(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto money = ch->money();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(money);
                 return 1;
             });
@@ -199,9 +206,10 @@ int character::builtin::builtin_money(lua_State* L)
     else
     {
         auto value = (uint32_t)lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->money(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -217,14 +225,15 @@ int character::builtin::builtin_exp(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto exp = ch->exp();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(exp);
                 return 1;
             });
@@ -233,9 +242,10 @@ int character::builtin::builtin_exp(lua_State* L)
     else
     {
         auto value = (uint32_t)lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->exp(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -250,7 +260,7 @@ int character::builtin::builtin_item(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto ch  = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (lua->is_number(2))
@@ -369,20 +379,21 @@ int character::builtin::builtin_items(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto ch  = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
-        auto buffer = std::vector<std::pair<uint8_t, fb::game::item*>>();
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
+        auto buffer = std::vector<std::pair<uint8_t, std::shared_ptr<fb::game::item>>>();
         for (int i = 0; i < CONTAINER_CAPACITY; i++)
         {
             if (ch->items[i] == nullptr)
                 continue;
 
-            buffer.push_back({i, ch->items[i]});
+            buffer.push_back({i, ch->items[i]->shared_from_this_as<fb::game::item>()});
         }
 
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             lua->new_table();
             for (auto& [index, item] : buffer)
             {
@@ -403,11 +414,12 @@ int character::builtin::builtin_equipments(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto ch  = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
-        auto buffer = std::vector<std::pair<EQUIPMENT_PARTS, fb::game::item*>>();
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
+        auto buffer = std::vector<std::pair<EQUIPMENT_PARTS, std::shared_ptr<fb::game::item>>>();
         for (auto& [parts, equipment] : ch->items.equipments())
         {
             if (equipment == nullptr)
@@ -416,7 +428,7 @@ int character::builtin::builtin_equipments(lua_State* L)
             buffer.push_back({parts, equipment});
         }
 
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             lua->new_table();
             for (auto& [parts, equipment] : buffer)
             {
@@ -437,16 +449,17 @@ int character::builtin::builtin_item_drop(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto ch  = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto index    = static_cast<uint8_t>(lua->tointeger(2));
     auto drop_all = lua->toboolean(3);
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto dropped = ch->items.drop(index - 1, drop_all ? 1 : -1);
 
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             if (dropped != nullptr)
                 lua->pushobject(dropped);
             else
@@ -465,7 +478,7 @@ int character::builtin::builtin_mkitem(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto name  = lua->tostring(2);
@@ -475,18 +488,21 @@ int character::builtin::builtin_mkitem(lua_State* L)
     if (store == false)
         return object::builtin::builtin_mkitem(L);
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto model = ctx->model.item.name2item(name);
         auto item  = static_cast<fb::game::item*>(nullptr);
         auto slot  = static_cast<uint8_t>(0xFF);
 
         if (model != nullptr)
         {
-            item = model->make(*ctx, count);
-            slot = ch->items.add(item);
+            // Use smart pointer for item creation
+            auto item_shared = model->make(*ctx, count);
+            item             = item_shared.get();
+            slot             = ch->items.add(item_shared); // Use smart pointer version
         }
 
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             if (model == nullptr || slot == 0xFF)
                 lua->pushnil();
             else
@@ -504,7 +520,7 @@ int character::builtin::builtin_rmitem(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto ch  = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto count       = static_cast<uint8_t>(lua->tointeger(3, 1));
@@ -516,7 +532,8 @@ int character::builtin::builtin_rmitem(lua_State* L)
         if (item == nullptr)
             return 0;
 
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             try
             {
                 auto index   = ch->items.index(item->based<fb::model::item>());
@@ -527,7 +544,7 @@ int character::builtin::builtin_rmitem(lua_State* L)
             catch (...)
             { }
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -538,7 +555,8 @@ int character::builtin::builtin_rmitem(lua_State* L)
         if (model == nullptr)
             return 0;
 
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             try
             {
                 auto index   = ch->items.index(*model);
@@ -549,7 +567,7 @@ int character::builtin::builtin_rmitem(lua_State* L)
             catch (...)
             { }
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -558,7 +576,8 @@ int character::builtin::builtin_rmitem(lua_State* L)
     {
         auto raw_index = lua->tointeger(2);
 
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             try
             {
                 auto index   = static_cast<uint8_t>(raw_index) - 1;
@@ -569,7 +588,7 @@ int character::builtin::builtin_rmitem(lua_State* L)
             catch (...)
             { }
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -580,12 +599,13 @@ int character::builtin::builtin_rmitem(lua_State* L)
         if (name.empty())
             return 0;
 
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             try
             {
                 auto model = ctx->model.item.name2item(name);
                 if (model == nullptr)
-                    return lua->ensure_resume(*ctx, *ch, [=]() {
+                    return lua->ensure_resume(*ctx, weak, [=]() {
                         return 0;
                     });
 
@@ -597,7 +617,7 @@ int character::builtin::builtin_rmitem(lua_State* L)
             catch (...)
             { }
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -617,14 +637,15 @@ int character::builtin::builtin_state(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto state = ch->state();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(state);
                 return 1;
             });
@@ -633,9 +654,10 @@ int character::builtin::builtin_state(lua_State* L)
     else
     {
         auto value = STATE(lua->tointeger(2));
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->state(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -651,14 +673,15 @@ int character::builtin::builtin_disguise(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto disguise = ch->disguise();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(disguise.value());
                 return 1;
             });
@@ -666,9 +689,10 @@ int character::builtin::builtin_disguise(lua_State* L)
     }
     else if (lua->is_nil(2))
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->undisguise();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -677,9 +701,10 @@ int character::builtin::builtin_disguise(lua_State* L)
     {
         auto value = lua->tointeger(2);
 
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->disguise(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -699,14 +724,15 @@ int character::builtin::builtin_class(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto cls = ch->cls();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(cls);
                 return 1;
             });
@@ -715,9 +741,10 @@ int character::builtin::builtin_class(lua_State* L)
     else
     {
         auto value = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->cls(static_cast<CLASS>(value));
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -733,14 +760,15 @@ int character::builtin::builtin_promotion(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto promotion = ch->promotion();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(promotion);
                 return 1;
             });
@@ -749,9 +777,10 @@ int character::builtin::builtin_promotion(lua_State* L)
     else
     {
         auto value = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->promotion(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -767,14 +796,15 @@ int character::builtin::builtin_level(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto level = ch->level();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(level);
                 return 1;
             });
@@ -783,9 +813,10 @@ int character::builtin::builtin_level(lua_State* L)
     else
     {
         auto level = std::max(0, std::min((int)lua->tointeger(2), 255));
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->level(level);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -828,17 +859,18 @@ int character::builtin::builtin_assert(lua_State* L)
         }
     }
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         try
         {
             ch->assert_state(values);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         }
         catch (std::runtime_error& e)
         {
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushstring(e.what());
                 return 1;
             });
@@ -866,14 +898,15 @@ int character::builtin::builtin_role(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto role = ch->role();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(role);
                 return 1;
             });
@@ -882,9 +915,10 @@ int character::builtin::builtin_role(lua_State* L)
     else
     {
         auto value = static_cast<ROLE>(lua->tointeger(2));
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->role(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -900,14 +934,15 @@ int character::builtin::builtin_deposited_money(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto deposited = ch->items.deposited();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(deposited);
                 return 1;
             });
@@ -916,9 +951,10 @@ int character::builtin::builtin_deposited_money(lua_State* L)
     else
     {
         auto value = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->items.deposited(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -934,16 +970,17 @@ int character::builtin::builtin_stored_item(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
         // Get all stored items
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             const auto& stored_items = ch->items.stored();
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->new_table();
                 for (int i = 0; i < stored_items.size(); i++)
                 {
@@ -960,14 +997,15 @@ int character::builtin::builtin_stored_item(lua_State* L)
         // Search by index
         auto index = lua->tointeger(2);
 
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             const auto& stored_items = ch->items.stored();
-            auto        stored_item  = static_cast<fb::game::item*>(nullptr);
+            auto        stored_item  = std::shared_ptr<fb::game::item>();
 
             if (index <= stored_items.size() - 1)
                 stored_item = stored_items.at(index);
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 if (stored_item == nullptr)
                     lua->pushnil();
                 else
@@ -981,15 +1019,18 @@ int character::builtin::builtin_stored_item(lua_State* L)
         // Search by name
         auto name = lua->tostring(2);
 
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             const auto& stored_items = ch->items.stored();
-            auto found = std::find_if(stored_items.cbegin(), stored_items.cend(), [&name](fb::game::item* stored_item) {
-                return stored_item->based<fb::model::item>().name == name;
-            });
+            auto        found        = std::find_if(stored_items.cbegin(),
+                                      stored_items.cend(),
+                                      [&name](const std::shared_ptr<fb::game::item>& stored_item) {
+                                          return stored_item->based<fb::model::item>().name == name;
+                                      });
 
             auto stored_item = (found != stored_items.cend()) ? *found : nullptr;
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 if (stored_item == nullptr)
                     lua->pushnil();
                 else
@@ -1003,17 +1044,19 @@ int character::builtin::builtin_stored_item(lua_State* L)
         // Search by game item
         auto item = lua->touserdata<fb::game::item>(2);
 
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             const auto& stored_items = ch->items.stored();
             auto&       model        = item->based<fb::model::item>();
-            auto        found =
-                std::find_if(stored_items.cbegin(), stored_items.cend(), [&model](fb::game::item* stored_item) {
-                    return stored_item->based<fb::model::item>() == model;
-                });
+            auto        found        = std::find_if(stored_items.cbegin(),
+                                      stored_items.cend(),
+                                      [&model](const std::shared_ptr<fb::game::item>& stored_item) {
+                                          return stored_item->based<fb::model::item>() == model;
+                                      });
 
             auto stored_item = (found != stored_items.cend()) ? *found : nullptr;
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 if (stored_item == nullptr)
                     lua->pushnil();
                 else
@@ -1027,15 +1070,18 @@ int character::builtin::builtin_stored_item(lua_State* L)
         // Search by model item
         auto model = lua->touserdata<fb::model::item>(2);
 
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             const auto& stored_items = ch->items.stored();
-            auto found = std::find_if(stored_items.cbegin(), stored_items.cend(), [model](fb::game::item* stored_item) {
-                return stored_item->based<fb::model::item>() == *model;
-            });
+            auto        found        = std::find_if(stored_items.cbegin(),
+                                      stored_items.cend(),
+                                      [model](const std::shared_ptr<fb::game::item>& stored_item) {
+                                          return stored_item->based<fb::model::item>() == *model;
+                                      });
 
             auto stored_item = (found != stored_items.cend()) ? *found : nullptr;
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 if (stored_item == nullptr)
                     lua->pushnil();
                 else
@@ -1059,19 +1105,32 @@ int character::builtin::builtin_store_item(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto item  = lua->touserdata<fb::game::item>(2);
     auto count = lua->tointeger(3, 1);
-    auto index = ch->items.index(*item);
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    // Find the shared_ptr that contains this item
+    auto& stored_items = ch->items.stored();
+    auto  index        = static_cast<uint8_t>(0xFF);
+
+    for (size_t i = 0; i < stored_items.size(); ++i)
+    {
+        if (stored_items[i] == item)
+        {
+            index = static_cast<uint8_t>(i);
+            break;
+        }
+    }
+
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto success = false;
         if (index != 0xFF)
             success = ch->items.store(index, count);
 
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushboolean(success);
             return 1;
         });
@@ -1087,24 +1146,27 @@ int character::builtin::builtin_retrieve_item(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto item  = lua->touserdata<fb::game::item>(2);
     auto count = lua->tointeger(3, 1);
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto& stored_items = ch->items.stored();
-        auto  found        = std::find(stored_items.cbegin(), stored_items.cend(), item);
-        auto  returned     = static_cast<fb::game::item*>(nullptr);
+        auto  returned     = std::shared_ptr<fb::game::item>();
 
-        if (found != stored_items.cend())
+        for (size_t i = 0; i < stored_items.size(); ++i)
         {
-            auto index = std::distance(stored_items.cbegin(), found);
-            returned   = ch->items.retrieve(index, count);
+            if (stored_items[i] == item)
+            {
+                returned = ch->items.retrieve(static_cast<uint8_t>(i), count);
+                break;
+            }
         }
 
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             if (returned == nullptr)
                 lua->pushnil();
             else
@@ -1123,14 +1185,24 @@ int character::builtin::builtin_group(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc < 2)
     {
-        static auto fn = [](fb::game::context* ctx, character* ch, fb::lua::context* lua) -> async::task<void> {
-            auto group_ptr = ch->_group;
-            if (group_ptr == nullptr)
+        static auto fn =
+            [](fb::game::context* ctx, std::weak_ptr<character> ch, fb::lua::context* lua) -> async::task<void> {
+            auto shared = ch.lock();
+            if (shared == nullptr)
+            {
+                co_await lua->switching();
+                lua->pushnil();
+                lua->resume(1);
+                co_return;
+            }
+
+            auto group_id = shared->group_id();
+            if (group_id.has_value() == false)
             {
                 co_await lua->switching();
                 lua->pushnil();
@@ -1138,28 +1210,28 @@ int character::builtin::builtin_group(lua_State* L)
             }
             else
             {
-                group_ptr->read([=](const auto& group) {
-                    async::awaitable_then(lua->switching(), [lua, &group](auto result) {
-                        result();
-                        lua->pushobject(group);
-                        lua->resume(1);
-                    });
+                ctx->groups.async_read(group_id.value(), [=](const auto& group) -> async::task<void> {
+                    co_await lua->switching();
+                    lua->pushobject(group);
+                    lua->resume(1);
                 });
             }
             co_return;
         };
 
-        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-            co_await fn(ctx, ch, lua);
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        ctx->threads.enqueue(weak, [=](auto&) -> async::task<void> {
+            co_await fn(ctx, weak, lua);
         });
         return lua->yield(1);
     }
     else if (lua->is_function(2))
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
-            auto group_ptr = ch->_group;
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
+            auto group_id = ch->group_id();
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 static auto static_func = [](fb::lua::context* ctx) {
                     lua_call(*ctx, 2, LUA_MULTRET);
                     ctx->remove(-ctx->argc());
@@ -1167,16 +1239,17 @@ int character::builtin::builtin_group(lua_State* L)
                 };
 
                 lua->pushobject(ch);
-                if (group_ptr == nullptr)
+                if (group_id.has_value() == false)
                 {
                     lua->pushnil();
                     return static_func(lua);
                 }
                 else
                 {
-                    return group_ptr->template read<int>([=](const auto& group) {
+                    ctx->groups.async_read(group_id.value(), [=](const auto& group) -> async::task<void> {
+                        co_await lua->switching();
                         lua->pushobject(group);
-                        return static_func(lua);
+                        lua->resume(1);
                     });
                 }
             });
@@ -1197,16 +1270,27 @@ int character::builtin::builtin_create_group(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto name = lua->tostring(2);
 
-    static auto fn =
-        [](fb::game::context* ctx, character* ch, fb::lua::context* lua, std::string target) -> async::task<void> {
+    static auto fn = [](fb::game::context*       ctx,
+                        std::weak_ptr<character> ch,
+                        fb::lua::context*        lua,
+                        std::string              target) -> async::task<void> {
+        auto shared = ch.lock();
+        if (shared == nullptr)
+        {
+            co_await lua->switching();
+            lua->pushnil();
+            lua->resume(1);
+            co_return;
+        }
+
         try
         {
-            co_await ctx->create_group(*ch, target);
+            co_await ctx->create_group(*shared, target);
             co_await lua->switching();
             lua->pushboolean(true);
             lua->resume(1);
@@ -1221,7 +1305,8 @@ int character::builtin::builtin_create_group(lua_State* L)
         }
     };
 
-    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    ctx->threads.enqueue(weak, [=](auto&) -> async::task<void> {
         co_await fn(ctx, ch, lua, name);
     });
 
@@ -1237,14 +1322,24 @@ int character::builtin::builtin_clan(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc < 2)
     {
-        static auto fn = [](fb::game::context* ctx, character* ch, fb::lua::context* lua) -> async::task<void> {
-            auto clan_ptr = ch->_clan;
-            if (clan_ptr == nullptr)
+        static auto fn =
+            [](fb::game::context* ctx, std::weak_ptr<character> ch, fb::lua::context* lua) -> async::task<void> {
+            auto shared = ch.lock();
+            if (shared == nullptr)
+            {
+                co_await lua->switching();
+                lua->pushnil();
+                lua->resume(1);
+                co_return;
+            }
+
+            auto& clan_id = shared->clan_id();
+            if (clan_id.has_value() == false)
             {
                 co_await lua->switching();
                 lua->pushnil();
@@ -1252,9 +1347,9 @@ int character::builtin::builtin_clan(lua_State* L)
             }
             else
             {
-                async::awaitable_then(lua->switching(), [lua, clan_ptr](auto result) {
+                async::awaitable_then(lua->switching(), [lua, ctx, cid = clan_id.value()](auto result) {
                     result();
-                    clan_ptr->read([=](const auto& clan) {
+                    ctx->clans.read(cid, [=](const auto& clan) {
                         lua->pushobject(clan);
                         lua->resume(1);
                     });
@@ -1263,16 +1358,27 @@ int character::builtin::builtin_clan(lua_State* L)
             co_return;
         };
 
-        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        ctx->threads.enqueue(weak, [=](auto&) -> async::task<void> {
             co_await fn(ctx, ch, lua);
         });
         return lua->yield(1);
     }
     else if (lua->is_function(2))
     {
-        static auto fn = [](fb::game::context* ctx, character* ch, fb::lua::context* lua) -> async::task<void> {
-            auto clan_ptr = ch->_clan;
-            if (clan_ptr == nullptr)
+        static auto fn =
+            [](fb::game::context* ctx, std::weak_ptr<character> ch, fb::lua::context* lua) -> async::task<void> {
+            auto shared = ch.lock();
+            if (shared == nullptr)
+            {
+                co_await lua->switching();
+                lua->pushnil();
+                lua->resume(1);
+                co_return;
+            }
+
+            auto& clan_id = shared->clan_id();
+            if (clan_id.has_value() == false)
             {
                 co_await lua->switching();
                 lua->pushnil();
@@ -1280,9 +1386,9 @@ int character::builtin::builtin_clan(lua_State* L)
             }
             else
             {
-                async::awaitable_then(lua->switching(), [lua, clan_ptr](auto result) {
+                async::awaitable_then(lua->switching(), [lua, ctx, cid = clan_id.value()](auto result) {
                     result();
-                    clan_ptr->read([=](const auto& clan) {
+                    ctx->clans.read(cid, [=](const auto& clan) {
                         lua->pushobject(clan);
                         lua->resume(1);
                     });
@@ -1290,7 +1396,8 @@ int character::builtin::builtin_clan(lua_State* L)
             }
         };
 
-        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        ctx->threads.enqueue(weak, [=](auto&) -> async::task<void> {
             co_await fn(ctx, ch, lua);
         });
 
@@ -1311,16 +1418,26 @@ int character::builtin::builtin_create_clan(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto name = lua->tostring(2);
 
-    static auto fn =
-        [](fb::game::context* ctx, character* ch, fb::lua::context* lua, const std::string& name) -> async::task<void> {
+    static auto fn = [](fb::game::context*       ctx,
+                        std::weak_ptr<character> ch,
+                        fb::lua::context*        lua,
+                        const std::string&       name) -> async::task<void> {
+        auto shared = ch.lock();
+        if (shared == nullptr)
+        {
+            co_await lua->switching();
+            lua->pushnil();
+            lua->resume(1);
+            co_return;
+        }
         try
         {
-            co_await ctx->create_clan(*ch, name);
+            co_await ctx->create_clan(*shared, name);
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);
@@ -1337,7 +1454,8 @@ int character::builtin::builtin_create_clan(lua_State* L)
         co_return;
     };
 
-    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    ctx->threads.enqueue(weak, [=](auto&) -> async::task<void> {
         co_await fn(ctx, ch, lua, name);
         co_return;
     });
@@ -1354,14 +1472,23 @@ int character::builtin::builtin_destroy_clan(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     // Static function to isolate async operation and ensure parameter lifetime safety
-    static auto static_func = [](fb::game::context* ctx, character* ch, fb::lua::context* lua) -> async::task<bool> {
+    static auto static_func =
+        [](fb::game::context* ctx, std::weak_ptr<character> ch, fb::lua::context* lua) -> async::task<bool> {
+        auto shared = ch.lock();
+        if (shared == nullptr)
+        {
+            co_await lua->switching();
+            lua->pushnil();
+            lua->resume(1);
+            co_return false;
+        }
         try
         {
-            co_await ctx->destroy_clan(*ch);
+            co_await ctx->destroy_clan(*shared);
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);
@@ -1379,9 +1506,9 @@ int character::builtin::builtin_destroy_clan(lua_State* L)
         }
     };
 
-    ctx->threads.enqueue(*ch, [ctx, ch, lua](auto&) -> async::task<void> {
-        // Call static_func with explicit parameters for lifetime safety
-        co_await static_func(ctx, ch, lua);
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    ctx->threads.enqueue(weak, [ctx, weak, lua](auto&) -> async::task<void> {
+        co_await static_func(ctx, weak, lua);
     });
 
     return lua->yield(1);
@@ -1395,17 +1522,18 @@ int character::builtin::builtin_achievements(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto ch  = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto buffer = std::vector<std::pair<uint32_t, fb::game::achievement*>>();
         for (auto& [id, achievement] : ch->achievements)
         {
             buffer.push_back({id, achievement.get()});
         }
 
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             lua->new_table();
             auto i = 0;
             for (auto& [id, achievement] : buffer)
@@ -1430,16 +1558,17 @@ int character::builtin::builtin_achievement(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto ch  = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
-    auto i = lua->tointeger(2);
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto i    = lua->tointeger(2);
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto achievement = static_cast<fb::game::achievement*>(nullptr);
         if (ch->achievements.contains(i))
             achievement = ch->achievements.at(i).get();
 
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             if (achievement == nullptr)
                 lua->pushnil();
             else
@@ -1459,7 +1588,7 @@ int character::builtin::builtin_push_achievement(lua_State* L)
     auto argc = lua->argc();
     auto ctx  = lua->env<fb::game::context>("context");
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto model = static_cast<const fb::model::achievement*>(nullptr);
@@ -1492,14 +1621,15 @@ int character::builtin::builtin_push_achievement(lua_State* L)
     if (lua->is_number(5))
         color = lua->tointeger(5);
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto already_has = ch->achievements.contains(model->id);
         if (!already_has)
             ch->achievements.insert({model->id, std::make_unique<fb::game::achievement>(*model, text, icon, color)});
         else
             ch->achievements[model->id] = std::make_unique<fb::game::achievement>(*model, text, icon, color);
 
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             if (already_has)
                 lua->pushnil();
             else
@@ -1517,11 +1647,12 @@ int character::builtin::builtin_erase_achievement(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto ch  = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
-    auto i = lua->tointeger(2);
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto i    = lua->tointeger(2);
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto success = false;
         if (ch->achievements.contains(i))
         {
@@ -1529,7 +1660,7 @@ int character::builtin::builtin_erase_achievement(lua_State* L)
             success = true;
         }
 
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushboolean(success);
             return 1;
         });
@@ -1544,20 +1675,29 @@ int character::builtin::builtin_whisper(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto ch  = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto to      = lua->tostring(2);
     auto message = lua->tostring(3);
 
-    static auto fn = [](fb::game::context*   ctx,
-                        fb::lua::context*    lua,
-                        fb::game::character* ch,
-                        const std::string&   to,
-                        const std::string&   message) -> async::task<void> {
+    static auto fn = [](fb::game::context*       ctx,
+                        fb::lua::context*        lua,
+                        std::weak_ptr<character> ch,
+                        const std::string&       to,
+                        const std::string&       message) -> async::task<void> {
+        auto shared = ch.lock();
+        if (shared == nullptr)
+        {
+            co_await lua->switching();
+            lua->pushnil();
+            lua->resume(1);
+            co_return;
+        }
+
         try
         {
-            co_await ctx->whisper(*ch, to, message);
+            co_await ctx->whisper(*shared, to, message);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -1568,7 +1708,8 @@ int character::builtin::builtin_whisper(lua_State* L)
         lua->resume(1);
     };
 
-    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    ctx->threads.enqueue(weak, [=](auto&) -> async::task<void> {
         co_await fn(ctx, lua, ch, to, message);
     });
 
@@ -1584,14 +1725,15 @@ int character::builtin::builtin_nation(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto nation = ch->nation();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(static_cast<uint8_t>(nation));
                 return 1;
             });
@@ -1600,9 +1742,10 @@ int character::builtin::builtin_nation(lua_State* L)
     else
     {
         auto value = static_cast<NATION>(lua->tointeger(2));
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->nation(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -1618,14 +1761,15 @@ int character::builtin::builtin_weapon(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto weapon = ch->items.weapon();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 if (weapon == nullptr)
                     lua->pushnil();
                 else
@@ -1637,9 +1781,10 @@ int character::builtin::builtin_weapon(lua_State* L)
     else
     {
         auto value = lua->touserdata<fb::game::weapon>(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->items.weapon(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -1655,14 +1800,15 @@ int character::builtin::builtin_title(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto title = ch->title();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushstring(title);
                 return 1;
             });
@@ -1671,9 +1817,10 @@ int character::builtin::builtin_title(lua_State* L)
     else
     {
         auto value = lua->tostring(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->title(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -1689,19 +1836,20 @@ int character::builtin::builtin_gain(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
-    auto items = std::vector<fb::game::item*>{};
+    auto items = std::vector<std::shared_ptr<fb::game::item>>{};
     for (int i = 2; i <= argc; i++)
     {
         auto item = lua->touserdata<fb::game::item>(i);
         items.push_back(item);
     }
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         ch->items.add(items, true);
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
         });
     });
@@ -1716,14 +1864,15 @@ int character::builtin::builtin_weapon_damage(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto weapon_damage = ch->weapon_damage();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(weapon_damage);
                 return 1;
             });
@@ -1732,9 +1881,10 @@ int character::builtin::builtin_weapon_damage(lua_State* L)
     else
     {
         auto value = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->weapon_damage(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -1750,14 +1900,15 @@ int character::builtin::builtin_detect(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto detect = ch->detect();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushboolean(detect);
                 return 1;
             });
@@ -1766,9 +1917,10 @@ int character::builtin::builtin_detect(lua_State* L)
     else
     {
         auto value = lua->toboolean(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->detect(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -1784,7 +1936,7 @@ int character::builtin::builtin_spawn_mob(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto map = ch->map();
@@ -1829,7 +1981,8 @@ int character::builtin::builtin_spawn_mob(lua_State* L)
         }
     }
 
-    return lua->ensure_yield(*ctx, *ch, [=]() mutable {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() mutable {
         if (argc < 3)
         {
             x = ch->x();
@@ -1837,7 +1990,7 @@ int character::builtin::builtin_spawn_mob(lua_State* L)
         }
 
         auto mob = ch->spawn_mob(*model, fb::model::point16_t(x, y), owned);
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             if (mob == nullptr)
                 lua->pushnil();
             else
@@ -1855,13 +2008,14 @@ int character::builtin::builtin_spawned_mobs(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto ch  = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto& spawned_mobs = ch->spawned_mobs();
 
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             lua->new_table();
             for (int i = 0; i < spawned_mobs.size(); i++)
             {
@@ -1884,14 +2038,15 @@ int character::builtin::builtin_base_hp(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto base_hp = ch->base_hp();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(base_hp);
                 return 1;
             });
@@ -1900,9 +2055,10 @@ int character::builtin::builtin_base_hp(lua_State* L)
     else
     {
         auto value = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->base_hp(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -1918,14 +2074,15 @@ int character::builtin::builtin_base_mp(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto base_mp = ch->base_mp();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(base_mp);
                 return 1;
             });
@@ -1934,9 +2091,10 @@ int character::builtin::builtin_base_mp(lua_State* L)
     else
     {
         auto value = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->base_mp(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -1952,14 +2110,15 @@ int character::builtin::builtin_base_str(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto base_str = ch->base_str();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(base_str);
                 return 1;
             });
@@ -1968,9 +2127,10 @@ int character::builtin::builtin_base_str(lua_State* L)
     else
     {
         auto value = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->base_str(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -1986,14 +2146,15 @@ int character::builtin::builtin_base_dex(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto base_dex = ch->base_dex();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(base_dex);
                 return 1;
             });
@@ -2002,9 +2163,10 @@ int character::builtin::builtin_base_dex(lua_State* L)
     else
     {
         auto value = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->base_dex(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -2020,14 +2182,15 @@ int character::builtin::builtin_base_int(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto base_int = ch->base_int();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(base_int);
                 return 1;
             });
@@ -2036,9 +2199,10 @@ int character::builtin::builtin_base_int(lua_State* L)
     else
     {
         auto value = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->base_int(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -2054,14 +2218,15 @@ int character::builtin::builtin_base_dam(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto base_dam = ch->base_dam();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(base_dam);
                 return 1;
             });
@@ -2070,9 +2235,10 @@ int character::builtin::builtin_base_dam(lua_State* L)
     else
     {
         auto value = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->base_dam(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -2088,14 +2254,15 @@ int character::builtin::builtin_base_hit(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto base_hit = ch->base_hit();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(base_hit);
                 return 1;
             });
@@ -2104,9 +2271,10 @@ int character::builtin::builtin_base_hit(lua_State* L)
     else
     {
         auto value = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->base_hit(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -2122,17 +2290,18 @@ int character::builtin::builtin_armor_color(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto result = std::optional<uint16_t>{};
             if (ch->_armor_color.has_value())
                 result = ch->_armor_color.value();
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 if (result.has_value())
                     lua->pushinteger(result.value());
                 else
@@ -2147,9 +2316,10 @@ int character::builtin::builtin_armor_color(lua_State* L)
         if (lua->is_number(2))
             value = lua->tointeger(2);
 
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->armor_color(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -2165,7 +2335,7 @@ int character::builtin::builtin_mkspell(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto name  = lua->tostring(2);
@@ -2173,12 +2343,13 @@ int character::builtin::builtin_mkspell(lua_State* L)
     if (model == nullptr)
         return 0;
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto slot = ch->spells.add(*model);
         if (slot == 0xFF)
             return 0;
 
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushinteger(slot);
             return 1;
         });
@@ -2194,12 +2365,13 @@ int character::builtin::builtin_rmspell(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             for (int i = 0; i < CONTAINER_CAPACITY; i++)
             {
                 auto spell = ch->spells[i];
@@ -2209,7 +2381,7 @@ int character::builtin::builtin_rmspell(lua_State* L)
                 ch->spells.remove(i);
             }
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -2217,16 +2389,18 @@ int character::builtin::builtin_rmspell(lua_State* L)
     else if (lua->is_number(2))
     {
         auto slot = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->spells.remove(slot);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
     }
     else if (lua->is_string(2))
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto name = lua->tostring(2);
             auto slot = uint8_t{0xFF};
             for (int i = 0; i < CONTAINER_CAPACITY; i++)
@@ -2245,7 +2419,8 @@ int character::builtin::builtin_rmspell(lua_State* L)
             if (slot != 0xFF)
                 ch->spells.remove(slot);
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            auto weak = ch->weak_from_this_as<fb::game::character>();
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -2265,7 +2440,7 @@ int character::builtin::builtin_world(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto name = lua->tostring(2);
@@ -2275,9 +2450,10 @@ int character::builtin::builtin_world(lua_State* L)
         {
             if (point.name == name)
             {
-                return lua->ensure_yield(*ctx, *ch, [=]() {
+                auto weak = ch->weak_from_this_as<fb::game::character>();
+                return lua->ensure_yield(*ctx, weak, [=]() {
                     ch->show_world_map(id, index);
-                    return lua->ensure_resume(*ctx, *ch, [=]() {
+                    return lua->ensure_resume(*ctx, weak, [=]() {
                         lua->pushboolean(true);
                         return 1;
                     });
@@ -2299,7 +2475,7 @@ int character::builtin::builtin_script(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto file = lua->tostring(2, "script.lua");
@@ -2333,7 +2509,8 @@ int character::builtin::builtin_script(lua_State* L)
     }
     else
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto new_lua = fb::lua::new_context(lua);
             if (new_lua == nullptr)
                 return 0;
@@ -2357,7 +2534,7 @@ int character::builtin::builtin_ad(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto width  = lua->tointeger(2, 300);
@@ -2377,7 +2554,7 @@ int character::builtin::builtin_web(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto type    = lua->tointeger(2, 0);
@@ -2396,7 +2573,7 @@ int character::builtin::builtin_delay(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto model = (const fb::model::spell*)nullptr;
@@ -2436,17 +2613,18 @@ int character::builtin::builtin_birthday(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto result = std::optional<std::uint32_t>{};
             if (ch->birthday().has_value())
                 result = ch->birthday().value();
 
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 if (result.has_value())
                     lua->pushinteger(result.value());
                 else
@@ -2458,9 +2636,10 @@ int character::builtin::builtin_birthday(lua_State* L)
     else
     {
         auto value = lua->tointeger(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->birthday(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -2476,14 +2655,14 @@ int character::builtin::builtin_active(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto item = lua->touserdata<fb::game::item>(2);
     if (item == nullptr)
         return 0;
 
-    auto slot = ch->items.index(*item);
+    auto slot = ch->items.index(item);
     if (slot == 0xFF)
         return 0;
 
@@ -2500,14 +2679,15 @@ int character::builtin::builtin_super_hide(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto result = ch->super_hide();
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushboolean(result);
                 return 1;
             });
@@ -2516,9 +2696,10 @@ int character::builtin::builtin_super_hide(lua_State* L)
     else
     {
         auto value = lua->toboolean(2);
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             ch->super_hide(value);
-            return lua->ensure_resume(*ctx, *ch, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -2534,7 +2715,7 @@ int character::builtin::builtin_send_mail(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
     auto to    = lua->tostring(2);
@@ -2546,9 +2727,10 @@ int character::builtin::builtin_send_mail(lua_State* L)
     if (argc >= 4 && lua->is_nil(4) == false)
         contents = lua->tostring(4);
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         std::ignore = ctx->send_mail(*ch, to, title, contents);
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
         });
     });
@@ -2563,12 +2745,13 @@ int character::builtin::builtin_creature(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
 
-    return lua->ensure_yield(*ctx, *ch, [=]() {
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto creature = ch->creature();
-        return lua->ensure_resume(*ctx, *ch, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushinteger(creature);
             return 1;
         });
@@ -2583,12 +2766,14 @@ int fb::game::character::builtin::builtin_teleport(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto ch  = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || ctx->alive(*ch) == false)
+    if (ch == nullptr)
         return 0;
+    auto ch_weak = ch->weak_from_this_as<fb::game::character>();
 
     auto target = lua->touserdata<fb::game::character>(2);
-    if (target == nullptr || ctx->alive(*target) == false)
+    if (target == nullptr)
         return 0;
+    auto target_weak = target->weak_from_this_as<fb::game::character>();
 
     if (ch->thread() == target->thread())
     {
@@ -2599,7 +2784,7 @@ int fb::game::character::builtin::builtin_teleport(lua_State* L)
     }
     else
     {
-        ctx->threads.enqueue(*target, [=](auto& thread) -> async::task<void> {
+        ctx->threads.enqueue(target_weak, [=](auto& thread) -> async::task<void> {
             auto map = target->map();
             if (map == nullptr)
             {
@@ -2608,10 +2793,11 @@ int fb::game::character::builtin::builtin_teleport(lua_State* L)
             }
             auto position = target->position();
 
-            ctx->threads.enqueue(*ch, [=](auto& thread) -> async::task<void> {
+            ctx->threads.enqueue(ch_weak, [=](auto& thread) -> async::task<void> {
                 async::awaitable_then(ch->map(map, position), [=](auto result) {
                     auto success = result();
-                    lua->ensure_resume(*ctx, *ch, [=]() {
+                    auto weak    = ch->weak_from_this_as<fb::game::character>();
+                    lua->ensure_resume(*ctx, weak, [=]() {
                         lua->pushboolean(success);
                         return 1;
                     });

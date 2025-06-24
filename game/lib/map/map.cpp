@@ -167,13 +167,13 @@ bool map::movable(const object& object, const fb::model::point16_t position) con
 
     for (const auto& [key, value] : this->objects)
     {
-        if (value.hidden(object))
+        if (value->hidden(object))
             continue;
 
-        if (value.is(OBJECT_TYPE::ITEM))
+        if (value->is(OBJECT_TYPE::ITEM))
             continue;
 
-        if (value.position() == position)
+        if (value->position() == position)
             return false;
     }
 
@@ -240,7 +240,7 @@ bool map::is_active() const
     return this->_sectors->is_active();
 }
 
-sector* map::sector_at(const fb::model::point16_t& position)
+std::shared_ptr<fb::game::sector> map::sector_at(const fb::model::point16_t& position)
 {
     if (this->_sectors == nullptr)
         return nullptr;
@@ -248,17 +248,17 @@ sector* map::sector_at(const fb::model::point16_t& position)
     return this->_sectors->at(position);
 }
 
-std::vector<fb::game::object*> map::nears(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
+std::vector<std::shared_ptr<fb::game::object>> map::nears(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
 {
     if (this->_sectors == nullptr)
-        return std::vector<fb::game::object*>{};
+        return std::vector<std::shared_ptr<fb::game::object>>{};
     else
         return this->_sectors->objects(pivot, type);
 }
 
-std::vector<fb::game::object*> map::belows(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
+std::vector<std::shared_ptr<fb::game::object>> map::belows(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
 {
-    auto objects = std::vector<fb::game::object*>();
+    auto objects = std::vector<std::shared_ptr<fb::game::object>>();
     try
     {
         if (this->_sectors == nullptr)
@@ -269,7 +269,7 @@ std::vector<fb::game::object*> map::belows(const fb::model::point16_t& pivot, OB
             return (type == OBJECT_TYPE::UNKNOWN || x->is(type)) && x->position() == pivot;
         });
 
-        std::sort(objects.begin(), objects.end(), [](auto* obj1, auto* obj2) {
+        std::sort(objects.begin(), objects.end(), [](auto obj1, auto obj2) {
             return obj1->sequence() > obj2->sequence();
         });
     }

@@ -1,6 +1,34 @@
 #ifndef __TRADE_H__
 #define __TRADE_H__
 
+/**
+ * @file    trade.h
+ * @brief   Player-to-player trading system for secure item and money exchange
+ * @author  FB Development Team
+ *
+ * @details This file implements the comprehensive trading system that allows players
+ *          to securely exchange items and money in a controlled, synchronized manner.
+ *          The system provides complete trade session management with state tracking,
+ *          validation, and atomic transaction processing to ensure fair and secure
+ *          exchanges between players.
+ *
+ *          Key features:
+ *          - Secure two-player trading with comprehensive state management
+ *          - Item and money exchange with thorough validation and anti-cheat measures
+ *          - Trade locking mechanism for final confirmation before exchange
+ *          - Atomic transaction processing to prevent item duplication or loss
+ *          - Trade cancellation and automatic rollback functionality
+ *          - Event-driven architecture with listener pattern for UI updates
+ *          - Support for stackable item quantity selection and management
+ *          - Inventory space validation before trade completion
+ *          - Real-time trade state synchronization between participants
+ *          - Comprehensive error handling and edge case management
+ *
+ * @note    The trading system ensures complete transaction integrity and prevents
+ *          common trading exploits while providing a smooth user experience
+ *          for legitimate item and money exchanges between players.
+ */
+
 #include <fb/stream.h>
 #include <unordered_map>
 
@@ -91,7 +119,7 @@ private:
      *
      * @return     Pointer to the found item, or nullptr if not found
      */
-    fb::game::item* find(const fb::model::item& item) const;
+    std::shared_ptr<fb::game::item> find(const fb::model::item& item) const;
     /**
      * @brief      Validates that both trades can be completed successfully.
      *
@@ -179,7 +207,7 @@ public:
      *
      * @return     Vector of pointers to items being offered in the trade
      */
-    const std::vector<fb::game::item*> items() const;
+    const std::vector<std::shared_ptr<fb::game::item>> items() const;
 
     /**
      * @brief      Gets a specific item from the trade by slot index.
@@ -188,7 +216,7 @@ public:
      *
      * @return     Pointer to the item at the specified slot, or nullptr if empty
      */
-    const fb::game::item* item(uint8_t index) const;
+    const std::shared_ptr<fb::game::item> item(uint8_t index) const;
 };
 
 /**

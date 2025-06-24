@@ -71,12 +71,9 @@ async::task<void> context::handle_start()
     co_await this->load_entries();
 }
 
-session* context::handle_accepted(fb::socket<session>& socket)
+std::shared_ptr<session> context::handle_accepted(fb::socket<session>& socket)
 {
-    auto uptr = std::make_unique<session>();
-    auto ptr  = uptr.get();
-    this->_sessions.push_back(std::move(uptr));
-    return ptr;
+    return std::make_shared<session>();
 }
 
 async::task<bool> context::handle_connected(fb::socket<session>& socket)

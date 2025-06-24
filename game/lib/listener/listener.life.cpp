@@ -13,6 +13,7 @@ async::task<void> listener_impl::on_attack(life& me, DURATION duration)
     if (lua == nullptr)
         co_return;
 
+    auto weak = me.weak_from_this_as<fb::game::life>();
 #if defined DEBUG | defined _DEBUG
     lua->load("scripts/interaction.lua");
 #endif
@@ -21,15 +22,13 @@ async::task<void> listener_impl::on_attack(life& me, DURATION duration)
     if (co_await lua->call(1, false) == false)
         goto cleanup;
 
-    if (this->context.alive(me) == false)
-        goto cleanup;
-    co_await me.thread()->switching();
+    co_await this->context.switch_thread(weak);
 
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
-        auto  attack_count = (uint32_t)lua->tointeger(1);
-        auto& ch           = static_cast<character&>(me);
-        auto  weapon       = ch.items.weapon();
+        auto attack_count = (uint32_t)lua->tointeger(1);
+        auto ch           = std::static_pointer_cast<character>(weak.lock());
+        auto weapon       = ch->items.weapon();
         if (weapon != nullptr)
         {
             auto& model = weapon->based<fb::model::weapon>();
@@ -40,15 +39,16 @@ async::task<void> listener_impl::on_attack(life& me, DURATION duration)
                 lua->pushobject(weapon);
                 co_await lua->call(2, false);
 
-                if (this->context.alive(ch) == false)
+                if (weak.lock() == nullptr)
                     goto cleanup;
-                co_await ch.thread()->switching();
+
+                co_await ch->thread()->switching();
             }
 
             if (attack_count > 0 && weapon->durability_down(attack_count))
             {
-                ch.message(std::format("{} 깨졌습니다.", weapon->name()));
-                delete ch.items.equipment_off(EQUIPMENT_PARTS::WEAPON);
+                ch->message(std::format("{} 깨졌습니다.", weapon->name()));
+                ch->items.equipment_off(EQUIPMENT_PARTS::WEAPON);
             }
         }
     }
@@ -57,7 +57,7 @@ cleanup:
     lua->release();
 }
 
-void listener_impl::on_dead(life& me, object* you)
+void listener_impl::on_dead(life& me, std::shared_ptr<object> you)
 {
     switch (me.what())
     {
@@ -84,35 +84,38 @@ void listener_impl::on_dead(life& me, object* you)
         }
 
         mob.drop_items();
-        auto owner = mob.owner;
+        auto owner = mob.owner.lock();
         if (owner != nullptr)
         {
-            if (this->context.alive(*owner))
-                owner->detach_spawned_mob(mob);
+            owner->detach_spawned_mob(mob);
             return;
         }
 
         if (you != nullptr && you->is(OBJECT_TYPE::MOB))
-            you = static_cast<fb::game::mob*>(you)->owner;
+            you = std::static_pointer_cast<fb::game::mob>(you)->owner.lock();
 
         if (you == nullptr)
             return;
 
         if (owner == nullptr && you->is(OBJECT_TYPE::CHARACTER))
         {
-            auto& ch    = static_cast<character&>(*you);
-            auto& group = ch.group();
-            auto  map   = ch.map();
-            auto  exp   = mob.based<fb::model::mob>().exp;
-            if (group != nullptr && map != nullptr)
+            auto& ch       = static_cast<character&>(*you);
+            auto& group_id = ch.group_id();
+            auto  map      = ch.map();
+            auto  exp      = mob.based<fb::model::mob>().exp;
+            if (group_id.has_value() && map != nullptr)
             {
-                group->read([this, &ch, map, exp](auto& group) {
-                    auto nears      = group.nears(*map, ch.position());
+                this->context.groups.read(group_id.value(), [this, &ch, map, exp](auto& group) {
+                    auto nears      = group->nears(*map, ch.position());
                     auto size       = nears.size();
                     auto divide_exp = exp / size;
-                    for (auto member : nears)
+                    for (auto& member : nears)
                     {
-                        member->add_exp(divide_exp, true, true);
+                        auto shared_ptr = member.lock();
+                        if (shared_ptr == nullptr)
+                            continue;
+
+                        shared_ptr->add_exp(divide_exp, true, true);
                     }
                 });
             }

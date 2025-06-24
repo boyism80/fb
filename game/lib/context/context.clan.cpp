@@ -17,57 +17,25 @@ void context::assert_clan(uint32_t error) const
     }
 }
 
-void context::foreach_ch(const clan& clan, const std::function<void(fb::game::character&)>& fn)
+async::task<void> context::upsert_clan_then(uint32_t                                                           id,
+                                            std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn)
 {
-    auto names = std::vector<std::string>();
-    for (auto& [name, _] : clan.members())
-    {
-        names.push_back(name);
-    }
+    co_await this->clans.async_write(
+        id,
+        [this, id, fn](auto& clan) -> async::task<void> {
+            co_await fn(clan);
+        },
+        [=, this]() -> async::task<std::shared_ptr<fb::game::clan>> {
+            auto&& resp = co_await this->http.get<internal_resp::GetClan>("internal", std::format("/clan/{}", id));
+            switch (static_cast<ERROR_CODE>(resp.error))
+            {
+            case ERROR_CODE::NONE:
+                co_return std::make_shared<fb::game::clan>(*this, id, resp.clan.name, resp.clan.title);
 
-    this->foreach_ch(names, fn);
-}
-
-void context::upsert_clan_then(uint32_t id, std::function<void(shared_clan_lock&)> fn)
-{
-    this->_shard[id]->clans.write([this, id, fn](auto& clans) {
-        if (clans.contains(id) == false)
-        {
-            clans.insert({id, std::make_shared<fb::locker<fb::game::clan>>(*this, id)});
-            async::awaitable_then(this->http.get<internal_resp::GetClan>("internal", std::format("/clan/{}", id)),
-                                  [this, id](auto result) {
-                                      try
-                                      {
-                                          auto&& resp = result();
-                                          switch (static_cast<ERROR_CODE>(resp.error))
-                                          {
-                                          case ERROR_CODE::NONE:
-                                              break;
-
-                                          default:
-                                              throw std::runtime_error(
-                                                  std::format("cannot get clan (error : {})", resp.error));
-                                          }
-
-                                          this->_shard[id]->clans.read([this, id, &resp](auto& clans) {
-                                              if (!clans.contains(id))
-                                                  return;
-
-                                              auto& clan_lock_ptr = clans.at(id);
-                                              clan_lock_ptr->write([this, &resp](auto& clan) {
-                                                  this->update_clan(clan, resp.clan, resp.members);
-                                              });
-                                          });
-                                      }
-                                      catch (std::exception& e)
-                                      {
-                                          fb::logger::fatal(e.what());
-                                      }
-                                  });
-        }
-
-        fn(clans.at(id));
-    });
+            default:
+                throw std::runtime_error(std::format("cannot get clan (error : {})", resp.error));
+            }
+        });
 }
 
 void context::update_clan(clan&                                                  clan,
@@ -84,77 +52,74 @@ void context::update_clan(clan&                                                 
     clan.update(resp1.name, resp1.title, members);
 }
 
-async::task<void> context::create_clan(character& me, const std::string& name)
+async::task<void> context::create_clan(character& me, std::string name)
 {
-    if (me.clan() != nullptr)
+    if (me.clan_id().has_value())
         throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_CLAN));
 
-    auto   fd   = me.fd();
+    auto   weak = me.weak_from_this_as<character>();
     auto&& resp = co_await this->http.post("internal", "/clan/create", CreateClan{me.id(), name});
+    co_await this->switch_thread(weak);
 
     this->assert_clan(resp.error);
 
     auto id = resp.clan.id;
-    this->_shard[id]->clans.write([this, id = resp.clan.id, fd, &resp, &me](auto& clans) {
-        auto id = resp.clan.id;
-        if (clans.contains(id) == false)
-        {
-            auto clan_ptr   = new fb::game::clan(*this, id);
-            auto shared_ptr = std::make_shared<fb::locker<fb::game::clan>>(*this, id);
-            shared_ptr->write([this, &resp](auto& clan) {
-                this->update_clan(clan, resp.clan, resp.members);
-            });
-            clans.insert({id, std::move(shared_ptr)});
-        }
+    this->clans.write(
+        id,
+        [=, &resp, this](auto& clan) {
+            this->update_clan(*clan.get(), resp.clan, resp.members);
 
-        auto& clan_lock_ptr = clans.at(id);
-        if (this->alive(me))
-        {
-            me.clan(clan_lock_ptr);
-            clan_lock_ptr->write([this, &me](auto& clan) {
-                clan.attach_character(me);
-            });
-        }
-    });
+            if (weak.expired() == false)
+            {
+                auto me = weak.lock();
+                me->clan_id(id);
+                clan->attach_character(weak);
+            }
+        },
+        [=, this]() -> std::shared_ptr<fb::game::clan> {
+            return std::make_shared<fb::game::clan>(*this, id, name, std::nullopt);
+        });
 }
 
 async::task<void> context::destroy_clan(character& me)
 {
-    auto& clan_lock = me.clan();
-    if (clan_lock == nullptr)
+    auto weak    = me.weak_from_this_as<character>();
+    auto clan_id = me.clan_id(); // don't use auto& because it will be invalidated after the clan is destroyed
+    if (clan_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
-    auto clan_name = std::string{};
-    auto clan_id   = uint32_t{};
-    clan_lock->read([&clan_name, &clan_id](auto& clan) {
-        clan_name = clan.name();
-        clan_id   = clan.id();
-    });
+    auto destroyed = co_await this->clans.async_write(clan_id.value(), [this, weak](auto& clan) -> async::task<bool> {
+        auto me = weak.lock();
+        if (me == nullptr)
+            co_return false;
 
-    auto   fd   = me.fd();
-    auto&& resp = co_await this->http.post("internal", "/clan/destroy", DestroyClan{me.id()});
-
-    this->assert_clan(resp.error);
-    this->_shard[clan_id]->clans.write([this, clan_id](auto& clans) {
-        if (clans.contains(clan_id))
+        auto members = std::vector<std::shared_ptr<fb::game::character>>();
+        for (auto& [_, weak_ptr] : clan->characters())
         {
-            clans.at(clan_id)->read([this](auto& clan) {
-                auto characters = std::vector<character*>{};
-                for (auto& [uid, ch] : clan.characters())
-                    characters.push_back(ch);
+            auto shared_ptr = weak_ptr.lock();
+            if (shared_ptr == nullptr)
+                continue;
 
-                for (auto& ch : characters)
-                {
-                    std::ignore = this->threads.dispatch(*ch, [ch](auto&) -> async::task<void> {
-                        ch->clan().reset();
-                        co_return;
-                    });
-                }
-            });
-
-            clans.erase(clan_id);
+            members.push_back(shared_ptr);
         }
+
+        auto&& resp = co_await this->http.post("internal", "/clan/destroy", DestroyClan{me->id()});
+        co_await this->switch_thread(weak);
+
+        this->assert_clan(resp.error);
+        auto message = std::format("{} 문파가 해체되었습니다.", clan->name());
+        co_await this->characters.foreach_async(
+            [this, message](auto& ch) -> async::task<void> {
+                ch->message(message, MESSAGE_TYPE::NOTIFY);
+                ch->clan_reset();
+                co_return;
+            },
+            members);
+        co_return true;
     });
+
+    if (destroyed)
+        this->clans.erase(clan_id.value());
 }
 
 async::task<void> context::set_clan_title(const clan& clan, std::string title)
@@ -163,7 +128,7 @@ async::task<void> context::set_clan_title(const clan& clan, std::string title)
     auto&& resp =
         co_await this->http.post("internal", "/clan/title", SetClanTitle{config<uint32_t>("host"), clan.id(), title});
 
-    this->on_clan_title_changed(resp);
+    co_await this->on_clan_title_changed(resp);
 }
 
 async::task<void> context::join_clan_member(const clan& clan, character& ch)
@@ -171,7 +136,7 @@ async::task<void> context::join_clan_member(const clan& clan, character& ch)
     auto&& resp =
         co_await this->http.post("internal", "/clan/join", JoinClan{config<uint32_t>("host"), clan.id(), ch.id()});
 
-    this->on_clan_join_member(resp);
+    co_await this->on_clan_join_member(resp);
 }
 
 async::task<void> context::leave_clan_member(const clan& clan, const std::string& name, bool kick)
@@ -179,7 +144,7 @@ async::task<void> context::leave_clan_member(const clan& clan, const std::string
     auto&& resp =
         co_await this->http.post("internal", "/clan/leave", LeaveClan{config<uint32_t>("host"), clan.id(), name, kick});
 
-    this->on_clan_leave_member(resp);
+    co_await this->on_clan_leave_member(resp);
 }
 
 async::task<void> context::broadcast(const clan& clan, const std::string& message, MESSAGE_TYPE type)
@@ -189,125 +154,121 @@ async::task<void> context::broadcast(const clan& clan, const std::string& messag
         "/clan/broadcast",
         BroadcastClan{config<uint32_t>("host"), clan.id(), message, static_cast<uint8_t>(type)});
 
-    this->on_clan_broadcast(resp);
+    co_await this->on_clan_broadcast(resp);
 }
 
-void context::on_clan_title_changed(const internal_resp::SetClanTitle& resp)
+async::task<void> context::on_clan_title_changed(const internal_resp::SetClanTitle& resp)
 {
     this->assert_clan(resp.error);
 
-    this->upsert_clan_then(resp.clan, [&title = resp.title](auto& clan_lock) {
-        clan_lock->write([&title](auto& clan) {
-            clan.title(title);
-        });
+    co_await this->upsert_clan_then(resp.clan, [&title = resp.title](auto& clan) -> async::task<void> {
+        clan->title(title);
+        co_return;
     });
 }
 
-void context::on_clan_join_member(const internal_resp::JoinClan& resp)
+async::task<void> context::on_clan_join_member(const internal_resp::JoinClan& resp)
 {
     this->assert_clan(resp.error);
 
-    this->upsert_clan_then(resp.clan, [this, resp](auto& clan_lock) {
-        auto ch =
-            this->_shard[resp.member.name]->names.template read<character*>([&resp](auto& ch_names) -> character* {
-                if (ch_names.contains(resp.member.name) == false)
-                    return nullptr;
+    co_await this->upsert_clan_then(resp.clan, [this, resp](auto& clan) -> async::task<void> {
+        auto ch = this->characters.find(resp.member.name);
+        if (ch == nullptr)
+            co_return;
 
-                return ch_names.at(resp.member.name);
-            });
+        if (ch->clan_id().has_value())
+            co_return;
 
+        auto weak    = ch->weak_from_this_as<character>();
+        auto members = std::vector<std::shared_ptr<fb::game::character>>();
+        for (auto& [_, weak_ptr] : clan->characters())
+        {
+            auto shared_ptr = weak_ptr.lock();
+            if (shared_ptr == nullptr)
+                continue;
+
+            members.push_back(shared_ptr);
+        }
+
+        co_await this->characters.foreach (
+            [this, resp](auto& member) {
+                member->message(std::format("{}님이 문파에 가입했습니다.", resp.member.name), MESSAGE_TYPE::NOTIFY);
+            },
+            members);
+
+        auto cm = clan_member{resp.member.name, static_cast<CLAN_POSITION>(resp.member.position)};
+        clan->join(cm);
+
+        if (weak.expired() == false)
+        {
+            clan->attach_character(weak);
+            ch->clan_id(clan->id());
+            ch->update_external(true);
+            ch->message(std::format("{} 문파에 가입되었습니다.", clan->name()), MESSAGE_TYPE::NOTIFY);
+        }
+    });
+}
+
+async::task<void> context::on_clan_leave_member(const internal_resp::LeaveClan& resp)
+{
+    this->assert_clan(resp.error);
+    co_await this->upsert_clan_then(resp.clan, [this, resp](auto& clan) -> async::task<void> {
+        auto ch = this->characters.find(resp.uname);
         if (ch != nullptr)
         {
-            std::ignore = this->threads.dispatch(*ch, [this, resp, ch, &clan_lock](auto&) -> async::task<void> {
-                clan_lock->write([=, this, &clan_lock](auto& clan) {
-                    this->foreach_ch(clan, [resp](auto& ch) {
-                        ch.message(std::format("{}님이 문파에 가입했습니다.", resp.member.name), MESSAGE_TYPE::NOTIFY);
-                    });
-
-                    auto cm = clan_member{resp.member.name, static_cast<CLAN_POSITION>(resp.member.position)};
-                    clan.join(cm);
-                    clan.attach_character(*ch);
-                    ch->clan(clan_lock);
-                    ch->update_external(true);
-                    ch->message(std::format("{} 문파에 가입되었습니다.", clan.name()), MESSAGE_TYPE::NOTIFY);
-                });
-                co_return;
-            });
+            auto weak = ch->weak_from_this_as<character>();
+            clan->detach_character(weak);
+            ch->clan_reset();
+            ch->update_external(true);
+            if (resp.kick)
+                ch->message("문파에서 추방당했습니다.", MESSAGE_TYPE::NOTIFY);
+            else
+                ch->message("문파에서 탈퇴했습니다.", MESSAGE_TYPE::NOTIFY);
         }
+
+        clan->leave(resp.uname);
+        auto members = std::vector<std::shared_ptr<fb::game::character>>();
+        for (auto& [_, weak_ptr] : clan->characters())
+        {
+            auto shared_ptr = weak_ptr.lock();
+            if (shared_ptr == nullptr)
+                continue;
+
+            members.push_back(shared_ptr);
+        }
+
+        auto message = resp.kick ? std::format("{}님이 문파에서 추방당했습니다.", resp.uname)
+                                 : std::format("{}님이 문파에서 탈퇴하였습니다.", resp.uname);
+        co_await this->characters.foreach (
+            [this, message](auto& member) {
+                member->message(message, MESSAGE_TYPE::NOTIFY);
+            },
+            members);
+
+        clan->leave(resp.uname);
+        co_return;
     });
 }
 
-void context::on_clan_leave_member(const internal_resp::LeaveClan& resp)
+async::task<void> context::on_clan_broadcast(const internal_resp::BroadcastClan& resp)
 {
     this->assert_clan(resp.error);
 
-    this->upsert_clan_then(resp.clan, [this, resp](auto& clan_lock) {
-        auto ch = this->_shard[resp.uname]->names.template write<character*>([&resp](auto& ch_names) -> character* {
-            if (ch_names.contains(resp.uname) == false)
-                return nullptr;
-
-            return ch_names.at(resp.uname);
-        });
-
-        if (ch != nullptr)
+    co_await this->upsert_clan_then(resp.clan, [this, resp](auto& clan) -> async::task<void> {
+        auto members = std::vector<std::shared_ptr<fb::game::character>>();
+        for (auto& [_, weak_ptr] : clan->characters())
         {
-            std::ignore = this->threads.dispatch(*ch, [this, ch, resp, &clan_lock](auto&) -> async::task<void> {
-                clan_lock->write([this, ch, &resp](auto& clan) {
-                    clan.leave(ch->name());
-                    clan.detach_character(*ch);
-                    ch->clan().reset();
-                    ch->update_external(true);
+            auto shared_ptr = weak_ptr.lock();
+            if (shared_ptr == nullptr)
+                continue;
 
-                    if (resp.kick)
-                    {
-                        ch->message("문파에서 추방당했습니다.", MESSAGE_TYPE::NOTIFY);
-                        this->foreach_ch(clan, [name = resp.uname](auto& ch) {
-                            ch.message(std::format("{}님이 문파에서 추방당했습니다.", name), MESSAGE_TYPE::NOTIFY);
-                        });
-                    }
-                    else
-                    {
-                        ch->message("문파에서 탈퇴했습니다.", MESSAGE_TYPE::NOTIFY);
-                        this->foreach_ch(clan, [name = resp.uname](auto& ch) {
-                            ch.message(std::format("{}님이 문파에서 탈퇴하였습니다.", name), MESSAGE_TYPE::NOTIFY);
-                        });
-                    }
-                });
-                co_return;
-            });
+            members.push_back(shared_ptr);
         }
-        else
-        {
-            clan_lock->read([this, &resp](auto& clan) {
-                if (resp.kick)
-                    this->foreach_ch(clan, [name = resp.uname](auto& ch) {
-                        ch.message(std::format("{}님이 문파에서 추방당했습니다.", name), MESSAGE_TYPE::NOTIFY);
-                    });
-                else
-                    this->foreach_ch(clan, [name = resp.uname](auto& ch) {
-                        ch.message(std::format("{}님이 문파에서 탈퇴하였습니다.", name), MESSAGE_TYPE::NOTIFY);
-                    });
-            });
-        }
-    });
-}
 
-void context::on_clan_broadcast(const internal_resp::BroadcastClan& resp)
-{
-
-    this->assert_clan(resp.error);
-
-    this->upsert_clan_then(resp.clan, [this, message = resp.message, type = resp.type](auto& clan_lock) {
-        clan_lock->read([this, message, type](auto& clan) {
-            auto names = std::vector<std::string>{};
-            for (auto& [name, member] : clan.members())
-            {
-                names.push_back(name);
-            }
-
-            this->foreach_ch(names, [message, type](auto& ch) {
-                ch.message(message, static_cast<MESSAGE_TYPE>(type));
-            });
-        });
+        co_await this->characters.foreach (
+            [this, resp](auto& member) {
+                member->message(resp.message, static_cast<MESSAGE_TYPE>(resp.type));
+            },
+            members);
     });
 }

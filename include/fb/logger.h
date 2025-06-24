@@ -1,6 +1,33 @@
 #ifndef __LOGGER_H__
 #define __LOGGER_H__
 
+/**
+ * @file    logger.h
+ * @brief   Thread-safe singleton logging system with configurable level filtering
+ * @author  FB Development Team
+ *
+ * @details This file implements a comprehensive logging system that provides thread-safe,
+ *          level-based logging functionality for the FB 2D MMORPG server. The system
+ *          supports multiple log levels with configurable filtering and formatted
+ *          output through the console system with singleton pattern for global access.
+ *
+ *          Key features:
+ *          - Thread-safe singleton logger with global access throughout the application
+ *          - Multiple log levels (DEBUG, INFO, WARN, FATAL) with bitwise combination support
+ *          - Configurable log level filtering through the configuration system
+ *          - Template-based formatted logging with std::format integration
+ *          - Automatic log level prefix injection for easy identification
+ *          - Integration with the console system for consistent output formatting
+ *          - Method chaining support for fluent logging interface
+ *          - Configuration-driven log level control for production/debug builds
+ *          - Exception-safe logging operations with proper error handling
+ *          - Performance optimization with early level checking to avoid formatting overhead
+ *
+ * @note    The logging system is initialized automatically and provides the primary
+ *          debugging and monitoring infrastructure for the FB 2D MMORPG server,
+ *          enabling comprehensive diagnostics and troubleshooting capabilities.
+ */
+
 #include <fb/config.h>
 #include <boost/algorithm/string.hpp>
 

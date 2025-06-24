@@ -31,11 +31,7 @@ int context::builtin::builtin_sleep(lua_State* L)
     lua->pending(true);
 
     auto context = lua->env<fb::game::context>("context");
-    async::awaitable_then(context->sleep(std::chrono::milliseconds(ms)), [L](auto result) {
-        auto lua = fb::lua::get(L);
-        if (lua == nullptr)
-            return;
-
+    async::awaitable_then(context->sleep(std::chrono::milliseconds(ms)), [lua](auto result) {
         lua->pending(false);
         lua->resume(0);
     });
@@ -146,21 +142,16 @@ int context::builtin::builtin_name2ch(lua_State* L)
     auto argc    = lua->argc();
     auto name    = lua->tostring(1);
 
-    auto ch = context->_shard[name]->names.template read<character*>([&name](const auto& names) -> character* {
-        if (names.contains(name) == false)
-            return nullptr;
-
-        return names.at(name);
-    });
-
+    auto ch = context->characters.find(name);
     if (ch == nullptr)
     {
         lua->pushnil();
         return 1;
     }
 
-    return lua->ensure_yield(*context, *ch, [=]() {
-        return lua->ensure_resume(*context, *ch, [=]() {
+    auto weak = ch->weak_from_this_as<character>();
+    return lua->ensure_yield(*context, weak, [=]() {
+        return lua->ensure_resume(*context, weak, [=]() {
             lua->pushobject(ch);
             return 1;
         });
@@ -317,9 +308,8 @@ int context::builtin::builtin_timer(lua_State* L)
     auto decrease = lua->toboolean(2);
 
     auto type = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
-    context->foreach_ch([value, type](auto& ch) -> async::task<void> {
-        ch.timer(value, type);
-        co_return;
+    context->characters.foreach ([value, type](auto& ch) {
+        ch->timer(value, type);
     });
     return 0;
 }
@@ -333,9 +323,8 @@ int context::builtin::builtin_weather(lua_State* L)
     auto context = lua->env<fb::game::context>("context");
     auto value   = (uint32_t)lua->tointeger(1);
 
-    context->foreach_ch([weather = WEATHER_TYPE(value)](auto& ch) -> async::task<void> {
-        ch.weather(weather);
-        co_return;
+    context->characters.foreach ([weather = WEATHER_TYPE(value)](auto& ch) {
+        ch->weather(weather);
     });
     return 0;
 }
@@ -349,9 +338,8 @@ int context::builtin::builtin_bright(lua_State* L)
     auto context = lua->env<fb::game::context>("context");
     auto value   = (uint32_t)lua->tointeger(1);
 
-    context->foreach_ch([value](auto& ch) -> async::task<void> {
-        ch.bright(value);
-        co_return;
+    context->characters.foreach ([value](auto& ch) {
+        ch->bright(value);
     });
     return 0;
 }
@@ -487,7 +475,7 @@ int context::builtin::builtin_mknpc(lua_State* L)
     if (model == nullptr)
         return 0;
 
-    auto map = static_cast<fb::game::map*>(nullptr);
+    std::shared_ptr<fb::game::map> map = nullptr;
     if (lua->is_string(2))
     {
         auto name      = lua->tostring(2);
@@ -498,7 +486,7 @@ int context::builtin::builtin_mknpc(lua_State* L)
         if (context->maps.contains(map_model->id) == false)
             return 0;
 
-        map = &context->maps[map_model->id];
+        map = context->maps[map_model->id];
     }
     else if (lua->is_userdata<fb::game::map>(2))
     {
@@ -515,7 +503,7 @@ int context::builtin::builtin_mknpc(lua_State* L)
         if (context->maps.contains(map_model->id) == false)
             return 0;
 
-        map = &context->maps[map_model->id];
+        map = context->maps[map_model->id];
     }
     else
     {
@@ -552,12 +540,15 @@ int context::builtin::builtin_mknpc(lua_State* L)
 
     if (map->thread()->id() == std::this_thread::get_id())
     {
-        return lua->ensure_yield(*context, *map, [=]() {
-            auto npc = model->make<fb::game::npc>(*context);
+        auto weak = map->weak_from_this();
+        return lua->ensure_yield(*context, weak, [=]() {
+            // Use smart pointer for NPC creation
+            auto npc = context->make<fb::game::npc>(*model);
             npc->direction(direction);
             npc->map(map, fb::model::point16_t{x, y});
 
-            return lua->ensure_resume(*context, *npc, [=]() {
+            auto weak = npc->weak_from_this();
+            return lua->ensure_resume(*context, weak, [=]() {
                 lua->pushobject(npc);
                 return 1;
             });
@@ -565,12 +556,15 @@ int context::builtin::builtin_mknpc(lua_State* L)
     }
     else
     {
-        return lua->ensure_yield(*context, *map, [=]() {
-            auto npc = model->make<fb::game::npc>(*context);
+        auto weak = map->weak_from_this();
+        return lua->ensure_yield(*context, weak, [=]() {
+            // Use smart pointer for NPC creation
+            auto npc = context->make<fb::game::npc>(*model);
             npc->direction(direction);
             npc->map(map, fb::model::point16_t{x, y});
 
-            return lua->ensure_resume(*context, *npc, [=]() {
+            auto weak = npc->weak_from_this();
+            return lua->ensure_resume(*context, weak, [=]() {
                 lua->pushobject(npc);
                 return 1;
             });
@@ -642,6 +636,6 @@ int context::builtin::builtin_assert_alive(lua_State* L)
     auto argc    = lua->argc();
     auto obj     = lua->touserdata<fb::game::object>(1);
 
-    lua->pushboolean(context->alive(*obj));
+    lua->pushboolean(obj != nullptr);
     return 1;
 }

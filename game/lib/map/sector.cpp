@@ -12,23 +12,26 @@ sector::sector(uint32_t id) :
 sector::~sector()
 { }
 
-void sector::push(object& object)
+void sector::push(std::shared_ptr<fb::game::object> object)
 {
-    this->push_back(&object);
-    if (object.is(OBJECT_TYPE::CHARACTER))
+    this->push_back(object);
+    if (object->is(OBJECT_TYPE::CHARACTER))
         this->_character_count++;
 }
 
-void sector::erase(object& object)
+void sector::erase(std::shared_ptr<fb::game::object> object)
 {
-    object.assert_thread();
+    object->assert_thread();
 
-    auto found = std::find(this->begin(), this->end(), &object);
-    if (found == this->end())
-        return;
-
-    super::erase(found);
-    if (object.is(OBJECT_TYPE::CHARACTER))
+    for (auto it = this->begin(); it != this->end(); ++it)
+    {
+        if (*it == object)
+        {
+            super::erase(it);
+            break;
+        }
+    }
+    if (object->is(OBJECT_TYPE::CHARACTER))
         this->_character_count--;
 }
 
@@ -51,7 +54,7 @@ sectors::sectors(const fb::model::size16_t& map_size, const fb::model::size16_t&
 {
     for (auto i = 0; i < this->_count; i++)
     {
-        this->_pool.push_back(std::make_unique<sector>(i));
+        this->_pool.push_back(std::make_shared<sector>(i));
     }
 }
 
@@ -62,9 +65,9 @@ uint32_t sectors::index(const fb::model::point16_t& position) const
     return (y / this->_size.height) * this->_columns + (x / this->_size.width);
 }
 
-std::set<sector*> sectors::active_sectors() const
+std::set<std::shared_ptr<fb::game::sector>> sectors::active_sectors() const
 {
-    auto sectors = std::set<sector*>();
+    auto sectors = std::set<std::shared_ptr<fb::game::sector>>();
     for (auto& sector_ptr : this->_pool)
     {
         if (sector_ptr->is_active() == false)
@@ -77,23 +80,23 @@ std::set<sector*> sectors::active_sectors() const
     return sectors;
 }
 
-sector* sectors::at(const fb::model::point16_t& position) const
+std::shared_ptr<fb::game::sector> sectors::at(const fb::model::point16_t& position) const
 {
     auto index = this->index(position);
     return this->at(index);
 }
 
-sector* sectors::at(uint32_t index) const
+std::shared_ptr<fb::game::sector> sectors::at(uint32_t index) const
 {
     if (index > this->_pool.size() - 1)
         return nullptr;
 
-    return this->_pool[index].get();
+    return this->_pool[index];
 }
 
-std::vector<sector*> sectors::nears(uint32_t index) const
+std::vector<std::shared_ptr<fb::game::sector>> sectors::nears(uint32_t index) const
 {
-    auto sectors = std::vector<sector*>();
+    auto sectors = std::vector<std::shared_ptr<fb::game::sector>>();
     auto center  = this->at(index);
     if (center == nullptr)
         throw std::runtime_error("center sector cannot be null");
@@ -162,15 +165,16 @@ std::vector<sector*> sectors::nears(uint32_t index) const
     return std::move(sectors);
 }
 
-std::vector<sector*> sectors::nears(const fb::model::point16_t& pivot) const
+std::vector<std::shared_ptr<fb::game::sector>> sectors::nears(const fb::model::point16_t& pivot) const
 {
     return this->nears(this->index(pivot));
 }
 
-std::vector<object*> sectors::objects(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
+std::vector<std::shared_ptr<fb::game::object>> sectors::objects(const fb::model::point16_t& pivot,
+                                                                OBJECT_TYPE                 type) const
 {
     auto&& sectors = this->nears(pivot);
-    auto   objects = std::vector<object*>();
+    auto   objects = std::vector<std::shared_ptr<fb::game::object>>();
     for (auto sector : sectors)
     {
         for (auto obj : *sector)
@@ -186,22 +190,28 @@ std::vector<object*> sectors::objects(const fb::model::point16_t& pivot, OBJECT_
     }
     else
     {
-        auto filtered = std::vector<object*>();
-        std::copy_if(objects.begin(), objects.end(), std::back_inserter(filtered), [type](auto x) {
-            return x->is(type);
-        });
+        auto filtered = std::vector<std::shared_ptr<fb::game::object>>();
+        std::copy_if(objects.begin(),
+                     objects.end(),
+                     std::back_inserter(filtered),
+                     [type](const std::shared_ptr<fb::game::object>& x) {
+                         return x->is(type);
+                     });
         return std::move(filtered);
     }
 }
 
-std::vector<object*> sectors::objects(OBJECT_TYPE type) const
+std::vector<std::shared_ptr<fb::game::object>> sectors::objects(OBJECT_TYPE type) const
 {
-    auto result = std::vector<object*>();
+    auto result = std::vector<std::shared_ptr<fb::game::object>>();
     for (auto& sector : this->active_sectors())
     {
-        std::copy_if(sector->begin(), sector->end(), std::back_inserter(result), [type](auto x) {
-            return type == OBJECT_TYPE::UNKNOWN || x->is(type);
-        });
+        std::copy_if(sector->begin(),
+                     sector->end(),
+                     std::back_inserter(result),
+                     [type](const std::shared_ptr<fb::game::object>& x) {
+                         return type == OBJECT_TYPE::UNKNOWN || x->is(type);
+                     });
     }
 
     return std::move(result);

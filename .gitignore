@@ -36,3 +36,4 @@ game/table*
 *.filters
 
 .fake
+x64

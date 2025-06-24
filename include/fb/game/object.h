@@ -1,6 +1,32 @@
 #ifndef __OBJECT_H__
 #define __OBJECT_H__
 
+/**
+ * @file    object.h
+ * @brief   Base class for all interactive objects in the FB 2D MMORPG game world
+ * @author  FB Development Team
+ *
+ * @details This file implements the fundamental object system that serves as the
+ *          foundation for all interactive entities in the FB 2D MMORPG game server.
+ *          Every entity that can exist in the game world (characters, NPCs, items,
+ *          doors, etc.) inherits from this base object class.
+ *
+ *          Key features:
+ *          - Spatial positioning and movement within game maps
+ *          - Line-of-sight calculations and visibility management
+ *          - Inter-object communication and chat system
+ *          - Buff/debuff system integration for temporary effects
+ *          - Thread-safe operations with automatic context switching
+ *          - Lua scripting integration for flexible game logic
+ *          - Event-driven architecture with comprehensive listener pattern
+ *          - Network communication capabilities for client updates
+ *          - Sector-based spatial optimization for performance
+ *          - Direction-based movement and interaction system
+ *
+ * @note    This is the core foundation class that all game entities inherit from,
+ *          providing essential functionality for existence in the game world.
+ */
+
 #include <fb/lua.h>
 #include <fb/stream.h>
 #include <fb/protocol/header.h>
@@ -80,14 +106,14 @@ public:
     friend fb::game::items;
 
 private:
-    fb::game::sector* _sector = nullptr;
+    std::shared_ptr<fb::game::sector> _sector;
 
 protected:
-    uint32_t                 _sequence = 0;
-    const fb::model::object& _model;
-    fb::model::point16_t     _position  = fb::model::point16_t(0, 0);
-    DIRECTION                _direction = DIRECTION::BOTTOM;
-    fb::game::map*           _map       = nullptr;
+    uint32_t                       _sequence = 0;
+    const fb::model::object&       _model;
+    fb::model::point16_t           _position  = fb::model::point16_t(0, 0);
+    DIRECTION                      _direction = DIRECTION::BOTTOM;
+    std::shared_ptr<fb::game::map> _map       = nullptr;
 
 public:
     listener_t&        listener;
@@ -148,7 +174,9 @@ private:
      *
      * @return     True if positions have line of sight, false otherwise
      */
-    static bool sight(const fb::model::point16_t me, const fb::model::point16_t you, const fb::game::map* map);
+    static bool sight(const fb::model::point16_t            me,
+                      const fb::model::point16_t            you,
+                      const std::shared_ptr<fb::game::map>& map);
 
 public:
     /**
@@ -386,7 +414,8 @@ public:
      *
      * @return     True if the map change was successful, false otherwise
      */
-    virtual async::task<bool> map(fb::game::map* map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual async::task<bool> map(std::shared_ptr<fb::game::map> map,
+                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT);
 
     /**
      * @brief      Moves the object to a different map at a specific position.
@@ -397,16 +426,16 @@ public:
      *
      * @return     True if the map change was successful, false otherwise
      */
-    virtual async::task<bool> map(fb::game::map*              map,
-                                  const fb::model::point16_t& position,
-                                  DESTROY_TYPE                destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual async::task<bool> map(std::shared_ptr<fb::game::map> map,
+                                  const fb::model::point16_t&    position,
+                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT);
 
     /**
      * @brief      Gets the map that this object is currently on.
      *
      * @return     Pointer to the current map, or nullptr if not on any map
      */
-    fb::game::map* map() const;
+    std::shared_ptr<fb::game::map> map() const;
 
     /**
      * @brief      Checks if this object can see a specific position.
@@ -453,7 +482,7 @@ public:
      *
      * @return     Pointer to the first object found, or nullptr if none
      */
-    object* side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::shared_ptr<fb::game::object> side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Gets all objects at the specified side direction.
@@ -463,7 +492,8 @@ public:
      *
      * @return     Vector of pointers to all objects found in that direction
      */
-    std::vector<object*> sides(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<std::shared_ptr<fb::game::object>> sides(DIRECTION   direction,
+                                                         OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Gets the first object directly in front of this object.
@@ -472,7 +502,7 @@ public:
      *
      * @return     Pointer to the first object found in front, or nullptr if none
      */
-    object* forward(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::shared_ptr<fb::game::object> forward(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Gets all objects directly in front of this object.
@@ -481,7 +511,7 @@ public:
      *
      * @return     Vector of pointers to all objects found in front
      */
-    std::vector<object*> forwards(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<std::shared_ptr<fb::game::object>> forwards(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Calculates the exact distance to another object.
@@ -539,7 +569,7 @@ public:
      *
      * @return     Vector of pointers to all visible objects
      */
-    std::vector<object*> sight_in(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<std::shared_ptr<fb::game::object>> sight_in(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Gets all nearby objects within the same sector.
@@ -549,7 +579,8 @@ public:
      *
      * @return     Vector of pointers to all nearby objects
      */
-    std::vector<object*> nears(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN, bool contains_super_hide = false) const;
+    std::vector<std::shared_ptr<fb::game::object>> nears(OBJECT_TYPE type                = OBJECT_TYPE::UNKNOWN,
+                                                         bool        contains_super_hide = false) const;
 
     /**
      * @brief      Gets the thread that this object belongs to.
@@ -730,6 +761,22 @@ struct object::listener_t
      * @param[in]  value  The effect ID being applied
      */
     virtual void on_effect(fb::game::object& ch, uint8_t value) = 0;
+
+    /**
+     * @brief      Called when an object leaves a map.
+     *
+     * @param      me    The object leaving the map
+     * @param      map   The map being left
+     */
+    virtual void on_map_leave(fb::game::object& me, const fb::game::map& map) = 0;
+
+    /**
+     * @brief      Called when an object enters a map.
+     *
+     * @param      me    The object entering the map
+     * @param      map   The map being entered
+     */
+    virtual void on_map_enter(fb::game::object& me, const fb::game::map& map) = 0;
 };
 
 /**
@@ -928,15 +975,6 @@ public:
     static int builtin_thread(lua_State* L);
 
     /**
-     * @brief      Lua binding to get the object's pointer address.
-     *
-     * @param      L     The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_ptr(lua_State* L);
-
-    /**
      * @brief      Lua binding to get the nearest object of a specific type.
      *
      * @param      L     The Lua state
@@ -975,10 +1013,10 @@ public:
 struct object::initial_params
 {
 public:
-    uint32_t                   id; ///< Unique object identifier (0xFFFFFFFF for auto-assignment)
-    const fb::model::point16_t position  = fb::model::point16_t(); ///< Initial position coordinates on the map
-    DIRECTION                  direction = DIRECTION::BOTTOM;      ///< Initial facing direction
-    fb::game::map*             map       = nullptr; ///< Pointer to the map where the object will be placed
+    uint32_t                       id; ///< Unique object identifier (0xFFFFFFFF for auto-assignment)
+    const fb::model::point16_t     position  = fb::model::point16_t(); ///< Initial position coordinates on the map
+    DIRECTION                      direction = DIRECTION::BOTTOM;      ///< Initial facing direction
+    std::shared_ptr<fb::game::map> map       = nullptr; ///< Pointer to the map where the object will be placed
 };
 
 } // namespace fb::game

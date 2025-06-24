@@ -1,6 +1,34 @@
 #ifndef __LISTENER_H__
 #define __LISTENER_H__
 
+/**
+ * @file    listener.h
+ * @brief   Comprehensive game event listener system for FB 2D MMORPG server
+ * @author  FB Development Team
+ *
+ * @details This file implements the complete event listener system that handles all
+ *          game events and coordinates the flow between game logic and network
+ *          communication. The listener system serves as the bridge between game
+ *          mechanics and client-server communication, ensuring proper event
+ *          handling and protocol message generation.
+ *
+ *          Key features:
+ *          - Unified event handling for all game entity types (objects, characters, mobs)
+ *          - Complete object lifecycle event management (create, destroy, move, hide)
+ *          - Character-specific event handling (level up, equipment, inventory changes)
+ *          - Combat and spell system event coordination (attack, damage, buffs, spells)
+ *          - Social system event management (chat, groups, clans, trading)
+ *          - UI and dialog system event handling (menus, notifications, dialogs)
+ *          - Real-time protocol message generation and network transmission
+ *          - Event broadcasting to relevant clients based on proximity and visibility
+ *          - Map and world state change notifications to connected players
+ *          - Integration with all major game systems for seamless event flow
+ *
+ * @note    The listener system is the central nervous system of the game server,
+ *          ensuring that all game events are properly communicated to clients
+ *          and that the game state remains synchronized across all connections.
+ */
+
 #include <fb/game/character.h>
 
 namespace fb::game {
@@ -200,6 +228,22 @@ public:
     void on_effect(fb::game::object& ch, uint8_t value) override final;
 
     /**
+     * @brief      Called when an object leaves a map.
+     *
+     * @param      me    The object leaving the map
+     * @param      map   The map being left
+     */
+    void on_map_leave(fb::game::object& me, const fb::game::map& map) override final;
+
+    /**
+     * @brief      Called when an object enters a map.
+     *
+     * @param      me    The object entering the map
+     * @param      map   The map being entered
+     */
+    void on_map_enter(fb::game::object& me, const fb::game::map& map) override final;
+
+    /**
      * @brief      Called when a life entity performs an attack action.
      *
      * @param      me    The life entity performing the attack
@@ -212,7 +256,7 @@ public:
      * @param      me    The life entity that died
      * @param      you   The object that caused the death (optional)
      */
-    void on_dead(life& me, object* you) override final;
+    void on_dead(life& me, std::shared_ptr<object> you) override final;
 
     /**
      * @brief      Called when a life entity's HP changes and needs visual update.

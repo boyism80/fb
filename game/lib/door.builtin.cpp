@@ -27,7 +27,7 @@ int door::builtin::builtin_toggle(lua_State* L)
     auto size    = fb::model::size8_t((uint8_t)door->model.pairs.size(), 1);
     for (auto& obj : door->map.nears(door->pivot, OBJECT_TYPE::CHARACTER))
     {
-        auto ch = static_cast<character*>(obj);
+        auto ch = std::static_pointer_cast<character>(obj);
         ch->update_map(door->map, door->pivot, size);
     }
     return 1;

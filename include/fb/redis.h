@@ -1,6 +1,33 @@
 #ifndef __REDIS_H__
 #define __REDIS_H__
 
+/**
+ * @file    redis.h
+ * @brief   High-performance Redis client with connection pooling and type-safe operations
+ * @author  FB Development Team
+ *
+ * @details This file implements a comprehensive Redis client system that provides
+ *          high-performance database operations with connection pooling, automatic
+ *          type conversion, and thread-safe access for the FB 2D MMORPG server.
+ *          The system is designed for scalable caching and session management.
+ *
+ *          Key features:
+ *          - Connection pooling for optimal performance and resource management
+ *          - Type-safe Redis operations with automatic C++ type conversion
+ *          - Support for strings, integers, doubles, booleans, and vector types
+ *          - Thread-safe connection management with proper resource cleanup
+ *          - Template-based command execution with compile-time type checking
+ *          - Automatic error handling and connection recovery
+ *          - Integration with hiredis library for robust Redis communication
+ *          - Vector support for batch operations and array data structures
+ *          - Exception-safe operations with proper error reporting
+ *          - Configurable pool size for different performance requirements
+ *
+ * @note    This Redis client is fundamental to the server's caching and session
+ *          management infrastructure, providing fast and reliable data storage
+ *          for player sessions, game state, and distributed server coordination.
+ */
+
 #include <hiredis/hiredis.h>
 #include <vector>
 #include <fb/logger.h>

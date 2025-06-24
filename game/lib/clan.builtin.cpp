@@ -158,13 +158,17 @@ int clan::builtin::builtin_join(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    static auto fn = [](fb::game::context*   context,
-                        fb::lua::context*    lua,
-                        fb::game::clan*      clan,
-                        fb::game::character* ch) -> async::task<void> {
+    static auto fn = [](fb::game::context*                 context,
+                        fb::lua::context*                  lua,
+                        fb::game::clan*                    clan,
+                        std::weak_ptr<fb::game::character> weak) -> async::task<void> {
         try
         {
-            co_await context->join_clan_member(*clan, *ch);
+            auto shared_ptr = weak.lock();
+            if (shared_ptr == nullptr)
+                throw std::runtime_error("character is not alive");
+
+            co_await context->join_clan_member(*clan, *shared_ptr);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -175,11 +179,15 @@ int clan::builtin::builtin_join(lua_State* L)
         lua->resume(1);
     };
 
-    std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+    auto thread = context->threads.current();
+    if (thread == nullptr)
+        throw std::runtime_error("thread is not alive");
+
+    std::ignore = thread->dispatch([=](auto&) -> async::task<void> {
         co_await fn(context, lua, clan, ch);
     });
 
-    return lua->yield(1);
+    return lua->yield(0);
 }
 
 int clan::builtin::builtin_leave(lua_State* L)

@@ -1,6 +1,34 @@
 #ifndef __SECTOR_H__
 #define __SECTOR_H__
 
+/**
+ * @file    sector.h
+ * @brief   Spatial partitioning system for efficient map object management
+ * @author  FB Development Team
+ *
+ * @details This file implements the spatial partitioning system that divides game maps
+ *          into sectors for efficient object management, collision detection, and
+ *          visibility calculations. The sector system optimizes performance by reducing
+ *          the search space for spatial operations and provides dynamic activation
+ *          based on player presence.
+ *
+ *          Key features:
+ *          - Grid-based spatial partitioning of maps into manageable sectors
+ *          - Efficient object storage and retrieval within spatial boundaries
+ *          - Character count tracking for intelligent activation management
+ *          - Dynamic sector activation/deactivation based on player presence
+ *          - STL container interface for seamless object iteration and manipulation
+ *          - Thread-safe object management with proper synchronization
+ *          - Neighbor sector lookup for proximity-based operations
+ *          - Object type filtering and specialized queries for different entity types
+ *          - Position-to-sector mapping and efficient indexing algorithms
+ *          - Performance optimization through active sector management
+ *
+ * @note    The sector system is crucial for game performance, enabling efficient
+ *          spatial queries, collision detection, and visibility calculations in
+ *          large game worlds with many objects and players.
+ */
+
 #include <fb/game/object.h>
 #include <set>
 
@@ -35,10 +63,10 @@ class sectors;
  *             - STL container interface for object iteration
  *             - Thread-safe object management
  */
-class sector : private std::vector<fb::game::object*>
+class sector : private std::vector<std::shared_ptr<fb::game::object>>
 {
 private:
-    using super = std::vector<fb::game::object*>;
+    using super = std::vector<std::shared_ptr<fb::game::object>>;
 
 public:
     friend class sectors;
@@ -82,7 +110,7 @@ public:
      *
      * @param      object  The object to add to this sector.
      */
-    void push(fb::game::object& object);
+    void push(std::shared_ptr<fb::game::object> object);
     /**
      * @brief      Removes an object from this sector.
      *
@@ -91,7 +119,7 @@ public:
      *
      * @param      object  The object to remove from this sector.
      */
-    void erase(fb::game::object& object);
+    void erase(std::shared_ptr<fb::game::object> object);
     /**
      * @brief      Gets the unique identifier of this sector.
      *
@@ -127,14 +155,14 @@ public:
 class sectors
 {
 public:
-    using unique_sectors = std::vector<std::unique_ptr<sector>>;
+    using shared_sectors = std::vector<std::shared_ptr<sector>>;
 
 private:
     const fb::model::size16_t _map_size = fb::model::size16_t(0, 0);
     const fb::model::size16_t _size     = fb::model::size16_t(0, 0);
     const uint32_t            _rows = 0, _columns = 0;
     const uint32_t            _count = 0;
-    unique_sectors            _pool;
+    shared_sectors            _pool;
 
 public:
     /**
@@ -203,7 +231,7 @@ private:
      *
      * @return     Set of pointers to active sectors.
      */
-    std::set<sector*> active_sectors() const;
+    std::set<std::shared_ptr<fb::game::sector>> active_sectors() const;
 
 public:
     /**
@@ -216,7 +244,7 @@ public:
      *
      * @return     Pointer to the sector containing the position, or nullptr if invalid.
      */
-    sector* at(const fb::model::point16_t& position) const;
+    std::shared_ptr<fb::game::sector> at(const fb::model::point16_t& position) const;
 
     /**
      * @brief      Gets the sector at the specified index.
@@ -228,7 +256,7 @@ public:
      *
      * @return     Pointer to the sector at the specified index, or nullptr if invalid.
      */
-    sector* at(uint32_t index) const;
+    std::shared_ptr<fb::game::sector> at(uint32_t index) const;
 
 public:
     /**
@@ -242,7 +270,7 @@ public:
      *
      * @return     Vector of pointers to neighboring sectors.
      */
-    std::vector<sector*> nears(uint32_t index) const;
+    std::vector<std::shared_ptr<fb::game::sector>> nears(uint32_t index) const;
 
     /**
      * @brief      Gets all sectors near the specified map position.
@@ -254,7 +282,7 @@ public:
      *
      * @return     Vector of pointers to sectors near the specified position.
      */
-    std::vector<sector*> nears(const fb::model::point16_t& pivot) const;
+    std::vector<std::shared_ptr<fb::game::sector>> nears(const fb::model::point16_t& pivot) const;
 
     /**
      * @brief      Gets all objects of a specific type near the given position.
@@ -267,7 +295,7 @@ public:
      *
      * @return     Vector of pointers to matching objects near the position.
      */
-    std::vector<object*> objects(const fb::model::point16_t& pivot, OBJECT_TYPE type) const;
+    std::vector<std::shared_ptr<fb::game::object>> objects(const fb::model::point16_t& pivot, OBJECT_TYPE type) const;
 
     /**
      * @brief      Gets all objects of a specific type across all sectors.
@@ -279,7 +307,7 @@ public:
      *
      * @return     Vector of pointers to all matching objects in all sectors.
      */
-    std::vector<object*> objects(OBJECT_TYPE type) const;
+    std::vector<std::shared_ptr<fb::game::object>> objects(OBJECT_TYPE type) const;
 
     /**
      * @brief      Checks if any sectors are currently active.

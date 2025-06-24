@@ -1,6 +1,33 @@
 #ifndef __TRACE_H__
 #define __TRACE_H__
 
+/**
+ * @file    achievement.h
+ * @brief   Player achievement system for tracking game accomplishments
+ * @author  FB Development Team
+ *
+ * @details This file implements the achievement system that tracks and manages player
+ *          accomplishments and milestones throughout their gameplay experience. The
+ *          system provides flexible achievement definitions with Lua scripting
+ *          integration for dynamic achievement logic and rewards.
+ *
+ *          Key features:
+ *          - Comprehensive achievement tracking for player accomplishments and milestones
+ *          - Model-based achievement configuration with flexible parameter support
+ *          - Optional custom text descriptions for personalized achievement messages
+ *          - Custom icon and color support for visual achievement representation
+ *          - Lua scripting integration for dynamic achievement logic and validation
+ *          - Support for complex achievement requirements and conditional triggers
+ *          - Achievement reward system integration for granting benefits to players
+ *          - Real-time achievement progress tracking and notification system
+ *          - Persistent achievement storage and retrieval across game sessions
+ *          - Event-driven architecture for responsive achievement processing
+ *
+ * @note    The achievement system enhances player engagement by providing clear
+ *          goals and recognition for various gameplay activities, from simple
+ *          tasks to complex long-term objectives.
+ */
+
 #include <fb/model/model.h>
 #include <fb/lua.h>
 

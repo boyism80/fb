@@ -24,26 +24,26 @@ void context::on_write_mail(const internal_resp::WriteMail& resp)
 {
     assert_mail(resp.error);
 
-    this->_shard[resp.mail.user]->ids.read([this, &resp](auto& ids) {
-        if (ids.contains(resp.mail.user) == false)
-            return;
+    auto ch = this->characters.find(resp.mail.user);
+    if (ch == nullptr)
+        return;
 
-        auto ch = ids.at(resp.mail.user);
-        this->threads.enqueue(*ch, [ch, unread = resp.unread](auto& thread) -> async::task<void> {
-            ch->unread_mail(unread);
-            co_return;
-        });
+    auto weak = ch->weak_from_this_as<character>();
+    this->threads.enqueue(weak, [ch, unread = resp.unread](auto& thread) -> async::task<void> {
+        ch->unread_mail(unread);
+        co_return;
     });
 }
 
 async::task<internal_resp::WriteMail>
 context::send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents)
 {
+    auto   weak   = ch.weak_from_this();
     auto   thread = ch.thread();
     auto&& resp   = co_await this->http.post("internal",
                                            "/mail/write",
                                            WriteMail{ch.id(), to, title, contents, config<uint32_t>("id")});
-    co_await this->switch_thread(ch);
+    co_await this->switch_thread(weak);
 
     this->assert_mail(resp.error);
     this->on_write_mail(resp);
@@ -52,19 +52,22 @@ context::send_mail(const character& ch, const std::string& to, const std::string
 
 async::task<internal_resp::GetMailList> context::mail_list(const character& ch, uint16_t offset, uint16_t count)
 {
+    auto   weak = ch.weak_from_this();
     auto&& resp = co_await this->http.get<internal_resp::GetMailList>(
         "internal",
         std::format("/mail/{}?offset={}&count={}", ch.id(), offset, count));
+    co_await this->switch_thread(weak);
+
     this->assert_mail(resp.error);
     co_return std::move(resp);
 }
 
 async::task<internal_resp::GetMail> context::read_mail(character& ch, uint16_t id)
 {
-    auto   url    = std::format("/mail/{}/{}", ch.id(), id);
-    auto   thread = ch.thread();
-    auto&& resp   = co_await this->http.get<internal_resp::GetMail>("internal", url);
-    co_await this->switch_thread(ch);
+    auto   weak = ch.weak_from_this();
+    auto   url  = std::format("/mail/{}/{}", ch.id(), id);
+    auto&& resp = co_await this->http.get<internal_resp::GetMail>("internal", url);
+    co_await this->switch_thread(weak);
 
     this->assert_mail(resp.error);
     ch.unread_mail(resp.unread);
@@ -73,9 +76,9 @@ async::task<internal_resp::GetMail> context::read_mail(character& ch, uint16_t i
 
 async::task<internal_resp::DeleteMail> context::delete_mail(character& ch, uint16_t id)
 {
-    auto   thread = ch.thread();
-    auto&& resp   = co_await this->http.post("internal", "/mail/delete", DeleteMail{ch.id(), id});
-    co_await this->switch_thread(ch);
+    auto   weak = ch.weak_from_this();
+    auto&& resp = co_await this->http.post("internal", "/mail/delete", DeleteMail{ch.id(), id});
+    co_await this->switch_thread(weak);
     this->assert_mail(resp.error);
     ch.unread_mail(resp.unread);
     co_return std::move(resp);

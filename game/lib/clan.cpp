@@ -4,9 +4,11 @@
 using namespace fb::game;
 using namespace fb::model;
 
-clan::clan(context& context, uint32_t id) :
+clan::clan(context& context, uint32_t id, const std::string& name, const std::optional<std::string>& title) :
     _context(context),
-    _id(id)
+    _id(id),
+    _name(name),
+    _title(title)
 { }
 
 clan::clan(clan&& r) :
@@ -66,45 +68,54 @@ void clan::leave(const std::string& member)
     this->_members.erase(member);
 }
 
-const std::unordered_map<uint32_t, fb::game::character*>& clan::characters() const
+const std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>>& clan::characters() const
 {
     return this->_characters;
 }
 
-void clan::attach_character(character& ch)
+void clan::attach_character(std::weak_ptr<character> ch)
 {
-    if (this->_characters.contains(ch.id()))
+    auto shared = ch.lock();
+    if (shared == nullptr)
         return;
 
-    this->_characters.insert({ch.id(), &ch});
-}
-
-void clan::detach_character(character& ch)
-{
-    if (!this->_characters.contains(ch.id()))
+    if (this->_characters.contains(shared->id()))
         return;
 
-    this->_characters.erase(ch.id());
+    this->_characters.insert({shared->id(), ch});
 }
 
-std::vector<character*> clan::nears(const fb::game::map& map, const point16_t& position) const
+void clan::detach_character(std::weak_ptr<character> ch)
+{
+    auto shared = ch.lock();
+    if (shared == nullptr)
+        return;
+
+    if (!this->_characters.contains(shared->id()))
+        return;
+
+    this->_characters.erase(shared->id());
+}
+
+std::vector<std::shared_ptr<fb::game::character>> clan::nears(const fb::game::map& map, const point16_t& position) const
 {
     auto nears  = map.nears(position, OBJECT_TYPE::CHARACTER); // same thread
-    auto result = std::vector<character*>();
+    auto result = std::vector<std::shared_ptr<fb::game::character>>();
 
     for (auto obj : nears)
     {
         if (obj->is(OBJECT_TYPE::CHARACTER) == false)
             continue;
 
-        auto ch = static_cast<character*>(obj);
-        if (ch->clan() == nullptr)
+        auto ch = std::static_pointer_cast<fb::game::character>(obj);
+        if (ch->clan_id().has_value() == false)
             continue;
 
-        ch->clan()->read([this, ch, &result](const auto& clan) {
-            if (&clan == this)
+        auto& clan_id = ch->clan_id().value();
+        this->_context.clans.read(clan_id, [ch, clan_id, &result](const auto& clan) {
+            if (ch->clan_id() == clan_id)
                 result.push_back(ch);
-        });
+        }); // same thread
     }
 
     return result;

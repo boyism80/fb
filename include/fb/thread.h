@@ -1,6 +1,32 @@
 #ifndef __THREAD_H__
 #define __THREAD_H__
 
+/**
+ * @file    thread.h
+ * @brief   Managed thread system with asynchronous task execution and smart pointer integration
+ * @author  FB Development Team
+ *
+ * @details This file implements the core thread management system for the FB 2D MMORPG
+ *          game server. It provides managed threads that can execute asynchronous tasks,
+ *          handle timers, and safely manage thread_switchable objects through smart
+ *          pointer integration.
+ *
+ *          Key features:
+ *          - Asynchronous task execution with queue-based task management
+ *          - Comprehensive timer system with disposable and recurring timers
+ *          - Smart pointer integration for safe thread_switchable object handling
+ *          - Lua scripting integration for thread-based game logic
+ *          - Thread-safe task enqueueing with proper synchronization
+ *          - Automatic resource cleanup and proper thread lifecycle management
+ *          - Thread-local data storage for context-specific information
+ *          - Exception handling and error callback mechanisms
+ *          - Sleep functionality for timed operations and delays
+ *          - Integration with async/await coroutine patterns
+ *
+ * @note    This thread system is specifically designed for game server architecture
+ *          where thread safety, performance, and proper resource management are critical.
+ */
+
 #include <thread>
 #include <functional>
 #include <future>
@@ -20,12 +46,19 @@ namespace fb {
 class thread_container;
 
 /**
- * @brief      Asynchronous execution thread with timer and task queue support.
+ * @brief      Thread class for managing asynchronous task execution.
  *
- *             This class provides a managed thread environment for executing asynchronous
- *             tasks with built-in timer support, task queuing, and Lua integration.
- *             Each thread maintains its own timer collection and task queue for
- *             thread-safe asynchronous operations.
+ *             This class represents a managed thread that can execute tasks asynchronously.
+ *             It inherits from luable to allow Lua script interaction and provides
+ *             comprehensive task queueing, timer management, and thread switching capabilities.
+ *             The class is designed to work seamlessly with the smart pointer system,
+ *             particularly for handling thread_switchable objects.
+ *
+ *             Smart Pointer Integration:
+ *             - Safely manages thread_switchable objects through weak_ptr references
+ *             - Prevents memory leaks in asynchronous operations
+ *             - Provides type-safe task dispatching with proper lifetime management
+ *             - Integrates with the Lua binding system for safe object handling
  */
 class thread : public fb::lua::luable
 {
@@ -60,6 +93,8 @@ public:
      *
      *             Creates and starts a new managed thread for asynchronous execution.
      *             The thread will begin processing tasks and timers immediately.
+     *             Thread safety is ensured through proper mutex usage and smart pointer
+     *             management for thread_switchable objects.
      *
      * @param[in]  index  The unique identifier for this thread within the thread pool
      */
@@ -70,22 +105,30 @@ public:
      *
      *             Signals the thread to exit, waits for all pending tasks to complete,
      *             and cleans up all associated resources including timers and queued tasks.
+     *             Ensures proper cleanup of any remaining weak_ptr references to
+     *             thread_switchable objects.
      */
     ~thread();
 
     /**
      * @brief      Move constructor (deleted).
      *
-     * @param      other  The other thread to move from.
+     *             Thread objects cannot be moved as they maintain unique thread IDs
+     *             and resource ownership.
+     *
+     * @param      other  The other thread to move from
      */
     thread(thread&&) = delete;
 
     /**
      * @brief      Assignment operator (deleted).
      *
-     * @param      other  The other thread to copy from.
+     *             Thread objects cannot be copied or assigned as they maintain
+     *             unique thread IDs and resource ownership.
      *
-     * @return     Reference to this thread.
+     * @param      other  The other thread to copy from
+     *
+     * @return     Reference to this thread
      */
     thread& operator= (thread&) = delete;
 

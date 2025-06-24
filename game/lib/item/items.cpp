@@ -9,23 +9,11 @@ fb::game::items::items(fb::game::character& owner) :
 { }
 
 fb::game::items::~items()
-{
-    for (auto item : *this)
-    {
-        if (item != nullptr)
-            delete item;
-    }
+{ }
 
-    for (auto& [parts, equipment] : this->equipments())
-    {
-        if (equipment != nullptr)
-            delete equipment;
-    }
-}
-
-fb::game::equipment* fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
+std::shared_ptr<fb::game::equipment> fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
 {
-    auto equipment = (fb::game::equipment*)nullptr;
+    auto equipment = std::shared_ptr<fb::game::equipment>{nullptr};
     switch (parts)
     {
     case EQUIPMENT_PARTS::WEAPON:
@@ -87,26 +75,22 @@ fb::game::equipment* fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
     return equipment;
 }
 
-uint8_t fb::game::items::add(fb::game::item& item)
+uint8_t fb::game::items::add(std::shared_ptr<fb::game::item> item)
 {
-    return this->add(&item);
-}
-
-uint8_t fb::game::items::add(fb::game::item* item)
-{
-    auto&& result = this->add(std::vector<fb::game::item*>{item});
+    auto&& result = this->add(std::vector<std::shared_ptr<fb::game::item>>{item});
     if (result.empty())
         return 0xFF;
     else
         return result[0];
 }
 
-std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& items, bool stop_if_remained)
+std::vector<uint8_t> fb::game::items::add(const std::vector<std::shared_ptr<fb::game::item>>& items,
+                                          bool                                                stop_if_remained)
 {
     auto indices = std::vector<uint8_t>();
-    auto updates = fb::game::item::container();
+    auto updates = std::unordered_map<uint8_t, std::shared_ptr<fb::game::item>>();
 
-    for (auto item : items)
+    for (auto& item : items)
     {
         if (item == nullptr)
             continue;
@@ -129,7 +113,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
         auto& model = item->based<fb::model::item>();
         if (model.attr(ITEM_ATTRIBUTE::CASH))
         {
-            auto cash   = static_cast<fb::game::cash*>(item);
+            auto cash   = std::static_pointer_cast<fb::game::cash>(item);
             auto before = cash->value;
             auto remain = this->owner.money_add(cash->value);
             if (remain != before)
@@ -153,9 +137,9 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
             auto exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(model) : nullptr;
             if (exists != nullptr)
             {
-                exists->merge(*item);
+                exists->merge(item);
 
-                auto index = this->index(*exists);
+                auto index = this->index(exists);
                 updates.insert({index, exists});
                 indices.push_back(index);
 
@@ -170,7 +154,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
                 if (index == 0xFF)
                     break;
 
-                std::ignore = this->add(*item, index);
+                std::ignore = this->add(item, index);
 
                 if (item->_map != nullptr)
                     std::ignore = item->map(nullptr);
@@ -183,50 +167,52 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
     return std::ref(indices);
 }
 
-uint8_t fb::game::items::add(fb::game::item& item, uint8_t index)
+uint8_t fb::game::items::add(std::shared_ptr<fb::game::item> item, uint8_t index)
 {
-    if (fb::game::inventory<fb::game::item>::add(item, index) == 0xFF)
+    if (super::add(item, index) == 0xFF)
         return 0xFF;
 
-    item._container = this;
-    item._death_cid = std::nullopt;
-    if (item.empty() == false)
-        this->owner.listener.on_item_update(static_cast<character&>(this->owner), index);
+    item->container(this);
+    item->death_cid(std::nullopt);
+    if (item->empty() == false)
+        this->owner.listener.on_item_update(this->owner, index);
 
     return index;
 }
 
-bool fb::game::items::store(fb::game::item& item)
+bool fb::game::items::store(std::shared_ptr<fb::game::item> item)
 {
     this->owner.assert_thread();
 
-    if (item.based<fb::model::item>().attr(ITEM_ATTRIBUTE::BUNDLE))
+    if (item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::BUNDLE))
     {
-        auto found = std::find_if(this->_stored.begin(), this->_stored.end(), [&item](auto* stored) {
-            auto& model = stored->template based<fb::model::item>();
-            return item.based<fb::model::item>() == model;
-        });
+        auto found = std::find_if(this->_stored.begin(),
+                                  this->_stored.end(),
+                                  [&item](const std::shared_ptr<fb::game::item>& stored) {
+                                      auto& model = stored->template based<fb::model::item>();
+                                      return item->based<fb::model::item>() == model;
+                                  });
 
         if (found == this->_stored.end())
         {
-            this->_stored.push_back(&item);
+            this->_stored.push_back(item);
         }
         else
         {
             auto stored   = *found;
             auto capacity = 0xFFFF - stored->count();
-            if (item.count() > capacity)
+            if (item->count() > capacity)
                 return false;
 
-            stored->count(stored->count() + item.count());
+            stored->count(stored->count() + item->count());
         }
     }
     else
     {
-        this->_stored.push_back(&item);
+        this->_stored.push_back(item);
     }
 
-    item._container = this;
+    item->container(this);
     return true;
 }
 
@@ -241,8 +227,8 @@ bool fb::game::items::store(uint8_t index, uint16_t count)
     if (item->count() < count)
         return false;
 
-    auto deleted = this->remove(*item, count, ITEM_DELETE_TYPE::NONE, false);
-    auto result  = this->store(*deleted);
+    auto deleted = this->remove(item, count, ITEM_DELETE_TYPE::NONE, false);
+    auto result  = this->store(deleted);
     if (result == false)
         this->add(deleted);
 
@@ -257,35 +243,33 @@ bool fb::game::items::store(const std::string& name, uint16_t count)
     if (item == nullptr)
         return false;
 
-    auto index = this->index(*item);
+    auto index = this->index(item);
     if (index == 0xFF)
         return false;
 
     return this->store(index, count);
 }
 
-item* fb::game::items::stored(const fb::model::item& item) const
+std::shared_ptr<fb::game::item> fb::game::items::stored(const fb::model::item& item) const
 {
     this->owner.assert_thread();
 
-    auto found = std::find_if(this->_stored.cbegin(), this->_stored.cend(), [&item](auto* stored) {
-        return stored->template based<fb::model::item>() == item;
-    });
-
-    if (found == this->_stored.cend())
-        return nullptr;
-
-    return *found;
+    for (const auto& stored : this->_stored)
+    {
+        if (stored->template based<fb::model::item>() == item)
+            return stored;
+    }
+    return nullptr;
 }
 
-const std::vector<item*>& fb::game::items::stored() const
+const std::vector<std::shared_ptr<fb::game::item>>& fb::game::items::stored() const
 {
     this->owner.assert_thread();
 
     return this->_stored;
 }
 
-item* fb::game::items::retrieve(uint8_t index, uint16_t count)
+std::shared_ptr<fb::game::item> fb::game::items::retrieve(uint8_t index, uint16_t count)
 {
     this->owner.assert_thread();
 
@@ -331,37 +315,31 @@ item* fb::game::items::retrieve(uint8_t index, uint16_t count)
     }
 }
 
-item* fb::game::items::retrieve(const std::string& name, uint16_t count)
+std::shared_ptr<fb::game::item> fb::game::items::retrieve(const std::string& name, uint16_t count)
 {
 
     this->owner.assert_thread();
 
-    auto found = std::find_if(this->_stored.begin(), this->_stored.end(), [&name](auto* stored) {
-        auto& model = stored->template based<fb::model::item>();
-        return model.name == name;
-    });
-
-    if (found == this->_stored.end())
-        return nullptr;
-
-    auto index = std::distance(this->_stored.begin(), found);
-    return this->retrieve((uint8_t)index, count);
+    for (size_t i = 0; i < this->_stored.size(); ++i)
+    {
+        auto& model = this->_stored[i]->template based<fb::model::item>();
+        if (model.name == name)
+            return this->retrieve(static_cast<uint8_t>(i), count);
+    }
+    return nullptr;
 }
 
-item* fb::game::items::retrieve(const fb::model::item& item, uint16_t count)
+std::shared_ptr<fb::game::item> fb::game::items::retrieve(const fb::model::item& item, uint16_t count)
 {
     this->owner.assert_thread();
 
-    auto found = std::find_if(this->_stored.begin(), this->_stored.end(), [&item](auto* stored) {
-        auto& model = stored->template based<fb::model::item>();
-        return model == item;
-    });
-
-    if (found == this->_stored.end())
-        return nullptr;
-
-    auto index = std::distance(this->_stored.begin(), found);
-    return this->retrieve((uint8_t)index, count);
+    for (size_t i = 0; i < this->_stored.size(); ++i)
+    {
+        auto& model = this->_stored[i]->template based<fb::model::item>();
+        if (model == item)
+            return this->retrieve(static_cast<uint8_t>(i), count);
+    }
+    return nullptr;
 }
 
 uint32_t fb::game::items::deposited() const
@@ -415,10 +393,8 @@ uint32_t fb::game::items::withdraw(uint32_t value)
     return lack;
 }
 
-fb::game::item* fb::game::items::active(uint8_t index)
+std::shared_ptr<fb::game::item> fb::game::items::active(uint8_t index)
 {
-    auto& context = this->owner.context;
-
     try
     {
         this->owner.assert_state({STATE::RIDING, STATE::GHOST});
@@ -427,11 +403,11 @@ fb::game::item* fb::game::items::active(uint8_t index)
         if (item == nullptr)
             return nullptr;
 
+        auto weak = item->weak_from_this_as<fb::game::item>();
         item->active();
-        if (context.alive(*item) == false)
-        {
+        if (weak.lock() == nullptr)
             return nullptr;
-        }
+
         if (item->empty())
         {
             std::ignore = item->destroy();
@@ -462,7 +438,7 @@ uint8_t fb::game::items::inactive(EQUIPMENT_PARTS parts)
     return slot;
 }
 
-uint8_t fb::game::items::index(const fb::model::item& item) const
+uint8_t fb::game::items::index(const fb::model::item& model) const
 {
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -471,26 +447,26 @@ uint8_t fb::game::items::index(const fb::model::item& item) const
         if (now == nullptr)
             continue;
 
-        if (now->based<fb::model::item>() == item)
+        if (now->based<fb::model::item>() == model)
             return i;
     }
 
     return 0xFF;
 }
 
-uint8_t fb::game::items::index(const fb::game::item& item) const
+uint8_t fb::game::items::index(const std::shared_ptr<fb::game::item>& item) const
 {
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto now = this->at(i);
-        if (now == &item)
+        if (now == item)
             return i;
     }
 
     return 0xFF;
 }
 
-std::vector<uint8_t> fb::game::items::index_all(const fb::model::item& item) const
+std::vector<uint8_t> fb::game::items::index_all(const std::shared_ptr<fb::game::item>& item) const
 {
     auto result = std::vector<uint8_t>();
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
@@ -500,7 +476,7 @@ std::vector<uint8_t> fb::game::items::index_all(const fb::model::item& item) con
         if (now == nullptr)
             continue;
 
-        if (now->based<fb::model::item>() == item)
+        if (now->based<fb::model::item>() == item->based<fb::model::item>())
             result.push_back(i);
     }
 
@@ -521,48 +497,51 @@ bool fb::game::items::update(uint8_t index) const
     return true;
 }
 
-fb::game::equipment* fb::game::items::wear(EQUIPMENT_PARTS parts, fb::game::equipment* item)
+std::shared_ptr<fb::game::equipment> fb::game::items::wear(EQUIPMENT_PARTS                      parts,
+                                                           std::shared_ptr<fb::game::equipment> item)
 {
     if (item != nullptr)
-        item->_container = this;
+        item->container(this);
 
     switch (parts) // EQUIPMENT_PARTS
     {
     case EQUIPMENT_PARTS::WEAPON:
-        return this->owner.items.weapon(static_cast<fb::game::weapon*>(item));
+        return this->owner.items.weapon(std::static_pointer_cast<fb::game::weapon>(item));
 
     case EQUIPMENT_PARTS::ARMOR:
-        return this->owner.items.armor(static_cast<fb::game::armor*>(item));
+        return this->owner.items.armor(std::static_pointer_cast<fb::game::armor>(item));
 
     case EQUIPMENT_PARTS::SHIELD:
-        return this->owner.items.shield(static_cast<fb::game::shield*>(item));
+        return this->owner.items.shield(std::static_pointer_cast<fb::game::shield>(item));
 
     case EQUIPMENT_PARTS::HELMET:
-        return this->owner.items.helmet(static_cast<fb::game::helmet*>(item));
+        return this->owner.items.helmet(std::static_pointer_cast<fb::game::helmet>(item));
 
     case EQUIPMENT_PARTS::LEFT_HAND:
-        return this->owner.items.ring(static_cast<fb::game::ring*>(item), EQUIPMENT_POSITION::LEFT);
+        return this->owner.items.ring(std::static_pointer_cast<fb::game::ring>(item), EQUIPMENT_POSITION::LEFT);
 
     case EQUIPMENT_PARTS::RIGHT_HAND:
-        return this->owner.items.ring(static_cast<fb::game::ring*>(item), EQUIPMENT_POSITION::RIGHT);
+        return this->owner.items.ring(std::static_pointer_cast<fb::game::ring>(item), EQUIPMENT_POSITION::RIGHT);
 
     case EQUIPMENT_PARTS::LEFT_AUX:
-        return this->owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), EQUIPMENT_POSITION::LEFT);
+        return this->owner.items.auxiliary(std::static_pointer_cast<fb::game::auxiliary>(item),
+                                           EQUIPMENT_POSITION::LEFT);
 
     case EQUIPMENT_PARTS::RIGHT_AUX:
-        return this->owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), EQUIPMENT_POSITION::RIGHT);
+        return this->owner.items.auxiliary(std::static_pointer_cast<fb::game::auxiliary>(item),
+                                           EQUIPMENT_POSITION::RIGHT);
 
     default:
         throw std::runtime_error("invalid equipment parts");
     }
 }
 
-fb::game::weapon* fb::game::items::weapon() const
+std::shared_ptr<fb::game::weapon> fb::game::items::weapon() const
 {
     return this->_weapon;
 }
 
-fb::game::weapon* fb::game::items::weapon(fb::game::weapon* weapon)
+std::shared_ptr<fb::game::weapon> fb::game::items::weapon(std::shared_ptr<fb::game::weapon> weapon)
 {
     auto before = this->_weapon;
 
@@ -571,12 +550,12 @@ fb::game::weapon* fb::game::items::weapon(fb::game::weapon* weapon)
     return before;
 }
 
-fb::game::armor* fb::game::items::armor() const
+std::shared_ptr<fb::game::armor> fb::game::items::armor() const
 {
     return this->_armor;
 }
 
-fb::game::armor* fb::game::items::armor(fb::game::armor* armor)
+std::shared_ptr<fb::game::armor> fb::game::items::armor(std::shared_ptr<fb::game::armor> armor)
 {
     auto before = this->_armor;
 
@@ -586,14 +565,14 @@ fb::game::armor* fb::game::items::armor(fb::game::armor* armor)
     return before;
 }
 
-fb::game::shield* fb::game::items::shield() const
+std::shared_ptr<fb::game::shield> fb::game::items::shield() const
 {
     return this->_shield;
 }
 
-fb::game::shield* fb::game::items::shield(fb::game::shield* shield)
+std::shared_ptr<fb::game::shield> fb::game::items::shield(std::shared_ptr<fb::game::shield> shield)
 {
-    fb::game::shield* before = this->_shield;
+    auto before = this->_shield;
 
     this->_shield = shield;
     this->owner.update_external(true);
@@ -601,14 +580,14 @@ fb::game::shield* fb::game::items::shield(fb::game::shield* shield)
     return before;
 }
 
-fb::game::helmet* fb::game::items::helmet() const
+std::shared_ptr<fb::game::helmet> fb::game::items::helmet() const
 {
     return this->_helmet;
 }
 
-fb::game::helmet* fb::game::items::helmet(fb::game::helmet* helmet)
+std::shared_ptr<fb::game::helmet> fb::game::items::helmet(std::shared_ptr<fb::game::helmet> helmet)
 {
-    fb::game::helmet* before = this->_helmet;
+    auto before = this->_helmet;
 
     this->_helmet = helmet;
     this->owner.update_external(true);
@@ -616,14 +595,14 @@ fb::game::helmet* fb::game::items::helmet(fb::game::helmet* helmet)
     return before;
 }
 
-fb::game::ring* fb::game::items::ring(EQUIPMENT_POSITION position) const
+std::shared_ptr<fb::game::ring> fb::game::items::ring(EQUIPMENT_POSITION position) const
 {
     return this->_rings[static_cast<int>(position)];
 }
 
-fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
+std::shared_ptr<fb::game::ring> fb::game::items::ring(std::shared_ptr<fb::game::ring> ring)
 {
-    fb::game::ring* before = nullptr;
+    std::shared_ptr<fb::game::ring> before = nullptr;
 
     if (this->_rings[static_cast<int>(EQUIPMENT_POSITION::LEFT)] == nullptr)
     {
@@ -636,23 +615,24 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
     return before;
 }
 
-fb::game::ring* fb::game::items::ring(fb::game::ring* ring, EQUIPMENT_POSITION position)
+std::shared_ptr<fb::game::ring> fb::game::items::ring(std::shared_ptr<fb::game::ring> ring, EQUIPMENT_POSITION position)
 {
-    auto before                              = this->_rings[static_cast<int>(position)];
+    auto before = this->_rings[static_cast<int>(position)];
+
     this->_rings[static_cast<int>(position)] = ring;
     this->owner.update_external(true);
 
     return before;
 }
 
-fb::game::auxiliary* fb::game::items::auxiliary(EQUIPMENT_POSITION position) const
+std::shared_ptr<fb::game::auxiliary> fb::game::items::auxiliary(EQUIPMENT_POSITION position) const
 {
     return this->_auxiliaries[static_cast<int>(position)];
 }
 
-fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
+std::shared_ptr<fb::game::auxiliary> fb::game::items::auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary)
 {
-    fb::game::auxiliary* before = nullptr;
+    std::shared_ptr<fb::game::auxiliary> before = nullptr;
 
     if (this->_auxiliaries[static_cast<int>(EQUIPMENT_POSITION::LEFT)] == nullptr)
     {
@@ -666,7 +646,8 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
     return before;
 }
 
-fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary, EQUIPMENT_POSITION position)
+std::shared_ptr<fb::game::auxiliary> fb::game::items::auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary,
+                                                                EQUIPMENT_POSITION                   position)
 {
     auto before                                    = this->_auxiliaries[static_cast<int>(position)];
     this->_auxiliaries[static_cast<int>(position)] = auxiliary;
@@ -675,7 +656,7 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary, 
     return before;
 }
 
-fb::game::item* fb::game::items::find(const std::string& name) const
+std::shared_ptr<fb::game::item> fb::game::items::find(const std::string& name) const
 {
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -685,13 +666,13 @@ fb::game::item* fb::game::items::find(const std::string& name) const
 
         auto& model = item->based<fb::model::item>();
         if (model.name == name)
-            return item;
+            return std::static_pointer_cast<fb::game::item>(item);
     }
 
     return nullptr;
 }
 
-fb::game::item* fb::game::items::find(const fb::model::item& model) const
+std::shared_ptr<fb::game::item> fb::game::items::find(const fb::model::item& model) const
 {
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -700,7 +681,7 @@ fb::game::item* fb::game::items::find(const fb::model::item& model) const
             continue;
 
         if (item->based<fb::model::item>() == model)
-            return item;
+            return std::static_pointer_cast<fb::game::item>(item);
     }
 
     for (auto& [parts, equipment] : this->equipments())
@@ -709,21 +690,22 @@ fb::game::item* fb::game::items::find(const fb::model::item& model) const
             continue;
 
         if (equipment->based<fb::model::item>() == model)
-            return equipment;
+            return std::static_pointer_cast<fb::game::item>(equipment);
     }
 
     return nullptr;
 }
 
-fb::game::item* fb::game::items::find_bundle(const fb::model::item& model) const
+std::shared_ptr<fb::game::item> fb::game::items::find_bundle(const fb::model::item& model) const
 {
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
         return nullptr;
 
-    return this->find(model);
+    return std::static_pointer_cast<fb::game::item>(this->find(model));
 }
 
-fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
+std::shared_ptr<fb::game::item>
+fb::game::items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
 {
 
     try
@@ -739,7 +721,7 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count, bool action,
         if (model.trade == false)
             throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_CANNOT_DROP_ITEM));
 
-        auto dropped = this->remove(*item, count, delete_type);
+        auto dropped = this->remove(item, count, delete_type);
         if (dropped != nullptr)
         {
             std::ignore = dropped->map(this->owner.map(), this->owner.position());
@@ -781,9 +763,9 @@ void fb::game::items::pickup(bool boost)
         this->owner.action(ACTION::PICKUP, DURATION::PICKUP);
 
         // Pick up items in reverse order
-        auto belows = std::vector<fb::game::item*>();
+        auto belows = std::vector<std::shared_ptr<fb::game::item>>();
         for (auto below : map->belows(this->owner.position(), OBJECT_TYPE::ITEM))
-            belows.push_back(static_cast<fb::game::item*>(below));
+            belows.push_back(std::static_pointer_cast<fb::game::item>(below));
 
         if (belows.size() == 0)
         {
@@ -843,7 +825,8 @@ bool fb::game::items::throws(uint8_t index)
     return false;
 }
 
-fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
+std::shared_ptr<fb::game::item>
+fb::game::items::remove(uint8_t index, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
 {
     auto item = this->at(index);
     if (item == nullptr)
@@ -864,7 +847,8 @@ fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, ITEM_DELE
     return splitted;
 }
 
-fb::game::item* fb::game::items::remove(fb::game::item& item, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
+std::shared_ptr<fb::game::item>
+fb::game::items::remove(std::shared_ptr<fb::game::item> item, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
 {
     auto index = this->index(item);
     if (index == 0xFF)
@@ -894,9 +878,9 @@ bool fb::game::items::swap(uint8_t src, uint8_t dst)
     return true;
 }
 
-std::map<EQUIPMENT_PARTS, fb::game::equipment*> fb::game::items::equipments() const
+std::map<EQUIPMENT_PARTS, std::shared_ptr<fb::game::equipment>> fb::game::items::equipments() const
 {
-    return std::map<EQUIPMENT_PARTS, equipment*>{
+    return std::map<EQUIPMENT_PARTS, std::shared_ptr<fb::game::equipment>>{
         {EQUIPMENT_PARTS::WEAPON,     _weapon                                                  },
         {EQUIPMENT_PARTS::ARMOR,      _armor                                                   },
         {EQUIPMENT_PARTS::SHIELD,     _shield                                                  },

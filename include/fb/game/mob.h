@@ -1,6 +1,32 @@
 #ifndef __MOB_H__
 #define __MOB_H__
 
+/**
+ * @file    mob.h
+ * @brief   Monster and hostile NPC system for the FB 2D MMORPG game server
+ * @author  FB Development Team
+ *
+ * @details This file implements the monster (mob) system that handles all computer-controlled
+ *          hostile entities in the game world. Mobs are AI-driven creatures that can attack
+ *          players, drop items when defeated, and are managed by an automatic respawn system
+ *          to maintain proper game world population.
+ *
+ *          Key features:
+ *          - AI-driven behavior system with target acquisition and combat logic
+ *          - Comprehensive respawn (rezen) system for automatic mob population management
+ *          - Item dropping system with configurable loot tables and drop rates
+ *          - Owner-based mob spawning system for player summons and pets
+ *          - Lua scripting integration for custom AI behaviors and special abilities
+ *          - Thread-safe operations with proper thread assertion and management
+ *          - Complete stat system with base values and temporary buff modifications
+ *          - Target tracking and oblivion (last attacker) system for AI decision making
+ *          - Visibility and hiding mechanics for stealth and special encounter mobs
+ *          - Integration with the life entity system for combat and spell interactions
+ *
+ * @note    Mobs are the primary source of PvE content and provide challenges,
+ *          rewards, and dynamic gameplay experiences throughout the game world.
+ */
+
 #include <fb/game/life.h>
 #include <fb/game/item.h>
 
@@ -116,14 +142,14 @@ public:
     public:
         const bool             alive = false;   ///< Whether the mob should spawn alive
         fb::game::rezen* const rezen = nullptr; ///< The respawn manager for this mob
-        fb::game::character*   owner = nullptr; ///< The character that owns this mob (for summons)
+        character*             owner = nullptr; ///< The character that owns this mob (for summons)
     };
 
 private:
     fb::model::datetime _action_time;
+    std::weak_ptr<life> _target;
+    std::weak_ptr<life> _oblivion;
     rezen*              _rezen         = nullptr;
-    life*               _target        = nullptr;
-    life*               _oblivion      = nullptr;
     lua::context*       _attack_thread = nullptr;
     uint32_t            _buff_hp       = 0;
     uint32_t            _buff_mp       = 0;
@@ -136,11 +162,10 @@ private:
     uint8_t             _buff_hit      = 0;
     std::vector<item*>  _items;
     bool                _hidden = false;
-    character*          _owner  = nullptr;
     std::unique_ptr<ai> _ai_strategy;
 
 public:
-    character* const owner = nullptr;
+    const std::weak_ptr<character> owner;
 
 public:
     mob::listener_t& listener;
@@ -186,7 +211,7 @@ private:
      *
      * @return     Pointer to the selected target, or nullptr if no target found.
      */
-    fb::game::life* find_target();
+    std::weak_ptr<fb::game::life> find_target();
 
     /**
      * @brief      Executes the mob's Lua AI script asynchronously.
@@ -220,7 +245,7 @@ public:
      *
      * @return     True if the mob is adjacent to the target, false otherwise.
      */
-    bool near_target(const fb::game::life& target, DIRECTION& out) const;
+    bool near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const;
 
     /**
      * @brief      Attempts to move the mob one step toward the specified position.
@@ -486,35 +511,35 @@ public:
      *
      * @return  Valid target pointer, nullptr if target is invalid or non-existent
      */
-    life* target() const;
+    std::shared_ptr<fb::game::life> target() const;
 
     /**
      * @brief   Sets the current target for this mob
      *
      * @param[in]  value  New target to set, can be nullptr to clear target
      */
-    void target(life* value);
+    void target(std::shared_ptr<fb::game::life> value);
 
     /**
      * @brief      Gets the mob's oblivion target (last attacker).
      *
      * @return     Pointer to the life entity that last attacked this mob
      */
-    fb::game::life* oblivion() const;
+    std::shared_ptr<fb::game::life> oblivion() const;
 
     /**
      * @brief      Sets the mob's oblivion target (last attacker).
      *
      * @param      value  The life entity that attacked this mob
      */
-    void oblivion(fb::game::life* value);
+    void oblivion(std::shared_ptr<fb::game::life> value);
 
     /**
      * @brief      Updates and returns the mob's current target.
      *
      * @return     Pointer to the updated target, or nullptr if no valid target
      */
-    fb::game::life* update_target();
+    std::shared_ptr<fb::game::life> update_target();
 
     /**
      * @brief      Checks if the mob is available for actions.
@@ -545,7 +570,9 @@ public:
      *
      * @return     The actual damage dealt after defense calculations.
      */
-    uint32_t damage(uint32_t value, fb::game::object* from = nullptr, bool critical = false) override final;
+    uint32_t damage(uint32_t                          value,
+                    std::shared_ptr<fb::game::object> from     = nullptr,
+                    bool                              critical = false) override final;
 
     /**
      * @brief      Kills the mob and handles death processing.
@@ -556,7 +583,8 @@ public:
      * @param      from          The object that caused the death (optional).
      * @param[in]  destroy_type  The type of destruction (normal, admin, etc.).
      */
-    void kill(fb::game::object* from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    void kill(std::shared_ptr<fb::game::object> from         = nullptr,
+              DESTROY_TYPE                      destroy_type = DESTROY_TYPE::DEFAULT) override final;
 
     /**
      * @brief      Drops items when the mob dies.
@@ -603,7 +631,7 @@ public:
      *
      * @return     True if this mob is hidden from the target, false otherwise
      */
-    bool hidden(const object& target) const override final;
+    bool hidden(const fb::game::object& target) const override final;
 
     /**
      * @brief      Sets the mob's hidden state.

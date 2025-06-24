@@ -1,6 +1,33 @@
 #ifndef __FB_STREAM_H__
 #define __FB_STREAM_H__
 
+/**
+ * @file    stream.h
+ * @brief   Binary data stream with compression and checksum capabilities
+ * @author  FB Development Team
+ *
+ * @details This file implements a binary data stream class that extends std::vector<uint8_t>
+ *          to provide specialized functionality for handling binary data in the FB 2D MMORPG
+ *          server. The stream supports compression, decompression, and integrity checking
+ *          capabilities essential for network communication and data storage.
+ *
+ *          Key features:
+ *          - Binary data stream based on std::vector<uint8_t> for efficient memory management
+ *          - zlib compression and decompression support for data size optimization
+ *          - CRC32 checksum calculation for data integrity verification
+ *          - Multiple construction methods for flexible data initialization
+ *          - Move semantics support for efficient data transfer without copying
+ *          - Exception-safe operations with proper error handling
+ *          - Cross-platform compatibility with appropriate header inclusions
+ *          - Integration with the logging system for error reporting
+ *          - Memory-efficient data handling for large binary payloads
+ *          - Support for protocol data serialization and network transmission
+ *
+ * @note    This stream class is fundamental to the server's data handling infrastructure,
+ *          providing the foundation for protocol serialization, network communication,
+ *          and data storage operations throughout the FB 2D MMORPG server.
+ */
+
 #include <stdexcept>
 #include <vector>
 #include <zlib.h>

@@ -66,7 +66,7 @@ void listener_impl::on_update_external(object& me, bool light)
             if (me.hidden(*obj))
                 continue;
 
-            auto you = static_cast<character*>(obj);
+            auto you = std::static_pointer_cast<fb::game::character>(obj);
             you->send(fb_resp::update_external(static_cast<character&>(me), *you, light));
         }
     }
@@ -184,4 +184,32 @@ void listener_impl::on_sound(object& me, SOUND sound)
 void listener_impl::on_effect(object& me, uint8_t value)
 {
     this->context.send(me, fb_resp::effect(me, value), scope::PIVOT);
+}
+
+void listener_impl::on_map_leave(object& me, const fb::game::map& map)
+{
+    if (me.is(OBJECT_TYPE::CHARACTER))
+    {
+        auto& ch     = static_cast<character&>(me);
+        auto  thread = map.thread();
+        if (thread != nullptr)
+        {
+            auto params = thread->template data<thread_params>();
+            params->characters.erase(ch.id());
+        }
+    }
+}
+
+void listener_impl::on_map_enter(object& me, const fb::game::map& map)
+{
+    if (me.is(OBJECT_TYPE::CHARACTER))
+    {
+        auto& ch     = static_cast<character&>(me);
+        auto  thread = map.thread();
+        if (thread != nullptr)
+        {
+            auto params = thread->template data<thread_params>();
+            params->characters.insert({ch.id(), ch.shared_from_this_as<character>()});
+        }
+    }
 }

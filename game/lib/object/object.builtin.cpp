@@ -28,7 +28,6 @@ IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
 {"front",               object::builtin::builtin_front},
 {"is",                  object::builtin::builtin_is},
 {"thread",              object::builtin::builtin_thread},
-{"ptr",                 object::builtin::builtin_ptr},
 {"near",                object::builtin::builtin_near},
 {"hidden",              object::builtin::builtin_hidden},
 END_LUA_EXTENSION; // clang-format on
@@ -41,7 +40,7 @@ int object::builtin::builtin_model(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto obj = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     obj->assert_thread();
@@ -59,7 +58,7 @@ int object::builtin::builtin_id(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto obj = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     obj->assert_thread();
@@ -114,7 +113,7 @@ int object::builtin::builtin_name(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto obj = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     obj->assert_thread();
@@ -131,13 +130,14 @@ int object::builtin::builtin_sound(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto obj = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     auto sound = static_cast<SOUND>(lua->tointeger(2));
-    return lua->ensure_yield(*ctx, *obj, [=]() {
+    auto weak  = obj->weak_from_this_as<object>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         obj->sound(sound);
-        return lua->ensure_resume(*ctx, *obj, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
         });
     });
@@ -152,15 +152,16 @@ int object::builtin::builtin_position(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *obj, [=]() {
+        auto weak = obj->weak_from_this_as<object>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             lua->pushinteger(obj->_position.x);
             lua->pushinteger(obj->_position.y);
-            return lua->ensure_resume(*ctx, *obj, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 2;
             });
         });
@@ -184,9 +185,10 @@ int object::builtin::builtin_position(lua_State* L)
             y = (uint16_t)lua->tointeger(3);
         }
 
-        return lua->ensure_yield(*ctx, *obj, [=]() {
+        auto weak = obj->weak_from_this_as<object>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             obj->position(x, y, true);
-            return lua->ensure_resume(*ctx, *obj, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -202,15 +204,16 @@ int object::builtin::builtin_front_position(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     auto step = lua->tointeger(2, 1);
     obj->assert_thread();
 
-    return lua->ensure_yield(*ctx, *obj, [=]() {
+    auto weak = obj->weak_from_this_as<object>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto position = obj->front_position(step);
-        return lua->ensure_resume(*ctx, *obj, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushinteger(position.x);
             lua->pushinteger(position.y);
             return 2;
@@ -227,14 +230,15 @@ int object::builtin::builtin_direction(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *obj, [=]() {
+        auto weak = obj->weak_from_this_as<object>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto direction = obj->_direction;
-            return lua->ensure_resume(*ctx, *obj, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(direction);
                 return 1;
             });
@@ -243,9 +247,10 @@ int object::builtin::builtin_direction(lua_State* L)
     else
     {
         auto direction = static_cast<DIRECTION>(lua->tointeger(2));
-        return lua->ensure_yield(*ctx, *obj, [=]() {
+        auto weak      = obj->weak_from_this_as<object>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             obj->direction(direction);
-            return lua->ensure_resume(*ctx, *obj, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
             });
         });
@@ -261,17 +266,18 @@ int object::builtin::builtin_chat(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     auto message  = lua->tostring(2);
     auto type     = lua->toenum(3, CHAT_TYPE::NORMAL);
     auto decorate = lua->toboolean(4, true);
 
-    return lua->ensure_yield(*ctx, *obj, [=]() {
+    auto weak = obj->weak_from_this_as<object>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         if (obj->is(OBJECT_TYPE::ITEM) == false)
             obj->chat(message, type, decorate);
-        return lua->ensure_resume(*ctx, *obj, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
         });
     });
@@ -286,10 +292,7 @@ int object::builtin::builtin_buff(lua_State* L)
     auto argc = lua->argc();
     auto ctx  = lua->env<fb::game::context>("context");
     auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
-        return 0;
-
-    if (ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     const fb::model::spell* model = nullptr;
@@ -329,7 +332,7 @@ int object::builtin::builtin_unbuff(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto obj = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     obj->assert_thread();
@@ -375,7 +378,7 @@ int object::builtin::builtin_isbuff(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto obj = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     obj->assert_thread();
@@ -436,13 +439,14 @@ int object::builtin::builtin_effect(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto obj = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     auto effect = static_cast<uint8_t>(lua->tointeger(2));
-    return lua->ensure_yield(*ctx, *obj, [=]() {
+    auto weak   = obj->weak_from_this_as<object>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         obj->effect(effect);
-        return lua->ensure_resume(*ctx, *obj, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
         });
     });
@@ -457,10 +461,10 @@ int object::builtin::builtin_map(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
-    auto map      = (fb::game::map*)nullptr;
+    auto map      = std::shared_ptr<fb::game::map>(nullptr);
     auto position = std::optional<fb::model::point16_t>{};
     if (argc > 1)
     {
@@ -472,13 +476,13 @@ int object::builtin::builtin_map(lua_State* L)
         {
             auto model = lua->touserdata<fb::model::map>(2);
             if (ctx->maps.contains(model->id))
-                map = &ctx->maps[model->id];
+                map = ctx->maps[model->id];
         }
         else if (lua->is_number(2))
         {
             auto id = lua->tointeger(2);
             if (ctx->maps.contains(id))
-                map = &ctx->maps[id];
+                map = ctx->maps[id];
         }
         else if (lua->is_string(2))
         {
@@ -517,19 +521,25 @@ int object::builtin::builtin_map(lua_State* L)
         }
     }
 
-    static auto static_func =
-        [](object* obj, fb::game::map* map, const std::optional<fb::model::point16_t>& position) -> async::task<bool> {
+    static auto static_func = [](std::weak_ptr<object>                      weak,
+                                 std::shared_ptr<fb::game::map>             map,
+                                 const std::optional<fb::model::point16_t>& position) -> async::task<bool> {
+        auto shared = weak.lock();
+        if (shared == nullptr)
+            co_return false;
+
         if (position.has_value())
-            co_return co_await obj->map(map, position.value());
+            co_return co_await shared->map(map, position.value());
         else
-            co_return co_await obj->map(map);
+            co_return co_await shared->map(map);
     };
 
     if (argc == 1)
     {
-        return lua->ensure_yield(*ctx, *obj, [=]() {
+        auto weak = obj->weak_from_this_as<object>();
+        return lua->ensure_yield(*ctx, weak, [=]() {
             auto map = obj->map();
-            return lua->ensure_resume(*ctx, *obj, [=]() {
+            return lua->ensure_resume(*ctx, weak, [=]() {
                 if (map == nullptr)
                     lua->pushnil();
                 else
@@ -540,12 +550,13 @@ int object::builtin::builtin_map(lua_State* L)
     }
     else
     {
-        ctx->threads.enqueue(*obj, [=](auto& thread) -> async::task<void> {
-            async::awaitable_then(static_func(obj, map, position), [=](auto result) {
+        auto weak = obj->weak_from_this_as<object>();
+        ctx->threads.enqueue(weak, [=](auto& thread) -> async::task<void> {
+            async::awaitable_then(static_func(weak, map, position), [=](auto result) {
                 auto success = result();
                 lua->ensure_resume(
                     *ctx,
-                    *obj,
+                    weak,
                     [=]() {
                         lua->pushboolean(success);
                         return 1;
@@ -567,7 +578,7 @@ int object::builtin::builtin_mkitem(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto obj = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     obj->assert_thread();
@@ -599,7 +610,7 @@ int object::builtin::builtin_sight_in(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     obj->assert_thread();
@@ -627,7 +638,7 @@ int object::builtin::builtin_nears(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     obj->assert_thread();
@@ -735,7 +746,7 @@ int object::builtin::builtin_front(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     obj->assert_thread();
@@ -759,12 +770,13 @@ int object::builtin::builtin_is(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
-    return lua->ensure_yield(*ctx, *obj, [=]() {
+    auto weak = obj->weak_from_this_as<object>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
         auto type = lua->tointeger(2);
-        return lua->ensure_resume(*ctx, *obj, [=]() {
+        return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushboolean(obj->is(OBJECT_TYPE(type)));
             return 1;
         });
@@ -780,7 +792,7 @@ int object::builtin::builtin_thread(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     obj->assert_thread();
@@ -794,23 +806,6 @@ int object::builtin::builtin_thread(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_ptr(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ctx  = lua->env<fb::game::context>("context");
-    auto argc = lua->argc();
-    auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
-        return 0;
-
-    obj->assert_thread();
-    lua->pushinteger((uint64_t)(void*)obj);
-    return 1;
-}
-
 int object::builtin::builtin_near(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -820,7 +815,7 @@ int object::builtin::builtin_near(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto obj  = lua->touserdata<object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     obj->assert_thread();
@@ -853,7 +848,7 @@ int object::builtin::builtin_buffs(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto obj = lua->touserdata<fb::game::object>(1);
-    if (obj == nullptr || ctx->alive(*obj) == false)
+    if (obj == nullptr)
         return 0;
 
     lua->new_table();
@@ -878,11 +873,11 @@ int object::builtin::builtin_hidden(lua_State* L)
 
     auto ctx = lua->env<fb::game::context>("context");
     auto me  = lua->touserdata<fb::game::object>(1);
-    if (me == nullptr || ctx->alive(*me) == false)
+    if (me == nullptr)
         return 0;
 
     auto you = lua->touserdata<fb::game::object>(2);
-    if (you == nullptr || ctx->alive(*you) == false)
+    if (you == nullptr)
         return 0;
 
     lua->pushboolean(me->hidden(*you));

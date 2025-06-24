@@ -1,4 +1,7 @@
 #include <fb/game/protocol/character/external_info.h>
+#ifndef BOT
+#include <fb/game/context.h>
+#endif
 
 namespace fb::protocol::game::response {
 
@@ -16,18 +19,18 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
     writer.write<uint8_t>(header);
     writer.write<std::string>(this->ch.title());
 
-    auto& clan_lock = this->ch.clan();
-    if (clan_lock == nullptr)
+    auto& clan_id = this->ch.clan_id();
+    if (clan_id.has_value())
     {
-        writer.write<std::string>("");
-        writer.write<std::string>("");
+        this->ch.context.clans.read(clan_id.value(), [&writer](auto& clan) {
+            writer.write<std::string>(clan->name());
+            writer.write<std::string>(clan->title().value_or(""));
+        });
     }
     else
     {
-        clan_lock->read([&writer](auto& clan) {
-            writer.write<std::string>(clan.name());
-            writer.write<std::string>(clan.title().value_or(""));
-        });
+        writer.write<std::string>("");
+        writer.write<std::string>("");
     }
 
     // 클래스 이름

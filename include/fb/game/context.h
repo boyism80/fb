@@ -1,6 +1,35 @@
 #ifndef __FB_GAME_H__
 #define __FB_GAME_H__
 
+/**
+ * @file    context.h
+ * @brief   Main game server context and world management system
+ * @author  FB Development Team
+ *
+ * @details This file implements the central game server context that coordinates
+ *          all game systems and manages the complete game world state. The context
+ *          serves as the main orchestrator for player connections, game objects,
+ *          server-wide operations, and inter-service communication in the FB 2D MMORPG.
+ *
+ *          Key features:
+ *          - Complete game world initialization and lifecycle management
+ *          - Player character session management and authentication
+ *          - Comprehensive map and object container management
+ *          - Group and clan system coordination with sharded containers
+ *          - Database integration with Redis for caching and persistence
+ *          - AMQP integration for inter-service communication and messaging
+ *          - Lua script execution environment for dynamic game logic
+ *          - Thread pool management and work distribution across multiple threads
+ *          - Real-time event processing and broadcasting to connected clients
+ *          - Protocol handler registration and automatic message routing
+ *          - Internal service communication (HTTP, AMQP) for distributed architecture
+ *          - Comprehensive game mechanics coordination (combat, spells, trading, etc.)
+ *
+ * @note    The context is the singleton entry point for all game server
+ *          operations and maintains the authoritative game state for the entire
+ *          game world instance.
+ */
+
 #include <boost/algorithm/string/join.hpp>
 #include <json/json.h>
 #include <fstream>
@@ -11,8 +40,9 @@
 #include <fb/game/thread_params.h>
 #include <fb/game/map/container.h>
 #include <fb/hash.h>
-#include <fb/game/shard.h>
 #include <fb/redis.h>
+#include <fb/shard_container.h>
+#include <fb/game/clan.h>
 
 using namespace fb::protocol::internal;
 using namespace fb::protocol::internal::request;
@@ -86,15 +116,16 @@ public:
     struct builtin;
 
 public:
-    using object_set         = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
-    using transfer_param     = fb_reqs::login::transfer_param;
-    using protocol_generator = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
-    using npc_interaction_func =
-        std::function<async::task<bool>(character&, const std::string&, const std::vector<fb::game::npc*>&)>;
+    using object_set           = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
+    using transfer_param       = fb_reqs::login::transfer_param;
+    using protocol_generator   = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
+    using npc_interaction_func = std::function<
+        async::task<bool>(character&, const std::string&, const std::vector<std::shared_ptr<fb::game::npc>>&)>;
+    using clan_ptr  = std::shared_ptr<fb::game::clan>;
+    using group_ptr = std::shared_ptr<fb::game::group>;
 
 private:
     fb::model::datetime               _time;
-    fb::hash<shard_params>            _shard;
     std::vector<npc_interaction_func> _npc_interaction_funcs;
     fb::redis                         _redis;
 
@@ -102,8 +133,11 @@ public:
     fb::game::listener_impl listener;
 
 public:
-    fb::model::model        model;
-    fb::game::map_container maps;
+    fb::model::model                     model;
+    fb::game::map_container              maps;
+    fb::game::character::container       characters;
+    fb::sharded_container<clan_ptr, 16>  clans;
+    fb::sharded_container<group_ptr, 16> groups;
 
 public:
     /**
@@ -158,7 +192,7 @@ private:
      * @param[in]  gid   The group ID to create or access.
      * @param[in]  fn    The callback function to execute with the group lock.
      */
-    void upsert_group_then(uint32_t gid, const std::function<void(shared_group_lock&)>& fn);
+    async::task<void> upsert_group_then(uint32_t gid, const std::function<void(group_ptr&)>& fn);
 
     /**
      * @brief      Creates or updates a group with specific members and executes a callback.
@@ -172,10 +206,10 @@ private:
      * @param[in]  members  The list of member names in the group.
      * @param[in]  fn       The callback function to execute with the group lock.
      */
-    void upsert_group_then(uint32_t                                       gid,
-                           const std::string&                             master,
-                           const std::vector<std::string>&                members,
-                           const std::function<void(shared_group_lock&)>& fn);
+    async::task<void> upsert_group_then(uint32_t                               gid,
+                                        const std::string&                     master,
+                                        const std::vector<std::string>&        members,
+                                        const std::function<void(group_ptr&)>& fn);
 
     /**
      * @brief      Updates clan information with data from internal protocol.
@@ -194,7 +228,8 @@ private:
      * @param[in]  id    The clan identifier
      * @param[in]  fn    The function to execute with the clan lock
      */
-    void upsert_clan_then(uint32_t id, std::function<void(shared_clan_lock&)> fn);
+    async::task<void> upsert_clan_then(uint32_t                                                           id,
+                                       std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn);
 
     /**
      * @brief      Initializes a character with data from the database.
@@ -295,14 +330,14 @@ private:
      *
      * @param[in]  resp  The group entry response containing group information.
      */
-    void on_enter_group(internal_resp::EnterGroup resp);
+    async::task<void> on_enter_group(const internal_resp::EnterGroup& resp);
 
     /**
      * @brief      Called when a character leaves a group.
      *
      * @param[in]  resp  The group leave response containing departure details.
      */
-    void on_leave_group(const internal_resp::LeaveGroup& resp);
+    async::task<void> on_leave_group(const internal_resp::LeaveGroup& resp);
 
     /**
      * @brief      Called when a server-wide broadcast message is received.
@@ -323,28 +358,28 @@ private:
      *
      * @param[in]  resp  The clan broadcast response containing the message and clan info.
      */
-    void on_clan_broadcast(const internal_resp::BroadcastClan& resp);
+    async::task<void> on_clan_broadcast(const internal_resp::BroadcastClan& resp);
 
     /**
      * @brief      Called when a clan's title/motto is changed.
      *
      * @param[in]  resp  The clan title change response containing the new title.
      */
-    void on_clan_title_changed(const internal_resp::SetClanTitle& resp);
+    async::task<void> on_clan_title_changed(const internal_resp::SetClanTitle& resp);
 
     /**
      * @brief      Called when a new member joins a clan.
      *
      * @param[in]  resp  The clan join response containing member information.
      */
-    void on_clan_join_member(const internal_resp::JoinClan& resp);
+    async::task<void> on_clan_join_member(const internal_resp::JoinClan& resp);
 
     /**
      * @brief      Called when a member leaves a clan.
      *
      * @param[in]  resp  The clan leave response containing departure details.
      */
-    void on_clan_leave_member(const internal_resp::LeaveClan& resp);
+    async::task<void> on_clan_leave_member(const internal_resp::LeaveClan& resp);
 
     /**
      * @brief      Called when a mail message is written/sent.
@@ -362,19 +397,55 @@ private:
 
 public:
     /**
-     * @brief      Creates a new game object with the context as first parameter.
+     * @brief      Creates a new game object managed by shared_ptr with the context as first parameter.
+     *
+     *             This is the new preferred method for creating objects that supports
+     *             automatic lifetime management and safe async operations.
      *
      * @param      args  The constructor arguments for the object.
      *
      * @tparam     T     The type of object to create.
      * @tparam     Args  Variadic template arguments for object construction.
      *
-     * @return     Pointer to the newly created object.
+     * @return     Shared pointer to the newly created object.
      */
     template <typename T, typename... Args>
-    T* make(Args&&... args)
+    std::shared_ptr<T> make(Args&&... args)
     {
-        return new T(*this, std::forward<Args>(args)...);
+        return std::make_shared<T>(*this, std::forward<Args>(args)...);
+    }
+
+    /**
+     * @brief      Safely checks if an object is alive using smart pointer semantics.
+     *
+     *             This method provides a more efficient alternative to hash-based alive() checks
+     *             by using weak pointer expiration checking.
+     *
+     * @param[in]  weak_obj  A weak pointer to the object to check
+     *
+     * @tparam     T         The type of object to check
+     *
+     * @return     True if the object is still alive, false otherwise
+     */
+    template <typename T>
+    bool alive_smart(const std::weak_ptr<T>& weak_obj) const
+    {
+        return !weak_obj.expired();
+    }
+
+    /**
+     * @brief      Safely checks if an object is alive using shared pointer.
+     *
+     * @param[in]  shared_obj  A shared pointer to the object to check
+     *
+     * @tparam     T           The type of object to check
+     *
+     * @return     True if the object is not null, false otherwise
+     */
+    template <typename T>
+    bool alive_smart(const std::shared_ptr<T>& shared_obj) const
+    {
+        return shared_obj != nullptr;
     }
 
 public:
@@ -395,7 +466,6 @@ public:
         {
             std::ignore = co_await obj.map(nullptr, fb::model::point16_t{0, 0}, destroy_type);
         }
-        delete &obj;
         co_return;
     }
 
@@ -425,67 +495,6 @@ public:
      * @return     An async task that completes when the character is saved.
      */
     [[nodiscard]] async::task<void> save(fb::game::character& ch);
-
-    /**
-     * @brief      Executes a function on a character by name with miss callback.
-     *
-     * @param[in]  name  The name of the character to find.
-     * @param[in]  fn    The function to execute on the found character.
-     * @param[in]  miss  The callback to execute if the character is not found.
-     */
-    void foreach_ch(const std::string&                                  name,
-                    const std::function<void(fb::game::character&)>&    fn,
-                    const std::function<void(const std::string& name)>& miss);
-
-    /**
-     * @brief      Executes a function on a character by name.
-     *
-     * @param[in]  name  The name of the character to find.
-     * @param[in]  fn    The function to execute on the found character.
-     */
-    void foreach_ch(const std::string& name, const std::function<void(fb::game::character&)>& fn);
-
-    /**
-     * @brief      Executes a function on multiple characters by names with miss callback.
-     *
-     * @param[in]  names  The list of character names to find.
-     * @param[in]  fn     The function to execute on each found character.
-     * @param[in]  miss   The callback to execute for each character not found.
-     */
-    void foreach_ch(const std::vector<std::string>&                     names,
-                    const std::function<void(fb::game::character&)>&    fn,
-                    const std::function<void(const std::string& name)>& miss);
-
-    /**
-     * @brief      Executes a function on multiple characters by names.
-     *
-     * @param[in]  names  The list of character names to find.
-     * @param[in]  fn     The function to execute on each found character.
-     */
-    void foreach_ch(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn);
-
-    /**
-     * @brief      Executes a function on all characters in a clan.
-     *
-     * @param[in]  clan  The clan whose members to iterate over.
-     * @param[in]  fn    The function to execute on each clan member.
-     */
-    void foreach_ch(const clan& clan, const std::function<void(fb::game::character&)>& fn);
-
-    /**
-     * @brief      Executes a function on all characters in a group.
-     *
-     * @param[in]  group  The group whose members to iterate over.
-     * @param[in]  fn     The function to execute on each group member.
-     */
-    void foreach_ch(const group& group, const std::function<void(fb::game::character&)>& fn);
-
-    /**
-     * @brief      Executes a function on all online characters.
-     *
-     * @param[in]  fn    The function to execute on each online character.
-     */
-    void foreach_ch(const std::function<void(fb::game::character&)>& fn);
 
 public:
     /**
@@ -544,11 +553,11 @@ public:
      * @brief      Creates a new clan with the specified character as leader.
      *
      * @param      me    The character who will become the clan leader.
-     * @param[in]  name  The name of the clan to create.
+     * @param[in]  name  The name of the clan to create. (rvalue)
      *
      * @return     An async task that completes when the clan is created.
      */
-    [[nodiscard]] async::task<void> create_clan(character& me, const std::string& name);
+    [[nodiscard]] async::task<void> create_clan(character& me, std::string name);
 
     /**
      * @brief      Destroys the clan that the character leads.
@@ -694,13 +703,13 @@ public:
     /**
      * @brief      Sends a private whisper message between characters.
      *
-     * @param      from     The character sending the whisper.
-     * @param[in]  to       The name of the character to send the whisper to.
-     * @param[in]  message  The whisper message content.
+     * @param[in]  sender        The character sending the whisper.
+     * @param[in]  receiver_name The name of the character to send the whisper to.
+     * @param[in]  message       The whisper message content.
      *
      * @return     An async task that completes when the whisper is sent.
      */
-    [[nodiscard]] async::task<void> whisper(character& from, std::string to, std::string message);
+    [[nodiscard]] async::task<void> whisper(character& sender, std::string receiver_name, std::string message);
 
 protected:
     /**
@@ -760,7 +769,7 @@ protected:
      *
      * @return     Pointer to the created character object, or nullptr if failed.
      */
-    fb::game::character* handle_accepted(fb::socket<fb::game::character>& socket) override final;
+    std::shared_ptr<fb::game::character> handle_accepted(fb::socket<fb::game::character>& socket) override final;
 
 protected:
     /**
@@ -1355,9 +1364,9 @@ public:
      *
      * @return     True if the sell interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_sell(character&                         ch,
-                                           const std::string&                 message,
-                                           const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_sell(character&                                         ch,
+                                           const std::string&                                 message,
+                                           const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for buying items from NPCs.
@@ -1368,9 +1377,9 @@ public:
      *
      * @return     True if the buy interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_buy(character&                         ch,
-                                          const std::string&                 message,
-                                          const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_buy(character&                                         ch,
+                                          const std::string&                                 message,
+                                          const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for repairing items.
@@ -1381,9 +1390,9 @@ public:
      *
      * @return     True if the repair interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_repair(character&                         ch,
-                                             const std::string&                 message,
-                                             const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_repair(character&                                         ch,
+                                             const std::string&                                 message,
+                                             const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for depositing money.
@@ -1394,9 +1403,9 @@ public:
      *
      * @return     True if the deposit interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_deposit_money(character&                         ch,
-                                                    const std::string&                 message,
-                                                    const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_deposit_money(character&                                         ch,
+                                                    const std::string&                                 message,
+                                                    const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for withdrawing money.
@@ -1407,9 +1416,9 @@ public:
      *
      * @return     True if the withdraw interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_withdraw_money(character&                         ch,
-                                                     const std::string&                 message,
-                                                     const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_withdraw_money(character&                                         ch,
+                                                     const std::string&                                 message,
+                                                     const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for storing items in storage.
@@ -1420,9 +1429,9 @@ public:
      *
      * @return     True if the store interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_store_item(character&                         ch,
-                                                 const std::string&                 message,
-                                                 const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_store_item(character&                                         ch,
+                                                 const std::string&                                 message,
+                                                 const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for retrieving items from storage.
@@ -1433,9 +1442,9 @@ public:
      *
      * @return     True if the retrieve interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_retrieve_item(character&                         ch,
-                                                    const std::string&                 message,
-                                                    const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_retrieve_item(character&                                         ch,
+                                                    const std::string&                                 message,
+                                                    const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for displaying items available for sale.
@@ -1446,9 +1455,9 @@ public:
      *
      * @return     True if the sell list interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_sell_list(character&                         ch,
-                                                const std::string&                 message,
-                                                const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_sell_list(character&                                         ch,
+                                                const std::string&                                 message,
+                                                const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for displaying items available for purchase.
@@ -1459,9 +1468,9 @@ public:
      *
      * @return     True if the buy list interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_buy_list(character&                         ch,
-                                               const std::string&                 message,
-                                               const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_buy_list(character&                                         ch,
+                                               const std::string&                                 message,
+                                               const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for checking item sell prices.
@@ -1472,9 +1481,9 @@ public:
      *
      * @return     True if the sell price interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_sell_price(character&                         ch,
-                                                 const std::string&                 message,
-                                                 const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_sell_price(character&                                         ch,
+                                                 const std::string&                                 message,
+                                                 const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for checking item buy prices.
@@ -1485,9 +1494,9 @@ public:
      *
      * @return     True if the buy price interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_buy_price(character&                         ch,
-                                                const std::string&                 message,
-                                                const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_buy_price(character&                                         ch,
+                                                const std::string&                                 message,
+                                                const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for displaying deposited money balance.
@@ -1498,9 +1507,9 @@ public:
      *
      * @return     True if the balance check interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_show_deposited_money(character&                         ch,
-                                                           const std::string&                 message,
-                                                           const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_show_deposited_money(character&                                         ch,
+                                                           const std::string&                                 message,
+                                                           const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for renaming weapons.
@@ -1511,9 +1520,9 @@ public:
      *
      * @return     True if the weapon rename interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_rename_weapon(character&                         ch,
-                                                    const std::string&                 message,
-                                                    const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_rename_weapon(character&                                         ch,
+                                                    const std::string&                                 message,
+                                                    const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for displaying stored items list.
@@ -1524,9 +1533,9 @@ public:
      *
      * @return     True if the storage list interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_store_item_list(character&                         ch,
-                                                      const std::string&                 message,
-                                                      const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_store_item_list(character&                                         ch,
+                                                      const std::string&                                 message,
+                                                      const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for checking stored item count.
@@ -1537,9 +1546,9 @@ public:
      *
      * @return     True if the storage count interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_store_item_count(character&                         ch,
-                                                       const std::string&                 message,
-                                                       const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_store_item_count(character&                                         ch,
+                                                       const std::string&                                 message,
+                                                       const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for character revival.
@@ -1550,9 +1559,9 @@ public:
      *
      * @return     True if the revive interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_revive(character&                         ch,
-                                             const std::string&                 message,
-                                             const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_revive(character&                                         ch,
+                                             const std::string&                                 message,
+                                             const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Handles NPC interaction for appreciation/gratitude expressions.
@@ -1563,9 +1572,9 @@ public:
      *
      * @return     True if the appreciation interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction_appreciate(character&                         ch,
-                                                 const std::string&                 message,
-                                                 const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_appreciate(character&                                         ch,
+                                                 const std::string&                                 message,
+                                                 const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      General NPC interaction handler that processes player messages.
@@ -1576,9 +1585,9 @@ public:
      *
      * @return     True if any NPC interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction(character&                         ch,
-                                      const std::string&                 message,
-                                      const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction(character&                                         ch,
+                                      const std::string&                                 message,
+                                      const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 };
 
 struct context::builtin
@@ -1841,21 +1850,22 @@ struct context::builtin
 } // namespace fb::game
 
 /**
- * @brief      Creates a game object instance using the model and game context.
+ * @brief      Creates a new game object managed by shared_ptr with the context as first parameter.
  *
- * @param      context  The game context to use for object creation.
- * @param      args     Additional constructor arguments for the object.
+ *             This is the new preferred method for creating objects that supports
+ *             automatic lifetime management and safe async operations.
  *
- * @tparam     T        The type of game object to create.
- * @tparam     Args     Variadic template arguments for object construction.
+ * @param      args  The constructor arguments for the object.
  *
- * @return     Pointer to the newly created game object.
+ * @tparam     T     The type of object to create.
+ * @tparam     Args  Variadic template arguments for object construction.
+ *
+ * @return     Shared pointer to the newly created object.
  */
 template <typename T, typename... Args>
-T* fb::model::object::make(fb::game::context& context, Args&&... args) const
+std::shared_ptr<T> fb::model::object::make(fb::game::context& context, Args&&... args) const
 {
-    auto& model = static_cast<const typename T::model_type&>(*this);
-    return context.template make<T>(model, std::forward<Args>(args)...);
+    return context.template make<T>(*this, std::forward<Args>(args)...);
 }
 
 #endif // !__FB_GAME_H__

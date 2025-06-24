@@ -1,6 +1,33 @@
 #ifndef __CHARACTER_H__
 #define __CHARACTER_H__
 
+/**
+ * @file    character.h
+ * @brief   Player character system for the FB 2D MMORPG game server
+ * @author  FB Development Team
+ *
+ * @details This file implements the core player character system that handles all
+ *          aspects of player avatars in the FB 2D MMORPG game server. Characters
+ *          represent players in the game world and manage their state, equipment,
+ *          skills, social relationships, and interactions.
+ *
+ *          Key features:
+ *          - Complete character state management (stats, level, experience)
+ *          - Equipment and inventory systems with item management
+ *          - Spell casting and buff/debuff systems
+ *          - Social systems (groups, clans, whispers, mail)
+ *          - Achievement and progression tracking
+ *          - Thread-safe operations with async/await patterns
+ *          - Lua scripting integration for game logic
+ *          - Real-time synchronization across server instances
+ *          - Database persistence and character data management
+ *          - Map movement and position tracking
+ *
+ * @note    Characters inherit from life and object classes, providing a complete
+ *          game entity with combat, movement, and interaction capabilities.
+ */
+
+#include <fb/game/life.h>
 #include <algorithm>
 #include <fb/game/dialog.h>
 #include <fb/game/character.h>
@@ -11,7 +38,6 @@
 #include <sstream>
 #include <fb/game/trade.h>
 #include <fb/game/achievement.h>
-#include <fb/game/clan.h>
 #include <fb/game/bulletin.h>
 #include <fb/game/stat.h>
 
@@ -21,20 +47,6 @@ namespace fb::game {
  * @brief      Forward declaration of the map class.
  */
 class map;
-/**
- * @brief      Forward declaration of the clan class.
- */
-class clan;
-/**
- * @brief      Forward declaration of the group class.
- */
-class group;
-
-using group_lock        = fb::locker<group>;
-using shared_group_lock = std::shared_ptr<group_lock>;
-
-using clan_lock        = fb::locker<clan>;
-using shared_clan_lock = std::shared_ptr<clan_lock>;
 
 /**
  * @brief      Represents a player character in the game world.
@@ -48,7 +60,7 @@ using shared_clan_lock = std::shared_ptr<clan_lock>;
  *             - Complete character progression system (level, experience, stats)
  *             - Inventory and equipment management
  *             - Spell and skill system integration
- *             - Group and clan membership
+ *             - Group membership
  *             - Real-time network communication with client
  *             - Lua scripting integration for game logic
  *             - Achievement and quest system
@@ -58,7 +70,6 @@ using shared_clan_lock = std::shared_ptr<clan_lock>;
 class character : public life
 {
     friend class group;
-    friend class clan;
 
 public:
     using object::map;
@@ -77,43 +88,43 @@ public:
     struct builtin;
 
 private:
-    uint32_t                _id;
-    fb::socket<character>&  _socket;
-    fb::thread*             _thread = nullptr;
-    std::string             _name;
-    ROLE                    _role;
-    std::string             _pw;
-    std::optional<uint32_t> _birthday;
-    fb::model::datetime     _updated_date;
-    uint16_t                _look        = 0;
-    uint8_t                 _color       = 0;
-    std::optional<uint8_t>  _armor_color = 0;
-    stat_value<uint32_t>    _max_hp, _max_mp;
-    stat_value<uint8_t>     _str, _dex, _int;
-    stat_value<int32_t>     _phydef, _magdef;
-    stat_value<int32_t>     _dam, _hit;
-    uint32_t                _experience   = 0;
-    uint8_t                 _regenerative = 0; // 재생력
-    NATION                  _nation       = NATION::GOGURYEO;
-    CREATURE                _creature     = CREATURE::DRAGON;
-    SEX                     _sex          = SEX::MAN;
-    STATE                   _state        = STATE::NORMAL;
-    uint8_t                 _level        = 1;
-    CLASS                   _class        = CLASS::NONE;
-    uint8_t                 _promotion    = 0;
-    uint32_t                _money        = 0;
-    std::optional<uint16_t> _disguise     = 0;
-    std::string             _title;
-    shared_group_lock       _group         = nullptr;
-    shared_clan_lock        _clan          = nullptr;
-    uint16_t                _unread_mail   = 0;
-    uint16_t                _weapon_damage = 0;
-    bool                    _detect        = false;
-    std::vector<mob*>       _spawned_mobs  = {};
-    fb::model::datetime     _last_spell_cast;
-    bool                    _super_hide        = false;
-    uint8_t                 _spell_cast_count  = 0;
-    bool                    _options[0x0B + 1] = {
+    uint32_t                                    _id;
+    fb::socket<character>&                      _socket;
+    fb::thread*                                 _thread = nullptr;
+    std::string                                 _name;
+    ROLE                                        _role;
+    std::string                                 _pw;
+    std::optional<uint32_t>                     _birthday;
+    fb::model::datetime                         _updated_date;
+    uint16_t                                    _look        = 0;
+    uint8_t                                     _color       = 0;
+    std::optional<uint8_t>                      _armor_color = 0;
+    stat_value<uint32_t>                        _max_hp, _max_mp;
+    stat_value<uint8_t>                         _str, _dex, _int;
+    stat_value<int32_t>                         _phydef, _magdef;
+    stat_value<int32_t>                         _dam, _hit;
+    uint32_t                                    _experience   = 0;
+    uint8_t                                     _regenerative = 0; // 재생력
+    NATION                                      _nation       = NATION::GOGURYEO;
+    CREATURE                                    _creature     = CREATURE::DRAGON;
+    SEX                                         _sex          = SEX::MAN;
+    STATE                                       _state        = STATE::NORMAL;
+    uint8_t                                     _level        = 1;
+    CLASS                                       _class        = CLASS::NONE;
+    uint8_t                                     _promotion    = 0;
+    uint32_t                                    _money        = 0;
+    std::optional<uint16_t>                     _disguise     = 0;
+    std::string                                 _title;
+    std::optional<uint32_t>                     _group_id      = std::nullopt;
+    std::optional<uint32_t>                     _clan_id       = std::nullopt;
+    uint16_t                                    _unread_mail   = 0;
+    uint16_t                                    _weapon_damage = 0;
+    bool                                        _detect        = false;
+    std::vector<std::shared_ptr<fb::game::mob>> _spawned_mobs  = {};
+    fb::model::datetime                         _last_spell_cast;
+    bool                                        _super_hide        = false;
+    uint8_t                                     _spell_cast_count  = 0;
+    bool                                        _options[0x0B + 1] = {
         1,
     };
 
@@ -207,8 +218,8 @@ public:
      *
      * @return     True if the map change was successful, false otherwise
      */
-    [[nodiscard]] async::task<bool> map(fb::game::map*              map,
-                                        const fb::model::point16_t& position,
+    [[nodiscard]] async::task<bool> map(std::shared_ptr<fb::game::map> map,
+                                        const fb::model::point16_t&    position,
                                         DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
 
 public:
@@ -289,7 +300,9 @@ public:
      *
      * @return     The actual damage dealt after calculations
      */
-    uint32_t damage(uint32_t value, fb::game::object* from = nullptr, bool critical = false) override final;
+    uint32_t damage(uint32_t                          value,
+                    std::shared_ptr<fb::game::object> from     = nullptr,
+                    bool                              critical = false) override final;
 
     /**
      * @brief      Performs a character action with visual and audio effects.
@@ -747,46 +760,61 @@ public:
     void title(const std::string& value);
 
     /**
-     * @brief      Gets the character's group (read-only).
+     * @brief      Gets the character's group ID (read-only).
      *
-     * @return     Const reference to the character's group lock
+     *             Returns the unique identifier of the group this character belongs to.
+     *             If the character is not in any group, returns std::nullopt.
+     *
+     * @return     Optional group ID if character is in a group, std::nullopt otherwise
      */
-    const shared_group_lock& group() const;
+    const std::optional<uint32_t>& group_id() const;
 
     /**
-     * @brief      Gets the character's group (modifiable).
+     * @brief      Gets the character's group ID (modifiable).
      *
-     * @return     Reference to the character's group lock
+     *             Returns a modifiable reference to the group ID. This allows
+     *             direct manipulation of the group membership status.
+     *
+     * @return     Reference to the character's optional group ID
      */
-    shared_group_lock& group();
+    std::optional<uint32_t>& group_id();
 
     /**
-     * @brief      Sets the character's group.
+     * @brief      Sets the character's group ID.
      *
-     * @param      value  The group lock to assign to the character
+     *             Assigns the character to a specific group by setting the group ID.
+     *             This establishes the character's membership in the specified group.
+     *
+     * @param[in]  gid  The group ID to assign to the character
      */
-    void group(shared_group_lock& value);
+    void group_id(uint32_t gid);
 
     /**
-     * @brief      Gets the character's clan (modifiable).
+     * @brief      Removes the character from their current group.
      *
-     * @return     Reference to the character's clan lock
+     *             Resets the character's group membership by clearing the group ID.
+     *             After calling this method, the character will not belong to any group.
      */
-    shared_clan_lock& clan();
+    void group_reset();
 
     /**
-     * @brief      Gets the character's clan (read-only).
+     * @brief      Gets the character's clan id (modifiable).
      *
-     * @return     Const reference to the character's clan lock
+     * @return     Reference to the character's clan id
      */
-    const shared_clan_lock& clan() const;
+    const std::optional<uint32_t>& clan_id() const;
 
     /**
      * @brief      Sets the character's clan.
      *
-     * @param      value  The clan lock to assign to the character
+     * @param      value  The clan id to assign to the character
      */
-    void clan(shared_clan_lock& value);
+    void clan_id(std::optional<uint32_t> value);
+
+    /**
+     * @brief      Resets the character's clan.
+     */
+    void clan_reset();
 
     /**
      * @brief      Asserts that the character is in a specific state.
@@ -1043,14 +1071,16 @@ public:
      *
      * @return     Pointer to the spawned mob, or nullptr if failed
      */
-    mob* spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned = true);
+    std::shared_ptr<fb::game::mob> spawn_mob(const fb::model::mob&       model,
+                                             const fb::model::point16_t& position,
+                                             bool                        owned = true);
 
     /**
      * @brief      Gets the list of mobs spawned by this character.
      *
      * @return     Const reference to the vector of spawned mobs
      */
-    const std::vector<fb::game::mob*>& spawned_mobs() const;
+    const std::vector<std::shared_ptr<fb::game::mob>>& spawned_mobs() const;
 
     /**
      * @brief      Detaches the spawned mob.
@@ -1414,7 +1444,7 @@ public:
      *
      * @return     True if this character is hidden from the target, false otherwise
      */
-    bool hidden(const object& target) const override final;
+    bool hidden(const fb::game::object& target) const override final;
 #pragma endregion
 };
 
@@ -2024,82 +2054,182 @@ public:
  *             members, or other character collections with specific access
  *             patterns and management requirements.
  */
-class character::container : private std::vector<character*>
+class character::container
 {
 private:
-    using super = std::vector<character*>;
+    std::unordered_map<uint32_t, std::shared_ptr<fb::game::character>>    _from_uid;
+    std::unordered_map<std::string, std::shared_ptr<fb::game::character>> _from_name;
 
 public:
-    using super::begin;
-    using super::end;
-    using super::size;
-    using super::operator[];
+    fb::game::context& _context;
 
 public:
-    /**
-     * @brief      Constructs a new instance.
-     */
-    container();
-
-    /**
-     * @brief      Constructs a new instance.
-     *
-     * @param[in]  right  The right
-     */
-    container(const std::vector<character*>& right);
-
-    /**
-     * @brief      Destroys the object.
-     */
-    ~container();
+    container(fb::game::context& context);
+    ~container() = default;
 
 public:
     /**
-     * @brief      Adds a character to the container.
+     * @brief      Inserts a character into the container.
      *
-     * @param      ch    The character to add to the container
+     *             This method adds a character to the container, associating it
+     *             with both its unique ID and its name. It ensures that the
+     *             character is properly tracked and accessible by both methods.
      *
-     * @return     Reference to this container for method chaining
+     * @param[in]  ch  The character to insert
      */
-    container& push(character& ch);
+    void insert(std::shared_ptr<fb::game::character> ch);
 
     /**
      * @brief      Removes a character from the container.
      *
-     * @param      ch    The character to remove from the container
-     *
-     * @return     Reference to this container for method chaining
+     * @param[in]  ch  The character to remove
      */
-    container& erase(character& ch);
+    void remove(std::shared_ptr<fb::game::character> ch);
+
+    /**
+     * @brief      Finds a character by their unique ID.
+     *
+     * @param[in]  uid  The unique ID of the character to find
+     *
+     * @return     A shared pointer to the character if found, nullptr otherwise
+     */
+    std::shared_ptr<fb::game::character> find(uint32_t uid) const;
+
+    /**
+     * @brief      Checks if a character with the given name exists in the container.
+     *
+     * @param[in]  name  The name of the character to check
+     *
+     * @return     True if the character exists, false otherwise
+     */
+    bool contains(const std::string& name) const;
+
+    /**
+     * @brief      Checks if a character with the given ID exists in the container.
+     *
+     * @param[in]  uid  The unique ID of the character to check
+     *
+     * @return     True if the character exists, false otherwise
+     */
+    bool contains(uint32_t uid) const;
+
+    /**
+     * @brief      Finds a character by their name.
+     *
+     * @param[in]  name  The name of the character to find
+     *
+     * @return     A shared pointer to the character if found, nullptr otherwise
+     */
+    std::shared_ptr<fb::game::character> find(const std::string& name) const;
+
+    /**
+     * @brief      Executes a function for each character in the container.
+     *
+     *             This method iterates through all characters in the container,
+     *             executing the provided function for each character. If a character
+     *             is not found, the fallback function is called with the character's
+     *             ID and name.
+     *
+     * @param[in]  fn        The function to execute for each character
+     * @param[in]  predict   The predicate function to filter characters
+     */
+    async::task<void> foreach (std::function<void(std::shared_ptr<fb::game::character>&)>&&     fn,
+                               std::function<bool(const std::shared_ptr<fb::game::character>&)> predict = nullptr);
+
+    /**
+     * @brief      Executes a function for each character in the container.
+     *
+     * @param[in]  fn        The function to execute for each character
+     * @param[in]  characters  The characters to iterate over
+     */
+    async::task<void> foreach (std::function<void(std::shared_ptr<fb::game::character>&)>&& fn,
+                               const std::vector<std::shared_ptr<fb::game::character>>&     characters);
+
+    /**
+     * @brief      Executes a function for each character in the container asynchronously.
+     *
+     *             This method iterates through all characters in the container,
+     *             executing the provided function for each character. If a character
+     *             is not found, the fallback function is called with the character's
+     *             ID and name.
+     *
+     * @param[in]  fn        The function to execute for each character
+     * @param[in]  predict   The predicate function to filter characters
+     */
+    async::task<void> foreach_async(std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
+                                    std::function<bool(const std::shared_ptr<fb::game::character>&)> predict = nullptr);
+
+    /**
+     * @brief      Executes a function for each character in the container asynchronously.
+     *
+     * @param[in]  fn        The function to execute for each character
+     * @param[in]  characters  The characters to iterate over
+     */
+    async::task<void> foreach_async(std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
+                                    const std::vector<std::shared_ptr<fb::game::character>>& characters);
+
+    /**
+     * @brief      Executes a function for each character in the container.
+     *
+     * @param[in]  names     The names of the characters to iterate over
+     * @param[in]  fn        The function to execute for each character
+     * @param[in]  miss      The function to call if a character is not found
+     */
+    async::task<void> foreach (const std::vector<std::string>& names,
+                               std::function<void(std::shared_ptr<fb::game::character>&)> && fn,
+                               std::function<void(const std::string& name)> miss = nullptr);
+
+    /**
+     * @brief      Executes a function for each character in the container.
+     *
+     * @param[in]  names     The names of the characters to iterate over
+     * @param[in]  fn        The function to execute for each character
+     * @param[in]  miss      The function to call if a character is not found
+     */
+    async::task<void> foreach_async(const std::vector<std::string>&                                           names,
+                                    std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
+                                    std::function<void(const std::string& name)> miss = nullptr);
+
+    /**
+     * @brief      Invokes a function for a specific character.
+     *
+     * @param[in]  name  The name of the character to invoke the function for
+     * @param[in]  fn    The function to invoke
+     * @param[in]  miss  The function to call if a character is not found
+     */
+    async::task<void> invoke(const std::string&                                           name,
+                             std::function<void(std::shared_ptr<fb::game::character>&)>&& fn,
+                             std::function<void(const std::string& name)>                 miss = nullptr);
+
+    /**
+     * @brief      Invokes a function for a specific character asynchronously.
+     *
+     * @param[in]  name  The name of the character to invoke the function for
+     * @param[in]  fn    The function to invoke
+     * @param[in]  miss  The function to call if a character is not found
+     */
+    async::task<void> invoke_async(const std::string&                                                        name,
+                                   std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
+                                   std::function<void(const std::string& name)> miss = nullptr);
 
 public:
     /**
-     * @brief      Searches for the first match.
+     * @brief      Accesses a character by their unique ID.
      *
-     * @param[in]  name  The name
+     * @param[in]  uid  The unique ID of the character to access
      *
-     * @return     Pointer to the found character, or nullptr if not found
+     * @return     A reference to the character
      */
-    character* find(const std::string& name);
+    std::shared_ptr<character>& operator[] (uint32_t uid);
 
     /**
-     * @brief      Checks if the container contains a specific character.
+     * @brief      Accesses a character by their name.
      *
-     * @param[in]  ch    The character to search for
+     * @param[in]  name  The name of the character to access
      *
-     * @return     True if the character is in the container, false otherwise
+     * @return     A reference to the character
      */
-    bool contains(const character& ch) const;
-
-public:
-    /**
-     * @brief      Array indexer operator.
-     *
-     * @param[in]  name  The name
-     *
-     * @return     The result of the array indexer
-     */
-    character* operator[] (const std::string& name);
+    std::shared_ptr<character>& operator[] (const std::string& name);
 };
 
 /**

@@ -1,6 +1,33 @@
 #ifndef __FB_CRYPTOR_H__
 #define __FB_CRYPTOR_H__
 
+/**
+ * @file    crypto.h
+ * @brief   Cryptographic system for secure data transmission and protocol protection
+ * @author  FB Development Team
+ *
+ * @details This file implements the cryptographic system used for securing data
+ *          transmission between clients and servers in the FB 2D MMORPG. The system
+ *          provides encryption, decryption, and data wrapping capabilities using
+ *          custom algorithms with lookup tables and sequence-based operations.
+ *
+ *          Key features:
+ *          - Custom encryption/decryption algorithms with lookup table optimization
+ *          - Sequence-based cryptographic operations for enhanced security
+ *          - Data wrapping and unwrapping with size headers for protocol integrity
+ *          - Configurable encryption keys and types for different security contexts
+ *          - XOR-based cryptographic operations with key cycling for performance
+ *          - Random key generation for dynamic security establishment
+ *          - Parameter validation to ensure cryptographic integrity
+ *          - Support for partial and full data stream encryption
+ *          - Memory-safe key management with proper cleanup
+ *          - Integration with the game protocol stack for seamless security
+ *
+ * @note    This cryptographic system is specifically designed for the FB game
+ *          protocol and provides the security foundation for all client-server
+ *          communications in the distributed game architecture.
+ */
+
 #include <fb/stream.h>
 #include <algorithm>
 #include <cstring>

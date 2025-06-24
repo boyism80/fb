@@ -84,12 +84,9 @@ void context::assert_account(const std::string& id, const std::string& pw) const
         throw pw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
 }
 
-session* context::handle_accepted(fb::socket<session>& socket)
+std::shared_ptr<session> context::handle_accepted(fb::socket<session>& socket)
 {
-    auto uptr = std::make_unique<session>();
-    auto ptr  = uptr.get();
-    this->_sessions.push_back(std::move(uptr));
-    return ptr;
+    return std::make_shared<session>();
 }
 
 async::task<bool> context::handle_connected(fb::socket<session>& socket)
@@ -128,7 +125,8 @@ async::task<bool> context::handle_agreement(fb::socket<session>& socket, const r
 async::task<bool> context::handle_create_account(fb::socket<session>& socket, const request::create& request)
 {
     // 여기는 task handler
-    auto fd = socket.fd();
+    auto fd   = socket.fd();
+    auto weak = socket.weak_from_this_as<fb::socket<session>>();
 
     try
     {
@@ -136,10 +134,8 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
         auto pw   = std::string(request.pw);
 
         this->assert_account(name, pw);
-
         auto&& response1 = co_await this->http.post("internal", "/user/reserve-name", ReserveName{name});
-
-        co_await this->switch_thread(socket);
+        co_await this->switch_thread(weak);
 
         if (response1.success == false)
             throw id_exception("이미 존재하는 이름입니다.");
@@ -168,8 +164,7 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
                 static_cast<uint8_t>(admin ? ROLE::ADMIN : ROLE::USER),                                   // admin
             });
 
-        // 여기서 새로운 promise handler
-        co_await this->switch_thread(socket);
+        co_await this->switch_thread(weak);
 
         if (response2.success == false)
             throw id_exception("이미 존재하는 이름입니다.");
@@ -182,12 +177,12 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
     }
     catch (login_exception& e)
     {
-        if (this->alive(socket))
+        if (weak.expired() == false)
             socket.send(response::message(e.what(), e.type()));
     }
     catch (std::exception& e)
     {
-        if (this->alive(socket))
+        if (weak.expired() == false)
             socket.send(response::message(e.what(), 0x0E));
     }
 
@@ -196,7 +191,8 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
 
 async::task<bool> context::handle_complete(fb::socket<session>& socket, const request::complete& request)
 {
-    auto fd = socket.fd();
+    auto fd   = socket.fd();
+    auto weak = socket.weak_from_this_as<fb::socket<session>>();
 
     try
     {
@@ -208,7 +204,7 @@ async::task<bool> context::handle_complete(fb::socket<session>& socket, const re
             "internal",
             "/user/mk-ch",
             MakeCharacter{session->pk, request.hair, request.sex, request.nation, request.creature});
-        co_await this->switch_thread(socket);
+        co_await this->switch_thread(weak);
 
         if (response.success == false)
             throw id_exception("이미 존재하는 이름입니다.");
@@ -220,12 +216,12 @@ async::task<bool> context::handle_complete(fb::socket<session>& socket, const re
     }
     catch (login_exception& e)
     {
-        if (this->alive(socket))
+        if (weak.expired() == false)
             socket.send(response::message(e.what(), e.type()));
     }
     catch (std::exception& e)
     {
-        if (this->alive(socket))
+        if (weak.expired() == false)
             socket.send(response::message(e.what(), 0x0E));
     }
 
@@ -234,6 +230,7 @@ async::task<bool> context::handle_complete(fb::socket<session>& socket, const re
 
 async::task<bool> context::handle_login(fb::socket<session>& socket, const request::login& request)
 {
+    auto weak  = socket.weak_from_this_as<fb::socket<session>>();
     auto delay = fb::config<uint32_t>("transfer delay");
     auto name  = std::string(request.id);
     auto pw    = std::string(request.pw);
@@ -246,14 +243,14 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
 
         auto&& response =
             co_await this->http.get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
-        co_await this->switch_thread(socket);
+        co_await this->switch_thread(weak);
 
         if (response.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
         auto   uid       = response.uid;
         auto&& response2 = co_await this->http.post("internal", "/user/authenticate", Authenticate{uid, pw});
-        co_await this->switch_thread(socket);
+        co_await this->switch_thread(weak);
 
         switch (response2.error_code)
         {
@@ -269,7 +266,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
             "internal",
             "/in-game/transfer",
             Transfer{fb::protocol::internal::Service ::Game, this->model.map[map].host, name, true});
-        co_await this->switch_thread(socket);
+        co_await this->switch_thread(weak);
 
         switch (static_cast<ERROR_CODE>(response3.error))
         {
@@ -297,17 +294,17 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
     }
     catch (login_exception& e)
     {
-        if (this->alive(socket))
+        if (weak.expired() == false)
             socket.send(response::message(e.what(), e.type()));
     }
     catch (boost::system::error_code& e)
     {
-        if (this->alive(socket))
+        if (weak.expired() == false)
             socket.send(response::message(std::format("({})", e.value()), 0x0E));
     }
     catch (std::exception& e)
     {
-        if (this->alive(socket))
+        if (weak.expired() == false)
             socket.send(response::message(e.what(), 0x0E));
     }
 
@@ -316,7 +313,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
 
 async::task<bool> context::handle_change_password(fb::socket<session>& socket, const request::update_pw& request)
 {
-    auto fd = socket.fd();
+    auto weak = socket.weak_from_this_as<fb::socket<session>>();
     try
     {
         // co_await this->_auth_service.change_pw(request.name, request.pw, request.new_pw, request.birthday);
@@ -352,7 +349,7 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
 
         auto&& response =
             co_await this->http.get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
-        co_await this->switch_thread(socket);
+        co_await this->switch_thread(weak);
 
         if (response.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
@@ -361,7 +358,7 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
 
         auto&& response2 = co_await this->http.post("internal", "/user/change-pw", ChangePw{uid, pw, new_pw, birthday});
 
-        co_await this->switch_thread(socket);
+        co_await this->switch_thread(weak);
 
         switch (static_cast<ERROR_CODE>(response2.error_code))
         {
@@ -380,12 +377,12 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
     }
     catch (login_exception& e)
     {
-        if (this->alive(socket))
+        if (weak.expired() == false)
             socket.send(response::message(e.what(), e.type()));
     }
     catch (std::exception& e)
     {
-        if (this->alive(socket))
+        if (weak.expired() == false)
             socket.send(response::message(e.what(), 0x0E));
     }
 

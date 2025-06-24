@@ -1,6 +1,33 @@
 #ifndef __PARALLEL_WORKER_H__
 #define __PARALLEL_WORKER_H__
 
+/**
+ * @file    parallel_worker.h
+ * @brief   Template framework for parallel processing with automatic work distribution
+ * @author  FB Development Team
+ *
+ * @details This file implements a comprehensive template framework for parallel processing
+ *          that automatically distributes work across multiple threads and collects results.
+ *          The system uses a producer-consumer pattern with thread-safe work distribution
+ *          and result collection, ideal for CPU-intensive tasks that can be parallelized.
+ *
+ *          Key features:
+ *          - Template-based parallel processing framework for type-safe operations
+ *          - Automatic work distribution across available CPU cores
+ *          - Thread-safe work queue management with mutex protection
+ *          - Result collection in original order for deterministic output
+ *          - Progress tracking with percentage completion callbacks
+ *          - Exception handling and error reporting for individual work items
+ *          - Specialization for void return types (side-effect only processing)
+ *          - Generator-based work item production for memory-efficient processing
+ *          - Configurable thread pool size based on hardware capabilities
+ *          - Comprehensive callback system for monitoring and error handling
+ *
+ * @note    This parallel processing framework is used throughout the FB 2D MMORPG
+ *          server for data processing tasks such as map generation, asset processing,
+ *          and batch operations that can benefit from multi-threaded execution.
+ */
+
 #include <memory>
 #include <vector>
 #include <unordered_map>

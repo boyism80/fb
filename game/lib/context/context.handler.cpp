@@ -6,6 +6,10 @@ using namespace std::chrono_literals;
 async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_reqs::login& request)
 {
     auto ch = socket.data();
+    if (ch == nullptr)
+        co_return false;
+
+    auto weak = ch->weak_from_this();
     socket.crt(request.enc_type, request.enc_key);
 
     ch->name(request.name);
@@ -26,25 +30,18 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 
     auto&& response = co_await this->http.get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
     auto   map      = transfer.has_value() ? transfer->map : response.character.map;
-    ch->thread(this->maps[map].thread());
-    co_await this->switch_thread(*ch);
+    ch->thread(this->maps[map]->thread());
+    co_await this->switch_thread(weak);
 
     if (co_await this->init_ch(response.character, *ch, response.group, response.clan, transfer) == false)
         co_return false;
-    co_await this->switch_thread(*ch);
+    co_await this->switch_thread(weak);
 
     ch->unread_mail(response.mail);
 
     this->init_items(response.items, *ch);
     this->init_spells(response.spells, *ch);
     this->init_achievements(response.achievements, *ch);
-    this->_shard[name]->names.write([&name, ch](auto& names) {
-        names.insert({name, ch});
-    });
-    this->_shard[id]->ids.write([id, ch](auto& ids) {
-        ids.insert({id, ch});
-    });
-
     this->init_option(response.option, *ch);
     ch->init();
     ch->update_time(this->_time.hours());
@@ -68,6 +65,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 
     ch->update(STATE_LEVEL::LEVEL_MAX);
     ch->update_option();
+    this->characters.insert(ch);
     co_return true;
 }
 
@@ -132,9 +130,9 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         {
         case DSL::map:
         {
-            auto  params = fb::model::dsl::map(warp->dest.params);
-            auto& map    = this->maps[params.id];
-            std::ignore  = co_await ch->map(&map, fb::model::point16_t(params.x, params.y));
+            auto params = fb::model::dsl::map(warp->dest.params);
+            auto map    = this->maps[params.id];
+            std::ignore = co_await ch->map(map, fb::model::point16_t(params.x, params.y));
         }
         break;
 
@@ -311,7 +309,8 @@ async::task<bool> context::handle_front_info(fb::socket<character>& socket, cons
     for (auto i = forwards.begin(); i != forwards.end(); i++)
     {
         auto object  = *i;
-        auto message = object->is(OBJECT_TYPE::ITEM) ? static_cast<item*>(*i)->inven_name() : (*i)->name();
+        auto message = object->is(OBJECT_TYPE::ITEM) ? std::static_pointer_cast<fb::game::item>(object)->inven_name()
+                                                     : object->name();
 
         ch->message(message, MESSAGE_TYPE::STATE);
     }
@@ -336,6 +335,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
     if (ch->inited() == false)
         co_return true;
 
+    auto weak   = ch->weak_from_this();
     auto option = OPTION(request.option);
     switch (option)
     {
@@ -358,15 +358,15 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
         if (option == OPTION::GROUP && !enabled)
         {
             auto&& response = co_await this->http.post("internal", "/group/leave", LeaveGroup{ch->name()});
-            co_await this->switch_thread(*ch);
+            co_await this->switch_thread(weak);
 
-            this->on_leave_group(response);
+            co_await this->on_leave_group(response);
         }
 
         auto&& response = co_await this->http.post("internal",
                                                    "/user/option",
                                                    SetOption{ch->id(), static_cast<uint8_t>(option), enabled});
-        co_await this->switch_thread(*ch);
+        co_await this->switch_thread(weak);
 
         if (response.success == false)
             ch->message("설정을 변경하지 못했습니다.");
@@ -464,7 +464,7 @@ async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const f
                 throw std::runtime_error("no match exception");
 
             auto count   = item->count();
-            auto deleted = ch->items.remove(*item, count);
+            auto deleted = ch->items.remove(item, count);
             if (deleted != nullptr)
                 std::ignore = deleted->destroy();
 
@@ -562,14 +562,14 @@ async::task<bool> context::handle_world(fb::socket<character>& socket, const fb_
     auto& before = world[request.before];
     auto& after  = world[request.after];
 
-    if (ch->map() == &this->maps[after.map])
+    if (ch->map() == this->maps[after.map])
     {
         ch->update_map();
         ch->update_external(false);
     }
     else
     {
-        std::ignore = co_await ch->map(&this->maps[after.map], after.position);
+        std::ignore = co_await ch->map(this->maps[after.map], after.position);
     }
     co_return true;
 }
@@ -623,7 +623,7 @@ async::task<bool> context::handle_give_item(fb::socket<character>& socket, const
         {
         case OBJECT_TYPE::CHARACTER:
         {
-            auto you = static_cast<character*>(forward);
+            auto you = std::static_pointer_cast<fb::game::character>(forward);
             if (model.attr(ITEM_ATTRIBUTE::BUNDLE) && you->items.index(model) != 0xFF)
             {
                 auto exists = you->items.find(model);
@@ -637,7 +637,7 @@ async::task<bool> context::handle_give_item(fb::socket<character>& socket, const
                     throw std::runtime_error("상대방의 인벤토리가 가득 찼습니다.");
             }
 
-            item = me->items.remove(*item, count, ITEM_DELETE_TYPE::GIVE);
+            item = me->items.remove(item, count, ITEM_DELETE_TYPE::GIVE);
             if (count == 1)
                 you->message(std::format("{}님이 {} 주었습니다.", me->name(), name_with(item->name())));
             else
@@ -648,11 +648,11 @@ async::task<bool> context::handle_give_item(fb::socket<character>& socket, const
 
         case OBJECT_TYPE::MOB:
         {
-            auto mob = static_cast<fb::game::mob*>(forward);
+            auto mob = std::static_pointer_cast<fb::game::mob>(forward);
             if (mob->items().size() >= CONTAINER_CAPACITY)
                 throw std::runtime_error("더 이상 줄 수 없습니다.");
 
-            item = me->items.remove(*item, count, ITEM_DELETE_TYPE::GIVE);
+            item = me->items.remove(item, count, ITEM_DELETE_TYPE::GIVE);
             mob->push_item(*item);
         }
         break;
@@ -689,7 +689,7 @@ async::task<bool> context::handle_give_money(fb::socket<character>& socket, cons
         {
         case OBJECT_TYPE::CHARACTER:
         {
-            auto you      = static_cast<character*>(forward);
+            auto you      = std::static_pointer_cast<fb::game::character>(forward);
             auto capacity = 0xFFFFFFFF - you->money();
             money         = std::min(capacity, money);
             if (money == 0)
@@ -702,7 +702,7 @@ async::task<bool> context::handle_give_money(fb::socket<character>& socket, cons
 
         case OBJECT_TYPE::MOB:
         {
-            auto mob = static_cast<fb::game::mob*>(forward);
+            auto mob = std::static_pointer_cast<fb::game::mob>(forward);
             if (mob->items().size() >= CONTAINER_CAPACITY)
                 throw std::runtime_error("더 이상 줄 수 없습니다.");
 
@@ -755,7 +755,8 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (ch->inited() == false)
         co_return true;
 
-    auto map = ch->map();
+    auto weak = ch->weak_from_this_as<character>();
+    auto map  = ch->map();
     if (map == nullptr)
         co_return true;
 
@@ -775,7 +776,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
         lua->pushstring(request.message);
         lua->pushboolean(request.shout);
         co_await lua->call(3, false);
-        if (this->alive(*ch) == false)
+        if (weak.expired())
         {
             lua->release();
             co_return true;
@@ -792,20 +793,22 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
     ch->chat(message, type, true);
 
-    auto npcs = std::vector<npc*>();
+    auto npcs = std::vector<std::shared_ptr<fb::game::npc>>();
     if (type == CHAT_TYPE::SHOUT)
     {
         for (auto& [fd, obj] : ch->map()->objects)
         {
-            if (obj.is(OBJECT_TYPE::NPC))
-                npcs.push_back(static_cast<npc*>(&obj));
+            if (obj->is(OBJECT_TYPE::NPC))
+            {
+                npcs.push_back(std::static_pointer_cast<fb::game::npc>(obj));
+            }
         }
     }
     else
     {
         for (auto npc : ch->sight_in(OBJECT_TYPE::NPC))
         {
-            npcs.push_back(static_cast<fb::game::npc*>(npc));
+            npcs.push_back(std::static_pointer_cast<fb::game::npc>(npc));
         }
     }
 
@@ -820,7 +823,8 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
     if (ch->inited() == false)
         co_return true;
 
-    auto fd = ch->fd();
+    auto weak = ch->weak_from_this();
+    auto fd   = ch->fd();
     switch (request.action)
     {
     case BULLETIN_ACTION::SECTIONS:
@@ -837,7 +841,7 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
             if (mail)
             {
                 auto&& resp = co_await this->mail_list(*ch, request.offset, 20);
-                co_await this->switch_thread(*ch);
+                co_await this->switch_thread(weak);
 
                 ch->show_mail_box(resp.summary_list, MAIL_BUTTON_ENABLE::NEW);
             }
@@ -845,7 +849,7 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
             {
                 auto   section  = request.section;
                 auto&& articles = co_await this->bulletin_list(request.section, request.offset);
-                co_await this->switch_thread(*ch);
+                co_await this->switch_thread(weak);
 
                 auto& model = this->model.bulletin[section];
                 auto  flag  = BULLETIN_BUTTON_ENABLE::UP;
@@ -857,7 +861,7 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
         }
         catch (std::exception& e)
         {
-            if (this->alive(*ch))
+            if (weak.expired() == false)
                 ch->show_bulletin_message(e.what(), false, mail);
         }
     }
@@ -871,14 +875,14 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
             if (mail)
             {
                 auto&& resp = co_await this->read_mail(*ch, request.article);
-                co_await this->switch_thread(*ch);
+                co_await this->switch_thread(weak);
                 auto flag = MAIL_BUTTON_ENABLE::NEW;
                 ch->show_mail_box(resp.mail, flag);
             }
             else
             {
                 auto&& article = co_await this->read_bulletin(request.section, request.article);
-                co_await this->switch_thread(*ch);
+                co_await this->switch_thread(weak);
 
                 auto flag = BULLETIN_BUTTON_ENABLE::NONE;
                 if (article.next)
@@ -892,7 +896,7 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
         }
         catch (std::exception& e)
         {
-            if (this->alive(*ch))
+            if (weak.expired() == false)
                 ch->show_bulletin_message(e.what(), false, mail);
         }
     }
@@ -903,13 +907,13 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
         try
         {
             co_await this->write_bulletin(*ch, request.section, request.title, request.contents);
-            co_await this->switch_thread(*ch);
+            co_await this->switch_thread(weak);
 
             ch->show_bulletin_message(_TEXT(MESSAGE_BULLETIN_WRITE), true, false);
         }
         catch (std::exception& e)
         {
-            if (this->alive(*ch))
+            if (weak.expired() == false)
                 ch->show_bulletin_message(e.what(), false, false);
         }
     }
@@ -923,20 +927,20 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
             if (mail)
             {
                 auto&& resp = co_await this->delete_mail(*ch, request.article);
-                co_await this->switch_thread(*ch);
+                co_await this->switch_thread(weak);
                 ch->show_bulletin_message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, true);
             }
             else
             {
                 co_await this->delete_bulletin(*ch, request.section, request.article);
-                co_await this->switch_thread(*ch);
+                co_await this->switch_thread(weak);
 
                 ch->show_bulletin_message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, false);
             }
         }
         catch (std::exception& e)
         {
-            if (this->alive(*ch))
+            if (weak.expired() == false)
                 ch->show_bulletin_message(e.what(), false, mail);
         }
     }
@@ -947,14 +951,14 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
         try
         {
             auto&& resp = co_await this->mail_list(*ch, 0xFFFF, 20); // TODO: 20 -> const
-            co_await this->switch_thread(*ch);
+            co_await this->switch_thread(weak);
 
             this->assert_mail(resp.error);
             ch->show_mail_box(resp.summary_list, MAIL_BUTTON_ENABLE::NEW);
         }
         catch (std::exception& e)
         {
-            if (this->alive(*ch))
+            if (weak.expired() == false)
                 ch->show_bulletin_message(e.what(), false, true);
         }
     }
@@ -965,12 +969,12 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
         try
         {
             auto&& resp = co_await this->send_mail(*ch, request.user, request.title, request.contents);
-            co_await this->switch_thread(*ch);
+            co_await this->switch_thread(weak);
             ch->show_bulletin_message("우편을 보냈습니다.", true, true);
         }
         catch (std::exception& e)
         {
-            if (this->alive(*ch))
+            if (weak.expired() == false)
                 ch->show_bulletin_message(e.what(), false, true);
         }
     }
@@ -1175,7 +1179,8 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
     if (me->inited() == false)
         co_return true;
 
-    auto map = me->map();
+    auto weak = me->weak_from_this();
+    auto map  = me->map();
     if (map == nullptr)
         co_return true;
 
@@ -1189,11 +1194,11 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
     try
     {
         co_await this->whisper(*me, request.name, request.message);
-        co_await this->switch_thread(*me);
+        co_await this->switch_thread(weak);
     }
     catch (std::exception& e)
     {
-        if (this->alive(*me))
+        if (weak.expired() == false)
             me->message(e.what(), MESSAGE_TYPE::NOTIFY);
     }
     co_return true;

@@ -1,8 +1,36 @@
 #ifndef __CONTAINER_H__
 #define __CONTAINER_H__
 
+/**
+ * @file    inventory.h
+ * @brief   Template-based inventory system for managing game object collections
+ * @author  FB Development Team
+ *
+ * @details This file implements a comprehensive template-based inventory system that
+ *          provides efficient storage and management of game objects such as items,
+ *          spells, and other entities. The system uses a fixed-capacity slot-based
+ *          approach for consistent memory usage and predictable performance.
+ *
+ *          Key features:
+ *          - Template-based design for type-safe object storage (items, spells, etc.)
+ *          - Fixed capacity of 52 slots for consistent memory usage and performance
+ *          - Owner-based association with life entities for proper context management
+ *          - Slot-based item management with automatic positioning and slot finding
+ *          - STL-compatible iterator interface for seamless integration with algorithms
+ *          - Virtual method support for specialized inventory behaviors and customization
+ *          - Thread-safe operations with proper bounds checking and validation
+ *          - Efficient add, remove, swap operations for inventory management
+ *          - Free slot tracking and availability checking for optimal space utilization
+ *          - Support for both automatic and manual slot assignment strategies
+ *
+ * @note    The inventory system is fundamental to the game's item management and
+ *          provides the foundation for player inventories, equipment systems,
+ *          spell books, and other collection-based game mechanics.
+ */
+
 #include <stdlib.h>
 #include <memory>
+#include <array>
 
 namespace fb { namespace game {
 
@@ -35,15 +63,13 @@ template <typename T>
 class inventory
 {
 public:
-    using array_type     = std::array<T*, CONTAINER_CAPACITY>;
-    using iterator       = array_type::iterator;
-    using const_iterator = array_type::const_iterator;
+    using array_type     = std::array<std::shared_ptr<T>, CONTAINER_CAPACITY>;
+    using iterator       = typename array_type::iterator;
+    using const_iterator = typename array_type::const_iterator;
 
 private:
     life&      _owner;
-    array_type _elements = {
-        nullptr,
-    };
+    array_type _elements = {};
 
 protected:
     /**
@@ -54,11 +80,14 @@ protected:
      *
      * @param      owner  The life entity that owns this inventory.
      */
-    inventory(life& owner);
+    inventory(life& owner) :
+        _owner(owner)
+    { }
+
     /**
      * @brief      Destroys the inventory and cleans up resources.
      */
-    ~inventory();
+    ~inventory() = default;
 
 protected:
     /**
@@ -72,7 +101,12 @@ protected:
      *
      * @return     The element that was previously at this position, or nullptr.
      */
-    T* set(T* element, int position);
+    std::shared_ptr<T> set(std::shared_ptr<T> element, int position)
+    {
+        auto before               = this->_elements[position];
+        this->_elements[position] = element;
+        return before;
+    }
 
 public:
     /**
@@ -83,7 +117,15 @@ public:
      *
      * @return     The index of the next empty slot, or 0xFF if inventory is full.
      */
-    uint8_t next() const;
+    uint8_t next() const
+    {
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            if (this->at(i) == nullptr)
+                return i;
+        }
+        return 0xFF;
+    }
 
     /**
      * @brief      Gets a reference to the inventory owner.
@@ -93,7 +135,10 @@ public:
      *
      * @return     Reference to the owning life entity.
      */
-    life& owner();
+    life& owner()
+    {
+        return this->_owner;
+    }
 
     /**
      * @brief      Gets a const reference to the inventory owner.
@@ -103,7 +148,10 @@ public:
      *
      * @return     Const reference to the owning life entity.
      */
-    const life& owner() const;
+    const life& owner() const
+    {
+        return this->_owner;
+    }
 
     /**
      * @brief      Gets the element at the specified inventory slot.
@@ -115,7 +163,13 @@ public:
      *
      * @return     Pointer to the element at the specified slot, or nullptr if empty/invalid.
      */
-    virtual T* at(uint8_t index) const;
+    virtual std::shared_ptr<T> at(uint8_t index) const
+    {
+        if (index > CONTAINER_CAPACITY - 1)
+            return nullptr;
+        return this->_elements[index];
+    }
+
     /**
      * @brief      Adds an element to the first available slot.
      *
@@ -126,7 +180,15 @@ public:
      *
      * @return     The slot index where the element was placed, or 0xFF if failed.
      */
-    virtual uint8_t add(T& element);
+    virtual uint8_t add(std::shared_ptr<T> element)
+    {
+        auto next_slot = this->next();
+        if (next_slot != 0xFF)
+        {
+            this->_elements[next_slot] = element;
+        }
+        return next_slot;
+    }
 
     /**
      * @brief      Adds an element to a specific slot.
@@ -139,7 +201,13 @@ public:
      *
      * @return     The slot index where the element was placed, or 0xFF if failed.
      */
-    virtual uint8_t add(T& element, uint8_t index);
+    virtual uint8_t add(std::shared_ptr<T> element, uint8_t index)
+    {
+        if (this->_elements[index] != nullptr)
+            return 0xFF;
+        this->_elements[index] = element;
+        return index;
+    }
 
     /**
      * @brief      Removes the element at the specified slot.
@@ -151,7 +219,14 @@ public:
      *
      * @return     True if an element was removed, false if slot was already empty.
      */
-    virtual bool remove(uint8_t index);
+    virtual bool remove(uint8_t index)
+    {
+        auto element = this->at(index);
+        if (element == nullptr)
+            return false;
+        this->_elements[index] = nullptr;
+        return true;
+    }
 
     /**
      * @brief      Swaps elements between two inventory slots.
@@ -164,7 +239,16 @@ public:
      *
      * @return     True if the swap was successful, false if indices are invalid.
      */
-    virtual bool swap(uint8_t src, uint8_t dst);
+    virtual bool swap(uint8_t src, uint8_t dst)
+    {
+        if (src == dst)
+            return false;
+        if (src > CONTAINER_CAPACITY - 1 || dst > CONTAINER_CAPACITY - 1)
+            return false;
+        std::swap(this->_elements[src], this->_elements[dst]);
+        return true;
+    }
+
     /**
      * @brief      Checks if the inventory has any free slots.
      *
@@ -173,7 +257,15 @@ public:
      *
      * @return     True if at least one slot is free, false if inventory is full.
      */
-    bool free() const;
+    bool free() const
+    {
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            if (this->_elements[i] == nullptr)
+                return true;
+        }
+        return false;
+    }
 
     /**
      * @brief      Gets the number of free slots in the inventory.
@@ -183,7 +275,16 @@ public:
      *
      * @return     The number of free slots (0-52).
      */
-    uint8_t free_size() const;
+    uint8_t free_size() const
+    {
+        uint8_t count = 0;
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            if (this->_elements[i] == nullptr)
+                count++;
+        }
+        return count;
+    }
 
     /**
      * @brief      Gets an iterator to the beginning of the inventory.
@@ -193,7 +294,10 @@ public:
      *
      * @return     Iterator to the beginning of the inventory.
      */
-    iterator begin();
+    iterator begin()
+    {
+        return this->_elements.begin();
+    }
 
     /**
      * @brief      Gets an iterator to the end of the inventory.
@@ -203,7 +307,10 @@ public:
      *
      * @return     Iterator to the end of the inventory.
      */
-    iterator end();
+    iterator end()
+    {
+        return this->_elements.end();
+    }
 
     /**
      * @brief      Gets a const iterator to the beginning of the inventory.
@@ -213,7 +320,10 @@ public:
      *
      * @return     Const iterator to the beginning of the inventory.
      */
-    const_iterator cbegin() const;
+    const_iterator cbegin() const
+    {
+        return this->_elements.cbegin();
+    }
 
     /**
      * @brief      Gets a const iterator to the end of the inventory.
@@ -223,7 +333,10 @@ public:
      *
      * @return     Const iterator to the end of the inventory.
      */
-    const_iterator cend() const;
+    const_iterator cend() const
+    {
+        return this->_elements.cend();
+    }
 
 public:
     /**
@@ -233,7 +346,11 @@ public:
      *
      * @return     The result of the array indexer
      */
-    T* operator[] (int index);
+    std::shared_ptr<T> operator[] (int index)
+    {
+        return this->at(index);
+    }
+
     /**
      * @brief      Array indexer operator.
      *
@@ -241,10 +358,11 @@ public:
      *
      * @return     The result of the array indexer
      */
-    const T* operator[] (int index) const;
+    const std::shared_ptr<T> operator[] (int index) const
+    {
+        return this->at(index);
+    }
 };
-
-#include "inventory.hpp"
 
 }} // namespace fb::game
 

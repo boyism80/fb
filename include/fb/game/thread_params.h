@@ -33,11 +33,11 @@ public:
     /// Container type for thread-local group management
     using group_container = std::unordered_map<uint32_t, std::unique_ptr<group>>;
     /// Container type for thread-local map references
-    using map_container = std::unordered_map<uint32_t, map*>;
+    using map_container = std::unordered_map<uint32_t, std::shared_ptr<map>>;
     /// Container type for thread-local mob respawn points
     using rezen_container = std::vector<rezen>;
     /// Container type for thread-local character references
-    using character_container = std::unordered_map<uint32_t, character*>;
+    using character_container = std::unordered_map<uint32_t, std::shared_ptr<character>>;
 
 public:
     group_container     groups;     ///< Groups managed by this thread

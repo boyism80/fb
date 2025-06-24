@@ -24,18 +24,18 @@ uint32_t life::heal(uint32_t value, fb::game::object* from)
     return this->_hp - before;
 }
 
-uint32_t life::damage(uint32_t value, fb::game::object* from, bool critical)
+uint32_t life::damage(uint32_t value, std::shared_ptr<fb::game::object> from, bool critical)
 {
     this->assert_thread();
     if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
     {
-        auto ch = static_cast<fb::game::character*>(from);
+        auto ch = std::static_pointer_cast<fb::game::character>(from);
         for (auto mob : ch->spawned_mobs())
         {
-            if (mob == this)
+            if (mob.get() == this)
                 continue;
 
-            mob->target(this);
+            mob->target(std::static_pointer_cast<fb::game::life>(this->shared_from_this()));
         }
     }
 
@@ -72,7 +72,7 @@ void life::update_hp(uint32_t diff, bool critical)
     this->listener.on_update_hp(*this, diff, critical);
 }
 
-void life::kill(fb::game::object* from, DESTROY_TYPE destroy_type)
+void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type)
 {
     this->_hp = 0;
     this->listener.on_dead(*this, from);

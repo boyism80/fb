@@ -30,10 +30,10 @@ bool fb::game::equipment::active()
     if (this->_container == nullptr)
         return false;
 
-    fb::game::item* before = nullptr;
-    auto&           owner  = this->_container->owner;
-    auto            parts  = EQUIPMENT_PARTS::UNKNOWN;
-    auto&           model  = this->based<fb::model::equipment>();
+    auto  before = std::shared_ptr<fb::game::item>();
+    auto& owner  = this->_container->owner;
+    auto  parts  = EQUIPMENT_PARTS::UNKNOWN;
+    auto& model  = this->based<fb::model::equipment>();
 
     for (auto& dsl : model.condition)
     {
@@ -99,22 +99,22 @@ bool fb::game::equipment::active()
     switch (model.attr())
     {
     case ITEM_ATTRIBUTE::WEAPON:
-        before = owner.items.weapon(static_cast<fb::game::weapon*>(this));
+        before = owner.items.weapon(this->shared_from_this_as<fb::game::weapon>());
         parts  = EQUIPMENT_PARTS::WEAPON;
         break;
 
     case ITEM_ATTRIBUTE::ARMOR:
-        before = owner.items.armor(static_cast<fb::game::armor*>(this));
+        before = owner.items.armor(this->shared_from_this_as<fb::game::armor>());
         parts  = EQUIPMENT_PARTS::ARMOR;
         break;
 
     case ITEM_ATTRIBUTE::SHIELD:
-        before = owner.items.shield(static_cast<fb::game::shield*>(this));
+        before = owner.items.shield(this->shared_from_this_as<fb::game::shield>());
         parts  = EQUIPMENT_PARTS::SHIELD;
         break;
 
     case ITEM_ATTRIBUTE::HELMET:
-        before = owner.items.helmet(static_cast<fb::game::helmet*>(this));
+        before = owner.items.helmet(this->shared_from_this_as<fb::game::helmet>());
         parts  = EQUIPMENT_PARTS::HELMET;
         break;
 
@@ -128,7 +128,7 @@ bool fb::game::equipment::active()
             parts = EQUIPMENT_PARTS::RIGHT_HAND;
         }
 
-        before = owner.items.ring(static_cast<fb::game::ring*>(this));
+        before = owner.items.ring(this->shared_from_this_as<fb::game::ring>());
         break;
 
     case ITEM_ATTRIBUTE::AUXILIARY:
@@ -141,7 +141,7 @@ bool fb::game::equipment::active()
             parts = EQUIPMENT_PARTS::RIGHT_AUX;
         }
 
-        before = owner.items.auxiliary(static_cast<fb::game::auxiliary*>(this));
+        before = owner.items.auxiliary(this->shared_from_this_as<fb::game::auxiliary>());
         break;
 
     default:
@@ -150,7 +150,7 @@ bool fb::game::equipment::active()
 
     fb::game::item::active();
 
-    owner.items.remove(*this, 1, ITEM_DELETE_TYPE::NONE, false);
+    owner.items.remove(this->shared_from_this_as<fb::game::item>(), 1, ITEM_DELETE_TYPE::NONE, false);
     owner.items.add(before);
     owner.listener.on_equipment_on(owner, *this, parts);
 

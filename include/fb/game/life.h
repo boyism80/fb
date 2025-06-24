@@ -1,6 +1,32 @@
 #ifndef __LIFE_H__
 #define __LIFE_H__
 
+/**
+ * @file    life.h
+ * @brief   Base class for all living entities with combat and magic capabilities
+ * @author  FB Development Team
+ *
+ * @details This file implements the life entity system that extends the base object
+ *          class to provide functionality specific to living entities such as player
+ *          characters and monsters. Life entities have health points, mana points,
+ *          combat statistics, and can engage in combat and spell casting.
+ *
+ *          Key features:
+ *          - HP/MP management with base and buffed values calculation
+ *          - Complete combat statistics system (STR, DEX, INT, damage, defense)
+ *          - Spell system integration with casting mechanics and cooldowns
+ *          - Comprehensive buff/debuff system with crowd control effects
+ *          - Advanced combat mechanics (damage calculation, critical hits, miss chance)
+ *          - Status effects management (paralysis, invincibility, cover protection)
+ *          - Experience points and character progression support
+ *          - Lua scripting integration for dynamic combat behavior
+ *          - Event-driven architecture with specialized life entity listeners
+ *          - Thread-safe operations for multi-threaded game server environment
+ *
+ * @note    This class serves as the foundation for all entities that can participate
+ *          in combat, cast spells, and have health/mana resources in the game world.
+ */
+
 #include <fb/game/object.h>
 
 namespace fb::game {
@@ -386,7 +412,7 @@ public:
      *
      * @return     The actual damage dealt
      */
-    virtual uint32_t damage(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
+    virtual uint32_t damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false);
 
     /**
      * @brief      Increases MP by the specified amount.
@@ -429,7 +455,8 @@ public:
      * @param      from          The object that caused the death (optional)
      * @param[in]  destroy_type  How the entity should be destroyed
      */
-    virtual void kill(fb::game::object* from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual void kill(std::shared_ptr<fb::game::object> from         = nullptr,
+                      DESTROY_TYPE                      destroy_type = DESTROY_TYPE::DEFAULT);
 
     /**
      * @brief      Gets the current crowd control effects.
@@ -1127,7 +1154,7 @@ struct life::listener_t : public virtual fb::game::object::listener_t, public vi
      * @param      me    The life entity that died
      * @param      you   The object that caused the death (optional)
      */
-    virtual void on_dead(life& me, object* you) = 0;
+    virtual void on_dead(life& me, std::shared_ptr<fb::game::object> you) = 0;
 
     /**
      * @brief      Called when a life entity's HP changes and needs visual update.

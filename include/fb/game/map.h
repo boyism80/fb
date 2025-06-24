@@ -1,6 +1,32 @@
 #ifndef __MAP_H__
 #define __MAP_H__
 
+/**
+ * @file    map.h
+ * @brief   Game world map system with spatial management and object tracking
+ * @author  FB Development Team
+ *
+ * @details This file implements the map system that represents individual game world
+ *          areas in the FB 2D MMORPG. Maps provide spatial organization, collision
+ *          detection, object management, and serve as the primary containers for
+ *          game world interactions and gameplay.
+ *
+ *          Key features:
+ *          - Tile-based spatial organization with collision detection system
+ *          - Sector-based optimization for efficient spatial queries and object management
+ *          - Comprehensive object container management for all map entities
+ *          - Door and warp point management for map transitions
+ *          - Movement validation and pathfinding support
+ *          - Thread-safe operations with automatic context switching
+ *          - Lua scripting integration for dynamic map behavior and events
+ *          - Real-time object tracking and proximity-based queries
+ *          - Map loading and initialization from binary data files
+ *          - Active/inactive state management for performance optimization
+ *
+ * @note    Maps are the fundamental spatial containers where all game interactions
+ *          occur, providing the foundation for movement, combat, and social activities.
+ */
+
 #include <fb/game/door/container.h>
 #include <fb/game/object/container.h>
 #include <fb/game/sector.h>
@@ -41,12 +67,12 @@ public:
 
 public:
     using unique_tiles  = std::unique_ptr<tile[]>;
-    using unique_sector = std::unique_ptr<sectors>;
+    using shared_sector = std::shared_ptr<sectors>;
 
 private:
     fb::model::size16_t _size  = fb::model::size16_t(0, 0);
     unique_tiles        _tiles = nullptr;
-    unique_sector       _sectors;
+    shared_sector       _sectors;
 
 public:
     const fb::game::context& context;
@@ -214,7 +240,7 @@ public:
      *
      * @return     Pointer to the sector containing the position, or nullptr if invalid
      */
-    sector* sector_at(const fb::model::point16_t& position);
+    std::shared_ptr<fb::game::sector> sector_at(const fb::model::point16_t& position);
 
     /**
      * @brief      Finds all objects near a pivot point within interaction range.
@@ -224,7 +250,8 @@ public:
      *
      * @return     Vector of object pointers within range of the pivot point
      */
-    std::vector<object*> nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<std::shared_ptr<fb::game::object>> nears(const fb::model::point16_t& pivot,
+                                                         OBJECT_TYPE                 type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Finds all objects at or below a specific position on the map.
@@ -234,7 +261,8 @@ public:
      *
      * @return     Vector of object pointers at or below the specified position
      */
-    std::vector<object*> belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<std::shared_ptr<fb::game::object>> belows(const fb::model::point16_t& pivot,
+                                                          OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Gets the thread that manages this map's execution context.

@@ -1,6 +1,7 @@
 #include <fb/game/protocol/character/internal_info.h>
 #ifndef BOT
 #include <fb/game/group.h>
+#include <fb/game/context.h>
 #endif
 
 namespace fb::protocol::game::response {
@@ -14,12 +15,12 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     writer.write<uint8_t>(this->ch.dam());
     writer.write<uint8_t>(this->ch.hit());
 
-    auto& clan_lock_ptr = this->ch.clan();
-    if (clan_lock_ptr != nullptr)
+    auto& clan_id = this->ch.clan_id();
+    if (clan_id.has_value())
     {
-        clan_lock_ptr->read([&writer](auto& clan) {
-            writer.write<std::string>(clan.name());
-            writer.write<std::string>(clan.title().value_or(""));
+        this->ch.context.clans.read(clan_id.value(), [&writer](auto& clan) {
+            writer.write<std::string>(clan->name());
+            writer.write<std::string>(clan->title().value_or(""));
         });
     }
     else
@@ -29,23 +30,16 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     }
     writer.write<std::string>(this->ch.title());
 
-    auto& shared_group_lock = this->ch.group();
-    if (shared_group_lock != nullptr)
+    auto& group_id = this->ch.group_id();
+    if (group_id.has_value())
     {
-        shared_group_lock->read([&writer](auto& group) {
-            if (group.inited())
-            {
-                auto sstream = std::stringstream();
-                sstream << "그룹원" << std::endl << "  * " << group.master() << std::endl;
+        this->ch.context.groups.read(group_id.value(), [&writer](auto& group) {
+            auto sstream = std::stringstream();
+            sstream << "그룹원" << std::endl << "  * " << group->master() << std::endl;
 
-                for (auto& member : group.members())
-                    sstream << "    " << member << std::endl;
-                writer.write<std::string>(sstream.str());
-            }
-            else
-            {
-                writer.write<std::string>("그룹 정보 가져오는중.");
-            }
+            for (auto& member : group->members())
+                sstream << "    " << member << std::endl;
+            writer.write<std::string>(sstream.str());
         });
     }
     else
@@ -60,12 +54,13 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     auto& class_name = model.promotion[this->ch.cls()][this->ch.promotion()].name;
     writer.write<std::string>(class_name);
 
-    fb::game::equipment* equipments[] = {this->ch.items.helmet(),
-                                         this->ch.items.ring(EQUIPMENT_POSITION::LEFT),
-                                         this->ch.items.ring(EQUIPMENT_POSITION::RIGHT),
-                                         this->ch.items.auxiliary(EQUIPMENT_POSITION::LEFT),
-                                         this->ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT)};
-    for (int i = 0, size = sizeof(equipments) / sizeof(fb::game::equipment*); i < size; i++)
+    auto equipments =
+        std::array<std::shared_ptr<fb::game::equipment>, 5>{this->ch.items.helmet(),
+                                                            this->ch.items.ring(EQUIPMENT_POSITION::LEFT),
+                                                            this->ch.items.ring(EQUIPMENT_POSITION::RIGHT),
+                                                            this->ch.items.auxiliary(EQUIPMENT_POSITION::LEFT),
+                                                            this->ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT)};
+    for (int i = 0, size = equipments.size(); i < size; i++)
     {
         if (equipments[i] == nullptr)
         {

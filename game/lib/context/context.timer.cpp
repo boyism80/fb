@@ -27,9 +27,8 @@ async::task<void> context::handle_time()
     auto updated = fb::model::datetime();
     if (this->_time.hours() != updated.hours())
     {
-        this->foreach_ch([hours = updated.hours()](auto& ch) -> async::task<void> {
-            ch.update_time(hours);
-            co_return;
+        this->characters.foreach ([hours = updated.hours()](auto& ch) {
+            ch->update_time(hours);
         });
     }
 

@@ -1,83 +1,63 @@
 #include <fb/game/context.h>
+#include <fb/game/group.h>
+#include <fb/game/character.h>
 
 using namespace fb::game;
 
-void context::foreach_ch(const group& group, const std::function<void(fb::game::character&)>& fn)
+async::task<void> context::upsert_group_then(uint32_t gid, const std::function<void(group_ptr&)>& fn)
 {
-    this->foreach_ch(group.members(), fn);
-}
+    co_await this->groups.async_write(
+        gid,
+        [this, gid, fn](auto& group) -> async::task<void> {
+            // Execute callback with existing group
+            fn(group);
+            co_return;
+        },
+        [this, gid]() -> async::task<std::shared_ptr<fb::game::group>> {
+            // Fetch group data from internal server when not found locally
+            auto&& resp = co_await this->http.get<internal_resp::GetGroup>("internal", std::format("/group/{}", gid));
+            switch (static_cast<ERROR_CODE>(resp.error))
+            {
+            case ERROR_CODE::NONE:
+                co_return this->make<fb::game::group>(gid, resp.group.master, resp.group.members);
 
-void context::upsert_group_then(uint32_t gid, const std::function<void(shared_group_lock&)>& fn)
-{
-    this->_shard[gid]->groups.write([this, gid, &fn](auto& groups) {
-        if (groups.contains(gid) == false)
-        {
-            groups.insert({gid, std::make_shared<fb::locker<fb::game::group>>(*this, gid)});
-            async::awaitable_then(this->http.get<internal_resp::GetGroup>("internal", std::format("/group/{}", gid)),
-                                  [this, gid](auto result) {
-                                      try
-                                      {
-                                          auto&& resp = result();
-                                          switch (static_cast<ERROR_CODE>(resp.error))
-                                          {
-                                          case ERROR_CODE::NONE:
-                                              break;
-
-                                          default:
-                                              throw std::runtime_error(
-                                                  std::format("cannot get group (error : {})", resp.error));
-                                          }
-
-                                          this->_shard[gid]->groups.read([this, gid, &resp](auto& groups) {
-                                              if (!groups.contains(gid))
-                                                  return;
-
-                                              auto& group_lock_ptr = groups.at(gid);
-                                              group_lock_ptr->write([&resp](auto& group) {
-                                                  group.update(resp.group.master, resp.group.members);
-                                              });
-                                          });
-                                      }
-                                      catch (std::exception& e)
-                                      {
-                                          fb::logger::fatal(e.what());
-                                      }
-                                  });
-        }
-
-        fn(groups.at(gid));
-    });
-}
-
-void context::upsert_group_then(uint32_t                                       gid,
-                                const std::string&                             master,
-                                const std::vector<std::string>&                members,
-                                const std::function<void(shared_group_lock&)>& fn)
-{
-    this->_shard[gid]->groups.write([this, gid, &fn, &master, &members](auto& groups) {
-        if (groups.contains(gid) == false)
-        {
-            groups.insert({gid, std::make_shared<fb::locker<fb::game::group>>(*this, gid)});
-        }
-
-        auto& group_lock_ptr = groups.at(gid);
-        group_lock_ptr->write([&master, &members](auto& group) {
-            group.update(master, members);
+            default:
+                throw std::runtime_error(std::format("cannot get group (error : {})", resp.error));
+            }
         });
-        fn(group_lock_ptr);
-    });
+}
+
+async::task<void> context::upsert_group_then(uint32_t                               gid,
+                                             const std::string&                     master,
+                                             const std::vector<std::string>&        members,
+                                             const std::function<void(group_ptr&)>& fn)
+{
+    co_await this->groups.async_write(
+        gid,
+        [this, fn, master, members](auto& group) -> async::task<void> {
+            // Update existing group with new member data
+            group->update(master, members);
+            fn(group);
+            co_return;
+        },
+        [this, gid, master, members]() -> std::shared_ptr<fb::game::group> {
+            // Create new group with provided data
+            return this->make<fb::game::group>(gid, master, members);
+        });
 }
 
 async::task<bool> context::create_group(character& me, const std::string& target)
 {
+    auto weak = me.weak_from_this_as<fb::game::character>();
     try
     {
         if (me.option(OPTION::GROUP) == false)
             throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
         auto&& resp = co_await this->http.post("internal", "/group/create", EnterGroup{me.id(), target});
+        co_await this->switch_thread(weak);
 
-        this->on_enter_group(resp);
+        co_await this->on_enter_group(resp);
         co_return true;
     }
     catch (std::exception& e)
@@ -89,6 +69,7 @@ async::task<bool> context::create_group(character& me, const std::string& target
 
 void context::assert_group(uint32_t error, const std::string& actor) const
 {
+    // Convert error codes to localized error messages
     switch (static_cast<ERROR_CODE>(error))
     {
     case ERROR_CODE::NONE:
@@ -120,62 +101,59 @@ void context::assert_group(uint32_t error, const std::string& actor) const
     }
 }
 
-void context::on_enter_group(internal_resp::EnterGroup resp)
+async::task<void> context::on_enter_group(const internal_resp::EnterGroup& resp)
 {
     this->assert_group(resp.error, resp.member);
 
     auto gid = resp.group.id;
-    this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp](auto& group_lock_ptr) {
+    co_await this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp](auto& group) {
+        // Build complete member list including master
         auto members = std::vector<std::string>{resp.group.members};
         members.push_back(resp.group.master);
+
         if (resp.action == GroupAction::Kick)
             members.push_back(resp.member);
 
-        this->foreach_ch(members, [action = resp.action, member = resp.member, &group_lock_ptr](auto& character) {
-            switch (action)
+        // Process group action for all affected members
+        this->characters.foreach (members, [resp, group](auto& ch) {
+            switch (resp.action)
             {
             case GroupAction::Create:
-                group_lock_ptr->write([&character](auto& group) {
-                    group.enter(character);
-                });
-                character.group(group_lock_ptr);
-                if (character.name() == member)
+                group->enter(ch);
+                ch->group_id(group->id());
+                if (ch->name() == resp.member)
                 {
-                    character.message("그룹에 참여했습니다.");
+                    ch->message("그룹에 참여했습니다.");
                 }
                 else
                 {
-                    character.message(std::format("{}님 그룹 참여", member));
+                    ch->message(std::format("{}님 그룹 참여", resp.member));
                 }
                 break;
 
             case GroupAction::Enter:
-                if (character.name() == member)
+                if (ch->name() == resp.member)
                 {
-                    character.message("그룹에 참여했습니다.");
-                    group_lock_ptr->write([&character](auto& group) {
-                        group.enter(character);
-                    });
-                    character.group(group_lock_ptr);
+                    ch->message("그룹에 참여했습니다.");
+                    group->enter(ch);
+                    ch->group_id(group->id());
                 }
                 else
                 {
-                    character.message(std::format("{}님 그룹 참여", member));
+                    ch->message(std::format("{}님 그룹 참여", resp.member));
                 }
                 break;
 
             case GroupAction::Kick:
-                if (character.name() == member)
+                if (ch->name() == resp.member)
                 {
-                    group_lock_ptr->write([&character](auto& group) {
-                        group.leave(character);
-                    });
-                    character.group().reset();
-                    character.message("그룹에서 추방당했습니다.");
+                    group->leave(ch);
+                    ch->group_reset();
+                    ch->message("그룹에서 추방당했습니다.");
                 }
                 else
                 {
-                    character.message(std::format("{}님 그룹 탈퇴", member));
+                    ch->message(std::format("{}님 그룹 탈퇴", resp.member));
                 }
                 break;
             }
@@ -183,7 +161,7 @@ void context::on_enter_group(internal_resp::EnterGroup resp)
     });
 }
 
-void context::on_leave_group(const internal_resp::LeaveGroup& resp)
+async::task<void> context::on_leave_group(const internal_resp::LeaveGroup& resp)
 {
     this->assert_group(resp.error, resp.member);
 
@@ -192,40 +170,40 @@ void context::on_leave_group(const internal_resp::LeaveGroup& resp)
     {
     case GroupAction::Leave:
     {
-        this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp, gid](auto& group_lock_ptr) {
-            this->foreach_ch(resp.member, [&group_lock_ptr](auto& ch) {
-                ch.group().reset();
+        co_await this->upsert_group_then(gid,
+                                         resp.group.master,
+                                         resp.group.members,
+                                         [this, &resp, gid](auto& group) -> async::task<void> {
+                                             co_await this->characters.invoke(resp.member, [group](auto& ch) {
+                                                 ch->group_reset();
+                                                 group->leave(ch);
+                                             });
 
-                group_lock_ptr->write([&ch](auto& group) {
-                    group.leave(ch);
-                });
-            });
-
-            auto members = std::vector<std::string>{resp.member};
-            members.push_back(resp.group.master);
-            this->foreach_ch(members, [member = resp.member](auto& ch) {
-                if (ch.name() == member)
-                    ch.message("그룹 탈퇴", MESSAGE_TYPE::STATE);
-                else
-                    ch.message(std::format("{}님 그룹에서 탈퇴", member), MESSAGE_TYPE::STATE);
-            });
-        });
+                                             auto members = std::vector<std::string>{resp.member};
+                                             members.push_back(resp.group.master);
+                                             this->characters.foreach (members, [member = resp.member](auto& ch) {
+                                                 if (ch->name() == member)
+                                                     ch->message("그룹 탈퇴", MESSAGE_TYPE::STATE);
+                                                 else
+                                                     ch->message(std::format("{}님 그룹에서 탈퇴", member),
+                                                                 MESSAGE_TYPE::STATE);
+                                             });
+                                         });
     }
     break;
 
     case GroupAction::BreakUp:
     {
-        this->_shard[gid]->groups.write([this, gid, &resp](auto& groups) {
+        co_await this->groups.async_write(gid, [this, gid, &resp](auto& groups) -> async::task<void> {
             auto members = std::vector<std::string>{resp.group.members};
             members.push_back(resp.group.master);
 
-            this->foreach_ch(members, [](auto& ch) {
-                ch.group().reset();
-                ch.message("그룹 해체", MESSAGE_TYPE::STATE);
+            co_await this->characters.foreach (members, [](auto& ch) {
+                ch->group_reset();
+                ch->message("그룹 해체", MESSAGE_TYPE::STATE);
             });
-
-            groups.erase(gid);
         });
+        this->groups.erase(gid);
     }
     break;
     }
@@ -245,11 +223,9 @@ void context::on_group_broadcast(const internal_resp::BroadcastGroup& resp)
 {
     this->assert_group(resp.error, "");
 
-    this->upsert_group_then(resp.group, [this, message = resp.message, type = resp.type](auto& group_lock) {
-        group_lock->read([this, message, type](auto& group) {
-            this->foreach_ch(group.members(), [message, type](auto& ch) {
-                ch.message(message, static_cast<MESSAGE_TYPE>(type));
-            });
+    this->upsert_group_then(resp.group, [this, message = resp.message, type = resp.type](auto& group) {
+        this->characters.foreach (group->members(), [message, type](auto& ch) {
+            ch->message(message, static_cast<MESSAGE_TYPE>(type));
         });
     });
 }

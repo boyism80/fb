@@ -1,6 +1,33 @@
 #ifndef __ENCODING_H__
 #define __ENCODING_H__
 
+/**
+ * @file    encoding.h
+ * @brief   Character encoding conversion and Korean language processing utilities
+ * @author  FB Development Team
+ *
+ * @details This file implements comprehensive character encoding conversion utilities
+ *          and Korean language processing functions for the FB 2D MMORPG server.
+ *          The system provides cross-platform encoding support, Korean grammatical
+ *          processing, and URL encoding capabilities for internationalization.
+ *
+ *          Key features:
+ *          - UTF-8 and CP949 encoding conversion with platform-specific handling
+ *          - Multibyte and wide string conversion for cross-platform compatibility
+ *          - Korean grammatical particle processing (을/를, 은/는, etc.)
+ *          - Korean character validation and processing utilities
+ *          - URL encoding for safe HTTP transmission of Korean text
+ *          - Platform-aware encoding conversion (Windows/Linux/Both)
+ *          - Wide string support for Unicode text processing
+ *          - Automatic Korean particle selection based on final consonant rules
+ *          - Cross-platform locale and character set handling
+ *          - Integration with iconv for robust encoding conversion
+ *
+ * @note    This system is essential for proper Korean language support in the
+ *          FB 2D MMORPG, handling both client display and server processing
+ *          of Korean text with proper grammatical formatting.
+ */
+
 #ifndef _WIN32
 #include <locale>
 #include <iconv.h>

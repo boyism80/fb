@@ -47,10 +47,11 @@ bool fb::game::pack::active()
     if (this->_durability <= 0)
         this->count(0);
 
-    auto& owner = this->_container->owner;
-    owner.listener.on_item_update(owner, this->_container->index(*this));
+    auto& owner  = this->_container->owner;
+    auto  shared = this->shared_from_this_as<fb::game::item>();
+    owner.listener.on_item_update(owner, this->_container->index(shared));
     if (this->empty())
-        std::ignore = this->_container->remove(*this, 0xFF, ITEM_DELETE_TYPE::REDUCE);
+        std::ignore = this->_container->remove(shared, 0xFF, ITEM_DELETE_TYPE::REDUCE);
 
     return true;
 }

@@ -39,21 +39,6 @@ async::task<void> fb::lua::dump(const std::string& path)
     }
 }
 
-void luable::to_lua(lua_State* ctx) const
-{
-    if (const auto context = fb::lua::get(ctx); context == nullptr)
-        return;
-
-    const auto allocated = static_cast<void**>(lua_newuserdata(ctx, sizeof(void**))); // [val]
-    *allocated           = (void*)this;
-
-    auto& metaname = this->metaname();
-    luaL_getmetatable(ctx, metaname.c_str());   // [val, mt]
-    lua_pushcfunction(ctx, luable::builtin_gc); // [val, mt, gc]
-    lua_setfield(ctx, -2, "__gc");              // [val, mt]
-    lua_setmetatable(ctx, -2);                  // [val]
-}
-
 luable::luable()
 { }
 
@@ -62,13 +47,6 @@ luable::luable(uint32_t id)
 
 luable::~luable()
 { }
-
-int luable::builtin_gc(lua_State* ctx)
-{
-    if (const auto allocated = static_cast<void**>(lua_touserdata(ctx, 1)); allocated != nullptr)
-        *allocated = nullptr;
-    return 0;
-}
 
 context::context(lua_State* ctx, fb::thread& initial_thread) :
     _ctx(ctx),
@@ -109,18 +87,6 @@ context& context::pushnil()
 context& context::pushboolean(bool value)
 {
     lua_pushboolean(this->_ctx, value);
-    return *this;
-}
-
-context& context::pushobject(const luable* object)
-{
-    object->to_lua(*this);
-    return *this;
-}
-
-context& context::pushobject(const luable& object)
-{
-    object.to_lua(*this);
     return *this;
 }
 
@@ -312,15 +278,19 @@ void context::pending(bool value)
     this->_state = value ? LUA_PENDING : LUA_YIELD;
 }
 
-int context::ensure_yield(fb::context& ctx, fb::thread_switchable& obj, std::function<int()> fn)
+int context::ensure_yield(fb::context& ctx, std::weak_ptr<fb::thread_switchable> weak, std::function<int()> fn)
 {
-    if (this->_initial_thread.id() == obj.thread()->id())
+    auto shared = weak.lock();
+    if (shared == nullptr)
+        return 0;
+
+    if (this->_initial_thread.id() == shared->thread()->id())
     {
         return fn();
     }
     else
     {
-        async::awaitable_then(ctx.switch_thread(obj), [this, fn](auto result) {
+        async::awaitable_then(ctx.switch_thread(weak), [this, fn](auto result) {
             try
             {
                 result();
@@ -336,11 +306,15 @@ int context::ensure_yield(fb::context& ctx, fb::thread_switchable& obj, std::fun
     }
 }
 
-int fb::lua::context::ensure_resume(fb::context&           ctx,
-                                    fb::thread_switchable& obj,
-                                    std::function<int()>   fn,
-                                    bool                   force_resume)
+int fb::lua::context::ensure_resume(fb::context&                         ctx,
+                                    std::weak_ptr<fb::thread_switchable> weak,
+                                    std::function<int()>                 fn,
+                                    bool                                 force_resume)
 {
+    auto shared = weak.lock();
+    if (shared == nullptr)
+        return 0;
+
     if (this->_initial_thread.id() == std::this_thread::get_id())
     {
         auto n = fn();
@@ -356,16 +330,14 @@ int fb::lua::context::ensure_resume(fb::context&           ctx,
     }
     else
     {
-        async::awaitable_then(this->_initial_thread.switching(), [this, fn, &ctx, &obj](auto result) {
+        async::awaitable_then(this->_initial_thread.switching(), [this, fn, &ctx, weak](auto result) {
             try
             {
                 result();
 
-                if (ctx.alive(obj) == false)
-                {
-                    this->release();
-                    return;
-                }
+                auto shared = weak.lock();
+                if (shared == nullptr)
+                    throw std::runtime_error("object not alive");
 
                 auto n = fn();
                 this->resume(n);

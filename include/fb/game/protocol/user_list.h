@@ -47,15 +47,15 @@ public:
     uint16_t               user_count;
     std::vector<user_data> users;
 #else
-    const character&        me;
-    std::vector<character*> users;
+    const character&                                  me;
+    std::vector<std::shared_ptr<fb::game::character>> users;
 #endif
 
 public:
 #ifdef BOT
     user_list() = default;
 #else
-    user_list(const character& me, std::vector<character*>&& users);
+    user_list(const character& me, std::vector<std::shared_ptr<fb::game::character>>&& users);
 #endif
 
 public:

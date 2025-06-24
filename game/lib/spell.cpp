@@ -39,15 +39,9 @@ spells::spells(life& owner) :
 { }
 
 spells::~spells()
-{
-    for (auto spell : *this)
-    {
-        if (spell != nullptr)
-            delete spell;
-    }
-}
+{ }
 
-fb::game::spell* fb::game::spells::find(const std::string& name) const
+std::shared_ptr<fb::game::spell> fb::game::spells::find(const std::string& name) const
 {
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -62,7 +56,7 @@ fb::game::spell* fb::game::spells::find(const std::string& name) const
     return nullptr;
 }
 
-fb::game::spell* fb::game::spells::find(const fb::model::spell& model) const
+std::shared_ptr<fb::game::spell> fb::game::spells::find(const fb::model::spell& model) const
 {
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -77,7 +71,7 @@ fb::game::spell* fb::game::spells::find(const fb::model::spell& model) const
     return nullptr;
 }
 
-uint8_t spells::add(spell& element)
+uint8_t spells::add(std::shared_ptr<spell> element)
 {
     auto& owner = this->owner();
     auto  index = super::add(element);
@@ -88,7 +82,7 @@ uint8_t spells::add(spell& element)
     return index;
 }
 
-uint8_t spells::add(spell& element, uint8_t index)
+uint8_t spells::add(std::shared_ptr<spell> element, uint8_t index)
 {
     auto& owner = this->owner();
 
@@ -103,7 +97,7 @@ uint8_t spells::add(const fb::model::spell& model, uint8_t slot, uint16_t delay)
     auto& owner   = this->owner();
     auto& context = owner.context;
     auto  created = context.make<spell>(owner, model, delay);
-    return this->add(*created, slot);
+    return this->add(created, slot);
 }
 
 uint8_t spells::add(const fb::model::spell& model)
@@ -111,7 +105,7 @@ uint8_t spells::add(const fb::model::spell& model)
     auto& owner   = this->owner();
     auto& context = owner.context;
     auto  created = context.make<spell>(owner, model, 0);
-    return this->add(*created);
+    return this->add(created);
 }
 
 bool spells::remove(uint8_t index)
@@ -177,32 +171,28 @@ buffs::buffs(object& owner) :
 { }
 
 buffs::~buffs()
-{
-    for (auto& [_, buff] : *this)
-    {
-        if (buff != nullptr)
-            delete buff;
-    }
-}
+{ }
 
 bool buffs::contains(const fb::model::spell& model) const
 {
     return this->contains(model.id);
 }
 
-bool buffs::push_back(buff& buff)
+bool buffs::push_back(std::shared_ptr<buff>&& buff)
 {
-    auto& model = buff.model;
+    auto& model = buff->model;
     if (this->contains(model.id))
         return false;
 
-    this->insert({model.id, &buff});
-    this->_owner.listener.on_buff(this->_owner, buff);
+    this->insert({model.id, std::move(buff)});
+    this->_owner.listener.on_buff(this->_owner, *buff);
 
     return true;
 }
 
-buff* buffs::push_back(const fb::model::spell& model, uint32_t seconds, const object* caster)
+std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  model,
+                                       uint32_t                                 seconds,
+                                       const std::shared_ptr<fb::game::object>& caster)
 {
     if (this->contains(model.id))
     {
@@ -212,8 +202,8 @@ buff* buffs::push_back(const fb::model::spell& model, uint32_t seconds, const ob
     }
 
     auto& context = this->_owner.context;
-    auto  created = context.make<buff>(model, caster, seconds);
-    if (this->push_back(*created) == false)
+    auto  created = std::make_shared<buff>(context, model, caster.get(), seconds);
+    if (this->push_back(std::move(created)) == false)
     {
         std::ignore = context.destroy(*created);
         return nullptr;
@@ -241,7 +231,7 @@ bool buffs::remove(const fb::model::spell& spell)
     return this->remove(spell.id);
 }
 
-buff* buffs::operator[] (uint32_t id) const
+std::shared_ptr<buff> buffs::operator[] (uint32_t id) const
 {
     if (this->contains(id) == false)
         return nullptr;

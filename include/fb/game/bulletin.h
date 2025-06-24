@@ -1,6 +1,33 @@
 #ifndef __BULLETIN_H__
 #define __BULLETIN_H__
 
+/**
+ * @file    bulletin.h
+ * @brief   Bulletin board system for community announcements and player posts
+ * @author  FB Development Team
+ *
+ * @details This file implements the bulletin board system that provides community
+ *          communication features for players to share announcements, news, and
+ *          messages. The system supports multiple sections with different access
+ *          levels and administrative controls for organized community interaction.
+ *
+ *          Key features:
+ *          - Multi-section bulletin board organization with categorized content
+ *          - Level-based access control for reading and writing permissions
+ *          - Administrative section support for official announcements
+ *          - Configurable minimum and maximum level requirements per section
+ *          - Complete article management with metadata and content storage
+ *          - Author identification and display name tracking
+ *          - Date-based organization for chronological article sorting
+ *          - Pagination support for efficient browsing of large article lists
+ *          - Section association for proper content categorization
+ *          - Comprehensive permission checking for secure access control
+ *
+ * @note    The bulletin system serves as the primary communication platform
+ *          for server-wide announcements, community events, and player-generated
+ *          content sharing within the game world.
+ */
+
 #include <ctime>
 #include <stdint.h>
 #include <optional>

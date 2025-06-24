@@ -28,14 +28,14 @@ void rezen::spawn(std::thread::id thread_id)
     if (this->_context.maps.contains(this->_model.parent) == false)
         return;
 
-    auto& map = this->_context.maps[this->_model.parent];
-    if (map.active == false)
+    auto map = this->_context.maps[this->_model.parent];
+    if (map->active == false)
         return;
 
-    if (map.is_active() == false)
+    if (map->is_active() == false)
         return;
 
-    auto thread = this->_context.thread(map);
+    auto thread = this->_context.threads.at(thread_id);
     if (thread == nullptr || thread->id() != thread_id)
         return;
 
@@ -52,6 +52,7 @@ void rezen::spawn(std::thread::id thread_id)
 
     for (int i = 0; i < spawn_count; i++)
     {
+        // Use smart pointer for mob creation
         auto mob = this->_context.make<fb::game::mob>(this->_context.model.mob[this->_model.mob],
                                                       mob::initial_params{.alive = true, .rezen = this});
 
@@ -60,20 +61,20 @@ void rezen::spawn(std::thread::id thread_id)
 
         while (true)
         {
-            auto  width    = this->_model.end.x - this->_model.begin.x;
-            auto  height   = this->_model.end.y - this->_model.begin.y;
-            auto& map      = this->_context.maps[this->_model.parent];
-            auto  position = fb::model::point16_t(this->_model.begin.x + (width > 0 ? std::rand() % width : 0),
+            auto width    = this->_model.end.x - this->_model.begin.x;
+            auto height   = this->_model.end.y - this->_model.begin.y;
+            auto map      = this->_context.maps[this->_model.parent];
+            auto position = fb::model::point16_t(this->_model.begin.x + (width > 0 ? std::rand() % width : 0),
                                                  this->_model.begin.y + (height > 0 ? std::rand() % height : 0));
 
-            if (position.x > map.width() - 1 || position.y > map.height() - 1)
+            if (position.x > map->width() - 1 || position.y > map->height() - 1)
                 continue;
 
-            if (map.blocked(position.x, position.y))
+            if (map->blocked(position.x, position.y))
                 continue;
 
             mob->position(position, true);
-            std::ignore = mob->map(&map, position);
+            std::ignore = mob->map(map, position);
             break;
         }
 
@@ -88,7 +89,7 @@ mob::mob(fb::game::context& context, const fb::model::mob& model, const initial_
     life(context, model, params),
     listener(context.listener),
     _rezen(params.rezen),
-    owner(params.owner)
+    owner(params.owner != nullptr ? params.owner->weak_from_this_as<character>() : std::weak_ptr<character>())
 {
     // Initialize AI strategy based on mob's attack type
     this->_ai_strategy = ai::create(model.attack_type);
@@ -139,14 +140,21 @@ async::task<bool> mob::call_script()
     this->_attack_thread->func(model.on_attack);
     this->_attack_thread->pushobject(this);
 
-    if (this->_target != nullptr)
-        this->_attack_thread->pushobject(this->_target);
+    if (this->_target.expired() == false)
+    {
+        auto shared = this->_target.lock();
+        if (shared != nullptr)
+            this->_attack_thread->pushobject(shared);
+    }
     else
         this->_attack_thread->pushnil();
 
-    auto& ctx = this->context;
+    auto& ctx  = this->context;
+    auto  weak = this->weak_from_this();
     co_await this->_attack_thread->call(2);
-    if (ctx.alive(*this) == false)
+
+    auto shared = weak.lock();
+    if (shared == nullptr)
         co_return false;
 
     this->_attack_thread = nullptr;
@@ -175,78 +183,92 @@ void mob::action_time(const fb::model::datetime& dt)
     this->_action_time = dt;
 }
 
-life* mob::target() const
+std::shared_ptr<life> mob::target() const
 {
     this->assert_thread();
 
-    if (this->_target == nullptr)
+    if (this->_target.expired())
         return nullptr;
 
-    bool lost_target = !this->context.alive(*this->_target) || !this->_target->alive() ||
-                       !this->sight(*this->_target) || this->_target->hidden(*this);
+    auto shared = this->_target.lock();
+    if (shared == nullptr)
+        return nullptr;
 
-    return lost_target ? nullptr : this->_target;
+    if (shared->alive() == false)
+        return nullptr;
+
+    if (this->sight(*shared) == false)
+        return nullptr;
+
+    if (shared->hidden(*this))
+        return nullptr;
+
+    return shared;
 }
 
-void mob::target(life* value)
+void mob::target(std::shared_ptr<life> value)
 {
     this->assert_thread();
 
     this->_target = value;
 }
 
-life* mob::oblivion() const
+std::shared_ptr<life> mob::oblivion() const
 {
     this->assert_thread();
 
-    return this->_oblivion;
+    if (this->_oblivion.expired())
+        return nullptr;
+
+    auto shared = this->_oblivion.lock();
+    if (shared == nullptr)
+        return nullptr;
+
+    return shared;
 }
 
-void mob::oblivion(life* value)
+void mob::oblivion(std::shared_ptr<life> value)
 {
     this->assert_thread();
 
     this->_oblivion = value;
 }
 
-life* mob::update_target()
+std::shared_ptr<life> mob::update_target()
 {
     this->assert_thread();
 
-    auto lost_target = this->_target == nullptr || this->context.alive(*this->_target) == false ||
-                       this->_target->alive() == false || this->sight(*this->_target) == false ||
-                       this->_target->hidden(*this);
-
-    if (lost_target)
+    auto target = this->target();
+    if (target == nullptr)
     {
-        this->_target = nullptr;
+        this->_target.reset();
 
         auto& model = this->based<fb::model::mob>();
         if (model.attack_type == MOB_ATTACK_TYPE::CONTAINMENT)
             this->_target = this->find_target();
         else
-            this->_target = nullptr;
+            this->_target.reset();
     }
 
-    return this->_target;
+    return this->_target.lock();
 }
 
-life* mob::find_target()
+std::weak_ptr<life> mob::find_target()
 {
     this->assert_thread();
 
     auto map = this->_map;
     if (map == nullptr)
-        return nullptr;
+        return std::weak_ptr<life>();
 
-    if (this->owner != nullptr)
-        return nullptr;
+    if (this->owner.expired())
+        return std::weak_ptr<life>();
 
     auto min_distance_sqrt = 0xFFFFFFFF;
     for (auto x : this->sight_in(OBJECT_TYPE::CHARACTER))
     {
-        auto life = static_cast<fb::game::life*>(x);
-        if (life == this->_oblivion)
+        auto life = std::static_pointer_cast<fb::game::life>(x);
+        if (life == this->_oblivion.lock())
             continue;
 
         if (life->alive() == false)
@@ -256,20 +278,20 @@ life* mob::find_target()
         if (distance_sqrt > min_distance_sqrt)
             continue;
 
-        this->_target = life;
+        this->_target = life->weak_from_this_as<fb::game::life>();
     }
 
     return this->_target;
 }
 
-bool mob::near_target(const fb::game::life& target, DIRECTION& out) const
+bool mob::near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const
 {
     this->assert_thread();
 
     for (int i = 0; i < 4; i++)
     {
         auto direction = DIRECTION(i);
-        if (this->side(direction, OBJECT_TYPE::LIFE) != &target)
+        if (this->side(direction, OBJECT_TYPE::LIFE) != target)
             continue;
 
         out = direction;
@@ -339,7 +361,7 @@ bool mob::available() const
     return this->alive();
 }
 
-uint32_t mob::damage(uint32_t value, object* from, bool critical)
+uint32_t mob::damage(uint32_t value, std::shared_ptr<object> from, bool critical)
 {
     this->assert_thread();
 
@@ -353,7 +375,7 @@ uint32_t mob::damage(uint32_t value, object* from, bool critical)
     // Handle damage in AI strategy
     if (this->_ai_strategy && from && from->is(OBJECT_TYPE::LIFE))
     {
-        this->_ai_strategy->on_damage(*this, static_cast<life*>(from), fb::model::datetime());
+        this->_ai_strategy->on_damage(*this, std::static_pointer_cast<life>(from), fb::model::datetime());
     }
 
     return result;
@@ -368,7 +390,7 @@ uint32_t mob::auto_attack_damage(MOB_SIZE size) const
     return model.damage.min + (std::rand() % difference);
 }
 
-void mob::kill(object* from, DESTROY_TYPE destroy_type)
+void mob::kill(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
 {
     life::kill(from, destroy_type);
     this->destroy(destroy_type);
@@ -390,7 +412,8 @@ void mob::drop_items()
     }
     this->_items.clear();
 
-    if (this->owner == nullptr)
+    auto owner = this->owner.lock();
+    if (owner == nullptr)
     {
         auto& drop = this->context.model.drop[model.drop];
         for (auto& dsl : drop.dsl)
@@ -404,8 +427,10 @@ void mob::drop_items()
                 if (random > (int)params.percent)
                     continue;
 
-                auto item   = this->context.model.item[params.id].make(this->context);
-                std::ignore = item->map(map, position);
+                // Use smart pointer for item creation
+                auto item_shared = this->context.model.item[params.id].make(this->context);
+                auto item        = item_shared.get(); // For compatibility with existing map system
+                std::ignore      = item->map(map, position);
             }
             break;
             }
@@ -430,10 +455,10 @@ bool mob::move(DIRECTION direction)
     auto position = this->side_position(direction);
     for (auto obj : map->nears(position, OBJECT_TYPE::LIFE))
     {
-        if (obj == this)
+        if (obj.get() == this)
             continue;
 
-        auto life = static_cast<fb::game::life*>(obj);
+        auto life = std::static_pointer_cast<fb::game::life>(obj);
         if (life->cover() == false)
             continue;
 
@@ -468,7 +493,7 @@ bool mob::push_item(item& i)
     return true;
 }
 
-bool mob::hidden(const object& target) const
+bool mob::hidden(const fb::game::object& target) const
 {
     return this->_hidden;
 }

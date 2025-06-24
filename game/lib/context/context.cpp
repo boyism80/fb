@@ -6,7 +6,14 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<character>(context, "GAME", port),
     maps(*this, fb::config<uint32_t>("id")),
     _redis(config<std::string>("redis:ip").c_str(), config<uint16_t>("redis:port"), config<uint32_t>("redis:pool")),
-    listener(*this)
+    listener(*this),
+    characters(*this),
+    clans([](const std::shared_ptr<clan>& clan) -> uint32_t {
+        return clan->id();
+    }),
+    groups([](const std::shared_ptr<group>& group) -> uint32_t {
+        return group->id();
+    })
 {
     auto& ist = fb::lua::context_pool::ist();
     ist.setup(this->threads);
@@ -89,17 +96,17 @@ async::task<void> context::handle_start()
 
     co_await fb::acceptor<character>::handle_start();
 
-    auto maps_division = std::unordered_map<fb::thread*, std::vector<fb::game::map*>>{};
+    auto maps_division = std::unordered_map<fb::thread*, std::vector<std::shared_ptr<fb::game::map>>>{};
     for (int i = 0; i < this->threads.count(); i++)
     {
         auto thread = this->threads.at(i);
-        maps_division.insert({thread, std::vector<fb::game::map*>{}});
+        maps_division.insert({thread, std::vector<std::shared_ptr<fb::game::map>>{}});
     }
 
     for (auto& [id, map] : this->maps)
     {
         auto thread = this->threads.modular(id);
-        maps_division[thread].push_back(&map);
+        maps_division[thread].push_back(map);
     }
 
     auto async_tasks = std::vector<async::task<void>>();
@@ -239,19 +246,10 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     auto ch = socket.data();
     if (ch == nullptr)
         co_return false;
+    auto weak = ch->weak_from_this_as<character>();
 
     if (ch->trade.trading())
         ch->trade.cancel();
-
-    auto id = ch->id();
-    this->_shard[id]->ids.write([&id](auto& ids) {
-        ids.erase(id);
-    });
-
-    auto& name = ch->name();
-    this->_shard[name]->names.write([&name](auto& names) {
-        names.erase(name);
-    });
 
     fb::logger::info("{} has disconnected.", ch->name());
 
@@ -265,25 +263,27 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         fb::logger::fatal(e.what());
     }
 
-    co_await this->switch_thread(*ch);
+    co_await this->switch_thread(weak);
 
-    auto& group_lock = ch->group();
-    if (group_lock != nullptr)
+    auto& group_id = ch->group_id();
+    if (group_id.has_value())
     {
-        group_lock->write([this, ch](auto& group) {
-            group.leave(*ch);
+        this->groups.write(group_id.value(), [weak](auto& group) {
+            group->leave(weak);
         });
-        group_lock.reset();
+        ch->group_reset();
     }
 
-    auto& clan_lock = ch->clan();
-    if (clan_lock != nullptr)
+    auto& clan_id = ch->clan_id();
+    if (clan_id.has_value())
     {
-        clan_lock->write([ch](auto& clan) {
-            clan.detach_character(*ch);
+        this->clans.read(clan_id.value(), [weak](auto& clan) {
+            clan->detach_character(weak);
         });
-        clan_lock.reset();
+        ch->clan_reset();
     }
+    this->characters.remove(ch);
+
     co_await ch->destroy();
     socket.data(nullptr);
     co_return true;
@@ -316,87 +316,14 @@ std::string context::elapsed_message(const std::string& dt)
     }
 }
 
-void context::foreach_ch(const std::string&                                  name,
-                         const std::function<void(fb::game::character&)>&    fn,
-                         const std::function<void(const std::string& name)>& miss)
-{
-    this->foreach_ch(std::vector<std::string>{name}, fn, miss);
-}
-
-void context::foreach_ch(const std::string& name, const std::function<void(fb::game::character&)>& fn)
-{
-    this->foreach_ch({name}, fn, [](auto&) {
-    });
-}
-
-void context::foreach_ch(const std::vector<std::string>&                     names,
-                         const std::function<void(fb::game::character&)>&    fn,
-                         const std::function<void(const std::string& name)>& miss)
-{
-    auto g = std::unordered_map<uint32_t, std::vector<std::string>>{};
-    for (auto& name : names)
-    {
-        auto mod = this->_shard.mod(name);
-
-        if (!g.contains(mod))
-            g.insert({mod, std::vector<std::string>{}});
-
-        g[mod].push_back(name);
-    }
-
-    for (auto& [mod, names] : g)
-    {
-        this->_shard[mod]->names.read([this, &names, &fn, &miss](auto& ch_names) {
-            for (auto& name : names)
-            {
-                if (!ch_names.contains(name))
-                {
-                    miss(name);
-                    continue;
-                }
-
-                auto ch = ch_names.at(name);
-                if (ch == nullptr || this->alive(*ch) == false)
-                    continue;
-
-                this->threads.enqueue(*ch, [=, this](auto& thread) -> async::task<void> {
-                    fn(*ch);
-                    co_return;
-                });
-            }
-        });
-    }
-}
-
-void context::foreach_ch(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn)
-{
-    this->foreach_ch(names, fn, [](auto&) {
-    });
-}
-
-void context::foreach_ch(const std::function<void(fb::game::character&)>& fn)
-{
-    for (int i = 0, n = this->threads.size(); i < n; i++)
-    {
-        auto thread = this->threads.at(i);
-        std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
-            auto params = thread.template data<thread_params>();
-            for (auto& [_, ch] : params->characters)
-            {
-                fn(*ch);
-            }
-            co_return;
-        });
-    }
-}
-
 async::task<bool> context::init_ch(const internal::Character&           response,
                                    character&                           ch,
                                    std::optional<uint32_t>              group,
                                    std::optional<uint32_t>              clan,
                                    const std::optional<transfer_param>& transfer)
 {
-    auto map = response.map;
+    auto map  = response.map;
+    auto weak = ch.weak_from_this_as<character>();
     ch.id(response.id);
     ch.name(response.name);
     ch.pw(response.pw);
@@ -447,25 +374,26 @@ async::task<bool> context::init_ch(const internal::Character&           response
 
     if (group.has_value())
     {
-        this->upsert_group_then(group.value(), [&ch](auto& lock) {
-            lock->write([&ch](auto& group) {
-                group.enter(ch);
-            });
-            ch.group(lock);
+        this->upsert_group_then(group.value(), [&ch](auto& group) {
+            group->enter(ch.weak_from_this_as<character>());
+            ch.group_id(group->id());
         });
     }
 
     if (clan.has_value())
     {
-        this->upsert_clan_then(clan.value(), [&ch](auto& lock) {
-            lock->write([&ch](auto& clan) {
-                clan.attach_character(ch);
-            });
-            ch.clan(lock);
+        co_await this->upsert_clan_then(clan.value(), [weak](auto& clan) -> async::task<void> {
+            auto ch = weak.lock();
+            if (ch == nullptr)
+                co_return;
+
+            clan->attach_character(weak);
+            ch->clan_id(clan->id());
+            co_return;
         });
     }
 
-    co_return co_await ch.map(&this->maps[map], fb::model::point16_t(position_x, position_y));
+    co_return co_await ch.map(this->maps[map], fb::model::point16_t(position_x, position_y));
 }
 
 void context::init_option(const internal::Option& response, fb::game::character& ch)
@@ -487,6 +415,7 @@ void context::init_items(const std::vector<internal::Item>& response, character&
 {
     for (auto& x : response)
     {
+        // Use smart pointer for item creation
         auto item = this->model.item[x.model].make(*this);
         item->count(x.count);
 
@@ -494,14 +423,14 @@ void context::init_items(const std::vector<internal::Item>& response, character&
             item->durability(x.durability.value());
 
         if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
-            static_cast<weapon*>(item)->custom_name(x.custom_name.value());
+            static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
 
         if (x.stored != -1)
-            ch.items.store(*item);
+            ch.items.store(item); // Use smart pointer version
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
-            ch.items.add(*item, x.index);
+            ch.items.add(item, x.index); // Use smart pointer version
         else
-            ch.items.wear((EQUIPMENT_PARTS)x.parts, static_cast<equipment*>(item));
+            ch.items.wear((EQUIPMENT_PARTS)x.parts, std::static_pointer_cast<fb::game::equipment>(item));
     }
 }
 
@@ -539,9 +468,9 @@ void context::init_achievements(const std::vector<fb::protocol::internal::Achiev
     }
 }
 
-character* context::handle_accepted(fb::socket<character>& socket)
+std::shared_ptr<fb::game::character> context::handle_accepted(fb::socket<character>& socket)
 {
-    return this->make<character>(socket);
+    return std::make_shared<character>(*this, socket);
 }
 
 async::task<void> context::send(object&                     object,
@@ -579,15 +508,15 @@ async::task<void> context::send(object&                     object,
         if (object.is(OBJECT_TYPE::CHARACTER) == false)
             co_return;
 
-        auto& ch                = static_cast<const character&>(object);
-        auto& shared_group_lock = ch.group();
-        if (shared_group_lock == nullptr)
+        auto& ch       = static_cast<const character&>(object);
+        auto& group_id = ch.group_id();
+        if (group_id.has_value() == false)
             co_return;
 
-        shared_group_lock->read([&stream, encrypt](auto& group) {
-            for (auto ch : group.characters())
+        this->groups.read(group_id.value(), [&stream, encrypt](auto& group) {
+            for (auto& shared_ptr : group->characters())
             {
-                ch->send(stream, encrypt);
+                shared_ptr->send(stream, encrypt);
             }
         });
     }
@@ -599,21 +528,20 @@ async::task<void> context::send(object&                     object,
         if (map == nullptr)
             co_return;
 
-        for (const auto& [seq, obj] : object.map()->objects)
+        for (const auto& [seq, obj] : map->objects)
         {
-            if (exclude_self && obj == object)
+            if (exclude_self && obj->sequence() == object.sequence())
                 continue;
 
-            obj.send(stream, encrypt);
+            obj->send(stream, encrypt);
         }
     }
     break;
 
     case fb::game::scope::WORLD:
     {
-        this->foreach_ch([stream, encrypt](auto& ch) -> async::task<void> {
-            ch.send(stream, encrypt);
-            co_return;
+        co_await this->characters.foreach ([stream, encrypt](auto& ch) {
+            ch->send(stream, encrypt);
         });
     }
     break;
@@ -625,6 +553,7 @@ async::task<void> context::save(character& ch)
     if (ch.inited() == false)
         co_return;
 
+    auto weak  = ch.weak_from_this();
     auto items = std::vector<internal::Item>();
     for (auto i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -675,7 +604,7 @@ async::task<void> context::save(character& ch)
     std::ignore =
         co_await this->http.post("internal", "/user/save", Save{ch.to_protocol(), items, spells, achievements});
 
-    co_await this->switch_thread(ch);
+    co_await this->switch_thread(weak);
     ch.send(fb_resp::save());
 }
 
@@ -752,8 +681,8 @@ async::task<void> context::broadcast(const std::string& message, MESSAGE_TYPE ty
 
     case BROADCAST_TYPE::WORLD:
     {
-        this->foreach_ch([message, type](auto& ch) {
-            ch.message(message, type);
+        co_await this->characters.foreach ([message, type](auto& ch) {
+            ch->message(message, type);
         });
     }
     break;

@@ -25,7 +25,9 @@ std::optional<uint32_t> item::durability() const
 void item::durability(uint32_t value)
 { }
 
-async::task<bool> item::map(fb::game::map* map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type)
+async::task<bool> item::map(std::shared_ptr<fb::game::map> map,
+                            const fb::model::point16_t&    position,
+                            DESTROY_TYPE                   destroy_type)
 {
     auto result = co_await object::map(map, position);
     if (!result)
@@ -145,7 +147,7 @@ bool item::active()
         return false;
 
     if (this->empty())
-        std::ignore = this->_container->remove(*this);
+        std::ignore = this->_container->remove(this->shared_from_this_as<fb::game::item>());
 
     auto& model = this->based<fb::model::item>();
     if (model.script.empty())
@@ -158,21 +160,21 @@ bool item::active()
     return true;
 }
 
-item* item::split(uint16_t count)
+std::shared_ptr<fb::game::item> item::split(uint16_t count)
 {
     auto& model = this->based<fb::model::item>();
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) && this->_count > count)
     {
         this->_count -= count;
-        return model.make(this->context, count);
+        return std::static_pointer_cast<fb::game::item>(model.make(this->context, count));
     }
     else
     {
-        return this;
+        return this->shared_from_this_as<fb::game::item>();
     }
 }
 
-void item::merge(item& item)
+void item::merge(std::shared_ptr<fb::game::item> item)
 {
     if (this->_container == nullptr)
         return;
@@ -181,16 +183,17 @@ void item::merge(item& item)
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
         return;
 
-    if (model != item.based())
+    if (model != item->based())
         return;
 
     auto& owner  = this->_container->owner;
     auto  before = this->_count;
-    auto  remain = this->fill(item.count());
-    item.count(remain);
+    auto  remain = this->fill(item->count());
+    item->count(remain);
 
     if (before != this->_count)
-        this->listener.on_item_update(static_cast<character&>(owner), owner.items.index(*this));
+        this->listener.on_item_update(static_cast<character&>(owner),
+                                      owner.items.index(this->shared_from_this_as<fb::game::item>()));
 
     if (remain > 0 && this->_count == model.capacity)
         owner.message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
@@ -215,6 +218,11 @@ void fb::game::item::assert_thread() const
         return;
     else
         object::assert_thread();
+}
+
+void fb::game::item::container(fb::game::items* container)
+{
+    this->_container = container;
 }
 
 fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const

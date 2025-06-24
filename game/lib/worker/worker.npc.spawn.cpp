@@ -23,20 +23,25 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
         throw std::runtime_error(
             std::format("NPC {}를 배치할 수 없습니다. {} 맵이 로드되지 않았습니다.", npc_model.name, map_model.name));
 
-    auto& map = this->_context.maps[spawn_model.parent];
-    if (map.active == false)
+    auto map = this->_context.maps[spawn_model.parent];
+    if (map == nullptr || map->active == false)
         return;
 
-    auto thread = this->_context.thread(map);
+    auto thread = map->thread();
     if (thread == nullptr)
         throw std::runtime_error("thread exception");
 
-    auto npc = this->_context.make<fb::game::npc>(this->_context.model.npc[spawn_model.npc]);
-    auto fn  = [](fb::game::npc* npc, fb::game::map& map, fb::model::npc_spawn& spawn_model) -> async::task<void> {
-        std::ignore = co_await npc->map(&map, spawn_model.position);
+    // Use smart pointer for NPC creation
+    auto& model = this->_context.model.npc[spawn_model.npc];
+    auto  npc   = this->_context.make<fb::game::npc>(model);
+    auto  weak  = npc->weak_from_this_as<fb::game::npc>();
+    auto  fn    = [](std::shared_ptr<fb::game::npc> npc,
+                 std::shared_ptr<fb::game::map> map,
+                 fb::model::npc_spawn&          spawn_model) -> async::task<void> {
+        std::ignore = co_await npc->map(map, spawn_model.position);
         npc->direction(spawn_model.direction);
     };
-    this->_context.threads.enqueue(*npc, [fn, npc, &map, &spawn_model](auto&) -> async::task<void> {
+    this->_context.threads.enqueue(weak, [fn, npc, map, &spawn_model](auto&) -> async::task<void> {
         co_await fn(npc, map, spawn_model);
     });
 }

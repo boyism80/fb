@@ -1,6 +1,33 @@
 #ifndef __ITEM_H__
 #define __ITEM_H__
 
+/**
+ * @file    item.h
+ * @brief   Item and equipment system for the FB 2D MMORPG game server
+ * @author  FB Development Team
+ *
+ * @details This file implements the comprehensive item and equipment system that
+ *          handles all game items including weapons, armor, consumables, and
+ *          miscellaneous items. The system provides functionality for item
+ *          management, equipment mechanics, inventory operations, and trading.
+ *
+ *          Key features:
+ *          - Base item class with count-based stacking for stackable items
+ *          - Equipment system with weapons, armor, shields, helmets, rings, and accessories
+ *          - Durability system for equipment degradation and repair mechanics
+ *          - Comprehensive inventory management with storage and retrieval
+ *          - Trade system integration with item transfer capabilities
+ *          - Drop and pickup mechanics with timing and ownership tracking
+ *          - Death-related item handling for player death scenarios
+ *          - Custom naming system for weapons and special items
+ *          - Protocol serialization for network communication
+ *          - Lua scripting integration for dynamic item behavior
+ *          - Thread-safe operations for multi-threaded server environment
+ *
+ * @note    This system handles all aspects of item existence from creation to
+ *          destruction, including inventory management and player interactions.
+ */
+
 #include <iomanip>
 #include <fb/game/object.h>
 #include <fb/protocol/flatbuffer/protocol.h>
@@ -43,7 +70,6 @@ class item : public object
 {
 public:
     using model_type = fb::model::item;
-    using container  = std::unordered_map<uint8_t, fb::game::item*>;
 
 public:
     using object::map;
@@ -120,9 +146,9 @@ public:
      *
      * @return     Async task that returns true if placement was successful
      */
-    virtual async::task<bool> map(fb::game::map*              map,
-                                  const fb::model::point16_t& position,
-                                  DESTROY_TYPE                destroy_type = DESTROY_TYPE::DEFAULT) override;
+    virtual async::task<bool> map(std::shared_ptr<fb::game::map> map,
+                                  const fb::model::point16_t&    position,
+                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT) override;
 
     /**
      * @brief      Gets the tooltip message for the item.
@@ -240,13 +266,13 @@ public:
      *
      * @return     Pointer to the new split item, or nullptr if split failed
      */
-    virtual item* split(uint16_t count = 1);
+    virtual std::shared_ptr<fb::game::item> split(uint16_t count = 1);
     /**
      * @brief      Merges another item into this item stack.
      *
      * @param      item  The item to merge into this stack
      */
-    virtual void merge(fb::game::item& item);
+    virtual void merge(std::shared_ptr<fb::game::item> item);
 
     /**
      * @brief      Gets the thread this item belongs to.
@@ -259,6 +285,9 @@ public:
      * @brief      Asserts that the current thread is the correct thread for this item.
      */
     void assert_thread() const override;
+
+public:
+    void container(fb::game::items* container);
 
 public:
     /**
@@ -955,14 +984,17 @@ public:
 class items : public fb::game::inventory<fb::game::item>
 {
 private:
-    fb::game::weapon*    _weapon         = nullptr;
-    fb::game::armor*     _armor          = nullptr;
-    fb::game::helmet*    _helmet         = nullptr;
-    fb::game::shield*    _shield         = nullptr;
-    fb::game::ring*      _rings[2]       = {nullptr, nullptr};
-    fb::game::auxiliary* _auxiliaries[2] = {nullptr, nullptr};
-    std::vector<item*>   _stored;
-    uint32_t             _deposited = 0;
+    using super = fb::game::inventory<fb::game::item>;
+
+private:
+    std::shared_ptr<fb::game::weapon>            _weapon         = nullptr;
+    std::shared_ptr<fb::game::armor>             _armor          = nullptr;
+    std::shared_ptr<fb::game::helmet>            _helmet         = nullptr;
+    std::shared_ptr<fb::game::shield>            _shield         = nullptr;
+    std::shared_ptr<fb::game::ring>              _rings[2]       = {nullptr, nullptr};
+    std::shared_ptr<fb::game::auxiliary>         _auxiliaries[2] = {nullptr, nullptr};
+    std::vector<std::shared_ptr<fb::game::item>> _stored;
+    uint32_t                                     _deposited = 0;
 
 public:
     fb::game::character& owner;
@@ -987,15 +1019,7 @@ public:
      *
      * @return     The inventory slot index where the item was added, or 0xFF if failed
      */
-    uint8_t add(fb::game::item& item) override;
-    /**
-     * @brief      Adds the specified item to the inventory.
-     *
-     * @param      item  The item pointer to add
-     *
-     * @return     The inventory slot index where the item was added, or 0xFF if failed
-     */
-    uint8_t add(fb::game::item* item);
+    uint8_t add(std::shared_ptr<fb::game::item> item) override;
     /**
      * @brief      Adds multiple items to the inventory.
      *
@@ -1004,7 +1028,7 @@ public:
      *
      * @return     Vector of inventory slot indices where items were added
      */
-    std::vector<uint8_t> add(const std::vector<fb::game::item*>& items, bool stop_if_remained = false);
+    std::vector<uint8_t> add(const std::vector<std::shared_ptr<fb::game::item>>& items, bool stop_if_remained = false);
     /**
      * @brief      Adds an item to a specific inventory slot.
      *
@@ -1013,15 +1037,15 @@ public:
      *
      * @return     The inventory slot index where the item was added, or 0xFF if failed
      */
-    uint8_t add(fb::game::item& item, uint8_t index);
+    uint8_t add(std::shared_ptr<fb::game::item> item, uint8_t index) override;
     /**
-     * @brief      Stores an item in the storage/warehouse.
+     * @brief      Stores an item in the storage/warehouse using smart pointer.
      *
-     * @param      item  The item to store
+     * @param      item  The shared pointer to the item to store
      *
      * @return     True if the item was successfully stored, false otherwise
      */
-    bool store(fb::game::item& item);
+    bool store(std::shared_ptr<fb::game::item> item);
     /**
      * @brief      Stores items from inventory slot to storage.
      *
@@ -1047,13 +1071,13 @@ public:
      *
      * @return     Pointer to the stored item, or nullptr if not found
      */
-    item* stored(const fb::model::item& item) const;
+    std::shared_ptr<fb::game::item> stored(const fb::model::item& item) const;
     /**
      * @brief      Gets all stored items in the storage.
      *
      * @return     Reference to the vector of all stored items
      */
-    const std::vector<item*>& stored() const;
+    const std::vector<std::shared_ptr<fb::game::item>>& stored() const;
     /**
      * @brief      Retrieves items from storage by index.
      *
@@ -1062,7 +1086,7 @@ public:
      *
      * @return     Pointer to the retrieved item, or nullptr if failed
      */
-    item* retrieve(uint8_t index, uint16_t count);
+    std::shared_ptr<fb::game::item> retrieve(uint8_t index, uint16_t count);
     /**
      * @brief      Retrieves items from storage by name.
      *
@@ -1071,7 +1095,7 @@ public:
      *
      * @return     Pointer to the retrieved item, or nullptr if failed
      */
-    item* retrieve(const std::string& name, uint16_t count);
+    std::shared_ptr<fb::game::item> retrieve(const std::string& name, uint16_t count);
     /**
      * @brief      Retrieves items from storage by model.
      *
@@ -1080,7 +1104,7 @@ public:
      *
      * @return     Pointer to the retrieved item, or nullptr if failed
      */
-    item* retrieve(const fb::model::item& item, uint16_t count);
+    std::shared_ptr<fb::game::item> retrieve(const fb::model::item& item, uint16_t count);
     /**
      * @brief      Gets the amount of money deposited in storage.
      *
@@ -1116,7 +1140,7 @@ public:
      *
      * @return     Pointer to the activated item, or nullptr if failed
      */
-    fb::game::item* active(uint8_t index);
+    std::shared_ptr<fb::game::item> active(uint8_t index);
     /**
      * @brief      Unequips equipment from the specified slot.
      *
@@ -1132,7 +1156,7 @@ public:
      *
      * @return     Pointer to the removed equipment, or nullptr if slot was empty
      */
-    fb::game::equipment* equipment_off(EQUIPMENT_PARTS parts);
+    std::shared_ptr<fb::game::equipment> equipment_off(EQUIPMENT_PARTS parts);
 
     /**
      * @brief      Finds the inventory slot index of an item by model.
@@ -1149,7 +1173,7 @@ public:
      *
      * @return     The inventory slot index, or 0xFF if not found
      */
-    uint8_t index(const fb::game::item& item) const;
+    uint8_t index(const std::shared_ptr<fb::game::item>& item) const;
     /**
      * @brief      Finds all inventory slot indices containing the specified item model.
      *
@@ -1157,7 +1181,7 @@ public:
      *
      * @return     Vector of inventory slot indices containing the item
      */
-    std::vector<uint8_t> index_all(const fb::model::item& item) const;
+    std::vector<uint8_t> index_all(const std::shared_ptr<fb::game::item>& item) const;
 
     /**
      * @brief      Updates the inventory slot to reflect changes.
@@ -1175,13 +1199,13 @@ public:
      *
      * @return     Pointer to the previously equipped item, or nullptr if slot was empty
      */
-    fb::game::equipment* wear(EQUIPMENT_PARTS parts, fb::game::equipment* item);
+    std::shared_ptr<fb::game::equipment> wear(EQUIPMENT_PARTS parts, std::shared_ptr<fb::game::equipment> item);
     /**
      * @brief      Gets the currently equipped weapon.
      *
      * @return     Pointer to the equipped weapon, or nullptr if no weapon equipped
      */
-    fb::game::weapon* weapon() const;
+    std::shared_ptr<fb::game::weapon> weapon() const;
     /**
      * @brief      Equips a weapon and returns the previously equipped weapon.
      *
@@ -1189,13 +1213,13 @@ public:
      *
      * @return     Pointer to the previously equipped weapon, or nullptr if none
      */
-    fb::game::weapon* weapon(fb::game::weapon* weapon);
+    std::shared_ptr<fb::game::weapon> weapon(std::shared_ptr<fb::game::weapon> weapon);
     /**
      * @brief      Gets the currently equipped armor.
      *
      * @return     Pointer to the equipped armor, or nullptr if no armor equipped
      */
-    fb::game::armor* armor() const;
+    std::shared_ptr<fb::game::armor> armor() const;
     /**
      * @brief      Equips armor and returns the previously equipped armor.
      *
@@ -1203,13 +1227,13 @@ public:
      *
      * @return     Pointer to the previously equipped armor, or nullptr if none
      */
-    fb::game::armor* armor(fb::game::armor* armor);
+    std::shared_ptr<fb::game::armor> armor(std::shared_ptr<fb::game::armor> armor);
     /**
      * @brief      Gets the currently equipped shield.
      *
      * @return     Pointer to the equipped shield, or nullptr if no shield equipped
      */
-    fb::game::shield* shield() const;
+    std::shared_ptr<fb::game::shield> shield() const;
     /**
      * @brief      Equips a shield and returns the previously equipped shield.
      *
@@ -1217,13 +1241,13 @@ public:
      *
      * @return     Pointer to the previously equipped shield, or nullptr if none
      */
-    fb::game::shield* shield(fb::game::shield* shield);
+    std::shared_ptr<fb::game::shield> shield(std::shared_ptr<fb::game::shield> shield);
     /**
      * @brief      Gets the currently equipped helmet.
      *
      * @return     Pointer to the equipped helmet, or nullptr if no helmet equipped
      */
-    fb::game::helmet* helmet() const;
+    std::shared_ptr<fb::game::helmet> helmet() const;
     /**
      * @brief      Equips a helmet and returns the previously equipped helmet.
      *
@@ -1231,7 +1255,7 @@ public:
      *
      * @return     Pointer to the previously equipped helmet, or nullptr if none
      */
-    fb::game::helmet* helmet(fb::game::helmet* helmet);
+    std::shared_ptr<fb::game::helmet> helmet(std::shared_ptr<fb::game::helmet> helmet);
     /**
      * @brief      Gets the ring equipped at the specified position.
      *
@@ -1239,7 +1263,7 @@ public:
      *
      * @return     Pointer to the equipped ring, or nullptr if slot is empty
      */
-    fb::game::ring* ring(EQUIPMENT_POSITION position) const;
+    std::shared_ptr<fb::game::ring> ring(EQUIPMENT_POSITION position) const;
     /**
      * @brief      Equips a ring to the first available ring slot.
      *
@@ -1247,7 +1271,7 @@ public:
      *
      * @return     Pointer to the previously equipped ring, or nullptr if none
      */
-    fb::game::ring* ring(fb::game::ring* ring);
+    std::shared_ptr<fb::game::ring> ring(std::shared_ptr<fb::game::ring> ring);
     /**
      * @brief      Equips a ring to the specified position.
      *
@@ -1256,7 +1280,7 @@ public:
      *
      * @return     Pointer to the previously equipped ring, or nullptr if none
      */
-    fb::game::ring* ring(fb::game::ring* ring, EQUIPMENT_POSITION position);
+    std::shared_ptr<fb::game::ring> ring(std::shared_ptr<fb::game::ring> ring, EQUIPMENT_POSITION position);
     /**
      * @brief      Gets the auxiliary item equipped at the specified position.
      *
@@ -1264,7 +1288,7 @@ public:
      *
      * @return     Pointer to the equipped auxiliary item, or nullptr if slot is empty
      */
-    fb::game::auxiliary* auxiliary(EQUIPMENT_POSITION position) const;
+    std::shared_ptr<fb::game::auxiliary> auxiliary(EQUIPMENT_POSITION position) const;
     /**
      * @brief      Equips an auxiliary item to the first available auxiliary slot.
      *
@@ -1272,7 +1296,7 @@ public:
      *
      * @return     Pointer to the previously equipped auxiliary, or nullptr if none
      */
-    fb::game::auxiliary* auxiliary(fb::game::auxiliary* auxiliary);
+    std::shared_ptr<fb::game::auxiliary> auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary);
     /**
      * @brief      Equips an auxiliary item to the specified position.
      *
@@ -1281,7 +1305,8 @@ public:
      *
      * @return     Pointer to the previously equipped auxiliary, or nullptr if none
      */
-    fb::game::auxiliary* auxiliary(fb::game::auxiliary* auxiliary, EQUIPMENT_POSITION position);
+    std::shared_ptr<fb::game::auxiliary> auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary,
+                                                   EQUIPMENT_POSITION                   position);
     /**
      * @brief      Searches for an item by name in the inventory.
      *
@@ -1289,7 +1314,7 @@ public:
      *
      * @return     Pointer to the first matching item, or nullptr if not found
      */
-    fb::game::item* find(const std::string& name) const;
+    std::shared_ptr<fb::game::item> find(const std::string& name) const;
     /**
      * @brief      Searches for an item by model in the inventory.
      *
@@ -1297,7 +1322,7 @@ public:
      *
      * @return     Pointer to the first matching item, or nullptr if not found
      */
-    fb::game::item* find(const fb::model::item& model) const;
+    std::shared_ptr<fb::game::item> find(const fb::model::item& model) const;
     /**
      * @brief      Finds a stackable item bundle by model.
      *
@@ -1305,7 +1330,7 @@ public:
      *
      * @return     Pointer to a stackable item bundle, or nullptr if not found
      */
-    fb::game::item* find_bundle(const fb::model::item& model) const;
+    std::shared_ptr<fb::game::item> find_bundle(const fb::model::item& model) const;
     /**
      * @brief      Drops items from inventory to the ground.
      *
@@ -1316,7 +1341,7 @@ public:
      *
      * @return     Pointer to the dropped item, or nullptr if drop failed
      */
-    fb::game::item*
+    std::shared_ptr<fb::game::item>
     drop(uint8_t index, uint8_t count, bool action = true, ITEM_DELETE_TYPE delete_type = ITEM_DELETE_TYPE::DROP);
     /**
      * @brief      Picks up items from the ground automatically.
@@ -1337,7 +1362,7 @@ public:
      *
      * @return     Map of equipment parts to equipped items
      */
-    std::map<EQUIPMENT_PARTS, equipment*> equipments() const;
+    std::map<EQUIPMENT_PARTS, std::shared_ptr<equipment>> equipments() const;
     /**
      * @brief      Swaps items between two inventory slots.
      *
@@ -1358,7 +1383,7 @@ public:
      *
      * @return     Pointer to the removed item, or nullptr if removal failed
      */
-    fb::game::item*
+    std::shared_ptr<fb::game::item>
     remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE, bool detach = true);
     /**
      * @brief      Removes a specific item from inventory.
@@ -1370,10 +1395,10 @@ public:
      *
      * @return     Pointer to the removed item, or nullptr if removal failed
      */
-    fb::game::item* remove(fb::game::item&  item,
-                           uint16_t         count  = 1,
-                           ITEM_DELETE_TYPE attr   = ITEM_DELETE_TYPE::NONE,
-                           bool             detach = true);
+    std::shared_ptr<fb::game::item> remove(std::shared_ptr<fb::game::item> item,
+                                           uint16_t                        count  = 1,
+                                           ITEM_DELETE_TYPE                attr   = ITEM_DELETE_TYPE::NONE,
+                                           bool                            detach = true);
 };
 
 } // namespace fb::game
