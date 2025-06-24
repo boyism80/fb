@@ -59,7 +59,7 @@ character::container::foreach_async(std::function<async::task<void>(std::shared_
     auto targets = std::vector<std::shared_ptr<character>>();
     for (auto& [uid, ch] : this->_from_uid)
     {
-        if (predict == nullptr || predict(ch) == false)
+        if (predict != nullptr && predict(ch) == false)
             continue;
 
         targets.push_back(ch);
