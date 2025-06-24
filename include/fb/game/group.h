@@ -1,6 +1,28 @@
 #ifndef __GROUP_H__
 #define __GROUP_H__
 
+/**
+ * @file    group.h
+ * @brief   Player group management system for cooperative gameplay
+ * @author  FB Development Team
+ *
+ * @details This file implements the player group (party) system for the FB 2D MMORPG
+ *          game server. Groups allow players to join together for cooperative gameplay
+ *          activities such as hunting, questing, and dungeon exploration.
+ *
+ *          Key features:
+ *          - Group membership management with master/member roles
+ *          - Thread-safe operations across multiple game server threads
+ *          - Real-time member synchronization and status tracking
+ *          - Proximity-based member queries for area effects and spells
+ *          - Experience sharing and cooperative gameplay mechanics
+ *          - Lua scripting integration for group-based game logic
+ *          - Asynchronous member updates from external sources
+ *
+ * @note    Groups are temporary associations that persist only while members
+ *          are online, unlike clans which are permanent organizations.
+ */
+
 #include <fb/game/character.h>
 #include <async/task.h>
 #include <unordered_set>
@@ -40,14 +62,16 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new player group with the specified context and identifier.
+     * @brief      Constructs a new player group with the specified context, identifier, and initial members.
      *
-     *             Creates a new group object managed by the given game context.
-     *             The group starts empty and must be populated with members through
-     *             the update() method or by characters entering individually.
+     *             Creates a new group object managed by the given game context with
+     *             predefined master and member list. The group is immediately initialized
+     *             with the provided member information.
      *
      * @param[in]  context  The game context that manages this group
      * @param[in]  id       The unique identifier for this group
+     * @param[in]  master   The name of the group master/leader
+     * @param[in]  members  The initial list of member names
      */
     group(context& context, uint32_t id, const std::string& master, const std::vector<std::string>& members);
 
@@ -119,7 +143,11 @@ public:
     /**
      * @brief      Gets all currently active character members in the group.
      *
-     * @return     Vector of pointers to active character members
+     *             Returns an unordered set containing shared pointers to all characters
+     *             that are currently active (online) and part of this group. This provides
+     *             fast lookup and iteration over active group members.
+     *
+     * @return     Unordered set of shared pointers to active character members
      */
     std::unordered_set<std::shared_ptr<character>> characters() const;
 

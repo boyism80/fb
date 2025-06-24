@@ -1,6 +1,33 @@
 #ifndef __CHARACTER_H__
 #define __CHARACTER_H__
 
+/**
+ * @file    character.h
+ * @brief   Player character system for the FB 2D MMORPG game server
+ * @author  FB Development Team
+ *
+ * @details This file implements the core player character system that handles all
+ *          aspects of player avatars in the FB 2D MMORPG game server. Characters
+ *          represent players in the game world and manage their state, equipment,
+ *          skills, social relationships, and interactions.
+ *
+ *          Key features:
+ *          - Complete character state management (stats, level, experience)
+ *          - Equipment and inventory systems with item management
+ *          - Spell casting and buff/debuff systems
+ *          - Social systems (groups, clans, whispers, mail)
+ *          - Achievement and progression tracking
+ *          - Thread-safe operations with async/await patterns
+ *          - Lua scripting integration for game logic
+ *          - Real-time synchronization across server instances
+ *          - Database persistence and character data management
+ *          - Map movement and position tracking
+ *
+ * @note    Characters inherit from life and object classes, providing a complete
+ *          game entity with combat, movement, and interaction capabilities.
+ */
+
+#include <fb/game/life.h>
 #include <algorithm>
 #include <fb/game/dialog.h>
 #include <fb/game/character.h>
@@ -733,28 +760,40 @@ public:
     void title(const std::string& value);
 
     /**
-     * @brief      Gets the character's group (read-only).
+     * @brief      Gets the character's group ID (read-only).
      *
-     * @return     Const reference to the character's group lock
+     *             Returns the unique identifier of the group this character belongs to.
+     *             If the character is not in any group, returns std::nullopt.
+     *
+     * @return     Optional group ID if character is in a group, std::nullopt otherwise
      */
     const std::optional<uint32_t>& group_id() const;
 
     /**
-     * @brief      Gets the character's group (modifiable).
+     * @brief      Gets the character's group ID (modifiable).
      *
-     * @return     Reference to the character's group lock
+     *             Returns a modifiable reference to the group ID. This allows
+     *             direct manipulation of the group membership status.
+     *
+     * @return     Reference to the character's optional group ID
      */
     std::optional<uint32_t>& group_id();
 
     /**
-     * @brief      Sets the character's group id.
+     * @brief      Sets the character's group ID.
      *
-     * @param      gid  The group id to assign to the character
+     *             Assigns the character to a specific group by setting the group ID.
+     *             This establishes the character's membership in the specified group.
+     *
+     * @param[in]  gid  The group ID to assign to the character
      */
     void group_id(uint32_t gid);
 
     /**
-     * @brief      Resets the character's group.
+     * @brief      Removes the character from their current group.
+     *
+     *             Resets the character's group membership by clearing the group ID.
+     *             After calling this method, the character will not belong to any group.
      */
     void group_reset();
 

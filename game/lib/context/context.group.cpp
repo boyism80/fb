@@ -9,12 +9,12 @@ async::task<void> context::upsert_group_then(uint32_t gid, const std::function<v
     co_await this->groups.async_write(
         gid,
         [this, gid, fn](auto& group) -> async::task<void> {
-            // When group is found, get group from sharded container
+            // Execute callback with existing group
             fn(group);
             co_return;
         },
         [this, gid]() -> async::task<std::shared_ptr<fb::game::group>> {
-            // When group is not found, get group from internal server
+            // Fetch group data from internal server when not found locally
             auto&& resp = co_await this->http.get<internal_resp::GetGroup>("internal", std::format("/group/{}", gid));
             switch (static_cast<ERROR_CODE>(resp.error))
             {
@@ -35,13 +35,13 @@ async::task<void> context::upsert_group_then(uint32_t                           
     co_await this->groups.async_write(
         gid,
         [this, fn, master, members](auto& group) -> async::task<void> {
-            // When group is found, update group
+            // Update existing group with new member data
             group->update(master, members);
             fn(group);
             co_return;
         },
         [this, gid, master, members]() -> std::shared_ptr<fb::game::group> {
-            // When group is not found, create new group
+            // Create new group with provided data
             return this->make<fb::game::group>(gid, master, members);
         });
 }
@@ -69,6 +69,7 @@ async::task<bool> context::create_group(character& me, const std::string& target
 
 void context::assert_group(uint32_t error, const std::string& actor) const
 {
+    // Convert error codes to localized error messages
     switch (static_cast<ERROR_CODE>(error))
     {
     case ERROR_CODE::NONE:
@@ -106,12 +107,14 @@ async::task<void> context::on_enter_group(const internal_resp::EnterGroup& resp)
 
     auto gid = resp.group.id;
     co_await this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp](auto& group) {
+        // Build complete member list including master
         auto members = std::vector<std::string>{resp.group.members};
         members.push_back(resp.group.master);
 
         if (resp.action == GroupAction::Kick)
             members.push_back(resp.member);
 
+        // Process group action for all affected members
         this->characters.foreach (members, [resp, group](auto& ch) {
             switch (resp.action)
             {
