@@ -248,7 +248,7 @@ private:
                     auto protocol = std::shared_ptr<fb::protocol::header>(
                         co_await this->handler.protocol.get_deserializer(cmd)(reader));
                     auto fd   = socket.fd();
-                    auto weak = socket.weak_from_this_as<fb::socket<T>>();
+                    auto weak = socket.template weak_from_this_as<fb::socket<T>>();
                     this->threads.enqueue(weak, [this, protocol, weak, fd, cmd](auto& thread) -> async::task<void> {
                         try
                         {
@@ -366,7 +366,7 @@ private:
             if (socket.data() == nullptr)
                 co_return;
 
-            auto weak = socket.weak_from_this_as<fb::socket<T>>();
+            auto weak = socket.template weak_from_this_as<fb::socket<T>>();
             co_await this->switch_thread(weak);
             co_await this->erase(socket);
         }

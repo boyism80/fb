@@ -257,7 +257,7 @@ public:
         if (thread == nullptr)
             throw std::runtime_error("no matched thread");
 
-        thread->enqueue<ReturnType>(
+        thread->template enqueue<ReturnType>(
             [=, this]() -> async::task<void> {
                 auto shared = pivot.lock();
                 if (shared == nullptr)
