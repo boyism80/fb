@@ -2131,10 +2131,10 @@ public:
      *             ID and name.
      *
      * @param[in]  fn        The function to execute for each character
-     * @param[in]  predict   The predicate function to filter characters
+     * @param[in]  predicate   The predicate function to filter characters
      */
     async::task<void> foreach (std::function<void(std::shared_ptr<fb::game::character>&)>&&     fn,
-                               std::function<bool(const std::shared_ptr<fb::game::character>&)> predict = nullptr);
+                               std::function<bool(const std::shared_ptr<fb::game::character>&)> predicate = nullptr);
 
     /**
      * @brief      Executes a function for each character in the container.
