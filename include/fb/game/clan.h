@@ -1,6 +1,32 @@
 #ifndef __CLAN_H__
 #define __CLAN_H__
 
+/**
+ * @file    clan.h
+ * @brief   Player clan (guild) system for long-term cooperative gameplay
+ * @author  FB Development Team
+ *
+ * @details This file implements the clan (guild) system that allows players to form
+ *          permanent organizations for long-term cooperative gameplay and social
+ *          interaction. Clans provide persistent group identity, hierarchical
+ *          structure, and various social and gameplay benefits.
+ *
+ *          Key features:
+ *          - Persistent clan membership with hierarchical roles and ranks
+ *          - Clan naming and title/motto system for identity and recognition
+ *          - Real-time member tracking and online status management
+ *          - Cross-server member synchronization for distributed game architecture
+ *          - Proximity-based member queries for area effects and clan spells
+ *          - Clan-wide communication and messaging systems
+ *          - Member management with join/leave functionality
+ *          - Integration with character system for persistent clan associations
+ *          - Lua scripting integration for clan-based game logic and events
+ *          - Thread-safe operations for multi-threaded server environment
+ *
+ * @note    Clans are permanent organizations that persist beyond individual
+ *          play sessions, unlike groups which are temporary associations.
+ */
+
 #include <fb/game/character.h>
 #include <fb/game/clan.member.h>
 

@@ -1,6 +1,34 @@
 #ifndef __SECTOR_H__
 #define __SECTOR_H__
 
+/**
+ * @file    sector.h
+ * @brief   Spatial partitioning system for efficient map object management
+ * @author  FB Development Team
+ *
+ * @details This file implements the spatial partitioning system that divides game maps
+ *          into sectors for efficient object management, collision detection, and
+ *          visibility calculations. The sector system optimizes performance by reducing
+ *          the search space for spatial operations and provides dynamic activation
+ *          based on player presence.
+ *
+ *          Key features:
+ *          - Grid-based spatial partitioning of maps into manageable sectors
+ *          - Efficient object storage and retrieval within spatial boundaries
+ *          - Character count tracking for intelligent activation management
+ *          - Dynamic sector activation/deactivation based on player presence
+ *          - STL container interface for seamless object iteration and manipulation
+ *          - Thread-safe object management with proper synchronization
+ *          - Neighbor sector lookup for proximity-based operations
+ *          - Object type filtering and specialized queries for different entity types
+ *          - Position-to-sector mapping and efficient indexing algorithms
+ *          - Performance optimization through active sector management
+ *
+ * @note    The sector system is crucial for game performance, enabling efficient
+ *          spatial queries, collision detection, and visibility calculations in
+ *          large game worlds with many objects and players.
+ */
+
 #include <fb/game/object.h>
 #include <set>
 

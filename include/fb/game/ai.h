@@ -1,6 +1,33 @@
 #ifndef __AI_H__
 #define __AI_H__
 
+/**
+ * @file    ai.h
+ * @brief   Artificial Intelligence system for mob behavior and decision making
+ * @author  FB Development Team
+ *
+ * @details This file implements the AI system that controls mob behavior, decision
+ *          making, and combat tactics in the FB 2D MMORPG. The system provides
+ *          intelligent behavior for computer-controlled entities including target
+ *          selection, damage tracking, and various attack strategies.
+ *
+ *          Key features:
+ *          - Intelligent target selection with priority-based decision making
+ *          - Damage memory tracking for revenge and threat assessment
+ *          - Multiple AI behavior types (aggressive, defensive, passive, etc.)
+ *          - Owner following behavior for summoned creatures and pets
+ *          - Target locking mechanism for focused combat engagement
+ *          - Dynamic threat evaluation based on recent damage and proximity
+ *          - Sight range and attack range validation for realistic behavior
+ *          - Cleanup mechanisms for expired data and memory management
+ *          - Flexible AI strategy pattern for different mob types
+ *          - Integration with mob combat and movement systems
+ *
+ * @note    The AI system is crucial for creating engaging PvE content and
+ *          realistic mob behavior that provides appropriate challenge and
+ *          immersion for players exploring the game world.
+ */
+
 #include <fb/model/model.h>
 #include <unordered_map>
 

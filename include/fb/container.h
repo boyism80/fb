@@ -1,6 +1,32 @@
 #ifndef __FB_CONTAINER_H__
 #define __FB_CONTAINER_H__
 
+/**
+ * @file    container.h
+ * @brief   Generic container classes for efficient data storage and management
+ * @author  FB Development Team
+ *
+ * @details This file implements generic container classes that provide efficient
+ *          storage and management of game data with smart pointer integration.
+ *          The containers are designed for high-performance scenarios where
+ *          fast lookup, iteration, and memory management are critical.
+ *
+ *          Key features:
+ *          - Key-value container with fast hash-based lookup and smart pointer management
+ *          - Array container with indexed access and automatic memory management
+ *          - STL-compatible iterator interfaces for seamless integration with algorithms
+ *          - Exception-safe operations with proper error handling and validation
+ *          - Template-based design for type safety and performance optimization
+ *          - Smart pointer integration for automatic memory management
+ *          - Efficient storage strategies optimized for game server performance
+ *          - Thread-safe design considerations for multi-threaded environments
+ *          - Support for both mutable and const iteration patterns
+ *          - Comprehensive bounds checking and validation for safe operations
+ *
+ * @note    These container classes are foundational components used throughout
+ *          the FB 2D MMORPG server for managing game data efficiently and safely.
+ */
+
 #include <memory>
 #include <unordered_map>
 #include <vector>

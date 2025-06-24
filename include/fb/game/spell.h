@@ -1,6 +1,32 @@
 #ifndef __SPELL_H__
 #define __SPELL_H__
 
+/**
+ * @file    spell.h
+ * @brief   Spell casting and magic system for the FB 2D MMORPG game server
+ * @author  FB Development Team
+ *
+ * @details This file implements the magic and spell system that handles all aspects
+ *          of spell casting, magic effects, and temporary buffs/debuffs in the game.
+ *          The system provides cooldown management, spell collections, and buff
+ *          tracking for living entities.
+ *
+ *          Key features:
+ *          - Spell instance management with cooldown and delay mechanics
+ *          - Spell collection system for character spell books
+ *          - Comprehensive buff/debuff system with timing and stacking
+ *          - Integration with Lua scripting for dynamic spell effects
+ *          - Model-based spell configuration and properties
+ *          - Thread-safe operations for multi-threaded server environment
+ *          - Event-driven architecture with listener pattern for spell events
+ *          - Automatic buff expiration and cleanup mechanisms
+ *          - Support for both beneficial and harmful magical effects
+ *          - Spell learning and forgetting mechanics
+ *
+ * @note    The spell system is tightly integrated with the life entity system
+ *          and provides the foundation for all magical interactions in the game.
+ */
+
 #include <chrono>
 #include <fb/game/inventory.h>
 #include <fb/model/model.h>

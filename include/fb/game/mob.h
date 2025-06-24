@@ -1,6 +1,32 @@
 #ifndef __MOB_H__
 #define __MOB_H__
 
+/**
+ * @file    mob.h
+ * @brief   Monster and hostile NPC system for the FB 2D MMORPG game server
+ * @author  FB Development Team
+ *
+ * @details This file implements the monster (mob) system that handles all computer-controlled
+ *          hostile entities in the game world. Mobs are AI-driven creatures that can attack
+ *          players, drop items when defeated, and are managed by an automatic respawn system
+ *          to maintain proper game world population.
+ *
+ *          Key features:
+ *          - AI-driven behavior system with target acquisition and combat logic
+ *          - Comprehensive respawn (rezen) system for automatic mob population management
+ *          - Item dropping system with configurable loot tables and drop rates
+ *          - Owner-based mob spawning system for player summons and pets
+ *          - Lua scripting integration for custom AI behaviors and special abilities
+ *          - Thread-safe operations with proper thread assertion and management
+ *          - Complete stat system with base values and temporary buff modifications
+ *          - Target tracking and oblivion (last attacker) system for AI decision making
+ *          - Visibility and hiding mechanics for stealth and special encounter mobs
+ *          - Integration with the life entity system for combat and spell interactions
+ *
+ * @note    Mobs are the primary source of PvE content and provide challenges,
+ *          rewards, and dynamic gameplay experiences throughout the game world.
+ */
+
 #include <fb/game/life.h>
 #include <fb/game/item.h>
 

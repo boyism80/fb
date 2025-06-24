@@ -1,6 +1,34 @@
 #ifndef __FB_GATEWAY_H__
 #define __FB_GATEWAY_H__
 
+/**
+ * @file    context.h
+ * @brief   Gateway server context for client connection routing and login server discovery
+ * @author  FB Development Team
+ *
+ * @details This file implements the gateway server context that serves as the initial
+ *          entry point for game clients in the FB 2D MMORPG distributed architecture.
+ *          The gateway provides login server discovery services, client version
+ *          validation, and connection routing to appropriate login servers.
+ *
+ *          Key features:
+ *          - Initial client connection point for distributed server architecture
+ *          - Login server discovery and endpoint distribution to clients
+ *          - Client version validation and compatibility checking
+ *          - Cryptographic handshake and secure connection establishment
+ *          - Load balancing support for multiple login servers
+ *          - AMQP integration for inter-service communication and monitoring
+ *          - Heartbeat system for service health monitoring
+ *          - Configurable endpoint management with dynamic server list updates
+ *          - Session management with proper connection lifecycle handling
+ *          - Support for server capacity monitoring and status reporting
+ *
+ * @note    The gateway server is the first point of contact for clients and
+ *          plays a crucial role in the distributed server architecture by
+ *          directing clients to appropriate login servers based on capacity
+ *          and availability.
+ */
+
 #include <fb/acceptor.h>
 #include <fb/gateway/session.h>
 #include <fb/gateway/util.h>

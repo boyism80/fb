@@ -1,6 +1,32 @@
 #ifndef __THREAD_H__
 #define __THREAD_H__
 
+/**
+ * @file    thread.h
+ * @brief   Managed thread system with asynchronous task execution and smart pointer integration
+ * @author  FB Development Team
+ *
+ * @details This file implements the core thread management system for the FB 2D MMORPG
+ *          game server. It provides managed threads that can execute asynchronous tasks,
+ *          handle timers, and safely manage thread_switchable objects through smart
+ *          pointer integration.
+ *
+ *          Key features:
+ *          - Asynchronous task execution with queue-based task management
+ *          - Comprehensive timer system with disposable and recurring timers
+ *          - Smart pointer integration for safe thread_switchable object handling
+ *          - Lua scripting integration for thread-based game logic
+ *          - Thread-safe task enqueueing with proper synchronization
+ *          - Automatic resource cleanup and proper thread lifecycle management
+ *          - Thread-local data storage for context-specific information
+ *          - Exception handling and error callback mechanisms
+ *          - Sleep functionality for timed operations and delays
+ *          - Integration with async/await coroutine patterns
+ *
+ * @note    This thread system is specifically designed for game server architecture
+ *          where thread safety, performance, and proper resource management are critical.
+ */
+
 #include <thread>
 #include <functional>
 #include <future>

@@ -1,6 +1,35 @@
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
+/**
+ * @file    socket.h
+ * @brief   High-performance TCP socket wrapper with encryption and rate limiting
+ * @author  FB Development Team
+ *
+ * @details This file implements a comprehensive TCP socket wrapper that extends
+ *          boost::asio functionality with game server specific features including
+ *          encryption/decryption, rate limiting, and thread-safe operations.
+ *          The socket system is designed for high-performance network communication
+ *          in the FB 2D MMORPG game server environment.
+ *
+ *          Key features:
+ *          - High-performance TCP socket operations with boost::asio integration
+ *          - Built-in encryption/decryption support with configurable crypto policies
+ *          - Advanced rate limiting system with both global and per-command TPS limits
+ *          - Thread-safe operations with proper synchronization mechanisms
+ *          - Asynchronous I/O operations with customizable event handlers
+ *          - Protocol-aware data streaming with automatic packet wrapping
+ *          - Session data association with template-based type safety
+ *          - Automatic connection lifecycle management with proper cleanup
+ *          - Integration with the game server's threading and context systems
+ *          - Comprehensive error handling and exception management
+ *          - Performance monitoring and metrics collection capabilities
+ *
+ * @note    This socket system serves as the foundation for all network communication
+ *          between game clients and the server, providing reliable and secure
+ *          data transmission with optimal performance characteristics.
+ */
+
 #include <exception>
 #include <unordered_map>
 #include <deque>

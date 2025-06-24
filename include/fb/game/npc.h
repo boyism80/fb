@@ -1,6 +1,33 @@
 #ifndef __NPC_H__
 #define __NPC_H__
 
+/**
+ * @file    npc.h
+ * @brief   Non-Player Character system for interactive game entities
+ * @author  FB Development Team
+ *
+ * @details This file implements the Non-Player Character (NPC) system that handles
+ *          all interactive NPCs in the game world. NPCs serve as merchants, quest
+ *          givers, guards, story characters, and other interactive entities that
+ *          provide services and content to players.
+ *
+ *          Key features:
+ *          - Interactive dialogue and conversation system with scripted responses
+ *          - Automated soliloquy system for ambient atmospheric speech
+ *          - Merchant and service provider functionality for trading and services
+ *          - Quest and story progression integration for narrative content
+ *          - Lua scripting integration for dynamic and customizable behavior
+ *          - Thread-safe operations with proper thread assertion and management
+ *          - Cloning support for creating multiple instances of the same NPC type
+ *          - Integration with the dialog system for rich player interactions
+ *          - Support for various NPC roles and behaviors through model configuration
+ *          - Event-driven architecture for responding to player actions
+ *
+ * @note    NPCs are essential for creating an immersive game world and provide
+ *          the primary means for players to access services, quests, and story
+ *          content throughout their gameplay experience.
+ */
+
 #include <fb/game/item.h>
 #include <format>
 #include <optional>

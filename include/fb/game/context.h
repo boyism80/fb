@@ -1,6 +1,35 @@
 #ifndef __FB_GAME_H__
 #define __FB_GAME_H__
 
+/**
+ * @file    context.h
+ * @brief   Main game server context and world management system
+ * @author  FB Development Team
+ *
+ * @details This file implements the central game server context that coordinates
+ *          all game systems and manages the complete game world state. The context
+ *          serves as the main orchestrator for player connections, game objects,
+ *          server-wide operations, and inter-service communication in the FB 2D MMORPG.
+ *
+ *          Key features:
+ *          - Complete game world initialization and lifecycle management
+ *          - Player character session management and authentication
+ *          - Comprehensive map and object container management
+ *          - Group and clan system coordination with sharded containers
+ *          - Database integration with Redis for caching and persistence
+ *          - AMQP integration for inter-service communication and messaging
+ *          - Lua script execution environment for dynamic game logic
+ *          - Thread pool management and work distribution across multiple threads
+ *          - Real-time event processing and broadcasting to connected clients
+ *          - Protocol handler registration and automatic message routing
+ *          - Internal service communication (HTTP, AMQP) for distributed architecture
+ *          - Comprehensive game mechanics coordination (combat, spells, trading, etc.)
+ *
+ * @note    The context is the singleton entry point for all game server
+ *          operations and maintains the authoritative game state for the entire
+ *          game world instance.
+ */
+
 #include <boost/algorithm/string/join.hpp>
 #include <json/json.h>
 #include <fstream>

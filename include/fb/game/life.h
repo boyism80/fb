@@ -1,6 +1,32 @@
 #ifndef __LIFE_H__
 #define __LIFE_H__
 
+/**
+ * @file    life.h
+ * @brief   Base class for all living entities with combat and magic capabilities
+ * @author  FB Development Team
+ *
+ * @details This file implements the life entity system that extends the base object
+ *          class to provide functionality specific to living entities such as player
+ *          characters and monsters. Life entities have health points, mana points,
+ *          combat statistics, and can engage in combat and spell casting.
+ *
+ *          Key features:
+ *          - HP/MP management with base and buffed values calculation
+ *          - Complete combat statistics system (STR, DEX, INT, damage, defense)
+ *          - Spell system integration with casting mechanics and cooldowns
+ *          - Comprehensive buff/debuff system with crowd control effects
+ *          - Advanced combat mechanics (damage calculation, critical hits, miss chance)
+ *          - Status effects management (paralysis, invincibility, cover protection)
+ *          - Experience points and character progression support
+ *          - Lua scripting integration for dynamic combat behavior
+ *          - Event-driven architecture with specialized life entity listeners
+ *          - Thread-safe operations for multi-threaded game server environment
+ *
+ * @note    This class serves as the foundation for all entities that can participate
+ *          in combat, cast spells, and have health/mana resources in the game world.
+ */
+
 #include <fb/game/object.h>
 
 namespace fb::game {

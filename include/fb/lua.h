@@ -1,6 +1,36 @@
 #ifndef __LUA_H__
 #define __LUA_H__
 
+/**
+ * @file    lua.h
+ * @brief   Comprehensive Lua scripting integration system for the FB 2D MMORPG server
+ * @author  FB Development Team
+ *
+ * @details This file implements the complete Lua scripting integration system that
+ *          provides powerful scripting capabilities for game logic, NPC behavior,
+ *          item functionality, and dynamic content management. The system includes
+ *          advanced features like context pooling, bytecode compilation, thread
+ *          safety, and seamless C++ object binding.
+ *
+ *          Key features:
+ *          - Complete Lua 5.3.5 integration with C++ object binding system
+ *          - High-performance context pooling for efficient script execution
+ *          - Bytecode compilation and caching for improved performance
+ *          - Thread-safe script execution with proper synchronization
+ *          - Smart pointer integration for safe object lifetime management
+ *          - Type traits system for automatic C++ to Lua binding generation
+ *          - Coroutine support for asynchronous script operations
+ *          - Memory management with automatic garbage collection integration
+ *          - Error handling and debugging support for script development
+ *          - Environment management for isolated script execution contexts
+ *          - Built-in functions for common game operations and utilities
+ *          - Support for both synchronous and asynchronous script execution
+ *
+ * @note    The Lua integration system is fundamental to the game's flexibility,
+ *          allowing for dynamic content creation, behavior modification, and
+ *          rapid prototyping without requiring server restarts.
+ */
+
 extern "C"
 {
 #include <lua/lua.h>

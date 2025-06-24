@@ -331,4 +331,59 @@ class player
 
 **CRITICAL: This ordering is MANDATORY and will be enforced in code reviews**
 
+## Doxygen Documentation (MANDATORY)
+- **MANDATORY: ALL C++ functions in HEADER FILES (.h/.hpp) MUST have complete Doxygen documentation**
+- **ZERO TOLERANCE for missing documentation on public functions, classes, and methods in header files**
+- **CPP FILES (.cpp/.cc/.cxx): Only add brief comments for complex logic, algorithms, or non-obvious implementations**
+- **Documentation MUST be 100% accurate and match function signature exactly**
+- **Grammar and syntax MUST be perfect - no awkward phrasing allowed**
+- **Parameter descriptions MUST match actual parameter names and types**
+- **Return value descriptions MUST accurately describe what is returned**
+- **Proper indentation is MANDATORY for all documentation comments**
+- **Always specify parameter direction (in/out/inout) in header files**
+
+## Documentation Placement Rules
+- **Header Files (.h/.hpp)**: Complete Doxygen documentation for ALL public functions, classes, methods
+- **Source Files (.cpp/.cc/.cxx)**: 
+  - Brief inline comments for complex algorithms or non-obvious logic
+  - Explanation of business rules or game-specific logic
+  - Clarification of thread safety considerations
+  - NO Doxygen comments (/** */) in source files
+  - Use simple // or /* */ comments for implementation details
+
+## File Header Documentation (MANDATORY for Header Files)
+- **ALL header files MUST include a file header comment block at the top**
+- **File header MUST be placed immediately after include guards**
+- **Required elements in file header:**
+  - `@file` - Filename
+  - `@brief` - One-line description of the file's purpose
+  - `@author` - Always "FB Development Team"
+  - `@details` - Detailed description of the file's contents and purpose
+  - Key features list using bullet points
+  - `@note` - Any important notes about usage or design decisions
+
+## File Header Template
+```cpp
+#ifndef HEADER_GUARD_H
+#define HEADER_GUARD_H
+
+/**
+ * @file    filename.h
+ * @brief   Brief description of the file's purpose
+ * @author  FB Development Team
+ * 
+ * @details Detailed description of what this file implements and its role
+ *          in the FB 2D MMORPG game server architecture.
+ * 
+ *          Key features:
+ *          - Feature 1 description
+ *          - Feature 2 description
+ *          - Feature 3 description
+ * 
+ * @note    Any important notes about the file's design or usage
+ */
+
+// Rest of file content...
+```
+
 

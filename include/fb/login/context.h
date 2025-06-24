@@ -1,6 +1,35 @@
 #ifndef __FB_LOGIN_H__
 #define __FB_LOGIN_H__
 
+/**
+ * @file    context.h
+ * @brief   Login server context for user authentication and character management
+ * @author  FB Development Team
+ *
+ * @details This file implements the login server context that handles user authentication,
+ *          account management, character creation, and game server connection routing
+ *          in the FB 2D MMORPG distributed architecture. The login server serves as
+ *          the authentication gateway between clients and game servers.
+ *
+ *          Key features:
+ *          - Comprehensive user authentication with secure credential validation
+ *          - Account creation and management with validation and security checks
+ *          - Character creation, deletion, and selection with name reservation
+ *          - Password change functionality with security validation
+ *          - Game server connection routing and load balancing
+ *          - Redis integration for session management and caching
+ *          - AMQP messaging for inter-service communication
+ *          - Database integration for persistent account and character data
+ *          - Security features including forbidden name filtering and validation
+ *          - Session management with proper authentication state tracking
+ *          - Exception handling for various authentication and validation scenarios
+ *          - Agreement and terms of service presentation to clients
+ *
+ * @note    The login server is a critical component in the distributed architecture,
+ *          responsible for user authentication and character management before
+ *          routing clients to appropriate game servers.
+ */
+
 #include <string>
 #include <iostream>
 #include <memory>

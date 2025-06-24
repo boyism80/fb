@@ -1,6 +1,33 @@
 #ifndef __ITEM_H__
 #define __ITEM_H__
 
+/**
+ * @file    item.h
+ * @brief   Item and equipment system for the FB 2D MMORPG game server
+ * @author  FB Development Team
+ *
+ * @details This file implements the comprehensive item and equipment system that
+ *          handles all game items including weapons, armor, consumables, and
+ *          miscellaneous items. The system provides functionality for item
+ *          management, equipment mechanics, inventory operations, and trading.
+ *
+ *          Key features:
+ *          - Base item class with count-based stacking for stackable items
+ *          - Equipment system with weapons, armor, shields, helmets, rings, and accessories
+ *          - Durability system for equipment degradation and repair mechanics
+ *          - Comprehensive inventory management with storage and retrieval
+ *          - Trade system integration with item transfer capabilities
+ *          - Drop and pickup mechanics with timing and ownership tracking
+ *          - Death-related item handling for player death scenarios
+ *          - Custom naming system for weapons and special items
+ *          - Protocol serialization for network communication
+ *          - Lua scripting integration for dynamic item behavior
+ *          - Thread-safe operations for multi-threaded server environment
+ *
+ * @note    This system handles all aspects of item existence from creation to
+ *          destruction, including inventory management and player interactions.
+ */
+
 #include <iomanip>
 #include <fb/game/object.h>
 #include <fb/protocol/flatbuffer/protocol.h>

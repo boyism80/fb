@@ -1,6 +1,33 @@
 #ifndef __ABSTRACT_H__
 #define __ABSTRACT_H__
 
+/**
+ * @file    abstract.h
+ * @brief   Base context classes for asynchronous operations and network acceptors
+ * @author  FB Development Team
+ *
+ * @details This file implements the fundamental context classes that serve as the
+ *          foundation for the FB 2D MMORPG server architecture. It provides base
+ *          classes for managing asynchronous operations, thread pools, timer systems,
+ *          and network connection acceptance with comprehensive lifecycle management.
+ *
+ *          Key features:
+ *          - Base context class with Boost.Asio integration for asynchronous operations
+ *          - Thread pool management with configurable worker thread counts
+ *          - Comprehensive timer system supporting both thread-based and coroutine-based timers
+ *          - Smart pointer integration for safe object lifetime management
+ *          - Thread-switchable object management with automatic context switching
+ *          - TCP acceptor context for handling incoming network connections
+ *          - Exception-safe timer callbacks with proper error handling
+ *          - Weak pointer support for preventing circular references in async operations
+ *          - Thread safety assertions and validation for multi-threaded environments
+ *          - Integration with the thread container system for efficient task distribution
+ *
+ * @note    This file provides the architectural foundation for all server components
+ *          and is critical for proper asynchronous operation and network handling
+ *          throughout the FB 2D MMORPG server infrastructure.
+ */
+
 #include <boost/asio.hpp>
 #include <fb/thread_container.h>
 #include <fb/hash.h>

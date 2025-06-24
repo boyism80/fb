@@ -1,6 +1,34 @@
 #ifndef __MUTEX_H__
 #define __MUTEX_H__
 
+/**
+ * @file    mutex.h
+ * @brief   Advanced mutex system with deadlock detection and named lock management
+ * @author  FB Development Team
+ *
+ * @details This file implements a sophisticated mutex management system that provides
+ *          advanced synchronization capabilities beyond standard mutex functionality.
+ *          The system maintains a pool of named mutexes, implements deadlock detection,
+ *          and supports both synchronous and asynchronous locking operations for
+ *          complex multi-threaded applications.
+ *
+ *          Key features:
+ *          - Named mutex pool management for resource-based locking strategies
+ *          - Comprehensive deadlock detection using dependency tracking algorithms
+ *          - Support for both synchronous and asynchronous locking operations
+ *          - Template-based lock handling for type-safe operation results
+ *          - Integration with the context system for proper lifecycle management
+ *          - Exception-safe locking with automatic cleanup and error handling
+ *          - Task completion source integration for async/await patterns
+ *          - Thread-safe mutex pool operations with proper synchronization
+ *          - Peek operations for non-blocking lock attempts
+ *          - Advanced lock dependency analysis for deadlock prevention
+ *
+ * @note    This mutex system is critical for preventing deadlocks in the complex
+ *          multi-threaded environment of the FB 2D MMORPG server, where multiple
+ *          game objects and systems require coordinated access to shared resources.
+ */
+
 #include <fb/abstract.h>
 #include <fb/concurrent.h>
 

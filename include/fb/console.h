@@ -1,6 +1,33 @@
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__
 
+/**
+ * @file    console.h
+ * @brief   Cross-platform console utility for formatted output and terminal control
+ * @author  FB Development Team
+ *
+ * @details This file implements a comprehensive cross-platform console utility system
+ *          that provides formatted text output, progress bars, cursor control, and
+ *          terminal detection for the FB 2D MMORPG server. The system handles platform
+ *          differences between Windows and Unix-like systems transparently.
+ *
+ *          Key features:
+ *          - Cross-platform console output with Windows and Unix support
+ *          - TTY detection for appropriate output formatting in different environments
+ *          - Formatted text output with alignment options (left, right, center)
+ *          - Progress bar display with percentage and text indicators
+ *          - Cursor positioning and movement control for dynamic output
+ *          - Thread-safe operations using recursive mutex for multi-threaded access
+ *          - Template-based formatted output with std::format integration
+ *          - Automatic fallback for non-TTY environments (pipes, redirects)
+ *          - Terminal size detection and management for proper formatting
+ *          - Comment system for temporary status messages and debugging
+ *
+ * @note    The console system provides the primary user interface for server
+ *          administration and monitoring, supporting both interactive terminal
+ *          usage and automated deployment scenarios with appropriate output formatting.
+ */
+
 #ifdef _WIN32
 #include <io.h>
 #else

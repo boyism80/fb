@@ -1,6 +1,34 @@
 #ifndef __THREAD_SWITCHABLE_H__
 #define __THREAD_SWITCHABLE_H__
 
+/**
+ * @file    thread_switchable.h
+ * @brief   Base class for objects with thread affinity and safe async operations
+ * @author  FB Development Team
+ *
+ * @details This file implements the thread_switchable base class that provides
+ *          thread affinity management and safe asynchronous operations for objects
+ *          in the FB 2D MMORPG server. Objects inheriting from this class can
+ *          validate their thread context and participate in safe async operations
+ *          using smart pointer semantics.
+ *
+ *          Key features:
+ *          - Thread affinity validation and assertion for multi-threaded safety
+ *          - Smart pointer integration with enable_shared_from_this for safe lifetime management
+ *          - Weak pointer support for safe async operations without circular references
+ *          - Type-safe weak pointer casting for derived class access
+ *          - Lua scripting integration for dynamic object behavior
+ *          - Thread context validation with proper error handling
+ *          - Backward compatibility with existing raw pointer systems
+ *          - Template-based type casting with compile-time safety checks
+ *          - Support for both mutable and const weak pointer operations
+ *          - Integration with the thread container system for proper context switching
+ *
+ * @note    This class is fundamental to the server's thread safety architecture
+ *          and is used as a base class for most game objects that need thread
+ *          affinity and safe asynchronous operation capabilities.
+ */
+
 #include <stdexcept>
 #include <memory>
 #include <fb/lua.h>

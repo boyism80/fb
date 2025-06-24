@@ -1,6 +1,32 @@
 #ifndef __MAP_H__
 #define __MAP_H__
 
+/**
+ * @file    map.h
+ * @brief   Game world map system with spatial management and object tracking
+ * @author  FB Development Team
+ *
+ * @details This file implements the map system that represents individual game world
+ *          areas in the FB 2D MMORPG. Maps provide spatial organization, collision
+ *          detection, object management, and serve as the primary containers for
+ *          game world interactions and gameplay.
+ *
+ *          Key features:
+ *          - Tile-based spatial organization with collision detection system
+ *          - Sector-based optimization for efficient spatial queries and object management
+ *          - Comprehensive object container management for all map entities
+ *          - Door and warp point management for map transitions
+ *          - Movement validation and pathfinding support
+ *          - Thread-safe operations with automatic context switching
+ *          - Lua scripting integration for dynamic map behavior and events
+ *          - Real-time object tracking and proximity-based queries
+ *          - Map loading and initialization from binary data files
+ *          - Active/inactive state management for performance optimization
+ *
+ * @note    Maps are the fundamental spatial containers where all game interactions
+ *          occur, providing the foundation for movement, combat, and social activities.
+ */
+
 #include <fb/game/door/container.h>
 #include <fb/game/object/container.h>
 #include <fb/game/sector.h>

@@ -1,6 +1,36 @@
 #ifndef __BOT_H__
 #define __BOT_H__
 
+/**
+ * @file    bot.h
+ * @brief   Automated game client bot system for testing and load simulation
+ * @author  FB Development Team
+ *
+ * @details This file implements the core bot system that provides automated game client
+ *          functionality for the FB 2D MMORPG server. Bots can simulate real player
+ *          behavior for testing, load testing, debugging, and development purposes.
+ *          The system supports multiple bot types with configurable behaviors and
+ *          protocol handling capabilities.
+ *
+ *          Key features:
+ *          - Base bot class with extensible architecture for different bot types
+ *          - Protocol handling system with automatic message routing and processing
+ *          - Request-response pattern support with temporary hooks and callbacks
+ *          - Cryptographic integration for secure server communication
+ *          - Configurable bot behaviors with timer-based actions and events
+ *          - Connection management with automatic reconnection and error handling
+ *          - Template-based protocol binding for type-safe message handling
+ *          - Hook system for intercepting and processing specific protocol messages
+ *          - Load testing capabilities with concurrent bot management
+ *          - Debugging and development support with detailed logging and monitoring
+ *          - Integration with game server protocol stack for realistic simulation
+ *          - Support for complex gameplay scenarios and automated testing workflows
+ *
+ * @note    The bot system is essential for server testing and development,
+ *          providing realistic load simulation and automated testing capabilities
+ *          that help ensure server stability and performance under various conditions.
+ */
+
 #include <random>
 #include <any>
 #include <fb/socket.h>

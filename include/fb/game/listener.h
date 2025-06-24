@@ -1,6 +1,34 @@
 #ifndef __LISTENER_H__
 #define __LISTENER_H__
 
+/**
+ * @file    listener.h
+ * @brief   Comprehensive game event listener system for FB 2D MMORPG server
+ * @author  FB Development Team
+ *
+ * @details This file implements the complete event listener system that handles all
+ *          game events and coordinates the flow between game logic and network
+ *          communication. The listener system serves as the bridge between game
+ *          mechanics and client-server communication, ensuring proper event
+ *          handling and protocol message generation.
+ *
+ *          Key features:
+ *          - Unified event handling for all game entity types (objects, characters, mobs)
+ *          - Complete object lifecycle event management (create, destroy, move, hide)
+ *          - Character-specific event handling (level up, equipment, inventory changes)
+ *          - Combat and spell system event coordination (attack, damage, buffs, spells)
+ *          - Social system event management (chat, groups, clans, trading)
+ *          - UI and dialog system event handling (menus, notifications, dialogs)
+ *          - Real-time protocol message generation and network transmission
+ *          - Event broadcasting to relevant clients based on proximity and visibility
+ *          - Map and world state change notifications to connected players
+ *          - Integration with all major game systems for seamless event flow
+ *
+ * @note    The listener system is the central nervous system of the game server,
+ *          ensuring that all game events are properly communicated to clients
+ *          and that the game state remains synchronized across all connections.
+ */
+
 #include <fb/game/character.h>
 
 namespace fb::game {

@@ -1,6 +1,35 @@
 #ifndef __THREAD_CONTAINER_H__
 #define __THREAD_CONTAINER_H__
 
+/**
+ * @file    thread_container.h
+ * @brief   High-performance thread pool and task distribution system
+ * @author  FB Development Team
+ *
+ * @details This file implements a comprehensive thread pool management system that
+ *          provides efficient task distribution across multiple worker threads. The
+ *          system is designed for high-performance server applications requiring
+ *          load balancing, asynchronous task execution, and thread-safe operations
+ *          with smart pointer integration for safe object lifetime management.
+ *
+ *          Key features:
+ *          - Multi-threaded task distribution with intelligent load balancing
+ *          - Thread selection by index, ID, or modular arithmetic for optimal distribution
+ *          - Smart pointer integration with weak_ptr for safe asynchronous operations
+ *          - Condition-based task enqueueing with callback handling and error management
+ *          - Thread-safe operations with proper synchronization and context switching
+ *          - Coroutine support for modern asynchronous programming patterns
+ *          - Timer integration for scheduled task execution and periodic operations
+ *          - Automatic object lifetime management in multi-threaded environments
+ *          - Exception handling and error propagation across thread boundaries
+ *          - Performance optimization through efficient thread pooling and reuse
+ *          - Context-aware task execution with proper thread validation
+ *
+ * @note    This system is fundamental to the server's performance, enabling
+ *          efficient handling of multiple concurrent operations while maintaining
+ *          thread safety and preventing resource contention.
+ */
+
 #include <boost/asio.hpp>
 #include <fb/thread.h>
 #include <fb/thread_switchable.h>

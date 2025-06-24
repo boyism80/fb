@@ -1,6 +1,35 @@
 #ifndef __DIALOG_H__
 #define __DIALOG_H__
 
+/**
+ * @file    dialog.h
+ * @brief   Interactive dialog system for NPC conversations and UI interactions
+ * @author  FB Development Team
+ *
+ * @details This file implements the comprehensive dialog system that handles all
+ *          interactive conversations between players and NPCs, as well as various
+ *          UI interactions that require player input or selection. The system
+ *          provides multiple dialog types with rich customization options for
+ *          creating engaging interactive experiences.
+ *
+ *          Key features:
+ *          - Multiple dialog interaction types (normal, menu, input, item selection)
+ *          - Character appearance presets for visual dialog representation
+ *          - Navigation support with previous/next buttons for multi-page dialogs
+ *          - Menu-based selection system for NPC services and options
+ *          - Text input dialogs with validation and length restrictions
+ *          - Item list dialogs for trading, crafting, and inventory management
+ *          - Inventory slot selection dialogs for item-specific operations
+ *          - Sequence tracking for complex dialog chains and state management
+ *          - Event-driven architecture with listener pattern for UI updates
+ *          - Rich customization options for dialog appearance and behavior
+ *          - Integration with NPC scripting system for dynamic content
+ *
+ * @note    The dialog system serves as the primary interface for player-NPC
+ *          interactions and provides the foundation for quest systems, trading,
+ *          crafting, and other interactive game mechanics.
+ */
+
 #include <stack>
 #include <fb/game/npc.h>
 

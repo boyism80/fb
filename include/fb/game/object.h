@@ -1,6 +1,32 @@
 #ifndef __OBJECT_H__
 #define __OBJECT_H__
 
+/**
+ * @file    object.h
+ * @brief   Base class for all interactive objects in the FB 2D MMORPG game world
+ * @author  FB Development Team
+ *
+ * @details This file implements the fundamental object system that serves as the
+ *          foundation for all interactive entities in the FB 2D MMORPG game server.
+ *          Every entity that can exist in the game world (characters, NPCs, items,
+ *          doors, etc.) inherits from this base object class.
+ *
+ *          Key features:
+ *          - Spatial positioning and movement within game maps
+ *          - Line-of-sight calculations and visibility management
+ *          - Inter-object communication and chat system
+ *          - Buff/debuff system integration for temporary effects
+ *          - Thread-safe operations with automatic context switching
+ *          - Lua scripting integration for flexible game logic
+ *          - Event-driven architecture with comprehensive listener pattern
+ *          - Network communication capabilities for client updates
+ *          - Sector-based spatial optimization for performance
+ *          - Direction-based movement and interaction system
+ *
+ * @note    This is the core foundation class that all game entities inherit from,
+ *          providing essential functionality for existence in the game world.
+ */
+
 #include <fb/lua.h>
 #include <fb/stream.h>
 #include <fb/protocol/header.h>

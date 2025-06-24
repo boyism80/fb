@@ -1,6 +1,28 @@
 #ifndef FB_SHARD_CONTAINER_H
 #define FB_SHARD_CONTAINER_H
 
+/**
+ * @file    shard_container.h
+ * @brief   Thread-safe sharded container with asynchronous operations
+ * @author  FB Development Team
+ *
+ * @details This file implements a high-performance sharded container system
+ *          designed for concurrent access in the FB 2D MMORPG game server.
+ *          The container distributes data across multiple sub-containers
+ *          (shards) to reduce lock contention and improve performance.
+ *
+ *          Key features:
+ *          - Hash-based data distribution across multiple shards
+ *          - Async/await coroutine support for non-blocking operations
+ *          - Both synchronous and asynchronous access patterns
+ *          - Template-based automatic type deduction
+ *          - Factory function support for lazy element creation
+ *          - Thread-safe operations with minimal lock contention
+ *
+ * @note    This container is specifically designed for the FB game server
+ *          architecture where high concurrency and low latency are critical.
+ */
+
 #include <atomic>
 #include <mutex>
 #include <shared_mutex>
@@ -21,18 +43,23 @@
 
 namespace fb {
 /**
- * @brief   Asynchronous single lock for coroutine synchronization
+ * @brief   Asynchronous exclusive lock for coroutine synchronization
  *
  *          Provides exclusive access control for asynchronous operations
  *          using semaphore-like counting mechanism with coroutine support.
+ *          This lock ensures that only one coroutine can enter the critical
+ *          section at a time, with automatic queuing of waiting coroutines.
+ *
+ * @note    This is specifically designed for async/await patterns in the
+ *          FB game server where blocking operations must be avoided.
  */
 class async_lock
 {
 public:
     /**
-     * @brief   Constructs async_lock with initial count
+     * @brief   Constructs async_lock with initial semaphore count
      *
-     * @param[in] initial Initial semaphore count (default: 1)
+     * @param[in] initial Initial semaphore count (default: 1 for exclusive lock)
      */
     explicit async_lock(int initial = 1) :
         _count(initial)

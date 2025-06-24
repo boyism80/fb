@@ -1,6 +1,35 @@
 #ifndef __FB_ACCEPTOR_H__
 #define __FB_ACCEPTOR_H__
 
+/**
+ * @file    acceptor.h
+ * @brief   High-performance network acceptor with integrated protocol handling
+ * @author  FB Development Team
+ *
+ * @details This file implements the core network acceptor system for the FB 2D MMORPG
+ *          game server. The acceptor handles TCP socket connections, protocol message
+ *          processing, AMQP integration, and HTTP client operations with comprehensive
+ *          security features and performance optimizations.
+ *
+ *          Key features:
+ *          - High-performance TCP socket accept/close operations with boost::asio
+ *          - Comprehensive protocol handler registry with automatic message routing
+ *          - AMQP integration for inter-service communication and message queuing
+ *          - Thread pool management with configurable worker threads
+ *          - HTTP client operations with FlatBuffer serialization support
+ *          - Rate limiting and DDoS protection with configurable thresholds
+ *          - Zero-copy packet processing for optimal performance
+ *          - Thread-safe socket container management with proper synchronization
+ *          - Automatic connection lifecycle management with proper cleanup
+ *          - Integrated encryption/decryption support with policy-based control
+ *          - Comprehensive error handling and exception management
+ *          - Performance monitoring and metrics collection
+ *
+ * @note    This acceptor system serves as the foundation for all network services
+ *          in the FB game server architecture, providing reliable and scalable
+ *          network communication capabilities.
+ */
+
 #include <ctime>
 #include <fb/mutex.h>
 #include <fb/protocol/flatbuffer/protocol.h>
