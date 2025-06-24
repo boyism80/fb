@@ -186,30 +186,30 @@ void listener_impl::on_effect(object& me, uint8_t value)
     this->context.send(me, fb_resp::effect(me, value), scope::PIVOT);
 }
 
-void listener_impl::on_map_changed(object& me, const fb::game::map* before, const fb::game::map* after)
+void listener_impl::on_map_leave(object& me, const fb::game::map& map)
 {
-    // TODO: thread mismatch
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
-        auto& ch = static_cast<character&>(me);
-        if (before != nullptr)
+        auto& ch     = static_cast<character&>(me);
+        auto  thread = map.thread();
+        if (thread != nullptr)
         {
-            auto thread = before->thread();
-            if (thread != nullptr)
-            {
-                auto params = thread->template data<thread_params>();
-                params->characters.erase(ch.id());
-            }
+            auto params = thread->template data<thread_params>();
+            params->characters.erase(ch.id());
         }
+    }
+}
 
-        if (after != nullptr)
+void listener_impl::on_map_enter(object& me, const fb::game::map& map)
+{
+    if (me.is(OBJECT_TYPE::CHARACTER))
+    {
+        auto& ch     = static_cast<character&>(me);
+        auto  thread = map.thread();
+        if (thread != nullptr)
         {
-            auto thread = after->thread();
-            if (thread != nullptr)
-            {
-                auto params = thread->template data<thread_params>();
-                params->characters.insert({ch.id(), ch.shared_from_this_as<character>()});
-            }
+            auto params = thread->template data<thread_params>();
+            params->characters.insert({ch.id(), ch.shared_from_this_as<character>()});
         }
     }
 }

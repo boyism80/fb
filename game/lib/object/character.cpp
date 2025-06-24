@@ -881,25 +881,24 @@ void character::group(shared_group_lock& value)
     this->_group = value;
 }
 
-shared_clan_lock& character::clan()
+const std::optional<uint32_t>& character::clan_id() const
 {
-    this->assert_thread();
-
-    return this->_clan;
+    return this->_clan_id;
 }
 
-const shared_clan_lock& character::clan() const
+void character::clan_id(std::optional<uint32_t> value)
 {
     this->assert_thread();
 
-    return this->_clan;
+    this->_clan_id = value;
 }
 
-void character::clan(shared_clan_lock& value)
+void character::clan_reset()
 {
     this->assert_thread();
 
-    this->_clan = value;
+    this->_clan_id.reset();
+    this->update_external(true);
 }
 
 void character::assert_state(STATE value) const
@@ -1191,42 +1190,6 @@ fb::protocol::internal::Character character::to_protocol() const
     return dto;
 }
 
-character::container::container()
-{ }
-
-character::container::container(const std::unordered_map<std::string, std::shared_ptr<character>>& right)
-{
-    for (auto& [_, ch] : right)
-        this->insert({ch->name(), ch});
-}
-
-character::container::~container()
-{ }
-
-character::container& character::container::push(std::shared_ptr<character> ch)
-{
-    super::insert({ch->name(), ch});
-    return *this;
-}
-
-character::container& character::container::erase(std::shared_ptr<character> ch)
-{
-    this->erase(ch->name());
-    return *this;
-}
-
-character::container& character::container::erase(const std::string& name)
-{
-    super::erase(name);
-    return *this;
-}
-
-std::shared_ptr<character> character::container::find(const std::string& name)
-{
-    auto it = super::find(name);
-    return it != super::end() ? it->second : nullptr;
-}
-
 uint16_t character::unread_mail() const
 {
     this->assert_thread();
@@ -1393,16 +1356,6 @@ bool character::detach_spawned_mob(fb::game::mob& mob)
 void character::bright(uint8_t value)
 {
     this->listener.on_bright(*this, value);
-}
-
-bool character::container::contains(const std::string& name) const
-{
-    return super::find(name) != super::end();
-}
-
-std::shared_ptr<character> character::container::operator[] (const std::string& name)
-{
-    return super::find(name)->second;
 }
 
 uint32_t character::base_hp() const

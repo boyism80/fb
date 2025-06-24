@@ -61,14 +61,14 @@ async::task<void> context::handle_amqp_SetClanTitle(const internal_resp::SetClan
     if (resp.host == fb::config<uint32_t>("id"))
         co_return;
 
-    this->on_clan_title_changed(resp);
+    co_await this->on_clan_title_changed(resp);
 };
 async::task<void> context::handle_amqp_JoinClan(const internal_resp::JoinClan& resp)
 {
     if (resp.host == fb::config<uint32_t>("id"))
         co_return;
 
-    this->on_clan_join_member(resp);
+    co_await this->on_clan_join_member(resp);
 };
 
 async::task<void> context::handle_amqp_LeaveClan(const internal_resp::LeaveClan& resp)
@@ -76,7 +76,7 @@ async::task<void> context::handle_amqp_LeaveClan(const internal_resp::LeaveClan&
     if (resp.host == fb::config<uint32_t>("id"))
         co_return;
 
-    this->on_clan_leave_member(resp);
+    co_await this->on_clan_leave_member(resp);
 };
 
 async::task<void> context::handle_amqp_BroadcastClan(const internal_resp::BroadcastClan& resp)
@@ -84,7 +84,7 @@ async::task<void> context::handle_amqp_BroadcastClan(const internal_resp::Broadc
     if (resp.host == fb::config<uint32_t>("id"))
         co_return;
 
-    this->on_clan_broadcast(resp);
+    co_await this->on_clan_broadcast(resp);
 };
 
 async::task<void> context::handle_amqp_WriteMail(const internal_resp::WriteMail& resp)

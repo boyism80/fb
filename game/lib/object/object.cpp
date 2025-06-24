@@ -482,7 +482,7 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
                 this->_sector.reset();
             }
 
-            this->listener.on_map_changed(*this, this->_map.get(), map.get());
+            this->listener.on_map_leave(*this, *this->_map);
             this->_map = nullptr;
             co_await this->context.switch_thread(weak);
             this->_position = fb::model::point16_t(1, 1);
@@ -494,7 +494,6 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
 
         // here the character is on some map.
         // set map to null.
-        auto before_map      = this->_map;
         auto before_position = fb::model::point16_t{position};
         if (this->_map != nullptr)
         {
@@ -510,9 +509,9 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
             static_cast<character*>(this)->thread(map->thread());
 
         co_await this->context.switch_thread(weak);
+        this->listener.on_map_enter(*this, *map);
         this->_position = before_position;
 
-        this->listener.on_map_changed(*this, before_map.get(), map.get());
         this->update_sector();
 
         // insert character into map cache

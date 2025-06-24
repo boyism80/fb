@@ -4,9 +4,11 @@
 using namespace fb::game;
 using namespace fb::model;
 
-clan::clan(context& context, uint32_t id) :
+clan::clan(context& context, uint32_t id, const std::string& name, const std::optional<std::string>& title) :
     _context(context),
-    _id(id)
+    _id(id),
+    _name(name),
+    _title(title)
 { }
 
 clan::clan(clan&& r) :
@@ -106,13 +108,14 @@ std::vector<std::shared_ptr<fb::game::character>> clan::nears(const fb::game::ma
             continue;
 
         auto ch = std::static_pointer_cast<fb::game::character>(obj);
-        if (ch->clan() == nullptr)
+        if (ch->clan_id().has_value() == false)
             continue;
 
-        ch->clan()->read([this, ch, &result](const auto& clan) {
-            if (&clan == this)
+        auto& clan_id = ch->clan_id().value();
+        this->_context.clans.read(clan_id, [ch, clan_id, &result](const auto& clan) {
+            if (ch->clan_id() == clan_id)
                 result.push_back(ch);
-        });
+        }); // same thread
     }
 
     return result;

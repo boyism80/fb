@@ -11,7 +11,6 @@
 #include <sstream>
 #include <fb/game/trade.h>
 #include <fb/game/achievement.h>
-#include <fb/game/clan.h>
 #include <fb/game/bulletin.h>
 #include <fb/game/stat.h>
 
@@ -22,19 +21,12 @@ namespace fb::game {
  */
 class map;
 /**
- * @brief      Forward declaration of the clan class.
- */
-class clan;
-/**
  * @brief      Forward declaration of the group class.
  */
 class group;
 
 using group_lock        = fb::locker<group>;
 using shared_group_lock = std::shared_ptr<group_lock>;
-
-using clan_lock        = fb::locker<clan>;
-using shared_clan_lock = std::shared_ptr<clan_lock>;
 
 /**
  * @brief      Represents a player character in the game world.
@@ -48,7 +40,7 @@ using shared_clan_lock = std::shared_ptr<clan_lock>;
  *             - Complete character progression system (level, experience, stats)
  *             - Inventory and equipment management
  *             - Spell and skill system integration
- *             - Group and clan membership
+ *             - Group membership
  *             - Real-time network communication with client
  *             - Lua scripting integration for game logic
  *             - Achievement and quest system
@@ -58,7 +50,6 @@ using shared_clan_lock = std::shared_ptr<clan_lock>;
 class character : public life
 {
     friend class group;
-    friend class clan;
 
 public:
     using object::map;
@@ -105,7 +96,7 @@ private:
     std::optional<uint16_t>                     _disguise     = 0;
     std::string                                 _title;
     shared_group_lock                           _group         = nullptr;
-    shared_clan_lock                            _clan          = nullptr;
+    std::optional<uint32_t>                     _clan_id       = std::nullopt;
     uint16_t                                    _unread_mail   = 0;
     uint16_t                                    _weapon_damage = 0;
     bool                                        _detect        = false;
@@ -770,25 +761,23 @@ public:
     void group(shared_group_lock& value);
 
     /**
-     * @brief      Gets the character's clan (modifiable).
+     * @brief      Gets the character's clan id (modifiable).
      *
-     * @return     Reference to the character's clan lock
+     * @return     Reference to the character's clan id
      */
-    shared_clan_lock& clan();
-
-    /**
-     * @brief      Gets the character's clan (read-only).
-     *
-     * @return     Const reference to the character's clan lock
-     */
-    const shared_clan_lock& clan() const;
+    const std::optional<uint32_t>& clan_id() const;
 
     /**
      * @brief      Sets the character's clan.
      *
-     * @param      value  The clan lock to assign to the character
+     * @param      value  The clan id to assign to the character
      */
-    void clan(shared_clan_lock& value);
+    void clan_id(std::optional<uint32_t> value);
+
+    /**
+     * @brief      Resets the character's clan.
+     */
+    void clan_reset();
 
     /**
      * @brief      Asserts that the character is in a specific state.
@@ -2028,91 +2017,138 @@ public:
  *             members, or other character collections with specific access
  *             patterns and management requirements.
  */
-class character::container : private std::unordered_map<std::string, std::shared_ptr<character>>
+class character::container
 {
 private:
-    using super = std::unordered_map<std::string, std::shared_ptr<character>>;
+    std::unordered_map<uint32_t, std::shared_ptr<fb::game::character>>    _from_uid;
+    std::unordered_map<std::string, std::shared_ptr<fb::game::character>> _from_name;
 
 public:
-    using super::begin;
-    using super::end;
-    using super::size;
-    using super::operator[];
+    fb::game::context& _context;
 
 public:
-    /**
-     * @brief      Constructs a new instance.
-     */
-    container();
-
-    /**
-     * @brief      Constructs a new instance.
-     *
-     * @param[in]  right  The right
-     */
-    container(const std::unordered_map<std::string, std::shared_ptr<character>>& right);
-
-    /**
-     * @brief      Destroys the object.
-     */
-    ~container();
+    container(fb::game::context& context);
+    ~container() = default;
 
 public:
     /**
-     * @brief      Adds a character to the container.
+     * @brief      Inserts a character into the container.
      *
-     * @param      ch    The character to add to the container
+     *             This method adds a character to the container, associating it
+     *             with both its unique ID and its name. It ensures that the
+     *             character is properly tracked and accessible by both methods.
      *
-     * @return     Reference to this container for method chaining
+     * @param[in]  ch  The character to insert
      */
-    container& push(std::shared_ptr<character> ch);
+    void insert(std::shared_ptr<fb::game::character> ch);
 
     /**
      * @brief      Removes a character from the container.
      *
-     * @param      ch    The character to remove from the container
-     *
-     * @return     Reference to this container for method chaining
+     * @param[in]  ch  The character to remove
      */
-    container& erase(std::shared_ptr<character> ch);
+    void remove(std::shared_ptr<fb::game::character> ch);
 
     /**
-     * @brief      Removes a character from the container.
+     * @brief      Finds a character by their unique ID.
      *
-     * @param      name  The name of the character to remove
+     * @param[in]  uid  The unique ID of the character to find
      *
-     * @return     Reference to this container for method chaining
+     * @return     A shared pointer to the character if found, nullptr otherwise
      */
-    container& erase(const std::string& name);
-
-public:
-    /**
-     * @brief      Searches for the first match.
-     *
-     * @param[in]  name  The name
-     *
-     * @return     Pointer to the found character, or nullptr if not found
-     */
-    std::shared_ptr<character> find(const std::string& name);
+    std::shared_ptr<fb::game::character> find(uint32_t uid) const;
 
     /**
-     * @brief      Checks if the container contains a specific character.
+     * @brief      Checks if a character with the given name exists in the container.
      *
-     * @param[in]  ch    The character to search for
+     * @param[in]  name  The name of the character to check
      *
-     * @return     True if the character is in the container, false otherwise
+     * @return     True if the character exists, false otherwise
      */
     bool contains(const std::string& name) const;
 
+    /**
+     * @brief      Checks if a character with the given ID exists in the container.
+     *
+     * @param[in]  uid  The unique ID of the character to check
+     *
+     * @return     True if the character exists, false otherwise
+     */
+    bool contains(uint32_t uid) const;
+
+    /**
+     * @brief      Finds a character by their name.
+     *
+     * @param[in]  name  The name of the character to find
+     *
+     * @return     A shared pointer to the character if found, nullptr otherwise
+     */
+    std::shared_ptr<fb::game::character> find(const std::string& name) const;
+
+    /**
+     * @brief      Executes a function for each character in the container.
+     *
+     *             This method iterates through all characters in the container,
+     *             executing the provided function for each character. If a character
+     *             is not found, the fallback function is called with the character's
+     *             ID and name.
+     *
+     * @param[in]  fn        The function to execute for each character
+     * @param[in]  predict   The predicate function to filter characters
+     */
+    async::task<void> foreach (std::function<void(std::shared_ptr<fb::game::character>&)>&&     fn,
+                               std::function<bool(const std::shared_ptr<fb::game::character>&)> predict = nullptr);
+
+    /**
+     * @brief      Executes a function for each character in the container.
+     *
+     * @param[in]  fn        The function to execute for each character
+     * @param[in]  characters  The characters to iterate over
+     */
+    async::task<void> foreach (std::function<void(std::shared_ptr<fb::game::character>&)>&& fn,
+                               const std::vector<std::shared_ptr<fb::game::character>>&     characters);
+
+    /**
+     * @brief      Executes a function for each character in the container asynchronously.
+     *
+     *             This method iterates through all characters in the container,
+     *             executing the provided function for each character. If a character
+     *             is not found, the fallback function is called with the character's
+     *             ID and name.
+     *
+     * @param[in]  fn        The function to execute for each character
+     * @param[in]  predict   The predicate function to filter characters
+     */
+    async::task<void> foreach_async(std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
+                                    std::function<bool(const std::shared_ptr<fb::game::character>&)> predict = nullptr);
+
+    /**
+     * @brief      Executes a function for each character in the container asynchronously.
+     *
+     * @param[in]  fn        The function to execute for each character
+     * @param[in]  characters  The characters to iterate over
+     */
+    async::task<void> foreach_async(std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
+                                    const std::vector<std::shared_ptr<fb::game::character>>& characters);
+
 public:
     /**
-     * @brief      Array indexer operator.
+     * @brief      Accesses a character by their unique ID.
      *
-     * @param[in]  name  The name
+     * @param[in]  uid  The unique ID of the character to access
      *
-     * @return     The result of the array indexer
+     * @return     A reference to the character
      */
-    std::shared_ptr<character> operator[] (const std::string& name);
+    std::shared_ptr<character>& operator[] (uint32_t uid);
+
+    /**
+     * @brief      Accesses a character by their name.
+     *
+     * @param[in]  name  The name of the character to access
+     *
+     * @return     A reference to the character
+     */
+    std::shared_ptr<character>& operator[] (const std::string& name);
 };
 
 /**

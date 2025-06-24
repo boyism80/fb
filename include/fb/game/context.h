@@ -13,6 +13,8 @@
 #include <fb/hash.h>
 #include <fb/game/shard.h>
 #include <fb/redis.h>
+#include <fb/shard_container.h>
+#include <fb/game/clan.h>
 
 using namespace fb::protocol::internal;
 using namespace fb::protocol::internal::request;
@@ -91,6 +93,7 @@ public:
     using protocol_generator   = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
     using npc_interaction_func = std::function<
         async::task<bool>(character&, const std::string&, const std::vector<std::shared_ptr<fb::game::npc>>&)>;
+    using clan_ptr = std::shared_ptr<fb::game::clan>;
 
 private:
     fb::model::datetime               _time;
@@ -102,8 +105,10 @@ public:
     fb::game::listener_impl listener;
 
 public:
-    fb::model::model        model;
-    fb::game::map_container maps;
+    fb::model::model                    model;
+    fb::game::map_container             maps;
+    fb::game::character::container      characters;
+    fb::sharded_container<clan_ptr, 16> clans;
 
 public:
     /**
@@ -194,7 +199,8 @@ private:
      * @param[in]  id    The clan identifier
      * @param[in]  fn    The function to execute with the clan lock
      */
-    void upsert_clan_then(uint32_t id, std::function<void(shared_clan_lock&)> fn);
+    async::task<void> upsert_clan_then(uint32_t                                                           id,
+                                       std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn);
 
     /**
      * @brief      Initializes a character with data from the database.
@@ -323,28 +329,28 @@ private:
      *
      * @param[in]  resp  The clan broadcast response containing the message and clan info.
      */
-    void on_clan_broadcast(const internal_resp::BroadcastClan& resp);
+    async::task<void> on_clan_broadcast(const internal_resp::BroadcastClan& resp);
 
     /**
      * @brief      Called when a clan's title/motto is changed.
      *
      * @param[in]  resp  The clan title change response containing the new title.
      */
-    void on_clan_title_changed(const internal_resp::SetClanTitle& resp);
+    async::task<void> on_clan_title_changed(const internal_resp::SetClanTitle& resp);
 
     /**
      * @brief      Called when a new member joins a clan.
      *
      * @param[in]  resp  The clan join response containing member information.
      */
-    void on_clan_join_member(const internal_resp::JoinClan& resp);
+    async::task<void> on_clan_join_member(const internal_resp::JoinClan& resp);
 
     /**
      * @brief      Called when a member leaves a clan.
      *
      * @param[in]  resp  The clan leave response containing departure details.
      */
-    void on_clan_leave_member(const internal_resp::LeaveClan& resp);
+    async::task<void> on_clan_leave_member(const internal_resp::LeaveClan& resp);
 
     /**
      * @brief      Called when a mail message is written/sent.
@@ -579,11 +585,11 @@ public:
      * @brief      Creates a new clan with the specified character as leader.
      *
      * @param      me    The character who will become the clan leader.
-     * @param[in]  name  The name of the clan to create.
+     * @param[in]  name  The name of the clan to create. (rvalue)
      *
      * @return     An async task that completes when the clan is created.
      */
-    [[nodiscard]] async::task<void> create_clan(character& me, const std::string& name);
+    [[nodiscard]] async::task<void> create_clan(character& me, std::string name);
 
     /**
      * @brief      Destroys the clan that the character leads.

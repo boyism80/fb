@@ -1339,8 +1339,8 @@ int character::builtin::builtin_clan(lua_State* L)
                 co_return;
             }
 
-            auto clan_ptr = shared->_clan;
-            if (clan_ptr == nullptr)
+            auto& clan_id = shared->clan_id();
+            if (clan_id.has_value() == false)
             {
                 co_await lua->switching();
                 lua->pushnil();
@@ -1348,9 +1348,9 @@ int character::builtin::builtin_clan(lua_State* L)
             }
             else
             {
-                async::awaitable_then(lua->switching(), [lua, clan_ptr](auto result) {
+                async::awaitable_then(lua->switching(), [lua, ctx, cid = clan_id.value()](auto result) {
                     result();
-                    clan_ptr->read([=](const auto& clan) {
+                    ctx->clans.read(cid, [=](const auto& clan) {
                         lua->pushobject(clan);
                         lua->resume(1);
                     });
@@ -1378,8 +1378,8 @@ int character::builtin::builtin_clan(lua_State* L)
                 co_return;
             }
 
-            auto clan_ptr = shared->_clan;
-            if (clan_ptr == nullptr)
+            auto& clan_id = shared->clan_id();
+            if (clan_id.has_value() == false)
             {
                 co_await lua->switching();
                 lua->pushnil();
@@ -1387,9 +1387,9 @@ int character::builtin::builtin_clan(lua_State* L)
             }
             else
             {
-                async::awaitable_then(lua->switching(), [lua, clan_ptr](auto result) {
+                async::awaitable_then(lua->switching(), [lua, ctx, cid = clan_id.value()](auto result) {
                     result();
-                    clan_ptr->read([=](const auto& clan) {
+                    ctx->clans.read(cid, [=](const auto& clan) {
                         lua->pushobject(clan);
                         lua->resume(1);
                     });

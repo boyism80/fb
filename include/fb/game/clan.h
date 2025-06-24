@@ -50,7 +50,7 @@ public:
      * @param[in]  context  The game context that manages this clan
      * @param[in]  id       The unique identifier for this clan
      */
-    clan(context& context, uint32_t id);
+    clan(context& context, uint32_t id, const std::string& name, const std::optional<std::string>& title);
 
     /**
      * @brief      Copy constructor (deleted).

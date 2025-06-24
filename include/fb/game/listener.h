@@ -200,13 +200,20 @@ public:
     void on_effect(fb::game::object& ch, uint8_t value) override final;
 
     /**
-     * @brief      Called when an object's map has changed.
+     * @brief      Called when an object leaves a map.
      *
-     * @param      me    The object whose map has changed
-     * @param      before  The previous map
-     * @param      after   The new map
+     * @param      me    The object leaving the map
+     * @param      map   The map being left
      */
-    void on_map_changed(fb::game::object& me, const fb::game::map* before, const fb::game::map* after) override final;
+    void on_map_leave(fb::game::object& me, const fb::game::map& map) override final;
+
+    /**
+     * @brief      Called when an object enters a map.
+     *
+     * @param      me    The object entering the map
+     * @param      map   The map being entered
+     */
+    void on_map_enter(fb::game::object& me, const fb::game::map& map) override final;
 
     /**
      * @brief      Called when a life entity performs an attack action.

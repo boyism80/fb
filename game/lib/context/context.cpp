@@ -6,7 +6,11 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<character>(context, "GAME", port),
     maps(*this, fb::config<uint32_t>("id")),
     _redis(config<std::string>("redis:ip").c_str(), config<uint16_t>("redis:port"), config<uint32_t>("redis:pool")),
-    listener(*this)
+    listener(*this),
+    characters(*this),
+    clans([](const std::shared_ptr<clan>& clan) -> uint32_t {
+        return clan->id();
+    })
 {
     auto& ist = fb::lua::context_pool::ist();
     ist.setup(this->threads);
@@ -277,14 +281,16 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         group_lock.reset();
     }
 
-    auto& clan_lock = ch->clan();
-    if (clan_lock != nullptr)
+    auto& clan_id = ch->clan_id();
+    if (clan_id.has_value())
     {
-        clan_lock->write([weak](auto& clan) {
-            clan.detach_character(weak);
+        this->clans.read(clan_id.value(), [weak](auto& clan) {
+            clan->detach_character(weak);
         });
-        clan_lock.reset();
+        ch->clan_reset();
     }
+    this->characters.remove(ch);
+
     co_await ch->destroy();
     socket.data(nullptr);
     co_return true;
@@ -460,11 +466,14 @@ async::task<bool> context::init_ch(const internal::Character&           response
 
     if (clan.has_value())
     {
-        this->upsert_clan_then(clan.value(), [weak, &ch](auto& lock) {
-            lock->write([weak](auto& clan) {
-                clan.attach_character(weak);
-            });
-            ch.clan(lock);
+        co_await this->upsert_clan_then(clan.value(), [weak](auto& clan) -> async::task<void> {
+            auto ch = weak.lock();
+            if (ch == nullptr)
+                co_return;
+
+            clan->attach_character(weak);
+            ch->clan_id(clan->id());
+            co_return;
         });
     }
 

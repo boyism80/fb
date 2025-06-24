@@ -72,6 +72,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 
     ch->update(STATE_LEVEL::LEVEL_MAX);
     ch->update_option();
+    this->characters.insert(ch);
     co_return true;
 }
 
