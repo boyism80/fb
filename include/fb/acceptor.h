@@ -267,7 +267,9 @@ private:
                                 !socket->limiter.update(cmd, handler.duration, handler.limit))
                                 co_return;
 
-                            std::ignore = co_await handler.fn(*socket, *protocol.get());
+                            [[maybe_unused]]
+                            volatile auto holder = protocol;
+                            std::ignore          = co_await handler.fn(*socket, *protocol.get());
                         }
                         catch (std::exception& e)
                         {
