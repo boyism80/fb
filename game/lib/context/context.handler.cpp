@@ -15,25 +15,22 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     ch->name(request.name);
     fb::logger::info("{} has connected.", request.name);
 
-    auto fd       = socket.fd();
-    auto id       = request.id;
-    auto name     = std::string(request.name);
-    auto from     = request.from;
-    auto transfer = request.transfer;
-    auto delay    = fb::config<uint32_t>("delay");
+    auto delay = fb::config<uint32_t>("delay");
     co_await this->sleep(std::chrono::seconds(delay));
 
-    auto&& login_resp =
-        co_await this->http.post("internal", "/in-game/login", Login{id, name, fb::config<uint8_t>("id")});
+    auto&& login_resp = co_await this->http.post("internal",
+                                                 "/in-game/login",
+                                                 Login{request.id, request.name, fb::config<uint8_t>("id")});
     if (login_resp.error != (uint32_t)ERROR_CODE::NONE)
         co_return false;
 
-    auto&& response = co_await this->http.get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
-    auto   map      = transfer.has_value() ? transfer->map : response.character.map;
+    auto&& response =
+        co_await this->http.get<internal_resp::Init>("internal", std::format("/user/init/{}", request.id));
+    auto map = request.transfer.has_value() ? request.transfer->map : response.character.map;
     ch->thread(this->maps[map]->thread());
     co_await this->switch_thread(weak);
 
-    if (co_await this->init_ch(response.character, *ch, response.group, response.clan, transfer) == false)
+    if (co_await this->init_ch(response.character, *ch, response.group, response.clan, request.transfer) == false)
         co_return false;
     co_await this->switch_thread(weak);
 
@@ -45,7 +42,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     this->init_option(response.option, *ch);
     ch->init();
     ch->update_time(this->_time.hours());
-    if (from == internal::Service::Login)
+    if (request.from == internal::Service::Login)
     {
         auto msg = this->elapsed_message(response.character.updated_date);
         if (msg.empty() == false)
