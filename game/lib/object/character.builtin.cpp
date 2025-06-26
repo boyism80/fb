@@ -1210,8 +1210,7 @@ int character::builtin::builtin_group(lua_State* L)
             }
             else
             {
-                ctx->groups.async_read(group_id.value(), [=](const auto& group) -> async::task<void> {
-                    co_await lua->switching();
+                ctx->groups.read(group_id.value(), [=](const auto& group) {
                     lua->pushobject(group);
                     lua->resume(1);
                 });
@@ -1246,8 +1245,7 @@ int character::builtin::builtin_group(lua_State* L)
                 }
                 else
                 {
-                    ctx->groups.async_read(group_id.value(), [=](const auto& group) -> async::task<void> {
-                        co_await lua->switching();
+                    ctx->groups.read(group_id.value(), [=](const auto& group) {
                         lua->pushobject(group);
                         lua->resume(1);
                     });
