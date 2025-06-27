@@ -4,6 +4,8 @@
 #include <fb/leak.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/model/loader.h>
+#include <boost/program_options.hpp>
+#include <filesystem>
 #ifndef _WIN32
 #include <execinfo.h>
 #else
@@ -14,9 +16,36 @@ using namespace fb;
 
 int main(int argc, char** argv)
 {
-    // Initialize config system
-    if (!fb::init_config(argc, argv))
+    namespace po = boost::program_options;
+
+    try
+    {
+        po::options_description desc("Login Server Options");
+        desc.add_options()("help,h", "Show help message")("config,c",
+                                                          po::value<std::string>()->default_value("config.json"),
+                                                          "Configuration file path");
+
+        po::variables_map vm;
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+
+        if (vm.count("help"))
+            return std::cout << desc << std::endl, 0;
+
+        auto config_path = vm["config"].as<std::string>();
+
+        // Initialize config system
+        if (!fb::init_config(config_path))
+        {
+            std::cerr << "Failed to initialize config from: " << config_path << std::endl;
+            return -1;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Command line parsing error: " << e.what() << std::endl;
         return -1;
+    }
 
     try
     {

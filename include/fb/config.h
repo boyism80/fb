@@ -211,43 +211,28 @@ inline void set_config_path(const std::string& path)
 }
 
 /**
- * @brief      Initializes the configuration system with command line arguments.
+ * @brief      Initializes the configuration system with direct config file path.
  *
- *             This function must be called from main() before using config() function.
- *             It parses command line arguments to determine the config file path.
+ *             This function sets the config file path directly without command line parsing.
+ *             Simpler alternative to the argc/argv version when config path is known.
  *
- * @param[in]  argc  Command line argument count
- * @param[in]  argv  Command line argument values
+ * @param[in]  config_path  The path to the configuration file
  *
  * @return     true if initialization succeeded, false otherwise
  *
- * @note       If no config file is specified, defaults to config.json in executable directory
+ * @note       The config file existence and validity will be checked when config() is first called
  */
-inline bool init_config(int argc, char* argv[])
+inline bool init_config(const std::string& config_path)
 {
-    namespace po = boost::program_options;
-
     try
     {
-        po::options_description desc("Configuration options");
-        desc.add_options()("config,c", po::value<std::string>(), "Path to configuration file");
-
-        po::variables_map vm;
-        po::store(po::parse_command_line(argc, argv, desc), vm);
-        po::notify(vm);
-
-        // Preferred initialization pattern with default value
-        auto config_path_value = std::string{};
-        if (vm.count("config"))
-            config_path_value = vm["config"].as<std::string>();
-        else
+        if (config_path.empty())
         {
-            auto exe_path     = std::filesystem::path(argv[0]).parent_path();
-            config_path_value = (exe_path / "config.json").string();
+            fb::console::puts("Config initialization failed: config path cannot be empty");
+            return false;
         }
 
-        set_config_path(config_path_value);
-
+        set_config_path(config_path);
         return true;
     }
     catch (const std::exception& e)
