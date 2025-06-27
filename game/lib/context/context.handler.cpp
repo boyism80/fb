@@ -28,11 +28,11 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         co_await this->http.get<internal_resp::Init>("internal", std::format("/user/init/{}", request.id));
     auto map = request.transfer.has_value() ? request.transfer->map : response.character.map;
     ch->thread(this->maps[map]->thread());
-    co_await this->switch_thread(weak);
+    co_await this->threads.switching(weak);
 
     if (co_await this->init_ch(response.character, *ch, response.group, response.clan, request.transfer) == false)
         co_return false;
-    co_await this->switch_thread(weak);
+    co_await this->threads.switching(weak);
 
     ch->unread_mail(response.mail);
 
@@ -355,7 +355,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
         if (option == OPTION::GROUP && !enabled)
         {
             auto&& response = co_await this->http.post("internal", "/group/leave", LeaveGroup{ch->name()});
-            co_await this->switch_thread(weak);
+            co_await this->threads.switching(weak);
 
             co_await this->on_leave_group(response);
         }
@@ -363,7 +363,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
         auto&& response = co_await this->http.post("internal",
                                                    "/user/option",
                                                    SetOption{ch->id(), static_cast<uint8_t>(option), enabled});
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (response.success == false)
             ch->message("설정을 변경하지 못했습니다.");
@@ -838,7 +838,7 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
             if (mail)
             {
                 auto&& resp = co_await this->mail_list(*ch, request.offset, 20);
-                co_await this->switch_thread(weak);
+                co_await this->threads.switching(weak);
 
                 ch->show_mail_box(resp.summary_list, MAIL_BUTTON_ENABLE::NEW);
             }
@@ -846,7 +846,7 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
             {
                 auto   section  = request.section;
                 auto&& articles = co_await this->bulletin_list(request.section, request.offset);
-                co_await this->switch_thread(weak);
+                co_await this->threads.switching(weak);
 
                 auto& model = this->model.bulletin[section];
                 auto  flag  = BULLETIN_BUTTON_ENABLE::UP;
@@ -872,14 +872,14 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
             if (mail)
             {
                 auto&& resp = co_await this->read_mail(*ch, request.article);
-                co_await this->switch_thread(weak);
+                co_await this->threads.switching(weak);
                 auto flag = MAIL_BUTTON_ENABLE::NEW;
                 ch->show_mail_box(resp.mail, flag);
             }
             else
             {
                 auto&& article = co_await this->read_bulletin(request.section, request.article);
-                co_await this->switch_thread(weak);
+                co_await this->threads.switching(weak);
 
                 auto flag = BULLETIN_BUTTON_ENABLE::NONE;
                 if (article.next)
@@ -904,7 +904,7 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
         try
         {
             co_await this->write_bulletin(*ch, request.section, request.title, request.contents);
-            co_await this->switch_thread(weak);
+            co_await this->threads.switching(weak);
 
             ch->show_bulletin_message(_TEXT(MESSAGE_BULLETIN_WRITE), true, false);
         }
@@ -924,13 +924,13 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
             if (mail)
             {
                 auto&& resp = co_await this->delete_mail(*ch, request.article);
-                co_await this->switch_thread(weak);
+                co_await this->threads.switching(weak);
                 ch->show_bulletin_message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, true);
             }
             else
             {
                 co_await this->delete_bulletin(*ch, request.section, request.article);
-                co_await this->switch_thread(weak);
+                co_await this->threads.switching(weak);
 
                 ch->show_bulletin_message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, false);
             }
@@ -948,7 +948,7 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
         try
         {
             auto&& resp = co_await this->mail_list(*ch, 0xFFFF, 20); // TODO: 20 -> const
-            co_await this->switch_thread(weak);
+            co_await this->threads.switching(weak);
 
             this->assert_mail(resp.error);
             ch->show_mail_box(resp.summary_list, MAIL_BUTTON_ENABLE::NEW);
@@ -966,7 +966,7 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
         try
         {
             auto&& resp = co_await this->send_mail(*ch, request.user, request.title, request.contents);
-            co_await this->switch_thread(weak);
+            co_await this->threads.switching(weak);
             ch->show_bulletin_message("우편을 보냈습니다.", true, true);
         }
         catch (std::exception& e)
@@ -1191,7 +1191,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
     try
     {
         co_await this->whisper(*me, request.name, request.message);
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
     }
     catch (std::exception& e)
     {

@@ -290,7 +290,7 @@ int context::ensure_yield(fb::context& ctx, std::weak_ptr<fb::thread_switchable>
     }
     else
     {
-        async::awaitable_then(ctx.switch_thread(weak), [this, fn](auto result) {
+        async::awaitable_then(ctx.threads.switching(weak), [this, fn](auto result) {
             try
             {
                 result();

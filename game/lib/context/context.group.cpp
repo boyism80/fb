@@ -55,7 +55,7 @@ async::task<bool> context::create_group(character& me, const std::string& target
             throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
         auto&& resp = co_await this->http.post("internal", "/group/create", EnterGroup{me.id(), target});
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         co_await this->on_enter_group(resp);
         co_return true;

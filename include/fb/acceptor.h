@@ -369,7 +369,7 @@ private:
                 co_return;
 
             auto weak = socket.template weak_from_this_as<fb::socket<T>>();
-            co_await this->switch_thread(weak);
+            co_await this->threads.switching(weak);
             co_await this->erase(socket);
         }
         catch (std::exception& e)

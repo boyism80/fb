@@ -484,7 +484,7 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
 
             this->listener.on_map_leave(*this, *this->_map);
             this->_map = nullptr;
-            co_await this->context.switch_thread(weak);
+            co_await this->context.threads.switching(weak);
             this->_position = fb::model::point16_t(1, 1);
             co_return true;
         }
@@ -508,7 +508,7 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         if (this->is(OBJECT_TYPE::CHARACTER))
             static_cast<character*>(this)->thread(map->thread());
 
-        co_await this->context.switch_thread(weak);
+        co_await this->context.threads.switching(weak);
         this->listener.on_map_enter(*this, *map);
         this->_position = before_position;
 

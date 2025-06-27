@@ -32,7 +32,7 @@ async::task<void> context::whisper(character& sender, std::string receiver_name,
     if (receiver != nullptr)
     {
         auto target_weak = receiver->weak_from_this_as<character>();
-        co_await this->switch_thread(target_weak);
+        co_await this->threads.switching(target_weak);
         auto target_name = receiver->name();
 
         if (receiver->option(OPTION::WHISPER) == false)
@@ -40,14 +40,14 @@ async::task<void> context::whisper(character& sender, std::string receiver_name,
 
         receiver->message(std::format("{}> {}", sender_name, message), MESSAGE_TYPE::NOTIFY);
 
-        co_await this->switch_thread(sender_weak);
+        co_await this->threads.switching(sender_weak);
         sender.message(std::format("{}< {}", target_name, message), MESSAGE_TYPE::NOTIFY);
     }
     else
     {
         auto&& resp =
             co_await this->http.post("internal", "/in-game/whisper", Whisper{sender_name, receiver_name, message});
-        co_await this->switch_thread(sender_weak);
+        co_await this->threads.switching(sender_weak);
 
         this->on_whisper(resp);
         sender.message(std::format("{}< {}", receiver_name, message), MESSAGE_TYPE::NOTIFY);
