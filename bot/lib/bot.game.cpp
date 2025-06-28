@@ -35,7 +35,7 @@ game_bot::game_bot(bot_controller<game_bot>& controller, uint32_t id, const fb::
 game_bot::~game_bot()
 { }
 
-async::task<void> game_bot::on_timer(const fb::model::datetime& now)
+async::task<void> game_bot::process_random_pattern(const fb::model::datetime& now)
 {
     if (!this->_inited)
         co_return;

@@ -83,6 +83,7 @@ private:
     std::unordered_map<uint8_t, deserilze_func> _deserializer;
     std::shared_mutex                           _handler_mutex; ///< Mutex for thread-safe handler operations
 
+protected:
     /**
      * @brief      Thread-safe container for managing active bot instances.
      *
@@ -110,6 +111,21 @@ protected:
     virtual bool decrypt_policy(int cmd) const override
     {
         return true;
+    }
+
+    template <typename Class>
+    void bind_timer(async::task<void> (Class::*fn)(), std::chrono::steady_clock::duration interval)
+    {
+        this->container.bind_timer(std::bind(fn, static_cast<Class*>(this)), interval);
+    }
+
+    template <typename Class>
+    void bind_thread_timer(async::task<void> (Class::*fn)(const fb::model::datetime&, std::thread::id),
+                           std::chrono::steady_clock::duration interval)
+    {
+        this->container.bind_thread_timer(
+            std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2),
+            interval);
     }
 
     /**
@@ -247,6 +263,23 @@ public:
         });
 
         return bot;
+    }
+
+    /**
+     * @brief      Checks if a bot with the specified ID is managed by this controller.
+     *
+     *             Provides thread-safe read access to the bot collection to check
+     *             if a bot with the given ID exists.
+     *
+     * @param[in]  id  The unique identifier of the bot.
+     *
+     * @return     True if the bot is managed, false otherwise.
+     */
+    bool contains(uint32_t id) const
+    {
+        return this->_bots.read<bool>([&](const auto& bots) {
+            return bots.contains(id);
+        });
     }
 
     async::task<void> on_receive(fb::socket<>& socket, fb::stream& stream)

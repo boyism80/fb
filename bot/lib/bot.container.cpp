@@ -10,8 +10,7 @@ using namespace fb::bot;
 
 bot_container::bot_container(boost::asio::io_context& context) :
     _context(context),
-    fb::context(context, "BOT", fb::config<uint32_t>("thread:logic")),
-    _remained_count(fb::config<uint32_t>("spawn_count") / fb::config<uint32_t>("io_size"))
+    fb::context(context, "BOT", fb::config<uint32_t>("thread:logic"))
 {
     for (int i = 0; i < this->threads.count(); i++)
     {
@@ -26,8 +25,9 @@ bot_container::bot_container(boost::asio::io_context& context) :
 void bot_container::initialize()
 {
     this->_running = true;
-    this->bind_thread_timer(&bot_container::handle_timer, 100ms);
-    this->bind_timer(&bot_container::handle_bot_spawn, std::chrono::milliseconds(fb::config<uint32_t>("interval")));
+    // Timer setup moved to individual controllers
+    this->gateway_controller->initialize();
+    this->game_controller->initialize();
 }
 
 bot_container::~bot_container()
@@ -42,35 +42,6 @@ bot_container::~bot_container()
 boost::asio::io_context& bot_container::context() const
 {
     return this->_context;
-}
-
-async::task<void> bot_container::handle_bot_spawn()
-{
-    auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(fb::config<std::string>("ip")),
-                                                   fb::config<uint16_t>("port"));
-    auto count =
-        std::min(this->_remained_count, fb::config<uint32_t>("spawn_per_interval") / fb::config<uint32_t>("io_size"));
-    for (uint32_t i = 0; i < count; i++)
-    {
-        auto bot = this->gateway_controller->create();
-        bot->connect(endpoint);
-    }
-
-    this->_remained_count -= count;
-    co_return;
-}
-
-async::task<void> bot_container::handle_timer(const datetime& now, std::thread::id id)
-{
-    auto thread = this->threads.at(id);
-    auto params = thread->data<bot_thread_params>();
-    if (params == nullptr)
-        co_return;
-
-    for (auto& [_, bot] : params->bots)
-    {
-        bot->on_timer(now);
-    }
 }
 
 async::task<void> bot_container::dispatch(uint32_t id, std::function<async::task<void>(fb::thread&)>&& fn)

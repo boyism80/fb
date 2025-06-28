@@ -87,6 +87,22 @@ protected:
     }
 
     /**
+     * @brief      Binds a lambda function as a thread-based timer callback.
+     *
+     *             Creates a timer that executes the specified lambda function at regular
+     *             intervals on the thread pool. The callback receives timing information
+     *             and thread ID for context-aware processing.
+     *
+     * @param[in]  fn        The lambda function to execute as timer callback
+     * @param[in]  duration  The time interval between timer executions
+     */
+    void bind_thread_timer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)> fn,
+                           const std::chrono::steady_clock::duration&                                    duration)
+    {
+        this->threads.settimer(fn, duration);
+    }
+
+    /**
      * @brief      Binds a member function as a coroutine-based timer callback with improved safety.
      *
      *             Creates a coroutine-based timer that executes the specified member function
@@ -135,6 +151,69 @@ protected:
                     {
                         // Execute the timer callback
                         async::awaitable_get((shared_this.get()->*fn)());
+                    }
+                    catch (const std::exception& e)
+                    {
+                        // Log timer callback errors but don't stop the timer
+                        fb::logger::warn(std::format("Timer callback error: {}", e.what()));
+                    }
+                    catch (...)
+                    {
+                        // Log unknown errors
+                        fb::logger::warn("Timer callback error: Unknown exception");
+                    }
+                }
+            },
+            boost::asio::detached);
+    }
+
+    /**
+     * @brief      Binds a lambda function as a coroutine-based timer callback with improved safety.
+     *
+     *             Creates a coroutine-based timer that executes the specified lambda function
+     *             at regular intervals using Boost.Asio's coroutine support. The timer runs
+     *             asynchronously and continues until the context is stopped.
+     *
+     *             Safety improvements:
+     *             - Uses weak_ptr to prevent dangling pointer issues
+     *             - Thread-safe running flag access
+     *             - Proper exception handling
+     *
+     * @param[in]  fn        The lambda function to execute as timer callback
+     * @param[in]  interval  The time interval between timer executions
+     */
+    void bind_timer(std::function<async::task<void>()> fn, std::chrono::steady_clock::duration interval)
+    {
+        // Use weak_ptr for safe object reference
+        auto weak_this = this->weak_from_this();
+
+        // Get executor
+        auto exec = this->io_context.get_executor();
+
+        // Spawn coroutine with improved safety
+        boost::asio::co_spawn(
+            exec,
+            [weak_this, fn, interval]() -> boost::asio::awaitable<void> {
+                boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
+
+                while (true)
+                {
+                    timer.expires_after(interval);
+                    co_await timer.async_wait(boost::asio::use_awaitable);
+
+                    // Check if object is still alive
+                    auto shared_this = weak_this.lock();
+                    if (!shared_this)
+                        break; // Object has been destroyed, stop timer
+
+                    // Check if context is still running
+                    if (!shared_this->_running)
+                        break;
+
+                    try
+                    {
+                        // Execute the timer callback
+                        async::awaitable_get(fn());
                     }
                     catch (const std::exception& e)
                     {

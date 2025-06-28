@@ -131,21 +131,6 @@ public:
     void connect(const boost::asio::ip::tcp::endpoint& endpoint);
 
     /**
-     * @brief      Called periodically to handle time-based bot actions.
-     *
-     *             Override this method to implement scheduled behaviors,
-     *             such as periodic actions, timeouts, or state updates.
-     *
-     * @param[in]  now  The current date and time.
-     *
-     * @return     An async task that completes when timer processing is finished.
-     */
-    virtual async::task<void> on_timer(const fb::model::datetime& now)
-    {
-        co_return;
-    }
-
-    /**
      * @brief      Processes temporary hooks for the given protocol message.
      *
      *             Checks if there are any temporary hooks registered for the

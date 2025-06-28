@@ -14,6 +14,11 @@ public:
 
     game_bot_controller(bot_container& container);
 
+    /**
+     * @brief      Initializes the game controller and sets up timers.
+     */
+    void initialize();
+
 public:
     /**
      * @brief      Handles game bot connection events.
@@ -38,6 +43,19 @@ public:
     virtual async::task<void> on_bot_disconnected(game_bot& bot) override;
 
 private:
+    /**
+     * @brief      Handles timer events for all bots in a specific thread.
+     *
+     *             Distributes timer notifications to all bot instances
+     *             managed by the specified thread.
+     *
+     * @param[in]  now  The current date and time.
+     * @param[in]  id   The thread identifier.
+     *
+     * @return     An async task that completes when all bots have processed the timer.
+     */
+    async::task<void> handle_timer(const fb::model::datetime& now, std::thread::id id);
+
     /**
      * @brief      Handles game time updates from the server.
      *

@@ -39,7 +39,6 @@ class bot_container : public fb::context
     friend class bot_controller;
 
 private:
-    uint32_t                 _remained_count;        ///< Number of bots remaining to be spawned
     uint32_t                 _sequence          = 0; ///< Sequence counter for generating unique bot IDs
     uint32_t                 _gateway_bot_count = 0; ///< Number of gateway bots to create
     uint32_t                 _login_bot_count   = 0; ///< Number of login bots to create
@@ -75,16 +74,6 @@ public:
     ~bot_container();
 
 private:
-    /**
-     * @brief      Handles the spawning of new bot instances.
-     *
-     *             Internal method that manages the creation and initialization
-     *             of bot instances based on the configured bot counts.
-     *
-     * @return     An async task that completes when bot spawning is finished.
-     */
-    async::task<void> handle_bot_spawn();
-
     /**
      * @brief      Creates a new bot instance of the specified type.
      *
@@ -175,19 +164,6 @@ public:
      * @return     Reference to the boost::asio I/O context for network operations.
      */
     boost::asio::io_context& context() const;
-
-    /**
-     * @brief      Handles timer events for all bots in a specific thread.
-     *
-     *             Distributes timer notifications to all bot instances
-     *             managed by the specified thread.
-     *
-     * @param[in]  now  The current date and time.
-     * @param[in]  id   The thread identifier.
-     *
-     * @return     An async task that completes when all bots have processed the timer.
-     */
-    async::task<void> handle_timer(const fb::model::datetime& now, std::thread::id id);
 
     /**
      * @brief      Dispatches a function to a specific bot's thread.

@@ -9,10 +9,18 @@ namespace fb::bot {
 
 class gateway_bot_controller : public bot_controller<gateway_bot>
 {
+private:
+    uint32_t _remained_count; ///< Number of bots remaining to be spawned
+
 public:
     using bot_type = gateway_bot; ///< Type alias for the managed bot type
 
     gateway_bot_controller(bot_container& container);
+
+    /**
+     * @brief      Initializes the gateway controller and sets up timers.
+     */
+    void initialize();
 
 protected:
     /**
@@ -51,6 +59,8 @@ public:
     virtual async::task<void> on_bot_disconnected(gateway_bot& bot) override;
 
 private:
+    async::task<void> handle_bot_spawn();
+
     /**
      * @brief      Handles welcome message from the gateway server.
      *

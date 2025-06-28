@@ -99,7 +99,7 @@ public:
      *
      * @return     An async task that completes when timer processing is finished.
      */
-    async::task<void> on_timer(const fb::model::datetime& now) override final;
+    async::task<void> process_random_pattern(const fb::model::datetime& now);
 
 public:
     // Game state accessors

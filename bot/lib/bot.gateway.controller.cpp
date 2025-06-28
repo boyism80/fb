@@ -7,12 +7,36 @@
 using namespace fb::bot;
 
 gateway_bot_controller::gateway_bot_controller(bot_container& container) :
-    bot_controller<gateway_bot>(container)
+    bot_controller<gateway_bot>(container),
+    _remained_count(fb::config<uint32_t>("spawn_count") / fb::config<uint32_t>("io_size"))
 {
     this->bind(&gateway_bot_controller::handle_welcome);
     this->bind(&gateway_bot_controller::handle_crt);
     this->bind(&gateway_bot_controller::handle_hosts);
     this->bind(&gateway_bot_controller::handle_transfer);
+}
+
+void gateway_bot_controller::initialize()
+{
+    this->bind_timer(&gateway_bot_controller::handle_bot_spawn,
+                     std::chrono::milliseconds(fb::config<uint32_t>("interval")));
+}
+
+async::task<void> gateway_bot_controller::handle_bot_spawn()
+{
+    auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(fb::config<std::string>("ip")),
+                                                   fb::config<uint16_t>("port"));
+    auto count =
+        std::min(this->_remained_count, fb::config<uint32_t>("spawn_per_interval") / fb::config<uint32_t>("io_size"));
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        auto bot = this->create();
+        bot->connect(endpoint);
+    }
+
+    this->_remained_count -= count;
+    co_return;
 }
 
 async::task<void> gateway_bot_controller::handle_welcome(gateway_bot&                                    bot,
