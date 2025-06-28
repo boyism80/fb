@@ -15,7 +15,7 @@ namespace fb::protocol::game::response {
 class spell_remove : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x18;
+    static constexpr uint8_t header = 0x18;
 
 public:
 #ifndef BOT

@@ -54,9 +54,11 @@ private:
     using super = std::enable_shared_from_this<context>;
 
 protected:
-    boost_timers             _timers;
-    boost::asio::io_context& _boost_context;
-    bool                     _running = false;
+    boost_timers _timers;
+    bool         _running = false;
+
+public:
+    boost::asio::io_context& io_context;
 
 public:
     thread_container threads;
@@ -85,6 +87,22 @@ protected:
     }
 
     /**
+     * @brief      Binds a lambda function as a thread-based timer callback.
+     *
+     *             Creates a timer that executes the specified lambda function at regular
+     *             intervals on the thread pool. The callback receives timing information
+     *             and thread ID for context-aware processing.
+     *
+     * @param[in]  fn        The lambda function to execute as timer callback
+     * @param[in]  duration  The time interval between timer executions
+     */
+    void bind_thread_timer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)> fn,
+                           const std::chrono::steady_clock::duration&                                    duration)
+    {
+        this->threads.settimer(fn, duration);
+    }
+
+    /**
      * @brief      Binds a member function as a coroutine-based timer callback with improved safety.
      *
      *             Creates a coroutine-based timer that executes the specified member function
@@ -107,7 +125,7 @@ protected:
         auto weak_this = std::weak_ptr<Class>(std::static_pointer_cast<Class>(this->shared_from_this()));
 
         // Get executor
-        auto exec = this->_boost_context.get_executor();
+        auto exec = this->io_context.get_executor();
 
         // Spawn coroutine with improved safety
         boost::asio::co_spawn(
@@ -149,74 +167,74 @@ protected:
             boost::asio::detached);
     }
 
+    /**
+     * @brief      Binds a lambda function as a coroutine-based timer callback with improved safety.
+     *
+     *             Creates a coroutine-based timer that executes the specified lambda function
+     *             at regular intervals using Boost.Asio's coroutine support. The timer runs
+     *             asynchronously and continues until the context is stopped.
+     *
+     *             Safety improvements:
+     *             - Uses weak_ptr to prevent dangling pointer issues
+     *             - Thread-safe running flag access
+     *             - Proper exception handling
+     *
+     * @param[in]  fn        The lambda function to execute as timer callback
+     * @param[in]  interval  The time interval between timer executions
+     */
+    void bind_timer(std::function<async::task<void>()> fn, std::chrono::steady_clock::duration interval)
+    {
+        // Use weak_ptr for safe object reference
+        auto weak_this = this->weak_from_this();
+
+        // Get executor
+        auto exec = this->io_context.get_executor();
+
+        // Spawn coroutine with improved safety
+        boost::asio::co_spawn(
+            exec,
+            [weak_this, fn, interval]() -> boost::asio::awaitable<void> {
+                boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
+
+                while (true)
+                {
+                    timer.expires_after(interval);
+                    co_await timer.async_wait(boost::asio::use_awaitable);
+
+                    // Check if object is still alive
+                    auto shared_this = weak_this.lock();
+                    if (!shared_this)
+                        break; // Object has been destroyed, stop timer
+
+                    // Check if context is still running
+                    if (!shared_this->_running)
+                        break;
+
+                    try
+                    {
+                        // Execute the timer callback
+                        async::awaitable_get(fn());
+                    }
+                    catch (const std::exception& e)
+                    {
+                        // Log timer callback errors but don't stop the timer
+                        fb::logger::warn(std::format("Timer callback error: {}", e.what()));
+                    }
+                    catch (...)
+                    {
+                        // Log unknown errors
+                        fb::logger::warn("Timer callback error: Unknown exception");
+                    }
+                }
+            },
+            boost::asio::detached);
+    }
+
 public:
     virtual ~context() = default;
 
 public:
     virtual void exit();
-
-    template <typename T>
-    async::task<void> switch_thread(std::weak_ptr<T> weak)
-    {
-        static_assert(std::is_base_of_v<fb::thread_switchable, T>, "T must inherit from thread_switchable");
-
-        while (true)
-        {
-            auto shared_ptr = weak.lock();
-            if (shared_ptr == nullptr)
-                throw std::runtime_error("object not alive");
-
-            auto thread = shared_ptr->thread();
-            if (thread->id() == std::this_thread::get_id())
-                break;
-
-            co_await thread->switching();
-        }
-    }
-
-    // New smart pointer-based methods
-    /**
-     * @brief      Checks if a thread-switchable object is alive using smart pointer semantics.
-     *
-     *             This is a more efficient alternative to the hash-based alive() check.
-     *             Uses weak_ptr to determine if the object is still valid without locking.
-     *
-     * @param[in]  weak_obj  A weak pointer to the object to check
-     *
-     * @return     True if the object is still alive, false otherwise
-     */
-    bool alive_smart(const std::weak_ptr<fb::thread_switchable>& weak_obj) const
-    {
-        return !weak_obj.expired();
-    }
-
-    /**
-     * @brief      Safely switches to the thread associated with the given object.
-     *
-     *             Uses smart pointer semantics to ensure the object is still alive
-     *             during the thread switching operation. More efficient than the
-     *             hash-based version as it doesn't require locking.
-     *
-     * @param[in]  weak_obj  A weak pointer to the thread-switchable object
-     *
-     * @return     An async task that completes when the thread switch is done
-     * @throws     std::runtime_error if the object is no longer alive
-     */
-    async::task<void> switch_thread_smart(const std::weak_ptr<fb::thread_switchable>& weak_obj)
-    {
-        while (true)
-        {
-            auto shared_obj = weak_obj.lock();
-            if (!shared_obj)
-                throw std::runtime_error("object not alive");
-
-            auto thread = shared_obj->thread();
-            if (thread->id() == std::this_thread::get_id())
-                break;
-
-            co_await thread->switching();
-        }
-    }
 
 public:
     operator boost::asio::io_context& () const;

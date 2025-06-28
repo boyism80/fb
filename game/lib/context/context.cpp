@@ -263,7 +263,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         fb::logger::fatal(e.what());
     }
 
-    co_await this->switch_thread(weak);
+    co_await this->threads.switching(weak);
 
     auto& group_id = ch->group_id();
     if (group_id.has_value())
@@ -600,11 +600,10 @@ async::task<void> context::save(character& ch)
             internal::Achievement{ch.id(), model, achievement->text, achievement->icon, achievement->color});
     }
 
-    auto fd = ch.fd();
     std::ignore =
         co_await this->http.post("internal", "/user/save", Save{ch.to_protocol(), items, spells, achievements});
 
-    co_await this->switch_thread(weak);
+    co_await this->threads.switching(weak);
     ch.send(fb_resp::save());
 }
 

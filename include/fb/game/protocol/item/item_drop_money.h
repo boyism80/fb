@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class item_drop_money : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x24;
+    static constexpr uint8_t header = 0x24;
 
 public:
     uint32_t chunk;

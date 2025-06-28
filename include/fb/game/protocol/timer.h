@@ -11,7 +11,7 @@ namespace fb::protocol::game::response {
 class timer : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x67;
+    static constexpr uint8_t header = 0x67;
 
 public:
 #ifndef BOT

@@ -1245,9 +1245,9 @@ int character::builtin::builtin_group(lua_State* L)
                 }
                 else
                 {
-                    ctx->groups.read(group_id.value(), [=](const auto& group) {
+                    return ctx->groups.read(group_id.value(), [=](const auto& group) {
                         lua->pushobject(group);
-                        lua->resume(1);
+                        return static_func(lua);
                     });
                 }
             });
@@ -1288,9 +1288,9 @@ int character::builtin::builtin_create_group(lua_State* L)
 
         try
         {
-            co_await ctx->create_group(*shared, target);
+            auto success = co_await ctx->create_group(*shared, target);
             co_await lua->switching();
-            lua->pushboolean(true);
+            lua->pushboolean(success);
             lua->resume(1);
         }
         catch (std::exception& e)
@@ -1475,14 +1475,14 @@ int character::builtin::builtin_destroy_clan(lua_State* L)
 
     // Static function to isolate async operation and ensure parameter lifetime safety
     static auto static_func =
-        [](fb::game::context* ctx, std::weak_ptr<character> ch, fb::lua::context* lua) -> async::task<bool> {
+        [](fb::game::context* ctx, std::weak_ptr<character> ch, fb::lua::context* lua) -> async::task<void> {
         auto shared = ch.lock();
         if (shared == nullptr)
         {
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);
-            co_return false;
+            co_return;
         }
         try
         {
@@ -1490,7 +1490,7 @@ int character::builtin::builtin_destroy_clan(lua_State* L)
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);
-            co_return true;
+            co_return;
         }
         catch (std::exception& e)
         {
@@ -1500,7 +1500,7 @@ int character::builtin::builtin_destroy_clan(lua_State* L)
                 lua->pushstring(what.c_str());
                 lua->resume(1);
             });
-            co_return false;
+            co_return;
         }
     };
 
@@ -2847,12 +2847,16 @@ int fb::game::character::builtin::builtin_dialog(lua_State* L)
     auto button_prev = lua->toboolean(4, false);
     auto button_next = lua->toboolean(5, false);
 
-    ch->listener.on_dialog(*ch, *model, message, button_prev, button_next, sequence);
+    std::ignore =
+        context->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
+            ch->listener.on_dialog(*ch, *model, message, button_prev, button_next, sequence);
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
 
-    if (ch->dialog != nullptr)
-        ch->dialog->release();
+            ch->dialog = lua;
+            co_return;
+        });
 
-    ch->dialog = lua;
     return lua->yield(1);
 }
 
@@ -2940,15 +2944,20 @@ int fb::game::character::builtin::builtin_list(lua_State* L)
         menus.push_back(lua->tostring(-1));
     }
 
-    if (custom_preset)
-        ch->listener.on_dialog(*ch, *model, message, menus, button_prev, preset, sequence);
-    else
-        ch->listener.on_dialog(*ch, *model, message, menus, button_prev, sequence);
+    std::ignore =
+        context->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
+            if (custom_preset)
+                ch->listener.on_dialog(*ch, *model, message, menus, button_prev, preset, sequence);
+            else
+                ch->listener.on_dialog(*ch, *model, message, menus, button_prev, sequence);
 
-    if (ch->dialog != nullptr)
-        ch->dialog->release();
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
 
-    ch->dialog = lua;
+            ch->dialog = lua;
+            co_return;
+        });
+
     return lua->yield(1);
 }
 
@@ -2990,17 +2999,30 @@ int fb::game::character::builtin::builtin_input(lua_State* L)
         auto maxlen      = (uint8_t)lua->tointeger(6, 0xFF);
         auto prev        = lua->toboolean(7, false);
 
-        ch->listener.on_dialog(*ch, *model, message, message_top, message_bot, maxlen, prev, sequence);
+        std::ignore = context->threads.dispatch(
+            ch->weak_from_this_as<fb::game::character>(),
+            [=](auto& thread) -> async::task<void> {
+                ch->listener.on_dialog(*ch, *model, message, message_top, message_bot, maxlen, prev, sequence);
+                if (ch->dialog != nullptr)
+                    ch->dialog->release();
+
+                ch->dialog = lua;
+                co_return;
+            });
     }
     else
     {
-        ch->listener.on_dialog(*ch, *model, message, sequence);
+        std::ignore = context->threads.dispatch(ch->weak_from_this_as<fb::game::character>(),
+                                                [=](auto& thread) -> async::task<void> {
+                                                    ch->listener.on_dialog(*ch, *model, message, sequence);
+                                                    if (ch->dialog != nullptr)
+                                                        ch->dialog->release();
+
+                                                    ch->dialog = lua;
+                                                    co_return;
+                                                });
     }
 
-    if (ch->dialog != nullptr)
-        ch->dialog->release();
-
-    ch->dialog = lua;
     return lua->yield(1);
 }
 
@@ -3044,12 +3066,17 @@ int fb::game::character::builtin::builtin_menu(lua_State* L)
         menus.push_back(lua->tostring(-1));
     }
 
-    ch->listener.on_dialog(*ch, *model, message, menus, sequence);
+    std::ignore =
+        context->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
+            ch->listener.on_dialog(*ch, *model, message, menus, sequence);
 
-    if (ch->dialog != nullptr)
-        ch->dialog->release();
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
 
-    ch->dialog = lua;
+            ch->dialog = lua;
+            co_return;
+        });
+
     return lua->yield(1);
 }
 
@@ -3092,11 +3119,16 @@ int fb::game::character::builtin::builtin_slot(lua_State* L)
         lua->pop(1);
     }
 
-    ch->listener.on_dialog(*ch, *model, message, slots, sequence);
+    std::ignore =
+        context->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
+            ch->listener.on_dialog(*ch, *model, message, slots, sequence);
 
-    if (ch->dialog != nullptr)
-        ch->dialog->release();
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
 
-    ch->dialog = lua;
+            ch->dialog = lua;
+            co_return;
+        });
+
     return lua->yield(1);
 }

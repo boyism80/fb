@@ -7,7 +7,7 @@ using namespace fb::game;
 character::character(fb::game::context& context, fb::socket<character>& socket) :
     life(context, context.model.life[0], initial_params{{.id = (uint32_t)socket.fd()}}),
     listener(context.listener),
-    _socket(socket)
+    _socket(socket.template weak_from_this_as<fb::socket<character>>())
 { }
 
 character::~character()
@@ -16,18 +16,60 @@ character::~character()
         this->dialog->release();
 }
 
+/**
+ * @brief      Sends a binary stream to the character's client with socket validation.
+ *
+ *             Transmits raw binary data to the character's client through the network socket.
+ *             Uses weak_ptr to check socket validity before sending - if the socket has been
+ *             destroyed (client disconnected), the method gracefully returns 0 bytes sent
+ *             instead of throwing an exception. This prevents crashes when the character
+ *             object outlives its associated socket.
+ *
+ * @param[in]  stream   The binary stream containing the data to send.
+ * @param[in]  encrypt  Whether to encrypt the data before transmission.
+ * @param[in]  wrap     Whether to wrap the data with protocol headers.
+ *
+ * @return     Number of bytes sent, or 0 if socket is no longer valid.
+ */
 async::task<size_t> character::send(const fb::stream& stream, bool encrypt, bool wrap)
 {
     this->assert_thread();
 
-    co_return co_await this->_socket.send(stream, encrypt, wrap);
+    auto socket = this->_socket.lock();
+    if (socket == nullptr || !socket->is_open())
+    {
+        co_return 0; // Gracefully return 0 instead of throwing
+    }
+
+    co_return co_await socket->send(stream, encrypt, wrap);
 }
 
+/**
+ * @brief      Sends a protocol header to the character's client with socket validation.
+ *
+ *             Transmits a protocol header to the character's client through the network socket.
+ *             Uses weak_ptr to check socket validity before sending - if the socket has been
+ *             destroyed (client disconnected), the method gracefully returns 0 bytes sent
+ *             instead of throwing an exception. This prevents crashes when the character
+ *             object outlives its associated socket.
+ *
+ * @param[in]  response  The protocol header to send.
+ * @param[in]  encrypt   Whether to encrypt the data before transmission.
+ * @param[in]  wrap      Whether to wrap the data with protocol headers.
+ *
+ * @return     Number of bytes sent, or 0 if socket is no longer valid.
+ */
 async::task<size_t> character::send(const fb::protocol::header& response, bool encrypt, bool wrap)
 {
     this->assert_thread();
 
-    co_return co_await this->_socket.send(response, encrypt, wrap);
+    auto socket = this->_socket.lock();
+    if (socket == nullptr || !socket->is_open())
+    {
+        co_return 0; // Gracefully return 0 instead of throwing
+    }
+
+    co_return co_await socket->send(response, encrypt, wrap);
 }
 
 OBJECT_TYPE character::what() const
@@ -147,17 +189,31 @@ uint32_t character::damage(uint32_t value, std::shared_ptr<fb::game::object> fro
     return result;
 }
 
-character::operator fb::socket<character>& ()
-{
-    return this->_socket;
-}
-
 bool character::inited() const
 {
     if (this->_thread == nullptr)
         return false;
 
     return true;
+}
+
+/**
+ * @brief      Gets the character's socket with lifetime validation.
+ *
+ *             Returns a raw pointer to the character's network socket if it's still valid.
+ *             Uses weak_ptr to check socket validity - if the socket has been destroyed
+ *             (client disconnected), returns nullptr instead of a dangling pointer.
+ *             This prevents crashes when accessing the socket after client disconnection.
+ *
+ * @return     Raw pointer to the socket, or nullptr if socket is no longer valid.
+ */
+fb::socket<character>* character::socket() const
+{
+    auto shared_ptr = this->_socket.lock();
+    if (shared_ptr == nullptr)
+        return nullptr;
+
+    return shared_ptr.get();
 }
 
 uint32_t character::id() const
@@ -170,11 +226,6 @@ void character::id(uint32_t id)
     this->assert_thread();
 
     this->_id = id;
-}
-
-uint32_t character::fd()
-{
-    return this->_socket.fd();
 }
 
 ROLE character::role() const
@@ -1127,7 +1178,7 @@ fb::thread* character::thread() const
     if (this->_thread != nullptr)
         return this->_thread;
     else
-        return this->context.threads.modular(this->_socket.fd());
+        return this->context.threads.modular(this->_id);
 }
 
 void fb::game::character::thread(fb::thread* value)

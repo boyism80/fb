@@ -89,7 +89,7 @@ public:
 
 private:
     uint32_t                                    _id;
-    fb::socket<character>&                      _socket;
+    std::weak_ptr<fb::socket<character>>        _socket;
     fb::thread*                                 _thread = nullptr;
     std::string                                 _name;
     ROLE                                        _role;
@@ -143,11 +143,14 @@ public:
      * @brief      Constructs a new character instance with game context and network socket.
      *
      *             Initializes a new character with the provided game context and network socket.
-     *             Sets up default values for all character attributes, initializes the inventory
-     *             and equipment systems, and prepares the character for game world interaction.
+     *             The socket reference is used to obtain a weak_ptr internally to prevent
+     *             circular references and ensure proper cleanup when the socket is destroyed.
+     *             Sets up default values for all character attributes, initializes the
+     *             inventory and equipment systems, and prepares the character for game world
+     *             interaction.
      *
      * @param      context  The game context that manages this character.
-     * @param      socket   The network socket for client communication.
+     * @param      socket   Reference to the network socket for client communication.
      */
     character(fb::game::context& context, fb::socket<character>& socket);
 
@@ -223,15 +226,19 @@ public:
                                         DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
 
 public:
-    operator fb::socket<character>& ();
-
-public:
     /**
      * @brief      Checks if the character has been fully initialized.
      *
      * @return     True if the character is initialized, false otherwise
      */
     bool inited() const;
+
+    /**
+     * @brief      Gets the character's socket.
+     *
+     * @return     The character's socket
+     */
+    fb::socket<character>* socket() const;
 
     /**
      * @brief      Gets the character's unique database ID.
@@ -246,13 +253,6 @@ public:
      * @param[in]  id    The new character database ID
      */
     void id(uint32_t id);
-
-    /**
-     * @brief      Gets the character's socket file descriptor.
-     *
-     * @return     The socket file descriptor
-     */
-    uint32_t fd();
 
     /**
      * @brief      Gets the character's role (player, admin, etc.).

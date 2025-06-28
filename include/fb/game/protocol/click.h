@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class click : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x43;
+    static constexpr uint8_t header = 0x43;
 
 public:
     uint32_t fd;

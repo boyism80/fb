@@ -22,8 +22,9 @@ async::task<void> context::handle_amqp_KickOut(const internal_resp::KickOut& res
     if (ch == nullptr)
         co_return;
 
-    auto& socket = static_cast<fb::socket<fb::game::character>&>(*ch);
-    socket.close();
+    auto socket = ch->socket();
+    if (socket != nullptr)
+        socket->close();
     co_return;
 }
 

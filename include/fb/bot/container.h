@@ -6,6 +6,11 @@
 
 namespace fb::bot {
 
+// Forward declarations for bot_controllers
+class gateway_bot_controller;
+class login_bot_controller;
+class game_bot_controller;
+
 /**
  * @brief      Thread-specific parameters for bot management.
  *
@@ -30,8 +35,10 @@ public:
  */
 class bot_container : public fb::context
 {
+    template <typename BotType>
+    friend class bot_controller;
+
 private:
-    uint32_t                 _remained_count;        ///< Number of bots remaining to be spawned
     uint32_t                 _sequence          = 0; ///< Sequence counter for generating unique bot IDs
     uint32_t                 _gateway_bot_count = 0; ///< Number of gateway bots to create
     uint32_t                 _login_bot_count   = 0; ///< Number of login bots to create
@@ -41,12 +48,38 @@ private:
     std::mutex               _mutex;                 ///< Mutex for thread-safe operations
 
 public:
+    std::unique_ptr<gateway_bot_controller> gateway;
+    std::unique_ptr<login_bot_controller>   login;
+    std::unique_ptr<game_bot_controller>    game;
+
+public:
     /**
      * @brief      Constructs a new bot container.
      *
      * @param      context  The boost::asio I/O context for network operations.
      */
     bot_container(boost::asio::io_context& context);
+
+    /**
+     * @brief      Sets the gateway bot bot_controller for this container.
+     *
+     * @param      bot_controller  The gateway bot bot_controller instance to use.
+     */
+    void set_gateway_bot_controller(std::unique_ptr<gateway_bot_controller> bot_controller);
+
+    /**
+     * @brief      Sets the login bot bot_controller for this container.
+     *
+     * @param      bot_controller  The login bot bot_controller instance to use.
+     */
+    void set_login_bot_controller(std::unique_ptr<login_bot_controller> bot_controller);
+
+    /**
+     * @brief      Sets the game bot bot_controller for this container.
+     *
+     * @param      bot_controller  The game bot bot_controller instance to use.
+     */
+    void set_game_bot_controller(std::unique_ptr<game_bot_controller> bot_controller);
 
     /**
      * @brief      Initializes the bot container after construction.
@@ -63,64 +96,11 @@ public:
 
 private:
     /**
-     * @brief      Handles the spawning of new bot instances.
-     *
-     *             Internal method that manages the creation and initialization
-     *             of bot instances based on the configured bot counts.
-     *
-     * @return     An async task that completes when bot spawning is finished.
-     */
-    async::task<void> handle_bot_spawn();
-
-public:
-    /**
-     * @brief      Gets the I/O context used by this container.
-     *
-     * @return     Reference to the boost::asio I/O context for network operations.
-     */
-    boost::asio::io_context& context() const;
-
-    /**
-     * @brief      Handles incoming data for bot sockets.
-     *
-     *             Delegates data processing to the appropriate bot instance.
-     *             This method is called by the socket framework when data arrives.
-     *
-     * @param      socket  The socket that received the data.
-     * @param      stream  The incoming data stream.
-     *
-     * @return     An async task that completes when data processing is finished.
-     */
-    async::task<void> on_receive(fb::socket<>& socket, fb::stream& stream)
-    {
-        co_await static_cast<base_bot&>(socket).on_receive(stream);
-    }
-
-    /**
-     * @brief      Handles socket closure events for bot connections.
-     *
-     *             Performs cleanup when a bot's connection is closed and removes
-     *             the bot from the thread-local bot collection.
-     *
-     * @param      socket  The socket that was closed.
-     *
-     * @return     An async task that completes when cleanup is finished.
-     */
-    async::task<void> on_closed(fb::socket<>& socket)
-    {
-        auto& bot    = static_cast<base_bot&>(socket);
-        auto  thread = bot.thread();
-        co_await thread->switching();
-        co_await bot.on_closed();
-        auto params = thread->template data<bot_thread_params>();
-        params->bots.erase(bot.id);
-    }
-
-    /**
      * @brief      Creates a new bot instance of the specified type.
      *
      *             Instantiates a bot with a unique ID and registers it with
-     *             the appropriate worker thread for execution.
+     *             the appropriate worker thread for execution. This method
+     *             can only be called by bot_controller classes.
      *
      * @tparam     T     The bot type to create (must inherit from base_bot).
      *
@@ -142,24 +122,25 @@ public:
     }
 
     /**
-     * @brief      Creates a new bot instance with initialization parameters.
+     * @brief      Creates a new bot instance with a bot_controller.
      *
-     *             Instantiates a bot with a unique ID and custom parameters,
-     *             then registers it with the appropriate worker thread.
+     *             Instantiates a bot with a unique ID and registers it with
+     *             the appropriate worker thread for execution. This method
+     *             can only be called by bot_controller classes.
      *
-     * @param[in]  params  Initialization parameters for the bot.
-     *
-     * @tparam     T       The bot type to create (must inherit from base_bot).
+     * @tparam     T          The bot type to create (must inherit from base_bot).
+     * @tparam     Controller The bot_controller type that will manage this bot.
+     * @param[in]  bot_controller The bot bot_controller that will manage this bot.
      *
      * @return     Shared pointer to the newly created bot instance.
      */
-    template <typename T>
-    std::shared_ptr<T> create(const fb::stream& params)
+    template <typename T, typename Controller>
+    std::shared_ptr<T> create(Controller& bot_controller)
     {
         this->_mutex.lock();
         auto id = this->_sequence++;
         this->_mutex.unlock();
-        auto bot    = std::make_shared<T>(*this, id, params);
+        auto bot    = std::make_shared<T>(bot_controller, id);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
             params->bots.insert({id, bot});
@@ -169,17 +150,41 @@ public:
     }
 
     /**
-     * @brief      Handles timer events for all bots in a specific thread.
+     * @brief      Creates a new bot instance with initialization parameters.
      *
-     *             Distributes timer notifications to all bot instances
-     *             managed by the specified thread.
+     *             Instantiates a bot with a unique ID and custom parameters,
+     *             then registers it with the appropriate worker thread. This method
+     *             can only be called by bot_controller classes.
      *
-     * @param[in]  now  The current date and time.
-     * @param[in]  id   The thread identifier.
+     * @tparam     T          The bot type to create (must inherit from base_bot).
+     * @tparam     Controller The bot_controller type that will manage this bot.
+     * @param[in]  bot_controller The bot bot_controller that will manage this bot.
+     * @param[in]  params     Initialization parameters for the bot.
      *
-     * @return     An async task that completes when all bots have processed the timer.
+     * @return     Shared pointer to the newly created bot instance.
      */
-    async::task<void> handle_timer(const fb::model::datetime& now, std::thread::id id);
+    template <typename T, typename Controller>
+    std::shared_ptr<T> create(Controller& bot_controller, const fb::stream& params)
+    {
+        this->_mutex.lock();
+        auto id = this->_sequence++;
+        this->_mutex.unlock();
+        auto bot    = std::make_shared<T>(bot_controller, id, params);
+        std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
+            auto params = thread.template data<bot_thread_params>();
+            params->bots.insert({id, bot});
+            co_return;
+        });
+        return bot;
+    }
+
+public:
+    /**
+     * @brief      Gets the I/O context used by this container.
+     *
+     * @return     Reference to the boost::asio I/O context for network operations.
+     */
+    boost::asio::io_context& context() const;
 
     /**
      * @brief      Dispatches a function to a specific bot's thread.
@@ -193,14 +198,6 @@ public:
      * @return     An async task that completes when the function execution is finished.
      */
     async::task<void> dispatch(uint32_t id, std::function<async::task<void>(fb::thread&)>&& fn);
-
-    /**
-     * @brief      Displays statistics about spawned bots.
-     *
-     *             Static utility method that outputs information about
-     *             the current state of bot instances across all containers.
-     */
-    static void display_spawned_bots();
 };
 
 } // namespace fb::bot

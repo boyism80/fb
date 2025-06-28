@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class item_drop : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x08;
+    static constexpr uint8_t header = 0x08;
 
 public:
     uint8_t index;

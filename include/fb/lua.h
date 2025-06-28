@@ -1410,11 +1410,9 @@ public:
     using setup_func = std::function<void(root& lua)>;
 
 private:
-    base_type                                       _roots;
-    std::vector<setup_func>                         _setup_funcs;
-    std::unordered_map<lua_State*, std::thread::id> _mapping;
-    std::shared_mutex                               _mapping_lock;
-    fb::thread_container*                           _threads;
+    base_type               _roots;
+    std::vector<setup_func> _setup_funcs;
+    fb::thread_container*   _threads;
 
 public:
     ~context_pool();
@@ -1423,8 +1421,6 @@ public:
     context* pop(context* parent);
     context* get(lua_State* ctx);
     void     setup(fb::thread_container& threads);
-    void     record(lua_State* L);
-    void     unrecord(lua_State* L);
 
     base_type::iterator begin();
     base_type::iterator end();

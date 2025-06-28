@@ -22,7 +22,7 @@ async::task<void> listener_impl::on_attack(life& me, DURATION duration)
     if (co_await lua->call(1, false) == false)
         goto cleanup;
 
-    co_await this->context.switch_thread(weak);
+    co_await this->context.threads.switching(weak);
 
     if (me.is(OBJECT_TYPE::CHARACTER))
     {

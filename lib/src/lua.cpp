@@ -290,7 +290,7 @@ int context::ensure_yield(fb::context& ctx, std::weak_ptr<fb::thread_switchable>
     }
     else
     {
-        async::awaitable_then(ctx.switch_thread(weak), [this, fn](auto result) {
+        async::awaitable_then(ctx.threads.switching(weak), [this, fn](auto result) {
             try
             {
                 result();
@@ -437,7 +437,6 @@ context* root::pop(context* parent)
         for (auto& [name, _] : this->_bytecodes)
             ptr->load(name);
 
-        context_pool::ist().record(*ptr);
         this->busy.insert({key, std::move(ptr)});
         return this->busy[key].get();
     }
@@ -484,10 +483,6 @@ void root::release(context& ctx)
 
 void root::revoke(context& ctx)
 {
-    // 데드락 요소
-    // root::revoke 메소드에서 락 순서는
-    // 1. _mutex
-    // 2. context_pool::ist().unrecord에서 _mapping_lock
     auto _ = std::lock_guard(this->_mutex);
 
     auto i = this->busy.find(ctx);
@@ -495,7 +490,6 @@ void root::revoke(context& ctx)
         return;
 
     this->busy.erase(i);
-    context_pool::ist().unrecord(ctx);
 }
 
 async::task<void> fb::lua::context::switching()
@@ -527,22 +521,9 @@ context* fb::lua::context_pool::pop(context* parent)
 
 context* fb::lua::context_pool::get(lua_State* ctx)
 {
-    // 데드락 요소
-    // context_pool::get 메소드에서 락 순서는
-    // 1. _mapping_lock
-    // 2. root::get 메소드에서 root::_mutex
-    // root::pop과 root::revoke 메소드에서 락이 걸리는 순서와 역전되어 데드락 발생
-    // 해결 : 임계영역 수정
-    std::thread::id id;
-    {
-        auto _ = std::shared_lock<std::shared_mutex>(this->_mapping_lock);
-        if (this->_mapping.contains(ctx) == false)
-            return nullptr;
-
-        id = this->_mapping[ctx];
-        if (this->_roots.contains(id) == false)
-            return nullptr;
-    }
+    auto id = std::this_thread::get_id();
+    if (this->_roots.contains(id) == false)
+        return nullptr;
 
     return this->_roots[id]->get(ctx);
 }
@@ -579,18 +560,6 @@ fb::lua::context_pool& fb::lua::context_pool::ist()
         _ist = std::unique_ptr<context_pool>(new context_pool());
     });
     return *_ist;
-}
-
-void fb::lua::context_pool::record(lua_State* L)
-{
-    auto _ = std::lock_guard<std::shared_mutex>(this->_mapping_lock);
-    this->_mapping.insert({L, std::this_thread::get_id()});
-}
-
-void fb::lua::context_pool::unrecord(lua_State* L)
-{
-    auto _ = std::lock_guard<std::shared_mutex>(this->_mapping_lock);
-    this->_mapping.erase(L);
 }
 
 thread::thread(context& owner, context* parent) :

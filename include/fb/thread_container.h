@@ -227,7 +227,6 @@ public:
     bool valid(thread* thread) const;
 
 public:
-    // Task Enqueue Methods (Fire-and-Forget)
     /**
      * @brief      Enqueues a task with condition checking and callbacks.
      *
@@ -317,7 +316,7 @@ public:
     {
         return this->enqueue<ReturnType, T>(
             pivot,
-            []() -> bool {
+            [](auto& thread) -> bool {
                 return true;
             },
             fn,
@@ -343,6 +342,8 @@ public:
                  const std::function<void(std::exception&)>& error,
                  const std::function<void()>&                callback)
     {
+        static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
+
         auto shared = pivot.lock();
         if (shared == nullptr)
             throw std::runtime_error("pivot object is expired");
@@ -386,6 +387,8 @@ public:
                  const std::function<bool(fb::thread&)>& condition,
                  const thread::handle_func_type<void>&   fn)
     {
+        static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
+
         return this->enqueue<T>(
             pivot,
             condition,
@@ -405,6 +408,8 @@ public:
     template <typename T>
     void enqueue(std::weak_ptr<T> pivot, const thread::handle_func_type<void>& fn)
     {
+        static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
+
         return this->enqueue<T>(
             pivot,
             [](auto& thread) -> bool {
@@ -417,7 +422,6 @@ public:
             });
     }
 
-    // Task Dispatch Methods (Awaitable)
     /**
      * @brief      Dispatches a task with condition checking and returns a future.
      *
@@ -430,11 +434,29 @@ public:
      * @return     A task that will complete when the function finishes.
      */
     template <typename ReturnType, typename T>
-    [[nodiscard]] async::task<void> dispatch(std::weak_ptr<T>                                           pivot,
-                                             const std::function<bool(fb::thread&)>&                    condition,
-                                             const std::function<async::task<ReturnType>(fb::thread&)>& fn)
+    [[nodiscard]] async::task<ReturnType> dispatch(std::weak_ptr<T>                                           pivot,
+                                                   const std::function<bool(fb::thread&)>&                    condition,
+                                                   const std::function<async::task<ReturnType>(fb::thread&)>& fn)
     {
-        auto promise = std::make_shared<async::task_completion_source<void>>();
+        static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
+
+        auto shared = pivot.lock();
+        if (shared == nullptr)
+            throw std::runtime_error("pivot object is expired");
+
+        auto target_thread = shared->thread();
+        if (target_thread == nullptr)
+            throw std::runtime_error("no matched thread");
+
+        if (target_thread->id() == std::this_thread::get_id())
+        {
+            if (condition(*target_thread) == false)
+                throw std::runtime_error("condition not satisfied");
+
+            co_return co_await fn(*target_thread);
+        }
+
+        auto promise = std::make_shared<async::task_completion_source<ReturnType>>();
         this->enqueue<ReturnType, T>(
             pivot,
             condition,
@@ -445,7 +467,7 @@ public:
             [promise](ReturnType&& value) {
                 promise->set_value(value);
             });
-        return promise->task();
+        co_return co_await promise->task();
     }
 
     /**
@@ -459,13 +481,28 @@ public:
      * @return     A task that will complete when the function finishes.
      */
     template <typename ReturnType, typename T>
-    [[nodiscard]] async::task<void> dispatch(std::weak_ptr<T>                                           pivot,
-                                             const std::function<async::task<ReturnType>(fb::thread&)>& fn)
+    [[nodiscard]] async::task<ReturnType> dispatch(std::weak_ptr<T>                                           pivot,
+                                                   const std::function<async::task<ReturnType>(fb::thread&)>& fn)
     {
+        static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
+
+        auto shared = pivot.lock();
+        if (shared == nullptr)
+            throw std::runtime_error("pivot object is expired");
+
+        auto target_thread = shared->thread();
+        if (target_thread == nullptr)
+            throw std::runtime_error("no matched thread");
+
+        if (target_thread->id() == std::this_thread::get_id())
+        {
+            co_return co_await fn(*target_thread);
+        }
+
         auto promise = std::make_shared<async::task_completion_source<ReturnType>>();
         this->enqueue<ReturnType, T>(
             pivot,
-            []() -> bool {
+            [](auto& thread) -> bool {
                 return true;
             },
             fn,
@@ -475,7 +512,7 @@ public:
             [promise](ReturnType&& value) {
                 promise->set_value(value);
             });
-        return promise->task();
+        co_return co_await promise->task();
     }
 
     /**
@@ -492,6 +529,25 @@ public:
                                const std::function<bool(fb::thread&)>& condition,
                                const thread::handle_func_type<void>&   fn)
     {
+        static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
+
+        auto shared = pivot.lock();
+        if (shared == nullptr)
+            throw std::runtime_error("pivot object is expired");
+
+        auto target_thread = shared->thread();
+        if (target_thread == nullptr)
+            throw std::runtime_error("no matched thread");
+
+        if (target_thread->id() == std::this_thread::get_id())
+        {
+            if (condition(*target_thread) == false)
+                throw std::runtime_error("condition not satisfied");
+
+            co_await fn(*target_thread);
+            co_return;
+        }
+
         auto promise = std::make_shared<async::task_completion_source<void>>();
         this->enqueue<T>(
             pivot,
@@ -503,7 +559,7 @@ public:
             [promise]() {
                 promise->set_value();
             });
-        return promise->task();
+        co_await promise->task();
     }
 
     /**
@@ -517,6 +573,22 @@ public:
     template <typename T>
     async::task<void> dispatch(std::weak_ptr<T> pivot, const thread::handle_func_type<void>& fn)
     {
+        static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
+
+        auto shared = pivot.lock();
+        if (shared == nullptr)
+            throw std::runtime_error("pivot object is expired");
+
+        auto target_thread = shared->thread();
+        if (target_thread == nullptr)
+            throw std::runtime_error("no matched thread");
+
+        if (target_thread->id() == std::this_thread::get_id())
+        {
+            co_await fn(*target_thread);
+            co_return;
+        }
+
         auto promise = std::make_shared<async::task_completion_source<void>>();
         this->enqueue<T>(
             pivot,
@@ -530,31 +602,24 @@ public:
             [promise]() {
                 promise->set_value();
             });
-        return promise->task();
+        co_await promise->task();
     }
 
     /**
      * @brief      Switches to the specified thread using a weak_ptr reference.
      *
      * @param      pivot  The pivot object for thread selection (as weak_ptr)
-     *
-     * @return     A task that completes when the switch is done
-     *
-     * @tparam     T     The type of the pivot object (must inherit from thread_switchable)
-     *
-     * @throws     std::runtime_error if pivot object expires or thread switching fails
-     *
-     * @note       Uses weak_ptr to safely handle object lifetime during thread switching
      */
     template <typename T>
     async::task<void> switching(std::weak_ptr<T> pivot)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
-        co_await this->dispatch(pivot, [](auto&) -> async::task<void> {
+
+        co_await this->dispatch(pivot, [](auto& thread) -> async::task<void> {
             co_return;
         });
     }
-    // Utility Methods
+
     /**
      * @brief      Sets a timer with a callback.
      *

@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class group : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x2E;
+    static constexpr uint8_t header = 0x2E;
 
 public:
     std::string name;

@@ -9,7 +9,7 @@ namespace fb::protocol::gateway::response {
 class crypto : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x00;
+    static constexpr uint8_t header = 0x00;
 
 public:
 #ifdef BOT

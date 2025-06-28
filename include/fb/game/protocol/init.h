@@ -11,7 +11,7 @@ namespace fb::protocol::game::response {
 class init : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x1E;
+    static constexpr uint8_t header = 0x1E;
 
 public:
     init() = default;

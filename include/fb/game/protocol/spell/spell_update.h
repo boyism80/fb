@@ -14,7 +14,7 @@ namespace fb::protocol::game::response {
 class spell_update : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x17;
+    static constexpr uint8_t header = 0x17;
 
 public:
 #ifdef BOT

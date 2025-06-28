@@ -14,7 +14,7 @@ namespace fb::protocol::game::request {
 class dialog : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x3A;
+    static constexpr uint8_t header = 0x3A;
 
 public:
 #ifdef BOT

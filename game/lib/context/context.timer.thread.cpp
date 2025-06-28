@@ -156,7 +156,7 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
                         lua->pushobject(equipment);
                     }
                     co_await lua->call(2, false);
-                    co_await this->switch_thread(weak);
+                    co_await this->threads.switching(weak);
                 }
                 catch (std::exception& e)
                 {

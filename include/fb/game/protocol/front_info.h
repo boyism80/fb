@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class front_info : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x09;
+    static constexpr uint8_t header = 0x09;
 
 public:
     front_info() = default;

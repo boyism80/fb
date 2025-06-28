@@ -42,7 +42,7 @@ async::task<bool> context::npc_interaction_sell(character&                      
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -92,7 +92,7 @@ async::task<bool> context::npc_interaction_buy(character&                       
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -140,7 +140,7 @@ async::task<bool> context::npc_interaction_repair(character&                    
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -191,7 +191,7 @@ async::task<bool> context::npc_interaction_deposit_money(character&             
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -242,7 +242,7 @@ async::task<bool> context::npc_interaction_withdraw_money(character&            
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -295,7 +295,7 @@ async::task<bool> context::npc_interaction_store_item(character&                
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -348,7 +348,7 @@ async::task<bool> context::npc_interaction_retrieve_item(character&             
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -394,7 +394,7 @@ async::task<bool> context::npc_interaction_sell_list(character&                 
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -440,7 +440,7 @@ async::task<bool> context::npc_interaction_buy_list(character&                  
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -488,7 +488,7 @@ async::task<bool> context::npc_interaction_sell_price(character&                
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -536,7 +536,7 @@ async::task<bool> context::npc_interaction_buy_price(character&                 
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -582,7 +582,7 @@ async::task<bool> context::npc_interaction_show_deposited_money(character&      
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -631,7 +631,7 @@ async::task<bool> context::npc_interaction_rename_weapon(character&             
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -677,7 +677,7 @@ async::task<bool> context::npc_interaction_store_item_list(character&           
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -725,7 +725,7 @@ async::task<bool> context::npc_interaction_store_item_count(character&          
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;
@@ -773,7 +773,7 @@ async::task<bool> context::npc_interaction_revive(character&                    
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->pending())
             goto release_true;
@@ -822,7 +822,7 @@ async::task<bool> context::npc_interaction_appreciate(character&                
         if (weak.expired())
             goto release_true;
 
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         if (lua->toboolean(1))
             goto release_true;

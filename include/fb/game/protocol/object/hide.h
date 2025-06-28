@@ -14,7 +14,7 @@ namespace fb::protocol::game::response {
 class hide : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x0E;
+    static constexpr uint8_t header = 0x0E;
 
 public:
 #ifndef BOT

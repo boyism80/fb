@@ -14,7 +14,7 @@ namespace fb::protocol::game::response {
 class dialog_slot : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x2F;
+    static constexpr uint8_t header = 0x2F;
 
 public:
 #ifndef BOT

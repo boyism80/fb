@@ -59,7 +59,7 @@ async::task<void> context::create_clan(character& me, std::string name)
 
     auto   weak = me.weak_from_this_as<character>();
     auto&& resp = co_await this->http.post("internal", "/clan/create", CreateClan{me.id(), name});
-    co_await this->switch_thread(weak);
+    co_await this->threads.switching(weak);
 
     this->assert_clan(resp.error);
 
@@ -104,7 +104,7 @@ async::task<void> context::destroy_clan(character& me)
         }
 
         auto&& resp = co_await this->http.post("internal", "/clan/destroy", DestroyClan{me->id()});
-        co_await this->switch_thread(weak);
+        co_await this->threads.switching(weak);
 
         this->assert_clan(resp.error);
         auto message = std::format("{} 문파가 해체되었습니다.", clan->name());

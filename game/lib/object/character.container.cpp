@@ -160,7 +160,7 @@ async::task<void> character::container::invoke(const std::string&               
 
     auto before = this->_context.threads.current();
     auto weak   = ch->weak_from_this_as<character>();
-    co_await this->_context.switch_thread(weak);
+    co_await this->_context.threads.switching(weak);
     fn(ch);
     if (before != nullptr)
         co_await before->switching();
@@ -179,7 +179,7 @@ async::task<void> character::container::invoke_async(const std::string& name,
 
     auto before = this->_context.threads.current();
     auto weak   = ch->weak_from_this_as<character>();
-    co_await this->_context.switch_thread(weak);
+    co_await this->_context.threads.switching(weak);
     co_await fn(ch);
     if (before != nullptr)
         co_await before->switching();

@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class spell_cast : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x0F;
+    static constexpr uint8_t header = 0x0F;
 
 private:
     fb::stream buffer;

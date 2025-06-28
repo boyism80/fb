@@ -14,7 +14,7 @@ namespace fb::protocol::game::response {
 class map_bgm : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x19;
+    static constexpr uint8_t header = 0x19;
 
 public:
 #ifndef BOT

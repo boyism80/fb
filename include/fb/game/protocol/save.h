@@ -11,7 +11,7 @@ namespace fb::protocol::game::response {
 class save : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x21;
+    static constexpr uint8_t header = 0x21;
 
 public:
     save() = default;

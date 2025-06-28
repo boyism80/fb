@@ -13,7 +13,7 @@ namespace fb::protocol::game::response {
 class bulletin_mails : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x31;
+    static constexpr uint8_t header = 0x31;
 
 public:
 #ifndef BOT

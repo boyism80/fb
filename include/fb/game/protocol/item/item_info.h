@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class item_info : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x66;
+    static constexpr uint8_t header = 0x66;
 
 public:
     uint16_t position;

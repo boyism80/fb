@@ -11,7 +11,7 @@ namespace fb::protocol::login::request {
 class update_pw : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x26;
+    static constexpr uint8_t header = 0x26;
 
 public:
 #ifndef BOT

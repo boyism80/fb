@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class item_inactive : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x1F;
+    static constexpr uint8_t header = 0x1F;
 
 public:
     EQUIPMENT_PARTS parts;

@@ -4,7 +4,7 @@
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
 #ifdef BOT
-#include <fb/bot/bot.bulletin.h>
+#include <fb/bot/bulletin.h>
 #endif
 
 using namespace fb::model::enum_value;
@@ -14,7 +14,7 @@ namespace fb::protocol::game::response {
 class bulletin_sections : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x31;
+    static constexpr uint8_t header = 0x31;
 
 public:
 #ifdef BOT

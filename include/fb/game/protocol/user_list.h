@@ -16,7 +16,7 @@ namespace fb::protocol::game::request {
 class user_list : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x18;
+    static constexpr uint8_t header = 0x18;
 
 public:
     user_list() = default;
@@ -32,7 +32,7 @@ namespace fb::protocol::game::response {
 class user_list : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x36;
+    static constexpr uint8_t header = 0x36;
 
 public:
 #ifdef BOT

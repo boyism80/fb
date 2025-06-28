@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class self_info : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x2D;
+    static constexpr uint8_t header = 0x2D;
 
 public:
     self_info() = default;
