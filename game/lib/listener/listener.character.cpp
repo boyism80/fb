@@ -106,11 +106,9 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
     if (me.map() == nullptr)
         co_return false;
 
-    auto  weak   = me.weak_from_this_as<character>();
-    auto& socket = static_cast<fb::socket<character>&>(me);
-    auto  fd     = static_cast<uint32_t>(socket.native_handle());
-    auto  error  = std::string();
-    auto  p      = fb::model::point16_t{position};
+    auto weak  = me.weak_from_this_as<character>();
+    auto error = std::string();
+    auto p     = fb::model::point16_t{position};
     try
     {
         auto&& response = co_await this->context.http.post(
@@ -140,8 +138,14 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
         writer.write<uint16_t>(map.model.id);
         writer.write<uint16_t>(p.x);
         writer.write<uint16_t>(p.y);
-        std::ignore =
-            this->context.transfer(socket, response.ip, response.port, fb::protocol::internal::Service::Game, stream);
+
+        auto socket = me.socket();
+        if (socket != nullptr)
+            std::ignore = this->context.transfer(*socket,
+                                                 response.ip,
+                                                 response.port,
+                                                 fb::protocol::internal::Service::Game,
+                                                 stream);
         co_return true;
     }
     catch (std::exception& e)

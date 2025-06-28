@@ -821,7 +821,6 @@ async::task<bool> context::handle_bulletin(fb::socket<character>& socket, const 
         co_return true;
 
     auto weak = ch->weak_from_this();
-    auto fd   = ch->fd();
     switch (request.action)
     {
     case BULLETIN_ACTION::SECTIONS:
@@ -1187,7 +1186,6 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
         co_return true;
     }
 
-    auto fd = me->fd();
     try
     {
         co_await this->whisper(*me, request.name, request.message);

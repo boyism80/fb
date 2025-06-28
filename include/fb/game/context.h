@@ -765,6 +765,10 @@ protected:
     /**
      * @brief      Handles new character socket acceptance.
      *
+     *             Creates a new character instance with the provided socket.
+     *             The socket reference is used to obtain a weak_ptr internally
+     *             within the character for lifecycle management.
+     *
      * @param      socket  The newly accepted character socket.
      *
      * @return     Pointer to the created character object, or nullptr if failed.
