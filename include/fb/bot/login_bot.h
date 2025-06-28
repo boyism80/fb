@@ -27,25 +27,25 @@ template <typename ControllerType> class bot;
 class login_bot : public bot<login_bot>
 {
 public:
-    using controller_type = login_bot_controller; ///< Type alias for the controller type
+    using bot_controller_type = login_bot_controller; ///< Type alias for the bot_controller type
 
 public:
     /**
      * @brief      Constructs a new login bot instance.
      *
-     * @param      controller  The login bot controller that manages this bot.
+     * @param      bot_controller  The login bot bot_controller that manages this bot.
      * @param[in]  id          The unique identifier for this bot instance.
      */
-    login_bot(bot_controller<login_bot>& controller, uint32_t id);
+    login_bot(bot_controller<login_bot>& bot_controller, uint32_t id);
 
     /**
      * @brief      Constructs a new login bot instance with transfer parameters.
      *
-     * @param      controller  The login bot controller that manages this bot.
+     * @param      bot_controller  The login bot bot_controller that manages this bot.
      * @param[in]  id          The unique identifier for this bot instance.
      * @param[in]  params      Transfer parameters containing crypto information.
      */
-    login_bot(bot_controller<login_bot>& controller, uint32_t id, const fb::stream& params);
+    login_bot(bot_controller<login_bot>& bot_controller, uint32_t id, const fb::stream& params);
 
     /**
      * @brief      Destroys the login bot and performs cleanup.

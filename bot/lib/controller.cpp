@@ -1,10 +1,10 @@
-#include <fb/bot/bot.container.h>
-#include <fb/bot/bot.gateway.h>
-#include <fb/bot/bot.login.h>
-#include <fb/bot/bot.game.h>
-#include <fb/bot/bot.gateway.controller.h>
-#include <fb/bot/bot.login.controller.h>
-#include <fb/bot/bot.game.controller.h>
+#include <fb/bot/container.h>
+#include <fb/bot/gateway_bot.h>
+#include <fb/bot/login_bot.h>
+#include <fb/bot/game_bot.h>
+#include <fb/bot/gateway_controller.h>
+#include <fb/bot/login_controller.h>
+#include <fb/bot/game_controller.h>
 
 using namespace fb::bot;
 
@@ -22,12 +22,31 @@ bot_container::bot_container(boost::asio::io_context& context) :
     }
 }
 
+void bot_container::set_gateway_bot_controller(std::unique_ptr<gateway_bot_controller> bot_controller)
+{
+    this->gateway = std::move(bot_controller);
+}
+
+void bot_container::set_login_bot_controller(std::unique_ptr<login_bot_controller> bot_controller)
+{
+    this->login = std::move(bot_controller);
+}
+
+void bot_container::set_game_bot_controller(std::unique_ptr<game_bot_controller> bot_controller)
+{
+    this->game = std::move(bot_controller);
+}
+
 void bot_container::initialize()
 {
     this->_running = true;
-    // Timer setup moved to individual controllers
-    this->gateway_controller->initialize();
-    this->game_controller->initialize();
+    // Timer setup moved to individual bot_controllers
+    if (this->gateway)
+        this->gateway->initialize();
+    if (this->login)
+        this->login->initialize();
+    if (this->game)
+        this->game->initialize();
 }
 
 bot_container::~bot_container()

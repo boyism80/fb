@@ -1,13 +1,13 @@
-#ifndef __BOT_GAME_CONTROLLER_H__
-#define __BOT_GAME_CONTROLLER_H__
+#ifndef __BOT_GAME_LOAD_CONTROLLER_H__
+#define __BOT_GAME_LOAD_CONTROLLER_H__
 
-#include <fb/bot/bot.controller.h>
+#include <fb/bot/game_controller.h>
 #include <fb/game/protocol.h>
-#include <fb/bot/bot.game.h>
+#include <fb/bot/game_bot.h>
 
-namespace fb::bot {
+namespace fb::bot::load {
 
-class game_bot_controller : public bot_controller<game_bot>
+class game_bot_controller : public fb::bot::game_bot_controller
 {
 public:
     using bot_type = game_bot; ///< Type alias for the managed bot type
@@ -15,7 +15,7 @@ public:
     game_bot_controller(bot_container& container);
 
     /**
-     * @brief      Initializes the game controller and sets up timers.
+     * @brief      Initializes the game bot_controller and sets up timers.
      */
     void initialize();
 
@@ -185,21 +185,8 @@ private:
      * @return     An async task that completes when transfer processing is finished.
      */
     async::task<void> handle_transfer(game_bot& bot, const fb::protocol::response::transfer& response);
-
-    /**
-     * @brief      Determines decryption policy for protocol messages.
-     *
-     *             Returns whether a protocol message should be decrypted
-     *             based on the command type. Some messages (like transfers)
-     *             are not encrypted and should bypass decryption.
-     *
-     * @param[in]  cmd  The protocol command identifier.
-     *
-     * @return     True if the message should be decrypted, false otherwise.
-     */
-    virtual bool decrypt_policy(int cmd) const override;
 };
 
-} // namespace fb::bot
+} // namespace fb::bot::load
 
 #endif

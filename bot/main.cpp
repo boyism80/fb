@@ -1,9 +1,15 @@
 #include <thread>
 #include <iostream>
-#include <fb/bot/bot.container.h>
-#include <fb/bot/bot.gateway.controller.h>
-#include <fb/bot/bot.login.controller.h>
-#include <fb/bot/bot.game.controller.h>
+#include <fb/bot/container.h>
+#include <fb/bot/gateway_controller.h>
+#include <fb/bot/load/gateway_controller.h>
+#include <fb/bot/integration/gateway_controller.h>
+#include <fb/bot/login_controller.h>
+#include <fb/bot/load/login_controller.h>
+#include <fb/bot/integration/login_controller.h>
+#include <fb/bot/game_controller.h>
+#include <fb/bot/load/game_controller.h>
+#include <fb/bot/integration/game_controller.h>
 #include <fb/config.h>
 #include <fb/console.h>
 #include <boost/program_options.hpp>
@@ -36,9 +42,9 @@ void display_spawned_bots(const std::vector<std::shared_ptr<fb::bot::bot_contain
     // Aggregate counts from all containers
     for (const auto& container : containers)
     {
-        total_gateway_count += container->gateway_controller->bot_count();
-        total_login_count   += container->login_controller->bot_count();
-        total_game_count    += container->game_controller->bot_count();
+        total_gateway_count += container->gateway->bot_count();
+        total_login_count   += container->login->bot_count();
+        total_game_count    += container->game->bot_count();
     }
 
     fb::console::puts("gateway\t\t{}", total_gateway_count);
@@ -103,8 +109,6 @@ int main(int argc, char** argv)
               << " mode" << std::endl;
     std::cout << "Using config file: " << config_path << std::endl;
 
-    // For now, both modes run the same load test
-    // TODO: Implement integration test mode when test system is ready
     using guard_type = executor_work_guard<io_context::executor_type>;
 
     auto io_size        = fb::config<uint32_t>("io_size");
@@ -116,7 +120,26 @@ int main(int argc, char** argv)
     {
         auto io = std::make_unique<io_context>();
         guards.push_back(std::make_unique<guard_type>(io->get_executor()));
+
+        // Create bot container
         auto container = std::make_shared<fb::bot::bot_container>(*io.get());
+
+        // Create appropriate bot_controllers based on test mode
+        if (mode == test_mode::INTEGRATION_TEST)
+        {
+            container->set_gateway_bot_controller(
+                std::make_unique<fb::bot::integration::gateway_bot_controller>(*container));
+            container->set_login_bot_controller(
+                std::make_unique<fb::bot::integration::login_bot_controller>(*container));
+            container->set_game_bot_controller(std::make_unique<fb::bot::integration::game_bot_controller>(*container));
+        }
+        else
+        {
+            container->set_gateway_bot_controller(std::make_unique<fb::bot::load::gateway_bot_controller>(*container));
+            container->set_login_bot_controller(std::make_unique<fb::bot::load::login_bot_controller>(*container));
+            container->set_game_bot_controller(std::make_unique<fb::bot::load::game_bot_controller>(*container));
+        }
+
         container->initialize();
         bot_containers.push_back(container);
         ios.push_back(std::move(io));

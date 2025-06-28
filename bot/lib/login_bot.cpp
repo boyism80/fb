@@ -1,16 +1,16 @@
-#include <fb/bot/bot.login.h>
-#include <fb/bot/bot.game.h>
-#include <fb/bot/bot.container.h>
-#include <fb/bot/bot.login.controller.h>
+#include <fb/bot/login_bot.h>
+#include <fb/bot/game_bot.h>
+#include <fb/bot/container.h>
+#include <fb/bot/login_controller.h>
 
 using namespace fb::bot;
 
-login_bot::login_bot(bot_controller<login_bot>& controller, uint32_t id) :
-    bot<login_bot>(controller, id)
+login_bot::login_bot(bot_controller<login_bot>& bot_controller, uint32_t id) :
+    bot<login_bot>(bot_controller, id)
 { }
 
-login_bot::login_bot(bot_controller<login_bot>& controller, uint32_t id, const fb::stream& params) :
-    login_bot(controller, id)
+login_bot::login_bot(bot_controller<login_bot>& bot_controller, uint32_t id, const fb::stream& params) :
+    login_bot(bot_controller, id)
 {
     auto clone    = fb::stream{params};
     auto reader   = fb::stream_reader<>(clone);

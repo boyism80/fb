@@ -1,17 +1,17 @@
 #include <fb/bot/bot.h>
-#include <fb/bot/bot.container.h>
-#include <fb/bot/bot.controller.h>
+#include <fb/bot/container.h>
+#include <fb/bot/controller.h>
 
 using namespace fb::bot;
 
 base_bot::base_bot(fb::context&                                                      context,
-                   base_bot_controller&                                              controller,
+                   base_bot_controller&                                              bot_controller,
                    std::function<async::task<void>(fb::socket<void*>&, fb::stream&)> on_receive,
                    std::function<async::task<void>(fb::socket<void*>&)>              on_closed,
                    uint32_t                                                          id) :
     fb::socket<void*>(context, on_receive, on_closed),
     _context(context),
-    _controller(controller),
+    _bot_controller(bot_controller),
     id(id)
 { }
 
@@ -33,7 +33,7 @@ void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
             boost::asio::co_spawn(this->_context.io_context, this->recv(), boost::asio::detached);
 
             std::ignore = this->thread()->dispatch([this](auto& thread) -> async::task<void> {
-                co_await this->_controller.on_bot_connected(*this);
+                co_await this->_bot_controller.on_bot_connected(*this);
             });
         });
     }

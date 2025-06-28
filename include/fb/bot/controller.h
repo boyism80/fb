@@ -2,7 +2,7 @@
 #define __BOT_CONTROLLER_H__
 
 #include <fb/bot/bot.h>
-#include <fb/bot/bot.container.h>
+#include <fb/bot/container.h>
 #include <fb/locker.h>
 #include <fb/protocol/header.h>
 
@@ -26,7 +26,7 @@ public:
      * @brief      Determines whether a command should be decrypted.
      *
      *             Specifies which protocol commands require decryption based on
-     *             the controller's security policy. Override this method to
+     *             the bot_controller's security policy. Override this method to
      *             customize decryption behavior for specific bot types.
      *
      * @param[in]  cmd  The protocol command identifier.
@@ -39,7 +39,7 @@ public:
      * @brief      Handles bot connection events.
      *
      *             Pure virtual function called when a bot successfully connects
-     *             to the server. Must be implemented by concrete controller classes.
+     *             to the server. Must be implemented by concrete bot_controller classes.
      *
      * @param      bot  The bot that connected.
      *
@@ -51,7 +51,7 @@ public:
      * @brief      Handles bot disconnection events.
      *
      *             Pure virtual function called when a bot disconnects from
-     *             the server. Must be implemented by concrete controller classes.
+     *             the server. Must be implemented by concrete bot_controller classes.
      *
      * @param      bot  The bot that disconnected.
      *
@@ -102,7 +102,7 @@ protected:
      * @brief      Default decryption policy implementation.
      *
      *             By default, all commands are decrypted. Override this method
-     *             in specific controller implementations to customize behavior.
+     *             in specific bot_controller implementations to customize behavior.
      *
      * @param[in]  cmd  The protocol command identifier.
      *
@@ -232,9 +232,9 @@ public:
      */
     std::shared_ptr<BotType> create()
     {
-        // Cast to derived controller type for bot creation
-        auto& derived_controller = static_cast<typename BotType::controller_type&>(*this);
-        auto  bot                = this->container.create<BotType>(derived_controller);
+        // Cast to derived bot_controller type for bot creation
+        auto& derived_bot_controller = static_cast<typename BotType::bot_controller_type&>(*this);
+        auto  bot                    = this->container.create<BotType>(derived_bot_controller);
 
         // Add bot to our managed collection
         this->_bots.write([&](auto& bots) {
@@ -253,9 +253,9 @@ public:
      */
     std::shared_ptr<BotType> create(const fb::stream& params)
     {
-        // Cast to derived controller type for bot creation
-        auto& derived_controller = static_cast<typename BotType::controller_type&>(*this);
-        auto  bot                = this->container.create<BotType>(derived_controller, params);
+        // Cast to derived bot_controller type for bot creation
+        auto& derived_bot_controller = static_cast<typename BotType::bot_controller_type&>(*this);
+        auto  bot                    = this->container.create<BotType>(derived_bot_controller, params);
 
         // Add bot to our managed collection
         this->_bots.write([&](auto& bots) {
@@ -266,7 +266,7 @@ public:
     }
 
     /**
-     * @brief      Checks if a bot with the specified ID is managed by this controller.
+     * @brief      Checks if a bot with the specified ID is managed by this bot_controller.
      *
      *             Provides thread-safe read access to the bot collection to check
      *             if a bot with the given ID exists.
@@ -383,7 +383,7 @@ public:
         auto  thread = bot.thread();
         co_await thread->switching();
 
-        // Notify controller of bot disconnection
+        // Notify bot_controller of bot disconnection
         co_await this->on_bot_disconnected(bot);
 
         // Remove bot from our managed collection
@@ -456,7 +456,7 @@ public:
     }
 
     /**
-     * @brief      Gets the number of active bots managed by this controller.
+     * @brief      Gets the number of active bots managed by this bot_controller.
      *
      * @return     The count of active bot instances.
      */
@@ -522,16 +522,16 @@ public:
 // Template method implementations for bot<ControllerType>
 // ============================================================================
 // Note: These implementations are placed here after all class definitions
-//       to resolve circular dependencies between bot.h and bot.controller.h
+//       to resolve circular dependencies between bot.h and controller.h
 
 template <typename BotType>
-bot<BotType>::bot(bot_controller<BotType>& controller, uint32_t id) :
-    base_bot(controller.container,
-             controller,
-             std::bind(&base_bot_controller::on_receive, &controller, std::placeholders::_1, std::placeholders::_2),
-             std::bind(&base_bot_controller::on_closed, &controller, std::placeholders::_1),
+bot<BotType>::bot(bot_controller<BotType>& bot_controller, uint32_t id) :
+    base_bot(bot_controller.container,
+             bot_controller,
+             std::bind(&base_bot_controller::on_receive, &bot_controller, std::placeholders::_1, std::placeholders::_2),
+             std::bind(&base_bot_controller::on_closed, &bot_controller, std::placeholders::_1),
              id),
-    _controller(controller)
+    _controller(bot_controller)
 { }
 
 template <typename BotType>

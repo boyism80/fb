@@ -1,15 +1,21 @@
-#include <fb/bot/bot.login.controller.h>
-#include <fb/bot/bot.game.h>
-#include <fb/bot/bot.login.h>
-#include <fb/bot/bot.game.controller.h>
+#include <fb/bot/container.h>
+#include <fb/bot/game_controller.h>
+#include <fb/bot/load/login_controller.h>
+#include <fb/bot/game_bot.h>
+#include <fb/bot/login_bot.h>
 
-using namespace fb::bot;
+using namespace fb::bot::load;
 
 login_bot_controller::login_bot_controller(bot_container& container) :
-    bot_controller<login_bot>(container)
+    fb::bot::login_bot_controller(container)
 {
     this->bind(&login_bot_controller::handle_agreement);
     this->bind(&login_bot_controller::handle_transfer);
+}
+
+void login_bot_controller::initialize()
+{
+    // No timers needed for login bot_controller as it's reactive
 }
 
 async::task<void> login_bot_controller::handle_agreement(login_bot&                                      bot,
@@ -92,7 +98,7 @@ async::task<void> login_bot_controller::handle_transfer(login_bot&              
 {
     bot.close();
 
-    auto created  = this->container.game_controller->create(response.parameter);
+    auto created  = this->container.game->create(response.parameter);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     created->connect(endpoint);
@@ -105,24 +111,12 @@ async::task<void> login_bot_controller::on_bot_connected(login_bot& bot)
     auto& crypto = bot.crt();
     bot.send(fb::protocol::login::request::agreement(crypto.type(), crypto.KEY_SIZE, crypto.key()), false, true);
 
-    // Bot is now managed by controller's thread-safe collection
+    // Bot is now managed by bot_controller's thread-safe collection
     co_return;
 }
 
 async::task<void> login_bot_controller::on_bot_disconnected(login_bot& bot)
 {
-    // Bot is automatically removed from controller's thread-safe collection
+    // Bot is automatically removed from bot_controller's thread-safe collection
     co_return;
-}
-
-bool login_bot_controller::decrypt_policy(int cmd) const
-{
-    switch (cmd)
-    {
-    case fb::protocol::response::transfer::header: // Host discovery
-        return false;
-
-    default:
-        return true;
-    }
 }

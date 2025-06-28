@@ -1,24 +1,38 @@
-#ifndef __BOT_LOGIN_CONTROLLER_H__
-#define __BOT_LOGIN_CONTROLLER_H__
+#ifndef __BOT_LOGIN_LOAD_CONTROLLER_H__
+#define __BOT_LOGIN_LOAD_CONTROLLER_H__
 
-#include <fb/bot/bot.controller.h>
+#include <fb/bot/login_controller.h>
 #include <fb/login/protocol.h>
-#include <fb/bot/bot.login.h>
+#include <fb/bot/login_bot.h>
 
-namespace fb::bot {
+namespace fb::bot::load {
 
-class login_bot_controller : public bot_controller<login_bot>
+/**
+ * @brief      Login bot bot_controller for load testing.
+ *
+ *             This bot_controller implements load testing functionality for login bots,
+ *             focusing on automated account creation, login flow testing,
+ *             and high-volume user session management.
+ */
+class login_bot_controller : public fb::bot::login_bot_controller
 {
 public:
     using bot_type = login_bot; ///< Type alias for the managed bot type
 
     login_bot_controller(bot_container& container);
 
+    /**
+     * @brief      Initializes the load test bot_controller.
+     *
+     *             Sets up protocol handlers for load testing scenarios.
+     */
+    void initialize() override;
+
 public:
     /**
-     * @brief      Handles login bot connection events.
+     * @brief      Handles login bot connection events for load testing.
      *
-     *             Increments the login bot counter when a bot connects.
+     *             Manages bot connections and initiates login flow for load testing.
      *
      * @param      bot  The login bot that connected.
      *
@@ -27,9 +41,9 @@ public:
     virtual async::task<void> on_bot_connected(login_bot& bot) override;
 
     /**
-     * @brief      Handles login bot disconnection events.
+     * @brief      Handles login bot disconnection events for load testing.
      *
-     *             Decrements the login bot counter when a bot disconnects.
+     *             Manages bot disconnections for load testing scenarios.
      *
      * @param      bot  The login bot that disconnected.
      *
@@ -63,21 +77,8 @@ private:
      * @return     An async task that completes when transfer processing is finished.
      */
     async::task<void> handle_transfer(login_bot& bot, const fb::protocol::response::transfer& response);
-
-    /**
-     * @brief      Determines decryption policy for protocol messages.
-     *
-     *             Returns whether a protocol message should be decrypted
-     *             based on the command type. Some messages (like transfers)
-     *             are not encrypted and should bypass decryption.
-     *
-     * @param[in]  cmd  The protocol command identifier.
-     *
-     * @return     True if the message should be decrypted, false otherwise.
-     */
-    virtual bool decrypt_policy(int cmd) const override;
 };
 
-} // namespace fb::bot
+} // namespace fb::bot::load
 
 #endif

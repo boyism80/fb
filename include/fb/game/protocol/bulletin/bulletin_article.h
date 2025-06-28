@@ -6,7 +6,7 @@
 #ifndef BOT
 #include <fb/game/bulletin.h>
 #else
-#include <fb/bot/bot.bulletin.h>
+#include <fb/bot/bulletin.h>
 #endif
 
 using namespace fb::model::enum_value;

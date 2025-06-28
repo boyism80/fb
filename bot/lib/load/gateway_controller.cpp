@@ -1,13 +1,13 @@
-#include <fb/bot/bot.container.h>
-#include <fb/bot/bot.gateway.controller.h>
-#include <fb/bot/bot.gateway.h>
-#include <fb/bot/bot.login.h>
-#include <fb/bot/bot.login.controller.h>
+#include <fb/bot/container.h>
+#include <fb/bot/load/gateway_controller.h>
+#include <fb/bot/gateway_bot.h>
+#include <fb/bot/login_bot.h>
+#include <fb/bot/login_controller.h>
 
-using namespace fb::bot;
+using namespace fb::bot::load;
 
 gateway_bot_controller::gateway_bot_controller(bot_container& container) :
-    bot_controller<gateway_bot>(container),
+    fb::bot::gateway_bot_controller(container),
     _remained_count(fb::config<uint32_t>("spawn_count") / fb::config<uint32_t>("io_size"))
 {
     this->bind(&gateway_bot_controller::handle_welcome);
@@ -66,7 +66,7 @@ async::task<void> gateway_bot_controller::handle_transfer(gateway_bot&          
 {
     bot.close();
 
-    auto created  = this->container.login_controller->create(response.parameter);
+    auto created  = this->container.login->create(response.parameter);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     created->connect(endpoint);
@@ -76,26 +76,12 @@ async::task<void> gateway_bot_controller::handle_transfer(gateway_bot&          
 
 async::task<void> gateway_bot_controller::on_bot_connected(gateway_bot& bot)
 {
-    // Bot is now managed by controller's thread-safe collection
+    // Bot is now managed by bot_controller's thread-safe collection
     co_return;
 }
 
 async::task<void> gateway_bot_controller::on_bot_disconnected(gateway_bot& bot)
 {
-    // Bot is automatically removed from controller's thread-safe collection
+    // Bot is automatically removed from bot_controller's thread-safe collection
     co_return;
-}
-
-bool gateway_bot_controller::decrypt_policy(int cmd) const
-{
-    switch (cmd)
-    {
-    case fb::protocol::gateway::response::crypto::header:  // Welcome message
-    case fb::protocol::gateway::response::welcome::header: // Crypto exchange
-    case fb::protocol::response::transfer::header:         // Host discovery
-        return false;
-
-    default:
-        return true;
-    }
 }

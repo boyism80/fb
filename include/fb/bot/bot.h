@@ -65,9 +65,9 @@ private:
     using hook_container = std::unordered_map<uint8_t, std::vector<hook_params>>; ///< Container for protocol hooks
 
 protected:
-    hook_container       _hooks;      ///< Temporary hooks for request-response patterns
-    fb::context&         _context;    ///< Reference to the context for socket operations
-    base_bot_controller& _controller; ///< Reference to the controller managing this bot
+    hook_container       _hooks;          ///< Temporary hooks for request-response patterns
+    fb::context&         _context;        ///< Reference to the context for socket operations
+    base_bot_controller& _bot_controller; ///< Reference to the bot_controller managing this bot
 
 public:
     const uint32_t id; ///< Unique identifier for this bot instance
@@ -77,13 +77,13 @@ protected:
      * @brief      Constructs a new bot instance.
      *
      * @param      context     The context for socket operations.
-     * @param      controller  The controller managing this bot.
+     * @param      bot_controller  The bot_controller managing this bot.
      * @param[in]  on_receive  Callback function for received messages.
      * @param[in]  on_closed   Callback function for connection closure.
      * @param[in]  id          The unique identifier for this bot.
      */
     base_bot(fb::context&                                                      context,
-             base_bot_controller&                                              controller,
+             base_bot_controller&                                              bot_controller,
              std::function<async::task<void>(fb::socket<void*>&, fb::stream&)> on_receive,
              std::function<async::task<void>(fb::socket<void*>&)>              on_closed,
              uint32_t                                                          id);
@@ -155,10 +155,10 @@ public:
 };
 
 /**
- * @brief      Template bot class with controller-specific functionality.
+ * @brief      Template bot class with bot_controller-specific functionality.
  *
- *             This template class extends base_bot with controller-specific
- *             functionality, providing type-safe access to the controller
+ *             This template class extends base_bot with bot_controller-specific
+ *             functionality, providing type-safe access to the bot_controller
  *             and implementing request-response patterns.
  *
  * @tparam     BotType  The specific bot type (CRTP pattern).
@@ -167,16 +167,16 @@ template <typename BotType>
 class bot : public base_bot
 {
 protected:
-    bot_controller<BotType>& _controller; ///< Reference to the bot controller for this bot type
+    bot_controller<BotType>& _controller; ///< Reference to the bot bot_controller for this bot type
 
 protected:
     /**
-     * @brief      Constructs a new bot instance with specific controller.
+     * @brief      Constructs a new bot instance with specific bot_controller.
      *
-     * @param      controller  The controller that will manage this bot.
+     * @param      bot_controller  The bot_controller that will manage this bot.
      * @param[in]  id         The unique identifier for this bot.
      */
-    bot(bot_controller<BotType>& controller, uint32_t id);
+    bot(bot_controller<BotType>& _controller, uint32_t id);
 
 public:
     /**
@@ -219,14 +219,15 @@ public:
     async::task<ResponseType> request(const fb::protocol::header& protocol, bool encrypt = true, bool wrap = true);
 
     /**
-     * @brief      Gets the controller managing this bot.
+     * @brief      Gets the bot_controller managing this bot.
      *
-     * @return     Reference to the controller.
+     * @return     Reference to the bot_controller.
      */
     bot_controller<BotType>& controller()
     {
         return this->_controller;
     }
+
     const bot_controller<BotType>& controller() const
     {
         return this->_controller;

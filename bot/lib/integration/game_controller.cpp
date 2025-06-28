@@ -1,20 +1,16 @@
-#include <fb/bot/bot.game.controller.h>
-#include <fb/bot/bot.game.h>
+#include <fb/bot/integration/game_controller.h>
+#include <fb/bot/game_bot.h>
 
-using namespace fb::bot;
+using namespace fb::bot::integration;
 
 game_bot_controller::game_bot_controller(bot_container& container) :
-    bot_controller<game_bot>(container)
+    fb::bot::game_bot_controller(container)
 {
+    // Bind integration test specific handlers
     this->bind(&game_bot_controller::handle_time);
     this->bind(&game_bot_controller::handle_state);
-    this->bind(&game_bot_controller::handle_option);
     this->bind(&game_bot_controller::handle_message);
     this->bind(&game_bot_controller::handle_sequence);
-    this->bind(&game_bot_controller::handle_spell_update);
-    this->bind(&game_bot_controller::handle_chat);
-    this->bind(&game_bot_controller::handle_action);
-    this->bind(&game_bot_controller::handle_direction);
     this->bind(&game_bot_controller::handle_position);
     this->bind(&game_bot_controller::handle_move);
     this->bind(&game_bot_controller::handle_map);
@@ -23,7 +19,8 @@ game_bot_controller::game_bot_controller(bot_container& container) :
 
 void game_bot_controller::initialize()
 {
-    this->bind_thread_timer(&game_bot_controller::handle_timer, 100ms);
+    // Set up integration test timer with different interval (slower for detailed testing)
+    this->bind_thread_timer(&game_bot_controller::handle_timer, 1000ms);
 }
 
 async::task<void> game_bot_controller::handle_timer(const fb::model::datetime& now, std::thread::id id)
@@ -33,6 +30,7 @@ async::task<void> game_bot_controller::handle_timer(const fb::model::datetime& n
     if (params == nullptr)
         co_return;
 
+    // Integration test logic: Execute test scenarios instead of random patterns
     this->_bots.read<void>([&](const auto& bots) {
         for (auto& [_, bot] : params->bots)
         {
@@ -40,7 +38,8 @@ async::task<void> game_bot_controller::handle_timer(const fb::model::datetime& n
                 continue;
 
             auto typed_bot = static_cast<game_bot*>(bot.get());
-            typed_bot->process_random_pattern(now);
+            // TODO: Execute integration test scenarios here
+            // typed_bot->execute_test_scenario(now);
         }
     });
     co_return;
@@ -48,107 +47,79 @@ async::task<void> game_bot_controller::handle_timer(const fb::model::datetime& n
 
 async::task<void> game_bot_controller::handle_time(game_bot& bot, const fb::protocol::game::response::time& response)
 {
+    // Integration test: Validate time synchronization
+    // TODO: Add time validation logic
     co_return;
 }
 
 async::task<void> game_bot_controller::handle_state(game_bot&                                            bot,
                                                     const fb::protocol::game::response::update_internal& response)
 {
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_option(game_bot&                                   bot,
-                                                     const fb::protocol::game::response::option& response)
-{
+    // Integration test: Validate state consistency
+    // TODO: Add state validation logic
     co_return;
 }
 
 async::task<void> game_bot_controller::handle_message(game_bot&                                    bot,
                                                       const fb::protocol::game::response::message& response)
 {
-    // if (response.text == fb::model::const_value::string::MESSAGE_NOT_READY_GAME_SERVER)
-    //{
-    //     bot.send(fb::protocol::game::request::chat(false, "/랜덤이동"));
-    // }
-
+    // Integration test: Validate message handling and trigger test responses
     if (response.type == MESSAGE_TYPE::NOTIFY)
     {
-        static const auto regex = boost::xpressive::sregex::compile("(?P<id>.+)> (?P<msg>.+)");
-        auto              what  = boost::xpressive::smatch();
-        if (boost::xpressive::regex_search(response.text, what, regex) == false)
-            co_return;
-
-        auto id  = what["id"].str();
-        auto msg = std::format("\"{}\"에 대한 응답입니다.", what["msg"].str());
-        bot.send(fb::protocol::game::request::whisper(id, msg));
+        // TODO: Parse message and execute appropriate test case
+        // Example: Test command processing, NPC interactions, etc.
     }
-
     co_return;
 }
 
 async::task<void> game_bot_controller::handle_sequence(game_bot& bot, const fb::protocol::game::response::id& response)
 {
+    // Integration test: Validate sequence ID consistency
     bot.set_sequence(response.sequence);
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_spell_update(game_bot&                                         bot,
-                                                           const fb::protocol::game::response::spell_update& response)
-{
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_chat(game_bot& bot, const fb::protocol::game::response::chat& response)
-{
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_action(game_bot&                                   bot,
-                                                     const fb::protocol::game::response::action& response)
-{
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_direction(game_bot&                                      bot,
-                                                        const fb::protocol::game::response::direction& response)
-{
+    // TODO: Add sequence validation logic
     co_return;
 }
 
 async::task<void> game_bot_controller::handle_position(game_bot&                                     bot,
                                                        const fb::protocol::game::response::position& response)
 {
+    // Integration test: Validate position updates
     bot.set_position(response.abs);
+    // TODO: Add position validation logic
     co_return;
 }
 
 async::task<void> game_bot_controller::handle_move(game_bot& bot, const fb::protocol::game::response::move& response)
 {
+    // Integration test: Validate movement mechanics
     if (bot.sequence() != response.id)
+    {
+        // TODO: Log sequence mismatch for test analysis
         co_return;
+    }
 
     bot.set_position(response.position);
+    // TODO: Add movement validation logic
     co_return;
 }
 
 async::task<void> game_bot_controller::handle_map(game_bot&                                       bot,
                                                   const fb::protocol::game::response::map_config& response)
 {
-    if (response.id == 1)
-    {
-        // bot.send(fb::protocol::game::request::chat(false, "/랜덤이동"));
-    }
-    else
-    {
-    }
+    // Integration test: Validate map loading and configuration
     bot.set_initialized(true);
+
+    // TODO: Execute map-specific test scenarios
+    // Example: Test NPC interactions, item spawning, area transitions, etc.
     co_return;
 }
 
 async::task<void> game_bot_controller::handle_transfer(game_bot& bot, const fb::protocol::response::transfer& response)
 {
+    // Integration test: Validate server transfer mechanics
     bot.close();
 
+    // TODO: Add transfer validation and test continuation logic
     auto created  = this->create(response.parameter);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
@@ -159,27 +130,16 @@ async::task<void> game_bot_controller::handle_transfer(game_bot& bot, const fb::
 
 async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
 {
-    // Send game login packet with transfer buffer
+    // Integration test: Initialize test scenarios upon connection
     bot.send(fb::protocol::game::request::login(bot.transfer_buffer()), false, true);
 
-    // Bot is now managed by controller's thread-safe collection
+    // TODO: Set up test scenario context for this bot
     co_return;
 }
 
 async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
 {
-    // Bot is automatically removed from controller's thread-safe collection
+    // Integration test: Collect test results and perform cleanup
+    // TODO: Generate test report for this bot session
     co_return;
-}
-
-bool game_bot_controller::decrypt_policy(int cmd) const
-{
-    switch (cmd)
-    {
-    case fb::protocol::response::transfer::header: // Host discovery
-        return false;
-
-    default:
-        return true;
-    }
 }

@@ -6,7 +6,7 @@
 
 namespace fb::bot {
 
-// Forward declarations for controllers
+// Forward declarations for bot_controllers
 class gateway_bot_controller;
 class login_bot_controller;
 class game_bot_controller;
@@ -48,9 +48,9 @@ private:
     std::mutex               _mutex;                 ///< Mutex for thread-safe operations
 
 public:
-    std::unique_ptr<gateway_bot_controller> gateway_controller = std::make_unique<gateway_bot_controller>(*this);
-    std::unique_ptr<login_bot_controller>   login_controller   = std::make_unique<login_bot_controller>(*this);
-    std::unique_ptr<game_bot_controller>    game_controller    = std::make_unique<game_bot_controller>(*this);
+    std::unique_ptr<gateway_bot_controller> gateway;
+    std::unique_ptr<login_bot_controller>   login;
+    std::unique_ptr<game_bot_controller>    game;
 
 public:
     /**
@@ -59,6 +59,27 @@ public:
      * @param      context  The boost::asio I/O context for network operations.
      */
     bot_container(boost::asio::io_context& context);
+
+    /**
+     * @brief      Sets the gateway bot bot_controller for this container.
+     *
+     * @param      bot_controller  The gateway bot bot_controller instance to use.
+     */
+    void set_gateway_bot_controller(std::unique_ptr<gateway_bot_controller> bot_controller);
+
+    /**
+     * @brief      Sets the login bot bot_controller for this container.
+     *
+     * @param      bot_controller  The login bot bot_controller instance to use.
+     */
+    void set_login_bot_controller(std::unique_ptr<login_bot_controller> bot_controller);
+
+    /**
+     * @brief      Sets the game bot bot_controller for this container.
+     *
+     * @param      bot_controller  The game bot bot_controller instance to use.
+     */
+    void set_game_bot_controller(std::unique_ptr<game_bot_controller> bot_controller);
 
     /**
      * @brief      Initializes the bot container after construction.
@@ -101,25 +122,25 @@ private:
     }
 
     /**
-     * @brief      Creates a new bot instance with a controller.
+     * @brief      Creates a new bot instance with a bot_controller.
      *
      *             Instantiates a bot with a unique ID and registers it with
      *             the appropriate worker thread for execution. This method
      *             can only be called by bot_controller classes.
      *
      * @tparam     T          The bot type to create (must inherit from base_bot).
-     * @tparam     Controller The controller type that will manage this bot.
-     * @param[in]  controller The bot controller that will manage this bot.
+     * @tparam     Controller The bot_controller type that will manage this bot.
+     * @param[in]  bot_controller The bot bot_controller that will manage this bot.
      *
      * @return     Shared pointer to the newly created bot instance.
      */
     template <typename T, typename Controller>
-    std::shared_ptr<T> create(Controller& controller)
+    std::shared_ptr<T> create(Controller& bot_controller)
     {
         this->_mutex.lock();
         auto id = this->_sequence++;
         this->_mutex.unlock();
-        auto bot    = std::make_shared<T>(controller, id);
+        auto bot    = std::make_shared<T>(bot_controller, id);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
             params->bots.insert({id, bot});
@@ -136,19 +157,19 @@ private:
      *             can only be called by bot_controller classes.
      *
      * @tparam     T          The bot type to create (must inherit from base_bot).
-     * @tparam     Controller The controller type that will manage this bot.
-     * @param[in]  controller The bot controller that will manage this bot.
+     * @tparam     Controller The bot_controller type that will manage this bot.
+     * @param[in]  bot_controller The bot bot_controller that will manage this bot.
      * @param[in]  params     Initialization parameters for the bot.
      *
      * @return     Shared pointer to the newly created bot instance.
      */
     template <typename T, typename Controller>
-    std::shared_ptr<T> create(Controller& controller, const fb::stream& params)
+    std::shared_ptr<T> create(Controller& bot_controller, const fb::stream& params)
     {
         this->_mutex.lock();
         auto id = this->_sequence++;
         this->_mutex.unlock();
-        auto bot    = std::make_shared<T>(controller, id, params);
+        auto bot    = std::make_shared<T>(bot_controller, id, params);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
             params->bots.insert({id, bot});

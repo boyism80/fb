@@ -23,7 +23,7 @@ template <typename ControllerType> class bot;
 class game_bot : public bot<game_bot>
 {
 public:
-    using controller_type = game_bot_controller; ///< Type alias for the controller type
+    using bot_controller_type = game_bot_controller; ///< Type alias for the bot_controller type
 
 private:
     /**
@@ -48,19 +48,19 @@ public:
     /**
      * @brief      Constructs a new game bot instance.
      *
-     * @param      controller  The game bot controller that manages this bot.
+     * @param      bot_controller  The game bot bot_controller that manages this bot.
      * @param[in]  id          The unique identifier for this bot instance.
      */
-    game_bot(bot_controller<game_bot>& controller, uint32_t id);
+    game_bot(bot_controller<game_bot>& bot_controller, uint32_t id);
 
     /**
      * @brief      Constructs a new game bot instance with transfer parameters.
      *
-     * @param      controller  The game bot controller that manages this bot.
+     * @param      bot_controller  The game bot bot_controller that manages this bot.
      * @param[in]  id          The unique identifier for this bot instance.
      * @param[in]  params      Transfer parameters containing crypto information.
      */
-    game_bot(bot_controller<game_bot>& controller, uint32_t id, const fb::stream& params);
+    game_bot(bot_controller<game_bot>& bot_controller, uint32_t id, const fb::stream& params);
 
     /**
      * @brief      Destroys the game bot and performs cleanup.

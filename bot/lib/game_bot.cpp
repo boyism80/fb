@@ -1,10 +1,10 @@
-#include <fb/bot/bot.game.h>
-#include <fb/bot/bot.game.controller.h>
+#include <fb/bot/game_bot.h>
+#include <fb/bot/load/game_controller.h>
 
 using namespace fb::bot;
 
-game_bot::game_bot(bot_controller<game_bot>& controller, uint32_t id) :
-    bot<game_bot>(controller, id)
+game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id) :
+    bot<game_bot>(bot_controller, id)
 {
     this->_next_action_time = fb::model::datetime();
 
@@ -17,8 +17,8 @@ game_bot::game_bot(bot_controller<game_bot>& controller, uint32_t id) :
     // this->pattern(&game_bot::pattern_bulletin_sections, 250ms, 1000ms);
 }
 
-game_bot::game_bot(bot_controller<game_bot>& controller, uint32_t id, const fb::stream& params) :
-    game_bot(controller, id)
+game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id, const fb::stream& params) :
+    game_bot(bot_controller, id)
 {
     auto clone    = fb::stream{params};
     auto reader   = fb::stream_reader<>(clone);
