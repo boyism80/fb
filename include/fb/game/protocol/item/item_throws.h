@@ -18,7 +18,7 @@ namespace fb::protocol::game::request {
 class item_throws : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x17;
+    static constexpr uint8_t header = 0x17;
 
 public:
     bool    all;
@@ -38,7 +38,7 @@ namespace fb::protocol::game::response {
 class item_throws : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x16;
+    static constexpr uint8_t header = 0x16;
 
 public:
 #ifndef BOT

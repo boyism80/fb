@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class give_item : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x29;
+    static constexpr uint8_t header = 0x29;
 
 public:
     uint8_t slot = 0;
@@ -31,7 +31,7 @@ public:
 class give_money : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x2A;
+    static constexpr uint8_t header = 0x2A;
 
 public:
     uint32_t money;

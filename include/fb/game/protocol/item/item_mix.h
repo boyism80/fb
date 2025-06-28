@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class item_mix : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x6B;
+    static constexpr uint8_t header = 0x6B;
 
 public:
     std::vector<uint8_t> indices;

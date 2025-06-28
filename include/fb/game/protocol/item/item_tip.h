@@ -11,7 +11,7 @@ namespace fb::protocol::game::response {
 class item_tip : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x59;
+    static constexpr uint8_t header = 0x59;
 
 public:
 #ifndef BOT

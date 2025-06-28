@@ -14,7 +14,7 @@ namespace fb::protocol::game::response {
 class spell_unbuff : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x3A;
+    static constexpr uint8_t header = 0x3A;
 
 public:
 #ifndef BOT

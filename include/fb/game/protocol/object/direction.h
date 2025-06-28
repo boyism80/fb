@@ -14,7 +14,7 @@ namespace fb::protocol::game::request {
 class direction : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x11;
+    static constexpr uint8_t header = 0x11;
 
 public:
 #ifndef BOT
@@ -45,7 +45,7 @@ namespace fb::protocol::game::response {
 class direction : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x11;
+    static constexpr uint8_t header = 0x11;
 
 public:
 #ifndef BOT

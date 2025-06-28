@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class map_world : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x3F;
+    static constexpr uint8_t header = 0x3F;
 
 public:
 #ifndef BOT // server only

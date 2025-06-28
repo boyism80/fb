@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class pick_up : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x07;
+    static constexpr uint8_t header = 0x07;
 
 public:
 #ifndef BOT

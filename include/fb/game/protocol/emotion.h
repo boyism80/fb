@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class emotion : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x1D;
+    static constexpr uint8_t header = 0x1D;
 
 public:
 #ifndef BOT

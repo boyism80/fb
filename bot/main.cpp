@@ -1,7 +1,11 @@
 #include <thread>
 #include <iostream>
 #include <fb/bot/bot.container.h>
+#include <fb/bot/bot.gateway.controller.h>
+#include <fb/bot/bot.login.controller.h>
+#include <fb/bot/bot.game.controller.h>
 #include <fb/config.h>
+#include <fb/console.h>
 #include <boost/program_options.hpp>
 
 using namespace std;
@@ -14,6 +18,34 @@ enum class test_mode
     LOAD_TEST,       // 부하 테스트 (기존 동작)
     INTEGRATION_TEST // 통합 테스트 (새로운 기능)
 };
+
+/**
+ * @brief      Displays statistics about spawned bots across all containers.
+ *
+ *             Aggregates bot counts from all container instances and displays
+ *             the total statistics for each bot type.
+ *
+ * @param[in]  containers  Vector of bot container instances to aggregate from.
+ */
+void display_spawned_bots(const std::vector<std::shared_ptr<fb::bot::bot_container>>& containers)
+{
+    size_t total_gateway_count = 0;
+    size_t total_login_count   = 0;
+    size_t total_game_count    = 0;
+
+    // Aggregate counts from all containers
+    for (const auto& container : containers)
+    {
+        total_gateway_count += container->gateway_controller->bot_count();
+        total_login_count   += container->login_controller->bot_count();
+        total_game_count    += container->game_controller->bot_count();
+    }
+
+    fb::console::puts("gateway\t\t{}", total_gateway_count);
+    fb::console::puts("login\t\t{}", total_login_count);
+    fb::console::puts("game\t\t{}", total_game_count);
+    fb::console::up(3);
+}
 
 int main(int argc, char** argv)
 {
@@ -91,10 +123,10 @@ int main(int argc, char** argv)
     }
 
     auto exit           = false;
-    auto display_thread = std::thread([&exit]() {
+    auto display_thread = std::thread([&exit, &bot_containers]() {
         while (!exit)
         {
-            fb::bot::bot_container::display_spawned_bots();
+            display_spawned_bots(bot_containers);
             std::this_thread::sleep_for(100ms);
         }
     });

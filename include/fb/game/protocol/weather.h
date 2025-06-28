@@ -11,7 +11,7 @@ namespace fb::protocol::game::response {
 class weather : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x1F;
+    static constexpr uint8_t header = 0x1F;
 
 public:
 #ifndef BOT

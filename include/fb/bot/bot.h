@@ -44,7 +44,10 @@ using namespace fb::model;
 
 namespace fb::bot {
 
+// Forward declarations
 class bot_container;
+class base_bot_controller;
+template <typename BotType> class bot_controller;
 
 /**
  * @brief      Base class for automated game client bots.
@@ -58,18 +61,13 @@ class bot_container;
 class base_bot : public fb::socket<void*>
 {
 private:
-    using handle_func    = std::function<async::task<void>(fb::protocol::header&)>; ///< Protocol handler function type
-    using deserilze_func = std::function<async::task<fb::protocol::header*>(
-        fb::stream_reader<big_endian>&)>;                                         ///< Deserialization function type
     using hook_func      = std::function<bool(const fb::protocol::header&)>;      ///< Hook condition function type
     using hook_container = std::unordered_map<uint8_t, std::vector<hook_params>>; ///< Container for protocol hooks
 
 protected:
-    bot_container&                              _owner;        ///< Reference to the bot container that manages this bot
-    fb::crypto                                  _crypto;       ///< Cryptographic context for secure communication
-    std::unordered_map<uint8_t, handle_func>    _handler;      ///< Maps protocol commands to handler functions
-    std::unordered_map<uint8_t, deserilze_func> _deserializer; ///< Maps protocol commands to deserialization functions
-    hook_container                              _hooks;        ///< Temporary hooks for request-response patterns
+    hook_container       _hooks;      ///< Temporary hooks for request-response patterns
+    fb::context&         _context;    ///< Reference to the context for socket operations
+    base_bot_controller& _controller; ///< Reference to the controller managing this bot
 
 public:
     const uint32_t id; ///< Unique identifier for this bot instance
@@ -78,10 +76,17 @@ protected:
     /**
      * @brief      Constructs a new bot instance.
      *
-     * @param      owner  The bot container that will manage this bot.
-     * @param[in]  id     The unique identifier for this bot.
+     * @param      context     The context for socket operations.
+     * @param      controller  The controller managing this bot.
+     * @param[in]  on_receive  Callback function for received messages.
+     * @param[in]  on_closed   Callback function for connection closure.
+     * @param[in]  id          The unique identifier for this bot.
      */
-    base_bot(bot_container& owner, uint32_t id);
+    base_bot(fb::context&                                                      context,
+             base_bot_controller&                                              controller,
+             std::function<async::task<void>(fb::socket<void*>&, fb::stream&)> on_receive,
+             std::function<async::task<void>(fb::socket<void*>&)>              on_closed,
+             uint32_t                                                          id);
 
 public:
     /**
@@ -89,51 +94,7 @@ public:
      */
     virtual ~base_bot();
 
-public:
-    /**
-     * @brief      Handles incoming data from the server.
-     *
-     *             Processes received data streams, deserializes protocols, and
-     *             dispatches them to appropriate handlers or hooks.
-     *
-     * @param      stream  The incoming data stream to process.
-     *
-     * @return     An async task that completes when processing is finished.
-     */
-    async::task<void> on_receive(fb::stream& stream);
-
-    /**
-     * @brief      Handles connection closure events.
-     *
-     *             Called when the connection to the server is closed, either
-     *             gracefully or due to an error. Performs cleanup operations.
-     *
-     * @return     An async task that completes when cleanup is finished.
-     */
-    async::task<void> on_closed();
-
 protected:
-    /**
-     * @brief      Called when the bot successfully connects to the server.
-     *
-     *             Override this method to implement bot-specific connection
-     *             initialization logic, such as sending authentication requests
-     *             or setting up initial state.
-     *
-     * @return     An async task that completes when connection setup is finished.
-     */
-    virtual async::task<void> on_connected();
-
-    /**
-     * @brief      Called when the bot disconnects from the server.
-     *
-     *             Override this method to implement bot-specific cleanup logic
-     *             when the connection is lost or closed.
-     *
-     * @return     An async task that completes when disconnection cleanup is finished.
-     */
-    virtual async::task<void> on_disconnected();
-
     /**
      * @brief      Applies encryption to outgoing data streams.
      *
@@ -157,18 +118,6 @@ protected:
      * @return     True if wrapping was applied successfully, false otherwise.
      */
     virtual bool on_wrap(fb::stream& out);
-
-    /**
-     * @brief      Determines whether a command should be decrypted.
-     *
-     *             Override this method to specify which protocol commands
-     *             require decryption based on the bot's security policy.
-     *
-     * @param[in]  cmd  The protocol command identifier.
-     *
-     * @return     True if the command should be decrypted, false otherwise.
-     */
-    virtual bool decrypt_policy(int cmd) const;
 
 public:
     /**
@@ -197,65 +146,54 @@ public:
     }
 
     /**
-     * @brief      Binds a response handler for a specific protocol type.
+     * @brief      Processes temporary hooks for the given protocol message.
      *
-     *             Registers a handler function that will be called whenever
-     *             a protocol message of the specified type is received.
-     *             Also sets up deserialization for the protocol type.
+     *             Checks if there are any temporary hooks registered for the
+     *             protocol command type. If a matching hook is found based on
+     *             its condition function, the hook's callback is executed and
+     *             the hook is removed from the collection.
      *
-     * @param[in]  fn   The handler function to bind.
+     * @param[in]  cmd     The protocol command identifier.
+     * @param      header  The protocol message to check against hooks.
      *
-     * @tparam     ResponseType  The protocol response type to handle.
+     * @return     True if a hook was found and processed, false otherwise.
      */
-    template <typename ResponseType>
-    void bind(const std::function<async::task<void>(ResponseType&)>& fn)
-    {
-        this->_deserializer.insert({ResponseType::header, [](auto& reader) -> async::task<fb::protocol::header*> {
-                                        auto protocol = new ResponseType();
-                                        co_await protocol->deserialize(reader);
-                                        co_return protocol;
-                                    }});
+    bool process_hooks(uint8_t cmd, fb::protocol::header& header);
 
-        this->_handler.insert(
-            {ResponseType::header, [this, fn](auto& header) -> async::task<void> {
-                 if (this->_hooks.contains(ResponseType::header))
-                 {
-                     auto& matched_hooks = this->_hooks.at(ResponseType::header);
-                     auto  i = std::find_if(matched_hooks.begin(), matched_hooks.end(), [&header](const auto& hook) {
-                         return hook.condition(header);
-                     });
-
-                     if (i != matched_hooks.end())
-                     {
-                         auto callback = i->matched;
-                         matched_hooks.erase(i);
-
-                         callback(header);
-                     }
-                 }
-
-                 auto protocol = static_cast<ResponseType&>(header);
-                 co_await fn(protocol);
-             }});
-    }
-
+public:
     /**
-     * @brief      Binds a member function as a response handler.
+     * @brief      Gets the thread associated with this bot.
      *
-     *             Convenience method for binding class member functions
-     *             as protocol response handlers.
-     *
-     * @param[in]  fn   The member function to bind.
-     *
-     * @tparam     Class         The class type containing the member function.
-     * @tparam     ResponseType  The protocol response type to handle.
+     * @return     Pointer to the thread managing this bot's execution.
      */
-    template <typename Class, typename ResponseType>
-    void bind(async::task<void> (Class::*fn)(const ResponseType&))
-    {
-        this->bind<ResponseType>(std::bind(fn, static_cast<Class*>(this), std::placeholders::_1));
-    }
+    virtual fb::thread* thread() const;
+};
 
+/**
+ * @brief      Template bot class with controller-specific functionality.
+ *
+ *             This template class extends base_bot with controller-specific
+ *             functionality, providing type-safe access to the controller
+ *             and implementing request-response patterns.
+ *
+ * @tparam     BotType  The specific bot type (CRTP pattern).
+ */
+template <typename BotType>
+class bot : public base_bot
+{
+protected:
+    bot_controller<BotType>& _controller; ///< Reference to the bot controller for this bot type
+
+protected:
+    /**
+     * @brief      Constructs a new bot instance with specific controller.
+     *
+     * @param      controller  The controller that will manage this bot.
+     * @param[in]  id         The unique identifier for this bot.
+     */
+    bot(bot_controller<BotType>& controller, uint32_t id);
+
+public:
     /**
      * @brief      Sends a request and waits for a matching response.
      *
@@ -276,36 +214,7 @@ public:
     async::task<ResponseType> request(const fb::protocol::header&                          protocol,
                                       const std::function<bool(const ResponseType& resp)>& condition,
                                       bool                                                 encrypt = true,
-                                      bool                                                 wrap    = true)
-    {
-        this->assert_thread();
-
-        if (!this->_handler.contains(ResponseType::header))
-        {
-            this->bind<ResponseType>([](const ResponseType& resp) -> async::task<void> {
-                co_return;
-            });
-        }
-
-        auto promise = std::make_shared<async::task_completion_source<ResponseType>>();
-        if (this->_hooks.contains(ResponseType::header) == false)
-            this->_hooks.insert({ResponseType::header, {}});
-
-        this->_hooks[ResponseType::header].push_back(hook_params{.condition =
-                                                                     [promise, condition](const auto& header) {
-                                                                         auto& protocol =
-                                                                             static_cast<const ResponseType&>(header);
-                                                                         return condition(protocol);
-                                                                     },
-                                                                 .matched =
-                                                                     [promise](const auto& header) {
-                                                                         auto& protocol =
-                                                                             static_cast<const ResponseType&>(header);
-                                                                         promise->set_value(protocol);
-                                                                     }});
-        this->send(protocol, encrypt, wrap);
-        return promise->task();
-    }
+                                      bool                                                 wrap    = true);
 
     /**
      * @brief      Sends a request and waits for any response of the specified type.
@@ -322,24 +231,21 @@ public:
      * @return     An async task that completes with the response.
      */
     template <typename ResponseType>
-    async::task<ResponseType> request(const fb::protocol::header& protocol, bool encrypt = true, bool wrap = true)
-    {
-        co_return co_await this->request<ResponseType>(
-            protocol,
-            [](auto& resp) -> bool {
-                return true;
-            },
-            encrypt,
-            wrap);
-    }
+    async::task<ResponseType> request(const fb::protocol::header& protocol, bool encrypt = true, bool wrap = true);
 
-public:
     /**
-     * @brief      Gets the thread associated with this bot.
+     * @brief      Gets the controller managing this bot.
      *
-     * @return     Pointer to the thread managing this bot's execution.
+     * @return     Reference to the controller.
      */
-    fb::thread* thread() const override final;
+    bot_controller<BotType>& controller()
+    {
+        return this->_controller;
+    }
+    const bot_controller<BotType>& controller() const
+    {
+        return this->_controller;
+    }
 };
 
 } // namespace fb::bot

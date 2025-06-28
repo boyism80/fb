@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class update_option : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x1B;
+    static constexpr uint8_t header = 0x1B;
 
 public:
     OPTION option;

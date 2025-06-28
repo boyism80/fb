@@ -12,7 +12,7 @@ namespace fb::protocol::game::request {
 class update_move : public move
 {
 public:
-    inline static uint8_t header = 0x06;
+    static constexpr uint8_t header = 0x06;
 
 public:
     fb::model::point<uint16_t> begin;

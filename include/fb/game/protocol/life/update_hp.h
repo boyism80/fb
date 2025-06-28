@@ -14,7 +14,7 @@ namespace fb::protocol::game::response {
 class update_hp : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x13;
+    static constexpr uint8_t header = 0x13;
 
 public:
 #ifndef BOT

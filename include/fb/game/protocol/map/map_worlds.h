@@ -11,7 +11,7 @@ namespace fb::protocol::game::response {
 class map_worlds : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x2E;
+    static constexpr uint8_t header = 0x2E;
 
 #ifdef BOT
 

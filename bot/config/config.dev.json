@@ -1,12 +1,17 @@
 {
-	"log": ["debug", "info", "warn", "fatal"],
-	"ip": "192.168.0.180",
-	"port": 30000,
-	"io_size": 5,
-	"interval": 10000,
-	"spawn_per_interval": 100,
-	"spawn_count": 3000,
+	"log": [
+		"debug",
+		"info",
+		"warn",
+		"fatal"
+	],
+	"ip": "127.0.0.1",
+	"port": 3001,
+	"io_size": 1,
+	"interval": 1000,
+	"spawn_per_interval": 1,
+	"spawn_count": 1,
 	"thread": {
-		"logic": 12
+		"logic": 1
 	}
 }

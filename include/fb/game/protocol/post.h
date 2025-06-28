@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class post : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x34;
+    static constexpr uint8_t header = 0x34;
 
 public:
     uint8_t slot = 0;

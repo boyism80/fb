@@ -12,6 +12,10 @@
 
 namespace fb::bot {
 
+// Forward declarations
+class login_bot_controller;
+template <typename ControllerType> class bot;
+
 /**
  * @brief      Automated bot for testing login server functionality.
  *
@@ -20,96 +24,41 @@ namespace fb::bot {
  *             agreement acceptance, and server transfers. The bot can simulate
  *             user login behavior for testing and load simulation purposes.
  */
-class login_bot : public base_bot
+class login_bot : public bot<login_bot>
 {
 public:
-    inline static std::shared_mutex _mutex;     ///< Mutex for thread-safe access to static members
-    inline static uint32_t          _count = 0; ///< Global count of active login bot instances
+    using controller_type = login_bot_controller; ///< Type alias for the controller type
 
 public:
     /**
      * @brief      Constructs a new login bot instance.
      *
-     * @param      owner  The bot container that manages this bot.
-     * @param[in]  id     The unique identifier for this bot instance.
+     * @param      controller  The login bot controller that manages this bot.
+     * @param[in]  id          The unique identifier for this bot instance.
      */
-    login_bot(bot_container& owner, uint32_t id);
+    login_bot(bot_controller<login_bot>& controller, uint32_t id);
 
     /**
-     * @brief      Constructs a new login bot instance with parameters.
+     * @brief      Constructs a new login bot instance with transfer parameters.
      *
-     * @param      owner   The bot container that manages this bot.
-     * @param[in]  id      The unique identifier for this bot instance.
-     * @param[in]  params  Initialization parameters for the bot.
+     * @param      controller  The login bot controller that manages this bot.
+     * @param[in]  id          The unique identifier for this bot instance.
+     * @param[in]  params      Transfer parameters containing crypto information.
      */
-    login_bot(bot_container& owner, uint32_t id, const fb::stream& params);
+    login_bot(bot_controller<login_bot>& controller, uint32_t id, const fb::stream& params);
 
     /**
      * @brief      Destroys the login bot and performs cleanup.
      */
     ~login_bot();
 
-private:
+public:
     /**
      * @brief      Generates a unique login identifier for authentication.
      *
      * @return     A randomly generated login ID string.
      */
     std::string generate_id() const;
-
-protected:
-    /**
-     * @brief      Called when the bot connects to the login server.
-     *
-     *             Initiates the login sequence by sending authentication
-     *             requests and handling the login protocol flow.
-     *
-     * @return     An async task that completes when connection setup is finished.
-     */
-    async::task<void> on_connected() override final;
-
-    /**
-     * @brief      Called when the bot disconnects from the login server.
-     *
-     *             Performs cleanup and updates the global bot count.
-     *
-     * @return     An async task that completes when disconnection cleanup is finished.
-     */
-    async::task<void> on_disconnected() override final;
-
-    /**
-     * @brief      Determines decryption policy for login protocol commands.
-     *
-     * @param[in]  cmd  The protocol command identifier.
-     *
-     * @return     True if the command should be decrypted, false otherwise.
-     */
-    bool decrypt_policy(int cmd) const;
-
-public:
-    /**
-     * @brief      Handles login agreement response from the server.
-     *
-     *             Processes the server's agreement response and continues
-     *             the login flow by accepting terms or handling errors.
-     *
-     * @param[in]  response  The agreement response from the login server.
-     *
-     * @return     An async task that completes when agreement processing is finished.
-     */
-    async::task<void> handle_agreement(const fb::protocol::login::response::agreement& response);
-
-    /**
-     * @brief      Handles server transfer response during login.
-     *
-     *             Processes transfer instructions to move the bot to
-     *             a different server (typically from login to game server).
-     *
-     * @param[in]  response  The transfer response containing new server information.
-     *
-     * @return     An async task that completes when transfer processing is finished.
-     */
-    async::task<void> handle_transfer(const fb::protocol::response::transfer& response);
 };
 
 } // namespace fb::bot

@@ -14,7 +14,7 @@ namespace fb::protocol::game::response {
 class trade_upload : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x42;
+    static constexpr uint8_t header = 0x42;
 
 public:
 #ifndef BOT

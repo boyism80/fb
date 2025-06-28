@@ -2,6 +2,9 @@
 #include <fb/bot/bot.gateway.h>
 #include <fb/bot/bot.login.h>
 #include <fb/bot/bot.game.h>
+#include <fb/bot/bot.gateway.controller.h>
+#include <fb/bot/bot.login.controller.h>
+#include <fb/bot/bot.game.controller.h>
 
 using namespace fb::bot;
 
@@ -49,7 +52,7 @@ async::task<void> bot_container::handle_bot_spawn()
         std::min(this->_remained_count, fb::config<uint32_t>("spawn_per_interval") / fb::config<uint32_t>("io_size"));
     for (uint32_t i = 0; i < count; i++)
     {
-        auto bot = this->create<fb::bot::gateway_bot>();
+        auto bot = this->gateway_controller->create();
         bot->connect(endpoint);
     }
 
@@ -75,16 +78,4 @@ async::task<void> bot_container::dispatch(uint32_t id, std::function<async::task
     auto index  = id % this->threads.size();
     auto thread = this->threads[index];
     co_await thread->dispatch(fn);
-}
-
-void bot_container::display_spawned_bots()
-{
-    auto _1 = std::shared_lock<std::shared_mutex>(gateway_bot::_mutex);
-    auto _2 = std::shared_lock<std::shared_mutex>(login_bot::_mutex);
-    auto _3 = std::shared_lock<std::shared_mutex>(game_bot::_mutex);
-
-    fb::console::puts("gateway\t\t{}", gateway_bot::_count);
-    fb::console::puts("login\t\t{}", login_bot::_count);
-    fb::console::puts("game\t\t{}", game_bot::_count);
-    fb::console::up(3);
 }

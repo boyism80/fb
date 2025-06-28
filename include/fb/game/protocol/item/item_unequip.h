@@ -11,7 +11,7 @@ namespace fb::protocol::game::response {
 class item_unequip : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x38;
+    static constexpr uint8_t header = 0x38;
 
 public:
 #ifndef BOT

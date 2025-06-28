@@ -15,7 +15,7 @@ namespace fb::protocol::game::request {
 class bulletin : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x3B;
+    static constexpr uint8_t header = 0x3B;
 
 public:
 #if BOT

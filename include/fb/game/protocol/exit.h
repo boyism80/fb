@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class exit : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x0B;
+    static constexpr uint8_t header = 0x0B;
 
 public:
     exit() = default;

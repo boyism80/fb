@@ -14,7 +14,7 @@ namespace fb::protocol::game::request {
 class chat : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x0E;
+    static constexpr uint8_t header = 0x0E;
 
 public:
 #ifndef BOT
@@ -47,7 +47,7 @@ namespace fb::protocol::game::response {
 class chat : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x0D;
+    static constexpr uint8_t header = 0x0D;
 
 public:
 #ifndef BOT

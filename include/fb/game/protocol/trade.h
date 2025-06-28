@@ -14,7 +14,7 @@ namespace fb::protocol::game::request {
 class trade : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x4A;
+    static constexpr uint8_t header = 0x4A;
 
 public:
     typedef union

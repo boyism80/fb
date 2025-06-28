@@ -28,7 +28,7 @@ namespace fb::protocol::gateway::request {
 class endpoint : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x57;
+    static constexpr uint8_t header = 0x57;
 
 public:
     uint8_t action;
@@ -56,7 +56,7 @@ namespace fb::protocol::gateway::response {
 class endpoint : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x56;
+    static constexpr uint8_t header = 0x56;
 
 public:
 #ifdef BOT

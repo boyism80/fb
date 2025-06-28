@@ -165,7 +165,7 @@ protected:
     {
         try
         {
-            auto resolver = boost::asio::ip::tcp::resolver(this->_boost_context);
+            auto resolver = boost::asio::ip::tcp::resolver(this->io_context);
             auto results  = resolver.resolve(ip, "0");
 
             for (const auto& entry : results)
@@ -847,7 +847,7 @@ public:
         for (int i = 0; i < fb::config<uint32_t>("thread:io"); i++)
         {
             threads.push_back(std::thread([this]() {
-                this->_boost_context.run();
+                this->io_context.run();
             }));
         }
 

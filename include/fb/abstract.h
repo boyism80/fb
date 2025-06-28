@@ -54,9 +54,11 @@ private:
     using super = std::enable_shared_from_this<context>;
 
 protected:
-    boost_timers             _timers;
-    boost::asio::io_context& _boost_context;
-    bool                     _running = false;
+    boost_timers _timers;
+    bool         _running = false;
+
+public:
+    boost::asio::io_context& io_context;
 
 public:
     thread_container threads;
@@ -107,7 +109,7 @@ protected:
         auto weak_this = std::weak_ptr<Class>(std::static_pointer_cast<Class>(this->shared_from_this()));
 
         // Get executor
-        auto exec = this->_boost_context.get_executor();
+        auto exec = this->io_context.get_executor();
 
         // Spawn coroutine with improved safety
         boost::asio::co_spawn(

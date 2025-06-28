@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class miss : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x0C;
+    static constexpr uint8_t header = 0x0C;
 
 public:
     uint32_t sequence;

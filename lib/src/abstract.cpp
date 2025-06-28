@@ -3,7 +3,7 @@
 using namespace fb;
 
 context::context(boost::asio::io_context& context, const std::string& name, uint32_t thread_count) :
-    _boost_context(context),
+    io_context(context),
     threads(*this, thread_count)
 {
     static auto flag = std::once_flag{};
@@ -19,7 +19,7 @@ context::context(boost::asio::io_context& context, const std::string& name, uint
 
 context::operator boost::asio::io_context& () const
 {
-    return this->_boost_context;
+    return this->io_context;
 }
 
 void context::exit()

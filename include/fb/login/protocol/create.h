@@ -11,7 +11,7 @@ namespace fb::protocol::login::request {
 class create : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x02;
+    static constexpr uint8_t header = 0x02;
 
 public:
 #ifndef BOT

@@ -11,7 +11,7 @@ namespace fb::protocol::login::request {
 class agreement : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x10;
+    static constexpr uint8_t header = 0x10;
 
 public:
 #ifdef BOT
@@ -45,7 +45,7 @@ namespace fb::protocol::login::response {
 class agreement : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x60;
+    static constexpr uint8_t header = 0x60;
 
 public:
 #ifdef BOT

@@ -11,7 +11,7 @@ namespace fb::protocol::game::request {
 class login : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x10;
+    static constexpr uint8_t header = 0x10;
 
 public:
     struct transfer_param

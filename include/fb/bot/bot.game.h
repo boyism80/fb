@@ -7,6 +7,10 @@
 
 namespace fb::bot {
 
+// Forward declarations
+class game_bot_controller;
+template <typename ControllerType> class bot;
+
 /**
  * @brief      Automated bot for testing game server functionality.
  *
@@ -16,11 +20,10 @@ namespace fb::bot {
  *             Game bots can perform automated testing of gameplay mechanics
  *             and provide load simulation for game servers.
  */
-class game_bot : public base_bot
+class game_bot : public bot<game_bot>
 {
 public:
-    inline static std::shared_mutex _mutex;     ///< Mutex for thread-safe access to static members
-    inline static uint32_t          _count = 0; ///< Global count of active game bot instances
+    using controller_type = game_bot_controller; ///< Type alias for the controller type
 
 private:
     /**
@@ -37,10 +40,7 @@ private:
     } pattern_params;
 
 private:
-    bool                        _inited   = false; ///< Whether the bot has been initialized
-    uint32_t                    _sequence = 0;     ///< Sequence counter for protocol messages
-    point<uint16_t>             _position;         ///< Current position of the bot in the game world
-    fb::stream                  _transfer_buffer;  ///< Buffer for handling server transfers
+    bool                        _inited = false;   ///< Whether the bot has been initialized
     std::vector<pattern_params> _pattern_params;   ///< Collection of behavior patterns
     datetime                    _next_action_time; ///< Timestamp for the next scheduled action
 
@@ -48,19 +48,19 @@ public:
     /**
      * @brief      Constructs a new game bot instance.
      *
-     * @param      owner  The bot container that manages this bot.
-     * @param[in]  id     The unique identifier for this bot instance.
+     * @param      controller  The game bot controller that manages this bot.
+     * @param[in]  id          The unique identifier for this bot instance.
      */
-    game_bot(bot_container& owner, uint32_t id);
+    game_bot(bot_controller<game_bot>& controller, uint32_t id);
 
     /**
-     * @brief      Constructs a new game bot instance with parameters.
+     * @brief      Constructs a new game bot instance with transfer parameters.
      *
-     * @param      owner   The bot container that manages this bot.
-     * @param[in]  id      The unique identifier for this bot instance.
-     * @param[in]  params  Initialization parameters for the bot.
+     * @param      controller  The game bot controller that manages this bot.
+     * @param[in]  id          The unique identifier for this bot instance.
+     * @param[in]  params      Transfer parameters containing crypto information.
      */
-    game_bot(bot_container& owner, uint32_t id, const fb::stream& params);
+    game_bot(bot_controller<game_bot>& controller, uint32_t id, const fb::stream& params);
 
     /**
      * @brief      Destroys the game bot and performs cleanup.
@@ -88,26 +88,6 @@ private:
         this->_pattern_params.push_back(pattern_params{std::bind(fn, static_cast<Class*>(this)), min, max});
     }
 
-protected:
-    /**
-     * @brief      Called when the bot connects to the game server.
-     *
-     *             Initiates the game protocol sequence, character login,
-     *             and begins automated behavior patterns.
-     *
-     * @return     An async task that completes when connection setup is finished.
-     */
-    async::task<void> on_connected() override final;
-
-    /**
-     * @brief      Called when the bot disconnects from the game server.
-     *
-     *             Performs cleanup and updates the global bot count.
-     *
-     * @return     An async task that completes when disconnection cleanup is finished.
-     */
-    async::task<void> on_disconnected() override final;
-
 public:
     /**
      * @brief      Handles timer events for automated bot behavior.
@@ -122,124 +102,39 @@ public:
     async::task<void> on_timer(const fb::model::datetime& now) override final;
 
 public:
-    /**
-     * @brief      Handles game time updates from the server.
-     *
-     * @param[in]  response  The time response containing current game time.
-     *
-     * @return     An async task that completes when time processing is finished.
-     */
-    async::task<void> handle_time(const fb::protocol::game::response::time& response);
+    // Game state accessors
+    uint32_t sequence() const
+    {
+        return _sequence;
+    }
+    void set_sequence(uint32_t value)
+    {
+        _sequence = value;
+    }
 
-    /**
-     * @brief      Handles character state updates from the server.
-     *
-     * @param[in]  response  The internal state update response.
-     *
-     * @return     An async task that completes when state processing is finished.
-     */
-    async::task<void> handle_state(const fb::protocol::game::response::update_internal& response);
+    point<uint16_t> position() const
+    {
+        return _position;
+    }
+    void set_position(const point<uint16_t>& value)
+    {
+        _position = value;
+    }
 
-    /**
-     * @brief      Handles game option updates from the server.
-     *
-     * @param[in]  response  The option update response.
-     *
-     * @return     An async task that completes when option processing is finished.
-     */
-    async::task<void> handle_option(const fb::protocol::game::response::option& response);
+    bool is_initialized() const
+    {
+        return _inited;
+    }
+    void set_initialized(bool value)
+    {
+        _inited = value;
+    }
 
-    /**
-     * @brief      Handles message notifications from the server.
-     *
-     * @param[in]  response  The message response containing notification text.
-     *
-     * @return     An async task that completes when message processing is finished.
-     */
-    async::task<void> handle_message(const fb::protocol::game::response::message& response);
+    const fb::stream& transfer_buffer() const
+    {
+        return _transfer_buffer;
+    }
 
-    /**
-     * @brief      Handles sequence ID updates from the server.
-     *
-     * @param[in]  response  The ID response containing the new sequence number.
-     *
-     * @return     An async task that completes when sequence processing is finished.
-     */
-    async::task<void> handle_sequence(const fb::protocol::game::response::id& response);
-
-    /**
-     * @brief      Handles spell updates from the server.
-     *
-     * @param[in]  response  The spell update response.
-     *
-     * @return     An async task that completes when spell processing is finished.
-     */
-    async::task<void> handle_spell_update(const fb::protocol::game::response::spell_update& response);
-
-    /**
-     * @brief      Handles chat messages from the server.
-     *
-     * @param[in]  response  The chat response containing message data.
-     *
-     * @return     An async task that completes when chat processing is finished.
-     */
-    async::task<void> handle_chat(const fb::protocol::game::response::chat& response);
-
-    /**
-     * @brief      Handles action notifications from the server.
-     *
-     * @param[in]  response  The action response containing action data.
-     *
-     * @return     An async task that completes when action processing is finished.
-     */
-    async::task<void> handle_action(const fb::protocol::game::response::action& response);
-
-    /**
-     * @brief      Handles direction change notifications from the server.
-     *
-     * @param[in]  response  The direction response containing new facing direction.
-     *
-     * @return     An async task that completes when direction processing is finished.
-     */
-    async::task<void> handle_direction(const fb::protocol::game::response::direction& response);
-
-    /**
-     * @brief      Handles position updates from the server.
-     *
-     * @param[in]  response  The position response containing new coordinates.
-     *
-     * @return     An async task that completes when position processing is finished.
-     */
-    async::task<void> handle_position(const fb::protocol::game::response::position& response);
-
-    /**
-     * @brief      Handles movement notifications from the server.
-     *
-     * @param[in]  response  The move response containing movement data.
-     *
-     * @return     An async task that completes when movement processing is finished.
-     */
-    async::task<void> handle_move(const fb::protocol::game::response::move& response);
-
-    /**
-     * @brief      Handles map configuration updates from the server.
-     *
-     * @param[in]  response  The map config response containing map data.
-     *
-     * @return     An async task that completes when map processing is finished.
-     */
-    async::task<void> handle_map(const fb::protocol::game::response::map_config& response);
-
-    /**
-     * @brief      Handles server transfer notifications.
-     *
-     * @param[in]  response  The transfer response containing new server information.
-     *
-     * @return     An async task that completes when transfer processing is finished.
-     */
-    async::task<void> handle_transfer(const fb::protocol::response::transfer& response);
-
-public:
     /**
      * @brief      Automated pattern for sending chat messages.
      *
@@ -288,6 +183,11 @@ public:
      * @return     An async task that completes when bulletin browsing is finished.
      */
     async::task<void> pattern_bulletin_sections();
+
+private:
+    uint32_t        _sequence = 0;    ///< Sequence counter for protocol messages
+    point<uint16_t> _position;        ///< Current position of the bot in the game world
+    fb::stream      _transfer_buffer; ///< Buffer for handling server transfers
 };
 
 } // namespace fb::bot

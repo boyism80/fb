@@ -6,7 +6,7 @@ namespace fb::protocol::login::response {
 class message : public fb::protocol::header
 {
 public:
-    inline static uint8_t header = 0x02;
+    static constexpr uint8_t header = 0x02;
 
 public:
 #ifdef BOT
