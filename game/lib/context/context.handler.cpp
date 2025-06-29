@@ -1119,7 +1119,7 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
     if (request.slot > CONTAINER_CAPACITY - 1)
         co_return false;
 
-    auto spell = ch->spells[request.slot];
+    auto spell = ch->spells[request.slot - 1];
     if (spell == nullptr)
         co_return false;
 

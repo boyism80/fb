@@ -253,6 +253,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
 
     fb::logger::info("{} has disconnected.", ch->name());
 
+    auto thread = ch->thread();
     try
     {
         co_await this->save(*ch);
@@ -263,29 +264,51 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         fb::logger::fatal(e.what());
     }
 
-    co_await this->threads.switching(weak);
-
-    auto& group_id = ch->group_id();
-    if (group_id.has_value())
+    // Check if character is still valid before thread switching
+    auto switched = false;
+    try
     {
-        this->groups.write(group_id.value(), [weak](auto& group) {
-            group->leave(weak);
-        });
-        ch->group_reset();
+        co_await this->threads.switching(weak);
+        switched = true;
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::warn("Thread switching failed during disconnect: {}", e.what());
     }
 
-    auto& clan_id = ch->clan_id();
-    if (clan_id.has_value())
-    {
-        this->clans.read(clan_id.value(), [weak](auto& clan) {
-            clan->detach_character(weak);
-        });
-        ch->clan_reset();
-    }
-    this->characters.remove(ch);
+    if (!switched)
+        co_await thread->switching();
 
-    co_await ch->destroy();
-    socket.data(nullptr);
+    auto shared = weak.lock();
+    if (shared != nullptr)
+    {
+        auto& group_id = shared->group_id();
+        if (group_id.has_value())
+        {
+            this->groups.write(group_id.value(), [weak](auto& group) {
+                group->leave(weak);
+            });
+            shared->group_reset();
+        }
+
+        auto& clan_id = shared->clan_id();
+        if (clan_id.has_value())
+        {
+            this->clans.read(clan_id.value(), [weak](auto& clan) {
+                clan->detach_character(weak);
+            });
+            shared->clan_reset();
+        }
+
+        this->characters.remove(shared);
+        co_await shared->destroy();
+        socket.data(nullptr);
+    }
+    else
+    {
+        fb::logger::debug("Character expired during cleanup, skipping group/clan operations");
+    }
+
     co_return true;
 }
 

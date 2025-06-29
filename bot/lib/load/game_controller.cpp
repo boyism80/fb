@@ -33,7 +33,7 @@ async::task<void> game_bot_controller::handle_timer(const fb::model::datetime& n
     if (params == nullptr)
         co_return;
 
-    this->_bots.read<void>([&](const auto& bots) {
+    this->_bots.read([&](const auto& bots) {
         for (auto& [_, bot] : params->bots)
         {
             if (bots.contains(bot->id) == false)

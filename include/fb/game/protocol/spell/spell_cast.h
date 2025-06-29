@@ -23,7 +23,16 @@ public:
     mutable fb::model::point<uint16_t> position;
 
 public:
+#ifndef BOT
     spell_cast() = default;
+#else
+    spell_cast(uint8_t slot, const std::string& message, uint32_t fd, const fb::model::point<uint16_t>& position) :
+        slot(slot),
+        message(message),
+        fd(fd),
+        position(position)
+    { }
+#endif
 
 public:
 #ifdef BOT
