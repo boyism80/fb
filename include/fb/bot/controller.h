@@ -277,7 +277,7 @@ public:
      */
     bool contains(uint32_t id) const
     {
-        return this->_bots.read<bool>([&](const auto& bots) {
+        return this->_bots.template read<bool>([&](const auto& bots) {
             return bots.contains(id);
         });
     }
@@ -347,7 +347,7 @@ public:
                 protocol = co_await deserializer(reader);
                 if (protocol != nullptr)
                 {
-                    auto weak = bot.weak_from_this_as<BotType>();
+                    auto weak = bot.template weak_from_this_as<BotType>();
 
                     this->container.threads.enqueue(weak, [=](auto& thread) -> async::task<void> {
                         auto shared = weak.lock();
@@ -462,7 +462,7 @@ public:
      */
     size_t bot_count() const
     {
-        return this->_bots.read<size_t>([](const auto& bots) {
+        return this->_bots.read([](const auto& bots) {
             return bots.size();
         });
     }
@@ -475,15 +475,15 @@ public:
      *
      * @param[in]  fn    Function to execute with read access to the bot collection.
      *
-     * @tparam     ReturnType  The return type of the function.
+     * @tparam     Func  The function type (lambda or function object).
      *
      * @return     The value returned by the function.
      */
-    template <typename ReturnType>
-    ReturnType
-    read_bots(const std::function<ReturnType(const std::unordered_map<uint32_t, std::shared_ptr<BotType>>&)>& fn) const
+    template <typename Func>
+    auto read_bots(Func&& fn) const
+        -> decltype(fn(std::declval<const std::unordered_map<uint32_t, std::shared_ptr<BotType>>&>()))
     {
-        return this->_bots.read<ReturnType>(fn);
+        return this->_bots.read(std::forward<Func>(fn));
     }
 
     /**
@@ -494,14 +494,14 @@ public:
      *
      * @param[in]  fn    Function to execute with write access to the bot collection.
      *
-     * @tparam     ReturnType  The return type of the function.
+     * @tparam     Func  The function type (lambda or function object).
      *
      * @return     The value returned by the function.
      */
-    template <typename ReturnType>
-    ReturnType write_bots(const std::function<ReturnType(std::unordered_map<uint32_t, std::shared_ptr<BotType>>&)>& fn)
+    template <typename Func>
+    auto write_bots(Func&& fn) -> decltype(fn(std::declval<std::unordered_map<uint32_t, std::shared_ptr<BotType>>&>()))
     {
-        return this->_bots.write<ReturnType>(fn);
+        return this->_bots.write(std::forward<Func>(fn));
     }
 
     /**

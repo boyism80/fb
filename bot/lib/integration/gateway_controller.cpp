@@ -15,25 +15,7 @@ gateway_bot_controller::gateway_bot_controller(bot_container& container) :
 }
 
 void gateway_bot_controller::initialize()
-{
-    // Set up integration test timer with longer interval for detailed testing
-    this->bind_timer(&gateway_bot_controller::handle_bot_spawn,
-                     std::chrono::milliseconds(fb::config<uint32_t>("interval") * 2));
-}
-
-async::task<void> gateway_bot_controller::handle_bot_spawn()
-{
-    // Integration test: Spawn fewer bots with more detailed testing
-    auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(fb::config<std::string>("ip")),
-                                                   fb::config<uint16_t>("port"));
-
-    // Create single bot for detailed testing instead of batch spawning
-    auto bot = this->create();
-    bot->connect(endpoint);
-
-    // TODO: Set up test scenario context for this bot
-    co_return;
-}
+{ }
 
 async::task<void> gateway_bot_controller::handle_welcome(gateway_bot&                                    bot,
                                                          const fb::protocol::gateway::response::welcome& response)

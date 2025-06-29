@@ -55,16 +55,6 @@ public:
 
 private:
     /**
-     * @brief      Handles controlled bot spawning for integration testing.
-     *
-     *             Creates bots with specific test scenarios rather than
-     *             high-volume spawning used in load testing.
-     *
-     * @return     An async task that completes when bot spawning is finished.
-     */
-    async::task<void> handle_bot_spawn();
-
-    /**
      * @brief      Handles welcome message with integration test validation.
      *
      *             Validates welcome protocol compliance and tests response timing.

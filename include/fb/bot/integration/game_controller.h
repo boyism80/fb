@@ -4,6 +4,9 @@
 #include <fb/bot/game_controller.h>
 #include <fb/game/protocol.h>
 #include <fb/bot/game_bot.h>
+#include <fb/bot/integration/test_case.h>
+#include <fb/locker.h>
+#include <memory>
 
 namespace fb::bot::integration {
 
@@ -14,9 +17,16 @@ namespace fb::bot::integration {
  *             capabilities including scenario-based testing, response verification,
  *             and comprehensive test case management. Unlike load testing,
  *             it focuses on functional correctness and system behavior validation.
+ *
+ *             The controller manages various test cases (movement, attack, skill tests)
+ *             and coordinates their execution across multiple bots.
  */
 class game_bot_controller : public fb::bot::game_bot_controller
 {
+private:
+    fb::locker<std::unique_ptr<bot_integration_test>>
+        _current_test; ///< Currently active test case with thread-safe access
+
 public:
     using bot_type = game_bot; ///< Type alias for the managed bot type
 
@@ -54,18 +64,47 @@ public:
      */
     virtual async::task<void> on_bot_disconnected(game_bot& bot) override;
 
+public:
+    /**
+     * @brief      Sets the current integration test case.
+     *
+     *             Replaces the current test with a new one and resets its state.
+     *             If a test is currently running, it will be stopped first.
+     *
+     * @param      test  Unique pointer to the new test case.
+     */
+    void set_test(std::unique_ptr<bot_integration_test> test);
+
+    /**
+     * @brief      Starts the current integration test.
+     *
+     *             Executes the currently set test case with all connected bots.
+     *             If no test is set or a test is already running, this method returns immediately.
+     *
+     * @return     An async task that completes when the test finishes.
+     */
+    async::task<void> start_test();
+
+    /**
+     * @brief      Resets the current test case to initial state.
+     *
+     *             Stops any running test and resets its internal state.
+     */
+    void reset_current_test();
+
 private:
     /**
      * @brief      Handles timer events for integration test scenarios.
      *
      *             Executes scheduled test cases and monitors test progress.
+     *             Checks if all bots are ready according to current test criteria
+     *             and starts the test automatically when conditions are met.
      *
      * @param[in]  now  The current date and time.
-     * @param[in]  id   The thread identifier.
      *
      * @return     An async task that completes when timer processing is finished.
      */
-    async::task<void> handle_timer(const fb::model::datetime& now, std::thread::id id);
+    async::task<void> handle_timer();
 
     /**
      * @brief      Handles game time updates with integration test logic.
@@ -108,7 +147,10 @@ private:
     async::task<void> handle_message(game_bot& bot, const fb::protocol::game::response::message& response);
 
     /**
-     * @brief      Handles sequence ID updates with validation.
+     * @brief      Handles sequence ID updates with test case triggering.
+     *
+     *             When a bot receives a sequence ID, it signals readiness to the current test.
+     *             For movement tests, this triggers the signal_bot_ready() method.
      *
      * @param[in]  bot       The game bot instance.
      * @param[in]  response  The ID response containing the new sequence number.
