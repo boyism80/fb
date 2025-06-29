@@ -1,4 +1,7 @@
 #include <fb/bot/integration/game_controller.h>
+#include <fb/bot/integration/movement_test.h>
+#include <fb/bot/integration/attack_test.h>
+#include <fb/bot/integration/skill_test.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
@@ -26,11 +29,15 @@ void game_bot_controller::initialize()
     // Set up integration test timer with different interval (slower for detailed testing)
     this->bind_timer(&game_bot_controller::handle_timer, 1000ms);
 
-    // Initialize with movement test by default
-    auto movement_test_ptr = std::make_unique<movement_test>();
-    set_test(std::move(movement_test_ptr));
+    // Initialize test queue with sequence of tests
+    this->_test_queue.push(std::make_unique<movement_test>());
+    this->_test_queue.push(std::make_unique<attack_test>());
+    this->_test_queue.push(std::make_unique<skill_test>());
 
-    fb::logger::info("Integration test controller initialized with movement test (bots managed externally)");
+    // Start the first test
+    this->start_next_test();
+
+    fb::logger::info("Integration test controller initialized with test queue (movement -> attack -> skill)");
 }
 
 void game_bot_controller::set_test(std::unique_ptr<bot_integration_test> test)
@@ -54,25 +61,34 @@ void game_bot_controller::set_test(std::unique_ptr<bot_integration_test> test)
             current_test->reset();
             fb::logger::info("Test case set to: {}", current_test->name());
 
-            // Note: Integration test controller does not spawn bots
-            // Bots are managed externally and connect to the test
+            async::awaitable_then(current_test->initialize(*this), [test_name = current_test->name()](auto result) {
+                try
+                {
+                    result();
+                    fb::logger::info("Test '{}' initialization completed", test_name);
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::warn("Failed to initialize test '{}': {}", test_name, e.what());
+                }
+            });
         }
     });
 }
 
-async::task<void> game_bot_controller::start_test()
+async::task<bool> game_bot_controller::start_test()
 {
-    co_await this->_current_test.async_write([](auto& current_test) -> async::task<void> {
+    co_return co_await this->_current_test.async_write([](auto& current_test) -> async::task<bool> {
         if (!current_test)
         {
             fb::logger::warn("No test case is currently set");
-            co_return;
+            co_return false;
         }
 
         if (current_test->is_running())
         {
             fb::logger::warn("Test '{}' is already running", current_test->name());
-            co_return;
+            co_return false;
         }
 
         if (current_test->is_complete())
@@ -82,7 +98,8 @@ async::task<void> game_bot_controller::start_test()
         }
 
         fb::logger::info("Starting test '{}'", current_test->name());
-        co_await current_test->execute();
+        auto result = co_await current_test->execute();
+        co_return result;
     });
 }
 
@@ -97,32 +114,61 @@ void game_bot_controller::reset_current_test()
     });
 }
 
+void game_bot_controller::start_next_test()
+{
+    if (this->_test_queue.empty())
+    {
+        fb::logger::info("All integration tests completed successfully!");
+        return;
+    }
+
+    // Get next test from queue
+    auto next_test = std::move(this->_test_queue.front());
+    this->_test_queue.pop();
+
+    // Set as current test (this will also initialize it)
+    this->set_test(std::move(next_test));
+}
+
 async::task<void> game_bot_controller::handle_timer()
 {
-    // Check if we have a test that could be started
-    this->_current_test.read([this](const auto& current_test) {
-        auto should_start =
-            current_test && !current_test->is_running() && !current_test->is_complete() && current_test->is_ready();
-        if (!should_start)
+    bool        should_start = false;
+    std::string test_name;
+
+    // Check test state with minimal lock time to avoid deadlock
+    this->_current_test.read([&](const auto& current_test) {
+        if (!current_test)
             return;
 
-        auto test_name = this->_current_test.read([](const auto& current_test) {
-            return current_test ? current_test->name() : std::string("unknown");
-        });
+        test_name    = current_test->name();
+        should_start = !current_test->is_running() && !current_test->is_complete() && current_test->is_ready();
+    });
 
+    // Handle test start (outside of lock to avoid deadlock)
+    if (should_start)
+    {
         fb::logger::info("All bots are ready for '{}', starting test", test_name);
 
-        async::awaitable_then(this->start_test(), [](auto result) {
+        async::awaitable_then(this->start_test(), [this, test_name](auto result) {
             try
             {
-                result();
+                auto success = result();
+                if (success)
+                {
+                    fb::logger::info("Test '{}' completed successfully, starting next test", test_name);
+                    this->start_next_test();
+                }
+                else
+                {
+                    fb::logger::fatal("Test '{}' failed, stopping test sequence", test_name);
+                }
             }
             catch (std::exception& e)
             {
-                fb::logger::warn("Failed to start test: {}", e.what());
+                fb::logger::warn("Failed to execute test '{}': {}", test_name, e.what());
             }
         });
-    });
+    }
 
     co_return;
 }

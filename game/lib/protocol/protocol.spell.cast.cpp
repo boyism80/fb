@@ -7,7 +7,7 @@ async::task<void> spell_cast::serialize(fb::stream_writer<big_endian>& writer) c
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint8_t>(this->slot + 1);
+    writer.write<uint8_t>(this->slot);
 
     // Write the buffer data
     if (this->buffer.size() > 0)
@@ -19,7 +19,7 @@ async::task<void> spell_cast::serialize(fb::stream_writer<big_endian>& writer) c
 async::task<void> spell_cast::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->slot = reader.read<uint8_t>() - 1;
+    this->slot = reader.read<uint8_t>();
 
     auto remained = reader.readable_size();
     auto buffer   = new uint8_t[remained];

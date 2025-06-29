@@ -145,14 +145,20 @@ int main(int argc, char** argv)
         ios.push_back(std::move(io));
     }
 
-    auto exit           = false;
-    auto display_thread = std::thread([&exit, &bot_containers]() {
-        while (!exit)
-        {
-            display_spawned_bots(bot_containers);
-            std::this_thread::sleep_for(100ms);
-        }
-    });
+    auto                         exit = false;
+    std::unique_ptr<std::thread> display_thread;
+
+    // Only start display thread for load testing mode
+    if (mode == test_mode::LOAD_TEST)
+    {
+        display_thread = std::make_unique<std::thread>([&exit, &bot_containers]() {
+            while (!exit)
+            {
+                display_spawned_bots(bot_containers);
+                std::this_thread::sleep_for(100ms);
+            }
+        });
+    }
 
     auto threads = boost::asio::thread_pool{io_size};
     for (auto& io : ios)
@@ -162,6 +168,14 @@ int main(int argc, char** argv)
         });
     }
     threads.join();
+
     exit = true;
+
+    // Join display thread only if it was created (load test mode)
+    if (display_thread)
+    {
+        display_thread->join();
+    }
+
     return 0;
 }

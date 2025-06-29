@@ -7,6 +7,7 @@
 #include <fb/bot/integration/test_case.h>
 #include <fb/locker.h>
 #include <memory>
+#include <queue>
 
 namespace fb::bot::integration {
 
@@ -26,6 +27,7 @@ class game_bot_controller : public fb::bot::game_bot_controller
 private:
     fb::locker<std::unique_ptr<bot_integration_test>>
         _current_test; ///< Currently active test case with thread-safe access
+    std::queue<std::unique_ptr<bot_integration_test>> _test_queue; ///< Queue of tests to execute in sequence
 
 public:
     using bot_type = game_bot; ///< Type alias for the managed bot type
@@ -81,9 +83,9 @@ public:
      *             Executes the currently set test case with all connected bots.
      *             If no test is set or a test is already running, this method returns immediately.
      *
-     * @return     An async task that completes when the test finishes.
+     * @return     An async task that completes when the test finishes, returning true on success.
      */
-    async::task<void> start_test();
+    async::task<bool> start_test();
 
     /**
      * @brief      Resets the current test case to initial state.
@@ -91,6 +93,15 @@ public:
      *             Stops any running test and resets its internal state.
      */
     void reset_current_test();
+
+private:
+    /**
+     * @brief      Starts the next test from the queue.
+     *
+     *             Moves to the next test in the queue and initializes it.
+     *             If the queue is empty, logs completion of all tests.
+     */
+    void start_next_test();
 
 private:
     /**

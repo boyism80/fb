@@ -28,18 +28,23 @@ public:
     virtual ~bot_integration_test() = default;
 
     /**
-     * @brief      Spawns the required number of bots for this test.
+     * @brief      Initializes the test case and spawns required bots if needed.
      *
-     *             Each test implementation defines how many bots it needs
-     *             and spawns them using the provided controller.
+     *             Each test implementation can override this method to perform
+     *             test-specific initialization and bot spawning. The default
+     *             implementation does nothing, allowing tests that don't need
+     *             bots to skip the spawning process.
      *
      * @param[in]  controller  The game bot controller to use for spawning bots.
      * @param[in]  endpoint    The server endpoint to connect bots to.
      *
-     * @return     A task that completes when all required bots are spawned.
+     * @return     A task that completes when initialization is finished.
      */
-    virtual async::task<void> spawn_bots(game_bot_controller&                  controller,
-                                         const boost::asio::ip::tcp::endpoint& endpoint) = 0;
+    virtual async::task<void> initialize(game_bot_controller& controller)
+    {
+        // Default implementation does nothing - tests can override as needed
+        co_return;
+    }
 
     /**
      * @brief      Executes the integration test with the spawned bots.
@@ -47,9 +52,9 @@ public:
      *             This method is called after all bots are ready and starts
      *             the actual test execution logic.
      *
-     * @return     A task that completes when the test finishes.
+     * @return     A task that completes when the test finishes, returning true on success.
      */
-    virtual async::task<void> execute() = 0;
+    virtual async::task<bool> execute() = 0;
 
     /**
      * @brief      Checks if the test has completed.
@@ -105,298 +110,6 @@ public:
      *             It ensures all bot connections are properly closed and resources are freed.
      */
     virtual void cleanup();
-};
-
-/**
- * @brief      Movement integration test implementation.
- *
- *             Tests bot movement by checking if all bots have non-zero sequence IDs,
- *             then moving the last bot downward by 5 positions with 1-second intervals.
- */
-class movement_test : public bot_integration_test
-{
-private:
-    bool _test_started{false};
-    bool _test_completed{false};
-    bool _test_running{false};
-
-    std::vector<std::shared_ptr<fb::bot::game_bot>> _test_bots; ///< Movement test's own bot collection
-
-    static constexpr int MOVEMENT_STEPS = 5;
-
-public:
-    /**
-     * @brief      Spawns the required bots for movement test.
-     *
-     *             Spawns 5 bots for movement testing and waits for them to connect.
-     *
-     * @param[in]  controller  The game bot controller to use for spawning bots.
-     * @param[in]  endpoint    The server endpoint to connect bots to.
-     *
-     * @return     A task that completes when all bots are spawned.
-     */
-    async::task<void> spawn_bots(game_bot_controller&                  controller,
-                                 const boost::asio::ip::tcp::endpoint& endpoint) override;
-
-    /**
-     * @brief      Executes the movement test.
-     *
-     *             Moves the last bot downward step by step with timing intervals.
-     *             This method is called only when all bots are ready (have non-zero sequence).
-     *
-     * @return     A task that completes when movement test finishes.
-     */
-    async::task<void> execute() override;
-
-    /**
-     * @brief      Checks if the movement test has completed.
-     *
-     * @return     True if all movement steps are finished.
-     */
-    bool is_complete() const override
-    {
-        return this->_test_completed;
-    }
-
-    /**
-     * @brief      Resets the movement test state.
-     */
-    void reset() override;
-
-    /**
-     * @brief      Gets the test name.
-     *
-     * @return     "Movement Test" as the identifier.
-     */
-    std::string name() const override
-    {
-        return "Movement Test";
-    }
-
-    /**
-     * @brief      Checks if the movement test is currently running.
-     *
-     * @return     True if the test is in progress.
-     */
-    bool is_running() const override
-    {
-        return this->_test_running;
-    }
-
-    /**
-     * @brief      Checks if all spawned bots are ready for movement test.
-     *
-     *             Movement test requires all bots to have received their sequence IDs
-     *             (sequence != 0) before starting the test.
-     *
-     * @return     True if all spawned bots have non-zero sequence, false otherwise.
-     */
-    bool is_ready() const override;
-
-    /**
-     * @brief      Called when a bot connects to the movement test.
-     *
-     *             Adds the bot to the movement test's bot collection.
-     *
-     * @param[in]  bot  The connected bot to add to the test.
-     */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override;
-
-    /**
-     * @brief      Cleans up movement test resources and disconnects all spawned bots.
-     *
-     *             Overrides base cleanup to handle movement test specific bot collection.
-     */
-    void cleanup() override;
-
-protected:
-    /**
-     * @brief      Gets the current list of movement test bots (thread-safe).
-     *
-     * @return     Vector of shared pointers to the movement test bots.
-     */
-    std::vector<std::shared_ptr<fb::bot::game_bot>> get_test_bots() const;
-};
-
-/**
- * @brief      Attack integration test implementation.
- *
- *             Tests bot attack functionality by coordinating attack sequences
- *             between multiple bots.
- */
-class attack_test : public bot_integration_test
-{
-private:
-    bool _test_completed{false};
-    bool _test_running{false};
-
-public:
-    /**
-     * @brief      Spawns the required bots for attack test.
-     *
-     *             Spawns the required number of bots for attack testing.
-     *
-     * @param[in]  controller  The game bot controller to use for spawning bots.
-     * @param[in]  endpoint    The server endpoint to connect bots to.
-     *
-     * @return     A task that completes when all bots are spawned.
-     */
-    async::task<void> spawn_bots(game_bot_controller&                  controller,
-                                 const boost::asio::ip::tcp::endpoint& endpoint) override;
-
-    /**
-     * @brief      Executes the attack test.
-     *
-     *             Coordinates attack sequences between multiple bots to test
-     *             combat functionality and bot interaction during attacks.
-     *
-     * @return     A task that completes when attack test finishes.
-     */
-    async::task<void> execute() override;
-
-    /**
-     * @brief      Checks if the attack test has completed.
-     *
-     * @return     True if all attack sequences are finished.
-     */
-    bool is_complete() const override
-    {
-        return this->_test_completed;
-    }
-
-    /**
-     * @brief      Resets the attack test state to initial conditions.
-     */
-    void reset() override;
-
-    /**
-     * @brief      Gets the attack test name.
-     *
-     * @return     "Attack Test" as the identifier.
-     */
-    std::string name() const override
-    {
-        return "Attack Test";
-    }
-
-    /**
-     * @brief      Checks if the attack test is currently running.
-     *
-     * @return     True if the test is in progress.
-     */
-    bool is_running() const override
-    {
-        return this->_test_running;
-    }
-
-    /**
-     * @brief      Checks if all spawned bots are ready for attack test.
-     *
-     *             Attack test requires all bots to have received their sequence IDs
-     *             and be in proper combat-ready state before starting.
-     *
-     * @return     True if all spawned bots are ready for attack test, false otherwise.
-     */
-    bool is_ready() const override;
-
-    /**
-     * @brief      Called when a bot connects to the attack test.
-     *
-     *             Attack test currently doesn't store individual bots.
-     *
-     * @param[in]  bot  The connected bot (ignored for now).
-     */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override;
-};
-
-/**
- * @brief      Skill integration test implementation.
- *
- *             Tests bot skill casting and coordination between multiple bots.
- */
-class skill_test : public bot_integration_test
-{
-private:
-    bool _test_completed{false};
-    bool _test_running{false};
-
-public:
-    /**
-     * @brief      Spawns the required bots for skill test.
-     *
-     *             Spawns the required number of bots for skill testing.
-     *
-     * @param[in]  controller  The game bot controller to use for spawning bots.
-     * @param[in]  endpoint    The server endpoint to connect bots to.
-     *
-     * @return     A task that completes when all bots are spawned.
-     */
-    async::task<void> spawn_bots(game_bot_controller&                  controller,
-                                 const boost::asio::ip::tcp::endpoint& endpoint) override;
-
-    /**
-     * @brief      Executes the skill test.
-     *
-     *             Tests bot skill casting functionality by coordinating spell
-     *             casting sequences and skill interactions between multiple bots.
-     *
-     * @return     A task that completes when skill test finishes.
-     */
-    async::task<void> execute() override;
-
-    /**
-     * @brief      Checks if the skill test has completed.
-     *
-     * @return     True if all skill casting sequences are finished.
-     */
-    bool is_complete() const override
-    {
-        return this->_test_completed;
-    }
-
-    /**
-     * @brief      Resets the skill test state to initial conditions.
-     */
-    void reset() override;
-
-    /**
-     * @brief      Gets the skill test name.
-     *
-     * @return     "Skill Test" as the identifier.
-     */
-    std::string name() const override
-    {
-        return "Skill Test";
-    }
-
-    /**
-     * @brief      Checks if the skill test is currently running.
-     *
-     * @return     True if the test is in progress.
-     */
-    bool is_running() const override
-    {
-        return this->_test_running;
-    }
-
-    /**
-     * @brief      Checks if all spawned bots are ready for skill test.
-     *
-     *             Skill test requires all bots to have received their sequence IDs
-     *             and be in proper spell-casting ready state before starting.
-     *
-     * @return     True if all spawned bots are ready for skill test, false otherwise.
-     */
-    bool is_ready() const override;
-
-    /**
-     * @brief      Called when a bot connects to the skill test.
-     *
-     *             Skill test currently doesn't store individual bots.
-     *
-     * @param[in]  bot  The connected bot (ignored for now).
-     */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override;
 };
 
 } // namespace fb::bot::integration
