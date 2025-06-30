@@ -1925,7 +1925,7 @@ async::task<void> character::death_penalty()
         {
             this->items.equipment_off(parts);
             equipment->death_cid(this->id());
-            co_await equipment->map(this->map(), this->position());
+            std::ignore = co_await equipment->map(this->map(), this->position());
         }
         else if (this->items.free())
         {

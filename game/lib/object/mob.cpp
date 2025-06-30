@@ -149,9 +149,9 @@ async::task<bool> mob::call_script()
     else
         this->_attack_thread->pushnil();
 
-    auto& ctx  = this->context;
-    auto  weak = this->weak_from_this();
-    co_await this->_attack_thread->call(2);
+    auto& ctx   = this->context;
+    auto  weak  = this->weak_from_this();
+    std::ignore = co_await this->_attack_thread->call(2);
 
     auto shared = weak.lock();
     if (shared == nullptr)
@@ -393,7 +393,7 @@ uint32_t mob::auto_attack_damage(MOB_SIZE size) const
 void mob::kill(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
 {
     life::kill(from, destroy_type);
-    this->destroy(destroy_type);
+    std::ignore = this->destroy(destroy_type);
 }
 
 void mob::drop_items()

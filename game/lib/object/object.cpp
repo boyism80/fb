@@ -502,7 +502,7 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         }
 
         if (this->_map != nullptr)
-            co_await this->map(nullptr);
+            std::ignore = co_await this->map(nullptr);
 
         this->_map = map;
         if (this->is(OBJECT_TYPE::CHARACTER))

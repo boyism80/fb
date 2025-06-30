@@ -37,7 +37,7 @@ async::task<void> listener_impl::on_attack(life& me, DURATION duration)
                 lua->func(model.on_attack);
                 lua->pushobject(ch);
                 lua->pushobject(weapon);
-                co_await lua->call(2, false);
+                std::ignore = co_await lua->call(2, false);
 
                 if (weak.lock() == nullptr)
                     goto cleanup;
