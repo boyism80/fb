@@ -39,17 +39,6 @@ void listener_impl::on_chat(object& me, const std::string& message, CHAT_TYPE ch
 
 void listener_impl::on_direction(object& me)
 {
-    auto lua = fb::lua::new_context();
-    if (lua != nullptr)
-    {
-#if defined DEBUG | defined _DEBUG
-        lua->load("scripts/interaction.lua");
-#endif
-        lua->func("on_direction");
-        lua->pushobject(me);
-        std::ignore = lua->call(1);
-    }
-
     this->context.send(me, fb_resp::direction(me), scope::PIVOT);
 }
 
@@ -123,58 +112,17 @@ void listener_impl::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
 
 void listener_impl::on_move(object& me, const fb::model::point16_t& before)
 {
-    auto lua = fb::lua::new_context();
-    if (lua != nullptr)
-    {
-#if defined DEBUG | defined _DEBUG
-        lua->load("scripts/interaction.lua");
-#endif
-        lua->func("on_move");
-        lua->pushobject(me);
-        std::ignore = lua->call(1);
-    }
-
     this->context.send(me, fb_resp::move(me, before), scope::PIVOT, true);
 }
 
 void listener_impl::on_buff(object& me, buff& buff)
 {
-    if (buff.model.buff.empty())
-        return;
-
-    auto lua = fb::lua::new_context();
-    if (lua != nullptr)
-    {
-        lua->func(buff.model.buff);
-        lua->pushobject(me);
-        lua->pushobject(buff.model);
-        std::ignore = lua->call(2);
-    }
-
     me.send(fb::protocol::game::response::spell_buff(buff));
 }
 
 void listener_impl::on_unbuff(object& me, buff& buff)
 {
-    if (buff.model.unbuff.empty())
-        return;
-
-    auto lua = fb::lua::new_context();
-    if (lua != nullptr)
-    {
-        lua->func(buff.model.unbuff);
-        lua->pushobject(me);
-        lua->pushobject(buff.model);
-        std::ignore = lua->call(2);
-    }
-
     me.send(fb_resp::spell_unbuff(buff));
-
-    if (me.is(OBJECT_TYPE::CHARACTER))
-    {
-        auto& ch = static_cast<character&>(me);
-        ch.message(std::format("{} 해제", buff.model.name));
-    }
 }
 
 void listener_impl::on_sound(object& me, SOUND sound)
@@ -188,28 +136,10 @@ void listener_impl::on_effect(object& me, uint8_t value)
 
 void listener_impl::on_map_leave(object& me, const fb::game::map& map)
 {
-    if (me.is(OBJECT_TYPE::CHARACTER))
-    {
-        auto& ch     = static_cast<character&>(me);
-        auto  thread = map.thread();
-        if (thread != nullptr)
-        {
-            auto params = thread->template data<thread_params>();
-            params->characters.erase(ch.id());
-        }
-    }
+    // Listener only handles packet response - no game logic
 }
 
 void listener_impl::on_map_enter(object& me, const fb::game::map& map)
 {
-    if (me.is(OBJECT_TYPE::CHARACTER))
-    {
-        auto& ch     = static_cast<character&>(me);
-        auto  thread = map.thread();
-        if (thread != nullptr)
-        {
-            auto params = thread->template data<thread_params>();
-            params->characters.insert({ch.id(), ch.shared_from_this_as<character>()});
-        }
-    }
+    // Listener only handles packet response - no game logic
 }

@@ -248,7 +248,7 @@ public:
      *
      * @param      me    The life entity performing the attack
      */
-    async::task<void> on_attack(life& me, DURATION duration = DURATION::ATTACK) override final;
+    void on_attack(life& me, DURATION duration = DURATION::ATTACK) override final;
 
     /**
      * @brief      Called when a life entity dies.

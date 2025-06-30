@@ -1146,7 +1146,7 @@ struct life::listener_t : public virtual fb::game::object::listener_t, public vi
      * @param      me        The life entity performing the attack
      * @param[in]  duration  The attack duration type
      */
-    virtual async::task<void> on_attack(life& me, DURATION duration = DURATION::ATTACK) = 0;
+    virtual void on_attack(life& me, DURATION duration = DURATION::ATTACK) = 0;
 
     /**
      * @brief      Called when a life entity dies.

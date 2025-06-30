@@ -261,6 +261,20 @@ bool object::move(DIRECTION direction)
 
     auto before = this->_position;
     this->position(after);
+
+    // Execute move script
+    auto lua = fb::lua::new_context();
+    if (lua != nullptr)
+    {
+#if defined DEBUG | defined _DEBUG
+        lua->load("scripts/interaction.lua");
+#endif
+        lua->func("on_move");
+        lua->pushobject(*this);
+        std::ignore = lua->call(1);
+    }
+
+    // Call listener for packet response
     this->listener.on_move(*this, before);
 
     return true;
@@ -312,6 +326,20 @@ bool object::direction(DIRECTION value)
         return true;
 
     this->_direction = value;
+
+    // Execute direction change script
+    auto lua = fb::lua::new_context();
+    if (lua != nullptr)
+    {
+#if defined DEBUG | defined _DEBUG
+        lua->load("scripts/interaction.lua");
+#endif
+        lua->func("on_direction");
+        lua->pushobject(*this);
+        std::ignore = lua->call(1);
+    }
+
+    // Call listener for packet response
     this->listener.on_direction(*this);
 
     return true;
@@ -482,7 +510,21 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
                 this->_sector.reset();
             }
 
+            // Call listener for packet response
             this->listener.on_map_leave(*this, *this->_map);
+
+            // Handle thread management for characters
+            if (this->is(OBJECT_TYPE::CHARACTER))
+            {
+                auto& ch     = static_cast<character&>(*this);
+                auto  thread = this->_map->thread();
+                if (thread != nullptr)
+                {
+                    auto params = thread->template data<thread_params>();
+                    params->characters.erase(ch.id());
+                }
+            }
+
             this->_map = nullptr;
             co_await this->context.threads.switching(weak);
             this->_position = fb::model::point16_t(1, 1);
@@ -509,7 +551,22 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
             static_cast<character*>(this)->thread(map->thread());
 
         co_await this->context.threads.switching(weak);
+
+        // Call listener for packet response
         this->listener.on_map_enter(*this, *map);
+
+        // Handle thread management for characters
+        if (this->is(OBJECT_TYPE::CHARACTER))
+        {
+            auto& ch     = static_cast<character&>(*this);
+            auto  thread = map->thread();
+            if (thread != nullptr)
+            {
+                auto params = thread->template data<thread_params>();
+                params->characters.insert({ch.id(), ch.shared_from_this_as<character>()});
+            }
+        }
+
         this->_position = before_position;
 
         this->update_sector();

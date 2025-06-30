@@ -4,19 +4,6 @@ using namespace fb::game;
 
 void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 {
-    auto lua = fb::lua::new_context();
-    if (lua != nullptr)
-    {
-#if defined DEBUG | defined _DEBUG
-        lua->load("scripts/interaction.lua");
-#endif
-        lua->func("on_equipment_active");
-        lua->pushobject(me);
-        lua->pushinteger(parts);
-        lua->pushobject(item);
-        std::ignore = lua->call(3);
-    }
-
     me.send(fb_resp::item_update_slot(me, parts));
     me.sound(SOUND::EQUIPMENT_ON);
 
@@ -66,23 +53,6 @@ void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS p
 
 void listener_impl::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)
 {
-    auto& model = equipment.based<fb::model::equipment>();
-    if (model.on_inactive.empty() == false)
-    {
-        auto lua = fb::lua::new_context();
-        if (lua == nullptr)
-            return;
-
-#if defined DEBUG | defined _DEBUG
-        lua->load(model.script);
-#endif
-        lua->func(model.on_inactive);
-        lua->pushobject(me);
-        lua->pushinteger(parts);
-        lua->pushobject(equipment);
-        std::ignore = lua->call(3);
-    }
-
     me.sound(SOUND::EQUIPMENT_OFF);
 }
 

@@ -156,6 +156,20 @@ bool item::active()
     if (model.on_active.empty())
         return false;
 
+    // Execute item activation script
+    auto lua = fb::lua::new_context();
+    if (lua != nullptr)
+    {
+#if defined DEBUG | defined _DEBUG
+        lua->load(model.script);
+#endif
+        lua->func(model.on_active);
+        lua->pushobject(this->_container->owner);
+        lua->pushobject(*this);
+        std::ignore = lua->call(2);
+    }
+
+    // Call listener for packet response
     this->listener.on_item_active(this->_container->owner, *this);
     return true;
 }
