@@ -74,6 +74,84 @@ template <typename BotType>
 class bot_controller : public base_bot_controller
 {
 public:
+    /**
+     * @brief      Request context for managing timed requests with automatic cleanup.
+     *
+     *             RAII-style structure that manages the lifecycle of a request with timeout.
+     *             Handles mutual dependencies between timer and hook callbacks safely.
+     */
+    template <typename ResponseType>
+    struct request_context
+    {
+        std::shared_ptr<async::task_completion_source<ResponseType>> promise;
+        std::shared_ptr<fb::timer>                                   timer;
+        std::weak_ptr<BotType>                                       bot_weak;
+        uint8_t                                                      hook_cmd;
+        std::atomic<bool>                                            completed{false};
+        const void*                                                  context_ptr; ///< Self-reference for hook removal
+
+        /**
+         * @brief      Constructs a new request context.
+         *
+         * @param[in]  bot  The bot instance (converted to weak_ptr for safe access).
+         * @param[in]  cmd  The protocol command for hook management.
+         */
+        request_context(std::shared_ptr<BotType> bot, uint8_t cmd) :
+            promise(std::make_shared<async::task_completion_source<ResponseType>>()),
+            bot_weak(bot),
+            hook_cmd(cmd),
+            context_ptr(this)
+        { }
+
+        /**
+         * @brief      Completes the request successfully.
+         *
+         *             Thread-safe completion that cancels timer and resolves promise.
+         *             Uses atomic flag to prevent double completion.
+         *
+         * @param[in]  response  The response to return.
+         */
+        void complete_success(const ResponseType& response)
+        {
+            if (completed.exchange(true))
+                return; // Already completed
+
+            if (timer)
+                timer->cancel();
+            promise->set_value(response);
+        }
+
+        /**
+         * @brief      Completes the request with timeout.
+         *
+         *             Thread-safe timeout completion that removes hooks and rejects promise.
+         *             Uses atomic flag to prevent double completion.
+         */
+        void complete_timeout()
+        {
+            if (completed.exchange(true))
+                return; // Already completed
+
+            // Remove hook from bot (if bot still exists)
+            if (auto bot = bot_weak.lock())
+            {
+                bot->remove_hook_by_context(hook_cmd, context_ptr);
+            }
+            promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
+        }
+
+        /**
+         * @brief      Gets the task for awaiting the result.
+         *
+         * @return     The task that will complete with the response or timeout.
+         */
+        async::task<ResponseType> task()
+        {
+            return promise->task();
+        }
+    };
+
+public:
     using handle_func = std::function<async::task<void>(BotType&, fb::protocol::header&)>;
     using deserilze_func =
         std::function<async::task<std::shared_ptr<fb::protocol::header>>(fb::stream_reader<big_endian>&)>;
@@ -547,37 +625,46 @@ async::task<ResponseType> bot<BotType>::request(const fb::protocol::header&     
     // Ensure deserializer is registered for hook processing
     this->_controller.template ensure_handler_registered<ResponseType>();
 
-    auto promise = std::make_shared<async::task_completion_source<ResponseType>>();
-    if (this->_hooks.contains(ResponseType::header) == false)
-        this->_hooks.insert({ResponseType::header, {}});
+    // Create request context for RAII management
+    auto self_ptr = std::static_pointer_cast<BotType>(this->shared_from_this());
+    auto context  = std::make_shared<typename bot_controller<BotType>::template request_context<ResponseType>>(
+        self_ptr,
+        ResponseType::header);
 
-    this->_hooks[ResponseType::header].push_back(hook_params{.condition =
-                                                                 [promise, condition](const auto& header) {
-                                                                     auto& protocol =
-                                                                         static_cast<const ResponseType&>(header);
-                                                                     return condition(protocol);
-                                                                 },
-                                                             .matched =
-                                                                 [promise](const auto& header) {
-                                                                     auto& protocol =
-                                                                         static_cast<const ResponseType&>(header);
-                                                                     promise->set_value(protocol);
-                                                                 }});
-
+    // Set up timeout timer if specified
     if (timeout > 0s)
     {
-        auto thread = this->thread();
-        thread->settimer(
-            [promise, this](auto& datetime, auto thread_id) -> async::task<void> {
-                this->_hooks.erase(ResponseType::header);
-                promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
+        auto thread    = this->thread();
+        context->timer = thread->settimer(
+            [context](auto& datetime, auto thread_id) -> async::task<void> {
+                context->complete_timeout();
                 co_return;
             },
             timeout,
             fb::timer::repeat_type::once);
     }
+
+    // Ensure hook container exists
+    if (this->_hooks.contains(ResponseType::header) == false)
+        this->_hooks.insert({ResponseType::header, {}});
+
+    // Register hook with context pointer for cleanup
+    this->_hooks[ResponseType::header].push_back(hook_params{.condition =
+                                                                 [context, condition](const auto& header) {
+                                                                     auto& protocol =
+                                                                         static_cast<const ResponseType&>(header);
+                                                                     return condition(protocol);
+                                                                 },
+                                                             .matched =
+                                                                 [context](const auto& header) {
+                                                                     auto& protocol =
+                                                                         static_cast<const ResponseType&>(header);
+                                                                     context->complete_success(protocol);
+                                                                 },
+                                                             .context_ptr = context.get()});
+
     this->send(protocol, encrypt, wrap);
-    return promise->task();
+    return context->task();
 }
 
 template <typename BotType>

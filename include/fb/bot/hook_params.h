@@ -41,6 +41,16 @@ public:
      *             removed from the hook collection.
      */
     std::function<void(const fb::protocol::header&)> matched;
+
+    /**
+     * @brief      Context pointer for identifying and removing specific hooks.
+     *
+     *             Optional pointer used to identify specific hook instances,
+     *             particularly useful for timeout scenarios where hooks need
+     *             to be removed by context rather than by iteration.
+     *             Set to nullptr for hooks that don't require context-based removal.
+     */
+    const void* context_ptr = nullptr;
 };
 
 } // namespace fb::bot

@@ -102,12 +102,12 @@ void fb::thread::exit()
     });
 }
 
-void fb::thread::settimer(const fb::timer::handle_callback_type& fn,
-                          const fb::model::timespan&             duration,
-                          fb::timer::repeat_type                 repeat)
+std::shared_ptr<fb::timer> fb::thread::settimer(const fb::timer::handle_callback_type& fn,
+                                                const fb::model::timespan&             duration,
+                                                fb::timer::repeat_type                 repeat)
 {
-    this->_timers.write([&](auto& timers) {
-        auto timer = new fb::timer(
+    return this->_timers.write([&](auto& timers) {
+        auto ptr = new fb::timer(
             [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {
                 auto index = this->_index;
                 try
@@ -122,7 +122,10 @@ void fb::thread::settimer(const fb::timer::handle_callback_type& fn,
             },
             duration,
             repeat);
-        timers.push_back(std::unique_ptr<fb::timer>(timer));
+
+        auto shared_ptr = std::shared_ptr<fb::timer>(ptr);
+        timers.push_back(shared_ptr);
+        return shared_ptr;
     });
 }
 

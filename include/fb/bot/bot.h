@@ -145,6 +145,20 @@ public:
      */
     bool process_hooks(uint8_t cmd, fb::protocol::header& header);
 
+    /**
+     * @brief      Removes a hook by its context pointer.
+     *
+     *             Removes the first hook found with the matching context pointer
+     *             from the specified command's hook collection. Used primarily
+     *             for timeout scenarios where specific hooks need to be cleaned up.
+     *
+     * @param[in]  cmd          The protocol command identifier.
+     * @param[in]  context_ptr  The context pointer to match against.
+     *
+     * @return     True if a hook was found and removed, false otherwise.
+     */
+    bool remove_hook_by_context(uint8_t cmd, const void* context_ptr);
+
 public:
     /**
      * @brief      Gets the thread associated with this bot.

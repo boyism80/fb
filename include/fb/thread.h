@@ -80,7 +80,7 @@ private:
 
 private:
     std::unordered_set<const void*>                 _ptrs;
-    fb::locker<std::vector<std::unique_ptr<timer>>> _timers;
+    fb::locker<std::vector<std::shared_ptr<timer>>> _timers;
     void*                                           _data = nullptr;
 
 private:
@@ -209,10 +209,12 @@ public:
      * @param[in]  fn          The callback function.
      * @param[in]  duration    The timer duration.
      * @param[in]  repeat      The timer repeat type.
+     *
+     * @return     A shared pointer to the timer.
      */
-    void settimer(const fb::timer::handle_callback_type& fn,
-                  const fb::model::timespan&             duration,
-                  fb::timer::repeat_type                 repeat = fb::timer::repeat_type::repeat);
+    std::shared_ptr<fb::timer> settimer(const fb::timer::handle_callback_type& fn,
+                                        const fb::model::timespan&             duration,
+                                        fb::timer::repeat_type                 repeat = fb::timer::repeat_type::repeat);
     /**
      * @brief      Sleeps for the specified duration.
      *
