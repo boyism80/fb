@@ -75,11 +75,25 @@ public:
         center
     };
 
+    /**
+     * @brief      Console output mode options.
+     *
+     *             Controls how console output is formatted and displayed.
+     *             The actual behavior depends on both the mode setting and
+     *             system TTY availability.
+     */
+    enum class mode : uint8_t
+    {
+        tty,  ///< Use TTY features (colors, progress bars, cursor control)
+        plain ///< Use plain text output only
+    };
+
 private:
     inline static std::recursive_mutex _mutex;
     inline static uint16_t             _comment_line = 0;
     inline static uint16_t             _width, _height;
-    inline static bool                 _tty;
+    inline static bool                 _system_tty;       ///< System TTY capability
+    inline static mode                 _mode = mode::tty; ///< User-configured output mode
 
 public:
     /**
@@ -95,9 +109,35 @@ public:
     /**
      * @brief      reference : https://github.com/jupyter-xeus/cpp-terminal
      *
-     * @return     True if the specified fd is a tty, False otherwise.
+     * @return     True if the system supports TTY, False otherwise.
      */
     static bool is_tty();
+
+    /**
+     * @brief      Gets the current console output mode.
+     *
+     * @return     The current mode setting.
+     */
+    static mode get_mode();
+
+    /**
+     * @brief      Sets the console output mode.
+     *
+     * @param[in]  new_mode  The new mode to set.
+     *
+     * @note       Setting TTY mode when system TTY is not available
+     *             will still result in plain text output.
+     */
+    static void set_mode(mode new_mode);
+
+    /**
+     * @brief      Determines if TTY features should be used.
+     *
+     *             This considers both system TTY capability and user mode setting.
+     *
+     * @return     True if TTY features should be used, False for plain text.
+     */
+    static bool is_effective_tty();
 
 public:
     /**
@@ -157,7 +197,7 @@ public:
         auto _ = std::lock_guard(_mutex);
 
         auto text    = std::vformat(fmt, std::make_format_args(args...));
-        auto padding = 0;
+        auto padding = uint16_t{0};
         switch (align)
         {
         case align_type::right:
@@ -174,7 +214,7 @@ public:
         }
 
         text = std::string(padding, ' ') + text;
-        if (!_tty)
+        if (!is_effective_tty())
         {
             std::cout << text << std::endl;
             return;
@@ -214,7 +254,7 @@ public:
     static void puts(align_type align, const std::string& fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
-        if (!_tty)
+        if (!is_effective_tty())
         {
             put(align, fmt, std::forward<Args>(args)...);
         }
@@ -253,7 +293,7 @@ public:
     {
         auto _    = std::lock_guard(_mutex);
         auto text = std::vformat(fmt, std::make_format_args(args...));
-        if (!_tty)
+        if (!is_effective_tty())
         {
             std::cout << text << std::endl;
         }

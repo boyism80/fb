@@ -160,6 +160,8 @@ int main(int argc, char** argv)
         });
     }
 
+    fb::console::set_mode(fb::console::mode::plain);
+
     auto threads = boost::asio::thread_pool{io_size};
     for (auto& io : ios)
     {

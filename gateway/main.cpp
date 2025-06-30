@@ -67,6 +67,8 @@ int main(int argc, char** argv)
         signals.async_wait([&context](const boost::system::error_code& ec, int signal_number) {
             context->exit();
         });
+
+        fb::console::set_mode(fb::console::mode::plain);
         context->run();
     }
     catch (std::exception& e)

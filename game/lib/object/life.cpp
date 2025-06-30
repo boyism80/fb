@@ -168,14 +168,14 @@ void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_typ
     }
 }
 
-void life::attack(DURATION duration)
+async::task<void> life::attack(DURATION duration)
 {
     this->assert_thread();
     if (this->_map == nullptr)
-        return;
+        co_return;
 
     if (this->alive() == false)
-        return;
+        co_return;
 
     // Execute attack interaction script and get attack count
     uint32_t attack_count = 0;
@@ -187,7 +187,7 @@ void life::attack(DURATION duration)
 #endif
         lua->func("on_attack");
         lua->pushobject(*this);
-        if (lua->call(1))
+        if (co_await lua->call(1))
         {
             attack_count = (uint32_t)lua->tointeger(1);
         }

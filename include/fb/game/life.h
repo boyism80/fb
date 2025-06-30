@@ -356,7 +356,7 @@ public:
      *
      * @param[in]  duration  The attack duration type
      */
-    virtual void attack(DURATION duration = DURATION::ATTACK);
+    virtual async::task<void> attack(DURATION duration = DURATION::ATTACK);
 
     /**
      * @brief      Gets the current HP value.

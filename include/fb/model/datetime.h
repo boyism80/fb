@@ -74,7 +74,7 @@ public:
         {
             auto in   = what["ms"].str();
             auto step = 100;
-            for (int i = 0; i < std::min<uint32_t>(3, in.size()); i++)
+            for (int i = 0; i < std::min<uint32_t>(3, static_cast<uint32_t>(in.size())); i++)
             {
                 auto v  = in.at(i) - '0';
                 ms     += v * step;
@@ -359,37 +359,37 @@ public:
 public:
     uint16_t year() const
     {
-        return this->_ptime.date().year();
+        return static_cast<uint16_t>(this->_ptime.date().year());
     }
 
     uint16_t month() const
     {
-        return this->_ptime.date().month();
+        return static_cast<uint16_t>(this->_ptime.date().month());
     }
 
     uint16_t day() const
     {
-        return this->_ptime.date().day();
+        return static_cast<uint16_t>(this->_ptime.date().day());
     }
 
     uint16_t hours() const
     {
-        return this->_ptime.time_of_day().hours();
+        return static_cast<uint16_t>(this->_ptime.time_of_day().hours());
     }
 
     uint16_t minutes() const
     {
-        return this->_ptime.time_of_day().minutes();
+        return static_cast<uint16_t>(this->_ptime.time_of_day().minutes());
     }
 
     uint16_t seconds() const
     {
-        return this->_ptime.time_of_day().seconds();
+        return static_cast<uint16_t>(this->_ptime.time_of_day().seconds());
     }
 
     uint16_t milliseconds() const
     {
-        return this->_ptime.time_of_day().total_milliseconds() % 1000;
+        return static_cast<uint16_t>(this->_ptime.time_of_day().total_milliseconds() % 1000);
     }
 
     datetime& add_days(int days)
@@ -424,7 +424,7 @@ public:
 
     datetime& add_timespan(const timespan& ts)
     {
-        this->add_milliseconds(ts.total_milliseconds());
+        this->add_milliseconds(static_cast<int>(ts.total_milliseconds()));
         return *this;
     }
 
@@ -438,7 +438,7 @@ public:
     friend datetime operator- (const datetime& dt, const timespan& ts)
     {
         auto result = datetime(dt);
-        result.add_milliseconds(-ts.total_milliseconds());
+        result.add_milliseconds(-static_cast<int>(ts.total_milliseconds()));
         return result;
     }
 
@@ -456,7 +456,7 @@ public:
 
     datetime& operator-= (const timespan& ts)
     {
-        this->add_milliseconds(-ts.total_milliseconds());
+        this->add_milliseconds(-static_cast<int>(ts.total_milliseconds()));
         return *this;
     }
 

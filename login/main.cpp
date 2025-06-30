@@ -65,6 +65,8 @@ int main(int argc, char** argv)
             context->exit();
         });
         fb::model::loader(context->model).run();
+
+        fb::console::set_mode(fb::console::mode::plain);
         context->run();
     }
     catch (std::exception& e)

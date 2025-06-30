@@ -32,7 +32,8 @@ async::task<void> skill_test::initialize(game_bot_controller& controller)
 
 async::task<bool> skill_test::execute()
 {
-    constexpr auto timeout = 5s;
+    constexpr auto interval = 250ms;
+    constexpr auto timeout  = 5s;
 
     if (this->_test_running || this->_test_completed)
         co_return false;
@@ -73,7 +74,7 @@ async::task<bool> skill_test::execute()
         bot->send(fb::protocol::game::request::spell_cast(resp2.index, "", 0, {0, 0}));
         fb::logger::debug("Skill test: Bot {} cast spell {} (slot {})", bot->fd(), i + 1, this->_spell_learned_index);
 
-        co_await bot->thread()->sleep(1s);
+        co_await bot->thread()->sleep(interval);
     }
 
     this->_test_completed = true;

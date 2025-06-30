@@ -192,7 +192,7 @@ async::task<bool> context::handle_attack(fb::socket<character>& socket, const fb
     if (ch->inited() == false)
         co_return true;
 
-    ch->attack();
+    co_await ch->attack();
     co_return true;
 }
 

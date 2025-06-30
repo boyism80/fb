@@ -30,6 +30,8 @@ async::task<void> attack_test::initialize(game_bot_controller& controller)
 
 async::task<bool> attack_test::execute()
 {
+    constexpr auto interval = 250ms;
+
     if (this->_test_running || this->_test_completed)
         co_return false;
 
@@ -59,7 +61,7 @@ async::task<bool> attack_test::execute()
         fb::logger::debug("Attack {}: bot {} performed attack", i + 1, target_bot->fd());
 
         auto thread = target_bot->thread();
-        co_await thread->sleep(1s);
+        co_await thread->sleep(interval);
     }
 
     this->_test_completed = true;

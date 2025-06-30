@@ -101,6 +101,7 @@ int main(int argc, char* argv[])
         fb::game::script_loader(*context).run();
         fb::game::npc_spawner(*context).run();
 
+        fb::console::set_mode(fb::console::mode::plain);
         context->run();
     }
     catch (std::exception& e)

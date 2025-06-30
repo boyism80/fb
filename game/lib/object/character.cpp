@@ -240,13 +240,13 @@ void character::role(ROLE value)
     this->_role = value;
 }
 
-void character::attack(DURATION duration)
+async::task<void> character::attack(DURATION duration)
 {
     this->assert_thread();
     try
     {
         this->assert_state({STATE::RIDING, STATE::GHOST});
-        life::attack(duration);
+        co_await life::attack(duration);
     }
     catch (const std::exception& e)
     {

@@ -280,7 +280,7 @@ public:
      *
      * @param[in]  duration  The attack duration type
      */
-    void attack(DURATION duration = DURATION::ATTACK) override final;
+    async::task<void> attack(DURATION duration = DURATION::ATTACK) override final;
 
     /**
      * @brief      Calculates auto-attack damage based on target size.

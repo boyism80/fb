@@ -72,6 +72,7 @@ public:
     template <typename ReturnType>
     using handle_func_type  = std::function<async::task<ReturnType>(fb::thread&)>;
     using handle_error_type = std::function<void(std::exception&)>;
+    using timer_list        = std::vector<std::shared_ptr<timer>>;
 
 private:
     uint8_t           _index = 0;
@@ -79,9 +80,9 @@ private:
     std::thread       _thread;
 
 private:
-    std::unordered_set<const void*>                 _ptrs;
-    fb::locker<std::vector<std::shared_ptr<timer>>> _timers;
-    void*                                           _data = nullptr;
+    std::unordered_set<const void*>  _ptrs;
+    fb::recursive_locker<timer_list> _timers;
+    void*                            _data = nullptr;
 
 private:
     std::queue<std::function<void()>> _queue;
