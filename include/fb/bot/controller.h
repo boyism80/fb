@@ -538,9 +538,12 @@ template <typename BotType>
 template <typename ResponseType>
 async::task<ResponseType> bot<BotType>::request(const fb::protocol::header&                          protocol,
                                                 const std::function<bool(const ResponseType& resp)>& condition,
+                                                const fb::model::timespan&                           timeout,
                                                 bool                                                 encrypt,
                                                 bool                                                 wrap)
 {
+    this->assert_thread();
+
     // Ensure deserializer is registered for hook processing
     this->_controller.template ensure_handler_registered<ResponseType>();
 
@@ -560,19 +563,34 @@ async::task<ResponseType> bot<BotType>::request(const fb::protocol::header&     
                                                                          static_cast<const ResponseType&>(header);
                                                                      promise->set_value(protocol);
                                                                  }});
+
+    if (timeout > 0s)
+    {
+        auto thread = this->thread();
+        thread->settimer(
+            [promise, this](auto& datetime, auto thread_id) -> async::task<void> {
+                this->_hooks.erase(ResponseType::header);
+                promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
+                co_return;
+            },
+            timeout,
+            fb::timer::repeat_type::once);
+    }
     this->send(protocol, encrypt, wrap);
     return promise->task();
 }
 
 template <typename BotType>
 template <typename ResponseType>
-async::task<ResponseType> bot<BotType>::request(const fb::protocol::header& protocol, bool encrypt, bool wrap)
+async::task<ResponseType>
+bot<BotType>::request(const fb::protocol::header& protocol, const fb::model::timespan& timeout, bool encrypt, bool wrap)
 {
     co_return co_await this->request<ResponseType>(
         protocol,
         [](auto& resp) -> bool {
             return true;
         },
+        timeout,
         encrypt,
         wrap);
 }

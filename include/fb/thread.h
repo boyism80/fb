@@ -40,6 +40,7 @@
 #include <fb/model/datetime.h>
 #include <unordered_set>
 #include <fb/lua.h>
+#include <fb/locker.h>
 
 namespace fb {
 
@@ -78,10 +79,9 @@ private:
     std::thread       _thread;
 
 private:
-    std::unordered_set<const void*>     _ptrs;
-    std::vector<std::unique_ptr<timer>> _timers;
-    std::recursive_mutex                _mutex_timer;
-    void*                               _data = nullptr;
+    std::unordered_set<const void*>                 _ptrs;
+    fb::locker<std::vector<std::unique_ptr<timer>>> _timers;
+    void*                                           _data = nullptr;
 
 private:
     std::queue<std::function<void()>> _queue;
@@ -208,11 +208,11 @@ public:
      *
      * @param[in]  fn          The callback function.
      * @param[in]  duration    The timer duration.
-     * @param[in]  disposable  Whether the timer is disposable.
+     * @param[in]  repeat      The timer repeat type.
      */
     void settimer(const fb::timer::handle_callback_type& fn,
                   const fb::model::timespan&             duration,
-                  bool                                   disposable = false);
+                  fb::timer::repeat_type                 repeat = fb::timer::repeat_type::repeat);
     /**
      * @brief      Sleeps for the specified duration.
      *

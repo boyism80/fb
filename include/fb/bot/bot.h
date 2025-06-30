@@ -188,6 +188,7 @@ public:
      *
      * @param[in]  protocol   The protocol message to send.
      * @param[in]  condition  Function to determine if a response matches this request.
+     * @param[in]  timeout    The timeout duration for the request.
      * @param[in]  encrypt    Whether to encrypt the outgoing message.
      * @param[in]  wrap       Whether to wrap the outgoing message.
      *
@@ -198,6 +199,7 @@ public:
     template <typename ResponseType>
     async::task<ResponseType> request(const fb::protocol::header&                          protocol,
                                       const std::function<bool(const ResponseType& resp)>& condition,
+                                      const fb::model::timespan&                           timeout = 0s,
                                       bool                                                 encrypt = true,
                                       bool                                                 wrap    = true);
 
@@ -208,6 +210,7 @@ public:
      *             type without additional filtering conditions.
      *
      * @param[in]  protocol  The protocol message to send.
+     * @param[in]  timeout   The timeout duration for the request.
      * @param[in]  encrypt   Whether to encrypt the outgoing message.
      * @param[in]  wrap      Whether to wrap the outgoing message.
      *
@@ -216,7 +219,10 @@ public:
      * @return     An async task that completes with the response.
      */
     template <typename ResponseType>
-    async::task<ResponseType> request(const fb::protocol::header& protocol, bool encrypt = true, bool wrap = true);
+    async::task<ResponseType> request(const fb::protocol::header& protocol,
+                                      const fb::model::timespan&  timeout = 0s,
+                                      bool                        encrypt = true,
+                                      bool                        wrap    = true);
 
     /**
      * @brief      Gets the bot_controller managing this bot.
