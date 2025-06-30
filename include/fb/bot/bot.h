@@ -180,6 +180,84 @@ public:
 template <typename BotType>
 class bot : public base_bot
 {
+public:
+    /**
+     * @brief      Request context for managing timed requests with automatic cleanup.
+     *
+     *             RAII-style structure that manages the lifecycle of a request with timeout.
+     *             Handles mutual dependencies between timer and hook callbacks safely.
+     */
+    template <typename ResponseType>
+    struct request_context
+    {
+        std::shared_ptr<async::task_completion_source<ResponseType>> promise;
+        std::shared_ptr<fb::timer>                                   timer;
+        std::weak_ptr<BotType>                                       bot_weak;
+        uint8_t                                                      hook_cmd;
+        std::atomic<bool>                                            completed{false};
+        const void*                                                  context_ptr; ///< Self-reference for hook removal
+
+        /**
+         * @brief      Constructs a new request context.
+         *
+         * @param[in]  bot  The bot instance (converted to weak_ptr for safe access).
+         * @param[in]  cmd  The protocol command for hook management.
+         */
+        request_context(std::shared_ptr<BotType> bot, uint8_t cmd) :
+            promise(std::make_shared<async::task_completion_source<ResponseType>>()),
+            bot_weak(bot),
+            hook_cmd(cmd),
+            context_ptr(this)
+        { }
+
+        /**
+         * @brief      Completes the request successfully.
+         *
+         *             Thread-safe completion that cancels timer and resolves promise.
+         *             Uses atomic flag to prevent double completion.
+         *
+         * @param[in]  response  The response to return.
+         */
+        void complete_success(const ResponseType& response)
+        {
+            if (completed.exchange(true))
+                return; // Already completed
+
+            if (timer)
+                timer->cancel();
+            promise->set_value(response);
+        }
+
+        /**
+         * @brief      Completes the request with timeout.
+         *
+         *             Thread-safe timeout completion that removes hooks and rejects promise.
+         *             Uses atomic flag to prevent double completion.
+         */
+        void complete_timeout()
+        {
+            if (completed.exchange(true))
+                return; // Already completed
+
+            // Remove hook from bot (if bot still exists)
+            if (auto bot = bot_weak.lock())
+            {
+                bot->remove_hook_by_context(hook_cmd, context_ptr);
+            }
+            promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
+        }
+
+        /**
+         * @brief      Gets the task for awaiting the result.
+         *
+         * @return     The task that will complete with the response or timeout.
+         */
+        async::task<ResponseType> task()
+        {
+            return promise->task();
+        }
+    };
+
 protected:
     bot_controller<BotType>& _controller; ///< Reference to the bot bot_controller for this bot type
 
