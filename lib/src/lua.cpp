@@ -359,22 +359,22 @@ root::root(fb::thread& thread) :
 
 root::~root()
 {
-    auto _ = std::lock_guard(this->_mutex);
-
-    this->idle.clear();
-    this->busy.clear();
-    lua_close(*this);
+    this->_bytecodes.write([this](auto& bytecodes) {
+        this->idle.clear();
+        this->busy.clear();
+        lua_close(*this);
+    });
 }
 
 context* root::get(lua_State* ctx)
 {
-    auto _ = std::lock_guard(this->_mutex);
+    return this->_bytecodes.read([this, ctx](const auto& bytecodes) -> context* {
+        auto found = this->busy.find(ctx);
+        if (found == this->busy.end())
+            return nullptr;
 
-    auto found = this->busy.find(ctx);
-    if (found == this->busy.end())
-        return nullptr;
-
-    return found->second.get();
+        return found->second.get();
+    });
 }
 
 bool root::dump(const std::string& path)
@@ -382,90 +382,96 @@ bool root::dump(const std::string& path)
     if (path.empty())
         return true;
 
-    if (_bytecodes.contains(path))
+    return this->_bytecodes.write([this, &path](auto& bytecodes) -> bool {
+        // Atomic check-and-load: prevent race conditions
+        if (bytecodes.contains(path))
+            return true;
+
+        // Load file outside the callback to avoid nested locking issues
+        if (luaL_loadfile(*this, path.c_str()) != LUA_OK)
+        {
+            auto error = lua_tostring(*this, -1);
+            context::pop(1); // pop error message
+            throw std::runtime_error(error);
+        }
+
+        // Prepare bytecode container
+        bytecodes[path] = std::vector<char>();
+
+        // Dump bytecode directly into the container
+        void*      params[] = {&bytecodes[path]};
+        const auto callback = [](lua_State* ctx, const void* bytes, size_t size, void* p) {
+            auto params    = static_cast<void**>(p);
+            auto bytecodes = static_cast<std::vector<char>*>(params[0]);
+
+            for (size_t i = 0; i < size; i++)
+                bytecodes->push_back(static_cast<const char*>(bytes)[i]);
+
+            return 0;
+        };
+
+        ::lua_dump(*this, callback, params, 1);
         return true;
-
-    if (luaL_loadfile(*this, path.c_str()) != LUA_OK)
-    {
-        auto error = lua_tostring(*this, -1);
-        context::pop(1); // pop error message
-        throw std::runtime_error(error);
-    }
-    void*      params[] = {this, (void*)path.c_str()};
-    const auto callback = [](lua_State* ctx, const void* bytes, size_t size, void* params) {
-        auto casted = (void**)(params);
-        auto ist    = (root*)casted[0];
-        auto path   = (const char*)casted[1];
-        if (ist->_bytecodes.contains(path) == false)
-            ist->_bytecodes[path] = std::vector<char>();
-
-        for (int i = 0; i < size; i++)
-            ist->_bytecodes[path].push_back(static_cast<const char*>(bytes)[i]);
-
-        return 0;
-    };
-
-    ::lua_dump(*this, callback, params, 1);
-    return true;
+    });
 }
 
 context* root::pop(context* parent)
 {
     // 데드락 요소
     // root::pop 메소드에서 락 순서는
-    // 1. _mutex
+    // 1. _bytecodes (was _mutex)
     // 2. context_pool::ist().record에서 _mapping_lock
-    auto _ = std::lock_guard(this->_mutex);
+    return this->_bytecodes.write([this, parent](auto& bytecodes) -> context* {
+        if (this->idle.empty() == false)
+        {
+            auto& ctx = this->idle.begin()->second;
+            auto  key = (lua_State*)*ctx;
+            this->busy.insert({key, std::move(ctx)});
+            this->idle.erase(key);
+            this->busy[key]->parent(parent);
+            return this->busy[key].get();
+        }
+        else if (this->idle.size() + this->busy.size() < DEFAULT_POOL_SIZE)
+        {
+            auto ptr = std::make_unique<fb::lua::thread>(*this, parent);
+            auto key = (lua_State*)*ptr.get();
 
-    if (this->idle.empty() == false)
-    {
-        auto& ctx = this->idle.begin()->second;
-        auto  key = (lua_State*)*ctx;
-        this->busy.insert({key, std::move(ctx)});
-        this->idle.erase(key);
-        this->busy[key]->parent(parent);
-        return this->busy[key].get();
-    }
-    else if (this->idle.size() + this->busy.size() < DEFAULT_POOL_SIZE)
-    {
-        auto ptr = std::make_unique<fb::lua::thread>(*this, parent);
-        auto key = (lua_State*)*ptr.get();
+            if (this->idle.contains(key) || this->busy.contains(key))
+                return nullptr;
 
-        if (this->idle.contains(key) || this->busy.contains(key))
+            for (auto& [name, _] : bytecodes)
+                ptr->load(name);
+
+            this->busy.insert({key, std::move(ptr)});
+            return this->busy[key].get();
+        }
+        else
+        {
             return nullptr;
-
-        for (auto& [name, _] : this->_bytecodes)
-            ptr->load(name);
-
-        this->busy.insert({key, std::move(ptr)});
-        return this->busy[key].get();
-    }
-    else
-    {
-        return nullptr;
-    }
+        }
+    });
 }
 
 void root::release(context& ctx)
 {
     auto internal_func = [this](context& ctx) {
-        auto _ = std::lock_guard(this->_mutex);
+        this->_bytecodes.write([this, &ctx](auto& bytecodes) {
+            if (this->busy.contains(ctx) == false)
+                return;
 
-        if (this->busy.contains(ctx) == false)
-            return;
+            if (this->idle.contains(ctx))
+                return;
 
-        if (this->idle.contains(ctx))
-            return;
+            if (ctx.state() != LUA_OK)
+                throw std::runtime_error("lua ctx's current state is not LUA_OK");
 
-        if (ctx.state() != LUA_OK)
-            throw std::runtime_error("lua ctx's current state is not LUA_OK");
+            lua_settop(ctx, 0);
+            ctx.parent(nullptr);
 
-        lua_settop(ctx, 0);
-        ctx.parent(nullptr);
-
-        auto key = (lua_State*)ctx;
-        this->idle.insert({key, std::move(this->busy[key])});
-        this->busy.erase(key);
+            auto key = (lua_State*)ctx;
+            this->idle.insert({key, std::move(this->busy[key])});
+            this->busy.erase(key);
+        });
     };
 
     if (this->_initial_thread.id() != std::this_thread::get_id())
@@ -483,13 +489,13 @@ void root::release(context& ctx)
 
 void root::revoke(context& ctx)
 {
-    auto _ = std::lock_guard(this->_mutex);
+    this->_bytecodes.write([this, &ctx](auto& bytecodes) {
+        auto i = this->busy.find(ctx);
+        if (i == this->busy.end())
+            return;
 
-    auto i = this->busy.find(ctx);
-    if (i == this->busy.end())
-        return;
-
-    this->busy.erase(i);
+        this->busy.erase(i);
+    });
 }
 
 async::task<void> fb::lua::context::switching()

@@ -85,8 +85,7 @@ private:
     void*                            _data = nullptr;
 
 private:
-    std::queue<std::function<void()>> _queue;
-    std::mutex                        _mutex_queue;
+    fb::locker<std::queue<std::function<void()>>> _queue;
 
 public:
     /**
@@ -237,29 +236,29 @@ public:
                  const handle_error_type&                 error,
                  const std::function<void(ReturnType&&)>& callback)
     {
-        auto _ = std::lock_guard(_mutex_queue);
-
-        this->_queue.push([=, this]() {
-            async::awaitable_then(fn(*this), [&](async::awaitable_result<ReturnType> result) {
-                try
-                {
-                    callback(result());
-                }
-                catch (std::exception& e)
-                {
-                    error(e);
-                }
-                catch (...)
-                {
+        this->_queue.write([=, this](auto& queue) {
+            queue.push([=, this]() {
+                async::awaitable_then(fn(*this), [&](async::awaitable_result<ReturnType> result) {
                     try
                     {
-                        std::rethrow_exception(std::current_exception());
+                        callback(result());
                     }
                     catch (std::exception& e)
                     {
                         error(e);
                     }
-                }
+                    catch (...)
+                    {
+                        try
+                        {
+                            std::rethrow_exception(std::current_exception());
+                        }
+                        catch (std::exception& e)
+                        {
+                            error(e);
+                        }
+                    }
+                });
             });
         });
     }

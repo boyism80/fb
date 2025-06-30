@@ -36,6 +36,7 @@
 #include <future>
 #include <algorithm>
 #include <fb/generator.h>
+#include <fb/locker.h>
 
 namespace fb {
 
@@ -102,41 +103,46 @@ public:
      */
     void run(std::vector<R>& result)
     {
-        auto queue     = std::queue<T>();
         auto indices   = std::unordered_map<T*, int>();
-        auto buffer    = std::unordered_map<uint32_t, std::unique_ptr<std::vector<R>>>();
         auto processed = std::atomic<int>(0);
 
-        std::mutex mutex_queue, mutex_buffer;
+        auto queue  = fb::locker<std::queue<T>>();
+        auto buffer = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<std::vector<R>>>>();
 
         auto gen_ready = this->on_ready();
         while (gen_ready.next())
         {
             auto input = gen_ready.value();
-            queue.push(input);
-
-            auto& added = queue.back();
-            indices.insert({&added, indices.size()});
+            queue.write([&input, &indices](auto& q) {
+                q.push(input);
+                auto& added = q.back();
+                indices.insert({&added, indices.size()});
+            });
         }
 
-        auto count = double(queue.size());
+        auto count = queue.read([](const auto& q) {
+            return double(q.size());
+        });
         auto fn    = [&, this]() {
             while (true)
             {
-                T* input = nullptr;
-                {
-                    auto _ = std::lock_guard(mutex_queue);
-                    if (queue.empty())
-                        break;
+                T*   input       = nullptr;
+                bool queue_empty = queue.write([&input](auto& q) -> bool {
+                    if (q.empty())
+                        return true;
 
-                    input = &queue.front();
-                    queue.pop();
-                }
+                    input = &q.front();
+                    q.pop();
+                    return false;
+                });
+
+                if (queue_empty)
+                    break;
 
                 auto index = indices.at(input);
-                mutex_buffer.lock();
-                buffer.insert({index, std::make_unique<std::vector<R>>()});
-                mutex_buffer.unlock();
+                buffer.write([index](auto& buf) {
+                    buf.insert({index, std::make_unique<std::vector<R>>()});
+                });
 
                 try
                 {
@@ -144,13 +150,17 @@ public:
                     while (gen_work.next())
                     {
                         auto output = gen_work.value();
-                        buffer[index]->push_back(output);
+                        buffer.write([index, &output](auto& buf) {
+                            buf[index]->push_back(output);
+                        });
                     }
 
-                    for (auto& output : *buffer[index])
-                    {
-                        this->on_worked(*input, output, (++processed * 100) / count);
-                    }
+                    buffer.read([this, input, index, &processed, count](const auto& buf) {
+                        for (auto& output : *buf.at(index))
+                        {
+                            this->on_worked(*input, output, (++processed * 100) / count);
+                        }
+                    });
                 }
                 catch (std::exception& e)
                 {
@@ -171,20 +181,25 @@ public:
             task.wait();
         }
 
-        auto keys = std::vector<uint32_t>();
-        for (auto& [k, _] : buffer)
-        {
-            keys.push_back(k);
-        }
-        std::sort(keys.begin(), keys.end());
-
-        for (auto k : keys)
-        {
-            for (auto& output : *buffer[k])
+        auto keys = buffer.read([](const auto& buf) {
+            auto result_keys = std::vector<uint32_t>();
+            for (auto& [k, _] : buf)
             {
-                result.push_back(output);
+                result_keys.push_back(k);
             }
-        }
+            std::sort(result_keys.begin(), result_keys.end());
+            return result_keys;
+        });
+
+        buffer.read([&result, &keys](const auto& buf) {
+            for (auto k : keys)
+            {
+                for (auto& output : *buf.at(k))
+                {
+                    result.push_back(output);
+                }
+            }
+        });
 
         this->on_finish(result);
     }
@@ -239,45 +254,49 @@ public:
      */
     void run()
     {
-        auto queue         = std::queue<T>();
-        auto mutex_queue   = std::mutex();
-        auto mutex_percent = std::mutex();
-        auto processed     = 0;
+        fb::locker<std::queue<T>> queue;
+        fb::locker<int>           processed(0);
 
         auto gen = this->on_ready();
         while (gen.next())
         {
-            queue.push(gen.value());
+            queue.write([&gen](auto& q) {
+                q.push(gen.value());
+            });
         }
 
-        auto count = double(queue.size());
+        auto count = queue.read([](const auto& q) {
+            return double(q.size());
+        });
         auto fn    = [&, this]() {
             while (true)
             {
-                auto input = std::optional<T>{};
-                {
-                    auto _ = std::lock_guard(mutex_queue);
-                    if (queue.empty())
-                        break;
+                auto input       = std::optional<T>{};
+                bool queue_empty = queue.write([&input](auto& q) -> bool {
+                    if (q.empty())
+                        return true;
 
-                    input = std::move(queue.front());
-                    queue.pop();
-                }
+                    input = std::move(q.front());
+                    q.pop();
+                    return false;
+                });
+
+                if (queue_empty)
+                    break;
 
                 try
                 {
                     this->on_work(input.value());
-                    {
-                        auto _ = std::lock_guard(mutex_percent);
-                        this->on_worked(input.value(), (++processed * 100) / count);
-                    }
+                    auto current_progress = processed.write([count](auto& p) {
+                        return (++p * 100) / count;
+                    });
+                    this->on_worked(input.value(), current_progress);
                 }
                 catch (std::exception& e)
                 {
-                    {
-                        auto _ = std::lock_guard(mutex_percent);
-                        processed++;
-                    }
+                    processed.write([](auto& p) {
+                        p++;
+                    });
                     this->on_error(input.value(), e);
                 }
             }

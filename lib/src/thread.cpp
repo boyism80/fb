@@ -18,15 +18,14 @@ void fb::thread::handle_thread(uint8_t index)
     while (!this->_exit)
     {
         std::function<void()> func;
-        {
-            auto _ = std::lock_guard(this->_mutex_queue);
 
-            if (this->_queue.empty() == false)
+        this->_queue.write([&func](auto& queue) {
+            if (queue.empty() == false)
             {
-                func = this->_queue.front();
-                this->_queue.pop();
+                func = queue.front();
+                queue.pop();
             }
-        }
+        });
 
         if (func != nullptr)
         {
@@ -147,29 +146,29 @@ void fb::thread::enqueue(const handle_func_type<void>& fn,
                          const handle_error_type&      error,
                          const std::function<void()>&  callback)
 {
-    auto _ = std::lock_guard(_mutex_queue);
-
-    this->_queue.push([=, this]() {
-        async::awaitable_then(fn(*this), [=](async::awaitable_result<void> result) {
-            try
-            {
-                callback();
-            }
-            catch (std::exception& e)
-            {
-                error(e);
-            }
-            catch (...)
-            {
+    this->_queue.write([=, this](auto& queue) {
+        queue.push([=, this]() {
+            async::awaitable_then(fn(*this), [=](async::awaitable_result<void> result) {
                 try
                 {
-                    std::rethrow_exception(std::current_exception());
+                    callback();
                 }
                 catch (std::exception& e)
                 {
                     error(e);
                 }
-            }
+                catch (...)
+                {
+                    try
+                    {
+                        std::rethrow_exception(std::current_exception());
+                    }
+                    catch (std::exception& e)
+                    {
+                        error(e);
+                    }
+                }
+            });
         });
     });
 }
