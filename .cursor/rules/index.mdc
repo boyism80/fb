@@ -89,6 +89,13 @@ Types:
   - Update wiki sorter script
   ```
 
+### Commit Approval Policy
+**CRITICAL**: Do NOT commit any changes unless explicitly requested by the user:
+- **Wait for explicit user approval** before executing any git commit commands
+- **Never auto-commit** after making code changes or fixes
+- **Always ask for permission** before committing, even if changes are complete
+- **User must explicitly say "commit" or "커밋"** to proceed with commits
+
 ### Pull Request Guidelines
 - **NO EMOJIS** in PR titles or descriptions
 - Use clear, descriptive titles
@@ -155,4 +162,5 @@ Invoke-Command -ScriptBlock { command } -TimeoutSec 30
   - `/scripts/npc/` - NPC interaction scripts
   - `/scripts/spell/` - Spell casting logic
   - `/scripts/mob/` - Monster behavior scripts
+
   - `/scripts/item/` - Item-specific logic 

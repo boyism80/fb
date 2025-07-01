@@ -62,7 +62,7 @@ void fb::thread::handle_idle()
             auto repeat = timer->repeat;
             auto fn     = fb::timer::handle_callback_type{timer->fn};
             async::awaitable_then(fn(now, this->_thread.get_id()), [timer, repeat, now](auto result) {
-                if (repeat == fb::timer::repeat_type::once)
+                if (repeat == fb::timer::repeat_type::repeat)
                     timer->begin = now;
             });
 
