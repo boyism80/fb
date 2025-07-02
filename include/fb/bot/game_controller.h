@@ -143,6 +143,16 @@ private:
     async::task<void> handle_spell_update(game_bot& bot, const fb::protocol::game::response::spell_update& response);
 
     /**
+     * @brief      Handles spell removal from the server.
+     *
+     * @param[in]  bot       The game bot instance.
+     * @param[in]  response  The spell remove response.
+     *
+     * @return     An async task that completes when spell removal processing is finished.
+     */
+    async::task<void> handle_spell_remove(game_bot& bot, const fb::protocol::game::response::spell_remove& response);
+
+    /**
      * @brief      Handles chat messages from the server.
      *
      * @param[in]  bot       The game bot instance.
@@ -329,6 +339,27 @@ private:
 
         co_return;
     }
+
+private:
+    /**
+     * @brief      Handles item acquisition and update notifications from the server.
+     *
+     * @param[in]  bot       The game bot instance.
+     * @param[in]  response  The item update response containing item data.
+     *
+     * @return     An async task that completes when item update processing is finished.
+     */
+    async::task<void> handle_item_update(game_bot& bot, const fb::protocol::game::response::item_update& response);
+
+    /**
+     * @brief      Handles item removal notifications from the server.
+     *
+     * @param[in]  bot       The game bot instance.
+     * @param[in]  response  The item remove response containing removal data.
+     *
+     * @return     An async task that completes when item removal processing is finished.
+     */
+    async::task<void> handle_item_remove(game_bot& bot, const fb::protocol::game::response::item_remove& response);
 };
 
 } // namespace fb::bot

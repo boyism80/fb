@@ -134,24 +134,34 @@ bool game_bot::has_buff(const std::string& name) const
 }
 
 // Spell management method implementations
-const std::set<std::string>& game_bot::active_spells() const
+void game_bot::update_spell(uint8_t slot, const std::string& name, uint8_t type)
 {
-    return this->_active_spells;
+    this->_spells[slot] = simple_spell(name, type);
 }
 
-void game_bot::add_spell(const std::string& name)
+void game_bot::remove_spell(uint8_t slot)
 {
-    this->_active_spells.insert(name);
+    this->_spells.erase(slot);
 }
 
-void game_bot::remove_spell(const std::string& name)
+std::optional<game_bot::simple_spell> game_bot::get_spell(uint8_t slot) const
 {
-    this->_active_spells.erase(name);
+    auto it = this->_spells.find(slot);
+    if (it != this->_spells.end())
+    {
+        return it->second;
+    }
+    return std::nullopt;
 }
 
-bool game_bot::has_spell(const std::string& name) const
+bool game_bot::has_spell(uint8_t slot) const
 {
-    return this->_active_spells.count(name) > 0;
+    return this->_spells.find(slot) != this->_spells.end();
+}
+
+const std::map<uint8_t, game_bot::simple_spell>& game_bot::spells() const
+{
+    return this->_spells;
 }
 
 // Character state accessor implementations
@@ -534,4 +544,35 @@ async::task<void> game_bot::pattern_bulletin_sections()
         fb::protocol::game::request::bulletin(BULLETIN_ACTION::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
     this->send(fb::protocol::game::request::bulletin(BULLETIN_ACTION::DELETE, section, 0));
     co_return;
+}
+
+// Simple item management method implementations
+void game_bot::update_item(uint8_t slot, const std::string& name, uint32_t count)
+{
+    this->_items[slot] = simple_item(name, count);
+}
+
+void game_bot::remove_item(uint8_t slot)
+{
+    this->_items.erase(slot);
+}
+
+std::optional<game_bot::simple_item> game_bot::get_item(uint8_t slot) const
+{
+    auto it = this->_items.find(slot);
+    if (it != this->_items.end())
+    {
+        return it->second;
+    }
+    return std::nullopt;
+}
+
+bool game_bot::has_item(uint8_t slot) const
+{
+    return this->_items.find(slot) != this->_items.end();
+}
+
+const std::map<uint8_t, game_bot::simple_item>& game_bot::items() const
+{
+    return this->_items;
 }

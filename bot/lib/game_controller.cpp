@@ -12,6 +12,7 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::handle_message);
     this->bind(&game_bot_controller::handle_sequence);
     this->bind(&game_bot_controller::handle_spell_update);
+    this->bind(&game_bot_controller::handle_spell_remove);
     this->bind(&game_bot_controller::handle_chat);
     this->bind(&game_bot_controller::handle_action);
     this->bind(&game_bot_controller::handle_direction);
@@ -28,6 +29,8 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::handle_transfer);
     this->bind(&game_bot_controller::handle_update_external<true>);
     this->bind(&game_bot_controller::handle_update_external<false>);
+    this->bind(&game_bot_controller::handle_item_update);
+    this->bind(&game_bot_controller::handle_item_remove);
 }
 
 bool game_bot_controller::decrypt_policy(int cmd) const
@@ -125,8 +128,16 @@ async::task<void> game_bot_controller::handle_sequence(game_bot& bot, const fb::
 async::task<void> game_bot_controller::handle_spell_update(game_bot&                                         bot,
                                                            const fb::protocol::game::response::spell_update& response)
 {
-    // Add the spell to the bot's active spells by name
-    bot.add_spell(response.name);
+    // Update the bot's spell inventory with the new or updated spell
+    bot.update_spell(response.index, response.name, response.type);
+    co_return;
+}
+
+async::task<void> game_bot_controller::handle_spell_remove(game_bot&                                         bot,
+                                                           const fb::protocol::game::response::spell_remove& response)
+{
+    // Remove the spell from the bot's spell inventory
+    bot.remove_spell(response.index);
     co_return;
 }
 
@@ -244,6 +255,22 @@ async::task<void> game_bot_controller::handle_unbuff(game_bot&                  
 async::task<void> game_bot_controller::handle_update(game_bot&                                   bot,
                                                      const fb::protocol::game::response::update& response)
 {
+    co_return;
+}
+
+async::task<void> game_bot_controller::handle_item_update(game_bot&                                        bot,
+                                                          const fb::protocol::game::response::item_update& response)
+{
+    // Update the bot's inventory with the new or updated item
+    bot.update_item(response.index, response.name, response.count);
+    co_return;
+}
+
+async::task<void> game_bot_controller::handle_item_remove(game_bot&                                        bot,
+                                                          const fb::protocol::game::response::item_remove& response)
+{
+    // Remove the item from the bot's inventory
+    bot.remove_item(static_cast<uint8_t>(response.index));
     co_return;
 }
 

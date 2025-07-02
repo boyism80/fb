@@ -6,6 +6,8 @@
 #include <shared_mutex>
 #include <set>
 #include <string>
+#include <map>
+#include <optional>
 
 namespace fb::bot {
 
@@ -26,6 +28,36 @@ class game_bot : public bot<game_bot>
 {
 public:
     using bot_controller_type = game_bot_controller; ///< Type alias for the bot_controller type
+
+    /**
+     * @brief      Simple item structure for bot inventory tracking.
+     */
+    struct simple_item
+    {
+        std::string name;      ///< Item name
+        uint32_t    count = 0; ///< Item count
+
+        simple_item() = default;
+        simple_item(const std::string& n, uint32_t c) :
+            name(n),
+            count(c)
+        { }
+    };
+
+    /**
+     * @brief      Simple spell structure for bot spell tracking.
+     */
+    struct simple_spell
+    {
+        std::string name; ///< Spell name
+        uint8_t     type; ///< Spell type
+
+        simple_spell() = default;
+        simple_spell(const std::string& n, uint8_t t) :
+            name(n),
+            type(t)
+        { }
+    };
 
 private:
     /**
@@ -58,7 +90,10 @@ private:
     uint8_t               _color = 0;     ///< Color value of the bot
     bool                  _dead  = false; ///< Whether the bot is dead
     std::set<std::string> _active_buffs;  ///< Set of currently active buff names
-    std::set<std::string> _active_spells; ///< Set of currently active spell names
+
+    // Simple item and spell management
+    std::map<uint8_t, simple_item>  _items;  ///< Map of slot index to item info
+    std::map<uint8_t, simple_spell> _spells; ///< Map of slot index to spell info
 
     // Character internal state information from update_internal
     uint8_t  _nation        = 0; ///< Character's nation
@@ -180,10 +215,11 @@ public:
     bool                         has_buff(const std::string& name) const;
 
     // Spell management methods
-    const std::set<std::string>& active_spells() const;
-    void                         add_spell(const std::string& name);
-    void                         remove_spell(const std::string& name);
-    bool                         has_spell(const std::string& name) const;
+    void                                   update_spell(uint8_t slot, const std::string& name, uint8_t type);
+    void                                   remove_spell(uint8_t slot);
+    std::optional<simple_spell>            get_spell(uint8_t slot) const;
+    bool                                   has_spell(uint8_t slot) const;
+    const std::map<uint8_t, simple_spell>& spells() const;
 
     // Character state accessors
     /**
@@ -598,6 +634,50 @@ public:
      * @return     An async task that completes when bulletin browsing is finished.
      */
     async::task<void> pattern_bulletin_sections();
+
+public:
+    // Simple item management methods
+
+    /**
+     * @brief      Updates or adds an item to the inventory.
+     *
+     * @param[in]  slot   The inventory slot index.
+     * @param[in]  name   The item name.
+     * @param[in]  count  The item count.
+     */
+    void update_item(uint8_t slot, const std::string& name, uint32_t count);
+
+    /**
+     * @brief      Removes an item from the inventory.
+     *
+     * @param[in]  slot  The inventory slot index to remove.
+     */
+    void remove_item(uint8_t slot);
+
+    /**
+     * @brief      Gets an item from the inventory by slot.
+     *
+     * @param[in]  slot  The inventory slot index.
+     *
+     * @return     An optional containing the item if found, otherwise nullopt.
+     */
+    std::optional<simple_item> get_item(uint8_t slot) const;
+
+    /**
+     * @brief      Checks if an inventory slot has an item.
+     *
+     * @param[in]  slot  The inventory slot index to check.
+     *
+     * @return     True if the slot has an item, false otherwise.
+     */
+    bool has_item(uint8_t slot) const;
+
+    /**
+     * @brief      Gets all items in the inventory.
+     *
+     * @return     A constant reference to the items map.
+     */
+    const std::map<uint8_t, simple_item>& items() const;
 };
 
 } // namespace fb::bot
