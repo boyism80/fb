@@ -49,17 +49,17 @@ public:
 
 public:
 #ifndef BOT
-    const uint32_t  sequence;
+    const uint32_t  oid;
     const DIRECTION value;
 #else
-    uint32_t  sequence;
+    uint32_t  oid;
     DIRECTION value;
 #endif
 
 public:
 #ifndef BOT
     direction(const fb::game::object& object);
-    direction(uint32_t sequence, DIRECTION value);
+    direction(uint32_t oid, DIRECTION value);
 #else
     direction() = default;
 #endif

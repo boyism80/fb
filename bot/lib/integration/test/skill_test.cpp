@@ -53,7 +53,7 @@ async::task<bool> skill_test::execute()
     // Step 1: Select the test bot for skill operations
     auto bot = bots.front();
 
-    fb::logger::info("Bot {} starting skill learning sequence", bot->fd());
+    fb::logger::info("Bot {} starting skill learning oid", bot->fd());
 
     // Step 2: Increase bot's MP to ensure sufficient mana for spell learning and casting
     auto thread = bot->thread();
@@ -104,10 +104,10 @@ bool skill_test::is_ready() const
     if (bots.empty())
         return false;
 
-    // Movement test requires all bots to have non-zero sequence
+    // Movement test requires all bots to have non-zero oid
     for (const auto& bot : bots)
     {
-        if (bot->sequence() == 0)
+        if (bot->oid() == 0)
             return false;
     }
 

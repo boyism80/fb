@@ -410,6 +410,11 @@ public:
     template <typename ResponseType>
     void bind(const std::function<async::task<void>(BotType&, ResponseType&)>& fn)
     {
+        static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>,
+                      "ResponseType must inherit from fb::protocol::header");
+        static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>,
+                      "ResponseType must have 'static constexpr uint8_t header' member");
+
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_handler_mutex);
 
         this->_deserializer.insert(
@@ -441,6 +446,11 @@ public:
     template <typename Class, typename ResponseType>
     void bind(async::task<void> (Class::*fn)(BotType&, const ResponseType&))
     {
+        static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>,
+                      "ResponseType must inherit from fb::protocol::header");
+        static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>,
+                      "ResponseType must have 'static constexpr uint8_t header' member");
+
         this->bind<ResponseType>(
             std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2));
     }

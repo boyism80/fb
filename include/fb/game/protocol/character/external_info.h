@@ -66,7 +66,7 @@ public:
 
     // Other information
     std::string equipment_text;
-    uint32_t    sequence;
+    uint32_t    oid;
     uint8_t     group_option;
     uint8_t     trade_option;
     uint32_t    unknown;

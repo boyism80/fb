@@ -48,7 +48,7 @@ private:
     datetime                    _next_action_time; ///< Timestamp for the next scheduled action
 
     // Basic bot state
-    uint32_t        _sequence = 0;                  ///< Sequence counter for protocol messages
+    uint32_t        _oid = 0;                       ///< Object ID for protocol messages
     point<uint16_t> _position;                      ///< Current position of the bot in the game world
     fb::stream      _transfer_buffer;               ///< Buffer for handling server transfers
     DIRECTION       _direction = DIRECTION::BOTTOM; ///< Current facing direction of the bot
@@ -149,8 +149,8 @@ public:
 
 public:
     // Game state accessors
-    uint32_t sequence() const;
-    void     set_sequence(uint32_t value);
+    uint32_t oid() const;
+    void     set_oid(uint32_t value);
 
     point<uint16_t> position() const;
     void            set_position(const point<uint16_t>& value);

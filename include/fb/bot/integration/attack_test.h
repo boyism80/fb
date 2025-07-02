@@ -81,10 +81,10 @@ public:
     /**
      * @brief      Checks if all spawned bots are ready for attack test.
      *
-     *             Attack test requires the single bot to have received its sequence ID
-     *             (sequence != 0) before starting the test.
+     *             Attack test requires the single bot to have received its oid ID
+     *             (oid != 0) before starting the test.
      *
-     * @return     True if the spawned bot has non-zero sequence, false otherwise.
+     * @return     True if the spawned bot has non-zero oid, false otherwise.
      */
     bool is_ready() const override;
 

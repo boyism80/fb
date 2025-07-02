@@ -22,14 +22,14 @@ public:
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
-    const uint32_t                      sequence;
+    const uint32_t                      oid;
 #else
     uint16_t             look;
     uint8_t              color;
     std::vector<uint8_t> slots;
     std::string          message;
     uint8_t              interaction;
-    uint32_t             sequence;
+    uint32_t             oid;
 #endif
 
 public:
@@ -37,7 +37,7 @@ public:
     dialog_slot(const fb::model::object&      obj,
                 const std::vector<uint8_t>&   slots,
                 const std::string&            message,
-                uint32_t                      sequence    = 0xFFFFFFFD,
+                uint32_t                      oid         = 0xFFFFFFFD,
                 fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT);
 #else
     dialog_slot() = default;

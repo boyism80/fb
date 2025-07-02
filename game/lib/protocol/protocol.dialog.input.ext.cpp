@@ -9,7 +9,7 @@ dialog_input_ext::dialog_input_ext(const fb::model::object&      obj,
                                    const std::string&            bottom,
                                    int                           maxlen,
                                    bool                          button_prev,
-                                   uint32_t                      sequence,
+                                   uint32_t                      oid,
                                    fb::game::dialog::interaction interaction) :
     obj(obj),
     message(message),
@@ -17,7 +17,7 @@ dialog_input_ext::dialog_input_ext(const fb::model::object&      obj,
     bottom(bottom),
     maxlen(maxlen),
     button_prev(button_prev),
-    sequence(sequence),
+    oid(oid),
     interaction(interaction)
 { }
 #endif
@@ -29,7 +29,7 @@ async::task<void> dialog_input_ext::serialize(fb::stream_writer<big_endian>& wri
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(0x04);
     writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
-    writer.write<uint32_t>(this->sequence);
+    writer.write<uint32_t>(this->oid);
     writer.write<uint8_t>(this->obj.look > 0xBFFF ? 0x02 : 0x01);
     writer.write<uint8_t>(0x01);
     writer.write<uint16_t>(this->obj.look);
@@ -52,7 +52,7 @@ async::task<void> dialog_input_ext::deserialize(fb::stream_reader<big_endian>& r
     co_await header::deserialize(reader);
     reader.read<uint8_t>(); // 0x04
     this->interaction = reader.read<uint8_t>();
-    this->sequence    = reader.read<uint32_t>();
+    this->oid         = reader.read<uint32_t>();
     reader.read<uint8_t>(); // obj type flag
     reader.read<uint8_t>(); // 0x01
     this->look  = reader.read<uint16_t>();

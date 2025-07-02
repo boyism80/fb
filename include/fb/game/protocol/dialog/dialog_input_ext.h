@@ -25,7 +25,7 @@ public:
     const int                           maxlen;
     const bool                          button_prev;
     const fb::game::dialog::interaction interaction;
-    const uint32_t                      sequence;
+    const uint32_t                      oid;
 #else
     uint16_t    look;
     uint8_t     color;
@@ -35,7 +35,7 @@ public:
     uint8_t     maxlen;
     bool        button_prev;
     uint8_t     interaction;
-    uint32_t    sequence;
+    uint32_t    oid;
 #endif
 
 public:
@@ -46,7 +46,7 @@ public:
                      const std::string&            bottom,
                      int                           maxlen      = 0xFF,
                      bool                          button_prev = false,
-                     uint32_t                      sequence    = 0xFFFFFFFD,
+                     uint32_t                      oid         = 0xFFFFFFFD,
                      fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX);
 #else
     dialog_input_ext() = default;

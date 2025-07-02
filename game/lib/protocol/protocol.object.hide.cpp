@@ -4,7 +4,7 @@ namespace fb::protocol::game::response {
 
 #ifndef BOT
 hide::hide(const fb::game::object& object) :
-    hide(object.sequence())
+    hide(object.oid())
 { }
 hide::hide(uint32_t id) :
     id(id)

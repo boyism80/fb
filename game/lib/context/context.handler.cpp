@@ -562,7 +562,7 @@ async::task<bool> context::handle_world(fb::socket<character>& socket, const fb_
     if (ch->map() == this->maps[after.map])
     {
         ch->update_map();
-        ch->update_external(false);
+        ch->update_external(true);
     }
     else
     {
@@ -581,12 +581,12 @@ async::task<bool> context::handle_object_miss(fb::socket<character>& socket, con
     if (map == nullptr)
         co_return true;
 
-    auto obj = map->objects[request.sequence];
+    auto obj = map->objects[request.oid];
     if (obj == nullptr)
         co_return true;
 
     obj->update_external(*ch, false);
-    fb::logger::info("Object miss for {}", obj->sequence());
+    fb::logger::info("Object miss for {}", obj->oid());
 
     co_return true;
 }

@@ -203,7 +203,7 @@ async::task<void> context::on_clan_join_member(const internal_resp::JoinClan& re
         {
             clan->attach_character(weak);
             ch->clan_id(clan->id());
-            ch->update_external(true);
+            ch->update_external(false);
             ch->message(std::format("{} 문파에 가입되었습니다.", clan->name()), MESSAGE_TYPE::NOTIFY);
         }
     });
@@ -219,7 +219,7 @@ async::task<void> context::on_clan_leave_member(const internal_resp::LeaveClan& 
             auto weak = ch->weak_from_this_as<character>();
             clan->detach_character(weak);
             ch->clan_reset();
-            ch->update_external(true);
+            ch->update_external(false);
             if (resp.kick)
                 ch->message("문파에서 추방당했습니다.", MESSAGE_TYPE::NOTIFY);
             else

@@ -99,7 +99,7 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
     sstream << " ]:보조2 :" << (aux_r != nullptr ? aux_r->name() : "없음") << std::endl;
     writer.write<std::string>(sstream.str());
 
-    writer.write<uint32_t>(this->ch.sequence());
+    writer.write<uint32_t>(this->ch.oid());
     writer.write<uint8_t>(this->ch.option(OPTION::GROUP));
     writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
     writer.write<uint32_t>(0x00000000); // unknown
@@ -171,7 +171,7 @@ async::task<void> external_info::deserialize(fb::stream_reader<big_endian>& read
     this->equipment_text = reader.read<std::string, uint8_t>();
 
     // Additional information
-    this->sequence     = reader.read<uint32_t>();
+    this->oid          = reader.read<uint32_t>();
     this->group_option = reader.read<uint8_t>();
     this->trade_option = reader.read<uint8_t>();
     this->unknown      = reader.read<uint32_t>();

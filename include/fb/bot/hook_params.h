@@ -26,7 +26,7 @@ public:
      *
      *             This function is called for each incoming protocol message of the
      *             registered type. It should return true if the message matches the
-     *             criteria for this specific hook (e.g., matching sequence numbers,
+     *             criteria for this specific hook (e.g., matching object IDs,
      *             specific field values, etc.).
      */
     std::function<bool(const fb::protocol::header&)> condition;

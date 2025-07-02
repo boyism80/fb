@@ -42,7 +42,7 @@ void listener_impl::on_direction(object& me)
     this->context.send(me, fb_resp::direction(me), scope::PIVOT);
 }
 
-void listener_impl::on_update_external(object& me, bool light)
+void listener_impl::on_update_external(object& me, bool detailed)
 {
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
@@ -56,7 +56,10 @@ void listener_impl::on_update_external(object& me, bool light)
                 continue;
 
             auto you = std::static_pointer_cast<fb::game::character>(obj);
-            you->send(fb_resp::update_external(static_cast<character&>(me), *you, light));
+            if (detailed)
+                you->send(fb_resp::update_external<true>(static_cast<character&>(me), *you));
+            else
+                you->send(fb_resp::update_external<false>(static_cast<character&>(me), *you));
         }
     }
     else
@@ -65,13 +68,18 @@ void listener_impl::on_update_external(object& me, bool light)
     }
 }
 
-void listener_impl::on_update_external(object& me, object& you, bool light)
+void listener_impl::on_update_external(object& me, object& you, bool detailed)
 {
     if (me.hidden(you))
         return;
 
     if (me.is(OBJECT_TYPE::CHARACTER))
-        you.send(fb_resp::update_external(static_cast<character&>(me), you, light));
+    {
+        if (detailed)
+            you.send(fb_resp::update_external<true>(static_cast<character&>(me), you));
+        else
+            you.send(fb_resp::update_external<false>(static_cast<character&>(me), you));
+    }
     else
         you.send(fb_resp::update(me));
 }

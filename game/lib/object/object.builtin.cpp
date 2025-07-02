@@ -63,7 +63,7 @@ int object::builtin::builtin_id(lua_State* L)
 
     obj->assert_thread();
 
-    lua->pushinteger(obj->sequence());
+    lua->pushinteger(obj->oid());
     return 1;
 }
 
@@ -85,7 +85,7 @@ int object::builtin::builtin_eq(lua_State* L)
         return 0;
     you->assert_thread();
 
-    lua->pushboolean(me->sequence() == you->sequence());
+    lua->pushboolean(me->oid() == you->oid());
     return 1;
 }
 

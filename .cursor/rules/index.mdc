@@ -44,6 +44,7 @@ Do not apply coding standards, documentation requirements, or perform code revie
 
 ### Commit Message Format
 **NO EMOJIS ALLOWED** - Keep commit messages clean and professional
+**ALL COMMIT MESSAGES MUST BE IN ENGLISH** - Follow the same language standard as code comments
 
 Format: `<type>: <short description>`
 
@@ -79,6 +80,7 @@ Types:
 - **Subject line**: Keep concise and focused on the main change
 - **Multiple changes**: List what was done in description section (not detailed how)
 - **Format**: Simple bullet points naming each task/area changed
+- **Comprehensive coverage**: Include ALL modified areas, not just the most recent work
 - **Verification**: Always check git status and diff before committing
 - **Example**:
   ```
@@ -111,7 +113,18 @@ Types:
 
 #### 1. Pager Interruption Prevention
 ```powershell
-# Always append | cat to prevent paging interruption
+# MANDATORY: Always use --no-pager for ALL git commands that may use pager
+git --no-pager diff
+git --no-pager log --oneline
+git --no-pager log
+git --no-pager show
+git --no-pager blame
+git --no-pager status
+git --no-pager branch
+git --no-pager tag
+git --no-pager reflog
+
+# Alternative: append | cat to prevent paging interruption (less preferred)
 git log --oneline | cat
 git diff --staged | cat
 git status | cat

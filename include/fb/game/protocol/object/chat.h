@@ -55,7 +55,7 @@ public:
     const std::string       text;
     const CHAT_TYPE         type;
 #else
-    uint32_t    sequence;
+    uint32_t    oid;
     std::string text;
     CHAT_TYPE   type;
 #endif

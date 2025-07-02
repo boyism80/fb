@@ -20,7 +20,7 @@ public:
 #ifndef BOT
     const fb::game::character& ch;
 #else
-    uint32_t sequence  = 0;
+    uint32_t oid       = 0;
     uint32_t direction = 0;
     uint8_t  cls       = 0;
 #endif

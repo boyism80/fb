@@ -27,7 +27,7 @@ class game_bot_controller : public fb::bot::game_bot_controller
 private:
     fb::locker<std::unique_ptr<bot_integration_test>>
         _current_test; ///< Currently active test case with thread-safe access
-    std::queue<std::unique_ptr<bot_integration_test>> _test_queue; ///< Queue of tests to execute in sequence
+    std::queue<std::unique_ptr<bot_integration_test>> _test_queue; ///< Queue of tests to execute in oid
 
 public:
     using bot_type = game_bot; ///< Type alias for the managed bot type
@@ -158,15 +158,15 @@ private:
     async::task<void> handle_message(game_bot& bot, const fb::protocol::game::response::message& response);
 
     /**
-     * @brief      Handles sequence ID updates with test case triggering.
+     * @brief      Handles oid ID updates with test case triggering.
      *
-     *             When a bot receives a sequence ID, it signals readiness to the current test.
+     *             When a bot receives a oid ID, it signals readiness to the current test.
      *             For movement tests, this triggers the signal_bot_ready() method.
      *
      * @param[in]  bot       The game bot instance.
-     * @param[in]  response  The ID response containing the new sequence number.
+     * @param[in]  response  The ID response containing the new oid number.
      *
-     * @return     An async task that completes when sequence processing is finished.
+     * @return     An async task that completes when oid processing is finished.
      */
     async::task<void> handle_sequence(game_bot& bot, const fb::protocol::game::response::id& response);
 

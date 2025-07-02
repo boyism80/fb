@@ -202,8 +202,8 @@ async::task<void> game_bot_controller::handle_message(game_bot&                 
 
 async::task<void> game_bot_controller::handle_sequence(game_bot& bot, const fb::protocol::game::response::id& response)
 {
-    // Integration test: Validate sequence ID consistency
-    bot.set_sequence(response.sequence);
+    // Integration test: Validate object ID consistency
+    bot.set_oid(response.oid);
     co_return;
 }
 
@@ -219,9 +219,9 @@ async::task<void> game_bot_controller::handle_position(game_bot&                
 async::task<void> game_bot_controller::handle_move(game_bot& bot, const fb::protocol::game::response::move& response)
 {
     // Integration test: Validate movement mechanics
-    if (bot.sequence() != response.id)
+    if (bot.oid() != response.id)
     {
-        // TODO: Log sequence mismatch for test analysis
+        // TODO: Log object ID mismatch for test analysis
         co_return;
     }
 

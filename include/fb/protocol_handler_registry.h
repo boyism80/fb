@@ -102,12 +102,15 @@ public:
      * @param[in]  limit     Maximum number of calls allowed within the duration window (default: 10).
      */
     template <typename Class, typename Request>
-    requires ProtocolHeader<Request>
     void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
               uint8_t                                    header,
               const std::chrono::steady_clock::duration& duration = 1s,
               uint32_t                                   limit    = 10)
     {
+        static_assert(ProtocolHeader<Request>, "Request type must inherit from fb::protocol::header");
+        static_assert(std::is_same_v<decltype(Request::header), const uint8_t>,
+                      "Request type must have 'static constexpr uint8_t header' member");
+
         // Add deserializer
         this->_deserializers.insert({header, [](auto& reader) -> async::task<fb::protocol::header*> {
                                          auto protocol = new Request();
@@ -138,11 +141,14 @@ public:
      * @param[in]  limit     Maximum number of calls allowed within the duration window (default: 10).
      */
     template <typename Class, typename Request>
-    requires ProtocolHeader<Request>
     void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
               const std::chrono::steady_clock::duration& duration = 1s,
               uint32_t                                   limit    = 10)
     {
+        static_assert(ProtocolHeader<Request>, "Request type must inherit from fb::protocol::header");
+        static_assert(std::is_same_v<decltype(Request::header), const uint8_t>,
+                      "Request type must have 'static constexpr uint8_t header' member");
+
         this->bind(fn, Request::header, duration, limit);
     }
 

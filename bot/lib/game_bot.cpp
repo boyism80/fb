@@ -36,14 +36,14 @@ game_bot::~game_bot()
 { }
 
 // Game state accessor implementations
-uint32_t game_bot::sequence() const
+uint32_t game_bot::oid() const
 {
-    return this->_sequence;
+    return this->_oid;
 }
 
-void game_bot::set_sequence(uint32_t value)
+void game_bot::set_oid(uint32_t value)
 {
-    this->_sequence = value;
+    this->_oid = value;
 }
 
 point<uint16_t> game_bot::position() const
@@ -477,7 +477,7 @@ async::task<void> game_bot::pattern_move()
     static std::uniform_int_distribution<> dist(0, directions.size() - 1);
 
     auto direction = directions.at(dist(gen));
-    this->send(fb::protocol::game::request::move{direction, this->_sequence, this->_position});
+    this->send(fb::protocol::game::request::move{direction, this->_oid, this->_position});
 
     // Update internal direction state
     this->_direction = direction;

@@ -9,7 +9,7 @@ object::object(fb::game::context& context, const fb::model::object& model, const
     fb::thread_switchable(params.id),
     context(context),
     listener(context.listener),
-    _sequence(params.id),
+    _oid(params.id),
     _model(model),
     _position(params.position),
     _direction(params.direction),
@@ -20,12 +20,10 @@ object::object(fb::game::context& context, const fb::model::object& model, const
 }
 
 object::object(const object& right) :
-    object(right.context,
-           right._model,
-           initial_params{.id        = right._sequence,
-                          .position  = right._position,
-                          .direction = right._direction,
-                          .map       = right._map})
+    object(
+        right.context,
+        right._model,
+        initial_params{.id = right._oid, .position = right._position, .direction = right._direction, .map = right._map})
 { }
 
 object::~object()
@@ -64,16 +62,16 @@ OBJECT_TYPE object::what() const
     return this->_model.what();
 }
 
-void object::update_external(bool light)
+void object::update_external(bool detailed)
 {
     this->assert_thread();
-    this->listener.on_update_external(*this, light);
+    this->listener.on_update_external(*this, detailed);
 }
 
-void object::update_external(object& to, bool light)
+void object::update_external(object& to, bool detailed)
 {
     this->assert_thread();
-    this->listener.on_update_external(*this, to, light);
+    this->listener.on_update_external(*this, to, detailed);
 }
 
 bool object::super_hide() const
@@ -105,21 +103,21 @@ async::task<size_t> object::send(const fb::protocol::header& response, bool encr
     co_return 0;
 }
 
-uint32_t object::sequence() const
+uint32_t object::oid() const
 {
     this->assert_thread();
 
     if (this->_map == nullptr)
         return 0xFFFFFFFD;
 
-    return this->_sequence;
+    return this->_oid;
 }
 
-void object::sequence(uint32_t value)
+void object::oid(uint32_t value)
 {
     this->assert_thread();
 
-    this->_sequence = value;
+    this->_oid = value;
 }
 
 void object::chat(const std::string& message, CHAT_TYPE chat_type, bool decorate)
@@ -576,7 +574,7 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         this->update_id();
         this->update_map(*map);
         this->update_position();
-        this->update_external(false);
+        this->update_external(true);
         this->update_bgm(map->model.bgm, 100);
 
         for (auto obj : map->nears(this->_position))
@@ -799,7 +797,7 @@ void object::hide(object& to, DESTROY_TYPE destroy_type)
 fb::thread* object::thread() const
 {
     if (this->_map == nullptr)
-        return this->context.threads.modular(this->_sequence);
+        return this->context.threads.modular(this->_oid);
     else
         return this->context.threads.modular(this->_map->model.id);
 }
@@ -830,7 +828,7 @@ bool object::operator== (const object& right) const
 {
     this->assert_thread();
 
-    return this->_map == right._map && this->sequence() == right.sequence();
+    return this->_map == right._map && this->oid() == right.oid();
 }
 
 bool object::operator!= (const object& right) const

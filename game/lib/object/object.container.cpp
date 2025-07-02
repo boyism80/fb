@@ -17,21 +17,21 @@ uint32_t object_container::allocate_seq()
     }
 
     // Generate new sequence if no reusable sequence available
-    for (int i = this->_sequence; i < 0xFFFF; i++)
+    for (int i = this->_oid; i < 0xFFFF; i++)
     {
         if (this->_ptrs.find(i) != this->_ptrs.end())
             continue;
 
-        this->_sequence = i + 1;
+        this->_oid = i + 1;
         return i;
     }
 
-    for (int i = 1; i < this->_sequence; i++)
+    for (int i = 1; i < this->_oid; i++)
     {
         if (this->_ptrs.find(i) != this->_ptrs.end())
             continue;
 
-        this->_sequence = i + 1;
+        this->_oid = i + 1;
         return i;
     }
 
@@ -71,7 +71,7 @@ std::shared_ptr<fb::game::object> object_container::at(uint32_t i)
 void object_container::push(fb::game::object& obj)
 {
     auto seq = this->allocate_seq();
-    obj.sequence(seq);
+    obj.oid(seq);
 
     this->_ptrs.insert({seq, std::static_pointer_cast<fb::game::object>(obj.shared_from_this())});
 }
@@ -87,7 +87,7 @@ fb::game::object& object_container::pop(uint32_t seq)
 
 fb::game::object& object_container::pop(fb::game::object& obj)
 {
-    return this->pop(obj.sequence());
+    return this->pop(obj.oid());
 }
 
 fb::game::object* object_container::try_pop(uint32_t seq)
@@ -109,7 +109,7 @@ fb::game::object* object_container::try_pop(uint32_t seq)
 
 fb::game::object* object_container::try_pop(fb::game::object& obj)
 {
-    return this->try_pop(obj.sequence());
+    return this->try_pop(obj.oid());
 }
 
 fb::game::object* object_container::operator[] (uint32_t seq)
@@ -148,7 +148,7 @@ bool object_container::contains(uint32_t fd) const
 {
     for (auto& [seq, obj] : *this)
     {
-        if (obj->sequence() == fd)
+        if (obj->oid() == fd)
             return true;
     }
 

@@ -25,7 +25,7 @@ private:
     {
         uint16_t x;
         uint16_t y;
-        uint32_t sequence;
+        uint32_t oid;
         uint16_t look;
         uint8_t  color;
         uint8_t  direction;

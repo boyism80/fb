@@ -89,10 +89,10 @@ bool attack_test::is_ready() const
     if (bots.empty())
         return false;
 
-    // Movement test requires all bots to have non-zero sequence
+    // Movement test requires all bots to have non-zero oid
     for (const auto& bot : bots)
     {
-        if (bot->sequence() == 0)
+        if (bot->oid() == 0)
             return false;
     }
 

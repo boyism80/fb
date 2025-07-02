@@ -31,7 +31,7 @@ class context;
  *             lookup capabilities and type-based filtering.
  *
  *             Key features:
- *             - Unique sequence ID generation for objects
+ *             - Unique object ID generation for objects
  *             - Efficient object lookup by ID and reference
  *             - Type-based object iteration and filtering
  *             - STL-compatible iterator interface
@@ -48,8 +48,8 @@ public:
 
 private:
     ptrs                 _ptrs;          ///< Storage for object shared pointers
-    uint32_t             _sequence = 1;  ///< Next available sequence ID for new objects
-    std::queue<uint32_t> _available_seq; ///< Queue for reusing sequence IDs
+    uint32_t             _oid = 1;       ///< Next available object ID for new objects
+    std::queue<uint32_t> _available_seq; ///< Queue for reusing object IDs
 
 public:
     fb::game::map& owner; ///< Reference to the map that owns this container
@@ -72,13 +72,13 @@ public:
 
 private:
     /**
-     * @brief      Allocates the next available sequence ID for a new object.
+     * @brief      Allocates the next available object ID for a new object.
      *
-     *             Returns a reusable sequence ID from the queue if available,
-     *             otherwise generates a new unused sequence ID for assignment
+     *             Returns a reusable object ID from the queue if available,
+     *             otherwise generates a new unused object ID for assignment
      *             to a new object being added to the container.
      *
-     * @return     The allocated sequence ID.
+     * @return     The allocated object ID.
      */
     uint32_t allocate_seq();
 
@@ -135,10 +135,10 @@ public:
     /**
      * @brief      Gets the object with the specified ID.
      *
-     *             Retrieves the object associated with the given sequence ID,
+     *             Retrieves the object associated with the given object ID,
      *             throwing an exception if the object is not found.
      *
-     * @param[in]  i     The sequence ID of the object to retrieve.
+     * @param[in]  i     The object ID of the object to retrieve.
      *
      * @return     Reference to the object with the specified ID.
      */
@@ -148,7 +148,7 @@ public:
      * @brief      Adds an object to the container.
      *
      *             Inserts the specified object into the container, assigning it
-     *             a unique sequence ID and making it available for lookup.
+     *             a unique object ID and making it available for lookup.
      *
      * @param      obj   The object to add to the container.
      */
@@ -160,7 +160,7 @@ public:
      *             Removes the object from the container and returns a reference
      *             to it, transferring ownership back to the caller.
      *
-     * @param[in]  fd    The sequence ID of the object to remove.
+     * @param[in]  fd    The object ID of the object to remove.
      *
      * @return     Reference to the removed object.
      */
@@ -183,7 +183,7 @@ public:
      *             Tries to remove the object from the container, returning a pointer
      *             to it if successful, or nullptr if the object is not found.
      *
-     * @param[in]  fd    The sequence ID of the object to remove.
+     * @param[in]  fd    The object ID of the object to remove.
      *
      * @return     Pointer to the removed object, or nullptr if not found.
      */
@@ -227,10 +227,10 @@ public:
     /**
      * @brief      Checks if the container contains an object with the specified ID.
      *
-     *             Determines whether an object with the given sequence ID is
+     *             Determines whether an object with the given object ID is
      *             currently managed by this container.
      *
-     * @param[in]  fd    The sequence ID to check for.
+     * @param[in]  fd    The object ID to check for.
      *
      * @return     True if an object with the ID exists, false otherwise.
      */
@@ -241,9 +241,9 @@ public:
      * @brief      Array indexer operator for object lookup.
      *
      *             Provides convenient array-style access to objects by their
-     *             sequence ID, returning nullptr if the object is not found.
+     *             object ID, returning nullptr if the object is not found.
      *
-     * @param[in]  fd    The sequence ID of the object to retrieve.
+     * @param[in]  fd    The object ID of the object to retrieve.
      *
      * @return     Pointer to the object with the specified ID, or nullptr if not found.
      */
