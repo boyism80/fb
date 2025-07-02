@@ -1102,6 +1102,9 @@ async::task<bool> context::handle_throw_item(fb::socket<character>& socket, cons
 
 async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_reqs::spell_cast& request)
 {
+    if (request.slot == 0)
+        co_return false;
+
     auto ch = socket.data();
     if (ch->inited() == false)
         co_return true;
