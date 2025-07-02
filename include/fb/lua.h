@@ -1555,18 +1555,22 @@ fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
 #else
     auto root = static_cast<fb::lua::root*>(this->owner);
     root->dump(fname);
-    if (root->_bytecodes.contains(fname) == false)
-    {
-        fb::logger::fatal("cannot find script {}", fname);
-        return *this;
-    }
+    root->_bytecodes.read([this, &fname](const auto& bytecodes) -> void {
+        auto it = bytecodes.find(fname);
+        if (it == bytecodes.end())
+        {
+            fb::logger::fatal("cannot find script {}", fname);
+            return;
+        }
 
-    auto& bytes = root->_bytecodes[fname];
-    if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
-        return *this;
+        const auto& bytes = it->second;
+        if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
+            return;
 
-    if (lua_pcall(*this, 0, LUA_MULTRET, 0))
-        return *this;
+        if (lua_pcall(*this, 0, LUA_MULTRET, 0))
+            return;
+    });
+
 #endif
     return *this;
 }
