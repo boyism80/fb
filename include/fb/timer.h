@@ -24,6 +24,13 @@ class thread;
 class timer
 {
 public:
+    enum class repeat_type : uint8_t
+    {
+        once   = 0,
+        repeat = 1,
+    };
+
+public:
     friend class fb::thread;
 
 public:
@@ -35,11 +42,14 @@ public:
      */
     using handle_callback_type = std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>;
 
+private:
+    bool _canceled = false;
+
 public:
-    const handle_callback_type fn;                 ///< The callback function to execute
-    const fb::model::timespan  duration;           ///< The timer interval or delay
-    const bool                 disposable = false; ///< Whether this is a one-shot timer
-    fb::model::datetime        begin;              ///< The start time of the timer
+    const handle_callback_type fn;       ///< The callback function to execute
+    const fb::model::timespan  duration; ///< The timer interval or delay
+    const repeat_type          repeat;   ///< The timer repeat type
+    fb::model::datetime        begin;    ///< The start time of the timer
 
 private:
     /**
@@ -47,13 +57,13 @@ private:
      *
      *             Creates a timer that will execute the given callback function
      *             after the specified duration. The timer can be configured as
-     *             disposable (executes once) or repeating.
+     *             once (executes once) or repeat.
      *
      * @param[in]  fn          The callback function to execute when the timer fires
      * @param[in]  duration    The time interval for the timer
-     * @param[in]  disposable  If true, the timer executes once and is destroyed
+     * @param[in]  repeat      The timer repeat type
      */
-    timer(const handle_callback_type& fn, const fb::model::timespan& duration, bool disposable);
+    timer(const handle_callback_type& fn, const fb::model::timespan& duration, repeat_type repeat);
 
     /**
      * @brief      Copy constructor (deleted).
@@ -92,6 +102,27 @@ public:
      */
     ~timer()
     { }
+
+public:
+    /**
+     * @brief      Cancels the timer.
+     *
+     *             Prevents the timer from executing its callback function.
+     */
+    void cancel()
+    {
+        this->_canceled = true;
+    }
+
+    /**
+     * @brief      Checks if the timer has been canceled.
+     *
+     * @return     True if the timer has been canceled, false otherwise.
+     */
+    bool canceled() const
+    {
+        return this->_canceled;
+    }
 };
 
 } // namespace fb

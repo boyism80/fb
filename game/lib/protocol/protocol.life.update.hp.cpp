@@ -17,7 +17,7 @@ async::task<void> update_hp::serialize(fb::stream_writer<big_endian>& writer) co
 
     auto percent = (uint8_t)std::ceil((this->me.hp() / static_cast<double>(this->me.base_hp())) * 100);
     writer.write<uint8_t>(header);
-    writer.write<uint32_t>(this->me.sequence());
+    writer.write<uint32_t>(this->me.oid());
     writer.write<uint8_t>(this->critical);
     writer.write<uint8_t>(percent);
     writer.write<uint32_t>(this->damage);
@@ -27,7 +27,7 @@ async::task<void> update_hp::serialize(fb::stream_writer<big_endian>& writer) co
 async::task<void> update_hp::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->sequence = reader.read<uint32_t>();
+    this->oid      = reader.read<uint32_t>();
     this->critical = reader.read<uint8_t>();
     this->percent  = reader.read<uint8_t>();
     this->damage   = reader.read<uint32_t>();

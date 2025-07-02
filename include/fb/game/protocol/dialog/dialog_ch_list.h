@@ -25,10 +25,10 @@ public:
     const std::string                   message;
     const bool                          button_prev;
     const fb::game::dialog::interaction interaction;
-    const uint32_t                      sequence;
+    const uint32_t                      oid;
 #else
     uint8_t                  interaction;
-    uint32_t                 sequence;
+    uint32_t                 oid;
     uint8_t                  sex;
     uint8_t                  state;
     uint16_t                 face;
@@ -50,7 +50,7 @@ public:
                    const std::vector<std::string>& list,
                    const std::string&              message,
                    bool                            button_prev,
-                   uint32_t                        sequence    = 0xFFFFFFFD,
+                   uint32_t                        oid         = 0xFFFFFFFD,
                    fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::LIST);
 #else
     dialog_ch_list() = default;

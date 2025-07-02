@@ -18,15 +18,14 @@ void fb::thread::handle_thread(uint8_t index)
     while (!this->_exit)
     {
         std::function<void()> func;
-        {
-            auto _ = std::lock_guard(this->_mutex_queue);
 
-            if (this->_queue.empty() == false)
+        this->_queue.write([&func](auto& queue) {
+            if (queue.empty() == false)
             {
-                func = this->_queue.front();
-                this->_queue.pop();
+                func = queue.front();
+                queue.pop();
             }
-        }
+        });
 
         if (func != nullptr)
         {
@@ -46,25 +45,33 @@ void fb::thread::handle_thread(uint8_t index)
 
 void fb::thread::handle_idle()
 {
-    auto _ = std::lock_guard(this->_mutex_timer);
+    this->_timers.write([&](auto& timers) {
+        auto now = fb::model::datetime();
+        for (int i = timers.size() - 1; i >= 0; i--)
+        {
+            auto timer = timers[i].get();
+            if (timer->canceled())
+            {
+                timers.erase(timers.begin() + i);
+                continue;
+            }
 
-    auto now = fb::model::datetime();
-    for (int i = this->_timers.size() - 1; i >= 0; i--)
-    {
-        auto timer = this->_timers[i].get();
-        if (now < timer->begin + timer->duration)
-            continue;
+            if (now < timer->begin + timer->duration)
+                continue;
 
-        auto disposable = timer->disposable;
-        auto fn         = fb::timer::handle_callback_type{timer->fn};
-        async::awaitable_then(fn(now, this->_thread.get_id()), [timer, disposable, now](auto result) {
-            if (!disposable)
-                timer->begin = now;
-        });
+            auto repeat = timer->repeat;
+            auto fn     = fb::timer::handle_callback_type{timer->fn};
+            async::awaitable_then(fn(now, this->_thread.get_id()), [timer, repeat, now](auto result) {
+                if (repeat == fb::timer::repeat_type::repeat)
+                    timer->begin = now;
+            });
 
-        if (disposable)
-            this->_timers.erase(this->_timers.begin() + i);
-    }
+            if (timer->repeat == fb::timer::repeat_type::once)
+            {
+                timers.erase(timers.begin() + i);
+            }
+        }
+    });
 }
 
 void fb::thread::assert_exec() const
@@ -89,33 +96,36 @@ void fb::thread::exit()
         fb::logger::fatal(e.what());
     }
 
-    this->_mutex_timer.lock();
-    this->_timers.clear();
-    this->_mutex_timer.unlock();
+    this->_timers.write([](auto& timers) {
+        timers.clear();
+    });
 }
 
-void fb::thread::settimer(const fb::timer::handle_callback_type& fn,
-                          const fb::model::timespan&             duration,
-                          bool                                   disposable)
+std::shared_ptr<fb::timer> fb::thread::settimer(const fb::timer::handle_callback_type& fn,
+                                                const fb::model::timespan&             duration,
+                                                fb::timer::repeat_type                 repeat)
 {
-    auto _ = std::lock_guard(this->_mutex_timer);
+    return this->_timers.write([&](auto& timers) {
+        auto ptr = new fb::timer(
+            [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {
+                auto index = this->_index;
+                try
+                {
+                    co_await fn(fb::model::datetime(), this->_thread.get_id());
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::fatal(std::format("timer error in thread {} : {}", index, e.what()));
+                }
+                co_return;
+            },
+            duration,
+            repeat);
 
-    auto timer = new fb::timer(
-        [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {
-            auto index = this->_index;
-            try
-            {
-                co_await fn(fb::model::datetime(), this->_thread.get_id());
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal(std::format("timer error in thread {} : {}", index, e.what()));
-            }
-            co_return;
-        },
-        duration,
-        disposable);
-    this->_timers.push_back(std::unique_ptr<fb::timer>(timer));
+        auto shared_ptr = std::shared_ptr<fb::timer>(ptr);
+        timers.push_back(shared_ptr);
+        return shared_ptr;
+    });
 }
 
 async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
@@ -127,7 +137,7 @@ async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
             co_return;
         },
         delay,
-        true);
+        fb::timer::repeat_type::once);
 
     return promise->task();
 }
@@ -136,29 +146,29 @@ void fb::thread::enqueue(const handle_func_type<void>& fn,
                          const handle_error_type&      error,
                          const std::function<void()>&  callback)
 {
-    auto _ = std::lock_guard(_mutex_queue);
-
-    this->_queue.push([=, this]() {
-        async::awaitable_then(fn(*this), [=](async::awaitable_result<void> result) {
-            try
-            {
-                callback();
-            }
-            catch (std::exception& e)
-            {
-                error(e);
-            }
-            catch (...)
-            {
+    this->_queue.write([=, this](auto& queue) {
+        queue.push([=, this]() {
+            async::awaitable_then(fn(*this), [=](async::awaitable_result<void> result) {
                 try
                 {
-                    std::rethrow_exception(std::current_exception());
+                    callback();
                 }
                 catch (std::exception& e)
                 {
                     error(e);
                 }
-            }
+                catch (...)
+                {
+                    try
+                    {
+                        std::rethrow_exception(std::current_exception());
+                    }
+                    catch (std::exception& e)
+                    {
+                        error(e);
+                    }
+                }
+            });
         });
     });
 }

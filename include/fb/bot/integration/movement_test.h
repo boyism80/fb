@@ -10,7 +10,7 @@ namespace fb::bot::integration {
 /**
  * @brief      Movement integration test implementation.
  *
- *             Tests bot movement by checking if all bots have non-zero sequence IDs,
+ *             Tests bot movement by checking if all bots have non-zero oid IDs,
  *             then moving the last bot downward by 5 positions with 1-second intervals.
  */
 class movement_test : public bot_integration_test
@@ -41,7 +41,7 @@ public:
      * @brief      Executes the movement test.
      *
      *             Moves the last bot downward step by step with timing intervals.
-     *             This method is called only when all bots are ready (have non-zero sequence).
+     *             This method is called only when all bots are ready (have non-zero oid).
      *
      * @return     A task that completes when movement test finishes, returning true on success.
      */
@@ -85,10 +85,10 @@ public:
     /**
      * @brief      Checks if all spawned bots are ready for movement test.
      *
-     *             Movement test requires all bots to have received their sequence IDs
-     *             (sequence != 0) before starting the test.
+     *             Movement test requires all bots to have received their oid IDs
+     *             (oid != 0) before starting the test.
      *
-     * @return     True if all spawned bots have non-zero sequence, false otherwise.
+     * @return     True if all spawned bots have non-zero oid, false otherwise.
      */
     bool is_ready() const override;
 

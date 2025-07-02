@@ -240,13 +240,13 @@ void character::role(ROLE value)
     this->_role = value;
 }
 
-void character::attack(DURATION duration)
+async::task<void> character::attack(DURATION duration)
 {
     this->assert_thread();
     try
     {
         this->assert_state({STATE::RIDING, STATE::GHOST});
-        life::attack(duration);
+        co_await life::attack(duration);
     }
     catch (const std::exception& e)
     {
@@ -326,7 +326,7 @@ void character::look(uint16_t value)
     this->assert_thread();
 
     this->_look = value;
-    this->update_external(false);
+    this->update_external(true);
 }
 
 uint8_t character::color() const
@@ -341,7 +341,7 @@ void character::color(uint8_t value)
     this->assert_thread();
 
     this->_color = value;
-    this->update_external(false);
+    this->update_external(true);
 }
 
 std::optional<uint8_t> character::armor_color() const
@@ -356,7 +356,7 @@ void character::armor_color(std::optional<uint8_t> value)
     this->assert_thread();
 
     this->_armor_color = value;
-    this->update_external(false);
+    this->update_external(true);
 }
 
 uint8_t character::current_armor_color() const
@@ -488,7 +488,7 @@ void character::sex(SEX value)
     this->assert_thread();
 
     this->_sex = value;
-    this->update_external(false);
+    this->update_external(true);
 }
 
 STATE character::state() const
@@ -539,7 +539,7 @@ void character::state(STATE value)
     this->assert_thread();
 
     this->_state = value;
-    this->update_external(false);
+    this->update_external(true);
 }
 
 CLASS character::cls() const
@@ -956,7 +956,7 @@ void character::clan_reset()
     this->assert_thread();
 
     this->_clan_id.reset();
-    this->update_external(true);
+    this->update_external(false);
 }
 
 void character::assert_state(STATE value) const
@@ -1925,7 +1925,7 @@ async::task<void> character::death_penalty()
         {
             this->items.equipment_off(parts);
             equipment->death_cid(this->id());
-            co_await equipment->map(this->map(), this->position());
+            std::ignore = co_await equipment->map(this->map(), this->position());
         }
         else if (this->items.free())
         {

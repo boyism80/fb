@@ -84,7 +84,7 @@ public:
     /**
      * @brief      Checks if all spawned bots are ready for skill test.
      *
-     *             Skill test requires all bots to have received their sequence IDs
+     *             Skill test requires all bots to have received their oid IDs
      *             and be in proper spell-casting ready state before starting.
      *
      * @return     True if all spawned bots are ready for skill test, false otherwise.

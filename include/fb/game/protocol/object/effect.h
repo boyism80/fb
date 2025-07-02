@@ -21,7 +21,7 @@ public:
     const fb::game::object& me;
     const uint8_t           value;
 #else
-    uint32_t sequence;
+    uint32_t oid;
     uint8_t  value;
 #endif
 

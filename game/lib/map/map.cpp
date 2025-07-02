@@ -270,7 +270,7 @@ std::vector<std::shared_ptr<fb::game::object>> map::belows(const fb::model::poin
         });
 
         std::sort(objects.begin(), objects.end(), [](auto obj1, auto obj2) {
-            return obj1->sequence() > obj2->sequence();
+            return obj1->oid() > obj2->oid();
         });
     }
     catch (std::exception&)

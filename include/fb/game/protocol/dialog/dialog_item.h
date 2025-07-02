@@ -23,7 +23,7 @@ public:
     const std::string                   message;
     const uint16_t                      pursuit;
     const fb::game::dialog::interaction interaction;
-    const uint32_t                      sequence;
+    const uint32_t                      oid;
 #else
     struct item_data
     {
@@ -39,7 +39,7 @@ public:
     std::string            message;
     uint16_t               pursuit;
     uint8_t                interaction;
-    uint32_t               sequence;
+    uint32_t               oid;
     std::vector<item_data> items;
 #endif
 
@@ -48,7 +48,7 @@ public:
     dialog_item(const fb::model::object&            obj,
                 const fb::game::dialog::item_pairs& items,
                 const std::string&                  message,
-                uint32_t                            sequence    = 0xFFFFFFFD,
+                uint32_t                            oid         = 0xFFFFFFFD,
                 uint16_t                            pursuit     = 0xFFFF,
                 fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::ITEM);
 #else

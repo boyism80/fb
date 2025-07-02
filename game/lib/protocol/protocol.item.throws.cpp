@@ -26,10 +26,10 @@ async::task<void> item_throws::serialize(fb::stream_writer<big_endian>& writer) 
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint32_t>(this->ch.sequence());
+    writer.write<uint32_t>(this->ch.oid());
     writer.write<uint16_t>(this->item.look());
     writer.write<uint8_t>(this->item.color());
-    writer.write<uint32_t>(this->item.sequence());
+    writer.write<uint32_t>(this->item.oid());
     writer.write<uint16_t>(this->ch.x());
     writer.write<uint16_t>(this->ch.y());
     writer.write<uint16_t>(this->to.x);

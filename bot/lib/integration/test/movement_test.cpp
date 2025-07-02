@@ -31,6 +31,8 @@ async::task<void> movement_test::initialize(game_bot_controller& controller)
 
 async::task<bool> movement_test::execute()
 {
+    constexpr auto interval = 250ms;
+
     if (this->_test_running || this->_test_completed)
         co_return false;
 
@@ -55,9 +57,9 @@ async::task<bool> movement_test::execute()
     for (auto i = 0; i < MOVEMENT_STEPS; i++)
     {
         auto position = target_bot->position();
-        auto sequence = target_bot->sequence();
+        auto oid      = target_bot->oid();
 
-        target_bot->send(fb::protocol::game::request::move{DIRECTION::BOTTOM, sequence, position});
+        target_bot->send(fb::protocol::game::request::move{DIRECTION::BOTTOM, oid, position});
 
         position.y += 1;
         target_bot->set_position(position);
@@ -69,7 +71,7 @@ async::task<bool> movement_test::execute()
                           position.y);
 
         auto thread = target_bot->thread();
-        co_await thread->sleep(1s);
+        co_await thread->sleep(interval);
     }
 
     this->_test_completed = true;
@@ -99,10 +101,10 @@ bool movement_test::is_ready() const
     if (bots.empty())
         return false;
 
-    // Movement test requires all bots to have non-zero sequence
+    // Movement test requires all bots to have non-zero oid
     for (const auto& bot : bots)
     {
-        if (bot->sequence() == 0)
+        if (bot->oid() == 0)
             return false;
     }
 

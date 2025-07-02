@@ -7,6 +7,7 @@
 #include <atomic>
 #include <mutex>
 #include <memory>
+#include <type_traits>
 
 // Microsoft cpp-async library
 #include <async/task.h>
@@ -407,6 +408,110 @@ public:
         {
             this->_async_mutex.unlock();
             throw;
+        }
+    }
+};
+
+/**
+ * @brief      A simple thread-safe wrapper with recursive locking support.
+ *
+ *             This template class wraps a value of type ValueType and provides
+ *             thread-safe access with support for recursive locking from the same thread.
+ *             Uses std::recursive_mutex for simple and reliable recursive locking.
+ *
+ * @tparam     ValueType  The type of value to protect with synchronization.
+ */
+template <typename ValueType>
+class recursive_locker
+{
+private:
+    mutable std::recursive_mutex _mutex;
+    ValueType                    _value;
+
+public:
+    /**
+     * @brief      Constructs a recursive_locker with the given arguments forwarded to ValueType.
+     *
+     * @param[in]  args  Arguments to forward to ValueType's constructor.
+     *
+     * @tparam     Args  Parameter pack for constructor arguments.
+     */
+    template <typename... Args>
+    recursive_locker(Args&&... args) :
+        _value(std::forward<Args>(args)...)
+    { }
+
+    /**
+     * @brief      Copy constructor is deleted to prevent copying.
+     */
+    recursive_locker(const recursive_locker&) = delete;
+
+    /**
+     * @brief      Move constructor is deleted to prevent moving.
+     */
+    recursive_locker(recursive_locker&&) = delete;
+
+    /**
+     * @brief      Destructor is defaulted.
+     */
+    ~recursive_locker() = default;
+
+    /**
+     * @brief      Performs an operation with recursive lock access.
+     *
+     *             Acquires a recursive lock and executes the provided function
+     *             with access to the wrapped value. The same thread can acquire
+     *             the lock multiple times without deadlocking.
+     *
+     * @param[in]  fn    Function to execute with access to the value.
+     *
+     * @tparam     Func  The function type (lambda or function object).
+     *
+     * @return     The value returned by the function.
+     */
+    template <typename Func>
+    auto lock(Func&& fn) -> decltype(fn(std::declval<ValueType&>()))
+    {
+        std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+
+        if constexpr (std::is_void_v<decltype(fn(this->_value))>)
+        {
+            fn(this->_value);
+        }
+        else
+        {
+            return fn(this->_value);
+        }
+    }
+
+    // Backward compatibility with existing locker interface
+    template <typename Func>
+    auto write(Func&& fn) -> decltype(fn(std::declval<ValueType&>()))
+    {
+        std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+
+        if constexpr (std::is_void_v<decltype(fn(this->_value))>)
+        {
+            fn(this->_value);
+        }
+        else
+        {
+            return fn(this->_value);
+        }
+    }
+
+    template <typename Func>
+    auto read(Func&& fn) const -> decltype(fn(std::declval<const ValueType&>()))
+    {
+        std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+
+        if constexpr (std::is_void_v<decltype(fn(this->_value))>)
+        {
+            fn(this->_value);
+        }
+        else
+        {
+            return fn(this->_value);
         }
     }
 };

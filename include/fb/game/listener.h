@@ -133,10 +133,10 @@ public:
      *             visible to other players, such as equipment changes, status
      *             effects, or other visual modifications.
      *
-     * @param      me     The object whose appearance is being updated.
-     * @param[in]  light  Whether to use light update (minimal data) or full update.
+     * @param      me        The object whose appearance is being updated.
+     * @param[in]  detailed  Whether to use detail update (minimal data) or full update.
      */
-    void on_update_external(fb::game::object& me, bool light) override final;
+    void on_update_external(fb::game::object& me, bool detailed) override final;
 
     /**
      * @brief      Called when an object's external appearance needs updating for a specific observer.
@@ -145,11 +145,11 @@ public:
      *             a specific observer, allowing for personalized or conditional
      *             appearance updates.
      *
-     * @param      me     The object whose appearance is being updated.
-     * @param      you    The observer who will receive the update.
-     * @param[in]  light  Whether to use light update (minimal data) or full update.
+     * @param      me        The object whose appearance is being updated.
+     * @param      you       The observer who will receive the update.
+     * @param[in]  detailed  Whether to use detail update (minimal data) or full update.
      */
-    void on_update_external(fb::game::object& me, fb::game::object& you, bool light) override final;
+    void on_update_external(fb::game::object& me, fb::game::object& you, bool detailed) override final;
 
     /**
      * @brief      Called when an object is hidden from view.
@@ -248,7 +248,7 @@ public:
      *
      * @param      me    The life entity performing the attack
      */
-    async::task<void> on_attack(life& me, DURATION duration = DURATION::ATTACK) override final;
+    void on_attack(life& me, DURATION duration = DURATION::ATTACK) override final;
 
     /**
      * @brief      Called when a life entity dies.
@@ -474,7 +474,7 @@ public:
     void on_weather(character& ch, WEATHER_TYPE weather) override final;
 
     /**
-     * @brief      Called when brightness/lighting changes for a character.
+     * @brief      Called when brightness/detailing changes for a character.
      *
      * @param      ch     The character experiencing the brightness change.
      * @param[in]  value  The new brightness value.
@@ -663,21 +663,21 @@ public:
     void on_trade_success(character& me, character& you) override final;
 
     /**
-     * @brief      Called when displaying a dialog with navigation buttons.
+     * @brief      Called when displaying a basic dialog with navigation buttons.
      *
      * @param      me           The character who should see the dialog
      * @param[in]  object       The object model associated with the dialog
      * @param[in]  message      The dialog message text
      * @param[in]  button_prev  Whether to show a previous button
      * @param[in]  button_next  Whether to show a next button
-     * @param[in]  sequence     The dialog sequence number for tracking
+     * @param[in]  seq          The dialog sequence number for tracking
      */
     void on_dialog(character&               me,
                    const fb::model::object& object,
                    const std::string&       message,
                    bool                     button_prev,
                    bool                     button_next,
-                   uint32_t                 sequence = 0xFFFFFFFD) override final;
+                   uint32_t                 seq = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called when displaying a dialog with menu options.
@@ -686,13 +686,13 @@ public:
      * @param[in]  obj      The object model associated with the dialog
      * @param[in]  message  The dialog message text
      * @param[in]  menus    The list of menu option strings
-     * @param[in]  sequence The dialog sequence number for tracking
+     * @param[in]  seq      The dialog sequence number for tracking
      */
     void on_dialog(character&                      me,
                    const fb::model::object&        obj,
                    const std::string&              message,
                    const std::vector<std::string>& menus,
-                   uint32_t                        sequence = 0xFFFFFFFD) override final;
+                   uint32_t                        seq = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called when displaying a dialog with menu options and navigation.
@@ -702,14 +702,14 @@ public:
      * @param[in]  message      The dialog message text
      * @param[in]  menus        The list of menu option strings
      * @param[in]  button_prev  Whether to show a previous button
-     * @param[in]  sequence     The dialog sequence number for tracking
+     * @param[in]  seq          The dialog sequence number for tracking
      */
     void on_dialog(character&                      me,
                    const fb::model::object&        obj,
                    const std::string&              message,
                    const std::vector<std::string>& menus,
                    bool                            button_prev,
-                   uint32_t                        sequence = 0xFFFFFFFD) override final;
+                   uint32_t                        seq = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called when displaying a dialog with menu options, navigation, and preset configuration.
@@ -720,7 +720,7 @@ public:
      * @param[in]  menus        The list of menu option strings
      * @param[in]  button_prev  Whether to show a previous button
      * @param[in]  preset       The dialog preset configuration
-     * @param[in]  sequence     The dialog sequence number for tracking
+     * @param[in]  seq          The dialog sequence number for tracking
      */
     void on_dialog(character&                      me,
                    const fb::model::object&        obj,
@@ -728,7 +728,7 @@ public:
                    const std::vector<std::string>& menus,
                    bool                            button_prev,
                    const dialog::preset&           preset,
-                   uint32_t                        sequence = 0xFFFFFFFD) override final;
+                   uint32_t                        seq = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called when displaying a dialog with item slot selection.
@@ -737,13 +737,13 @@ public:
      * @param[in]  obj          The object model associated with the dialog
      * @param[in]  message      The dialog message text
      * @param[in]  item_slots   The list of item slot indices to display
-     * @param[in]  sequence     The dialog sequence number for tracking
+     * @param[in]  seq          The dialog sequence number for tracking
      */
     void on_dialog(character&                  me,
                    const fb::model::object&    obj,
                    const std::string&          message,
                    const std::vector<uint8_t>& item_slots,
-                   uint32_t                    sequence = 0xFFFFFFFD) override final;
+                   uint32_t                    seq = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called when displaying a dialog with item pairs.
@@ -752,15 +752,15 @@ public:
      * @param[in]  obj      The object model associated with the dialog
      * @param[in]  message  The dialog message text
      * @param[in]  pairs    The item pairs to display in the dialog
-     * @param[in]  sequence The dialog sequence number for tracking
+     * @param[in]  seq      The dialog sequence number for tracking
      * @param[in]  pursuit  The pursuit identifier for quest tracking
      */
     void on_dialog(character&                          me,
                    const fb::model::object&            obj,
                    const std::string&                  message,
                    const fb::game::dialog::item_pairs& pairs,
-                   uint32_t                            sequence = 0xFFFFFFFD,
-                   uint16_t                            pursuit  = 0xFFFF) override final;
+                   uint32_t                            seq     = 0xFFFFFFFD,
+                   uint16_t                            pursuit = 0xFFFF) override final;
 
     /**
      * @brief      Called when displaying a simple dialog.
@@ -768,12 +768,12 @@ public:
      * @param      me       The character who should see the dialog
      * @param[in]  obj      The object model associated with the dialog
      * @param[in]  message  The dialog message text
-     * @param[in]  sequence The dialog sequence number for tracking
+     * @param[in]  seq      The dialog sequence number for tracking
      */
     void on_dialog(character&               me,
                    const fb::model::object& obj,
                    const std::string&       message,
-                   uint32_t                 sequence = 0xFFFFFFFD) override final;
+                   uint32_t                 seq = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called when displaying a dialog with text input fields.
@@ -785,16 +785,16 @@ public:
      * @param[in]  bottom   The bottom text input field label
      * @param[in]  maxlen   The maximum length for text input
      * @param[in]  prev     Whether to show a previous button
-     * @param[in]  sequence The dialog sequence number for tracking
+     * @param[in]  seq      The dialog sequence number for tracking
      */
     void on_dialog(character&               me,
                    const fb::model::object& obj,
                    const std::string&       message,
                    const std::string&       top,
                    const std::string&       bottom,
-                   int                      maxlen   = 0xFF,
-                   bool                     prev     = false,
-                   uint32_t                 sequence = 0xFFFFFFFD) override final;
+                   int                      maxlen = 0xFF,
+                   bool                     prev   = false,
+                   uint32_t                 seq    = 0xFFFFFFFD) override final;
 };
 
 } // namespace fb::game

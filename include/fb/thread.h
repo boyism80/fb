@@ -40,6 +40,7 @@
 #include <fb/model/datetime.h>
 #include <unordered_set>
 #include <fb/lua.h>
+#include <fb/locker.h>
 
 namespace fb {
 
@@ -71,6 +72,7 @@ public:
     template <typename ReturnType>
     using handle_func_type  = std::function<async::task<ReturnType>(fb::thread&)>;
     using handle_error_type = std::function<void(std::exception&)>;
+    using timer_list        = std::vector<std::shared_ptr<timer>>;
 
 private:
     uint8_t           _index = 0;
@@ -78,14 +80,12 @@ private:
     std::thread       _thread;
 
 private:
-    std::unordered_set<const void*>     _ptrs;
-    std::vector<std::unique_ptr<timer>> _timers;
-    std::recursive_mutex                _mutex_timer;
-    void*                               _data = nullptr;
+    std::unordered_set<const void*>  _ptrs;
+    fb::recursive_locker<timer_list> _timers;
+    void*                            _data = nullptr;
 
 private:
-    std::queue<std::function<void()>> _queue;
-    std::mutex                        _mutex_queue;
+    fb::locker<std::queue<std::function<void()>>> _queue;
 
 public:
     /**
@@ -208,11 +208,13 @@ public:
      *
      * @param[in]  fn          The callback function.
      * @param[in]  duration    The timer duration.
-     * @param[in]  disposable  Whether the timer is disposable.
+     * @param[in]  repeat      The timer repeat type.
+     *
+     * @return     A shared pointer to the timer.
      */
-    void settimer(const fb::timer::handle_callback_type& fn,
-                  const fb::model::timespan&             duration,
-                  bool                                   disposable = false);
+    std::shared_ptr<fb::timer> settimer(const fb::timer::handle_callback_type& fn,
+                                        const fb::model::timespan&             duration,
+                                        fb::timer::repeat_type                 repeat = fb::timer::repeat_type::repeat);
     /**
      * @brief      Sleeps for the specified duration.
      *
@@ -234,29 +236,29 @@ public:
                  const handle_error_type&                 error,
                  const std::function<void(ReturnType&&)>& callback)
     {
-        auto _ = std::lock_guard(_mutex_queue);
-
-        this->_queue.push([=, this]() {
-            async::awaitable_then(fn(*this), [&](async::awaitable_result<ReturnType> result) {
-                try
-                {
-                    callback(result());
-                }
-                catch (std::exception& e)
-                {
-                    error(e);
-                }
-                catch (...)
-                {
+        this->_queue.write([=, this](auto& queue) {
+            queue.push([=, this]() {
+                async::awaitable_then(fn(*this), [&](async::awaitable_result<ReturnType> result) {
                     try
                     {
-                        std::rethrow_exception(std::current_exception());
+                        callback(result());
                     }
                     catch (std::exception& e)
                     {
                         error(e);
                     }
-                }
+                    catch (...)
+                    {
+                        try
+                        {
+                            std::rethrow_exception(std::current_exception());
+                        }
+                        catch (std::exception& e)
+                        {
+                            error(e);
+                        }
+                    }
+                });
             });
         });
     }

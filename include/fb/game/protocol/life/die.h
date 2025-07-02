@@ -18,15 +18,15 @@ public:
 
 public:
 #ifndef BOT
-    const uint32_t id;
+    const uint32_t oid;
 #else
-    uint32_t id;
+    uint32_t oid;
 #endif
 
 public:
 #ifndef BOT
     die(const fb::game::life& life);
-    die(uint32_t id);
+    die(uint32_t oid);
 #else
     die() = default;
 #endif

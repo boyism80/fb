@@ -39,10 +39,7 @@ void listener_impl::on_trade_failed(character& me, character& you)
 void listener_impl::on_trade_success(character& me, character& you)
 {
     me.send(fb_resp::trade_close(_TEXT(MESSAGE_TRADE_SUCCESS)));
-    me.update(STATE_LEVEL::EXP_MONEY);
-
     you.send(fb_resp::trade_close(_TEXT(MESSAGE_TRADE_SUCCESS)));
-    you.update(STATE_LEVEL::EXP_MONEY);
 }
 
 void listener_impl::on_trade_item(character& me, character& you, uint8_t index, const fb::game::item& item)

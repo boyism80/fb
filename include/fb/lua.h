@@ -50,6 +50,7 @@ extern "C"
 #include <macro.h>
 #include <fb/encoding.h>
 #include <fb/logger.h>
+#include <fb/locker.h>
 #include <async/task.h>
 #include <async/task_completion_source.h>
 #include <shared_mutex>
@@ -1259,8 +1260,7 @@ public:
     using bytecode_set   = std::unordered_map<std::string, std::vector<char>>;
 
 private:
-    bytecode_set _bytecodes;
-    std::mutex   _mutex;
+    fb::locker<bytecode_set> _bytecodes;
 
 public:
     friend class context;

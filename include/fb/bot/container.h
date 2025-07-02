@@ -1,6 +1,7 @@
 #ifndef __BOT_CONTAINER_H__
 #define __BOT_CONTAINER_H__
 
+#include <atomic>
 #include <fb/bot/bot.h>
 #include <fb/thread_container.h>
 
@@ -39,13 +40,12 @@ class bot_container : public fb::context
     friend class bot_controller;
 
 private:
-    uint32_t                 _sequence          = 0; ///< Sequence counter for generating unique bot IDs
+    std::atomic<uint32_t>    _sequence          = 0; ///< Atomic sequence counter for generating unique bot IDs
     uint32_t                 _gateway_bot_count = 0; ///< Number of gateway bots to create
     uint32_t                 _login_bot_count   = 0; ///< Number of login bots to create
     uint32_t                 _game_bot_count    = 0; ///< Number of game bots to create
     boost::asio::io_context& _context;               ///< Reference to the I/O context for network operations
     bool                     _exit = false;          ///< Flag indicating if the container is shutting down
-    std::mutex               _mutex;                 ///< Mutex for thread-safe operations
 
 public:
     std::unique_ptr<gateway_bot_controller> gateway;
@@ -109,9 +109,7 @@ private:
     template <typename T>
     std::shared_ptr<T> create()
     {
-        this->_mutex.lock();
-        auto id = this->_sequence++;
-        this->_mutex.unlock();
+        auto id     = this->_sequence++;
         auto bot    = std::make_shared<T>(*this, id);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
@@ -137,9 +135,7 @@ private:
     template <typename T, typename Controller>
     std::shared_ptr<T> create(Controller& bot_controller)
     {
-        this->_mutex.lock();
-        auto id = this->_sequence++;
-        this->_mutex.unlock();
+        auto id     = this->_sequence++;
         auto bot    = std::make_shared<T>(bot_controller, id);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
@@ -166,9 +162,7 @@ private:
     template <typename T, typename Controller>
     std::shared_ptr<T> create(Controller& bot_controller, const fb::stream& params)
     {
-        this->_mutex.lock();
-        auto id = this->_sequence++;
-        this->_mutex.unlock();
+        auto id     = this->_sequence++;
         auto bot    = std::make_shared<T>(bot_controller, id, params);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();

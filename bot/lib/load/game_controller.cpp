@@ -5,21 +5,7 @@ using namespace fb::bot::load;
 
 game_bot_controller::game_bot_controller(bot_container& container) :
     fb::bot::game_bot_controller(container)
-{
-    this->bind(&game_bot_controller::handle_time);
-    this->bind(&game_bot_controller::handle_state);
-    this->bind(&game_bot_controller::handle_option);
-    this->bind(&game_bot_controller::handle_message);
-    this->bind(&game_bot_controller::handle_sequence);
-    this->bind(&game_bot_controller::handle_spell_update);
-    this->bind(&game_bot_controller::handle_chat);
-    this->bind(&game_bot_controller::handle_action);
-    this->bind(&game_bot_controller::handle_direction);
-    this->bind(&game_bot_controller::handle_position);
-    this->bind(&game_bot_controller::handle_move);
-    this->bind(&game_bot_controller::handle_map);
-    this->bind(&game_bot_controller::handle_transfer);
-}
+{ }
 
 void game_bot_controller::initialize()
 {
@@ -43,117 +29,6 @@ async::task<void> game_bot_controller::handle_timer(const fb::model::datetime& n
             typed_bot->process_random_pattern(now);
         }
     });
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_time(game_bot& bot, const fb::protocol::game::response::time& response)
-{
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_state(game_bot&                                            bot,
-                                                    const fb::protocol::game::response::update_internal& response)
-{
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_option(game_bot&                                   bot,
-                                                     const fb::protocol::game::response::option& response)
-{
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_message(game_bot&                                    bot,
-                                                      const fb::protocol::game::response::message& response)
-{
-    // if (response.text == fb::model::const_value::string::MESSAGE_NOT_READY_GAME_SERVER)
-    //{
-    //     bot.send(fb::protocol::game::request::chat(false, "/랜덤이동"));
-    // }
-
-    if (response.type == MESSAGE_TYPE::NOTIFY)
-    {
-        static const auto regex = boost::xpressive::sregex::compile("(?P<id>.+)> (?P<msg>.+)");
-        auto              what  = boost::xpressive::smatch();
-        if (boost::xpressive::regex_search(response.text, what, regex) == false)
-            co_return;
-
-        auto id  = what["id"].str();
-        auto msg = std::format("\"{}\"에 대한 응답입니다.", what["msg"].str());
-        bot.send(fb::protocol::game::request::whisper(id, msg));
-    }
-
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_sequence(game_bot& bot, const fb::protocol::game::response::id& response)
-{
-    bot.set_sequence(response.sequence);
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_spell_update(game_bot&                                         bot,
-                                                           const fb::protocol::game::response::spell_update& response)
-{
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_chat(game_bot& bot, const fb::protocol::game::response::chat& response)
-{
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_action(game_bot&                                   bot,
-                                                     const fb::protocol::game::response::action& response)
-{
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_direction(game_bot&                                      bot,
-                                                        const fb::protocol::game::response::direction& response)
-{
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_position(game_bot&                                     bot,
-                                                       const fb::protocol::game::response::position& response)
-{
-    bot.set_position(response.abs);
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_move(game_bot& bot, const fb::protocol::game::response::move& response)
-{
-    if (bot.sequence() != response.id)
-        co_return;
-
-    bot.set_position(response.position);
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_map(game_bot&                                       bot,
-                                                  const fb::protocol::game::response::map_config& response)
-{
-    if (response.id == 1)
-    {
-        // bot.send(fb::protocol::game::request::chat(false, "/랜덤이동"));
-    }
-    else
-    {
-    }
-    bot.set_initialized(true);
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_transfer(game_bot& bot, const fb::protocol::response::transfer& response)
-{
-    bot.close();
-
-    auto created  = this->create(response.parameter);
-    auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
-    auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
-    created->connect(endpoint);
-
     co_return;
 }
 

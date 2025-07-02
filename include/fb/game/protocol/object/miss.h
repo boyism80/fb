@@ -14,7 +14,7 @@ public:
     static constexpr uint8_t header = 0x0C;
 
 public:
-    uint32_t sequence;
+    uint32_t oid;
 
 public:
     miss() = default;

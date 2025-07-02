@@ -410,6 +410,11 @@ public:
     template <typename ResponseType>
     void bind(const std::function<async::task<void>(BotType&, ResponseType&)>& fn)
     {
+        static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>,
+                      "ResponseType must inherit from fb::protocol::header");
+        static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>,
+                      "ResponseType must have 'static constexpr uint8_t header' member");
+
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_handler_mutex);
 
         this->_deserializer.insert(
@@ -441,6 +446,11 @@ public:
     template <typename Class, typename ResponseType>
     void bind(async::task<void> (Class::*fn)(BotType&, const ResponseType&))
     {
+        static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>,
+                      "ResponseType must inherit from fb::protocol::header");
+        static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>,
+                      "ResponseType must have 'static constexpr uint8_t header' member");
+
         this->bind<ResponseType>(
             std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2));
     }
@@ -538,41 +548,67 @@ template <typename BotType>
 template <typename ResponseType>
 async::task<ResponseType> bot<BotType>::request(const fb::protocol::header&                          protocol,
                                                 const std::function<bool(const ResponseType& resp)>& condition,
+                                                const fb::model::timespan&                           timeout,
                                                 bool                                                 encrypt,
                                                 bool                                                 wrap)
 {
+    this->assert_thread();
+
     // Ensure deserializer is registered for hook processing
     this->_controller.template ensure_handler_registered<ResponseType>();
 
-    auto promise = std::make_shared<async::task_completion_source<ResponseType>>();
+    // Create request context for RAII management
+    auto self_ptr = std::static_pointer_cast<BotType>(this->shared_from_this());
+    auto context =
+        std::make_shared<typename BotType::template request_context<ResponseType>>(self_ptr, ResponseType::header);
+
+    // Set up timeout timer if specified
+    if (timeout > 0s)
+    {
+        auto thread    = this->thread();
+        context->timer = thread->settimer(
+            [context](auto& datetime, auto thread_id) -> async::task<void> {
+                context->complete_timeout();
+                co_return;
+            },
+            timeout,
+            fb::timer::repeat_type::once);
+    }
+
+    // Ensure hook container exists
     if (this->_hooks.contains(ResponseType::header) == false)
         this->_hooks.insert({ResponseType::header, {}});
 
+    // Register hook with context pointer for cleanup
     this->_hooks[ResponseType::header].push_back(hook_params{.condition =
-                                                                 [promise, condition](const auto& header) {
+                                                                 [context, condition](const auto& header) {
                                                                      auto& protocol =
                                                                          static_cast<const ResponseType&>(header);
                                                                      return condition(protocol);
                                                                  },
                                                              .matched =
-                                                                 [promise](const auto& header) {
+                                                                 [context](const auto& header) {
                                                                      auto& protocol =
                                                                          static_cast<const ResponseType&>(header);
-                                                                     promise->set_value(protocol);
-                                                                 }});
+                                                                     context->complete_success(protocol);
+                                                                 },
+                                                             .context_ptr = context.get()});
+
     this->send(protocol, encrypt, wrap);
-    return promise->task();
+    return context->task();
 }
 
 template <typename BotType>
 template <typename ResponseType>
-async::task<ResponseType> bot<BotType>::request(const fb::protocol::header& protocol, bool encrypt, bool wrap)
+async::task<ResponseType>
+bot<BotType>::request(const fb::protocol::header& protocol, const fb::model::timespan& timeout, bool encrypt, bool wrap)
 {
     co_return co_await this->request<ResponseType>(
         protocol,
         [](auto& resp) -> bool {
             return true;
         },
+        timeout,
         encrypt,
         wrap);
 }

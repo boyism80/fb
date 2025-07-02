@@ -78,6 +78,27 @@ bool base_bot::process_hooks(uint8_t cmd, fb::protocol::header& header)
     return false;
 }
 
+bool base_bot::remove_hook_by_context(uint8_t cmd, const void* context_ptr)
+{
+    this->assert_thread();
+
+    if (this->_hooks.contains(cmd))
+    {
+        auto& hooks = this->_hooks.at(cmd);
+        auto  i     = std::find_if(hooks.begin(), hooks.end(), [context_ptr](const auto& hook) {
+            return hook.context_ptr == context_ptr;
+        });
+
+        if (i != hooks.end())
+        {
+            hooks.erase(i);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 fb::thread* base_bot::thread() const
 {
     return this->_context.threads.modular(this->id);

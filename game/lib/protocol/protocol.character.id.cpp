@@ -13,7 +13,7 @@ async::task<void> id::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint32_t>(this->ch.sequence());
+    writer.write<uint32_t>(this->ch.oid());
     writer.write<uint32_t>(static_cast<uint32_t>(this->ch.direction())); // side
     writer.write<uint8_t>(static_cast<uint8_t>(this->ch.cls()));         // class
     writer.write<uint16_t>(0x00);
@@ -23,7 +23,7 @@ async::task<void> id::serialize(fb::stream_writer<big_endian>& writer) const
 async::task<void> id::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->sequence  = reader.read<uint32_t>();
+    this->oid       = reader.read<uint32_t>();
     this->direction = reader.read<uint32_t>();
     this->cls       = reader.read<uint8_t>();
 }

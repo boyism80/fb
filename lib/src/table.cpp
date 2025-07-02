@@ -1,4 +1,5 @@
 #include <fb/table.h>
+#include <fb/locker.h>
 
 using namespace fb::table;
 
@@ -28,13 +29,20 @@ fb::table::load(const std::string& path, const handle_callback& callback, const 
         return 0;
 
     auto count = data.size();
-    auto read  = 0;
-    auto queue = std::queue<std::pair<Json::Value, std::unique_ptr<Json::Value>>>();
-    auto mutex = std::mutex();
+
+    struct work_data
+    {
+        std::queue<std::pair<Json::Value, std::unique_ptr<Json::Value>>> queue;
+        int                                                              read = 0;
+    };
+
+    fb::locker<work_data> work;
 
     for (auto i = data.begin(); i != data.end(); i++)
     {
-        queue.push(std::make_pair(i.key(), std::make_unique<Json::Value>(*i)));
+        work.write([&i](auto& w) {
+            w.queue.push(std::make_pair(i.key(), std::make_unique<Json::Value>(*i)));
+        });
     }
 
     auto fn = [&]() {
@@ -43,25 +51,26 @@ fb::table::load(const std::string& path, const handle_callback& callback, const 
             auto key  = Json::Value();
             auto data = Json::Value();
 
-            {
-                auto _ = std::lock_guard(mutex);
+            bool queue_empty = work.write([&key, &data](auto& w) -> bool {
+                if (w.queue.empty())
+                    return true;
 
-                if (queue.empty())
-                    break;
-
-                auto& entity = queue.front();
+                auto& entity = w.queue.front();
                 key          = entity.first;
                 data         = *entity.second;
-                queue.pop();
-            }
+                w.queue.pop();
+                return false;
+            });
+
+            if (queue_empty)
+                break;
 
             auto percentage = 0.0;
             try
             {
-                {
-                    auto _     = std::lock_guard(mutex);
-                    percentage = (read++ * 100) / double(count);
-                }
+                percentage = work.write([count](auto& w) {
+                    return (w.read++ * 100) / double(count);
+                });
 
                 callback(key, data, percentage);
             }

@@ -69,9 +69,29 @@ std::shared_ptr<fb::game::equipment> fb::game::items::equipment_off(EQUIPMENT_PA
         return nullptr;
 
     this->owner.update(STATE_LEVEL::LEVEL_MAX);
+
+    // Execute equipment deactivation script
+    auto& model = equipment->based<fb::model::equipment>();
+    if (model.on_inactive.empty() == false)
+    {
+        auto lua = fb::lua::new_context();
+        if (lua != nullptr)
+        {
+#if defined DEBUG | defined _DEBUG
+            lua->load(model.script);
+#endif
+            lua->func(model.on_inactive);
+            lua->pushobject(this->owner);
+            lua->pushinteger(parts);
+            lua->pushobject(*equipment);
+            std::ignore = lua->call(3);
+        }
+    }
+
+    // Call listener for packet response
     owner.listener.on_equipment_off(this->owner, parts, *equipment);
 
-    this->owner.update_external(false);
+    this->owner.update_external(true);
     return equipment;
 }
 
@@ -546,7 +566,7 @@ std::shared_ptr<fb::game::weapon> fb::game::items::weapon(std::shared_ptr<fb::ga
     auto before = this->_weapon;
 
     this->_weapon = weapon;
-    this->owner.update_external(true);
+    this->owner.update_external(false);
     return before;
 }
 
@@ -560,7 +580,7 @@ std::shared_ptr<fb::game::armor> fb::game::items::armor(std::shared_ptr<fb::game
     auto before = this->_armor;
 
     this->_armor = armor;
-    this->owner.update_external(true);
+    this->owner.update_external(false);
 
     return before;
 }
@@ -575,7 +595,7 @@ std::shared_ptr<fb::game::shield> fb::game::items::shield(std::shared_ptr<fb::ga
     auto before = this->_shield;
 
     this->_shield = shield;
-    this->owner.update_external(true);
+    this->owner.update_external(false);
 
     return before;
 }
@@ -590,7 +610,7 @@ std::shared_ptr<fb::game::helmet> fb::game::items::helmet(std::shared_ptr<fb::ga
     auto before = this->_helmet;
 
     this->_helmet = helmet;
-    this->owner.update_external(true);
+    this->owner.update_external(false);
 
     return before;
 }
@@ -620,7 +640,7 @@ std::shared_ptr<fb::game::ring> fb::game::items::ring(std::shared_ptr<fb::game::
     auto before = this->_rings[static_cast<int>(position)];
 
     this->_rings[static_cast<int>(position)] = ring;
-    this->owner.update_external(true);
+    this->owner.update_external(false);
 
     return before;
 }
@@ -651,7 +671,7 @@ std::shared_ptr<fb::game::auxiliary> fb::game::items::auxiliary(std::shared_ptr<
 {
     auto before                                    = this->_auxiliaries[static_cast<int>(position)];
     this->_auxiliaries[static_cast<int>(position)] = auxiliary;
-    this->owner.update_external(true);
+    this->owner.update_external(false);
 
     return before;
 }

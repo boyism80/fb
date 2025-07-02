@@ -27,10 +27,10 @@ namespace fb::protocol::game::response {
 
 #ifndef BOT
 direction::direction(const fb::game::object& object) :
-    direction(object.sequence(), object.direction())
+    direction(object.oid(), object.direction())
 { }
-direction::direction(uint32_t sequence, DIRECTION value) :
-    sequence(sequence),
+direction::direction(uint32_t oid, DIRECTION value) :
+    oid(oid),
     value(value)
 { }
 #endif
@@ -40,7 +40,7 @@ async::task<void> direction::serialize(fb::stream_writer<big_endian>& writer) co
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint32_t>(this->sequence);
+    writer.write<uint32_t>(this->oid);
     writer.write<uint8_t>(static_cast<uint8_t>(this->value));
     writer.write<uint8_t>(0x00);
 }
@@ -48,8 +48,8 @@ async::task<void> direction::serialize(fb::stream_writer<big_endian>& writer) co
 async::task<void> direction::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->sequence = reader.read<uint32_t>();
-    this->value    = (DIRECTION)reader.read<uint8_t>();
+    this->oid   = reader.read<uint32_t>();
+    this->value = (DIRECTION)reader.read<uint8_t>();
 }
 #endif
 

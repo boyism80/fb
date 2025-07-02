@@ -297,13 +297,13 @@ int character::builtin::builtin_item(lua_State* L)
     }
 
     // item dialog
-    auto sequence = uint32_t{0xFFFFFFFD};
-    auto model    = (const fb::model::object*)nullptr;
+    auto oid   = uint32_t{0xFFFFFFFD};
+    auto model = (const fb::model::object*)nullptr;
     if (lua->is_userdata<fb::game::object>(2))
     {
         auto obj = lua->touserdata<fb::game::object>(2);
         model    = &obj->based<fb::model::object>();
-        sequence = obj->sequence();
+        oid      = obj->oid();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -363,7 +363,7 @@ int character::builtin::builtin_item(lua_State* L)
         }
     }
 
-    ch->listener.on_dialog(*ch, *model, message, items, sequence);
+    ch->listener.on_dialog(*ch, *model, message, items, oid);
     if (ch->dialog != nullptr)
         ch->dialog->release();
 
@@ -2826,13 +2826,13 @@ int fb::game::character::builtin::builtin_dialog(lua_State* L)
     if (argc < 3)
         throw std::runtime_error("not enough parameters");
 
-    auto sequence = uint32_t{0xFFFFFFFD};
-    auto model    = (const fb::model::object*)nullptr;
+    auto oid   = uint32_t{0xFFFFFFFD};
+    auto model = (const fb::model::object*)nullptr;
     if (lua->is_userdata<fb::game::object>(2))
     {
         auto obj = lua->touserdata<fb::game::object>(2);
         model    = &obj->based<fb::model::object>();
-        sequence = obj->sequence();
+        oid      = obj->oid();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -2849,7 +2849,7 @@ int fb::game::character::builtin::builtin_dialog(lua_State* L)
 
     std::ignore =
         context->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
-            ch->listener.on_dialog(*ch, *model, message, button_prev, button_next, sequence);
+            ch->listener.on_dialog(*ch, *model, message, button_prev, button_next, oid);
             if (ch->dialog != nullptr)
                 ch->dialog->release();
 
@@ -2872,13 +2872,13 @@ int fb::game::character::builtin::builtin_list(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto sequence = uint32_t{0xFFFFFFFD};
-    auto model    = (const fb::model::object*)nullptr;
+    auto oid   = uint32_t{0xFFFFFFFD};
+    auto model = (const fb::model::object*)nullptr;
     if (lua->is_userdata<fb::game::object>(2))
     {
         auto obj = lua->touserdata<fb::game::object>(2);
         model    = &obj->based<fb::model::object>();
-        sequence = obj->sequence();
+        oid      = obj->oid();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -2947,9 +2947,9 @@ int fb::game::character::builtin::builtin_list(lua_State* L)
     std::ignore =
         context->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
             if (custom_preset)
-                ch->listener.on_dialog(*ch, *model, message, menus, button_prev, preset, sequence);
+                ch->listener.on_dialog(*ch, *model, message, menus, button_prev, preset, oid);
             else
-                ch->listener.on_dialog(*ch, *model, message, menus, button_prev, sequence);
+                ch->listener.on_dialog(*ch, *model, message, menus, button_prev, oid);
 
             if (ch->dialog != nullptr)
                 ch->dialog->release();
@@ -2973,13 +2973,13 @@ int fb::game::character::builtin::builtin_input(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto sequence = uint32_t{0xFFFFFFFD};
-    auto model    = (const fb::model::object*)nullptr;
+    auto oid   = uint32_t{0xFFFFFFFD};
+    auto model = (const fb::model::object*)nullptr;
     if (lua->is_userdata<fb::game::object>(2))
     {
         auto obj = lua->touserdata<fb::game::object>(2);
         model    = &obj->based<fb::model::object>();
-        sequence = obj->sequence();
+        oid      = obj->oid();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -3002,7 +3002,7 @@ int fb::game::character::builtin::builtin_input(lua_State* L)
         std::ignore = context->threads.dispatch(
             ch->weak_from_this_as<fb::game::character>(),
             [=](auto& thread) -> async::task<void> {
-                ch->listener.on_dialog(*ch, *model, message, message_top, message_bot, maxlen, prev, sequence);
+                ch->listener.on_dialog(*ch, *model, message, message_top, message_bot, maxlen, prev, oid);
                 if (ch->dialog != nullptr)
                     ch->dialog->release();
 
@@ -3014,7 +3014,7 @@ int fb::game::character::builtin::builtin_input(lua_State* L)
     {
         std::ignore = context->threads.dispatch(ch->weak_from_this_as<fb::game::character>(),
                                                 [=](auto& thread) -> async::task<void> {
-                                                    ch->listener.on_dialog(*ch, *model, message, sequence);
+                                                    ch->listener.on_dialog(*ch, *model, message, oid);
                                                     if (ch->dialog != nullptr)
                                                         ch->dialog->release();
 
@@ -3038,13 +3038,13 @@ int fb::game::character::builtin::builtin_menu(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto sequence = uint32_t{0xFFFFFFFD};
-    auto model    = (const fb::model::object*)nullptr;
+    auto oid   = uint32_t{0xFFFFFFFD};
+    auto model = (const fb::model::object*)nullptr;
     if (lua->is_userdata<fb::game::object>(2))
     {
         auto obj = lua->touserdata<fb::game::object>(2);
         model    = &obj->based<fb::model::object>();
-        sequence = obj->sequence();
+        oid      = obj->oid();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -3068,7 +3068,7 @@ int fb::game::character::builtin::builtin_menu(lua_State* L)
 
     std::ignore =
         context->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
-            ch->listener.on_dialog(*ch, *model, message, menus, sequence);
+            ch->listener.on_dialog(*ch, *model, message, menus, oid);
 
             if (ch->dialog != nullptr)
                 ch->dialog->release();
@@ -3091,13 +3091,13 @@ int fb::game::character::builtin::builtin_slot(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto sequence = uint32_t{0xFFFFFFFD};
-    auto model    = (const fb::model::object*)nullptr;
+    auto oid   = uint32_t{0xFFFFFFFD};
+    auto model = (const fb::model::object*)nullptr;
     if (lua->is_userdata<fb::game::object>(2))
     {
         auto obj = lua->touserdata<fb::game::object>(2);
         model    = &obj->based<fb::model::object>();
-        sequence = obj->sequence();
+        oid      = obj->oid();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -3121,7 +3121,7 @@ int fb::game::character::builtin::builtin_slot(lua_State* L)
 
     std::ignore =
         context->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
-            ch->listener.on_dialog(*ch, *model, message, slots, sequence);
+            ch->listener.on_dialog(*ch, *model, message, slots, oid);
 
             if (ch->dialog != nullptr)
                 ch->dialog->release();

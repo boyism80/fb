@@ -185,6 +185,21 @@ bool buffs::push_back(std::shared_ptr<buff>&& buff)
         return false;
 
     this->insert({model.id, std::move(buff)});
+
+    // Execute buff script
+    if (buff->model.buff.empty() == false)
+    {
+        auto lua = fb::lua::new_context();
+        if (lua != nullptr)
+        {
+            lua->func(buff->model.buff);
+            lua->pushobject(this->_owner);
+            lua->pushobject(buff->model);
+            std::ignore = lua->call(2);
+        }
+    }
+
+    // Call listener for packet response
     this->_owner.listener.on_buff(this->_owner, *buff);
 
     return true;
@@ -220,7 +235,29 @@ bool buffs::remove(uint32_t id)
     if (buff == nullptr)
         return false;
 
+    // Execute unbuff script
+    if (buff->model.unbuff.empty() == false)
+    {
+        auto lua = fb::lua::new_context();
+        if (lua != nullptr)
+        {
+            lua->func(buff->model.unbuff);
+            lua->pushobject(this->_owner);
+            lua->pushobject(buff->model);
+            std::ignore = lua->call(2);
+        }
+    }
+
+    // Call listener for packet response
     this->_owner.listener.on_unbuff(this->_owner, *buff);
+
+    // Show unbuff message for characters
+    if (this->_owner.is(OBJECT_TYPE::CHARACTER))
+    {
+        auto& ch = static_cast<character&>(this->_owner);
+        ch.message(std::format("{} 해제", buff->model.name));
+    }
+
     this->erase(id);
     std::ignore = this->_owner.context.destroy(*buff);
     return true;

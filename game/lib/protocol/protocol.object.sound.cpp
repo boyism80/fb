@@ -19,7 +19,7 @@ async::task<void> sound::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint16_t>(static_cast<uint16_t>(this->value)); // sound
     writer.write<uint8_t>(100);
     writer.write<uint16_t>(0x0004);
-    writer.write<uint32_t>(this->me.sequence());
+    writer.write<uint32_t>(this->me.oid());
     writer.write<uint16_t>(0x0100);
     writer.write<uint16_t>(0x0202);
     writer.write<uint16_t>(0x0004);
@@ -34,7 +34,7 @@ async::task<void> sound::deserialize(fb::stream_reader<big_endian>& reader)
     this->value = static_cast<SOUND>(reader.read<uint16_t>());
     reader.read<uint8_t>();  // 100
     reader.read<uint16_t>(); // 0x0004
-    this->sequence = reader.read<uint32_t>();
+    this->oid = reader.read<uint32_t>();
     reader.read<uint16_t>(); // 0x0100
     reader.read<uint16_t>(); // 0x0202
     reader.read<uint16_t>(); // 0x0004

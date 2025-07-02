@@ -26,13 +26,17 @@ console::console()
 {
     static constexpr uint32_t max_width = 120;
 
+    // Detect system TTY capability
 #ifdef _WIN32
-    _tty = static_cast<bool>(_isatty(_fileno(const_cast<FILE*>(stdin))));
+    _system_tty = static_cast<bool>(_isatty(_fileno(const_cast<FILE*>(stdin))));
 #else
-    _tty = ::isatty(::fileno(const_cast<FILE*>(stdin)));
+    _system_tty = ::isatty(::fileno(const_cast<FILE*>(stdin)));
 #endif
 
-    if (_tty)
+    // Set default mode based on system TTY capability
+    _mode = _system_tty ? mode::tty : mode::plain;
+
+    if (_system_tty)
     {
 #ifdef _WIN32
         auto hwnd   = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -52,8 +56,8 @@ console::console()
         _width = max_width;
     }
 
-    // hide cursor
-    if (_tty)
+    // hide cursor if effective TTY is enabled
+    if (is_effective_tty())
         std::cout << "\x1B[?25l";
 
     _width = max_width > _width ? max_width : _width;
@@ -66,13 +70,30 @@ console::~console()
 
 bool console::is_tty()
 {
-    return _tty;
+    return _system_tty;
+}
+
+console::mode console::get_mode()
+{
+    auto _ = std::lock_guard(_mutex);
+    return _mode;
+}
+
+void console::set_mode(console::mode new_mode)
+{
+    auto _ = std::lock_guard(_mutex);
+    _mode  = new_mode;
+}
+
+bool console::is_effective_tty()
+{
+    return _system_tty && (_mode == mode::tty);
 }
 
 void console::newline()
 {
     auto _ = std::lock_guard(_mutex);
-    if (!_tty)
+    if (!is_effective_tty())
         return;
 
     std::cout << std::format("\033[{}B", ++_comment_line) << '\r';
@@ -82,7 +103,7 @@ void console::newline()
 void console::clear()
 {
     auto _ = std::lock_guard(_mutex);
-    if (!_tty)
+    if (!is_effective_tty())
         return;
 
     std::cout << "\x1b[2K";
@@ -91,7 +112,7 @@ void console::clear()
 void console::save_point()
 {
     auto _ = std::lock_guard(_mutex);
-    if (!_tty)
+    if (!is_effective_tty())
         return;
 
     std::cout << "\033[s";
@@ -100,7 +121,7 @@ void console::save_point()
 void console::restore_point()
 {
     auto _ = std::lock_guard(_mutex);
-    if (!_tty)
+    if (!is_effective_tty())
         return;
 
     std::cout << "\033[u";
@@ -109,7 +130,7 @@ void console::restore_point()
 void console::up(uint8_t line)
 {
     auto _ = std::lock_guard(_mutex);
-    if (!_tty)
+    if (!is_effective_tty())
         return;
 
     std::cout << std::format("\033[{}A", line);
@@ -118,7 +139,7 @@ void console::up(uint8_t line)
 void console::down(uint8_t line)
 {
     auto _ = std::lock_guard(_mutex);
-    if (!_tty)
+    if (!is_effective_tty())
         return;
 
     std::cout << std::format("\033[{}B", line);
@@ -128,7 +149,7 @@ void console::progress(const std::string& text, float progress)
 {
     auto _ = std::lock_guard(_mutex);
 
-    if (!_tty)
+    if (!is_effective_tty())
     {
         std::cout << std::format("{:>7.2f}% {}", progress, text) << std::endl;
     }

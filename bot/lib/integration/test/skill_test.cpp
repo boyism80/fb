@@ -32,6 +32,9 @@ async::task<void> skill_test::initialize(game_bot_controller& controller)
 
 async::task<bool> skill_test::execute()
 {
+    constexpr auto interval = 250ms;
+    constexpr auto timeout  = 5s;
+
     if (this->_test_running || this->_test_completed)
         co_return false;
 
@@ -50,23 +53,28 @@ async::task<bool> skill_test::execute()
     // Step 1: Select the test bot for skill operations
     auto bot = bots.front();
 
-    fb::logger::info("Bot {} starting skill learning sequence", bot->fd());
+    fb::logger::info("Bot {} starting skill learning oid", bot->fd());
 
     // Step 2: Increase bot's MP to ensure sufficient mana for spell learning and casting
-    bot->send(fb::protocol::game::request::chat{false, "/마력바꾸기 100000"});
+    auto thread = bot->thread();
+    co_await thread->switching();
+    auto&& resp1 = co_await bot->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, "/마력바꾸기 100000"},
+        timeout);
 
     // Step 3: Learn the spell "누리의기원" and wait for spell_update response
-    auto&& resp = co_await bot->request<fb::protocol::game::response::spell_update>(
-        fb::protocol::game::request::chat{false, "/마법배우기 누리의기원"});
+    auto&& resp2 = co_await bot->request<fb::protocol::game::response::spell_update>(
+        fb::protocol::game::request::chat{false, "/마법배우기 누리의기원"},
+        timeout);
     fb::logger::debug("Skill test: Bot {} sent spell learning chat message", bot->fd());
 
     // Step 4: Cast the learned spell 10 times with 1-second intervals
     for (auto i = 0; i < SPELL_CAST_COUNT; i++)
     {
-        bot->send(fb::protocol::game::request::spell_cast(resp.index, "", 0, {0, 0}));
+        bot->send(fb::protocol::game::request::spell_cast(resp2.index, "", 0, {0, 0}));
         fb::logger::debug("Skill test: Bot {} cast spell {} (slot {})", bot->fd(), i + 1, this->_spell_learned_index);
 
-        co_await bot->thread()->sleep(1s);
+        co_await bot->thread()->sleep(interval);
     }
 
     this->_test_completed = true;
@@ -96,10 +104,10 @@ bool skill_test::is_ready() const
     if (bots.empty())
         return false;
 
-    // Movement test requires all bots to have non-zero sequence
+    // Movement test requires all bots to have non-zero oid
     for (const auto& bot : bots)
     {
-        if (bot->sequence() == 0)
+        if (bot->oid() == 0)
             return false;
     }
 

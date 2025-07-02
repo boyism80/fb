@@ -152,6 +152,22 @@ bool fb::game::equipment::active()
 
     owner.items.remove(this->shared_from_this_as<fb::game::item>(), 1, ITEM_DELETE_TYPE::NONE, false);
     owner.items.add(before);
+
+    // Execute equipment activation script
+    auto lua = fb::lua::new_context();
+    if (lua != nullptr)
+    {
+#if defined DEBUG | defined _DEBUG
+        lua->load("scripts/interaction.lua");
+#endif
+        lua->func("on_equipment_active");
+        lua->pushobject(owner);
+        lua->pushinteger(parts);
+        lua->pushobject(*this);
+        std::ignore = lua->call(3);
+    }
+
+    // Call listener for packet response
     owner.listener.on_equipment_on(owner, *this, parts);
 
     return true;

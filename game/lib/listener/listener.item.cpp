@@ -19,21 +19,7 @@ void listener_impl::on_item_swap(character& me, uint8_t src, uint8_t dst)
 
 void listener_impl::on_item_active(character& me, item& item)
 {
-    auto& model = item.based<fb::model::item>();
-    if (model.on_active.empty())
-        return;
-
-    auto lua = fb::lua::new_context();
-    if (lua == nullptr)
-        return;
-
-#if defined DEBUG | defined _DEBUG
-    lua->load(model.script);
-#endif
-    lua->func(model.on_active);
-    lua->pushobject(me);
-    lua->pushobject(item);
-    std::ignore = lua->call(2);
+    // Listener only handles packet response - no game logic
 }
 
 void listener_impl::on_item_throws(character& me, item& item, const fb::model::point16_t& to)

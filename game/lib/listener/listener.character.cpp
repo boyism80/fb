@@ -154,7 +154,7 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
         if (shared != nullptr)
         {
             shared->update_map();
-            shared->update_external(false);
+            shared->update_external(true);
             this->on_message(me, e.what(), MESSAGE_TYPE::STATE);
         }
         co_return false;
@@ -165,7 +165,7 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
         if (shared != nullptr)
         {
             shared->update_map();
-            shared->update_external(false);
+            shared->update_external(true);
             this->on_message(me, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
         }
         co_return false;

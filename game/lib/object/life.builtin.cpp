@@ -552,10 +552,20 @@ int life::builtin::builtin_attack(lua_State* L)
     auto duration = lua->toenum(2, DURATION::ATTACK);
     auto weak     = obj->weak_from_this();
     return lua->ensure_yield(*ctx, weak, [=]() {
-        obj->attack(duration);
-        return lua->ensure_resume(*ctx, weak, [=]() {
-            return 0;
+        async::awaitable_then(obj->attack(duration), [=](auto result) {
+            try
+            {
+                result();
+            }
+            catch (const std::exception& e)
+            {
+                // Nothing to do
+            }
+            lua->ensure_resume(*ctx, weak, [=]() {
+                return 0;
+            });
         });
+        return 0;
     });
 }
 

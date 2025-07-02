@@ -375,7 +375,13 @@ bool fb::game::trade::lock()
         else
         {
             this->exchange(*this, this->_you->trade);
+
+            // Call listener for packet response
             this->_owner.listener.on_trade_success(this->_owner, *this->_you);
+
+            // Update state after successful trade
+            this->_owner.update(STATE_LEVEL::EXP_MONEY);
+            this->_you->update(STATE_LEVEL::EXP_MONEY);
 
             this->end();
             return true;

@@ -16,7 +16,7 @@ async::task<void> action::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint32_t>(this->me.sequence());
+    writer.write<uint32_t>(this->me.oid());
     writer.write<uint8_t>(static_cast<uint8_t>(this->value));      // type
     writer.write<uint16_t>(static_cast<uint16_t>(this->duration)); // duration
     writer.write<uint8_t>(this->sound);                            // sound
@@ -25,7 +25,7 @@ async::task<void> action::serialize(fb::stream_writer<big_endian>& writer) const
 async::task<void> action::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->sequence = reader.read<uint32_t>();
+    this->oid      = reader.read<uint32_t>();
     this->value    = (ACTION)reader.read<uint8_t>();
     this->duration = (DURATION)reader.read<uint16_t>();
     this->sound    = reader.read<uint8_t>();

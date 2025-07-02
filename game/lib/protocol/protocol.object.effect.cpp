@@ -14,7 +14,7 @@ async::task<void> effect::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint32_t>(this->me.sequence());
+    writer.write<uint32_t>(this->me.oid());
     writer.write<uint8_t>(this->value);
     writer.write<uint8_t>(0x00);
 }
@@ -22,8 +22,8 @@ async::task<void> effect::serialize(fb::stream_writer<big_endian>& writer) const
 async::task<void> effect::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->sequence = reader.read<uint32_t>();
-    this->value    = reader.read<uint8_t>();
+    this->oid   = reader.read<uint32_t>();
+    this->value = reader.read<uint8_t>();
     reader.read<uint8_t>(); // 0x00
 }
 #endif

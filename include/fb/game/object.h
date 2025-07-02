@@ -109,7 +109,7 @@ private:
     std::shared_ptr<fb::game::sector> _sector;
 
 protected:
-    uint32_t                       _sequence = 0;
+    uint32_t                       _oid = 0;
     const fb::model::object&       _model;
     fb::model::point16_t           _position  = fb::model::point16_t(0, 0);
     DIRECTION                      _direction = DIRECTION::BOTTOM;
@@ -217,18 +217,18 @@ public:
     virtual async::task<size_t> send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true);
 
     /**
-     * @brief      Gets the object's sequence number.
+     * @brief      Gets the object's oid number.
      *
-     * @return     The current sequence number
+     * @return     The current oid number
      */
-    uint32_t sequence() const;
+    uint32_t oid() const;
 
     /**
-     * @brief      Sets the object's sequence number.
+     * @brief      Sets the object's oid number.
      *
-     * @param[in]  value  The new sequence number
+     * @param[in]  value  The new oid number
      */
-    void sequence(uint32_t value);
+    void oid(uint32_t value);
 
     /**
      * @brief      Gets the underlying model object.
@@ -277,17 +277,17 @@ public:
     /**
      * @brief      Updates the object's external appearance to all nearby objects.
      *
-     * @param[in]  light  Whether to use light update (minimal data) or full update
+     * @param[in]  detailed  Whether to use detailed update (minimal data) or full update
      */
-    virtual void update_external(bool light);
+    virtual void update_external(bool detailed);
 
     /**
      * @brief      Updates the object's external appearance to a specific target.
      *
-     * @param      you    The target object to send the update to
-     * @param[in]  light  Whether to use light update (minimal data) or full update
+     * @param      you       The target object to send the update to
+     * @param[in]  detailed  Whether to use detailed update (minimal data) or full update
      */
-    virtual void update_external(object& you, bool light);
+    virtual void update_external(object& you, bool detailed);
 
     /**
      * @brief      Checks if the object is in super hide mode (invisible to all).
@@ -678,18 +678,18 @@ struct object::listener_t
      * @brief      Called when an object's external appearance is updated to all nearby objects.
      *
      * @param      me     The object whose appearance is being updated
-     * @param[in]  light  Whether this is a light update (minimal data) or full update
+     * @param[in]  detailed  Whether this is a detailed update (minimal data) or full update
      */
-    virtual void on_update_external(fb::game::object& me, bool light) = 0;
+    virtual void on_update_external(fb::game::object& me, bool detailed) = 0;
 
     /**
      * @brief      Called when an object's external appearance is updated to a specific target object.
      *
      * @param      me     The object whose appearance is being updated
      * @param      you    The target object receiving the appearance update
-     * @param[in]  light  Whether this is a light update (minimal data) or full update
+     * @param[in]  detailed  Whether this is a detailed update (minimal data) or full update
      */
-    virtual void on_update_external(fb::game::object& me, fb::game::object& you, bool light) = 0;
+    virtual void on_update_external(fb::game::object& me, fb::game::object& you, bool detailed) = 0;
 
     /**
      * @brief      Called when an object is hidden from all other objects.

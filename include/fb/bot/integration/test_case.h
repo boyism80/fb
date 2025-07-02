@@ -86,7 +86,7 @@ public:
      * @brief      Checks if all spawned bots are ready to start the test.
      *
      *             Each test implementation defines its own readiness criteria.
-     *             For example, movement test might require all bots to have non-zero sequence,
+     *             For example, movement test might require all bots to have non-zero oid,
      *             while attack test might require bots to be in specific positions.
      *
      * @return     True if all spawned bots are ready to start this test, false otherwise.

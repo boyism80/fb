@@ -23,7 +23,7 @@ public:
     const DURATION        duration;
     const uint8_t         sound;
 #else
-    uint32_t sequence;
+    uint32_t oid;
     ACTION   value;
     DURATION duration;
     uint8_t  sound;

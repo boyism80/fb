@@ -117,14 +117,14 @@ struct listener_t
      * @param[in]  message      The dialog message text to display.
      * @param[in]  button_prev  Whether to show a "previous" navigation button.
      * @param[in]  button_next  Whether to show a "next" navigation button.
-     * @param[in]  sequence     The dialog sequence identifier for tracking.
+     * @param[in]  seq          The dialog sequence number for tracking.
      */
     virtual void on_dialog(character&               me,
                            const fb::model::object& object,
                            const std::string&       message,
                            bool                     button_prev,
                            bool                     button_next,
-                           uint32_t                 sequence = 0xFFFFFFFD) = 0;
+                           uint32_t                 seq = 0xFFFFFFFD) = 0;
     /**
      * @brief      Called when a menu dialog is displayed.
      *
@@ -135,13 +135,13 @@ struct listener_t
      * @param[in]  obj      The object (typically NPC) initiating the dialog.
      * @param[in]  message  The dialog message text to display above the menu.
      * @param[in]  menus    The list of menu option strings for player selection.
-     * @param[in]  sequence The dialog sequence identifier for tracking.
+     * @param[in]  seq      The dialog sequence number for tracking.
      */
     virtual void on_dialog(character&                      me,
                            const fb::model::object&        obj,
                            const std::string&              message,
                            const std::vector<std::string>& menus,
-                           uint32_t                        sequence = 0xFFFFFFFD) = 0;
+                           uint32_t                        seq = 0xFFFFFFFD) = 0;
 
     /**
      * @brief      Called when a menu dialog with navigation is displayed.
@@ -154,14 +154,14 @@ struct listener_t
      * @param[in]  message      The dialog message text to display above the menu.
      * @param[in]  menus        The list of menu option strings for player selection.
      * @param[in]  button_prev  Whether to show a "previous" navigation button.
-     * @param[in]  sequence     The dialog sequence identifier for tracking.
+     * @param[in]  seq          The dialog sequence number for tracking.
      */
     virtual void on_dialog(character&                      me,
                            const fb::model::object&        obj,
                            const std::string&              message,
                            const std::vector<std::string>& menus,
                            bool                            button_prev,
-                           uint32_t                        sequence = 0xFFFFFFFD) = 0;
+                           uint32_t                        seq = 0xFFFFFFFD) = 0;
 
     /**
      * @brief      Called when a menu dialog with character preset is displayed.
@@ -175,7 +175,7 @@ struct listener_t
      * @param[in]  menus        The list of menu option strings for player selection.
      * @param[in]  button_prev  Whether to show a "previous" navigation button.
      * @param[in]  preset       The character appearance preset for visual display.
-     * @param[in]  sequence     The dialog sequence identifier for tracking.
+     * @param[in]  seq          The dialog sequence number for tracking.
      */
     virtual void on_dialog(character&                      me,
                            const fb::model::object&        obj,
@@ -183,7 +183,7 @@ struct listener_t
                            const std::vector<std::string>& menus,
                            bool                            button_prev,
                            const dialog::preset&           preset,
-                           uint32_t                        sequence = 0xFFFFFFFD) = 0;
+                           uint32_t                        seq = 0xFFFFFFFD) = 0;
     /**
      * @brief      Called when an item slot selection dialog is displayed.
      *
@@ -194,13 +194,13 @@ struct listener_t
      * @param[in]  obj         The object (typically NPC) initiating the dialog.
      * @param[in]  message     The dialog message text to display.
      * @param[in]  item_slots  The list of available inventory slot indices.
-     * @param[in]  sequence    The dialog sequence identifier for tracking.
+     * @param[in]  seq         The dialog sequence number for tracking.
      */
     virtual void on_dialog(character&                  me,
                            const fb::model::object&    obj,
                            const std::string&          message,
                            const std::vector<uint8_t>& item_slots,
-                           uint32_t                    sequence = 0xFFFFFFFD) = 0;
+                           uint32_t                    seq = 0xFFFFFFFD) = 0;
 
     /**
      * @brief      Called when an item list dialog is displayed.
@@ -212,15 +212,15 @@ struct listener_t
      * @param[in]  obj      The object (typically NPC) initiating the dialog.
      * @param[in]  message  The dialog message text to display above the item list.
      * @param[in]  pairs    The list of item-quantity pairs to display.
-     * @param[in]  sequence The dialog sequence identifier for tracking.
+     * @param[in]  seq      The dialog sequence number for tracking.
      * @param[in]  pursuit  Additional pursuit/context parameter for the dialog.
      */
     virtual void on_dialog(character&               me,
                            const fb::model::object& obj,
                            const std::string&       message,
                            const item_pairs&        pairs,
-                           uint32_t                 sequence = 0xFFFFFFFD,
-                           uint16_t                 pursuit  = 0xFFFF) = 0;
+                           uint32_t                 seq     = 0xFFFFFFFD,
+                           uint16_t                 pursuit = 0xFFFF) = 0;
     /**
      * @brief      Called when a simple text dialog is displayed.
      *
@@ -230,12 +230,10 @@ struct listener_t
      * @param      me       The character receiving the dialog.
      * @param[in]  obj      The object (typically NPC) initiating the dialog.
      * @param[in]  message  The dialog message text to display.
-     * @param[in]  sequence The dialog sequence identifier for tracking.
+     * @param[in]  seq      The dialog sequence number for tracking.
      */
-    virtual void on_dialog(character&               me,
-                           const fb::model::object& obj,
-                           const std::string&       message,
-                           uint32_t                 sequence = 0xFFFFFFFD) = 0;
+    virtual void
+    on_dialog(character& me, const fb::model::object& obj, const std::string& message, uint32_t seq = 0xFFFFFFFD) = 0;
 
     /**
      * @brief      Called when a text input dialog is displayed.
@@ -250,16 +248,16 @@ struct listener_t
      * @param[in]  bottom   The text to display at the bottom of the input field.
      * @param[in]  maxlen   The maximum length of input allowed (default 255).
      * @param[in]  prev     Whether to show a "previous" navigation button.
-     * @param[in]  sequence The dialog sequence identifier for tracking.
+     * @param[in]  seq      The dialog sequence number for tracking.
      */
     virtual void on_dialog(character&               me,
                            const fb::model::object& obj,
                            const std::string&       message,
                            const std::string&       top,
                            const std::string&       bottom,
-                           int                      maxlen   = 0xFF,
-                           bool                     prev     = false,
-                           uint32_t                 sequence = 0xFFFFFFFD) = 0;
+                           int                      maxlen = 0xFF,
+                           bool                     prev   = false,
+                           uint32_t                 seq    = 0xFFFFFFFD) = 0;
 };
 } // namespace fb::game::dialog
 #endif

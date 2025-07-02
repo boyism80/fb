@@ -73,13 +73,21 @@ int main(int argc, char** argv)
     }
     catch (const po::error& e)
     {
-        std::cerr << "Error parsing command line: " << e.what() << std::endl;
-        std::cerr << desc << std::endl;
+        fb::console::puts("Error parsing command line: {}", e.what());
+
+        auto sstream = std::stringstream();
+        sstream << desc;
+        fb::console::puts("{}", sstream.str());
         return -1;
     }
 
     if (vm.count("help"))
-        return std::cout << desc << std::endl, 0;
+    {
+        auto sstream = std::stringstream();
+        sstream << desc;
+        fb::console::puts("{}", sstream.str());
+        return 0;
+    }
 
     // Get config file path
     auto config_path = vm["config"].as<string>();
@@ -87,7 +95,7 @@ int main(int argc, char** argv)
     // Initialize config system with direct path
     if (!fb::init_config(config_path))
     {
-        std::cerr << "Failed to initialize config system with file: " << config_path << std::endl;
+        fb::console::puts("Failed to initialize config system with file: {}", config_path);
         return -1;
     }
 
@@ -100,14 +108,10 @@ int main(int argc, char** argv)
         mode = test_mode::LOAD_TEST;
     else
     {
-        std::cerr << "Invalid test mode: " << mode_str << std::endl;
-        std::cerr << "Valid modes: 'load', 'integration'" << std::endl;
+        fb::console::puts("Invalid test mode: {}", mode_str);
+        fb::console::puts("Valid modes: 'load', 'integration'");
         return -1;
     }
-
-    std::cout << "Starting bot system in " << (mode == test_mode::LOAD_TEST ? "load test" : "integration test")
-              << " mode" << std::endl;
-    std::cout << "Using config file: " << config_path << std::endl;
 
     using guard_type = executor_work_guard<io_context::executor_type>;
 
@@ -159,6 +163,8 @@ int main(int argc, char** argv)
             }
         });
     }
+
+    fb::console::set_mode(fb::console::mode::plain);
 
     auto threads = boost::asio::thread_pool{io_size};
     for (auto& io : ios)

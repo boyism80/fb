@@ -553,7 +553,7 @@ async::task<void> context::send(object&                     object,
 
         for (const auto& [seq, obj] : map->objects)
         {
-            if (exclude_self && obj->sequence() == object.sequence())
+            if (exclude_self && obj->oid() == object.oid())
                 continue;
 
             obj->send(stream, encrypt);

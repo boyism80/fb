@@ -2,8 +2,8 @@
 
 using namespace fb;
 
-timer::timer(const handle_callback_type& fn, const fb::model::timespan& duration, bool disposable) :
+timer::timer(const handle_callback_type& fn, const fb::model::timespan& duration, repeat_type repeat) :
     fn(fn),
     duration(duration),
-    disposable(disposable)
+    repeat(repeat)
 { }
