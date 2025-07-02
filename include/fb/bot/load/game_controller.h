@@ -150,7 +150,7 @@ private:
      * @brief      Handles position updates from the server.
      *
      * @param[in]  bot       The game bot instance.
-     * @param[in]  response  The position response containing new coordinates.
+     * @param[in]  response  The position response containing current position.
      *
      * @return     An async task that completes when position processing is finished.
      */
@@ -167,10 +167,80 @@ private:
     async::task<void> handle_move(game_bot& bot, const fb::protocol::game::response::move& response);
 
     /**
-     * @brief      Handles map configuration updates from the server.
+     * @brief      Handles sound effect notifications from the server.
      *
      * @param[in]  bot       The game bot instance.
-     * @param[in]  response  The map config response containing map data.
+     * @param[in]  response  The sound response containing sound effect data.
+     *
+     * @return     An async task that completes when sound processing is finished.
+     */
+    async::task<void> handle_sound(game_bot& bot, const fb::protocol::game::response::sound& response);
+
+    /**
+     * @brief      Handles visual effect notifications from the server.
+     *
+     * @param[in]  bot       The game bot instance.
+     * @param[in]  response  The effect response containing effect data.
+     *
+     * @return     An async task that completes when effect processing is finished.
+     */
+    async::task<void> handle_effect(game_bot& bot, const fb::protocol::game::response::effect& response);
+
+    /**
+     * @brief      Handles object hide notifications from the server.
+     *
+     * @param[in]  bot       The game bot instance.
+     * @param[in]  response  The hide response containing hide data.
+     *
+     * @return     An async task that completes when hide processing is finished.
+     */
+    async::task<void> handle_hide(game_bot& bot, const fb::protocol::game::response::hide& response);
+
+    /**
+     * @brief      Handles death notifications from the server.
+     *
+     * @param[in]  bot       The game bot instance.
+     * @param[in]  response  The die response containing death data.
+     *
+     * @return     An async task that completes when death processing is finished.
+     */
+    async::task<void> handle_die(game_bot& bot, const fb::protocol::game::response::die& response);
+
+    /**
+     * @brief      Handles buff application notifications from the server.
+     *
+     * @param[in]  bot       The game bot instance.
+     * @param[in]  response  The buff response containing buff data.
+     *
+     * @return     An async task that completes when buff processing is finished.
+     */
+    async::task<void> handle_buff(game_bot& bot, const fb::protocol::game::response::spell_buff& response);
+
+    /**
+     * @brief      Handles buff removal notifications from the server.
+     *
+     * @param[in]  bot       The game bot instance.
+     * @param[in]  response  The unbuff response containing buff removal data.
+     *
+     * @return     An async task that completes when unbuff processing is finished.
+     */
+    async::task<void> handle_unbuff(game_bot& bot, const fb::protocol::game::response::spell_unbuff& response);
+
+    /**
+     * @brief      Handles object update notifications from the server.
+     *
+     * @param[in]  bot       The game bot instance.
+     * @param[in]  response  The update response containing object data.
+     *
+     * @return     An async task that completes when update processing is finished.
+     */
+    async::task<void> handle_update(game_bot& bot, const fb::protocol::game::response::update& response);
+
+    /**
+     * @brief      Handles map configuration from the server.
+     *
+     * @param[in]  bot       The game bot instance.
+     * @param[in]  response  The map config response.
      *
      * @return     An async task that completes when map processing is finished.
      */

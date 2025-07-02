@@ -17,6 +17,13 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::handle_direction);
     this->bind(&game_bot_controller::handle_position);
     this->bind(&game_bot_controller::handle_move);
+    this->bind(&game_bot_controller::handle_sound);
+    this->bind(&game_bot_controller::handle_effect);
+    this->bind(&game_bot_controller::handle_hide);
+    this->bind(&game_bot_controller::handle_die);
+    this->bind(&game_bot_controller::handle_buff);
+    this->bind(&game_bot_controller::handle_unbuff);
+    this->bind(&game_bot_controller::handle_update);
     this->bind(&game_bot_controller::handle_map);
     this->bind(&game_bot_controller::handle_transfer);
 }
@@ -54,6 +61,40 @@ async::task<void> game_bot_controller::handle_time(game_bot& bot, const fb::prot
 async::task<void> game_bot_controller::handle_state(game_bot&                                            bot,
                                                     const fb::protocol::game::response::update_internal& response)
 {
+    // Update character information based on the state level received
+    if (ENUM_IN(response.level, STATE_LEVEL::BASED))
+    {
+        bot.set_nation(response.ch_nation);
+        bot.set_creature(response.ch_creature);
+        bot.set_level(response.ch_level);
+        bot.set_base_hp(response.ch_base_hp);
+        bot.set_base_mp(response.ch_base_mp);
+        bot.set_strength(response.ch_strength);
+        bot.set_intelligence(response.ch_intelligence);
+        bot.set_dexterity(response.ch_dexterity);
+    }
+
+    if (ENUM_IN(response.level, STATE_LEVEL::HP_MP))
+    {
+        bot.set_hp(response.ch_hp);
+        bot.set_mp(response.ch_mp);
+    }
+
+    if (ENUM_IN(response.level, STATE_LEVEL::EXP_MONEY))
+    {
+        bot.set_exp(response.ch_exp);
+        bot.set_money(response.ch_money);
+    }
+
+    if (ENUM_IN(response.level, STATE_LEVEL::CROWD_CONTROL))
+    {
+        bot.set_crowd_control(response.ch_crowd_control);
+    }
+
+    // Always update mail count and fast move setting
+    bot.set_mail_count(response.ch_mail);
+    bot.set_fast_move(response.ch_fast_move);
+
     co_return;
 }
 
@@ -95,6 +136,8 @@ async::task<void> game_bot_controller::handle_sequence(game_bot& bot, const fb::
 async::task<void> game_bot_controller::handle_spell_update(game_bot&                                         bot,
                                                            const fb::protocol::game::response::spell_update& response)
 {
+    // Add the spell to the bot's active spells by name
+    bot.add_spell(response.name);
     co_return;
 }
 
@@ -112,6 +155,13 @@ async::task<void> game_bot_controller::handle_action(game_bot&                  
 async::task<void> game_bot_controller::handle_direction(game_bot&                                      bot,
                                                         const fb::protocol::game::response::direction& response)
 {
+    // Update the bot's direction from the server response
+    // Only update if the response is for this bot (matching sequence)
+    if (bot.sequence() == response.sequence)
+    {
+        bot.set_direction(response.value);
+    }
+
     co_return;
 }
 
@@ -154,6 +204,57 @@ async::task<void> game_bot_controller::handle_transfer(game_bot& bot, const fb::
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     created->connect(endpoint);
 
+    co_return;
+}
+
+async::task<void> game_bot_controller::handle_sound(game_bot& bot, const fb::protocol::game::response::sound& response)
+{
+    // Sound is a one-time event, no need to store state
+    co_return;
+}
+
+async::task<void> game_bot_controller::handle_effect(game_bot&                                   bot,
+                                                     const fb::protocol::game::response::effect& response)
+{
+    // Effect is a one-time event, no need to store state
+    co_return;
+}
+
+async::task<void> game_bot_controller::handle_hide(game_bot& bot, const fb::protocol::game::response::hide& response)
+{
+    // Hide events are for other players disappearing, not relevant for bot's own state
+    co_return;
+}
+
+async::task<void> game_bot_controller::handle_die(game_bot& bot, const fb::protocol::game::response::die& response)
+{
+    // Update the bot's death state if the response is for this bot
+    if (bot.sequence() == response.id)
+    {
+        bot.set_dead(true);
+    }
+    co_return;
+}
+
+async::task<void> game_bot_controller::handle_buff(game_bot&                                       bot,
+                                                   const fb::protocol::game::response::spell_buff& response)
+{
+    // Add the buff to the bot's active buffs by name
+    bot.add_buff(response.name);
+    co_return;
+}
+
+async::task<void> game_bot_controller::handle_unbuff(game_bot&                                         bot,
+                                                     const fb::protocol::game::response::spell_unbuff& response)
+{
+    // Remove the buff from the bot's active buffs by name
+    bot.remove_buff(response.buff_name);
+    co_return;
+}
+
+async::task<void> game_bot_controller::handle_update(game_bot&                                   bot,
+                                                     const fb::protocol::game::response::update& response)
+{
     co_return;
 }
 

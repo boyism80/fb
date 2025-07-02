@@ -35,6 +35,386 @@ game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id, const 
 game_bot::~game_bot()
 { }
 
+// Game state accessor implementations
+uint32_t game_bot::sequence() const
+{
+    return this->_sequence;
+}
+
+void game_bot::set_sequence(uint32_t value)
+{
+    this->_sequence = value;
+}
+
+point<uint16_t> game_bot::position() const
+{
+    return this->_position;
+}
+
+void game_bot::set_position(const point<uint16_t>& value)
+{
+    this->_position = value;
+}
+
+bool game_bot::is_initialized() const
+{
+    return this->_inited;
+}
+
+void game_bot::set_initialized(bool value)
+{
+    this->_inited = value;
+}
+
+const fb::stream& game_bot::transfer_buffer() const
+{
+    return this->_transfer_buffer;
+}
+
+DIRECTION game_bot::direction() const
+{
+    return this->_direction;
+}
+
+void game_bot::set_direction(DIRECTION value)
+{
+    this->_direction = value;
+}
+
+// Additional state accessor implementations
+uint16_t game_bot::look() const
+{
+    return this->_look;
+}
+
+void game_bot::set_look(uint16_t value)
+{
+    this->_look = value;
+}
+
+uint8_t game_bot::color() const
+{
+    return this->_color;
+}
+
+void game_bot::set_color(uint8_t value)
+{
+    this->_color = value;
+}
+
+bool game_bot::is_dead() const
+{
+    return this->_dead;
+}
+
+void game_bot::set_dead(bool value)
+{
+    this->_dead = value;
+}
+
+// Buff management method implementations
+const std::set<std::string>& game_bot::active_buffs() const
+{
+    return this->_active_buffs;
+}
+
+void game_bot::add_buff(const std::string& name)
+{
+    this->_active_buffs.insert(name);
+}
+
+void game_bot::remove_buff(const std::string& name)
+{
+    this->_active_buffs.erase(name);
+}
+
+bool game_bot::has_buff(const std::string& name) const
+{
+    return this->_active_buffs.count(name) > 0;
+}
+
+// Spell management method implementations
+const std::set<std::string>& game_bot::active_spells() const
+{
+    return this->_active_spells;
+}
+
+void game_bot::add_spell(const std::string& name)
+{
+    this->_active_spells.insert(name);
+}
+
+void game_bot::remove_spell(const std::string& name)
+{
+    this->_active_spells.erase(name);
+}
+
+bool game_bot::has_spell(const std::string& name) const
+{
+    return this->_active_spells.count(name) > 0;
+}
+
+// Character state accessor implementations
+uint8_t game_bot::nation() const
+{
+    return this->_nation;
+}
+
+void game_bot::set_nation(uint8_t value)
+{
+    this->_nation = value;
+}
+
+uint8_t game_bot::creature() const
+{
+    return this->_creature;
+}
+
+void game_bot::set_creature(uint8_t value)
+{
+    this->_creature = value;
+}
+
+uint8_t game_bot::level() const
+{
+    return this->_level;
+}
+
+void game_bot::set_level(uint8_t value)
+{
+    this->_level = value;
+}
+
+uint32_t game_bot::base_hp() const
+{
+    return this->_base_hp;
+}
+
+void game_bot::set_base_hp(uint32_t value)
+{
+    this->_base_hp = value;
+}
+
+uint32_t game_bot::base_mp() const
+{
+    return this->_base_mp;
+}
+
+void game_bot::set_base_mp(uint32_t value)
+{
+    this->_base_mp = value;
+}
+
+uint8_t game_bot::strength() const
+{
+    return this->_strength;
+}
+
+void game_bot::set_strength(uint8_t value)
+{
+    this->_strength = value;
+}
+
+uint8_t game_bot::intelligence() const
+{
+    return this->_intelligence;
+}
+
+void game_bot::set_intelligence(uint8_t value)
+{
+    this->_intelligence = value;
+}
+
+uint8_t game_bot::dexterity() const
+{
+    return this->_dexterity;
+}
+
+void game_bot::set_dexterity(uint8_t value)
+{
+    this->_dexterity = value;
+}
+
+uint32_t game_bot::hp() const
+{
+    return this->_hp;
+}
+
+void game_bot::set_hp(uint32_t value)
+{
+    this->_hp = value;
+}
+
+uint32_t game_bot::mp() const
+{
+    return this->_mp;
+}
+
+void game_bot::set_mp(uint32_t value)
+{
+    this->_mp = value;
+}
+
+uint32_t game_bot::exp() const
+{
+    return this->_exp;
+}
+
+void game_bot::set_exp(uint32_t value)
+{
+    this->_exp = value;
+}
+
+uint32_t game_bot::money() const
+{
+    return this->_money;
+}
+
+void game_bot::set_money(uint32_t value)
+{
+    this->_money = value;
+}
+
+uint32_t game_bot::crowd_control() const
+{
+    return this->_crowd_control;
+}
+
+void game_bot::set_crowd_control(uint32_t value)
+{
+    this->_crowd_control = value;
+}
+
+uint8_t game_bot::mail_count() const
+{
+    return this->_mail_count;
+}
+
+void game_bot::set_mail_count(uint8_t value)
+{
+    this->_mail_count = value;
+}
+
+uint8_t game_bot::fast_move() const
+{
+    return this->_fast_move;
+}
+
+void game_bot::set_fast_move(uint8_t value)
+{
+    this->_fast_move = value;
+}
+
+uint8_t game_bot::disguised() const
+{
+    return this->_disguised;
+}
+
+void game_bot::set_disguised(uint8_t value)
+{
+    this->_disguised = value;
+}
+
+uint8_t game_bot::sex() const
+{
+    return this->_sex;
+}
+
+void game_bot::set_sex(uint8_t value)
+{
+    this->_sex = value;
+}
+
+uint8_t game_bot::state() const
+{
+    return this->_state;
+}
+
+void game_bot::set_state(uint8_t value)
+{
+    this->_state = value;
+}
+
+uint8_t game_bot::armor_dress() const
+{
+    return this->_armor_dress;
+}
+
+void game_bot::set_armor_dress(uint8_t value)
+{
+    this->_armor_dress = value;
+}
+
+uint8_t game_bot::armor_color() const
+{
+    return this->_armor_color;
+}
+
+void game_bot::set_armor_color(uint8_t value)
+{
+    this->_armor_color = value;
+}
+
+uint16_t game_bot::weapon_dress() const
+{
+    return this->_weapon_dress;
+}
+
+void game_bot::set_weapon_dress(uint16_t value)
+{
+    this->_weapon_dress = value;
+}
+
+uint8_t game_bot::weapon_color() const
+{
+    return this->_weapon_color;
+}
+
+void game_bot::set_weapon_color(uint8_t value)
+{
+    this->_weapon_color = value;
+}
+
+uint8_t game_bot::shield_dress() const
+{
+    return this->_shield_dress;
+}
+
+void game_bot::set_shield_dress(uint8_t value)
+{
+    this->_shield_dress = value;
+}
+
+uint8_t game_bot::shield_color() const
+{
+    return this->_shield_color;
+}
+
+void game_bot::set_shield_color(uint8_t value)
+{
+    this->_shield_color = value;
+}
+
+uint8_t game_bot::head_marker() const
+{
+    return this->_head_marker;
+}
+
+void game_bot::set_head_marker(uint8_t value)
+{
+    this->_head_marker = value;
+}
+
+const std::string& game_bot::name() const
+{
+    return this->_name;
+}
+
+void game_bot::set_name(const std::string& value)
+{
+    this->_name = value;
+}
+
 async::task<void> game_bot::process_random_pattern(const fb::model::datetime& now)
 {
     if (!this->_inited)
@@ -82,6 +462,10 @@ async::task<void> game_bot::pattern_direction()
 
     auto direction = directions.at(dist(gen));
     this->send(fb::protocol::game::request::direction{direction});
+
+    // Update internal direction state
+    this->_direction = direction;
+
     co_return;
 }
 
@@ -94,6 +478,9 @@ async::task<void> game_bot::pattern_move()
 
     auto direction = directions.at(dist(gen));
     this->send(fb::protocol::game::request::move{direction, this->_sequence, this->_position});
+
+    // Update internal direction state
+    this->_direction = direction;
 
     switch (direction)
     {
