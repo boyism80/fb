@@ -1558,14 +1558,14 @@ fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
     root->_bytecodes.read([this, &fname](const auto& bytecodes) -> void {
         auto it = bytecodes.find(fname);
         if (it == bytecodes.end())
-            throw std::runtime_error("cannot find script {}", fname);
+            throw std::runtime_error(std::format("cannot find script {}", fname));
 
         const auto& bytes = it->second;
         if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
-            throw std::runtime_error("cannot load script {}", fname);
+            throw std::runtime_error(std::format("cannot load script {}", fname));
 
         if (lua_pcall(*this, 0, LUA_MULTRET, 0))
-            throw std::runtime_error("cannot run script {}", fname);
+            throw std::runtime_error(std::format("cannot run script {}", fname));
     });
 
 #endif
