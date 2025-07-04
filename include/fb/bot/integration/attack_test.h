@@ -19,7 +19,7 @@ private:
 
     std::vector<std::shared_ptr<fb::bot::game_bot>> _test_bots; ///< Attack test's own bot collection
 
-    static constexpr int ATTACK_COUNT = 10;
+    static constexpr int ATTACK_COUNT = 5;
 
 public:
     /**

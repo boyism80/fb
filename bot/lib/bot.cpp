@@ -91,13 +91,11 @@ bool base_bot::remove_hook_by_context(uint8_t cmd, const void* context_ptr)
 
         if (i != hooks.end())
         {
-            fb::logger::debug("remove hook by context: {}", cmd);
             hooks.erase(i);
             return true;
         }
     }
 
-    fb::logger::debug("remove hook by context: {} not found", cmd);
     return false;
 }
 

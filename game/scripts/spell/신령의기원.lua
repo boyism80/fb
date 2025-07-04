@@ -1,6 +1,7 @@
 -- 신령의기원 캐스팅
 function ON_CAST_4038(me, you, spell)
-    if not assert_map(me) then
+    local map = me:map()
+    if map == nil then
         return
     end
 

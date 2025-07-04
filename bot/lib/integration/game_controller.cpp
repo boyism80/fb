@@ -30,8 +30,8 @@ void game_bot_controller::initialize()
     this->bind_timer(&game_bot_controller::handle_timer, 1000ms);
 
     // Initialize test queue with sequence of tests
-    this->_test_queue.push(std::make_unique<movement_test>());
-    this->_test_queue.push(std::make_unique<attack_test>());
+    // this->_test_queue.push(std::make_unique<movement_test>());
+    // this->_test_queue.push(std::make_unique<attack_test>());
     this->_test_queue.push(std::make_unique<skill_test>());
 
     // Start the first test

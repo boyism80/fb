@@ -122,6 +122,22 @@ private:
     {
         return this->_test_bots;
     }
+
+    /**
+     * @brief      Tests healing spells with comprehensive spell coverage.
+     *
+     *             Performs healing spell tests including:
+     *             - Standard healing spells (self and target)
+     *             - Dynamic healing spell (백호의희원)
+     *             - Group healing spell (백호의희원'첨)
+     *
+     * @param[in]  bots     The list of bots to use for testing.
+     * @param[in]  timeout  The timeout for each spell operation.
+     *
+     * @return     A task that completes when all healing spell tests finish.
+     */
+    async::task<bool> test_healing_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                          std::chrono::milliseconds                              timeout);
 };
 
 } // namespace fb::bot::integration

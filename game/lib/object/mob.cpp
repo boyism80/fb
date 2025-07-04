@@ -453,7 +453,7 @@ bool mob::move(DIRECTION direction)
         return false;
 
     auto position = this->side_position(direction);
-    for (auto obj : map->nears(position, OBJECT_TYPE::LIFE))
+    for (auto& obj : map->nears(position, OBJECT_TYPE::LIFE))
     {
         if (obj.get() == this)
             continue;

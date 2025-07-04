@@ -32,7 +32,7 @@ async::task<void> movement_test::initialize(game_bot_controller& controller)
 
 async::task<bool> movement_test::execute()
 {
-    constexpr auto interval = 250ms;
+    constexpr auto interval = 100ms;
 
     if (this->_test_running || this->_test_completed)
         co_return false;

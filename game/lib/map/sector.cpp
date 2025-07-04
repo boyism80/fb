@@ -175,9 +175,9 @@ std::vector<std::shared_ptr<fb::game::object>> sectors::objects(const fb::model:
 {
     auto&& sectors = this->nears(pivot);
     auto   objects = std::vector<std::shared_ptr<fb::game::object>>();
-    for (auto sector : sectors)
+    for (auto& sector : sectors)
     {
-        for (auto obj : *sector)
+        for (auto& obj : *sector)
         {
             if (obj->available())
                 objects.push_back(obj);

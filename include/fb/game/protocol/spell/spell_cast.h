@@ -17,19 +17,32 @@ private:
     fb::stream buffer;
 
 public:
-    mutable uint8_t                    slot;
-    mutable std::string                message;
-    mutable uint32_t                   fd;
-    mutable fb::model::point<uint16_t> position;
+#ifdef BOT
+    const SPELL_TYPE                 type;
+    const uint8_t                    slot;
+    const std::string                message;
+    const uint32_t                   oid;
+    const fb::model::point<uint16_t> position;
+#else
+    uint8_t                    slot;
+    std::string                message;
+    uint32_t                   oid;
+    fb::model::point<uint16_t> position;
+#endif
 
 public:
 #ifndef BOT
     spell_cast() = default;
 #else
-    spell_cast(uint8_t slot, const std::string& message, uint32_t fd, const fb::model::point<uint16_t>& position) :
+    spell_cast(SPELL_TYPE                        type,
+               uint8_t                           slot,
+               const std::string&                message,
+               uint32_t                          oid,
+               const fb::model::point<uint16_t>& position) :
+        type(type),
         slot(slot),
         message(message),
-        fd(fd),
+        oid(oid),
         position(position)
     { }
 #endif

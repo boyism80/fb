@@ -296,8 +296,9 @@ int context::ensure_yield(fb::context& ctx, std::weak_ptr<fb::thread_switchable>
                 result();
                 return fn();
             }
-            catch (std::exception&)
+            catch (std::exception& e)
             {
+                fb::logger::fatal("lua error message : {}", e.what());
                 this->release();
                 return 0;
             }
@@ -344,6 +345,7 @@ int fb::lua::context::ensure_resume(fb::context&                         ctx,
             }
             catch (std::exception& e)
             {
+                fb::logger::fatal("lua error message : {}", e.what());
                 this->release();
             }
         });

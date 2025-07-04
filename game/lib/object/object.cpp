@@ -171,7 +171,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         this->update_position();
 
     if (sight(before, this->_position, this->_map) == false)
-        this->update_external(*this, false);
+        this->update_external(*this, true);
 
     this->update_sector();
 
@@ -221,7 +221,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         {
             if (!sight(before, obj->_position, this->_map) && this->sight(*obj))
             {
-                obj->update_external(*this, false);
+                obj->update_external(*this, true);
             }
         }
     }
@@ -577,12 +577,12 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         this->update_external(true);
         this->update_bgm(map->model.bgm, 100);
 
-        for (auto obj : map->nears(this->_position))
+        for (auto& obj : map->nears(this->_position))
         {
             if (obj.get() == this)
                 continue;
 
-            obj->update_external(*this, false);
+            obj->update_external(*this, true);
         }
 
         co_return true;

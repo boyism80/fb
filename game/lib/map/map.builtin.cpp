@@ -318,7 +318,7 @@ int map::builtin::builtin_tile(lua_State* L)
         tile->object = value;
 
         auto position = fb::model::point16_t{x, y};
-        for (auto obj : map->nears(position, OBJECT_TYPE::CHARACTER))
+        for (auto& obj : map->nears(position, OBJECT_TYPE::CHARACTER))
         {
             auto ch = std::static_pointer_cast<character>(obj);
             ch->update_map(*map, position, fb::model::size8_t{1, 1});
