@@ -41,6 +41,7 @@
 #include <unordered_set>
 #include <fb/lua.h>
 #include <fb/locker.h>
+#include <boost/stacktrace.hpp>
 
 namespace fb {
 

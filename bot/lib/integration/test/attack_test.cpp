@@ -13,8 +13,9 @@ async::task<void> attack_test::initialize(game_bot_controller& controller)
 {
     constexpr auto REQUIRED_BOTS = 1;
 
-    auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(fb::config<std::string>("ip")),
-                                                   fb::config<uint16_t>("port"));
+    auto ip = controller.container.ipv4(fb::config<std::string>("ip"));
+    auto endpoint =
+        boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
 
     fb::logger::info("Attack test initializing and spawning {} bot", REQUIRED_BOTS);
 
@@ -61,6 +62,7 @@ async::task<bool> attack_test::execute()
         fb::logger::debug("Attack {}: bot {} performed attack", i + 1, target_bot->fd());
 
         auto thread = target_bot->thread();
+        co_await thread->switching();
         co_await thread->sleep(interval);
     }
 

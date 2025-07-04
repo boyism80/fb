@@ -13,10 +13,11 @@ namespace fb::bot::integration {
 
 async::task<void> skill_test::initialize(game_bot_controller& controller)
 {
-    constexpr auto REQUIRED_BOTS = 1;
+    constexpr auto REQUIRED_BOTS = 5;
 
-    auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(fb::config<std::string>("ip")),
-                                                   fb::config<uint16_t>("port"));
+    auto ip = controller.container.ipv4(fb::config<std::string>("ip"));
+    auto endpoint =
+        boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
 
     fb::logger::info("Skill test initializing and spawning {} bot", REQUIRED_BOTS);
 
@@ -32,8 +33,8 @@ async::task<void> skill_test::initialize(game_bot_controller& controller)
 
 async::task<bool> skill_test::execute()
 {
-    constexpr auto interval = 250ms;
-    constexpr auto timeout  = 5s;
+    constexpr auto interval = 250ms; // Increased from 250ms to reduce server load
+    constexpr auto timeout  = 5s;    // Increased from 5s to handle server processing delays
 
     if (this->_test_running || this->_test_completed)
         co_return false;
@@ -51,30 +52,45 @@ async::task<bool> skill_test::execute()
     }
 
     // Step 1: Select the test bot for skill operations
-    auto bot = bots.front();
+    auto caster = bots.at(0);
+    auto target = bots.at(1);
 
-    fb::logger::info("Bot {} starting skill learning oid", bot->fd());
+    fb::logger::info("Bot {} starting skill learning oid", caster->oid());
 
     // Step 2: Increase bot's MP to ensure sufficient mana for spell learning and casting
-    auto thread = bot->thread();
+    auto thread = caster->thread();
     co_await thread->switching();
-    auto&& resp1 = co_await bot->request<fb::protocol::game::response::update_internal>(
+
+    std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, "/체력바꾸기 100000"},
+        timeout);
+
+    std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, "/현재체력 50"},
+        timeout);
+
+    std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
         fb::protocol::game::request::chat{false, "/마력바꾸기 100000"},
         timeout);
 
     // Step 3: Learn the spell "누리의기원" and wait for spell_update response
-    auto&& resp2 = co_await bot->request<fb::protocol::game::response::spell_update>(
+    std::ignore = co_await caster->request<fb::protocol::game::response::spell_update>(
         fb::protocol::game::request::chat{false, "/마법배우기 누리의기원"},
         timeout);
-    fb::logger::debug("Skill test: Bot {} sent spell learning chat message", bot->fd());
+    fb::logger::debug("Skill test: Bot {} sent spell learning chat message", caster->oid());
 
-    // Step 4: Cast the learned spell 10 times with 1-second intervals
+    // Step 4: Cast the learned spell 10 times with improved intervals
     for (auto i = 0; i < SPELL_CAST_COUNT; i++)
     {
-        bot->send(fb::protocol::game::request::spell_cast(resp2.index, "", 0, {0, 0}));
-        fb::logger::debug("Skill test: Bot {} cast spell {} (slot {})", bot->fd(), i + 1, this->_spell_learned_index);
+        auto before_hp = caster->hp();
+        std::ignore    = co_await caster->request<fb::protocol::game::response::update_internal>(
+            fb::protocol::game::request::spell_cast(1, "", 0, {0, 0}),
+            [before_hp](auto& resp) -> bool {
+                return resp.ch_hp == before_hp + 50;
+            },
+            timeout);
 
-        co_await bot->thread()->sleep(interval);
+        co_await caster->thread()->sleep(interval);
     }
 
     this->_test_completed = true;

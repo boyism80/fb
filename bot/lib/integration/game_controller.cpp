@@ -40,9 +40,9 @@ void game_bot_controller::initialize()
     fb::logger::info("Integration test controller initialized with test queue (movement -> attack -> skill)");
 }
 
-void game_bot_controller::set_test(std::unique_ptr<bot_integration_test> test)
+async::task<void> game_bot_controller::set_test(std::unique_ptr<bot_integration_test> test)
 {
-    this->_current_test.write([&](auto& current_test) {
+    co_await this->_current_test.async_write([&](auto& current_test) -> async::task<void> {
         if (current_test)
         {
             if (current_test->is_running())
@@ -60,35 +60,30 @@ void game_bot_controller::set_test(std::unique_ptr<bot_integration_test> test)
         {
             current_test->reset();
             fb::logger::info("Test case set to: {}", current_test->name());
-
-            async::awaitable_then(current_test->initialize(*this), [test_name = current_test->name()](auto result) {
-                try
-                {
-                    result();
-                    fb::logger::info("Test '{}' initialization completed", test_name);
-                }
-                catch (std::exception& e)
-                {
-                    fb::logger::warn("Failed to initialize test '{}': {}", test_name, e.what());
-                }
-            });
+            co_await current_test->initialize(*this);
+            fb::logger::info("Test '{}' initialization completed", current_test->name());
+            co_return;
         }
     });
 }
 
 async::task<bool> game_bot_controller::start_test()
 {
-    co_return co_await this->_current_test.async_write([](auto& current_test) -> async::task<bool> {
+    // Step 1: 짧은 락으로 실행 가능성 판단 + 테스트 참조 복사
+    bot_integration_test* test_to_run = nullptr;
+    std::string           test_name;
+
+    bool can_start = this->_current_test.write([&](auto& current_test) -> bool {
         if (!current_test)
         {
             fb::logger::warn("No test case is currently set");
-            co_return false;
+            return false;
         }
 
         if (current_test->is_running())
         {
             fb::logger::warn("Test '{}' is already running", current_test->name());
-            co_return false;
+            return false;
         }
 
         if (current_test->is_complete())
@@ -97,10 +92,19 @@ async::task<bool> game_bot_controller::start_test()
             current_test->reset();
         }
 
-        fb::logger::info("Starting test '{}'", current_test->name());
-        auto result = co_await current_test->execute();
-        co_return result;
+        test_name   = current_test->name();
+        test_to_run = current_test.get(); // raw pointer 복사
+        return true;
     });
+
+    if (!can_start)
+        co_return false;
+
+    // Step 2: 락 없이 테스트 실행
+    fb::logger::info("Starting test '{}'", test_name);
+    auto result = co_await test_to_run->execute();
+
+    co_return result;
 }
 
 void game_bot_controller::reset_current_test()
@@ -114,12 +118,12 @@ void game_bot_controller::reset_current_test()
     });
 }
 
-void game_bot_controller::start_next_test()
+async::task<void> game_bot_controller::start_next_test()
 {
     if (this->_test_queue.empty())
     {
         fb::logger::info("All integration tests completed successfully!");
-        return;
+        co_return;
     }
 
     // Get next test from queue
@@ -127,7 +131,7 @@ void game_bot_controller::start_next_test()
     this->_test_queue.pop();
 
     // Set as current test (this will also initialize it)
-    this->set_test(std::move(next_test));
+    co_await this->set_test(std::move(next_test));
 }
 
 async::task<void> game_bot_controller::handle_timer()
@@ -148,26 +152,23 @@ async::task<void> game_bot_controller::handle_timer()
     if (should_start)
     {
         fb::logger::info("All bots are ready for '{}', starting test", test_name);
-
-        async::awaitable_then(this->start_test(), [this, test_name](auto result) {
-            try
+        try
+        {
+            auto success = co_await this->start_test();
+            if (success)
             {
-                auto success = result();
-                if (success)
-                {
-                    fb::logger::info("Test '{}' completed successfully, starting next test", test_name);
-                    this->start_next_test();
-                }
-                else
-                {
-                    fb::logger::fatal("Test '{}' failed, stopping test sequence", test_name);
-                }
+                fb::logger::info("Test '{}' completed successfully, starting next test", test_name);
+                co_await this->start_next_test();
             }
-            catch (std::exception& e)
+            else
             {
-                fb::logger::warn("Failed to execute test '{}': {}", test_name, e.what());
+                fb::logger::fatal("Test '{}' failed, stopping test sequence", test_name);
             }
-        });
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::warn("Failed to execute test '{}': {}", test_name, e.what());
+        }
     }
 
     co_return;
@@ -258,7 +259,7 @@ async::task<void> game_bot_controller::handle_transfer(game_bot& bot, const fb::
 async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
 {
     // Notify current test about bot connection
-    this->_current_test.write([this, &bot](auto& current_test) {
+    this->_current_test.read([this, &bot](const auto& current_test) {
         if (current_test)
         {
             // Use shared_from_this to get shared_ptr to game_bot

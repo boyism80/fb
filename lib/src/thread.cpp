@@ -105,6 +105,14 @@ std::shared_ptr<fb::timer> fb::thread::settimer(const fb::timer::handle_callback
                                                 const fb::model::timespan&             duration,
                                                 fb::timer::repeat_type                 repeat)
 {
+    if (this->id() != std::this_thread::get_id())
+    {
+        auto sstream = std::stringstream();
+        sstream << boost::stacktrace::stacktrace();
+        fb::logger::fatal("cannot set timer. thread mismatched.\nStacktrace:\n{}", sstream.str());
+        throw std::runtime_error("cannot set timer. thread mismatched.");
+    }
+
     return this->_timers.write([&](auto& timers) {
         auto ptr = new fb::timer(
             [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {

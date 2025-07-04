@@ -2,6 +2,7 @@
 #define __BOT_INTEGRATION_SKILL_TEST_H__
 
 #include <fb/bot/integration/test_case.h>
+#include <stdexcept>
 
 namespace fb::bot::integration {
 

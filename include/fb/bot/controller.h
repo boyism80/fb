@@ -565,14 +565,17 @@ async::task<ResponseType> bot<BotType>::request(const fb::protocol::header&     
     // Set up timeout timer if specified
     if (timeout > 0s)
     {
-        auto thread    = this->thread();
-        context->timer = thread->settimer(
-            [context](auto& datetime, auto thread_id) -> async::task<void> {
-                context->complete_timeout();
-                co_return;
-            },
-            timeout,
-            fb::timer::repeat_type::once);
+        auto thread = this->thread();
+        std::ignore = thread->dispatch([context, timeout](auto& thread) -> async::task<void> {
+            context->timer = thread.settimer(
+                [context](auto& datetime, auto thread_id) -> async::task<void> {
+                    context->complete_timeout();
+                    co_return;
+                },
+                timeout,
+                fb::timer::repeat_type::once);
+            co_return;
+        });
     }
 
     // Ensure hook container exists

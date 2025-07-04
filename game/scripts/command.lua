@@ -190,6 +190,20 @@ command_funcs = {
         return true
     end,
 
+    ['현재체력'] = 
+    function (me, args)
+        local value = table.unpack(args)
+        me:hp(tonumber(value))
+        return true
+    end,
+
+    ['현재마력'] = 
+    function (me, args)
+        local value = table.unpack(args)
+        me:mp(tonumber(value))
+        return true
+    end,
+
     ['아이템생성'] = 
     function (me, args)
         local name, count = table.unpack(args)

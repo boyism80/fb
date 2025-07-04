@@ -38,7 +38,7 @@ add_executable(${DEST} ${SOURCE_FILES} main.cpp)
 IF(WIN32)
   set_target_properties(${DEST} PROPERTIES
     VS_DEBUGGER_COMMAND_ARGUMENTS "-c config/config.dev.json"
-    VS_DEBUGGER_WORKING_DIRECTORY "${ROOT_DIR}"
+    VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
   )
 ENDIF(WIN32)
 

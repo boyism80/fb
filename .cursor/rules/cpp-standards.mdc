@@ -200,6 +200,42 @@ Yes, this pattern causes value copying between stages. This is **unavoidable and
 - Use `UPPER_CASE` for constants, macros, and enum values
 - **Note: PascalCase may appear in auto-generated code only**
 
+### **Member Variable Naming Convention**
+- **Private member variables MUST have underscore prefix (`_`)**
+- **Public member variables use snake_case (no underscore prefix)**
+- **Member variables MUST be declared before method declarations in class definition**
+
+```cpp
+// Preferred - Follow fb project standard
+class example_class
+{
+private:
+    std::atomic<bool> _is_running{false};        // Private: underscore prefix
+    std::string       _internal_name;            // Private: underscore prefix
+    mutable std::mutex _data_mutex;              // Private: underscore prefix
+
+public:
+    std::string display_name;                    // Public: no underscore prefix
+    
+    // Methods come after member variables
+    void start();
+    void stop();
+    bool is_running() const { return this->_is_running.load(); }
+};
+
+// Avoid - Wrong member variable naming
+class bad_example
+{
+public:
+    void start();                                // WRONG: Methods before member variables
+    
+private:
+    std::atomic<bool> is_running{false};         // WRONG: Missing underscore prefix
+    std::string       internalName;              // WRONG: camelCase instead of snake_case
+    mutable std::mutex data_mutex_;              // WRONG: Underscore suffix instead of prefix
+};
+```
+
 ### **Enum Naming Convention**
 ```cpp
 // Preferred - Follow fb project standard

@@ -75,7 +75,7 @@ public:
      *
      * @param      test  Unique pointer to the new test case.
      */
-    void set_test(std::unique_ptr<bot_integration_test> test);
+    async::task<void> set_test(std::unique_ptr<bot_integration_test> test);
 
     /**
      * @brief      Starts the current integration test.
@@ -101,7 +101,7 @@ private:
      *             Moves to the next test in the queue and initializes it.
      *             If the queue is empty, logs completion of all tests.
      */
-    void start_next_test();
+    async::task<void> start_next_test();
 
 private:
     /**

@@ -66,6 +66,9 @@ public:
 protected:
     context(boost::asio::io_context& context, const std::string& name, uint32_t thread_count);
 
+public:
+    virtual ~context() = default;
+
 protected:
     /**
      * @brief      Binds a member function as a thread-based timer callback.
@@ -150,7 +153,7 @@ protected:
                     try
                     {
                         // Execute the timer callback
-                        async::awaitable_get((shared_this.get()->*fn)());
+                        std::ignore = (shared_this.get()->*fn)();
                     }
                     catch (const std::exception& e)
                     {
@@ -213,7 +216,7 @@ protected:
                     try
                     {
                         // Execute the timer callback
-                        async::awaitable_get(fn());
+                        std::ignore = fn();
                     }
                     catch (const std::exception& e)
                     {
@@ -231,7 +234,34 @@ protected:
     }
 
 public:
-    virtual ~context() = default;
+    /**
+     * @brief      Gets the IPv4 address from a hostname or IP address string.
+     *
+     * @param[in]  ip  The hostname or IP address to resolve.
+     *
+     * @return     The resolved IPv4 address as a string.
+     */
+    std::string ipv4(const std::string& ip) const
+    {
+        try
+        {
+            auto resolver = boost::asio::ip::tcp::resolver(this->io_context);
+            auto results  = resolver.resolve(ip, "0");
+
+            for (const auto& entry : results)
+            {
+                auto addr = entry.endpoint().address();
+                if (addr.is_v4())
+                    return addr.to_string();
+            }
+
+            throw std::runtime_error(std::format("Failed to resolve IPv4 address for: {}", ip));
+        }
+        catch (const std::exception& e)
+        {
+            throw std::runtime_error(std::format("Error resolving address: {}", e.what()));
+        }
+    }
 
 public:
     virtual void exit();
