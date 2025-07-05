@@ -1,9 +1,4 @@
 ---
-description: 
-globs: 
-alwaysApply: true
----
----
 description: Common project rules and standards for FB 2D MMORPG game server
 alwaysApply: true
 globs:
@@ -53,16 +48,23 @@ Format: `<type>: <short description>`
 - **Blank line**: Separate subject from description
 - **Description**: Detailed explanation if needed (wrap at 72 characters)
 
+**Commit Command Format**:
+- **Maximum 2 `-m` options only**: Use exactly 2 `-m` options maximum
+- **First `-m`**: Subject line only
+- **Second `-m`**: Description with multiple bullet points (no unnecessary newlines between points)
+- **Multiline description**: Use single string with embedded newlines, not multiple `-m` options
+
 **Example**:
 ```
-feat: add user authentication system
-
-- Implement JWT token validation
+git commit -m "feat: add user authentication system" -m "- Implement JWT token validation
 - Add password hashing with bcrypt
 - Create login/logout endpoints
-- Add session management middleware
+- Add session management middleware"
+```
 
-Note: Integration testing required before deployment
+**WRONG Example** (multiple -m options):
+```
+git commit -m "feat: add user authentication system" -m "- Implement JWT token validation" -m "- Add password hashing with bcrypt" -m "- Create login/logout endpoints"
 ```
 
 Types:
@@ -172,6 +174,11 @@ Invoke-Command -ScriptBlock { command } -TimeoutSec 30
 - Keep header files (.h) and implementation files (.cpp) separate
 - Place templates in dedicated Template/ directories
 - Organize Lua scripts by functionality:
+  - `/scripts/npc/` - NPC interaction scripts
+  - `/scripts/spell/` - Spell casting logic
+  - `/scripts/mob/` - Monster behavior scripts
+
+  - `/scripts/item/` - Item-specific logic 
   - `/scripts/npc/` - NPC interaction scripts
   - `/scripts/spell/` - Spell casting logic
   - `/scripts/mob/` - Monster behavior scripts
