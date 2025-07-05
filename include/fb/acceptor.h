@@ -340,11 +340,27 @@ private:
 
             auto weak = socket.template weak_from_this_as<fb::socket<T>>();
             co_await this->threads.switching(weak);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal("failed to switch thread context: {}", e.what());
+        }
+        catch (...)
+        {
+            fb::logger::fatal("failed to switch thread context: unknown exception");
+        }
+
+        try
+        {
             co_await this->erase(socket);
         }
         catch (std::exception& e)
         {
-            fb::logger::fatal(e.what());
+            fb::logger::fatal("failed to erase socket: {}", e.what());
+        }
+        catch (...)
+        {
+            fb::logger::fatal("failed to erase socket: unknown exception");
         }
     }
 

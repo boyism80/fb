@@ -88,11 +88,20 @@ async::task<bool> skill_test::execute()
 
     // Step 2: Execute healing spell tests
     auto healing_test_result = co_await this->test_healing_spells(bots, timeout);
+    if (healing_test_result == false)
+    {
+        fb::logger::fatal("Healing spell test failed");
+        this->cleanup();
+        co_return false;
+    }
+
+    // Step 3: Execute damage spell tests
+    auto damage_test_result = co_await this->test_damage_spells(bots, timeout);
 
     this->_test_completed = true;
     this->_test_running   = false;
 
-    if (healing_test_result)
+    if (damage_test_result)
     {
         fb::logger::info("Skill test completed successfully");
         auto caster = bots.at(0);
@@ -482,6 +491,147 @@ async::task<bool> skill_test::test_healing_spells(const std::vector<std::shared_
                      healing_spells.size());
     caster->send(fb::protocol::game::request::chat(false, "All healing spell tests completed successfully!"));
 
+    co_return true;
+}
+
+async::task<bool> skill_test::test_damage_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                 std::chrono::milliseconds                              timeout)
+{
+    constexpr auto interval = 100ms;
+
+    auto& caster = bots.at(0);
+    auto& target = bots.at(1);
+    auto& other1 = bots.at(2);
+    auto& other2 = bots.at(3);
+
+    fb::logger::info("Bot {} starting damage spell test", caster->oid());
+    caster->send(fb::protocol::game::request::chat(false, "=== DAMAGE SPELL TEST STARTED ==="));
+
+    auto thread = caster->thread();
+    co_await thread->switching();
+
+    for (auto& bot : bots)
+    {
+        std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
+            fb::protocol::game::request::chat{false, "/체력바꾸기 100000"},
+            timeout);
+
+        std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
+            fb::protocol::game::request::chat{false, "/마력바꾸기 100000"},
+            timeout);
+    }
+
+    struct damage_spell_test
+    {
+        std::string name;
+        SPELL_TYPE  type;
+        int         expected_damage;
+        int         expected_mp_cost;
+    };
+
+    std::vector<damage_spell_test> damage_spells = {
+        {"뢰진주",       SPELL_TYPE::TARGET, 320,  120},
+        {"화염주",       SPELL_TYPE::TARGET, 320,  120},
+        {"백열주",       SPELL_TYPE::TARGET, 320,  120},
+        {"자무주",       SPELL_TYPE::TARGET, 320,  120},
+        {"뢰격주",       SPELL_TYPE::TARGET, 530,  180},
+        {"화영열주",     SPELL_TYPE::TARGET, 530,  180},
+        {"백령주",       SPELL_TYPE::TARGET, 530,  180},
+        {"자영무주",     SPELL_TYPE::TARGET, 530,  180},
+        {"뢰격참주",     SPELL_TYPE::TARGET, 740,  250},
+        {"화열참주",     SPELL_TYPE::TARGET, 740,  250},
+        {"백열참주",     SPELL_TYPE::TARGET, 740,  250},
+        {"자천무주",     SPELL_TYPE::TARGET, 740,  250},
+        {"진뢰격참주",   SPELL_TYPE::TARGET, 1950, 330},
+        {"진화열참주",   SPELL_TYPE::TARGET, 1950, 330},
+        {"진백열참주",   SPELL_TYPE::TARGET, 1950, 330},
+        {"진자천무주",   SPELL_TYPE::TARGET, 1950, 330},
+        {"극진뢰격참주", SPELL_TYPE::TARGET, 3580, 360},
+        {"극진화열참주", SPELL_TYPE::TARGET, 3580, 360},
+        {"극진백열참주", SPELL_TYPE::TARGET, 3580, 360},
+        {"극진자천무주", SPELL_TYPE::TARGET, 3580, 360},
+        {"흡성대법",     SPELL_TYPE::TARGET, 3000, 60 },
+        {"백열장",       SPELL_TYPE::TARGET, 280,  80 },
+        {"헬파이어",     SPELL_TYPE::TARGET, 0,    0  }  // Special case, damage is not fixed, mp cost is all current mp
+    };
+
+    for (auto& spell : damage_spells)
+    {
+        std::ignore = co_await caster->request<fb::protocol::game::response::spell_update>(
+            fb::protocol::game::request::chat{false, std::format("/마법배우기 {}", spell.name)},
+            timeout);
+    }
+
+    fb::logger::info("Learning {} damage spells", damage_spells.size());
+    uint8_t spell_slot = 1;
+    for (const auto& spell : damage_spells)
+    {
+        fb::logger::info("Testing spell: {} (Damage: {}, MP: -{})",
+                         spell.name,
+                         spell.expected_damage,
+                         spell.expected_mp_cost);
+
+        // Spawn a monster for each spell test to ensure a fresh target
+        auto&& spawn_response = co_await caster->request<fb::protocol::game::response::update>(
+            fb::protocol::game::request::chat{false, "/몬스터생성 다람쥐"},
+            timeout);
+
+        if (spawn_response.objects_data.empty())
+        {
+            fb::logger::warn("Failed to spawn monster for {} test.", spell.name);
+            spell_slot++;
+            continue;
+        }
+        auto& mob = spawn_response.objects_data[0];
+
+        co_await caster->request<fb::protocol::game::response::update_internal>(
+            fb::protocol::game::request::chat{false, "/체력바꾸기 100000"},
+            [](auto& resp) -> bool {
+                return resp.ch_hp == 100000;
+            },
+            timeout);
+
+        co_await caster->request<fb::protocol::game::response::update_internal>(
+            fb::protocol::game::request::chat{false, "/현재체력 50"},
+            [](auto& resp) -> bool {
+                return resp.ch_hp == 50;
+            },
+            timeout);
+
+        // Set caster's MP to be sufficient
+        co_await caster->request<fb::protocol::game::response::update_internal>(
+            fb::protocol::game::request::chat{false, "/마력바꾸기 100000"},
+            [](auto& resp) -> bool {
+                return resp.ch_mp == 100000;
+            },
+            timeout);
+
+        auto before_caster_hp = caster->hp();
+        auto before_caster_mp = caster->mp();
+        auto expected_hp      = before_caster_hp;
+        auto expected_mp      = before_caster_mp - spell.expected_mp_cost;
+        if (spell.name == "헬파이어")
+            expected_mp = 0;
+
+        if (spell.name == "흡성대법")
+            expected_hp = before_caster_hp + 15;
+
+        co_await caster->request<fb::protocol::game::response::update_internal>(
+            fb::protocol::game::request::spell_cast(spell.type,
+                                                    spell_slot,
+                                                    "",
+                                                    mob.oid,
+                                                    fb::model::point(mob.x, mob.y)),
+            [=](auto& resp) -> bool {
+                return resp.ch_hp == expected_hp && resp.ch_mp == expected_mp;
+            },
+            timeout);
+        spell_slot++;
+        co_await caster->thread()->sleep(interval);
+    }
+
+    caster->send(fb::protocol::game::request::chat(false, "=== DAMAGE SPELL TEST COMPLETED ==="));
+    fb::logger::info("Damage spell test completed.");
     co_return true;
 }
 

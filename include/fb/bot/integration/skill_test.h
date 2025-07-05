@@ -138,6 +138,9 @@ private:
      */
     async::task<bool> test_healing_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
                                           std::chrono::milliseconds                              timeout);
+
+    async::task<bool> test_damage_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                         std::chrono::milliseconds                              timeout);
 };
 
 } // namespace fb::bot::integration

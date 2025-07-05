@@ -355,8 +355,8 @@ public:
                             co_return;
 
                         [[maybe_unused]] volatile auto holder = protocol;
-                        shared->process_hooks(cmd, *protocol.get());
                         co_await handler(*shared, *protocol.get());
+                        shared->process_hooks(cmd, *protocol.get());
                     });
                 }
 
@@ -425,10 +425,9 @@ public:
              }});
 
         this->_handler.insert({ResponseType::header, [this, fn](auto& bot, auto& header) -> async::task<void> {
-                                   bot.process_hooks(ResponseType::header, header);
-
                                    auto protocol = static_cast<ResponseType&>(header);
                                    co_await fn(bot, protocol);
+                                   bot.process_hooks(ResponseType::header, header);
                                }});
     }
 

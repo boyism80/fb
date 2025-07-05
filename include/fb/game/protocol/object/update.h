@@ -16,7 +16,7 @@ class update : public fb::protocol::header
 public:
     static constexpr uint8_t header = 0x07;
 
-private:
+public:
 #ifndef BOT
     const fb::game::object*               object;
     const std::vector<fb::game::object*>* objects;
