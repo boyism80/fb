@@ -51,7 +51,6 @@ function func(me, val1, val2, val3)
     --     near:chat(near:name())
     -- end
     -- sleep(1000)
-    me:chat(baram_time())
 
     return 'hello', 'world'
 end
