@@ -184,22 +184,41 @@ void fb::thread::enqueue(const handle_func_type<void>& fn,
 async::task<void> fb::thread::dispatch(const handle_func_type<void>& fn)
 {
     auto promise = std::make_shared<async::task_completion_source<void>>();
-    this->enqueue(
-        fn,
-        [promise](std::exception& e) {
-            promise->set_exception(std::make_exception_ptr(e));
-        },
-        [promise]() {
-            promise->set_value();
+    if (this->id() == std::this_thread::get_id())
+    {
+        async::awaitable_then(fn(*this), [promise](auto result) {
+            try
+            {
+                result();
+                promise->set_value();
+            }
+            catch (std::exception& e)
+            {
+                promise->set_exception(std::make_exception_ptr(e));
+            }
+            catch (...)
+            {
+                promise->set_exception(std::make_exception_ptr(std::runtime_error("unknown error")));
+            }
         });
+    }
+    else
+    {
+        this->enqueue(
+            fn,
+            [promise](std::exception& e) {
+                promise->set_exception(std::make_exception_ptr(e));
+            },
+            [promise]() {
+                promise->set_value();
+            });
+    }
+
     return promise->task();
 }
 
 async::task<void> fb::thread::switching()
 {
-    if (this->id() == std::this_thread::get_id())
-        co_return;
-
     co_await this->dispatch([](auto& thread) -> async::task<void> {
         co_return;
     });

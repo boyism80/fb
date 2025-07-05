@@ -302,16 +302,35 @@ public:
     /**
      * @brief      Dispatches a void task and returns a future.
      *
-     * @param[in]  fn    The function to execute.
+     *             This function executes a task on this thread and returns a future
+     *             that completes when the task finishes. If called from the same thread,
+     *             the task executes immediately. Otherwise, it's queued for execution
+     *             on the target thread. The function provides proper exception handling
+     *             and ensures thread safety through the task queue system.
+     *
+     * @param[in]  fn    The function to execute on this thread.
      *
      * @return     A task that will complete when the function finishes.
+     *
+     * @note       Same-thread calls execute immediately for better performance
+     * @note       Cross-thread calls are queued for safe execution
+     * @warning    Exceptions in the task are properly propagated to the future
      */
     [[nodiscard]] async::task<void> dispatch(const handle_func_type<void>& fn);
 
     /**
      * @brief      Switches to this thread context.
      *
+     *             This function creates a task that switches execution to this thread's
+     *             context. It's used to ensure that subsequent operations execute on
+     *             the correct thread, particularly important for thread_switchable
+     *             objects that must be accessed from their designated thread.
+     *
      * @return     A task that completes when the switch is done.
+     *
+     * @note       Used for thread context synchronization
+     * @note       Ensures proper thread_switchable object access
+     * @warning    Must be awaited to ensure thread switch completion
      */
     [[nodiscard]] async::task<void> switching();
 };
