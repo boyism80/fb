@@ -48,5 +48,5 @@ function ON_CAST_1018(me, spell)
         front:position(x, y)
     end
 
-    attack_cast(me, front, spell, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect})
+    attack_cast(me, front, spell, {hp = hp, mp = 0, damage = damage, message = message, sound = sound, effect = effect})
 end

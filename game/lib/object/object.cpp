@@ -175,7 +175,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
 
     this->update_sector();
 
-    for (auto obj : this->_map->nears(before))
+    for (auto& obj : this->_map->nears(before))
     {
         if (this == obj.get())
             continue;
@@ -193,7 +193,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         }
     }
 
-    for (auto obj : this->_map->nears(this->_position))
+    for (auto& obj : this->_map->nears(this->_position))
     {
         if (this == obj.get())
             continue;
@@ -205,11 +205,11 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
 
             if (!before_sight && after_sight) // 상대 시야에 내가 추가됨
             {
-                this->update_external(*obj, false);
+                this->update_external(*obj, true);
             }
             else if (refresh && before_sight && after_sight) // 상대 시야에 원래 있었는데 위치 강제이동
             {
-                this->update_external(*obj, false);
+                this->update_external(*obj, true);
             }
             else
             {

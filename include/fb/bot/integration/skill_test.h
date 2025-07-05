@@ -144,6 +144,12 @@ private:
 
     async::task<bool> test_near_damage_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
                                               std::chrono::milliseconds                              timeout);
+
+    async::task<bool> test_attack_cast_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                              std::chrono::milliseconds                              timeout);
+
+    async::task<bool> test_multi_target_attack_cast_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                           std::chrono::milliseconds timeout);
 };
 
 } // namespace fb::bot::integration

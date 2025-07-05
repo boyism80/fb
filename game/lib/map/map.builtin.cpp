@@ -152,31 +152,25 @@ int map::builtin::builtin_movable(lua_State* L)
         return 0;
 
     auto position = fb::model::point16_t();
-    if (lua_istable(L, 3))
+    if (lua->is_table(3))
     {
-        lua_rawgeti(L, 3, 1);
+        lua->rawgeti(3, 1);
         position.x = (uint16_t)lua->tointeger(-1);
         lua->remove(-1);
 
-        lua_rawgeti(L, 3, 2);
+        lua->rawgeti(3, 2);
         position.y = (uint16_t)lua->tointeger(-1);
         lua->remove(-1);
     }
-    else if (lua_isnumber(L, 3) && lua_isnumber(L, 4))
+    else if (lua->is_number(3) && lua->is_number(4))
     {
         position.x = (uint16_t)lua->tointeger(3);
         position.y = (uint16_t)lua->tointeger(4);
     }
-    else if (lua_isuserdata(L, 3))
+    else if (lua->is_number(3))
     {
-        auto obj = lua->touserdata<object>(3);
-        if (obj == nullptr)
-            return 0;
-
-        auto argc = lua->argc();
-        auto step = lua->tointeger(4, 1);
-
-        position = obj->front_position(step);
+        auto step = lua->tointeger(3);
+        position  = obj->front_position(step);
     }
     else
     {
