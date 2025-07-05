@@ -1141,7 +1141,7 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
         break;
 
     case SPELL_TYPE::TARGET:
-        ch->active(*spell, request.fd);
+        ch->active(*spell, request.oid);
         break;
 
     case SPELL_TYPE::NORMAL:

@@ -50,7 +50,7 @@ void listener_impl::on_update_external(object& me, bool detailed)
         if (map == nullptr)
             return;
 
-        for (auto obj : map->nears(me.position(), OBJECT_TYPE::CHARACTER))
+        for (auto& obj : map->nears(me.position(), OBJECT_TYPE::CHARACTER))
         {
             if (me.hidden(*obj))
                 continue;

@@ -413,7 +413,7 @@ private:
      *
      * @return     True if the buff was successfully added, false otherwise
      */
-    bool push_back(std::shared_ptr<buff>&& buff);
+    bool push_back(const std::shared_ptr<buff>& buff);
 
 public:
     /**

@@ -124,8 +124,3 @@ std::vector<std::weak_ptr<character>> group::nears(const fb::game::map& map, con
 
     return result;
 }
-
-fb::thread* group::thread() const
-{
-    return this->_context.threads.modular(this->_id);
-}

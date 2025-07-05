@@ -465,12 +465,21 @@ public:
     /**
      * @brief      Loads and executes a Lua script with formatted arguments.
      *
+     *             This function loads and executes Lua scripts from files or compiled bytecode.
+     *             In debug builds, it loads scripts directly from files. In release builds,
+     *             it uses pre-compiled bytecode for better performance. The function supports
+     *             format string arguments for dynamic script path generation.
+     *
      * @param[in]  fmt   The format string for the Lua script path or code.
-     * @param      args  The arguments to format into the script string.
+     * @param[in]  args  The arguments to format into the script string.
      *
      * @tparam     Args  Variadic template arguments for formatting.
      *
      * @return     Reference to this context for method chaining.
+     *
+     * @note       In debug builds, scripts are loaded directly from files
+     * @note       In release builds, scripts use pre-compiled bytecode for performance
+     * @warning    Script loading failures throw std::runtime_error
      */
     template <class... Args>
     context& load(const std::string& fmt, Args&&... args);
@@ -1260,7 +1269,7 @@ public:
     using bytecode_set   = std::unordered_map<std::string, std::vector<char>>;
 
 private:
-    fb::locker<bytecode_set> _bytecodes;
+    bytecode_set _bytecodes;
 
 public:
     friend class context;
@@ -1308,15 +1317,35 @@ public:
     /**
      * @brief      Dumps Lua bytecode to a file.
      *
-     * @param[in]  path  The path to dump to.
+     *             This function compiles a Lua script file to bytecode and stores it
+     *             in the internal bytecode cache. The compiled bytecode is used in
+     *             release builds for improved performance. If the script is already
+     *             compiled, the function returns immediately without recompilation.
+     *
+     * @param[in]  path  The path to the Lua script file to compile.
      *
      * @return     True if successful, false otherwise.
+     *
+     * @note       Bytecode is cached internally for reuse
+     * @note       Compilation errors throw std::runtime_error
+     * @warning    File loading failures throw std::runtime_error
      */
     bool dump(const std::string& path);
     /**
      * @brief      Pops a context from the pool.
      *
-     * @return     A pointer to the popped context.
+     *             This function retrieves a Lua context from the idle pool or creates
+     *             a new one if the pool is empty and under capacity. The context is
+     *             moved to the busy pool and initialized with the specified parent.
+     *             All cached bytecode scripts are automatically loaded into the new context.
+     *
+     * @param[in]  parent  The parent context for the new context.
+     *
+     * @return     A pointer to the popped context, or nullptr if pool is full.
+     *
+     * @note       Contexts are automatically loaded with all cached bytecode
+     * @note       Returns nullptr if pool capacity is exceeded
+     * @warning    Thread safety is handled by per-thread context pools
      */
     context* pop(context* parent);
     /**
@@ -1330,13 +1359,31 @@ public:
     /**
      * @brief      Releases a context back to the pool.
      *
-     * @param      ctx   The context to release.
+     *             This function returns a Lua context to the idle pool for reuse.
+     *             The context is cleaned up (stack cleared, parent reset) and moved
+     *             from the busy pool to the idle pool. This function is thread-safe
+     *             and handles the context lifecycle management.
+     *
+     * @param[in]  ctx   The context to release back to the pool.
+     *
+     * @note       Context stack is cleared and parent is reset during release
+     * @note       Thread safety is handled by per-thread context pools
+     * @warning    Invalid context state throws std::runtime_error
      */
     void release(context& ctx);
     /**
      * @brief      Revokes a context from the pool.
      *
-     * @param      ctx   The context to revoke.
+     *             This function removes a Lua context from the busy pool without
+     *             returning it to the idle pool. This is typically used when a
+     *             context becomes invalid or needs to be permanently removed from
+     *             the pool. The context is destroyed and its resources are freed.
+     *
+     * @param[in]  ctx   The context to revoke from the pool.
+     *
+     * @note       Context is permanently removed, not returned to idle pool
+     * @note       Thread safety is handled by per-thread context pools
+     * @warning    Context resources are freed immediately
      */
     void revoke(context& ctx);
 
@@ -1555,21 +1602,17 @@ fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
 #else
     auto root = static_cast<fb::lua::root*>(this->owner);
     root->dump(fname);
-    root->_bytecodes.read([this, &fname](const auto& bytecodes) -> void {
-        auto it = bytecodes.find(fname);
-        if (it == bytecodes.end())
-        {
-            fb::logger::fatal("cannot find script {}", fname);
-            return;
-        }
 
-        const auto& bytes = it->second;
-        if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
-            return;
+    auto it = root->_bytecodes.find(fname);
+    if (it == root->_bytecodes.end())
+        throw std::runtime_error(std::format("cannot find script {}", fname));
 
-        if (lua_pcall(*this, 0, LUA_MULTRET, 0))
-            return;
-    });
+    const auto& bytes = it->second;
+    if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
+        throw std::runtime_error(std::format("cannot load script {}", fname));
+
+    if (lua_pcall(*this, 0, LUA_MULTRET, 0))
+        throw std::runtime_error(std::format("cannot run script {}", fname));
 
 #endif
     return *this;

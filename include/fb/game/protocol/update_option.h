@@ -14,11 +14,23 @@ public:
     static constexpr uint8_t header = 0x1B;
 
 public:
+#ifndef BOT
     OPTION option;
     bool   ride = false;
+#else
+    const OPTION option;
+    const bool   ride = false;
+#endif
 
 public:
+#ifndef BOT
     update_option() = default;
+#else
+    update_option(OPTION option, bool ride) :
+        option(option),
+        ride(ride)
+    { }
+#endif
 
 public:
 #ifdef BOT

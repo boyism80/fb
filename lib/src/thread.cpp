@@ -105,6 +105,14 @@ std::shared_ptr<fb::timer> fb::thread::settimer(const fb::timer::handle_callback
                                                 const fb::model::timespan&             duration,
                                                 fb::timer::repeat_type                 repeat)
 {
+    if (this->id() != std::this_thread::get_id())
+    {
+        auto sstream = std::stringstream();
+        sstream << boost::stacktrace::stacktrace();
+        fb::logger::fatal("cannot set timer. thread mismatched.\nStacktrace:\n{}", sstream.str());
+        throw std::runtime_error("cannot set timer. thread mismatched.");
+    }
+
     return this->_timers.write([&](auto& timers) {
         auto ptr = new fb::timer(
             [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {
@@ -176,22 +184,41 @@ void fb::thread::enqueue(const handle_func_type<void>& fn,
 async::task<void> fb::thread::dispatch(const handle_func_type<void>& fn)
 {
     auto promise = std::make_shared<async::task_completion_source<void>>();
-    this->enqueue(
-        fn,
-        [promise](std::exception& e) {
-            promise->set_exception(std::make_exception_ptr(e));
-        },
-        [promise]() {
-            promise->set_value();
+    if (this->id() == std::this_thread::get_id())
+    {
+        async::awaitable_then(fn(*this), [promise](auto result) {
+            try
+            {
+                result();
+                promise->set_value();
+            }
+            catch (std::exception& e)
+            {
+                promise->set_exception(std::make_exception_ptr(e));
+            }
+            catch (...)
+            {
+                promise->set_exception(std::make_exception_ptr(std::runtime_error("unknown error")));
+            }
         });
+    }
+    else
+    {
+        this->enqueue(
+            fn,
+            [promise](std::exception& e) {
+                promise->set_exception(std::make_exception_ptr(e));
+            },
+            [promise]() {
+                promise->set_value();
+            });
+    }
+
     return promise->task();
 }
 
 async::task<void> fb::thread::switching()
 {
-    if (this->id() == std::this_thread::get_id())
-        co_return;
-
     co_await this->dispatch([](auto& thread) -> async::task<void> {
         co_return;
     });

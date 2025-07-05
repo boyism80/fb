@@ -178,7 +178,7 @@ bool buffs::contains(const fb::model::spell& model) const
     return this->contains(model.id);
 }
 
-bool buffs::push_back(std::shared_ptr<buff>&& buff)
+bool buffs::push_back(const std::shared_ptr<buff>& buff)
 {
     auto& model = buff->model;
     if (this->contains(model.id))
@@ -211,14 +211,19 @@ std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  
 {
     if (this->contains(model.id))
     {
-        auto buff = this->at(model.id);
+        auto& buff = this->at(model.id);
         buff->time(std::chrono::seconds(seconds));
         return buff;
     }
 
     auto& context = this->_owner.context;
-    auto  created = std::make_shared<buff>(context, model, caster.get(), seconds);
-    if (this->push_back(std::move(created)) == false)
+    auto  created = context.make<buff>(model, caster.get(), seconds);
+    if (created == nullptr)
+    {
+        fb::logger::warn("Failed to create buff for {}", model.name);
+        return nullptr;
+    }
+    else if (this->push_back(created) == false)
     {
         std::ignore = context.destroy(*created);
         return nullptr;

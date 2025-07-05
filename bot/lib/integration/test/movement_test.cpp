@@ -14,8 +14,9 @@ async::task<void> movement_test::initialize(game_bot_controller& controller)
 {
     constexpr auto REQUIRED_BOTS = 5;
 
-    auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(fb::config<std::string>("ip")),
-                                                   fb::config<uint16_t>("port"));
+    auto ip = controller.container.ipv4(fb::config<std::string>("ip"));
+    auto endpoint =
+        boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
 
     fb::logger::info("Movement test initializing and spawning {} bots", REQUIRED_BOTS);
 
@@ -31,7 +32,7 @@ async::task<void> movement_test::initialize(game_bot_controller& controller)
 
 async::task<bool> movement_test::execute()
 {
-    constexpr auto interval = 250ms;
+    constexpr auto interval = 100ms;
 
     if (this->_test_running || this->_test_completed)
         co_return false;
@@ -71,6 +72,7 @@ async::task<bool> movement_test::execute()
                           position.y);
 
         auto thread = target_bot->thread();
+        co_await thread->switching();
         co_await thread->sleep(interval);
     }
 

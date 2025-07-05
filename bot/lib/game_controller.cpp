@@ -86,7 +86,6 @@ async::task<void> game_bot_controller::handle_state(game_bot&                   
     // Always update mail count and fast move setting
     bot.set_mail_count(response.ch_mail);
     bot.set_fast_move(response.ch_fast_move);
-
     co_return;
 }
 

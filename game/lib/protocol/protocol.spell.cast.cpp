@@ -9,10 +9,21 @@ async::task<void> spell_cast::serialize(fb::stream_writer<big_endian>& writer) c
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(this->slot);
 
-    // Write the buffer data
-    if (this->buffer.size() > 0)
+    switch (this->type)
     {
-        writer.write(this->buffer.data(), this->buffer.size());
+    case SPELL_TYPE::INPUT:
+#ifdef _WIN32
+        writer.write((const void*)this->message.c_str(), this->message.size());
+#else
+        writer.write((const void*)cp949(this->message).c_str(), this->message.size());
+#endif
+        break;
+
+    case SPELL_TYPE::TARGET:
+        writer.write<uint32_t>(this->oid);
+        writer.write<uint16_t>(this->position.x);
+        writer.write<uint16_t>(this->position.y);
+        break;
     }
 }
 #else
@@ -47,7 +58,7 @@ void spell_cast::parse(SPELL_TYPE type)
 
     case SPELL_TYPE::TARGET:
     {
-        this->fd         = reader.read<uint32_t>();
+        this->oid        = reader.read<uint32_t>();
         this->position.x = reader.read<uint16_t>();
         this->position.y = reader.read<uint16_t>();
     }

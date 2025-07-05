@@ -355,8 +355,8 @@ public:
                             co_return;
 
                         [[maybe_unused]] volatile auto holder = protocol;
-                        shared->process_hooks(cmd, *protocol.get());
                         co_await handler(*shared, *protocol.get());
+                        shared->process_hooks(cmd, *protocol.get());
                     });
                 }
 
@@ -425,10 +425,9 @@ public:
              }});
 
         this->_handler.insert({ResponseType::header, [this, fn](auto& bot, auto& header) -> async::task<void> {
-                                   bot.process_hooks(ResponseType::header, header);
-
                                    auto protocol = static_cast<ResponseType&>(header);
                                    co_await fn(bot, protocol);
+                                   bot.process_hooks(ResponseType::header, header);
                                }});
     }
 
@@ -565,14 +564,17 @@ async::task<ResponseType> bot<BotType>::request(const fb::protocol::header&     
     // Set up timeout timer if specified
     if (timeout > 0s)
     {
-        auto thread    = this->thread();
-        context->timer = thread->settimer(
-            [context](auto& datetime, auto thread_id) -> async::task<void> {
-                context->complete_timeout();
-                co_return;
-            },
-            timeout,
-            fb::timer::repeat_type::once);
+        auto thread = this->thread();
+        std::ignore = thread->dispatch([context, timeout](auto& thread) -> async::task<void> {
+            context->timer = thread.settimer(
+                [context](auto& datetime, auto thread_id) -> async::task<void> {
+                    context->complete_timeout();
+                    co_return;
+                },
+                timeout,
+                fb::timer::repeat_type::once);
+            co_return;
+        });
     }
 
     // Ensure hook container exists

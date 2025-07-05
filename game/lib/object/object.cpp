@@ -171,11 +171,11 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         this->update_position();
 
     if (sight(before, this->_position, this->_map) == false)
-        this->update_external(*this, false);
+        this->update_external(*this, true);
 
     this->update_sector();
 
-    for (auto obj : this->_map->nears(before))
+    for (auto& obj : this->_map->nears(before))
     {
         if (this == obj.get())
             continue;
@@ -193,7 +193,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         }
     }
 
-    for (auto obj : this->_map->nears(this->_position))
+    for (auto& obj : this->_map->nears(this->_position))
     {
         if (this == obj.get())
             continue;
@@ -205,11 +205,11 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
 
             if (!before_sight && after_sight) // 상대 시야에 내가 추가됨
             {
-                this->update_external(*obj, false);
+                this->update_external(*obj, true);
             }
             else if (refresh && before_sight && after_sight) // 상대 시야에 원래 있었는데 위치 강제이동
             {
-                this->update_external(*obj, false);
+                this->update_external(*obj, true);
             }
             else
             {
@@ -221,7 +221,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         {
             if (!sight(before, obj->_position, this->_map) && this->sight(*obj))
             {
-                obj->update_external(*this, false);
+                obj->update_external(*this, true);
             }
         }
     }
@@ -577,12 +577,12 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         this->update_external(true);
         this->update_bgm(map->model.bgm, 100);
 
-        for (auto obj : map->nears(this->_position))
+        for (auto& obj : map->nears(this->_position))
         {
             if (obj.get() == this)
                 continue;
 
-            obj->update_external(*this, false);
+            obj->update_external(*this, true);
         }
 
         co_return true;

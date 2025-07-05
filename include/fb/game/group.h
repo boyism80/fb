@@ -45,7 +45,7 @@ namespace fb::game {
  *             - Lua scripting integration for group-based logic
  *             - Real-time member status tracking
  */
-class group : public fb::thread_switchable
+class group : public fb::lua::luable
 {
 public:
     LUA_PROTOTYPE
@@ -167,13 +167,6 @@ public:
      * @return     Vector of character pointers for nearby group members
      */
     std::vector<std::weak_ptr<character>> nears(const fb::game::map& map, const fb::model::point16_t& position) const;
-
-    /**
-     * @brief      Gets the thread that manages this group's execution context.
-     *
-     * @return     Pointer to the thread managing this group
-     */
-    fb::thread* thread() const override;
 };
 
 struct group::builtin

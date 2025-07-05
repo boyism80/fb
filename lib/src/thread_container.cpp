@@ -129,9 +129,12 @@ void thread_container::settimer(const fb::timer::handle_callback_type& fn, const
     }
     else
     {
-        for (auto& [key, value] : this->_thread_container)
+        for (auto& [key, thread] : this->_thread_container)
         {
-            value->settimer(fn, duration);
+            std::ignore = thread->dispatch([fn, duration](auto& thread) -> async::task<void> {
+                thread.settimer(fn, duration);
+                co_return;
+            });
         }
     }
 }

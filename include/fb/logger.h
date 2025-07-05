@@ -29,6 +29,7 @@
  */
 
 #include <fb/config.h>
+#include <fb/model/datetime.h>
 #include <boost/algorithm/string.hpp>
 
 namespace fb {
@@ -206,7 +207,7 @@ fb::logger& fb::logger::debug(const std::string& fmt, Args&&... args)
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts("[DEBUG] {}", message);
+    fb::console::puts("{:<7} {} {}", "[DEBUG]", fb::model::datetime().to_string(), message);
 
     return ist;
 }
@@ -232,7 +233,7 @@ fb::logger& fb::logger::info(const std::string& fmt, Args&&... args)
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts("[INFO] {}", message);
+    fb::console::puts("{:<7} {} {}", "[INFO]", fb::model::datetime().to_string(), message);
 
     return ist;
 }
@@ -258,7 +259,7 @@ fb::logger& fb::logger::warn(const std::string& fmt, Args&&... args)
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts("[WARN] {}", message);
+    fb::console::puts("{:<7} {} {}", "[WARN]", fb::model::datetime().to_string(), message);
 
     return ist;
 }
@@ -284,7 +285,7 @@ fb::logger& fb::logger::fatal(const std::string& fmt, Args&&... args)
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts("[FATAL] {}", message);
+    fb::console::puts("{:<7} {} {}", "[FATAL]", fb::model::datetime().to_string(), message);
 
     return ist;
 }

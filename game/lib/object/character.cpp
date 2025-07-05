@@ -1355,7 +1355,7 @@ void character::detect(bool value)
         if (ch->state() != STATE::HALF_CLOACK)
             continue;
 
-        ch->update_external(*this, true);
+        ch->update_external(*this, false);
     }
 }
 

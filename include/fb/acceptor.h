@@ -153,36 +153,6 @@ protected:
      */
     virtual void handle_init_amqp(fb::amqp::socket& amqp) = 0;
 
-protected:
-    /**
-     * @brief      Gets the IPv4 address from a hostname or IP address string.
-     *
-     * @param[in]  ip  The hostname or IP address to resolve.
-     *
-     * @return     The resolved IPv4 address as a string.
-     */
-    std::string ipv4(const std::string& ip) const
-    {
-        try
-        {
-            auto resolver = boost::asio::ip::tcp::resolver(this->io_context);
-            auto results  = resolver.resolve(ip, "0");
-
-            for (const auto& entry : results)
-            {
-                auto addr = entry.endpoint().address();
-                if (addr.is_v4())
-                    return addr.to_string();
-            }
-
-            throw std::runtime_error(std::format("Failed to resolve IPv4 address for: {}", ip));
-        }
-        catch (const std::exception& e)
-        {
-            throw std::runtime_error(std::format("Error resolving address: {}", e.what()));
-        }
-    }
-
 public:
     /**
      * @brief      Checks if a socket with the given file descriptor is currently connected.
@@ -370,11 +340,27 @@ private:
 
             auto weak = socket.template weak_from_this_as<fb::socket<T>>();
             co_await this->threads.switching(weak);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal("failed to switch thread context: {}", e.what());
+        }
+        catch (...)
+        {
+            fb::logger::fatal("failed to switch thread context: unknown exception");
+        }
+
+        try
+        {
             co_await this->erase(socket);
         }
         catch (std::exception& e)
         {
-            fb::logger::fatal(e.what());
+            fb::logger::fatal("failed to erase socket: {}", e.what());
+        }
+        catch (...)
+        {
+            fb::logger::fatal("failed to erase socket: unknown exception");
         }
     }
 

@@ -126,8 +126,13 @@ command_funcs = {
 
     ['몬스터생성'] = 
     function (me, args)
-        local name = table.unpack(args)
-        local x, y = me:position()
+        local name, x, y = table.unpack(args)
+        if x == nil and y == nil then
+            x, y = me:position()
+        else
+            x = tonumber(x)
+            y = tonumber(y)
+        end
         me:spawn_mob(name, x, y, false)
         return true
     end,
@@ -187,6 +192,20 @@ command_funcs = {
         local value = table.unpack(args)
         me:base_mp(tonumber(value))
         me:mp(me:maxmp())
+        return true
+    end,
+
+    ['현재체력'] = 
+    function (me, args)
+        local value = table.unpack(args)
+        me:hp(tonumber(value))
+        return true
+    end,
+
+    ['현재마력'] = 
+    function (me, args)
+        local value = table.unpack(args)
+        me:mp(tonumber(value))
         return true
     end,
 
