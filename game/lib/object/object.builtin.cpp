@@ -9,6 +9,7 @@ IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
 {"model",               object::builtin::builtin_model},
 {"__eq",                object::builtin::builtin_eq},
 {"__tostring",          object::builtin::builtin_tostring},
+{"destroy",             object::builtin::builtin_destroy},
 {"id",                  object::builtin::builtin_id},
 {"name",                object::builtin::builtin_name},
 {"sound",               object::builtin::builtin_sound},
@@ -103,6 +104,26 @@ int object::builtin::builtin_tostring(lua_State* L)
 
     lua->pushstring(me->name());
     return 1;
+}
+
+int object::builtin::builtin_destroy(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ctx = lua->env<fb::game::context>("context");
+    auto obj = lua->touserdata<object>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto weak = obj->weak_from_this_as<object>();
+    return lua->ensure_yield(*ctx, weak, [=]() {
+        obj->destroy();
+        return lua->ensure_resume(*ctx, weak, [=]() {
+            return 0;
+        });
+    });
 }
 
 int object::builtin::builtin_name(lua_State* L)
@@ -773,11 +794,12 @@ int object::builtin::builtin_is(lua_State* L)
     if (obj == nullptr)
         return 0;
 
+    auto type = lua->tonumber(2);
     auto weak = obj->weak_from_this_as<object>();
     return lua->ensure_yield(*ctx, weak, [=]() {
-        auto type = lua->tointeger(2);
+        auto matched = obj->is(OBJECT_TYPE(type));
         return lua->ensure_resume(*ctx, weak, [=]() {
-            lua->pushboolean(obj->is(OBJECT_TYPE(type)));
+            lua->pushboolean(matched);
             return 1;
         });
     });

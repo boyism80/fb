@@ -822,6 +822,14 @@ public:
     static int builtin_tostring(lua_State* L);
 
     /**
+     *
+     * @param      L     The Lua state
+     *
+     * @return     Number of return values pushed to Lua stack
+     */
+    static int builtin_destroy(lua_State* L);
+
+    /**
      * @brief      Lua binding to get the object's name.
      *
      * @param      L     The Lua state

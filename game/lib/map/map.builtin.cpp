@@ -87,12 +87,15 @@ int map::builtin::builtin_objects(lua_State* L)
     if (map == nullptr)
         return 0;
 
-    lua->new_table();
-    const auto& objects = map->objects;
+    auto type = lua->toenum(2, OBJECT_TYPE::UNKNOWN);
 
+    lua->new_table();
     int i = 0;
     for (auto& [_, obj] : map->objects)
     {
+        if (type != OBJECT_TYPE::UNKNOWN && obj->is(type) == false)
+            continue;
+
         lua->pushobject(obj);
         lua_rawseti(L, -2, i + 1);
         i++;
@@ -178,7 +181,7 @@ int map::builtin::builtin_movable(lua_State* L)
         return 1;
     }
 
-    auto weak = obj->weak_from_this_as<object>();
+    auto weak = map->weak_from_this_as<fb::game::map>();
     return lua->ensure_yield(*ctx, weak, [=]() {
         auto result = map->movable(*obj, position);
         return lua->ensure_resume(*ctx, weak, [=]() {

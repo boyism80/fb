@@ -18,15 +18,15 @@ public:
 
 public:
 #ifndef BOT
-    const uint32_t id;
+    const uint32_t oid;
 #else
-    uint32_t id;
+    uint32_t oid;
 #endif
 
 public:
 #ifndef BOT
     hide(const fb::game::object& object);
-    hide(uint32_t id);
+    hide(uint32_t oid);
 #else
     hide() = default;
 #endif

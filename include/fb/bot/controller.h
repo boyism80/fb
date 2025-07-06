@@ -291,6 +291,7 @@ public:
         auto  reader = fb::stream_reader<big_endian>(stream);
         while (true)
         {
+            auto processed_cmd = std::optional<uint8_t>{};
             try
             {
                 if (reader.readable_size() < base_size)
@@ -307,7 +308,8 @@ public:
                     co_return;
                 }
 
-                auto cmd = reader.read<uint8_t>();
+                auto cmd      = reader.read<uint8_t>();
+                processed_cmd = cmd;
                 if (this->decrypt_policy(cmd))
                 {
                     auto& crypto = bot.crt();
@@ -367,12 +369,28 @@ public:
             }
             catch (std::exception& e)
             {
-                fb::logger::fatal("bot_controller::on_receive: {}", e.what());
+                if (processed_cmd.has_value())
+                    fb::logger::fatal("bot_controller::on_receive: cmd={:#x} error={}\n{}",
+                                      processed_cmd.value(),
+                                      e.what(),
+                                      boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
+                else
+                    fb::logger::fatal("bot_controller::on_receive: error={}\n{}",
+                                      e.what(),
+                                      boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
                 reader.clear();
                 break;
             }
             catch (...)
             {
+                if (processed_cmd.has_value())
+                    fb::logger::fatal("bot_controller::on_receive: cmd={:#x} error=unknown\n{}",
+                                      processed_cmd.value(),
+                                      boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
+                else
+                    fb::logger::fatal("bot_controller::on_receive: error=unknown\n{}",
+                                      boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
+
                 reader.clear();
                 break;
             }

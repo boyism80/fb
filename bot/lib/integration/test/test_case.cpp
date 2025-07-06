@@ -326,17 +326,34 @@ async::task<size_t> bot_integration_test::learn_spells(std::shared_ptr<fb::bot::
     co_return learned_count;
 }
 
-async::task<bool> bot_integration_test::clear_all_spells(std::shared_ptr<fb::bot::game_bot> bot,
-                                                         std::chrono::milliseconds          timeout)
+async::task<void> bot_integration_test::clear_all_spells(std::shared_ptr<fb::bot::game_bot>& bot,
+                                                         std::chrono::milliseconds           timeout)
 {
     auto thread = bot->thread();
     co_await thread->switching();
 
-    auto result = co_await bot->request<fb::protocol::game::response::spell_remove>(
-        fb::protocol::game::request::chat{false, "/마법지우기"},
-        timeout);
+    auto count = bot->spells().size();
+    if (count == 0)
+        co_return;
 
-    co_return true; // Command should succeed if bot is valid
+    auto last_slot = uint8_t{0};
+    for (auto& [slot, spell] : bot->spells())
+    {
+        last_slot = std::max<uint8_t>(last_slot, slot);
+    }
+
+    bot->send(fb::protocol::game::request::chat{false, "/마법지우기"});
+    co_return; // Command should succeed if bot is valid
+}
+
+async::task<void> bot_integration_test::clear_all_items(std::shared_ptr<fb::bot::game_bot>& bot,
+                                                        fb::model::timespan                 timeout)
+{
+    auto thread = bot->thread();
+    co_await thread->switching();
+
+    bot->send(fb::protocol::game::request::chat{false, "/아이템삭제"});
+    co_return;
 }
 
 async::task<void> bot_integration_test::move_bot_back_to_position(std::shared_ptr<fb::bot::game_bot> bot,

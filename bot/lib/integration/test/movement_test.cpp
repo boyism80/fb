@@ -129,7 +129,7 @@ bool movement_test::is_ready() const
     // Movement test requires all bots to have non-zero oid
     for (const auto& bot : this->get_test_bots())
     {
-        if (bot->oid() == 0 && bot->oid() != 0xFFFFFFFD)
+        if (bot->oid() == 0)
             return false;
     }
 

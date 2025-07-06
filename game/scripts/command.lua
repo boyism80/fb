@@ -211,8 +211,13 @@ command_funcs = {
 
     ['아이템생성'] = 
     function (me, args)
-        local name, count = table.unpack(args)
-        me:mkitem(name, tonumber(count))
+        local name, count, store = table.unpack(args)
+        if store == nil then
+            store = true
+        else
+            store = tonumber(store) == 1
+        end
+        me:mkitem(name, tonumber(count), store)
         return true
     end,
 
@@ -403,6 +408,27 @@ command_funcs = {
         local achievements = me:achievements()
         for id, achievement in pairs(achievements) do
             me:erase_achievement(id-1)
+        end
+        return true
+    end,
+
+    ['버프해제'] = 
+    function (me, args)
+        for _, buff in pairs(me:buffs()) do
+            me:unbuff(buff)
+        end
+        return true
+    end,
+
+    ['아이템삭제'] = 
+    function (me, args)
+        local map = me:map()
+        if map == nil then
+            return true
+        end
+
+        for _, item in pairs(map:objects(OBJECT_TYPE_ITEM)) do
+            item:destroy()
         end
         return true
     end,

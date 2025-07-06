@@ -180,6 +180,9 @@ async::task<bool> context::call(int argc, bool auto_release, int* n)
 
 void fb::lua::context::resume(int argc, int* n)
 {
+    if (this->_state == LUA_YIELD)
+        this->_state = LUA_OK;
+
     if (this->_promise == nullptr)
         return;
 

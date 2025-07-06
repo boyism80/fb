@@ -13,9 +13,9 @@ async::task<void> spell_cast::serialize(fb::stream_writer<big_endian>& writer) c
     {
     case SPELL_TYPE::INPUT:
 #ifdef _WIN32
-        writer.write((const void*)this->message.c_str(), this->message.size());
+        writer.write((const void*)this->message.c_str(), this->message.size() + 1);
 #else
-        writer.write((const void*)cp949(this->message).c_str(), this->message.size());
+        writer.write((const void*)cp949(this->message).c_str(), this->message.size() + 1);
 #endif
         break;
 

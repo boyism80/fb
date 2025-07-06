@@ -148,8 +148,6 @@ void object::chat(const std::string& message, CHAT_TYPE chat_type, bool decorate
 
 const fb::model::point16_t& object::position() const
 {
-    this->assert_thread();
-
     return this->_position;
 }
 

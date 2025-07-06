@@ -14,11 +14,23 @@ public:
     static constexpr uint8_t header = 0x08;
 
 public:
+#ifndef BOT
     uint8_t index;
     bool    all;
+#else
+    const uint8_t index;
+    const bool    all;
+#endif
 
 public:
+#ifndef BOT
     item_drop() = default;
+#else
+    item_drop(uint8_t index, bool all) :
+        index(index),
+        all(all)
+    { }
+#endif
 
 public:
 #ifdef BOT

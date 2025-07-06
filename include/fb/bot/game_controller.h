@@ -203,16 +203,6 @@ private:
     async::task<void> handle_move(game_bot& bot, const fb::protocol::game::response::move& response);
 
     /**
-     * @brief      Handles sound effect notifications from the server.
-     *
-     * @param[in]  bot       The game bot instance.
-     * @param[in]  response  The sound response containing sound effect data.
-     *
-     * @return     An async task that completes when sound processing is finished.
-     */
-    async::task<void> handle_sound(game_bot& bot, const fb::protocol::game::response::sound& response);
-
-    /**
      * @brief      Handles visual effect notifications from the server.
      *
      * @param[in]  bot       The game bot instance.

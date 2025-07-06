@@ -596,6 +596,28 @@ public:
     async::task<void> move(DIRECTION direction, int step = 1, const fb::model::timespan& delay = 0ms);
 
     /**
+     * @brief      Move the bot to a specific map and coordinates.
+     *
+     *             Executes the '/맵이동 map x y' command and waits for the map_bgm
+     *             response to confirm successful map transition.
+     *
+     * @param[in]  map_name  The name of the target map.
+     * @param[in]  x         The target x coordinate.
+     * @param[in]  y         The target y coordinate.
+     * @param[in]  timeout   The timeout for the map transition operation.
+     *
+     * @return     An async task that completes when map transition is finished.
+     */
+    async::task<void> map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Change the bot's facing direction.
+     *
+     * @param[in]  direction  The direction to face.
+     */
+    void direction(DIRECTION direction);
+
+    /**
      * @brief      Automated pattern for sending chat messages.
      *
      * @return     An async task that completes when chat action is finished.
@@ -687,6 +709,41 @@ public:
      * @return     A constant reference to the items map.
      */
     const std::map<uint8_t, simple_item>& items() const;
+
+    /**
+     * @brief      Remove all buffs from the bot.
+     *
+     *             Executes the '/버프해제' command to remove all active buffs.
+     */
+    void remove_buffs();
+
+    /**
+     * @brief      Send a chat message.
+     *
+     * @param[in]  message  The chat message to send.
+     */
+    void chat(const std::string& message);
+
+    /**
+     * @brief      Create items using the '/아이템생성' command.
+     *
+     * @param[in]  item_name  The name of the item to create.
+     * @param[in]  count      The quantity of items to create.
+     * @param[in]  timeout    The timeout for the operation.
+     *
+     * @return     An async task that completes when item creation is finished.
+     */
+    async::task<void> create_item(const std::string& item_name, uint32_t count, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Change money using the '/금전바꾸기' command.
+     *
+     * @param[in]  amount   The amount of money to set.
+     * @param[in]  timeout  The timeout for the operation.
+     *
+     * @return     An async task that completes when money change is finished.
+     */
+    async::task<void> change_money(uint32_t amount, std::chrono::milliseconds timeout);
 };
 
 } // namespace fb::bot
