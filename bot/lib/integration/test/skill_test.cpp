@@ -233,6 +233,10 @@ void skill_test::initialize_test_functions()
         return this->test_buff_debuff_spells(bots, timeout);
     });
 
+    this->_test_functions.emplace_back("Teleport Spells", [this](auto& bots, auto timeout) {
+        return this->test_teleport_spells(bots, timeout);
+    });
+
     fb::logger::info("Initialized {} test functions", this->_test_functions.size());
 }
 

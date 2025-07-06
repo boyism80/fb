@@ -251,6 +251,61 @@ private:
                                     std::chrono::milliseconds                        timeout);
 
     /**
+     * @brief      Tests teleport spells (출두/소환) with INPUT type spell casting.
+     *
+     *             Performs teleport spell tests including:
+     *             - 출두 (caster teleports to target location)
+     *             - 소환 (target teleports to caster location)
+     *             - Map movement scenarios for testing
+     *             - Text input validation for player names
+     *
+     * @param[in]  bots     The list of bots to use for testing.
+     * @param[in]  timeout  The timeout for each spell operation.
+     *
+     * @return     A task that completes when all teleport spell tests finish.
+     */
+    async::task<bool> test_teleport_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                           std::chrono::milliseconds                        timeout);
+
+    /**
+     * @brief      Tests the 출두 (teleport to target) spell.
+     *
+     *             Moves caster to different map, then casts 출두 to teleport to target.
+     *
+     * @param[in]  caster           The bot casting the spell.
+     * @param[in]  target           The target bot to teleport to.
+     * @param[in]  spell_slot       The spell slot index.
+     * @param[in]  expected_mp_cost The expected MP cost for the spell.
+     * @param[in]  timeout          The timeout for spell operations.
+     *
+     * @return     A task that completes when 출두 test is finished.
+     */
+    async::task<void> test_chuldu_spell(std::shared_ptr<fb::bot::game_bot> caster,
+                                        std::shared_ptr<fb::bot::game_bot> target,
+                                        uint8_t                            spell_slot,
+                                        int                                expected_mp_cost,
+                                        std::chrono::milliseconds          timeout);
+
+    /**
+     * @brief      Tests the 소환 (summon target) spell.
+     *
+     *             Moves target to different map, then casts 소환 to summon target to caster.
+     *
+     * @param[in]  caster           The bot casting the spell.
+     * @param[in]  target           The target bot to summon.
+     * @param[in]  spell_slot       The spell slot index.
+     * @param[in]  expected_mp_cost The expected MP cost for the spell.
+     * @param[in]  timeout          The timeout for spell operations.
+     *
+     * @return     A task that completes when 소환 test is finished.
+     */
+    async::task<void> test_sohwan_spell(std::shared_ptr<fb::bot::game_bot> caster,
+                                        std::shared_ptr<fb::bot::game_bot> target,
+                                        uint8_t                            spell_slot,
+                                        int                                expected_mp_cost,
+                                        std::chrono::milliseconds          timeout);
+
+    /**
      * @brief      Structure for healing spell test data
      */
     struct healing_spell_test

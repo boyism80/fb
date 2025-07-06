@@ -2518,7 +2518,7 @@ int character::builtin::builtin_script(lua_State* L)
             new_lua->pushobject(ch);
             lua_xmove(L, *new_lua, argc - 3);
             std::ignore = new_lua->call(argc - 2);
-            return lua->yield(0);
+            return 0;
         });
     }
 }

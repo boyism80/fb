@@ -596,6 +596,27 @@ public:
     async::task<void> move(DIRECTION direction, int step = 1, const fb::model::timespan& delay = 0ms);
 
     /**
+     * @brief      Move the bot to a specific map and coordinates.
+     *
+     *             Executes the '/맵이동 map x y' command and waits for the map_bgm
+     *             response to confirm successful map transition.
+     *
+     * @param[in]  map_name  The name of the target map.
+     * @param[in]  x         The target x coordinate.
+     * @param[in]  y         The target y coordinate.
+     * @param[in]  timeout   The timeout for the map transition operation.
+     *
+     * @return     An async task that completes when map transition is finished.
+     */
+    async::task<void> map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
+    {
+        auto command = std::format("/맵이동 {} {} {}", map_name, x, y);
+        co_await this->request<fb::protocol::game::response::position>(
+            fb::protocol::game::request::chat{false, command},
+            timeout);
+    }
+
+    /**
      * @brief      Change the bot's facing direction.
      *
      * @param[in]  direction  The direction to face.
