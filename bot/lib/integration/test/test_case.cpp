@@ -6,10 +6,9 @@
 
 namespace fb::bot::integration {
 
-// Base test class implementation
-void bot_integration_test::cleanup()
+void bot_integration_test::notify_ready()
 {
-    fb::logger::info("Test cleanup completed (base implementation)");
+    this->_controller.notify_test_ready();
 }
 
 // Utility functions for common bot operations
@@ -257,47 +256,44 @@ async::task<bool> bot_integration_test::set_current_hp_mp(std::shared_ptr<fb::bo
     co_return true; // Both commands should succeed if bot is valid
 }
 
-async::task<bool> bot_integration_test::setup_bots_hp_mp(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                         int                                                    max_hp,
-                                                         int                                                    max_mp,
-                                                         std::optional<int>        current_hp,
-                                                         std::optional<int>        current_mp,
-                                                         std::chrono::milliseconds timeout)
+async::task<bool> bot_integration_test::setup_bot_stats(std::shared_ptr<fb::bot::game_bot> bot,
+                                                        int                                max_hp,
+                                                        int                                max_mp,
+                                                        std::optional<int>                 current_hp,
+                                                        std::optional<int>                 current_mp,
+                                                        std::chrono::milliseconds          timeout)
 {
-    for (auto& bot : bots)
+    auto thread = bot->thread();
+    co_await thread->switching();
+
+    // Set max HP/MP
+    std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, std::format("/체력바꾸기 {}", max_hp)},
+        timeout);
+
+    std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, std::format("/마력바꾸기 {}", max_mp)},
+        timeout);
+
+    // Set current HP/MP if specified
+    if (current_hp.has_value())
     {
-        auto thread = bot->thread();
-        co_await thread->switching();
-
-        // Set max HP/MP
         std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat{false, std::format("/체력바꾸기 {}", max_hp)},
+            fb::protocol::game::request::chat{false, std::format("/현재체력 {}", current_hp.value())},
+            [current_hp](auto& resp) -> bool {
+                return resp.ch_hp == current_hp.value();
+            },
             timeout);
+    }
 
+    if (current_mp.has_value())
+    {
         std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat{false, std::format("/마력바꾸기 {}", max_mp)},
+            fb::protocol::game::request::chat{false, std::format("/현재마력 {}", current_mp.value())},
+            [current_mp](auto& resp) -> bool {
+                return resp.ch_mp == current_mp.value();
+            },
             timeout);
-
-        // Set current HP/MP if specified
-        if (current_hp.has_value())
-        {
-            std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-                fb::protocol::game::request::chat{false, std::format("/현재체력 {}", current_hp.value())},
-                [current_hp](auto& resp) -> bool {
-                    return resp.ch_hp == current_hp.value();
-                },
-                timeout);
-        }
-
-        if (current_mp.has_value())
-        {
-            std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-                fb::protocol::game::request::chat{false, std::format("/현재마력 {}", current_mp.value())},
-                [current_mp](auto& resp) -> bool {
-                    return resp.ch_mp == current_mp.value();
-                },
-                timeout);
-        }
     }
 
     co_return true;
@@ -345,7 +341,7 @@ async::task<bool> bot_integration_test::clear_all_spells(std::shared_ptr<fb::bot
 
 async::task<void> bot_integration_test::move_bot_back_to_position(std::shared_ptr<fb::bot::game_bot> bot,
                                                                   const fb::model::point<uint16_t>&  original_position,
-                                                                  std::chrono::milliseconds          interval)
+                                                                  const fb::model::timespan&         interval)
 {
     auto thread = bot->thread();
     co_await thread->switching();

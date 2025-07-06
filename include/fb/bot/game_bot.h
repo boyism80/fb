@@ -587,6 +587,15 @@ public:
     void set_name(const std::string& value);
 
     /**
+     * @brief      Move the bot in the specified direction.
+     *
+     * @param[in]  direction  The direction to move.
+     * @param[in]  step       The number of steps to move.
+     * @param[in]  delay      The delay between steps.
+     */
+    async::task<void> move(DIRECTION direction, int step = 1, const fb::model::timespan& delay = 0ms);
+
+    /**
      * @brief      Automated pattern for sending chat messages.
      *
      * @return     An async task that completes when chat action is finished.

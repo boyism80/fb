@@ -2,6 +2,8 @@
 #define __BOT_INTEGRATION_MOVEMENT_TEST_H__
 
 #include <fb/bot/integration/test_case.h>
+#include <fb/bot/integration/game_controller.h>
+#include <fb/game/protocol.h>
 #include <vector>
 #include <memory>
 
@@ -16,105 +18,85 @@ namespace fb::bot::integration {
 class movement_test : public bot_integration_test
 {
 private:
-    bool _test_started{false};
-    bool _test_completed{false};
-    bool _test_running{false};
-
-    std::vector<std::shared_ptr<fb::bot::game_bot>> _test_bots; ///< Movement test's own bot collection
-
     static constexpr int MOVEMENT_STEPS = 5;
 
 public:
     /**
+     * @brief      Constructs a new movement test with controller reference.
+     *
+     *             Initializes the movement test and registers hooks for specific
+     *             protocol types to enable event-driven test execution.
+     *
+     * @param[in]  controller  Reference to the parent game bot controller.
+     */
+    movement_test(game_bot_controller& controller);
+
+    /**
      * @brief      Initializes the movement test and spawns required bots.
      *
-     *             Spawns 5 bots for movement testing and waits for them to connect.
+     *             Spawns 1 bot for movement testing and waits for it to connect.
      *
      * @param[in]  controller  The game bot controller to use for spawning bots.
-     * @param[in]  endpoint    The server endpoint to connect bots to.
      *
      * @return     A task that completes when initialization is finished.
      */
-    async::task<void> initialize(game_bot_controller& controller) override;
+    async::task<void> initialize(game_bot_controller& controller);
 
     /**
      * @brief      Executes the movement test.
      *
-     *             Moves the last bot downward step by step with timing intervals.
+     *             Moves the bot in a square pattern to test movement functionality.
      *             This method is called only when all bots are ready (have non-zero oid).
      *
      * @return     A task that completes when movement test finishes, returning true on success.
      */
-    async::task<bool> execute() override;
-
-    /**
-     * @brief      Checks if the movement test has completed.
-     *
-     * @return     True if all movement steps are finished.
-     */
-    bool is_complete() const override
-    {
-        return this->_test_completed;
-    }
-
-    /**
-     * @brief      Resets the movement test state.
-     */
-    void reset() override;
+    async::task<bool> execute();
 
     /**
      * @brief      Gets the test name.
      *
      * @return     "Movement Test" as the identifier.
      */
-    std::string name() const override
+    std::string name() const
     {
         return "Movement Test";
     }
 
     /**
-     * @brief      Checks if the movement test is currently running.
+     * @brief      Called when a bot receives an object ID response.
      *
-     * @return     True if the test is in progress.
+     *             Checks if all bots are ready and starts the test if conditions are met.
+     *
+     * @param[in]  bot       The bot that received the object ID.
+     * @param[in]  response  The object ID response containing the new ID.
+     *
+     * @return     An async task that completes when hook processing is finished.
      */
-    bool is_running() const override
-    {
-        return this->_test_running;
-    }
+    async::task<void> on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response);
 
     /**
-     * @brief      Checks if all spawned bots are ready for movement test.
-     *
-     *             Movement test requires all bots to have received their oid IDs
-     *             (oid != 0) before starting the test.
-     *
-     * @return     True if all spawned bots have non-zero oid, false otherwise.
+     * @brief      Resets the test state to idle.
      */
-    bool is_ready() const override;
+    void reset();
 
     /**
-     * @brief      Called when a bot connects to the movement test.
+     * @brief      Checks if the test is ready to start execution.
      *
-     *             Adds the bot to the movement test's bot collection.
-     *
-     * @param[in]  bot  The connected bot to add to the test.
+     * @return     True if the test is ready to start, false otherwise.
      */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override;
+    bool is_ready() const;
 
     /**
-     * @brief      Cleans up movement test resources and disconnects all spawned bots.
+     * @brief      Called when a bot connects to the test.
      *
-     *             Overrides base cleanup to handle movement test specific bot collection.
+     * @param[in]  bot  Shared pointer to the connected bot.
      */
-    void cleanup() override;
+    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot);
 
-protected:
     /**
-     * @brief      Gets the current list of movement test bots (thread-safe).
-     *
-     * @return     Vector of shared pointers to the movement test bots.
+     * @brief      Performs cleanup operations when the test is destroyed.
      */
-    std::vector<std::shared_ptr<fb::bot::game_bot>> get_test_bots() const;
+    void cleanup();
 };
 
 } // namespace fb::bot::integration

@@ -10,6 +10,14 @@ using namespace std::chrono_literals;
 
 namespace fb::bot::integration {
 
+movement_test::movement_test(game_bot_controller& controller) :
+    bot_integration_test(controller)
+{
+    // Register hook for object ID (sequence) responses
+    this->_controller.hook_external(this, this, &movement_test::on_hook_sequence);
+    fb::logger::debug("Movement test constructed");
+}
+
 async::task<void> movement_test::initialize(game_bot_controller& controller)
 {
     constexpr auto REQUIRED_BOTS = 5;
@@ -30,14 +38,31 @@ async::task<void> movement_test::initialize(game_bot_controller& controller)
     co_return;
 }
 
+async::task<void> movement_test::on_hook_sequence(fb::bot::game_bot&                      bot,
+                                                  const fb::protocol::game::response::id& response)
+{
+    fb::logger::debug("Movement test: Bot {} received object ID {}", bot.fd(), response.oid);
+
+    if (this->is_ready() == false)
+        co_return;
+
+    if (this->get_state() == test_state::running)
+        co_return;
+
+    fb::logger::info("Movement test: All bots ready, notifying controller");
+    this->set_state(test_state::ready);
+    this->notify_ready();
+    co_return;
+}
+
 async::task<bool> movement_test::execute()
 {
     constexpr auto interval = 100ms;
 
-    if (this->_test_running || this->_test_completed)
+    if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
         co_return false;
 
-    this->_test_running = true;
+    this->set_state(test_state::running);
 
     auto bots = this->get_test_bots();
     fb::logger::info("Starting movement test with {} bots", bots.size());
@@ -45,7 +70,7 @@ async::task<bool> movement_test::execute()
     if (bots.empty())
     {
         fb::logger::fatal("No bots available for movement test");
-        this->_test_running = false;
+        this->set_state(test_state::failed);
         co_return false;
     }
 
@@ -76,37 +101,35 @@ async::task<bool> movement_test::execute()
         co_await thread->sleep(interval);
     }
 
-    this->_test_completed = true;
-    this->_test_running   = false;
+    this->set_state(test_state::completed);
 
     fb::logger::info("Movement test completed successfully");
 
     // Cleanup bots after test completion
     this->cleanup();
 
+    // Notify controller that this test is completed
+    this->_controller.notify_test_completed(this);
+
     co_return true; // 성공
 }
 
 void movement_test::reset()
 {
-    this->_test_started   = false;
-    this->_test_completed = false;
-    this->_test_running   = false;
+    this->_state = test_state::idle;
 
     fb::logger::info("Movement test reset");
 }
 
 bool movement_test::is_ready() const
 {
-    auto bots = this->get_test_bots();
-
-    if (bots.empty())
+    if (this->get_test_bots().empty())
         return false;
 
     // Movement test requires all bots to have non-zero oid
-    for (const auto& bot : bots)
+    for (const auto& bot : this->get_test_bots())
     {
-        if (bot->oid() == 0)
+        if (bot->oid() == 0 && bot->oid() != 0xFFFFFFFD)
             return false;
     }
 
@@ -115,25 +138,20 @@ bool movement_test::is_ready() const
 
 void movement_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
 {
-    this->_test_bots.push_back(bot);
+    bot_integration_test::on_bot_connected(bot);
     fb::logger::debug("Movement test: Bot {} added to collection", bot->fd());
-}
-
-std::vector<std::shared_ptr<fb::bot::game_bot>> movement_test::get_test_bots() const
-{
-    return this->_test_bots;
 }
 
 void movement_test::cleanup()
 {
-    for (auto bot : this->_test_bots)
+    auto bots = this->get_test_bots();
+    for (auto bot : bots)
     {
         if (bot)
         {
             bot->close();
         }
     }
-    this->_test_bots.clear();
 
     fb::logger::info("Movement test cleanup completed - all bots disconnected");
 }

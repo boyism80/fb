@@ -8,6 +8,11 @@
 #include <fb/locker.h>
 #include <memory>
 #include <queue>
+#include <vector>
+#include <unordered_map>
+#include <typeindex>
+#include <functional>
+#include <shared_mutex>
 
 namespace fb::bot::integration {
 
@@ -19,15 +24,20 @@ namespace fb::bot::integration {
  *             and comprehensive test case management. Unlike load testing,
  *             it focuses on functional correctness and system behavior validation.
  *
- *             The controller manages various test cases (movement, attack, skill tests)
+ *             The controller manages test instances for lifetime management
  *             and coordinates their execution across multiple bots.
  */
 class game_bot_controller : public fb::bot::game_bot_controller
 {
 private:
-    fb::locker<std::unique_ptr<bot_integration_test>>
-        _current_test; ///< Currently active test case with thread-safe access
-    std::queue<std::unique_ptr<bot_integration_test>> _test_queue; ///< Queue of tests to execute in oid
+    std::vector<std::unique_ptr<bot_integration_test>> _test_instances; ///< Test instances for lifetime management
+    std::queue<bot_integration_test*>                  _test_queue;     ///< Queue of tests to execute
+    bot_integration_test* _current_test{nullptr};                       ///< Currently active test (non-owning pointer)
+
+    // Hook system for integration tests - per test
+    using hook_function = std::function<async::task<void>(game_bot&, const fb::protocol::header&)>;
+    std::unordered_map<bot_integration_test*, std::unordered_map<uint8_t, std::vector<hook_function>>> _test_hooks;
+    std::shared_mutex _hook_mutex; ///< Mutex for thread-safe hook operations
 
 public:
     using bot_type = game_bot; ///< Type alias for the managed bot type
@@ -68,40 +78,124 @@ public:
 
 public:
     /**
-     * @brief      Sets the current integration test case.
+     * @brief      Notifies the controller that a test has completed.
      *
-     *             Replaces the current test with a new one and resets its state.
-     *             If a test is currently running, it will be stopped first.
+     *             Called by test instances when they finish execution.
      *
-     * @param      test  Unique pointer to the new test case.
+     * @param[in]  test  Pointer to the test that has completed.
      */
-    async::task<void> set_test(std::unique_ptr<bot_integration_test> test);
+    void notify_test_completed(bot_integration_test* test);
 
     /**
-     * @brief      Starts the current integration test.
+     * @brief      Notifies the controller that the current test is ready to start.
      *
-     *             Executes the currently set test case with all connected bots.
-     *             If no test is set or a test is already running, this method returns immediately.
-     *
-     * @return     An async task that completes when the test finishes, returning true on success.
+     *             Called by test instances when they detect they are ready to begin execution.
      */
-    async::task<bool> start_test();
+    void notify_test_ready();
 
     /**
-     * @brief      Resets the current test case to initial state.
+     * @brief      Starts the current test.
      *
-     *             Stops any running test and resets its internal state.
+     *             Called when the current test notifies it is ready.
      */
-    void reset_current_test();
+    async::task<void> start_current_test();
 
-private:
     /**
-     * @brief      Starts the next test from the queue.
+     * @brief      Adds a test to the execution queue.
      *
-     *             Moves to the next test in the queue and initializes it.
-     *             If the queue is empty, logs completion of all tests.
+     * @param[in]  test  Unique pointer to the test to add.
      */
-    async::task<void> start_next_test();
+    void enqueue_test(std::unique_ptr<bot_integration_test> test);
+
+    /**
+     * @brief      Starts the next test in the queue.
+     *
+     *             Called when the current test completes.
+     */
+    void start_next_test();
+
+    /**
+     * @brief      Checks if there are more tests in the queue.
+     *
+     * @return     True if there are more tests, false otherwise.
+     */
+    bool has_more_tests() const;
+
+    /**
+     * @brief      Activates the first test in the queue.
+     *
+     *             This method initializes the first test by creating bots,
+     *             registering hooks, and performing other setup tasks.
+     *             This is different from starting the test - activation
+     *             prepares the test to become ready.
+     */
+    async::task<void> activate_first_test();
+
+    /**
+     * @brief      Registers a hook for a specific protocol type for a test.
+     *
+     *             This method should be called by tests to register their hooks.
+     *             Only hooks for the current test will be executed.
+     *
+     * @param[in]  test  Pointer to the test instance registering the hook.
+     * @param[in]  fn    The hook function to register.
+     *
+     * @tparam     ResponseType  The protocol response type to hook.
+     */
+    template <typename ResponseType>
+    void hook_for_test(bot_integration_test*                                                   test,
+                       const std::function<async::task<void>(game_bot&, const ResponseType&)>& fn)
+    {
+        auto hook_func = [fn](game_bot& bot, const fb::protocol::header& header) -> async::task<void> {
+            auto& protocol = static_cast<const ResponseType&>(header);
+            co_await fn(bot, protocol);
+        };
+
+        auto unique_lock = std::unique_lock<std::shared_mutex>(this->_hook_mutex);
+        this->_test_hooks[test][ResponseType::header].push_back(hook_func);
+    }
+
+    /**
+     * @brief      Registers a member function as a hook for a specific protocol type from external class.
+     *
+     *             Allows external classes to register hooks by passing the class instance pointer.
+     *
+     * @param[in]  test      Pointer to the test instance registering the hook.
+     * @param[in]  instance  Pointer to the class instance.
+     * @param[in]  fn        The member function to register as hook.
+     *
+     * @tparam     Class         The class type containing the member function.
+     * @tparam     ResponseType  The protocol response type to hook.
+     */
+    template <typename Class, typename ResponseType>
+    void hook_external(bot_integration_test* test,
+                       Class*                instance,
+                       async::task<void> (Class::*fn)(game_bot&, const ResponseType&))
+    {
+        auto hook_func = [instance, fn](game_bot& bot, const fb::protocol::header& header) -> async::task<void> {
+            auto& protocol = static_cast<const ResponseType&>(header);
+            co_await (instance->*fn)(bot, protocol);
+        };
+
+        auto unique_lock = std::unique_lock<std::shared_mutex>(this->_hook_mutex);
+        this->_test_hooks[test][ResponseType::header].push_back(hook_func);
+    }
+
+protected:
+    /**
+     * @brief      Overrides the base controller's integration hook execution.
+     *
+     *             This method executes hooks for the current test only.
+     *
+     * @param[in]  cmd     The command identifier.
+     * @param[in]  bot     The bot that received the message.
+     * @param[in]  header  The protocol header.
+     *
+     * @return     An async task that completes when hook processing is finished.
+     */
+    async::task<void> on_integration_hook_execution(uint8_t                     cmd,
+                                                    game_bot&                   bot,
+                                                    const fb::protocol::header& header) override;
 
 private:
     /**

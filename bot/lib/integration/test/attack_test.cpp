@@ -2,12 +2,20 @@
 #include <fb/bot/integration/game_controller.h>
 #include <fb/bot/integration/gateway_controller.h>
 #include <fb/logger.h>
-#include <fb/game/protocol/attack.h>
+#include <fb/game/protocol.h>
 #include <chrono>
 
 using namespace std::chrono_literals;
 
 namespace fb::bot::integration {
+
+attack_test::attack_test(game_bot_controller& controller) :
+    bot_integration_test(controller)
+{
+    // Register hook for object ID (sequence) responses
+    this->_controller.hook_external(this, this, &attack_test::on_hook_sequence);
+    fb::logger::debug("Attack test constructed");
+}
 
 async::task<void> attack_test::initialize(game_bot_controller& controller)
 {
@@ -19,13 +27,25 @@ async::task<void> attack_test::initialize(game_bot_controller& controller)
 
     fb::logger::info("Attack test initializing and spawning {} bot", REQUIRED_BOTS);
 
-    for (auto i = 0; i < REQUIRED_BOTS; i++)
-    {
-        auto gateway_bot = controller.container.gateway->create();
-        gateway_bot->connect(endpoint);
-    }
+    auto gateway_bot = controller.container.gateway->create();
+    gateway_bot->connect(endpoint);
 
     fb::logger::info("Attack test initialization completed - {} bot spawned", REQUIRED_BOTS);
+    co_return;
+}
+
+async::task<void> attack_test::on_hook_sequence(fb::bot::game_bot&                      bot,
+                                                const fb::protocol::game::response::id& response)
+{
+    if (this->is_ready() == false)
+        co_return;
+
+    if (this->get_state() == test_state::running)
+        co_return;
+
+    fb::logger::info("Attack test: All bots ready, notifying controller");
+    this->set_state(test_state::ready);
+    this->notify_ready();
     co_return;
 }
 
@@ -33,68 +53,66 @@ async::task<bool> attack_test::execute()
 {
     constexpr auto interval = 100ms;
 
-    if (this->_test_running || this->_test_completed)
+    if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
         co_return false;
 
-    this->_test_running = true;
+    this->set_state(test_state::running);
 
     auto bots = this->get_test_bots();
-    fb::logger::info("Starting attack test with {} bot", bots.size());
+    fb::logger::info("Starting attack test with {} bots", bots.size());
 
     if (bots.empty())
     {
         fb::logger::fatal("No bots available for attack test");
-        this->_test_running = false;
+        this->set_state(test_state::failed);
         co_return false;
     }
 
-    // Use the first (and only) bot for attacks
-    auto target_bot = bots.front();
+    auto target_bot = bots[0];
 
-    fb::logger::info("Bot {} performing {} attacks", target_bot->fd(), ATTACK_COUNT);
+    fb::logger::info("Attack test: Bot {} will perform attack sequences", target_bot->fd());
 
-    // Perform attack sequences
+    // Perform attack sequences - simple attack to air 5 times
+    constexpr int ATTACK_COUNT = 5;
     for (auto i = 0; i < ATTACK_COUNT; i++)
     {
-        // Send attack packet
         target_bot->send(fb::protocol::game::request::attack{});
 
-        fb::logger::debug("Attack {}: bot {} performed attack", i + 1, target_bot->fd());
+        fb::logger::debug("Attack sequence {}: bot {} performed attack", i + 1, target_bot->fd());
 
         auto thread = target_bot->thread();
         co_await thread->switching();
         co_await thread->sleep(interval);
     }
 
-    this->_test_completed = true;
-    this->_test_running   = false;
+    this->set_state(test_state::completed);
 
-    fb::logger::info("Attack test completed successfully - {} attacks performed", ATTACK_COUNT);
+    fb::logger::info("Attack test completed successfully");
 
     // Cleanup bots after test completion
     this->cleanup();
+
+    // Notify controller that this test is completed
+    this->_controller.notify_test_completed(this);
 
     co_return true; // 성공
 }
 
 void attack_test::reset()
 {
-    this->_test_completed = false;
-    this->_test_running   = false;
-
+    this->set_state(test_state::idle);
     fb::logger::info("Attack test reset");
 }
 
 bool attack_test::is_ready() const
 {
-    auto bots = this->get_test_bots();
-    if (bots.empty())
+    if (this->get_test_bots().empty())
         return false;
 
     // Movement test requires all bots to have non-zero oid
-    for (const auto& bot : bots)
+    for (const auto& bot : this->get_test_bots())
     {
-        if (bot->oid() == 0)
+        if (bot->oid() == 0 && bot->oid() != 0xFFFFFFFD)
             return false;
     }
 
@@ -103,25 +121,20 @@ bool attack_test::is_ready() const
 
 void attack_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
 {
-    this->_test_bots.push_back(bot);
+    bot_integration_test::on_bot_connected(bot);
     fb::logger::debug("Attack test: Bot {} added to collection", bot->fd());
-}
-
-std::vector<std::shared_ptr<fb::bot::game_bot>> attack_test::get_test_bots() const
-{
-    return this->_test_bots;
 }
 
 void attack_test::cleanup()
 {
-    for (auto bot : this->_test_bots)
+    auto bots = this->get_test_bots();
+    for (auto bot : bots)
     {
         if (bot)
         {
             bot->close();
         }
     }
-    this->_test_bots.clear();
 
     fb::logger::info("Attack test cleanup completed - all bots disconnected");
 }
