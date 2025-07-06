@@ -351,7 +351,7 @@ public:
                 {
                     auto weak = bot.template weak_from_this_as<BotType>();
 
-                    this->container.threads.enqueue(weak, [=](auto& thread) -> async::task<void> {
+                    this->container.threads.enqueue(weak, [=, this](auto& thread) -> async::task<void> {
                         auto shared = weak.lock();
                         if (shared == nullptr)
                             co_return;

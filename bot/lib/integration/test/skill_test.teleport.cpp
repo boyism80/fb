@@ -93,7 +93,7 @@ async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<f
     auto move_y_axis = end_position.y - begin_position.y;
     auto direction_y = move_y_axis > 0 ? DIRECTION::TOP : DIRECTION::BOTTOM;
     co_await caster->move(direction_y, std::abs(move_y_axis), interval);
-    caster->thread()->sleep(interval);
+    co_await caster->thread()->sleep(interval);
     caster->direction(DIRECTION::BOTTOM);
 
     co_return true;
