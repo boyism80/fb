@@ -184,7 +184,7 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     if (this->contains(model.id))
         return false;
 
-    this->insert({model.id, std::move(buff)});
+    this->insert({model.id, buff});
 
     // Execute buff script
     if (buff->model.buff.empty() == false)
