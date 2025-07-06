@@ -407,6 +407,14 @@ command_funcs = {
         return true
     end,
 
+    ['버프해제'] = 
+    function (me, args)
+        for _, buff in pairs(me:buffs()) do
+            me:unbuff(buff)
+        end
+        return true
+    end,
+
     ['서버종료'] = 
     function (me, args)
         local delay = table.unpack(args)

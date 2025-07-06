@@ -3,6 +3,7 @@
 
 #include <fb/bot/integration/test_case.h>
 #include <stdexcept>
+#include <fb/game/protocol.h>
 
 namespace fb::bot::integration {
 
@@ -167,6 +168,15 @@ private:
     async::task<bool> test_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
                                               std::chrono::milliseconds                        timeout);
 
+    async::task<bool> test_near_target_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                     std::chrono::milliseconds                        timeout);
+
+    async::task<bool> test_area_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                              std::chrono::milliseconds                        timeout);
+
+    async::task<bool> test_buff_debuff_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                              std::chrono::milliseconds                        timeout);
+
     async::task<bool> test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
                                                            std::chrono::milliseconds                        timeout);
 
@@ -201,6 +211,16 @@ private:
         SPELL_TYPE  type;             ///< Spell type (NORMAL)
         int         expected_damage;  ///< Expected damage dealt by the spell
         int         expected_mp_cost; ///< Expected MP cost for casting the spell
+    };
+
+    /**
+     * @brief      Structure for near target damage spell test data
+     */
+    struct near_target_damage_spell_test
+    {
+        std::string                                                                   name;
+        SPELL_TYPE                                                                    type;
+        std::function<std::pair<int, int>(const std::shared_ptr<fb::bot::game_bot>&)> calculator;
     };
 
     /**

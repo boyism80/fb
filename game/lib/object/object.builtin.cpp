@@ -773,11 +773,12 @@ int object::builtin::builtin_is(lua_State* L)
     if (obj == nullptr)
         return 0;
 
+    auto type = lua->tonumber(2);
     auto weak = obj->weak_from_this_as<object>();
     return lua->ensure_yield(*ctx, weak, [=]() {
-        auto type = lua->tointeger(2);
+        auto matched = obj->is(OBJECT_TYPE(type));
         return lua->ensure_resume(*ctx, weak, [=]() {
-            lua->pushboolean(obj->is(OBJECT_TYPE(type)));
+            lua->pushboolean(matched);
             return 1;
         });
     });

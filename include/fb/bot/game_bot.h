@@ -596,6 +596,13 @@ public:
     async::task<void> move(DIRECTION direction, int step = 1, const fb::model::timespan& delay = 0ms);
 
     /**
+     * @brief      Change the bot's facing direction.
+     *
+     * @param[in]  direction  The direction to face.
+     */
+    void direction(DIRECTION direction);
+
+    /**
      * @brief      Automated pattern for sending chat messages.
      *
      * @return     An async task that completes when chat action is finished.
