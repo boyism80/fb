@@ -93,10 +93,6 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
         co_await caster->thread()->sleep(interval);
     }
 
-    // Clean up all spells
-    fb::logger::info("Cleaning up all learned near target spells");
-    std::ignore = co_await this->clear_all_spells(caster, timeout);
-
     caster->send(fb::protocol::game::request::chat(false, "=== NEAR TARGET DAMAGE SPELL TEST COMPLETED ==="));
     fb::logger::info("Near target damage spell test completed.");
     co_return true;

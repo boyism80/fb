@@ -5,7 +5,7 @@ end
 
 -- 무형술 버프 효과
 function ON_BUFF_2021(me, spell)
-    mee:buff_phydef(me:buff_phydef() - 40)
+    me:buff_phydef(me:buff_phydef() - 40)
 end
 
 -- 무형술 버프 해제 효과

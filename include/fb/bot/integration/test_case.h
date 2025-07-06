@@ -382,9 +382,8 @@ protected:
      * @param[in]  bot       The bot that will have spells removed
      * @param[in]  timeout   Request timeout duration
      *
-     * @return     An async task that returns true if spells were removed successfully
      */
-    async::task<bool> clear_all_spells(std::shared_ptr<fb::bot::game_bot> bot, std::chrono::milliseconds timeout);
+    async::task<void> clear_all_spells(std::shared_ptr<fb::bot::game_bot> bot, std::chrono::milliseconds timeout);
 
     /**
      * @brief      Moves a bot back to its original position after movement spells

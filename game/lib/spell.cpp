@@ -43,6 +43,9 @@ spells::~spells()
 
 std::shared_ptr<fb::game::spell> fb::game::spells::find(const std::string& name) const
 {
+    auto& owner = this->owner();
+    owner.assert_thread();
+
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto spell = this->at(i);
@@ -58,6 +61,9 @@ std::shared_ptr<fb::game::spell> fb::game::spells::find(const std::string& name)
 
 std::shared_ptr<fb::game::spell> fb::game::spells::find(const fb::model::spell& model) const
 {
+    auto& owner = this->owner();
+    owner.assert_thread();
+
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto spell = this->at(i);
@@ -74,8 +80,9 @@ std::shared_ptr<fb::game::spell> fb::game::spells::find(const fb::model::spell& 
 uint8_t spells::add(std::shared_ptr<spell> element)
 {
     auto& owner = this->owner();
-    auto  index = super::add(element);
+    owner.assert_thread();
 
+    auto index = super::add(element);
     if (index != 0xFF)
         owner.listener.on_spell_update(this->owner(), index);
 
@@ -85,6 +92,7 @@ uint8_t spells::add(std::shared_ptr<spell> element)
 uint8_t spells::add(std::shared_ptr<spell> element, uint8_t index)
 {
     auto& owner = this->owner();
+    owner.assert_thread();
 
     if (super::add(element, index) != 0xFF)
         owner.listener.on_spell_update(this->owner(), index);
@@ -94,7 +102,9 @@ uint8_t spells::add(std::shared_ptr<spell> element, uint8_t index)
 
 uint8_t spells::add(const fb::model::spell& model, uint8_t slot, uint16_t delay)
 {
-    auto& owner   = this->owner();
+    auto& owner = this->owner();
+    owner.assert_thread();
+
     auto& context = owner.context;
     auto  created = context.make<spell>(owner, model, delay);
     return this->add(created, slot);
@@ -102,7 +112,9 @@ uint8_t spells::add(const fb::model::spell& model, uint8_t slot, uint16_t delay)
 
 uint8_t spells::add(const fb::model::spell& model)
 {
-    auto& owner   = this->owner();
+    auto& owner = this->owner();
+    owner.assert_thread();
+
     auto& context = owner.context;
     auto  created = context.make<spell>(owner, model, 0);
     return this->add(created);
@@ -110,8 +122,10 @@ uint8_t spells::add(const fb::model::spell& model)
 
 bool spells::remove(uint8_t index)
 {
-    auto& owner   = this->owner();
-    auto  success = super::remove(index);
+    auto& owner = this->owner();
+    owner.assert_thread();
+
+    auto success = super::remove(index);
 
     if (success)
         owner.listener.on_spell_remove(this->owner(), index);
@@ -122,6 +136,7 @@ bool spells::remove(uint8_t index)
 bool spells::swap(uint8_t src, uint8_t dst)
 {
     auto& owner = this->owner();
+    owner.assert_thread();
 
     if (super::swap(src, dst) == false)
         return false;
@@ -175,11 +190,15 @@ buffs::~buffs()
 
 bool buffs::contains(const fb::model::spell& model) const
 {
+    this->_owner.assert_thread();
+
     return this->contains(model.id);
 }
 
 bool buffs::push_back(const std::shared_ptr<buff>& buff)
 {
+    this->_owner.assert_thread();
+
     auto& model = buff->model;
     if (this->contains(model.id))
         return false;
@@ -209,6 +228,8 @@ std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  
                                        uint32_t                                 seconds,
                                        const std::shared_ptr<fb::game::object>& caster)
 {
+    this->_owner.assert_thread();
+
     if (this->contains(model.id))
     {
         auto& buff = this->at(model.id);
@@ -236,6 +257,8 @@ std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  
 
 bool buffs::remove(uint32_t id)
 {
+    this->_owner.assert_thread();
+
     auto buff = this->operator[] (id);
     if (buff == nullptr)
         return false;
@@ -270,11 +293,15 @@ bool buffs::remove(uint32_t id)
 
 bool buffs::remove(const fb::model::spell& spell)
 {
+    this->_owner.assert_thread();
+
     return this->remove(spell.id);
 }
 
 std::shared_ptr<buff> buffs::operator[] (uint32_t id) const
 {
+    this->_owner.assert_thread();
+
     if (this->contains(id) == false)
         return nullptr;
 

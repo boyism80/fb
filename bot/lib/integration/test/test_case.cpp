@@ -326,17 +326,26 @@ async::task<size_t> bot_integration_test::learn_spells(std::shared_ptr<fb::bot::
     co_return learned_count;
 }
 
-async::task<bool> bot_integration_test::clear_all_spells(std::shared_ptr<fb::bot::game_bot> bot,
+async::task<void> bot_integration_test::clear_all_spells(std::shared_ptr<fb::bot::game_bot> bot,
                                                          std::chrono::milliseconds          timeout)
 {
     auto thread = bot->thread();
     co_await thread->switching();
 
-    auto result = co_await bot->request<fb::protocol::game::response::spell_remove>(
+    auto count = bot->spells().size();
+    if (count == 0)
+        co_return;
+
+    auto   removed = 0;
+    auto&& result  = co_await bot->request<fb::protocol::game::response::spell_remove>(
         fb::protocol::game::request::chat{false, "/마법지우기"},
+        [&bot, count, &removed](auto& resp) -> bool {
+            removed++;
+            return removed == count;
+        },
         timeout);
 
-    co_return true; // Command should succeed if bot is valid
+    co_return; // Command should succeed if bot is valid
 }
 
 async::task<void> bot_integration_test::move_bot_back_to_position(std::shared_ptr<fb::bot::game_bot> bot,

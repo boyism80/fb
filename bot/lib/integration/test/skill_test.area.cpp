@@ -219,10 +219,6 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
         co_await caster->thread()->sleep(interval);
     }
 
-    // Clean up all spells
-    fb::logger::info("Cleaning up all learned area spells");
-    std::ignore = co_await this->clear_all_spells(caster, timeout);
-
     co_await bots[4]->move(DIRECTION::TOP, 3, interval);
     co_await bots[4]->move(DIRECTION::RIGHT, 3, interval);
     co_await bots[3]->move(DIRECTION::RIGHT, 1, interval);

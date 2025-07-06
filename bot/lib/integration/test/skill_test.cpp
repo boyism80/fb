@@ -45,7 +45,11 @@ async::task<void> skill_test::initialize(game_bot_controller& controller)
 async::task<bool> skill_test::execute()
 {
     constexpr auto interval = 100ms; // Increased from 100ms to reduce server load
-    constexpr auto timeout  = 1h;    // Increased from 5s to handle server processing delays
+#if defined DEBUG || defined _DEBUG
+    constexpr auto timeout = 1h;
+#else
+    constexpr auto timeout = 5s;
+#endif
 
     if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
         co_return false;
@@ -197,6 +201,10 @@ void skill_test::initialize_test_functions()
         return this->test_healing_spells(bots, timeout);
     });
 
+    this->_test_functions.emplace_back("Group Healing Spells", [this](auto& bots, auto timeout) {
+        return this->test_group_healing_spells(bots, timeout);
+    });
+
     this->_test_functions.emplace_back("Damage Spells", [this](auto& bots, auto timeout) {
         return this->test_damage_spells(bots, timeout);
     });
@@ -246,6 +254,14 @@ async::task<bool> skill_test::execute_test_functions(std::vector<std::shared_ptr
         }
 
         fb::logger::info("Test function '{}' completed successfully", test_name);
+
+        // Clean up all spells after each test function completes
+        if (bots.empty() == false)
+        {
+            auto& caster = bots[0]; // Use first bot as caster for cleanup
+            fb::logger::debug("Cleaning up all spells after test function '{}'", test_name);
+            co_await this->clear_all_spells(caster, timeout);
+        }
     }
 
     fb::logger::info("All test functions completed successfully");

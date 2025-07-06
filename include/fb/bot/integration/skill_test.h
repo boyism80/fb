@@ -181,6 +181,76 @@ private:
                                                            std::chrono::milliseconds                        timeout);
 
     /**
+     * @brief      Tests group healing spells with comprehensive group management.
+     *
+     *             Performs group healing spell tests including:
+     *             - Group formation and management
+     *             - Dynamic MP-based healing (백호의희원'첨)
+     *             - Fixed-value group healing (신령의기원'첨)
+     *             - Group cleanup after testing
+     *
+     * @param[in]  bots     The list of bots to use for testing.
+     * @param[in]  timeout  The timeout for each spell operation.
+     *
+     * @return     A task that completes when all group healing spell tests finish.
+     */
+    async::task<bool> test_group_healing_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                std::chrono::milliseconds                        timeout);
+
+    /**
+     * @brief      Forms a group with all provided bots.
+     *
+     *             The first bot becomes the group leader and invites all other bots.
+     *
+     * @param[in]  bots     The list of bots to form into a group.
+     * @param[in]  timeout  The timeout for group formation operations.
+     *
+     * @return     A task that completes when group formation is finished.
+     */
+    async::task<void> form_group(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                 std::chrono::milliseconds                        timeout);
+
+    /**
+     * @brief      Prepares all bots for group healing test by setting appropriate HP levels.
+     *
+     *             Sets bots to low HP values to ensure visible healing effects.
+     *             Adjusts HP based on expected healing amount to prevent overflow.
+     *
+     * @param[in]  bots              The list of bots to prepare.
+     * @param[in]  expected_hp_gain  The expected HP gain from the group healing spell.
+     * @param[in]  timeout           The timeout for HP adjustment operations.
+     *
+     * @return     A task that completes when all bots are prepared.
+     */
+    async::task<void> prepare_bots_for_group_healing(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                     int                                              expected_hp_gain,
+                                                     std::chrono::milliseconds                        timeout);
+
+    /**
+     * @brief      Verifies that group healing effects were applied correctly to all group members.
+     *
+     * @param[in]  bots              The list of bots to verify.
+     * @param[in]  before_hp_values  The HP values before casting the group healing spell.
+     * @param[in]  expected_hp_gain  The expected HP gain from the group healing spell.
+     *
+     * @return     A task that completes when verification is finished.
+     */
+    async::task<void> verify_group_healing_effects(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                   const std::vector<int>&                          before_hp_values,
+                                                   int                                              expected_hp_gain);
+
+    /**
+     * @brief      Cleans up group formation by removing all bots from the group.
+     *
+     * @param[in]  bots     The list of bots to remove from the group.
+     * @param[in]  timeout  The timeout for group cleanup operations.
+     *
+     * @return     A task that completes when group cleanup is finished.
+     */
+    async::task<void> cleanup_group(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                    std::chrono::milliseconds                        timeout);
+
+    /**
      * @brief      Structure for healing spell test data
      */
     struct healing_spell_test

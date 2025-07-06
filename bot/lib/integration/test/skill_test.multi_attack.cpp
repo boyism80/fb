@@ -24,7 +24,7 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
         std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
     }
 
-    std::vector<multi_target_attack_cast_spell_test> multi_target_spells = {
+    auto multi_target_spells = std::vector<multi_target_attack_cast_spell_test>{
         // Multi-target attack spells
         {"어검술",
          SPELL_TYPE::NORMAL,
@@ -139,10 +139,6 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
         co_await this->move_bot_back_to_position(caster, caster_pos, interval);
         co_await caster->thread()->sleep(interval);
     }
-
-    // Clean up all spells
-    fb::logger::info("Cleaning up all learned multi-target spells");
-    std::ignore = co_await this->clear_all_spells(caster, timeout);
 
     caster->send(fb::protocol::game::request::chat(false, "=== MULTI-TARGET ATTACK_CAST SPELL TEST COMPLETED ==="));
     fb::logger::info("Multi-target attack_cast spell test completed.");

@@ -336,10 +336,6 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
         co_await caster->thread()->sleep(interval);
     }
 
-    // Clean up all spells
-    fb::logger::info("Cleaning up all learned buff/debuff spells");
-    std::ignore = co_await this->clear_all_spells(caster, timeout);
-
     caster->send(fb::protocol::game::request::chat(false, "=== BUFF/DEBUFF SPELL TEST COMPLETED ==="));
     fb::logger::info("Buff/debuff spell test completed.");
     co_return true;
