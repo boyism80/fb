@@ -1006,7 +1006,7 @@ bool skill_test::is_ready() const
 
     for (auto& bot : this->get_test_bots())
     {
-        if (bot->oid() == 0 && bot->oid() != 0xFFFFFFFD)
+        if (bot->oid() == 0 || bot->oid() != 0xFFFFFFFD)
             return false;
 
         if (bot->position().x == 0 && bot->position().y == 0)
