@@ -12,7 +12,7 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
     auto& caster = bots.at(0);
 
     fb::logger::info("Bot {} starting near target damage spell test", caster->oid());
-    caster->send(fb::protocol::game::request::chat(false, "=== NEAR TARGET DAMAGE SPELL TEST STARTED ==="));
+    caster->chat("=== NEAR TARGET DAMAGE SPELL TEST STARTED ===");
 
     auto thread = caster->thread();
     co_await thread->switching();
@@ -93,7 +93,7 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
         co_await caster->thread()->sleep(interval);
     }
 
-    caster->send(fb::protocol::game::request::chat(false, "=== NEAR TARGET DAMAGE SPELL TEST COMPLETED ==="));
+    caster->chat("=== NEAR TARGET DAMAGE SPELL TEST COMPLETED ===");
     fb::logger::info("Near target damage spell test completed.");
     co_return true;
 }

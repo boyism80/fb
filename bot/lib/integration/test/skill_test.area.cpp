@@ -15,7 +15,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
     auto& caster = bots.at(0);
 
     fb::logger::info("Bot {} starting area damage spell test", caster->oid());
-    caster->send(fb::protocol::game::request::chat(false, "=== AREA DAMAGE SPELL TEST STARTED ==="));
+    caster->chat("=== AREA DAMAGE SPELL TEST STARTED ===");
 
     auto thread = caster->thread();
     co_await thread->switching();
@@ -126,7 +126,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
         fb::logger::info("Testing area spell: {}", spell.name);
 
         // Get current bot positions to exclude from monster spawning
-        std::set<std::pair<int, int>> occupied_positions;
+        auto occupied_positions = std::set<std::pair<int, int>>{};
         for (const auto& bot : bots)
         {
             auto pos = bot->position();
@@ -134,10 +134,10 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
         }
 
         // Generate monster spawn positions within spell range, excluding bot positions
-        std::vector<fb::model::point<uint16_t>> spawn_positions;
-        auto                                    caster_pos = caster->position();
-        auto                                    range_x    = spell.range.first;
-        auto                                    range_y    = spell.range.second;
+        auto spawn_positions = std::vector<fb::model::point<uint16_t>>{};
+        auto caster_pos      = caster->position();
+        auto range_x         = spell.range.first;
+        auto range_y         = spell.range.second;
 
         // Calculate range bounds centered on caster
         int start_x = caster_pos.x - range_x / 2;
@@ -189,6 +189,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
         }
 
         // Cast the spell
+        caster->chat(std::format("Testing {}", spell.name));
         co_await caster->request<fb::protocol::game::response::update_internal>(
             fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", 0, {0, 0}),
             [=](auto& resp) -> bool {
@@ -236,7 +237,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
     bots[1]->direction(DIRECTION::BOTTOM);
     caster->direction(DIRECTION::BOTTOM);
 
-    caster->send(fb::protocol::game::request::chat(false, "=== AREA DAMAGE SPELL TEST COMPLETED ==="));
+    caster->chat("=== AREA DAMAGE SPELL TEST COMPLETED ===");
     fb::logger::info("Area damage spell test completed.");
     co_return true;
 }

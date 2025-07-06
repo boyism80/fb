@@ -70,7 +70,8 @@ async::task<void> context::handle_buff_timer(const fb::model::datetime& now, std
         for (auto obj : concast)
         {
             auto ended_buffs = std::vector<std::shared_ptr<fb::game::buff>>();
-            for (auto& [id, buff] : obj->buffs)
+            auto buffs       = obj->buffs; // To avoid iterator invalidation
+            for (auto& [id, buff] : buffs)
             {
                 buff->time_dec(1s);
                 if (buff->time() <= 0ms)

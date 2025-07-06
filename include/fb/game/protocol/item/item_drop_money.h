@@ -14,10 +14,20 @@ public:
     static constexpr uint8_t header = 0x24;
 
 public:
+#ifndef BOT
     uint32_t chunk;
+#else
+    const uint32_t chunk;
+#endif
 
 public:
+#ifndef BOT
     item_drop_money() = default;
+#else
+    item_drop_money(uint32_t chunk) :
+        chunk(chunk)
+    { }
+#endif
 
 public:
 #ifdef BOT

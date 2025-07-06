@@ -124,6 +124,51 @@ public:
      */
     async::task<void> on_hook_position(fb::bot::game_bot& bot, const fb::protocol::game::response::position& response);
 
+    /**
+     * @brief      Tests teleport spells (출두, 소환) with map movement scenarios.
+     *
+     * @param[in]  bots     The bot instances to use for testing.
+     * @param[in]  timeout  The timeout for each test operation.
+     *
+     * @return     An async task that completes when teleport testing is finished.
+     */
+    async::task<bool> test_teleport_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                           std::chrono::milliseconds                        timeout);
+
+    /**
+     * @brief      Tests disguise spells (경수, 맹수, 야수, 금수) with all available monster transformations.
+     *
+     * @param[in]  bots     The bot instances to use for testing.
+     * @param[in]  timeout  The timeout for each test operation.
+     *
+     * @return     An async task that completes when disguise testing is finished.
+     */
+    async::task<bool> test_disguise_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                           std::chrono::milliseconds                        timeout);
+
+    /**
+     * @brief      Tests shout spells (사자후전사, 사자후도사, 사자후술사, 사자후도적) with message input and SHOUT
+     * verification.
+     *
+     * @param[in]  bots     The bot instances to use for testing.
+     * @param[in]  timeout  The timeout for each test operation.
+     *
+     * @return     An async task that completes when shout testing is finished.
+     */
+    async::task<bool> test_shout_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                        std::chrono::milliseconds                        timeout);
+
+    /**
+     * @brief      Tests loot spell (노획) with item and money pickup scenarios.
+     *
+     * @param[in]  bots     The bot instances to use for testing.
+     * @param[in]  timeout  The timeout for each test operation.
+     *
+     * @return     An async task that completes when loot testing is finished.
+     */
+    async::task<bool> test_loot_spell(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                      std::chrono::milliseconds                        timeout);
+
 private:
     /**
      * @brief      Initializes the test function queue with all test functions.
@@ -249,23 +294,6 @@ private:
      */
     async::task<void> cleanup_group(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
                                     std::chrono::milliseconds                        timeout);
-
-    /**
-     * @brief      Tests teleport spells (출두/소환) with INPUT type spell casting.
-     *
-     *             Performs teleport spell tests including:
-     *             - 출두 (caster teleports to target location)
-     *             - 소환 (target teleports to caster location)
-     *             - Map movement scenarios for testing
-     *             - Text input validation for player names
-     *
-     * @param[in]  bots     The list of bots to use for testing.
-     * @param[in]  timeout  The timeout for each spell operation.
-     *
-     * @return     A task that completes when all teleport spell tests finish.
-     */
-    async::task<bool> test_teleport_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                           std::chrono::milliseconds                        timeout);
 
     /**
      * @brief      Tests the 출두 (teleport to target) spell.

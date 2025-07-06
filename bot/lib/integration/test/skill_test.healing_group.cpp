@@ -17,7 +17,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
     auto&          target   = bots.size() > 1 ? bots[1] : bots[0];
 
     fb::logger::info("Starting group healing spell test with {} bots", bots.size());
-    caster->send(fb::protocol::game::request::chat(false, "Starting group healing spell test"));
+    caster->chat("Starting group healing spell test");
 
     // Group healing spells with their test parameters
     struct group_healing_spell
@@ -57,7 +57,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
     for (const auto& spell_info : group_healing_spells)
     {
         fb::logger::info("Testing group healing spell: {}", spell_info.name);
-        caster->send(fb::protocol::game::request::chat(false, std::format("Testing {}", spell_info.name)));
+        caster->chat(std::format("Testing {}", spell_info.name));
 
         co_await set_current_hp_mp(caster, 10000, 10000, timeout);
 
@@ -84,6 +84,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
 
         // Cast group healing spell
         spell_slot++;
+        caster->chat(std::format("Testing {}", spell_info.name));
         std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
             fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, spell_slot, "", 0, {0, 0}),
             [before_caster_mp, expected_mp_cost](auto& resp) -> bool {
@@ -99,7 +100,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
         co_await this->verify_group_healing_effects(bots, before_hp_values, expected_hp_gain);
 
         fb::logger::info("Group healing spell {} test completed successfully", spell_info.name);
-        caster->send(fb::protocol::game::request::chat(false, std::format("{} test completed", spell_info.name)));
+        caster->chat(std::format("{} test completed", spell_info.name));
 
         co_await caster->thread()->sleep(interval);
     }
@@ -108,7 +109,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
     co_await this->cleanup_group(bots, timeout);
 
     fb::logger::info("Group healing spell test completed successfully - {} spells tested", group_healing_spells.size());
-    caster->send(fb::protocol::game::request::chat(false, "All group healing spell tests completed successfully!"));
+    caster->chat("All group healing spell tests completed successfully!");
 
     co_return true;
 }
@@ -129,7 +130,7 @@ async::task<void> skill_test::form_group(std::vector<std::shared_ptr<fb::bot::ga
         auto group_request = fb::protocol::game::request::group{};
         group_request.name = target_bot->name();
         auto&& resp        = co_await caster->request<fb::protocol::game::response::message>(group_request, timeout);
-        caster->send(fb::protocol::game::request::chat(false, resp.text));
+        caster->chat(resp.text);
         co_await caster->thread()->sleep(interval);
     }
 

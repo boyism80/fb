@@ -15,7 +15,7 @@ async::task<bool> skill_test::test_damage_spells(std::vector<std::shared_ptr<fb:
     auto& other2 = bots.at(3);
 
     fb::logger::info("Bot {} starting damage spell test", caster->oid());
-    caster->send(fb::protocol::game::request::chat(false, "=== DAMAGE SPELL TEST STARTED ==="));
+    caster->chat("=== DAMAGE SPELL TEST STARTED ===");
 
     auto thread = caster->thread();
     co_await thread->switching();
@@ -86,6 +86,7 @@ async::task<bool> skill_test::test_damage_spells(std::vector<std::shared_ptr<fb:
         if (spell.name == "흡성대법")
             expected_hp = before_caster_hp + 15;
 
+        caster->chat(std::format("Testing {}", spell.name));
         co_await caster->request<fb::protocol::game::response::update_internal>(
             fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", mob_info.oid, mob_info.position),
             [=](auto& resp) -> bool {
@@ -96,7 +97,7 @@ async::task<bool> skill_test::test_damage_spells(std::vector<std::shared_ptr<fb:
         co_await caster->thread()->sleep(interval);
     }
 
-    caster->send(fb::protocol::game::request::chat(false, "=== DAMAGE SPELL TEST COMPLETED ==="));
+    caster->chat("=== DAMAGE SPELL TEST COMPLETED ===");
     fb::logger::info("Damage spell test completed.");
     co_return true;
 }

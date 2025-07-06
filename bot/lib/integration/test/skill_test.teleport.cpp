@@ -19,7 +19,7 @@ async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<f
     auto&          target   = bots[1];
 
     fb::logger::info("Starting teleport spell test with {} bots", bots.size());
-    caster->send(fb::protocol::game::request::chat(false, "=== TELEPORT SPELL TEST STARTED ==="));
+    caster->chat("=== TELEPORT SPELL TEST STARTED ===");
 
     // Teleport spells with their test parameters
     struct teleport_spell_test
@@ -61,7 +61,7 @@ async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<f
                          spell_info.expected_mp_cost,
                          spell_info.caster_moves);
 
-        caster->send(fb::protocol::game::request::chat(false, std::format("Testing {}", spell_info.name)));
+        caster->chat(std::format("Testing {}", spell_info.name));
 
         // Test scenario setup
         if (spell_info.caster_moves)
@@ -76,14 +76,14 @@ async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<f
         }
 
         fb::logger::info("Teleport spell {} test completed successfully", spell_info.name);
-        caster->send(fb::protocol::game::request::chat(false, std::format("{} test completed", spell_info.name)));
+        caster->chat(std::format("{} test completed", spell_info.name));
 
         spell_slot++;
         co_await caster->thread()->sleep(interval);
     }
 
     fb::logger::info("Teleport spell test completed successfully - {} spells tested", teleport_spells.size());
-    caster->send(fb::protocol::game::request::chat(false, "All teleport spell tests completed successfully!"));
+    caster->chat("All teleport spell tests completed successfully!");
 
     auto end_position = caster->position();
     auto move_x_axis  = end_position.x - begin_position.x;

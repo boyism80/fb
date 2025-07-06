@@ -383,7 +383,17 @@ protected:
      * @param[in]  timeout   Request timeout duration
      *
      */
-    async::task<void> clear_all_spells(std::shared_ptr<fb::bot::game_bot> bot, std::chrono::milliseconds timeout);
+    async::task<void> clear_all_spells(std::shared_ptr<fb::bot::game_bot>& bot, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Removes all items from a map
+     *
+     * @param[in]  bot       The bot that will have items removed
+     * @param[in]  timeout   Request timeout duration
+     *
+     * @return     An async task that completes when the items are removed
+     */
+    async::task<void> clear_all_items(std::shared_ptr<fb::bot::game_bot>& bot, fb::model::timespan timeout);
 
     /**
      * @brief      Moves a bot back to its original position after movement spells

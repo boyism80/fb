@@ -13,7 +13,7 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
     auto& target = bots.at(1);
 
     fb::logger::info("Bot {} starting near damage spell test", caster->oid());
-    caster->send(fb::protocol::game::request::chat(false, "=== NEAR DAMAGE SPELL TEST STARTED ==="));
+    caster->chat("=== NEAR DAMAGE SPELL TEST STARTED ===");
 
     auto thread = caster->thread();
     co_await thread->switching();
@@ -47,28 +47,32 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
         std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
     }
 
-    std::vector<near_damage_spell_test> near_damage_spells = {
-        // spell_damage_near spells (caster area) - sorted by MP cost
-        {"화염주'첨",       SPELL_TYPE::NORMAL, 300,  180},
-        {"자무주'첨",       SPELL_TYPE::NORMAL, 300,  180},
-        {"백열주'첨",       SPELL_TYPE::NORMAL, 300,  180},
+    auto near_damage_spells = std::vector<near_damage_spell_test>{
+        // spell_damage_near spells (caster area) - sorted by MP cost and element
         {"뢰진주'첨",       SPELL_TYPE::NORMAL, 300,  180},
-        {"자영무주'첨",     SPELL_TYPE::NORMAL, 510,  250},
+        {"화염주'첨",       SPELL_TYPE::NORMAL, 300,  180},
+        {"백열주'첨",       SPELL_TYPE::NORMAL, 300,  180},
+        {"자무주'첨",       SPELL_TYPE::NORMAL, 300,  180},
+
+        {"뢰격주'첨",       SPELL_TYPE::NORMAL, 510,  250},
         {"화영열주'첨",     SPELL_TYPE::NORMAL, 510,  250},
         {"백령주'첨",       SPELL_TYPE::NORMAL, 510,  250},
-        {"뢰격주'첨",       SPELL_TYPE::NORMAL, 510,  250},
-        {"자천무주'첨",     SPELL_TYPE::NORMAL, 720,  330},
+        {"자영무주'첨",     SPELL_TYPE::NORMAL, 510,  250},
+
+        {"뢰격참주'첨",     SPELL_TYPE::NORMAL, 720,  330},
         {"화열참주'첨",     SPELL_TYPE::NORMAL, 720,  330},
         {"백열참주'첨",     SPELL_TYPE::NORMAL, 720,  330},
-        {"뢰격참주'첨",     SPELL_TYPE::NORMAL, 720,  330},
-        {"진자천무주'첨",   SPELL_TYPE::NORMAL, 1930, 400},
+        {"자천무주'첨",     SPELL_TYPE::NORMAL, 720,  330},
+
+        {"진뢰격참주'첨",   SPELL_TYPE::NORMAL, 1930, 400},
         {"진화열참주'첨",   SPELL_TYPE::NORMAL, 1930, 400},
         {"진백열참주'첨",   SPELL_TYPE::NORMAL, 1930, 400},
-        {"진뢰격참주'첨",   SPELL_TYPE::NORMAL, 1930, 400},
-        {"극진자천무주'첨", SPELL_TYPE::NORMAL, 3560, 470},
+        {"진자천무주'첨",   SPELL_TYPE::NORMAL, 1930, 400},
+
+        {"극진뢰격참주'첨", SPELL_TYPE::NORMAL, 3560, 470},
         {"극진화열참주'첨", SPELL_TYPE::NORMAL, 3560, 470},
         {"극진백열참주'첨", SPELL_TYPE::NORMAL, 3560, 470},
-        {"극진뢰격참주'첨", SPELL_TYPE::NORMAL, 3560, 470}
+        {"극진자천무주'첨", SPELL_TYPE::NORMAL, 3560, 470}
     };
     auto spell_count = near_damage_spells.size();
 
@@ -113,6 +117,7 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
         auto expected_hp      = before_caster_hp;
         auto expected_mp      = before_caster_mp - spell.expected_mp_cost;
 
+        caster->chat(std::format("Testing {}", spell.name));
         co_await caster->request<fb::protocol::game::response::update_internal>(
             fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", 0, {0, 0}),
             [=](auto& resp) -> bool {
@@ -127,7 +132,7 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
     co_await caster->move(DIRECTION::TOP);
     caster->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
 
-    caster->send(fb::protocol::game::request::chat(false, "=== NEAR DAMAGE SPELL TEST COMPLETED ==="));
+    caster->chat("=== NEAR DAMAGE SPELL TEST COMPLETED ===");
     fb::logger::info("Near damage spell test completed.");
     co_return true;
 }

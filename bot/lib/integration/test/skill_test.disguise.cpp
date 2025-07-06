@@ -1,0 +1,109 @@
+#include <fb/bot/integration/skill_test.h>
+#include <fb/bot/game_bot.h>
+#include <fb/logger.h>
+#include <chrono>
+#include <vector>
+#include <string>
+
+using namespace fb::bot::integration;
+using namespace std::chrono_literals;
+
+namespace fb::bot::integration {
+
+struct disguise_spell_test
+{
+    std::string              spell_name;
+    int                      mp_cost;
+    std::vector<std::string> available_mobs;
+};
+
+async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                   std::chrono::milliseconds                        timeout)
+{
+    if (bots.size() < 1)
+    {
+        fb::logger::fatal("Disguise spell test requires at least 1 bot");
+        co_return false;
+    }
+
+    auto caster = bots[0];
+
+    constexpr auto interval = 100ms;
+
+    // Define disguise spells with their available monster transformations
+    auto disguise_spells = std::vector<disguise_spell_test>{
+        {"경수", 30, {"토끼", "다람쥐"}                                },
+        {"맹수", 30, {"곰", "호랑이"}                                  },
+        {"야수", 30, {"여우", "늑대"}                                  },
+        {"금수", 30, {"고양이", "새끼돼지", "돼지", "강아지", "누렁이"}}
+    };
+
+    fb::logger::info("Testing disguise spells with all available monster transformations");
+    caster->chat("=== DISGUISE SPELL TEST STARTED ===");
+
+    // Learn all disguise spells
+    auto spell_names = std::vector<std::string>{};
+    for (const auto& spell : disguise_spells)
+    {
+        fb::logger::info("Learning spell: {}", spell.spell_name);
+        spell_names.push_back(spell.spell_name);
+    }
+    co_await this->learn_spells(caster, spell_names, timeout);
+
+    // Test each disguise spell with all available monster transformations
+    auto spell_slot = 0;
+    for (const auto& spell : disguise_spells)
+    {
+        spell_slot++;
+        fb::logger::info("Testing {} spell", spell.spell_name);
+
+        // Test each available monster transformation
+        for (const auto& mob_name : spell.available_mobs)
+        {
+            // Set current hp and mp
+            co_await this->set_current_hp_mp(caster, 10000, 1000, timeout);
+
+            fb::logger::info("Testing {} transformation to {}", spell.spell_name, mob_name);
+
+            // Step 1: Cast disguise spell with specific monster name
+            auto before_mp   = caster->mp();
+            auto expected_mp = before_mp - spell.mp_cost;
+
+            fb::logger::info("Casting {} spell to transform into {} (MP: {} -> {})",
+                             spell.spell_name,
+                             mob_name,
+                             before_mp,
+                             expected_mp);
+
+            // Use SPELL_TYPE::INPUT with monster name as text input
+            caster->chat(std::format("{} - {}", spell.spell_name, mob_name));
+            std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
+                fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, spell_slot, mob_name, 0, {0, 0}),
+                [expected_mp](auto& resp) -> bool {
+                    return resp.ch_mp == expected_mp;
+                },
+                timeout);
+
+            fb::logger::info("{} spell cast completed successfully for {}", spell.spell_name, mob_name);
+
+            // Step 2: Verify transformation (check if buff is applied)
+            // Note: We can't directly verify the visual transformation in bot testing,
+            // but we can verify that the spell was cast successfully and MP was consumed
+
+            fb::logger::info("{} transformation to {} completed successfully", spell.spell_name, mob_name);
+
+            // Step 3: Remove buff to prepare for next test
+            fb::logger::info("Removing buff to prepare for next test");
+            caster->remove_buffs();
+            co_await caster->thread()->sleep(interval);
+        }
+
+        fb::logger::info("Completed testing all transformations for {} spell", spell.spell_name);
+    }
+
+    fb::logger::info("Disguise spell testing completed");
+    caster->chat("=== DISGUISE SPELL TEST COMPLETED ===");
+    co_return true;
+}
+
+} // namespace fb::bot::integration

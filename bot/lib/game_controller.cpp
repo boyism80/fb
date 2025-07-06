@@ -18,7 +18,6 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::handle_direction);
     this->bind(&game_bot_controller::handle_position);
     this->bind(&game_bot_controller::handle_move);
-    this->bind(&game_bot_controller::handle_sound);
     this->bind(&game_bot_controller::handle_effect);
     this->bind(&game_bot_controller::handle_hide);
     this->bind(&game_bot_controller::handle_die);
@@ -203,12 +202,6 @@ async::task<void> game_bot_controller::handle_transfer(game_bot& bot, const fb::
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     created->connect(endpoint);
 
-    co_return;
-}
-
-async::task<void> game_bot_controller::handle_sound(game_bot& bot, const fb::protocol::game::response::sound& response)
-{
-    // Sound is a one-time event, no need to store state
     co_return;
 }
 

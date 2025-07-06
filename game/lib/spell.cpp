@@ -185,6 +185,15 @@ buffs::buffs(object& owner) :
     _owner(owner)
 { }
 
+buffs::buffs(const buffs& other) :
+    _owner(other._owner)
+{
+    for (auto& [id, buff] : other)
+    {
+        super::insert({id, buff});
+    }
+}
+
 buffs::~buffs()
 { }
 

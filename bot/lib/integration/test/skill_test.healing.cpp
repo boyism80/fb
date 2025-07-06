@@ -14,7 +14,7 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
     auto target = bots.at(1);
 
     fb::logger::info("Bot {} starting healing spell test", caster->oid());
-    caster->send(fb::protocol::game::request::chat(false, "=== HEALING SPELL TEST STARTED ==="));
+    caster->chat("=== HEALING SPELL TEST STARTED ===");
 
     // Step 1: Setup bots with HP/MP for spell testing
     auto thread = caster->thread();
@@ -26,7 +26,7 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
         std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, 50, std::nullopt, timeout);
     }
 
-    caster->send(fb::protocol::game::request::chat(false, "Bot setup completed - ready for spell testing"));
+    caster->chat("Bot setup completed - ready for spell testing");
 
     std::vector<healing_spell_test> healing_spells = {
         {"누리의기원", SPELL_TYPE::NORMAL, 50,    30   },
@@ -57,7 +57,7 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
 
     auto learned_count = co_await this->learn_spells(caster, spell_names, timeout);
     fb::logger::info("Successfully learned {} out of {} healing spells", learned_count, healing_spells.size());
-    caster->send(fb::protocol::game::request::chat(false, "All healing spells learned - starting test sequence"));
+    caster->chat("All healing spells learned - starting test sequence");
 
     // Step 3: Test each healing spell
     auto spell_slot = 1;
@@ -76,6 +76,7 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
 
             fb::logger::debug("Casting {} on self - before: hp={}, mp={}", spell.name, before_hp, before_mp);
 
+            caster->chat(std::format("Testing {}", spell.name));
             std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
                 fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", 0, {0, 0}),
                 [before_hp, spell](auto& resp) -> bool {
@@ -97,6 +98,7 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
                               before_caster_mp);
 
             // Caster casts spell on target
+            caster->chat(std::format("Testing {}", spell.name));
             std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
                 fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", target->oid(), target->position()),
                 [before_caster_mp, spell](auto& resp) -> bool {
@@ -217,7 +219,7 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
 
     fb::logger::info("Healing spell test completed successfully - {} healing spells + 1 special spell tested",
                      healing_spells.size());
-    caster->send(fb::protocol::game::request::chat(false, "All healing spell tests completed successfully!"));
+    caster->chat("All healing spell tests completed successfully!");
 
     co_return true;
 }

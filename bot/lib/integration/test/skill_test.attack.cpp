@@ -13,7 +13,7 @@ async::task<bool> skill_test::test_attack_cast_spells(std::vector<std::shared_pt
     auto& target = bots.at(1);
 
     fb::logger::info("Bot {} starting attack_cast spell test", caster->oid());
-    caster->send(fb::protocol::game::request::chat(false, "=== ATTACK_CAST SPELL TEST STARTED ==="));
+    caster->chat("=== ATTACK_CAST SPELL TEST STARTED ===");
 
     auto thread = caster->thread();
     co_await thread->switching();
@@ -128,7 +128,7 @@ async::task<bool> skill_test::test_attack_cast_spells(std::vector<std::shared_pt
         co_await caster->thread()->sleep(interval);
     }
 
-    caster->send(fb::protocol::game::request::chat(false, "=== ATTACK_CAST SPELL TEST COMPLETED ==="));
+    caster->chat("=== ATTACK_CAST SPELL TEST COMPLETED ===");
     fb::logger::info("Attack_cast spell test completed.");
     co_return true;
 }

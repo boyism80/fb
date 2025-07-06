@@ -13,7 +13,7 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
     auto& caster = bots.at(0);
 
     fb::logger::info("Bot {} starting multi-target attack_cast spell test", caster->oid());
-    caster->send(fb::protocol::game::request::chat(false, "=== MULTI-TARGET ATTACK_CAST SPELL TEST STARTED ==="));
+    caster->chat("=== MULTI-TARGET ATTACK_CAST SPELL TEST STARTED ===");
 
     auto thread = caster->thread();
     co_await thread->switching();
@@ -140,7 +140,7 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
         co_await caster->thread()->sleep(interval);
     }
 
-    caster->send(fb::protocol::game::request::chat(false, "=== MULTI-TARGET ATTACK_CAST SPELL TEST COMPLETED ==="));
+    caster->chat("=== MULTI-TARGET ATTACK_CAST SPELL TEST COMPLETED ===");
     fb::logger::info("Multi-target attack_cast spell test completed.");
     co_return true;
 }

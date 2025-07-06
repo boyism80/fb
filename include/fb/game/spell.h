@@ -401,6 +401,13 @@ public:
      */
     buffs(fb::game::object& owner);
     /**
+     * @brief      Copy constructor.
+     *
+     * @param[in]  other  The other buffs to copy from
+     */
+    buffs(const buffs& other);
+
+    /**
      * @brief      Destroys the object.
      */
     ~buffs();

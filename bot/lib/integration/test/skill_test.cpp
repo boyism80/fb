@@ -237,6 +237,18 @@ void skill_test::initialize_test_functions()
         return this->test_teleport_spells(bots, timeout);
     });
 
+    this->_test_functions.emplace_back("Disguise Spells", [this](auto& bots, auto timeout) {
+        return this->test_disguise_spells(bots, timeout);
+    });
+
+    this->_test_functions.emplace_back("Shout Spells", [this](auto& bots, auto timeout) {
+        return this->test_shout_spells(bots, timeout);
+    });
+
+    this->_test_functions.emplace_back("Loot Spell", [this](auto& bots, auto timeout) {
+        return this->test_loot_spell(bots, timeout);
+    });
+
     fb::logger::info("Initialized {} test functions", this->_test_functions.size());
 }
 
@@ -265,6 +277,10 @@ async::task<bool> skill_test::execute_test_functions(std::vector<std::shared_ptr
             auto& caster = bots[0]; // Use first bot as caster for cleanup
             fb::logger::debug("Cleaning up all spells after test function '{}'", test_name);
             co_await this->clear_all_spells(caster, timeout);
+
+            fb::logger::debug("Clearing all items after test function '{}'", test_name);
+            co_await this->clear_all_items(caster, timeout);
+            co_await caster->thread()->sleep(500ms);
         }
     }
 
