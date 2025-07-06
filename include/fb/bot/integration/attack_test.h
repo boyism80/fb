@@ -2,28 +2,34 @@
 #define __BOT_INTEGRATION_ATTACK_TEST_H__
 
 #include <fb/bot/integration/test_case.h>
+#include <fb/bot/integration/game_controller.h>
+#include <fb/game/protocol.h>
+#include <vector>
+#include <memory>
 
 namespace fb::bot::integration {
 
 /**
  * @brief      Attack integration test implementation.
  *
- *             Tests bot attack functionality by spawning a single bot and
- *             performing 10 attack sequences with 1-second intervals.
+ *             Tests bot attack functionality by spawning a monster and having
+ *             the bot attack it until the monster is defeated.
  */
 class attack_test : public bot_integration_test
 {
-private:
-    bool _test_completed{false};
-    bool _test_running{false};
-
-    std::vector<std::shared_ptr<fb::bot::game_bot>> _test_bots; ///< Attack test's own bot collection
-
-    static constexpr int ATTACK_COUNT = 5;
-
 public:
     /**
-     * @brief      Initializes the attack test and spawns a single bot.
+     * @brief      Constructs a new attack test with controller reference.
+     *
+     *             Initializes the attack test and registers hooks for specific
+     *             protocol types to enable event-driven test execution.
+     *
+     * @param[in]  controller  Reference to the parent game bot controller.
+     */
+    attack_test(game_bot_controller& controller);
+
+    /**
+     * @brief      Initializes the attack test and spawns required bots.
      *
      *             Spawns 1 bot for attack testing and waits for it to connect.
      *
@@ -31,86 +37,63 @@ public:
      *
      * @return     A task that completes when initialization is finished.
      */
-    async::task<void> initialize(game_bot_controller& controller) override;
+    async::task<void> initialize(game_bot_controller& controller);
 
     /**
      * @brief      Executes the attack test.
      *
-     *             Performs 10 attack sequences with 1-second intervals using
-     *             the spawned bot to test combat functionality.
+     *             Spawns a monster and has the bot attack it until defeated.
+     *             This method is called only when all bots are ready (have non-zero oid).
      *
      * @return     A task that completes when attack test finishes, returning true on success.
      */
-    async::task<bool> execute() override;
+    async::task<bool> execute();
 
     /**
-     * @brief      Checks if the attack test has completed.
-     *
-     * @return     True if all attack sequences are finished.
-     */
-    bool is_complete() const override
-    {
-        return this->_test_completed;
-    }
-
-    /**
-     * @brief      Resets the attack test state to initial conditions.
-     */
-    void reset() override;
-
-    /**
-     * @brief      Gets the attack test name.
+     * @brief      Gets the test name.
      *
      * @return     "Attack Test" as the identifier.
      */
-    std::string name() const override
+    std::string name() const
     {
         return "Attack Test";
     }
 
     /**
-     * @brief      Checks if the attack test is currently running.
+     * @brief      Called when a bot receives an object ID response.
      *
-     * @return     True if the test is in progress.
+     *             Checks if all bots are ready and starts the test if conditions are met.
+     *
+     * @param[in]  bot       The bot that received the object ID.
+     * @param[in]  response  The object ID response containing the new ID.
+     *
+     * @return     An async task that completes when hook processing is finished.
      */
-    bool is_running() const override
-    {
-        return this->_test_running;
-    }
+    async::task<void> on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response);
 
     /**
-     * @brief      Checks if all spawned bots are ready for attack test.
-     *
-     *             Attack test requires the single bot to have received its oid ID
-     *             (oid != 0) before starting the test.
-     *
-     * @return     True if the spawned bot has non-zero oid, false otherwise.
+     * @brief      Resets the test state to idle.
      */
-    bool is_ready() const override;
+    void reset();
 
     /**
-     * @brief      Called when a bot connects to the attack test.
+     * @brief      Checks if the test is ready to start execution.
      *
-     *             Adds the bot to the attack test's bot collection.
-     *
-     * @param[in]  bot  The connected bot to add to the test.
+     * @return     True if the test is ready to start, false otherwise.
      */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override;
+    bool is_ready() const;
 
     /**
-     * @brief      Cleans up attack test resources and disconnects the spawned bot.
+     * @brief      Called when a bot connects to the test.
      *
-     *             Overrides base cleanup to handle attack test specific bot collection.
+     * @param[in]  bot  Shared pointer to the connected bot.
      */
-    void cleanup() override;
+    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot);
 
-protected:
     /**
-     * @brief      Gets the current list of attack test bots (thread-safe).
-     *
-     * @return     Vector of shared pointers to the attack test bots.
+     * @brief      Performs cleanup operations when the test is destroyed.
      */
-    std::vector<std::shared_ptr<fb::bot::game_bot>> get_test_bots() const;
+    void cleanup();
 };
 
 } // namespace fb::bot::integration

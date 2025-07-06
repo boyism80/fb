@@ -54,6 +54,7 @@ point<uint16_t> game_bot::position() const
 void game_bot::set_position(const point<uint16_t>& value)
 {
     this->_position = value;
+    fb::logger::info("Bot {} position set to ({}, {})", this->_oid, value.x, value.y);
 }
 
 bool game_bot::is_initialized() const
@@ -423,6 +424,38 @@ const std::string& game_bot::name() const
 void game_bot::set_name(const std::string& value)
 {
     this->_name = value;
+}
+
+async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model::timespan& delay)
+{
+    auto thread = this->thread();
+    auto before = this->_position;
+    auto after  = before;
+    for (int i = 0; i < step; i++)
+    {
+        this->send(fb::protocol::game::request::move{direction, this->_oid, after});
+        switch (direction)
+        {
+        case DIRECTION::LEFT:
+            after.x--;
+            break;
+
+        case DIRECTION::TOP:
+            after.y--;
+            break;
+
+        case DIRECTION::RIGHT:
+            after.x++;
+            break;
+
+        case DIRECTION::BOTTOM:
+            after.y++;
+            break;
+        }
+
+        this->_position = after;
+        co_await this->thread()->sleep(delay);
+    }
 }
 
 async::task<void> game_bot::process_random_pattern(const fb::model::datetime& now)

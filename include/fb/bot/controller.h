@@ -354,8 +354,10 @@ public:
                         if (shared == nullptr)
                             co_return;
 
-                        [[maybe_unused]] volatile auto holder = protocol;
+                        [[maybe_unused]] volatile auto holder     = protocol;
+                        [[maybe_unused]] volatile auto controller = this;
                         co_await handler(*shared, *protocol.get());
+                        co_await controller->on_integration_hook_execution(cmd, *shared, *protocol.get());
                         shared->process_hooks(cmd, *protocol.get());
                     });
                 }
@@ -424,11 +426,20 @@ public:
                  co_return protocol;
              }});
 
-        this->_handler.insert({ResponseType::header, [this, fn](auto& bot, auto& header) -> async::task<void> {
-                                   auto protocol = static_cast<ResponseType&>(header);
-                                   co_await fn(bot, protocol);
-                                   bot.process_hooks(ResponseType::header, header);
-                               }});
+        this->_handler.insert(
+            {ResponseType::header, [this, fn](auto& bot, auto& header) -> async::task<void> {
+                 auto                           protocol   = static_cast<ResponseType&>(header);
+                 [[maybe_unused]] volatile auto controller = this;
+
+                 // 1. Execute the main handler
+                 co_await fn(bot, protocol);
+
+                 // 2. Execute integration hooks
+                 co_await controller->on_integration_hook_execution(ResponseType::header, bot, header);
+
+                 // 3. Execute bot's process_hooks
+                 bot.process_hooks(ResponseType::header, header);
+             }});
     }
 
     /**
@@ -524,6 +535,26 @@ public:
     void write_bots(const std::function<void(std::unordered_map<uint32_t, std::shared_ptr<BotType>>&)>& fn)
     {
         this->_bots.write(fn);
+    }
+
+    /**
+     * @brief      Virtual method for integration hook execution.
+     *
+     *             This method is called when a protocol message is received.
+     *             Derived controllers can override this to implement custom hook logic.
+     *
+     * @param[in]  cmd     The command identifier.
+     * @param[in]  bot     The bot that received the message.
+     * @param[in]  header  The protocol header.
+     *
+     * @return     An async task that completes when hook processing is finished.
+     */
+    virtual async::task<void> on_integration_hook_execution(uint8_t                     cmd,
+                                                            BotType&                    bot,
+                                                            const fb::protocol::header& header)
+    {
+        // Default implementation does nothing
+        co_return;
     }
 };
 

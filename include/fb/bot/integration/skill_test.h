@@ -14,25 +14,29 @@ namespace fb::bot::integration {
 class skill_test : public bot_integration_test
 {
 private:
-    bool _test_completed{false};
-    bool _test_running{false};
-
-    std::vector<std::shared_ptr<fb::bot::game_bot>> _test_bots; ///< Skill test's own bot collection
-
     // Spell learning tracking
     bool    _waiting_for_spell_update{false};
     uint8_t _spell_learned_index{0};
 
     // Test function queue management
-    using test_function = std::function<async::task<bool>(const std::vector<std::shared_ptr<fb::bot::game_bot>>&,
-                                                          std::chrono::milliseconds)>;
+    using test_function =
+        std::function<async::task<bool>(std::vector<std::shared_ptr<fb::bot::game_bot>>&, std::chrono::milliseconds)>;
     std::vector<std::pair<std::string, test_function>> _test_functions;
 
     static constexpr int SPELL_CAST_COUNT = 10;
 
 public:
     /**
-     * @brief      Initializes the skill test and spawns a single bot.
+     * @brief      Constructs a new skill test with controller reference.
+     *
+     *             Initializes the skill test and registers hooks for specific
+     *             protocol types to enable event-driven test execution.
+     *
+     * @param[in]  controller  Reference to the parent game bot controller.
+     */
+    skill_test(game_bot_controller& controller);
+    /**
+     * @brief      Initializes the skill test and spawns required bots.
      *
      *             Spawns 1 bot for skill testing and waits for it to connect.
      *
@@ -40,27 +44,17 @@ public:
      *
      * @return     A task that completes when initialization is finished.
      */
-    async::task<void> initialize(game_bot_controller& controller) override;
+    async::task<void> initialize(game_bot_controller& controller);
 
     /**
      * @brief      Executes the skill test.
      *
-     *             Tests bot skill casting functionality by sending a spell learning chat,
-     *             waiting for spell_update response, then casting the learned spell 10 times.
+     *             Tests various skill functionalities by spawning monsters and
+     *             having the bot use skills against them.
      *
      * @return     A task that completes when skill test finishes, returning true on success.
      */
-    async::task<bool> execute() override;
-
-    /**
-     * @brief      Checks if the skill test has completed.
-     *
-     * @return     True if all skill casting sequences are finished.
-     */
-    bool is_complete() const override
-    {
-        return this->_test_completed;
-    }
+    async::task<bool> execute();
 
     /**
      * @brief      Resets the skill test state to initial conditions.
@@ -68,23 +62,13 @@ public:
     void reset() override;
 
     /**
-     * @brief      Gets the skill test name.
+     * @brief      Gets the test name.
      *
      * @return     "Skill Test" as the identifier.
      */
-    std::string name() const override
+    std::string name() const
     {
         return "Skill Test";
-    }
-
-    /**
-     * @brief      Checks if the skill test is currently running.
-     *
-     * @return     True if the test is in progress.
-     */
-    bool is_running() const override
-    {
-        return this->_test_running;
     }
 
     /**
@@ -117,17 +101,29 @@ public:
      */
     void on_spell_update_received(std::shared_ptr<fb::bot::game_bot> bot, uint8_t index);
 
-private:
     /**
-     * @brief      Gets the list of connected test bots.
+     * @brief      Called when a bot receives an object ID response.
      *
-     * @return     Vector of test bots for skill testing.
+     *             Checks if all bots are ready and starts the test if conditions are met.
+     *
+     * @param[in]  bot       The bot that received the object ID.
+     * @param[in]  response  The object ID response containing the new ID.
+     *
+     * @return     An async task that completes when hook processing is finished.
      */
-    const std::vector<std::shared_ptr<fb::bot::game_bot>>& get_test_bots() const
-    {
-        return this->_test_bots;
-    }
+    async::task<void> on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response);
 
+    /**
+     * @brief      Called when a bot receives a position response.
+     *
+     * @param[in]  bot       The bot that received the position.
+     * @param[in]  response  The position response containing the new position.
+     *
+     * @return     An async task that completes when hook processing is finished.
+     */
+    async::task<void> on_hook_position(fb::bot::game_bot& bot, const fb::protocol::game::response::position& response);
+
+private:
     /**
      * @brief      Initializes the test function queue with all test functions.
      *
@@ -143,8 +139,8 @@ private:
      *
      * @return     A task that completes when all test functions finish.
      */
-    async::task<bool> execute_test_functions(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                             std::chrono::milliseconds                              timeout);
+    async::task<bool> execute_test_functions(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                             std::chrono::milliseconds                        timeout);
 
     /**
      * @brief      Tests healing spells with comprehensive spell coverage.
@@ -159,20 +155,20 @@ private:
      *
      * @return     A task that completes when all healing spell tests finish.
      */
-    async::task<bool> test_healing_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                          std::chrono::milliseconds                              timeout);
+    async::task<bool> test_healing_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                          std::chrono::milliseconds                        timeout);
 
-    async::task<bool> test_damage_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                         std::chrono::milliseconds                              timeout);
+    async::task<bool> test_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                         std::chrono::milliseconds                        timeout);
 
-    async::task<bool> test_near_damage_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                              std::chrono::milliseconds                              timeout);
+    async::task<bool> test_near_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                              std::chrono::milliseconds                        timeout);
 
-    async::task<bool> test_attack_cast_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                              std::chrono::milliseconds                              timeout);
+    async::task<bool> test_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                              std::chrono::milliseconds                        timeout);
 
-    async::task<bool> test_multi_target_attack_cast_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                           std::chrono::milliseconds timeout);
+    async::task<bool> test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                           std::chrono::milliseconds                        timeout);
 
     /**
      * @brief      Structure for healing spell test data

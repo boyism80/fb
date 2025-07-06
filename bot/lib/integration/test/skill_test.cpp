@@ -13,6 +13,19 @@ using namespace std::chrono_literals;
 
 namespace fb::bot::integration {
 
+skill_test::skill_test(game_bot_controller& controller) :
+    bot_integration_test(controller)
+{
+    // Register hook for object ID (sequence) responses
+    this->_controller.hook_external(this, this, &skill_test::on_hook_sequence);
+    this->_controller.hook_external(this, this, &skill_test::on_hook_position);
+
+    // Initialize test function queue
+    this->initialize_test_functions();
+
+    fb::logger::debug("Skill test constructed");
+}
+
 async::task<void> skill_test::initialize(game_bot_controller& controller)
 {
     constexpr auto REQUIRED_BOTS = 5;
@@ -39,12 +52,12 @@ async::task<void> skill_test::initialize(game_bot_controller& controller)
 async::task<bool> skill_test::execute()
 {
     constexpr auto interval = 100ms; // Increased from 100ms to reduce server load
-    constexpr auto timeout  = 1h;    // Increased from 5s to handle server processing delays
+    constexpr auto timeout  = 5s;    // Increased from 5s to handle server processing delays
 
-    if (this->_test_running || this->_test_completed)
+    if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
         co_return false;
 
-    this->_test_running = true;
+    this->set_state(test_state::running);
 
     auto bots = this->get_test_bots();
     fb::logger::info("Starting skill test with {} bot", bots.size());
@@ -52,7 +65,7 @@ async::task<bool> skill_test::execute()
     if (bots.empty())
     {
         fb::logger::fatal("No bots available for skill test");
-        this->_test_running = false;
+        this->set_state(test_state::failed);
         co_return false;
     }
 
@@ -62,22 +75,14 @@ async::task<bool> skill_test::execute()
     // Move bots in reverse order to avoid blocking (4→3→2→1)
     for (int i = static_cast<int>(bots.size()) - 1; i >= 1; --i)
     {
-        auto bot              = bots[i];
-        auto current_position = bot->position();
-        auto target_position  = current_position;
-        auto thread           = bot->thread();
+        auto& bot              = bots[i];
+        auto  current_position = bot->position();
+        auto  target_position  = current_position;
+        auto  thread           = bot->thread();
 
         // Move bot i steps to the right
         co_await thread->switching();
-        for (int step = 0; step < i; ++step)
-        {
-            target_position.x += 1;
-            bot->send(fb::protocol::game::request::move{DIRECTION::RIGHT, bot->oid(), bot->position()});
-            bot->set_position(target_position);
-
-            // Small delay between moves
-            co_await thread->sleep(50ms);
-        }
+        co_await bot->move(DIRECTION::RIGHT, i, 50ms);
 
         // Set direction to BOTTOM
         bot->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
@@ -99,29 +104,21 @@ async::task<bool> skill_test::execute()
         co_return false;
     }
 
-    this->_test_completed = true;
-    this->_test_running   = false;
+    this->set_state(test_state::completed);
 
-    if (test_result)
-    {
-        fb::logger::info("Skill test completed successfully");
-        auto caster = bots.at(0);
-        caster->send(fb::protocol::game::request::chat(false, "=== SKILL TEST COMPLETED SUCCESSFULLY ==="));
-        this->cleanup();
-        co_return true;
-    }
-    else
-    {
-        fb::logger::fatal("Skill test failed");
-        auto caster = bots.at(0);
-        caster->send(fb::protocol::game::request::chat(false, "=== SKILL TEST FAILED ==="));
-        this->cleanup();
-        co_return false;
-    }
+    fb::logger::info("Skill test completed successfully");
+
+    // Cleanup bots after test completion
+    this->cleanup();
+
+    // Notify controller that this test is completed
+    this->_controller.notify_test_completed(this);
+
+    co_return true; // 성공
 }
 
-async::task<bool> skill_test::test_healing_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                  std::chrono::milliseconds                              timeout)
+async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                  std::chrono::milliseconds                        timeout)
 {
     constexpr auto interval = 100ms;
 
@@ -137,7 +134,10 @@ async::task<bool> skill_test::test_healing_spells(const std::vector<std::shared_
     co_await thread->switching();
 
     // Setup all bots with max HP/MP and current HP
-    std::ignore = co_await this->setup_bots_hp_mp(bots, 100000, 100000, 50, std::nullopt, timeout);
+    for (auto& bot : bots)
+    {
+        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, 50, std::nullopt, timeout);
+    }
 
     caster->send(fb::protocol::game::request::chat(false, "Bot setup completed - ready for spell testing"));
 
@@ -474,8 +474,8 @@ async::task<bool> skill_test::test_healing_spells(const std::vector<std::shared_
     co_return true;
 }
 
-async::task<bool> skill_test::test_damage_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                 std::chrono::milliseconds                              timeout)
+async::task<bool> skill_test::test_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                 std::chrono::milliseconds                        timeout)
 {
     constexpr auto interval = 100ms;
 
@@ -491,7 +491,10 @@ async::task<bool> skill_test::test_damage_spells(const std::vector<std::shared_p
     co_await thread->switching();
 
     // Setup all bots with max HP/MP
-    std::ignore = co_await this->setup_bots_hp_mp(bots, 100000, 100000, std::nullopt, std::nullopt, timeout);
+    for (auto& bot : bots)
+    {
+        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
+    }
 
     std::vector<damage_spell_test> damage_spells = {
         {"뢰진주",       SPELL_TYPE::TARGET, 320,  120},
@@ -572,8 +575,8 @@ async::task<bool> skill_test::test_damage_spells(const std::vector<std::shared_p
     co_return true;
 }
 
-async::task<bool> skill_test::test_near_damage_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                      std::chrono::milliseconds                              timeout)
+async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                      std::chrono::milliseconds                        timeout)
 {
     constexpr auto interval = 100ms;
 
@@ -587,25 +590,14 @@ async::task<bool> skill_test::test_near_damage_spells(const std::vector<std::sha
     co_await thread->switching();
 
     // Step 1: Move caster down by 1 tile
-    auto original_position  = caster->position();
-    auto target_position    = original_position;
-    target_position.y      += 1;
-
-    caster->send(fb::protocol::game::request::move{DIRECTION::BOTTOM, caster->oid(), original_position});
-    caster->set_position(target_position);
-
-    fb::logger::info("Caster moved from ({}, {}) to ({}, {})",
-                     original_position.x,
-                     original_position.y,
-                     target_position.x,
-                     target_position.y);
-
+    co_await caster->move(DIRECTION::BOTTOM);
     co_await caster->thread()->sleep(100ms);
 
     // Step 2: Spawn 4 monsters around the caster
-    auto spawn_points  = std::vector<fb::model::point<uint16_t>>();
-    auto left_pos      = target_position;
-    left_pos.x        -= 1;
+    auto spawn_points     = std::vector<fb::model::point<uint16_t>>();
+    auto target_position  = caster->position();
+    auto left_pos         = target_position;
+    left_pos.x           -= 1;
     spawn_points.push_back(left_pos);
 
     auto top_pos  = target_position;
@@ -621,7 +613,10 @@ async::task<bool> skill_test::test_near_damage_spells(const std::vector<std::sha
     spawn_points.push_back(bottom_pos);
 
     // Setup all bots with max HP/MP
-    std::ignore = co_await this->setup_bots_hp_mp(bots, 100000, 100000, std::nullopt, std::nullopt, timeout);
+    for (auto& bot : bots)
+    {
+        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
+    }
 
     std::vector<near_damage_spell_test> near_damage_spells = {
         // spell_damage_near spells (caster area) - sorted by MP cost
@@ -704,8 +699,7 @@ async::task<bool> skill_test::test_near_damage_spells(const std::vector<std::sha
     fb::logger::info("Cleaning up all learned spells");
     std::ignore = co_await this->clear_all_spells(caster, timeout);
 
-    caster->send(fb::protocol::game::request::move{DIRECTION::TOP, caster->oid(), target_position});
-    caster->set_position(original_position);
+    co_await caster->move(DIRECTION::TOP);
     caster->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
 
     caster->send(fb::protocol::game::request::chat(false, "=== NEAR DAMAGE SPELL TEST COMPLETED ==="));
@@ -713,8 +707,8 @@ async::task<bool> skill_test::test_near_damage_spells(const std::vector<std::sha
     co_return true;
 }
 
-async::task<bool> skill_test::test_attack_cast_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                      std::chrono::milliseconds                              timeout)
+async::task<bool> skill_test::test_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                      std::chrono::milliseconds                        timeout)
 {
     constexpr auto interval = 100ms;
 
@@ -728,7 +722,10 @@ async::task<bool> skill_test::test_attack_cast_spells(const std::vector<std::sha
     co_await thread->switching();
 
     // Setup all bots with max HP/MP
-    std::ignore = co_await this->setup_bots_hp_mp(bots, 100000, 100000, std::nullopt, std::nullopt, timeout);
+    for (auto& bot : bots)
+    {
+        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
+    }
 
     std::vector<attack_cast_spell_test> attack_cast_spells = {
         // Single target attack spells (front target)
@@ -844,8 +841,8 @@ async::task<bool> skill_test::test_attack_cast_spells(const std::vector<std::sha
 }
 
 async::task<bool>
-skill_test::test_multi_target_attack_cast_spells(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                 std::chrono::milliseconds                              timeout)
+skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                 std::chrono::milliseconds                        timeout)
 {
     constexpr auto interval = 100ms;
 
@@ -858,7 +855,10 @@ skill_test::test_multi_target_attack_cast_spells(const std::vector<std::shared_p
     co_await thread->switching();
 
     // Setup all bots with max HP/MP
-    std::ignore = co_await this->setup_bots_hp_mp(bots, 100000, 100000, std::nullopt, std::nullopt, timeout);
+    for (auto& bot : bots)
+    {
+        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
+    }
 
     std::vector<multi_target_attack_cast_spell_test> multi_target_spells = {
         // Multi-target attack spells
@@ -938,7 +938,6 @@ skill_test::test_multi_target_attack_cast_spells(const std::vector<std::shared_p
     fb::logger::info("Learning {} multi-target attack_cast spells", multi_target_spells.size());
     auto spell_slot = 1;
 
-    auto original_position = caster->position();
     for (const auto& spell : multi_target_spells)
     {
         fb::logger::info("Testing multi-target spell: {}", spell.name);
@@ -973,8 +972,7 @@ skill_test::test_multi_target_attack_cast_spells(const std::vector<std::shared_p
         spell_slot++;
 
         // Move bot back to original position if it moved
-        co_await this->move_bot_back_to_position(caster, original_position, interval);
-
+        co_await this->move_bot_back_to_position(caster, caster_pos, interval);
         co_await caster->thread()->sleep(interval);
     }
 
@@ -989,8 +987,9 @@ skill_test::test_multi_target_attack_cast_spells(const std::vector<std::shared_p
 
 void skill_test::reset()
 {
-    this->_test_completed           = false;
-    this->_test_running             = false;
+    // Call base class reset
+    bot_integration_test::reset();
+
     this->_waiting_for_spell_update = false;
     this->_spell_learned_index      = 0;
 
@@ -1002,14 +1001,15 @@ void skill_test::reset()
 
 bool skill_test::is_ready() const
 {
-    auto& bots = this->get_test_bots();
-    if (bots.empty())
+    if (this->get_test_bots().empty())
         return false;
 
-    // Movement test requires all bots to have non-zero oid
-    for (const auto& bot : bots)
+    for (auto& bot : this->get_test_bots())
     {
-        if (bot->oid() == 0)
+        if (bot->oid() == 0 && bot->oid() != 0xFFFFFFFD)
+            return false;
+
+        if (bot->position().x == 0 && bot->position().y == 0)
             return false;
     }
 
@@ -1018,7 +1018,8 @@ bool skill_test::is_ready() const
 
 void skill_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
 {
-    this->_test_bots.push_back(bot);
+    // Call base class implementation
+    bot_integration_test::on_bot_connected(bot);
     fb::logger::debug("Skill test: Bot {} added to collection", bot->fd());
 }
 
@@ -1030,37 +1031,68 @@ void skill_test::on_spell_update_received(std::shared_ptr<fb::bot::game_bot> bot
     this->_waiting_for_spell_update = false;
 }
 
+async::task<void> skill_test::on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response)
+{
+    fb::logger::debug("Skill test: Bot {} received object ID {}", bot.fd(), response.oid);
+
+    if (this->is_ready() == false)
+        co_return;
+
+    if (this->get_state() == test_state::running)
+        co_return;
+
+    fb::logger::info("Skill test: All bots ready, notifying controller");
+    this->set_state(test_state::ready);
+    this->notify_ready();
+    co_return;
+}
+
+async::task<void> skill_test::on_hook_position(fb::bot::game_bot&                            bot,
+                                               const fb::protocol::game::response::position& response)
+{
+    if (this->is_ready() == false)
+        co_return;
+
+    if (this->get_state() == test_state::running)
+        co_return;
+
+    fb::logger::info("Skill test: All bots ready, notifying controller");
+    this->set_state(test_state::ready);
+    this->notify_ready();
+    co_return;
+}
+
 void skill_test::initialize_test_functions()
 {
     // Clear existing test functions
     this->_test_functions.clear();
 
     // Register all test functions in execution order
-    this->_test_functions.emplace_back("Healing Spells", [this](const auto& bots, auto timeout) {
+    this->_test_functions.emplace_back("Healing Spells", [this](auto& bots, auto timeout) {
         return this->test_healing_spells(bots, timeout);
     });
 
-    this->_test_functions.emplace_back("Damage Spells", [this](const auto& bots, auto timeout) {
+    this->_test_functions.emplace_back("Damage Spells", [this](auto& bots, auto timeout) {
         return this->test_damage_spells(bots, timeout);
     });
 
-    this->_test_functions.emplace_back("Near Damage Spells", [this](const auto& bots, auto timeout) {
+    this->_test_functions.emplace_back("Near Damage Spells", [this](auto& bots, auto timeout) {
         return this->test_near_damage_spells(bots, timeout);
     });
 
-    this->_test_functions.emplace_back("Attack Cast Spells", [this](const auto& bots, auto timeout) {
+    this->_test_functions.emplace_back("Attack Cast Spells", [this](auto& bots, auto timeout) {
         return this->test_attack_cast_spells(bots, timeout);
     });
 
-    this->_test_functions.emplace_back("Multi-Target Attack Cast Spells", [this](const auto& bots, auto timeout) {
+    this->_test_functions.emplace_back("Multi-Target Attack Cast Spells", [this](auto& bots, auto timeout) {
         return this->test_multi_target_attack_cast_spells(bots, timeout);
     });
 
     fb::logger::info("Initialized {} test functions", this->_test_functions.size());
 }
 
-async::task<bool> skill_test::execute_test_functions(const std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                     std::chrono::milliseconds                              timeout)
+async::task<bool> skill_test::execute_test_functions(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
+                                                     std::chrono::milliseconds                        timeout)
 {
     fb::logger::info("Executing {} test functions", this->_test_functions.size());
 
