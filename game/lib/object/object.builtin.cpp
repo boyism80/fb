@@ -794,10 +794,10 @@ int object::builtin::builtin_is(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto type = lua->tonumber(2);
+    auto type = lua->toenum(2, OBJECT_TYPE::UNKNOWN);
     auto weak = obj->weak_from_this_as<object>();
     return lua->ensure_yield(*ctx, weak, [=]() {
-        auto matched = obj->is(OBJECT_TYPE(type));
+        auto matched = obj->is(type);
         return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushboolean(matched);
             return 1;
