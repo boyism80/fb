@@ -286,7 +286,9 @@ void fb::game::trade::assert_exchange(const fb::game::trade& trade) const
     if (0xFFFFFFFF - trade.money() < this->_owner.money())
         throw std::runtime_error(_TEXT(MESSAGE_MONEY_FULL));
 
-    auto free_size = this->_owner.items.free_size();
+    if (this->_owner.items.free_size() < trade.items().size())
+        throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
+
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto item = this->_owner.items[i];
@@ -302,13 +304,8 @@ void fb::game::trade::assert_exchange(const fb::game::trade& trade) const
             continue;
 
         if (model.capacity < item->count() + found->trade_count() - item->trade_count())
-            continue;
-
-        free_size++;
+            throw std::runtime_error(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
     }
-
-    if (free_size < trade.items().size())
-        throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
 }
 
 void fb::game::trade::exchange(trade& trade1, trade& trade2)

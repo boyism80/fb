@@ -5,6 +5,8 @@
 #include <fb/game/protocol.h>
 #include <fb/model/model.h>
 #include <fb/game/trade.h>
+#include <queue>
+#include <functional>
 
 using namespace std::chrono_literals;
 
@@ -46,7 +48,8 @@ async::task<void> trade_test::initialize(game_bot_controller& controller)
 
 async::task<bool> trade_test::execute()
 {
-    constexpr auto timeout = 1h;
+    constexpr auto timeout  = 1h;
+    constexpr auto interval = 100ms;
 
     if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
         co_return false;
@@ -63,44 +66,45 @@ async::task<bool> trade_test::execute()
 
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
+    co_await bot2->move(DIRECTION::RIGHT, 1, interval);
+    co_await bot2->thread()->switching();
+    co_await bot2->thread()->sleep(interval);
+    bot2->direction(DIRECTION::BOTTOM);
 
     fb::logger::info("Starting trade test with bot1: '{}' and bot2: '{}'", bot1->name(), bot2->name());
 
-    // Test 1: Successful trade
-    if (!co_await this->test_scenario_1(bot1, bot2, timeout))
-    {
-        fb::logger::fatal("Trade test scenario 1 FAILED");
-        this->set_state(test_state::failed);
-        co_return false;
-    }
-    fb::logger::info("Trade test scenario 1 PASSED");
+    using scenario_fn = std::function<async::task<bool>()>;
+    std::queue<scenario_fn> scenarios;
+    scenarios.push([this, &bot1, &bot2, timeout] {
+        return this->test_scenario_1(bot1, bot2, timeout);
+    });
+    scenarios.push([this, &bot1, &bot2, timeout] {
+        return this->test_scenario_2(bot1, bot2, timeout);
+    });
+    scenarios.push([this, &bot1, &bot2, timeout] {
+        return this->test_scenario_3(bot1, bot2, timeout);
+    });
+    scenarios.push([this, &bot1, &bot2, timeout] {
+        return this->test_scenario_4(bot1, bot2, timeout);
+    });
 
-    // Test 2: Money overflow
-    if (!co_await this->test_scenario_2(bot1, bot2, timeout))
+    int i = 1;
+    while (scenarios.empty() == false)
     {
-        fb::logger::fatal("Trade test scenario 2 FAILED");
-        this->set_state(test_state::failed);
-        co_return false;
-    }
-    fb::logger::info("Trade test scenario 2 PASSED");
+        co_await this->reset_bot_state(bot1, timeout);
+        co_await this->reset_bot_state(bot2, timeout);
 
-    // Test 3: Item stack overflow
-    if (!co_await this->test_scenario_3(bot1, bot2, timeout))
-    {
-        fb::logger::fatal("Trade test scenario 3 FAILED");
-        this->set_state(test_state::failed);
-        co_return false;
-    }
-    fb::logger::info("Trade test scenario 3 PASSED");
+        auto& scenario = scenarios.front();
+        if (co_await scenario() == false)
+        {
+            fb::logger::fatal("Trade test scenario {} FAILED", i);
+            this->set_state(test_state::failed);
+            co_return false;
+        }
 
-    // Test 4: Inventory full
-    if (!co_await this->test_scenario_4(bot1, bot2, timeout))
-    {
-        fb::logger::fatal("Trade test scenario 4 FAILED");
-        this->set_state(test_state::failed);
-        co_return false;
+        fb::logger::info("Trade test scenario {} PASSED", i++);
+        scenarios.pop();
     }
-    fb::logger::info("Trade test scenario 4 PASSED");
 
     fb::logger::info("All trade test scenarios PASSED");
     this->set_state(test_state::completed);
@@ -196,10 +200,6 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
                                               std::shared_ptr<game_bot>& bot2,
                                               const fb::model::timespan& timeout)
 {
-
-    co_await this->reset_bot_state(bot1, timeout);
-    co_await this->reset_bot_state(bot2, timeout);
-
     // 2. Bot1 creates 150 도토리, 1 부적, and changes money to 10000.
     co_await bot1->create_item("도토리", 150, timeout); // slot 0
     co_await bot1->create_item("부적", 1, timeout);     // slot 1
@@ -423,10 +423,19 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         timeout);
     bot2->chat("Scenario 1: Bot2 locked the trade, completing it.");
 
+    auto thread = bot1->thread();
+    co_await thread->switching();
+    co_await thread->sleep(500ms);
+
     // 10. Verify that items and money have been swapped between Bot1 and Bot2.
-    if (bot1->money() != 20000 || bot2->money() != 10000)
+    if (bot1->money() != 20000)
     {
-        fb::logger::fatal("Money not swapped correctly. bot1: %d, bot2: %d", bot1->money(), bot2->money());
+        fb::logger::fatal("Money not swapped correctly. bot1: {}, bot2: {}", bot1->money(), bot2->money());
+        co_return false;
+    }
+    if (bot2->money() != 10000)
+    {
+        fb::logger::fatal("Money not swapped correctly. bot1: {}, bot2: {}", bot1->money(), bot2->money());
         co_return false;
     }
 
@@ -461,14 +470,11 @@ async::task<bool> trade_test::test_scenario_2(std::shared_ptr<game_bot>& bot1,
                                               std::shared_ptr<game_bot>& bot2,
                                               const fb::model::timespan& timeout)
 {
-
-    co_await this->reset_bot_state(bot1, timeout);
-    co_await this->reset_bot_state(bot2, timeout);
-
+    // 1. Set bot1's money to max and bot2's to 1.
     co_await bot1->change_money(0xFFFFFFFF, timeout);
     co_await bot2->change_money(1, timeout);
 
-    // Start trade
+    // 2. Start trade.
     co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::REQUEST, bot2->oid(), {}),
         [oid = bot2->oid()](auto& resp) -> bool {
@@ -481,8 +487,9 @@ async::task<bool> trade_test::test_scenario_2(std::shared_ptr<game_bot>& bot1,
             return true;
         },
         timeout);
+    bot1->chat("Scenario 2: Trade initiated for money overflow test.");
 
-    // Bot2 puts up 1 gold.
+    // 3. Bot2 puts up 1 gold.
     co_await bot2->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::UP_MONEY,
                                            bot1->oid(),
@@ -491,25 +498,42 @@ async::task<bool> trade_test::test_scenario_2(std::shared_ptr<game_bot>& bot1,
             return resp.type == fb::bot::integration::trade_bot::trade_type::money;
         },
         timeout);
+    bot2->chat("Scenario 2: Bot2 puts up 1 gold.");
 
-    // Both bots lock the trade.
+    // 4. Both bots lock the trade, expecting failure.
     co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::LOCK, bot2->oid(), {}),
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::lock;
         },
         timeout);
+    bot1->chat("Scenario 2: Bot1 locked the trade.");
 
-    auto fail_msg_bot2 = co_await bot2->request<fb::protocol::game::response::message>(
+    co_await bot2->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::LOCK, bot1->oid(), {}),
-        timeout);
-    if (fail_msg_bot2.text.find(_TEXT(MESSAGE_MONEY_FULL)) == std::string::npos)
-    {
-        fb::logger::fatal("Scenario 2 failed: bot2 did not receive money full message.");
-        co_return false;
-    }
+        [](auto& resp) {
+            if (resp.type != fb::bot::integration::trade_bot::trade_type::close)
+            {
+                fb::logger::fatal("Scenario 2: wrong response type, expected close but got {}", int(resp.type));
+                return false;
+            }
 
-    // Verify money.
+            if (resp.close_message.find(_TEXT(MESSAGE_TRADE_FAILED)) == std::string::npos)
+            {
+                fb::logger::fatal("Scenario 2: did not receive money full message. Got: {}", resp.close_message);
+                return false;
+            }
+
+            return true;
+        },
+        timeout);
+    bot2->chat("Scenario 2: Bot2 tried to lock, trade failed as expected.");
+
+    auto thread = bot1->thread();
+    co_await thread->switching();
+    co_await thread->sleep(500ms);
+
+    // 5. Verify money has not changed.
     if (bot1->money() != 0xFFFFFFFF || bot2->money() != 1)
     {
         fb::logger::fatal("Scenario 2 failed: money was changed.");
@@ -523,13 +547,11 @@ async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1,
                                               std::shared_ptr<game_bot>& bot2,
                                               const fb::model::timespan& timeout)
 {
-
-    co_await this->reset_bot_state(bot1, timeout);
-    co_await this->reset_bot_state(bot2, timeout);
-
+    // 1. Give each bot 150 도토리.
     co_await bot1->create_item("도토리", 150, timeout);
     co_await bot2->create_item("도토리", 150, timeout);
 
+    // 2. Start trade.
     co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::REQUEST, bot2->oid(), {}),
         [oid = bot2->oid()](auto& resp) -> bool {
@@ -542,7 +564,9 @@ async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1,
             return true;
         },
         timeout);
+    bot1->chat("Scenario 3: Trade initiated for item stack overflow test.");
 
+    // 3. Bot1 puts up 150 도토리.
     co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::UP_ITEM,
                                            bot2->oid(),
@@ -551,6 +575,7 @@ async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1,
             return resp.type == fb::bot::integration::trade_bot::trade_type::bundle;
         },
         timeout);
+    bot1->chat("Scenario 3: Bot1 puts up 도토리.");
     co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::ITEM_COUNT,
                                            bot2->oid(),
@@ -559,23 +584,43 @@ async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1,
             return resp.type == fb::bot::integration::trade_bot::trade_type::upload;
         },
         timeout);
+    bot1->chat("Scenario 3: Bot1 sets item count.");
 
+    // 4. Both bots lock the trade, expecting failure.
     co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::LOCK, bot2->oid(), {}),
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::lock;
         },
         timeout);
+    bot1->chat("Scenario 3: Bot1 locked the trade.");
 
-    auto fail_msg_bot2 = co_await bot2->request<fb::protocol::game::response::message>(
+    co_await bot2->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::LOCK, bot1->oid(), {}),
-        timeout);
-    if (fail_msg_bot2.text.find("최대") == std::string::npos) // Check for message indicating max capacity
-    {
-        fb::logger::fatal("Scenario 3 failed: bot2 did not receive item capacity message.");
-        co_return false;
-    }
+        [](auto& resp) {
+            if (resp.type != fb::bot::integration::trade_bot::trade_type::close)
+            {
+                fb::logger::fatal("Scenario 3: wrong response type, expected close but got {}", int(resp.type));
+                return false;
+            }
 
+            if (resp.close_message.find(_TEXT(MESSAGE_TRADE_FAILED)) ==
+                std::string::npos) // Check for message indicating max capacity
+            {
+                fb::logger::fatal("Scenario 3: did not receive item capacity message. Got: {}", resp.close_message);
+                return false;
+            }
+
+            return true;
+        },
+        timeout);
+    bot2->chat("Scenario 3: Bot2 tried to lock, trade failed as expected.");
+
+    auto thread = bot1->thread();
+    co_await thread->switching();
+    co_await thread->sleep(500ms);
+
+    // 5. Verify item counts have not changed.
     if (this->get_item_count(bot1, "도토리") != 150 || this->get_item_count(bot2, "도토리") != 150)
     {
         fb::logger::fatal("Scenario 3 failed: item counts were changed.");
@@ -591,15 +636,14 @@ async::task<bool> trade_test::test_scenario_4(std::shared_ptr<game_bot>& bot1,
 {
     constexpr auto CONTAINER_CAPACITY = 52;
 
-    co_await this->reset_bot_state(bot1, timeout);
-    co_await this->reset_bot_state(bot2, timeout);
-
+    // 1. Fill bot1's inventory and give bot2 one item.
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         co_await bot1->create_item("목도", 1, timeout);
     }
     co_await bot2->create_item("현철중검", 1, timeout);
 
+    // 2. Start trade.
     co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::REQUEST, bot2->oid(), {}),
         [oid = bot2->oid()](auto& resp) -> bool {
@@ -612,7 +656,9 @@ async::task<bool> trade_test::test_scenario_4(std::shared_ptr<game_bot>& bot1,
             return true;
         },
         timeout);
+    bot1->chat("Scenario 4: Trade initiated for inventory full test.");
 
+    // 3. Bot2 puts up its item.
     co_await bot2->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::UP_ITEM,
                                            bot1->oid(),
@@ -621,23 +667,42 @@ async::task<bool> trade_test::test_scenario_4(std::shared_ptr<game_bot>& bot1,
             return resp.type == fb::bot::integration::trade_bot::trade_type::upload;
         },
         timeout);
+    bot2->chat("Scenario 4: Bot2 puts up an item.");
 
+    // 4. Both bots lock the trade, expecting failure.
     co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::LOCK, bot2->oid(), {}),
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::lock;
         },
         timeout);
+    bot1->chat("Scenario 4: Bot1 locked the trade.");
 
-    auto fail_msg_bot2 = co_await bot2->request<fb::protocol::game::response::message>(
+    co_await bot2->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::LOCK, bot1->oid(), {}),
-        timeout);
-    if (fail_msg_bot2.text.find(_TEXT(MESSAGE_ITEM_FULL)) == std::string::npos)
-    {
-        fb::logger::fatal("Scenario 4 failed: bot2 did not receive item full message.");
-        co_return false;
-    }
+        [](auto& resp) {
+            if (resp.type != fb::bot::integration::trade_bot::trade_type::close)
+            {
+                fb::logger::fatal("Scenario 4: wrong response type, expected close but got {}", int(resp.type));
+                return false;
+            }
 
+            if (resp.close_message.find(_TEXT(MESSAGE_TRADE_FAILED)) == std::string::npos)
+            {
+                fb::logger::fatal("Scenario 4: did not receive item full message. Got: {}", resp.close_message);
+                return false;
+            }
+
+            return true;
+        },
+        timeout);
+    bot2->chat("Scenario 4: Bot2 tried to lock, trade failed as expected.");
+
+    auto thread = bot1->thread();
+    co_await thread->switching();
+    co_await thread->sleep(500ms);
+
+    // 5. Verify items have not been swapped.
     if (this->has_item(bot1, "현철중검") || !this->has_item(bot2, "현철중검"))
     {
         fb::logger::fatal("Scenario 4 failed: items were swapped.");

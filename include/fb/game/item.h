@@ -1324,14 +1324,6 @@ public:
      */
     std::shared_ptr<fb::game::item> find(const fb::model::item& model) const;
     /**
-     * @brief      Finds a stackable item bundle by model.
-     *
-     * @param[in]  model  The item model to search for
-     *
-     * @return     Pointer to a stackable item bundle, or nullptr if not found
-     */
-    std::shared_ptr<fb::game::item> find_bundle(const fb::model::item& model) const;
-    /**
      * @brief      Drops items from inventory to the ground.
      *
      * @param[in]  index        The inventory slot index

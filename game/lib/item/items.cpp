@@ -716,14 +716,6 @@ std::shared_ptr<fb::game::item> fb::game::items::find(const fb::model::item& mod
     return nullptr;
 }
 
-std::shared_ptr<fb::game::item> fb::game::items::find_bundle(const fb::model::item& model) const
-{
-    if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
-        return nullptr;
-
-    return std::static_pointer_cast<fb::game::item>(this->find(model));
-}
-
 std::shared_ptr<fb::game::item>
 fb::game::items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
 {

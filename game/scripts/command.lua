@@ -382,7 +382,7 @@ command_funcs = {
     ['금전'] = 
     function (me, args)
         local money = table.unpack(args)
-        me:money(me:money() + tonumber(money))
+        me:money(tonumber(money))
         return true
     end,
 
@@ -436,7 +436,7 @@ command_funcs = {
     ['아이템초기화'] = 
     function (me, args)
         for slot, item in pairs(me:items()) do
-            me:rmitem(slot)
+            me:rmitem(slot, item:count())
         end
         return true
     end,
