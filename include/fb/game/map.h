@@ -189,7 +189,21 @@ public:
     bool in_ground(const fb::model::point16_t position) const;
 
     /**
+     * @brief      Checks if a position is movable with a custom predicate.
+     *
+     * @param[in]  position     The target position to check for movement validity
+     * @param[in]  predicate    The predicate function to check object properties
+     *
+     * @return     True if the position is movable, false if blocked
+     */
+    bool movable(const fb::model::point16_t& position, const std::function<bool(const object&)>& predicate) const;
+
+    /**
      * @brief      Checks if an object can move to a specific position on the map.
+     *
+     * @warning    Care must be taken when calling this method as thread safety issues may arise
+     *             if the object and map are running on different threads. The object's thread
+     *             and map's thread must be properly synchronized to avoid race conditions.
      *
      * @param[in]  position  The target position to check for movement validity
      *

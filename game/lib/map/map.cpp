@@ -153,7 +153,7 @@ bool map::in_ground(const fb::model::point16_t position) const
     return position.x < this->_size.width && position.y < this->_size.height;
 }
 
-bool map::movable(const object& object, const fb::model::point16_t position) const
+bool map::movable(const fb::model::point16_t& position, const std::function<bool(const object&)>& predicate) const
 {
     if (this->in_ground(position) == false)
         return false;
@@ -167,10 +167,10 @@ bool map::movable(const object& object, const fb::model::point16_t position) con
 
     for (const auto& [key, value] : this->objects)
     {
-        if (value->hidden(object))
+        if (value->is(OBJECT_TYPE::ITEM))
             continue;
 
-        if (value->is(OBJECT_TYPE::ITEM))
+        if (predicate(*value) == false)
             continue;
 
         if (value->position() == position)
@@ -178,6 +178,13 @@ bool map::movable(const object& object, const fb::model::point16_t position) con
     }
 
     return true;
+}
+
+bool map::movable(const object& object, const fb::model::point16_t position) const
+{
+    return this->movable(position, [&object](const auto& x) {
+        return object.hidden(x);
+    });
 }
 
 bool map::movable(const object& object, DIRECTION direction) const

@@ -1445,6 +1445,15 @@ public:
      * @return     True if this character is hidden from the target, false otherwise
      */
     bool hidden(const fb::game::object& target) const override final;
+
+    /**
+     * @brief      Checks if the character is hidden from a specific role.
+     *
+     * @param[in]  role  The role to check visibility against
+     *
+     * @return     True if the character is hidden from the role, false otherwise
+     */
+    bool hidden(ROLE role) const;
 #pragma endregion
 };
 

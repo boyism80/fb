@@ -90,7 +90,7 @@ async::task<void> context::handle_buff_timer(const fb::model::datetime& now, std
                     else
                         lua->pushobject(buff->caster);
                     lua->pushobject(buff);
-                    co_await lua->call(3);
+                    std::ignore = co_await lua->call(3);
                     continue;
                 }
             }
@@ -156,7 +156,7 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
                         lua->pushobject(ch);
                         lua->pushobject(equipment);
                     }
-                    co_await lua->call(2, false);
+                    std::ignore = co_await lua->call(2, false);
                     co_await this->threads.switching(weak);
                 }
                 catch (std::exception& e)

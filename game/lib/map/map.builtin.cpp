@@ -155,6 +155,8 @@ int map::builtin::builtin_movable(lua_State* L)
         return 0;
 
     auto position = fb::model::point16_t();
+    auto is_front = false;
+    auto step     = 0;
     if (lua->is_table(3))
     {
         lua->rawgeti(3, 1);
@@ -172,8 +174,8 @@ int map::builtin::builtin_movable(lua_State* L)
     }
     else if (lua->is_number(3))
     {
-        auto step = lua->tointeger(3);
-        position  = obj->front_position(step);
+        step     = lua->tointeger(3);
+        is_front = true;
     }
     else
     {
@@ -181,14 +183,39 @@ int map::builtin::builtin_movable(lua_State* L)
         return 1;
     }
 
-    auto weak = map->weak_from_this_as<fb::game::map>();
-    return lua->ensure_yield(*ctx, weak, [=]() {
-        auto result = map->movable(*obj, position);
-        return lua->ensure_resume(*ctx, weak, [=]() {
-            lua->pushboolean(result);
-            return 1;
-        });
-    });
+    auto weak = obj->weak_from_this_as<fb::game::object>();
+    return lua->ensure_yield(
+        *ctx,
+        weak,
+        [=]() mutable {
+            auto role = ROLE::USER;
+            if (obj->is(OBJECT_TYPE::CHARACTER))
+                role = static_cast<character*>(obj.get())->role();
+
+            if (is_front)
+                position = obj->front_position(step);
+
+            auto map_weak = map->weak_from_this_as<fb::game::map>();
+            return lua->ensure_yield(
+                *ctx,
+                map_weak,
+                [=]() {
+                    auto result = map->movable(position, [=](const auto& obj) -> bool {
+                        if (obj.is(OBJECT_TYPE::CHARACTER) == false)
+                            return true;
+
+                        auto ch = std::static_pointer_cast<character>(obj);
+                        return !ch->hidden(role);
+                    });
+
+                    return lua->ensure_resume(*ctx, map_weak, [=]() {
+                        lua->pushboolean(result);
+                        return 1;
+                    });
+                },
+                true);
+        },
+        false);
 }
 
 int map::builtin::builtin_door(lua_State* L)

@@ -1856,6 +1856,11 @@ bool character::hidden(const fb::game::object& target) const
     return this->role() > ch.role();
 }
 
+bool character::hidden(ROLE role) const
+{
+    return this->role() > role;
+}
+
 async::task<void> character::death_penalty()
 {
     auto buff_keys = std::vector<uint32_t>{};

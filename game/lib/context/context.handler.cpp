@@ -772,7 +772,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
         lua->pushobject(ch);
         lua->pushstring(request.message);
         lua->pushboolean(request.shout);
-        co_await lua->call(3, false);
+        std::ignore = co_await lua->call(3, false);
         if (weak.expired())
         {
             lua->release();
@@ -1168,7 +1168,7 @@ async::task<bool> context::handle_door(fb::socket<character>& socket, const fb_r
 
     lua->func("on_door");
     lua->pushobject(ch);
-    co_await lua->call(1);
+    std::ignore = co_await lua->call(1);
     co_return true;
 }
 
