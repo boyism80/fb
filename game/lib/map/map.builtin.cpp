@@ -204,8 +204,8 @@ int map::builtin::builtin_movable(lua_State* L)
                         if (obj.is(OBJECT_TYPE::CHARACTER) == false)
                             return true;
 
-                        auto ch = std::static_pointer_cast<character>(obj);
-                        return !ch->hidden(role);
+                        auto& ch = static_cast<const character&>(obj);
+                        return !ch.hidden(role);
                     });
 
                     return lua->ensure_resume(*ctx, map_weak, [=]() {

@@ -119,7 +119,9 @@ int object::builtin::builtin_destroy(lua_State* L)
 
     auto weak = obj->weak_from_this_as<object>();
     return lua->ensure_yield(*ctx, weak, [=]() {
-        obj->destroy();
+        // TODO: Need to verify that the destructor is called when the object is destroyed and ensure_resume's callback
+        // is properly invoked
+        std::ignore = obj->destroy();
         return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
         });
