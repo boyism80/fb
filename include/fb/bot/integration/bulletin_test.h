@@ -3,6 +3,7 @@
 
 #include <optional>
 #include <fb/bot/integration/test_case.h>
+#include <fb/bot/integration/bulletin_bot.h>
 
 namespace fb::bot::integration {
 
@@ -72,7 +73,7 @@ public:
      * @return     A task that completes when bulletin article read test finishes, returning true if the response
      * contains valid article data.
      */
-    async::task<bool> read_article(std::shared_ptr<fb::bot::game_bot> bot, uint16_t section, uint16_t article_id);
+    async::task<void> read_article(std::shared_ptr<fb::bot::game_bot> bot, uint16_t section, uint16_t article_id);
 
     /**
      * @brief      Tests bulletin article delete functionality.
@@ -83,7 +84,7 @@ public:
      * @return     A task that completes when bulletin article delete test finishes, returning true if the response
      * indicates successful deletion.
      */
-    async::task<bool> delete_article(std::shared_ptr<fb::bot::game_bot> bot, uint16_t section, uint16_t article_id);
+    async::task<void> delete_article(std::shared_ptr<fb::bot::game_bot> bot, uint16_t section, uint16_t article_id);
 
     /**
      * @brief      Resets the bulletin test state to initial conditions.

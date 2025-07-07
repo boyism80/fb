@@ -184,38 +184,34 @@ int map::builtin::builtin_movable(lua_State* L)
     }
 
     auto weak = obj->weak_from_this_as<fb::game::object>();
-    return lua->ensure_yield(
-        *ctx,
-        weak,
-        [=]() mutable {
-            auto role = ROLE::USER;
-            if (obj->is(OBJECT_TYPE::CHARACTER))
-                role = static_cast<character*>(obj.get())->role();
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) mutable {
+        auto role = ROLE::USER;
+        if (obj->is(OBJECT_TYPE::CHARACTER))
+            role = static_cast<character*>(obj.get())->role();
 
-            if (is_front)
-                position = obj->front_position(step);
+        if (is_front)
+            position = obj->front_position(step);
 
-            auto map_weak = map->weak_from_this_as<fb::game::map>();
-            return lua->ensure_yield(
-                *ctx,
-                map_weak,
-                [=]() {
-                    auto result = map->movable(position, [=](const auto& obj) -> bool {
-                        if (obj.is(OBJECT_TYPE::CHARACTER) == false)
-                            return true;
+        auto map_weak = map->weak_from_this_as<fb::game::map>();
+        return lua->ensure_yield(
+            *ctx,
+            map_weak,
+            [=](auto is_yield) {
+                auto result = map->movable(position, [=](const auto& obj) -> bool {
+                    if (obj.is(OBJECT_TYPE::CHARACTER) == false)
+                        return true;
 
-                        auto& ch = static_cast<const character&>(obj);
-                        return !ch.hidden(role);
-                    });
+                    auto& ch = static_cast<const character&>(obj);
+                    return !ch.hidden(role);
+                });
 
-                    return lua->ensure_resume(*ctx, map_weak, [=]() {
-                        lua->pushboolean(result);
-                        return 1;
-                    });
-                },
-                true);
-        },
-        false);
+                return lua->ensure_resume(*ctx, map_weak, [=]() {
+                    lua->pushboolean(result);
+                    return 1;
+                });
+            },
+            is_yield);
+    });
 }
 
 int map::builtin::builtin_door(lua_State* L)
@@ -376,7 +372,7 @@ int map::builtin::builtin_at(lua_State* L)
     auto position = fb::model::point16_t{x, y};
 
     auto weak = map->weak_from_this_as<fb::game::map>();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto nears  = map->nears(fb::model::point16_t{x, y}, type);
         auto result = std::shared_ptr<object>(nullptr);
         for (auto obj : nears)

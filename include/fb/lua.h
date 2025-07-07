@@ -1200,7 +1200,7 @@ public:
      */
     int ensure_yield(fb::context&                         ctx,
                      std::weak_ptr<fb::thread_switchable> weak,
-                     std::function<int()>                 fn,
+                     std::function<int(bool)>             fn,
                      bool                                 no_yield = false);
 
     /**

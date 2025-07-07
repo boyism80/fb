@@ -98,7 +98,7 @@ async::task<bool> bulletin_test::execute()
     bot->chat("=== TESTING BULLETIN ARTICLE LIST TO FIND OUR ARTICLE ===");
 
     // Find our written article from section 1 (general section)
-    auto found_article_id = co_await this->find_my_article(bot, 1, 0);
+    auto found_article_id = co_await this->find_my_article(bot, 1, 0x7FFF);
     if (!found_article_id.has_value())
     {
         fb::logger::fatal("Failed to find our written article");
@@ -114,29 +114,14 @@ async::task<bool> bulletin_test::execute()
     fb::logger::info("Testing bulletin article read functionality");
     bot->chat("=== TESTING BULLETIN ARTICLE READ ===");
 
-    if (!co_await this->read_article(bot, 1, found_article_id.value()))
-    {
-        fb::logger::fatal("Bulletin article read test failed");
-        bot->chat("=== BULLETIN ARTICLE READ TEST FAILED ===");
-        this->set_state(test_state::failed);
-        co_return false;
-    }
-
-    fb::logger::info("Bulletin article read test successful");
+    co_await this->read_article(bot, 1, found_article_id.value());
     bot->chat("=== BULLETIN ARTICLE READ TEST COMPLETED SUCCESSFULLY ===");
 
     // Test deleting our article
     fb::logger::info("Testing bulletin article delete functionality");
     bot->chat("=== TESTING BULLETIN ARTICLE DELETE ===");
 
-    if (!co_await this->delete_article(bot, 1, found_article_id.value()))
-    {
-        fb::logger::fatal("Bulletin article delete test failed");
-        bot->chat("=== BULLETIN ARTICLE DELETE TEST FAILED ===");
-        this->set_state(test_state::failed);
-        co_return false;
-    }
-
+    co_await this->delete_article(bot, 1, found_article_id.value());
     fb::logger::info("Bulletin article delete test successful");
     bot->chat("=== BULLETIN ARTICLE DELETE TEST COMPLETED SUCCESSFULLY ===");
 
@@ -160,13 +145,14 @@ async::task<bool> bulletin_test::write(std::shared_ptr<fb::bot::game_bot> bot,
         co_return false;
 
     // Send the request and wait for response
-    auto&& resp = co_await bot->request<fb::protocol::game::response::bulletin_message>(
+    auto&& resp = co_await bot->request<fb::bot::integration::bulletin_bot>(
         fb::protocol::game::request::bulletin(BULLETIN_ACTION::WRITE, 1, 0, 0, title, contents),
         timeout);
 
     // Check if the response indicates success
     auto expected_message = _TEXT(MESSAGE_BULLETIN_WRITE);
-    if (resp.text == expected_message)
+    if (resp.type == fb::bot::integration::bulletin_bot::bulletin_type::message &&
+        resp.message_text == expected_message)
         co_return true;
     else
         co_return false;
@@ -182,105 +168,100 @@ async::task<std::optional<uint16_t>> bulletin_test::find_my_article(std::shared_
         co_return std::nullopt;
 
     // Send the request and wait for response
-    auto&& resp = co_await bot->request<fb::protocol::game::response::bulletin_articles>(
-        fb::protocol::game::request::bulletin(BULLETIN_ACTION::ARTICLES, section, offset),
+    auto&& resp = co_await bot->request<fb::bot::integration::bulletin_bot>(
+        fb::protocol::game::request::bulletin(BULLETIN_ACTION::ARTICLES, section, 0, offset),
+        [section](auto& resp) -> bool {
+            if (resp.type != fb::bot::integration::bulletin_bot::bulletin_type::articles)
+                return false;
+
+            if (resp.articles_bulletin_id != section)
+                return false;
+
+            return true;
+        },
         timeout);
 
-    // Check if the response contains valid data
-    if (resp.bulletin_id == section && !resp.bulletin_name.empty())
-    {
-        fb::logger::info("Bulletin articles retrieved successfully - Section: {}, Name: {}, Articles: {}",
-                         resp.bulletin_id,
-                         resp.bulletin_name,
-                         resp.articles.size());
+    fb::logger::info("Bulletin articles retrieved successfully - Section: {}, Name: {}, Articles: {}",
+                     resp.articles_bulletin_id,
+                     resp.articles_bulletin_name,
+                     resp.articles.size());
 
-        // Find articles written by this bot
-        auto bot_name = bot->name();
-        for (const auto& article : resp.articles)
+    // Find articles written by this bot
+    auto& bot_name = bot->name();
+    for (const auto& article : resp.articles)
+    {
+        fb::logger::debug("Article - ID: {}, Title: {}, Author: {}, Date: {}/{}",
+                          article.id,
+                          article.title,
+                          article.uname,
+                          article.month,
+                          article.day);
+
+        // Check if this article was written by our bot
+        if (article.uname == bot_name)
         {
-            fb::logger::debug("Article - ID: {}, Title: {}, Author: {}, Date: {}/{}",
-                              article.id,
-                              article.title,
-                              article.uname,
-                              article.month,
-                              article.day);
-
-            // Check if this article was written by our bot
-            if (article.uname == bot_name)
-            {
-                fb::logger::info("Found article written by bot - ID: {}, Title: {}", article.id, article.title);
-                co_return article.id;
-            }
+            fb::logger::info("Found article written by bot - ID: {}, Title: {}", article.id, article.title);
+            co_return article.id;
         }
+    }
 
-        fb::logger::warn("No articles found written by bot: {}", bot_name);
-        co_return std::nullopt;
-    }
-    else
-    {
-        fb::logger::fatal("Bulletin articles response invalid - Section: {}, Name: {}",
-                          resp.bulletin_id,
-                          resp.bulletin_name);
-        co_return std::nullopt;
-    }
+    fb::logger::warn("No articles found written by bot: {}", bot_name);
+    co_return std::nullopt;
 }
 
-async::task<bool> bulletin_test::read_article(std::shared_ptr<fb::bot::game_bot> bot,
+async::task<void> bulletin_test::read_article(std::shared_ptr<fb::bot::game_bot> bot,
                                               uint16_t                           section,
                                               uint16_t                           article_id)
 {
     constexpr auto timeout = 10s;
 
     if (bot == nullptr || article_id == 0)
-        co_return false;
+        co_return;
 
     // Send the request and wait for response
-    auto&& resp = co_await bot->request<fb::protocol::game::response::bulletin_article>(
+    auto&& resp = co_await bot->request<fb::bot::integration::bulletin_bot>(
         fb::protocol::game::request::bulletin(BULLETIN_ACTION::ARTICLE, section, article_id),
+        [article_id](auto& resp) -> bool {
+            if (resp.type != fb::bot::integration::bulletin_bot::bulletin_type::article)
+                return false;
+
+            if (resp.article_id != article_id)
+                return false;
+
+            return true;
+        },
         timeout);
 
-    // Check if the response contains valid article data
-    if (resp.id == article_id && !resp.title.empty())
-    {
-        fb::logger::info("Bulletin article read successfully - ID: {}, Title: {}, Author: {}",
-                         resp.id,
-                         resp.title,
-                         resp.uname);
-        co_return true;
-    }
-    else
-    {
-        fb::logger::fatal("Bulletin article read failed - Expected ID: {}, Got ID: {}", article_id, resp.id);
-        co_return false;
-    }
+    fb::logger::info("Bulletin article read successfully - ID: {}, Title: {}, Author: {}",
+                     resp.article_id,
+                     resp.article_title,
+                     resp.article_uname);
 }
 
-async::task<bool> bulletin_test::delete_article(std::shared_ptr<fb::bot::game_bot> bot,
+async::task<void> bulletin_test::delete_article(std::shared_ptr<fb::bot::game_bot> bot,
                                                 uint16_t                           section,
                                                 uint16_t                           article_id)
 {
     constexpr auto timeout = 10s;
 
     if (bot == nullptr || article_id == 0)
-        co_return false;
+        co_return;
 
     // Send the request and wait for response
-    auto&& resp = co_await bot->request<fb::protocol::game::response::bulletin_message>(
+    auto&& resp = co_await bot->request<fb::bot::integration::bulletin_bot>(
         fb::protocol::game::request::bulletin(BULLETIN_ACTION::DELETE, section, article_id),
+        [article_id](auto& resp) -> bool {
+            if (resp.type != fb::bot::integration::bulletin_bot::bulletin_type::message)
+                return false;
+
+            if (resp.message_text != _TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE))
+                return false;
+
+            return true;
+        },
         timeout);
 
-    // Check if the response indicates success
-    auto expected_message = _TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE);
-    if (resp.text == expected_message)
-    {
-        fb::logger::info("Bulletin article deleted successfully - ID: {}", article_id);
-        co_return true;
-    }
-    else
-    {
-        fb::logger::fatal("Bulletin article delete failed - ID: {}, Response: {}", article_id, resp.text);
-        co_return false;
-    }
+    fb::logger::info("Bulletin article deleted successfully - ID: {}", article_id);
 }
 
 void bulletin_test::reset()

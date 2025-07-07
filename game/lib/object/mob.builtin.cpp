@@ -27,7 +27,7 @@ int mob::builtin::builtin_target(lua_State* L)
     if (argc == 1)
     {
         auto weak = mob->weak_from_this_as<fb::game::mob>();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto target = mob->target();
             return lua->ensure_resume(*ctx, weak, [=]() {
                 if (target == nullptr)
@@ -42,7 +42,7 @@ int mob::builtin::builtin_target(lua_State* L)
     {
         auto target = lua->touserdata<fb::game::life>(2);
         auto weak   = mob->weak_from_this_as<fb::game::mob>();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             mob->target(target);
             return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
@@ -66,7 +66,7 @@ int mob::builtin::builtin_oblivion(lua_State* L)
     if (argc == 1)
     {
         auto weak = mob->weak_from_this_as<fb::game::mob>();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto oblivion = mob->oblivion();
             return lua->ensure_resume(*ctx, weak, [=]() {
                 if (oblivion == nullptr)
@@ -81,7 +81,7 @@ int mob::builtin::builtin_oblivion(lua_State* L)
     {
         auto oblivion = lua->touserdata<fb::game::life>(2);
         auto weak     = mob->weak_from_this_as<fb::game::mob>();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             mob->oblivion(oblivion);
             return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
@@ -103,7 +103,7 @@ int mob::builtin::builtin_owner(lua_State* L)
         return 0;
 
     auto weak = mob->weak_from_this_as<fb::game::mob>();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         return lua->ensure_resume(*ctx, weak, [=]() {
             auto owner = mob->owner.lock();
             if (owner == nullptr)
@@ -128,7 +128,7 @@ int mob::builtin::builtin_items(lua_State* L)
         return 0;
 
     auto weak = mob->weak_from_this_as<fb::game::mob>();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto buffer = mob->items();
         return lua->ensure_resume(*ctx, weak, [=]() {
             lua->new_table();

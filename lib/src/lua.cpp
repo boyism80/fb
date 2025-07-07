@@ -283,7 +283,7 @@ void context::pending(bool value)
 
 int context::ensure_yield(fb::context&                         ctx,
                           std::weak_ptr<fb::thread_switchable> weak,
-                          std::function<int()>                 fn,
+                          std::function<int(bool)>             fn,
                           bool                                 no_yield)
 {
     auto shared = weak.lock();
@@ -292,7 +292,7 @@ int context::ensure_yield(fb::context&                         ctx,
 
     if (this->_initial_thread.id() == shared->thread()->id())
     {
-        return fn();
+        return fn(false);
     }
     else
     {
@@ -300,7 +300,7 @@ int context::ensure_yield(fb::context&                         ctx,
             try
             {
                 result();
-                return fn();
+                return fn(true);
             }
             catch (std::exception& e)
             {

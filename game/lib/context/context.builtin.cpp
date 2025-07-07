@@ -150,7 +150,7 @@ int context::builtin::builtin_name2ch(lua_State* L)
     }
 
     auto weak = ch->weak_from_this_as<character>();
-    return lua->ensure_yield(*context, weak, [=]() {
+    return lua->ensure_yield(*context, weak, [=](auto is_yield) {
         return lua->ensure_resume(*context, weak, [=]() {
             lua->pushobject(ch);
             return 1;
@@ -541,7 +541,7 @@ int context::builtin::builtin_mknpc(lua_State* L)
     if (map->thread()->id() == std::this_thread::get_id())
     {
         auto weak = map->weak_from_this();
-        return lua->ensure_yield(*context, weak, [=]() {
+        return lua->ensure_yield(*context, weak, [=](auto is_yield) {
             // Use smart pointer for NPC creation
             auto npc = context->make<fb::game::npc>(*model);
             npc->direction(direction);
@@ -557,7 +557,7 @@ int context::builtin::builtin_mknpc(lua_State* L)
     else
     {
         auto weak = map->weak_from_this();
-        return lua->ensure_yield(*context, weak, [=]() {
+        return lua->ensure_yield(*context, weak, [=](auto is_yield) {
             // Use smart pointer for NPC creation
             auto npc = context->make<fb::game::npc>(*model);
             npc->direction(direction);

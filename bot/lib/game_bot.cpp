@@ -472,7 +472,7 @@ async::task<void> game_bot::change_level(uint8_t level, std::chrono::millisecond
     std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
         fb::protocol::game::request::chat{false, command},
         [level](auto& resp) -> bool {
-            return resp.level == STATE_LEVEL::BASED && resp.ch_level == level;
+            return ENUM_IN(resp.level, STATE_LEVEL::BASED) && resp.ch_level == level;
         },
         timeout);
 }

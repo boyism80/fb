@@ -36,7 +36,7 @@ int example_builtin(lua_State* L) {
 
 #### **Stage 2: Object Thread (Data Access via ensure_yield)**
 ```cpp
-return lua->ensure_yield(*ctx, *obj, [=]() {
+return lua->ensure_yield(*ctx, *obj, [=](auto is_yield) {
     // ALLOWED: Object data access, business logic
     auto value = obj->get_data();
     obj->set_data(new_value);
@@ -71,7 +71,7 @@ int character::builtin::builtin_hp(lua_State* L) {
         return 0;
 
     if (lua->argc() == 1) {  // Getter
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        return lua->ensure_yield(*ctx, *ch, [=](auto is_yield) {
             auto hp_value = ch->hp();  // Object thread: safe access
             
             return lua->ensure_resume(*ctx, *ch, [=]() {
@@ -82,7 +82,7 @@ int character::builtin::builtin_hp(lua_State* L) {
     } else {  // Setter
         auto new_hp = lua->tointeger(2);  // Lua thread: parameter parsing
         
-        return lua->ensure_yield(*ctx, *ch, [=]() {
+        return lua->ensure_yield(*ctx, *ch, [=](auto is_yield) {
             ch->hp(new_hp);  // Object thread: safe modification
             
             return lua->ensure_resume(*ctx, *ch, [=]() {
@@ -105,7 +105,7 @@ int wrong_builtin(lua_State* L) {
     return 1;
     
     // WRONG: Lua operations in object thread
-    return lua->ensure_yield(*ctx, *obj, [=]() {
+    return lua->ensure_yield(*ctx, *obj, [=](auto is_yield) {
         auto value = obj->hp();
         lua->pushinteger(value);  // CRASH: Wrong thread for Lua ops
         return 1;
