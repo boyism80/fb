@@ -32,7 +32,7 @@
 #include <fb/stream.h>
 #include <unordered_map>
 
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      Forward declaration of the character class.
@@ -300,6 +300,6 @@ struct trade::listener_t
     virtual void on_trade_success(character& me, character& you) = 0;
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__TRADE_H__

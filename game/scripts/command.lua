@@ -433,6 +433,14 @@ command_funcs = {
         return true
     end,
 
+    ['아이템초기화'] = 
+    function (me, args)
+        for slot, item in pairs(me:items()) do
+            me:rmitem(slot)
+        end
+        return true
+    end,
+
     ['서버종료'] = 
     function (me, args)
         local delay = table.unpack(args)

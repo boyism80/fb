@@ -325,7 +325,7 @@ void fb::game::trade::exchange(trade& trade1, trade& trade2)
 
             auto split = item->split(trade_count);
             if (split == item)
-                trade._owner.items.remove(item);
+                trade._owner.items.remove(item, item->count(), ITEM_DELETE_TYPE::NONE, true);
 
             buffer.push_back(split);
         }

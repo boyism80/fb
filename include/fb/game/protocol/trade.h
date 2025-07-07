@@ -27,17 +27,35 @@ public:
 
 public:
 #ifndef BOT
-    uint8_t  action;
-    uint32_t fd;
-    params   parameter;
+    fb::game::trade::state action;
+    uint32_t               oid;
+    params                 parameter;
 #else
-    const uint8_t  action;
-    const uint32_t fd;
+    enum class state : uint8_t
+    {
+        REQUEST    = 0x00,
+        UP_ITEM    = 0x01,
+        ITEM_COUNT = 0x02,
+        UP_MONEY   = 0x03,
+        CANCEL     = 0x04,
+        LOCK       = 0x05,
+    };
+
+    const state    action;
+    const uint32_t oid;
     const params   parameter;
 #endif
 
 public:
+#ifndef BOT
     trade() = default;
+#else
+    trade(state action, uint32_t oid, const params& parameter) :
+        action(action),
+        oid(oid),
+        parameter(parameter)
+    { }
+#endif
 
 public:
 #ifdef BOT

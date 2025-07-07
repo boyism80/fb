@@ -501,11 +501,11 @@ async::task<bool> context::handle_trade(fb::socket<character>& socket, const fb_
     if (map == nullptr)
         co_return true;
 
-    auto you = static_cast<character*>(map->objects[request.fd]); // 파트너
+    auto you = static_cast<character*>(map->objects[request.oid]); // 파트너
     if (you == nullptr)
         co_return true;
 
-    switch (static_cast<trade::state>(request.action))
+    switch (request.action)
     {
     case trade::state::REQUEST:
     {
