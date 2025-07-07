@@ -122,24 +122,6 @@ public:
     }
 
     /**
-     * @brief      Called when a bot receives an object ID response.
-     *
-     *             This method is called by the hook system when a bot receives
-     *             an object ID. Derived classes should override this to check
-     *             readiness and notify the controller.
-     *
-     * @param[in]  bot       The bot that received the object ID.
-     * @param[in]  response  The object ID response.
-     *
-     * @return     An async task that completes when processing is finished.
-     */
-    virtual async::task<void> on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response)
-    {
-        // Default implementation does nothing
-        co_return;
-    }
-
-    /**
      * @brief      Notifies the controller that this test is ready to start.
      *
      *             Called by derived classes when they detect they are ready to begin execution.

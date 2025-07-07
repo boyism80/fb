@@ -190,7 +190,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
 
         // Cast the spell
         caster->chat(std::format("Testing {}", spell.name));
-        co_await caster->request<fb::protocol::game::response::update_internal>(
+        std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
             fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", 0, {0, 0}),
             [=](auto& resp) -> bool {
                 return resp.ch_hp == expected_caster_hp && resp.ch_mp == expected_caster_mp;

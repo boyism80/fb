@@ -20,7 +20,7 @@ async::task<bool> skill_test::test_loot_spell(std::vector<std::shared_ptr<fb::bo
         co_return false;
     }
 
-    auto& caster = bots[0];
+    auto& caster = bots.front();
 
     fb::logger::info("Testing loot spell with item and money pickup");
     caster->chat("=== LOOT SPELL TEST STARTED ===");
@@ -40,12 +40,12 @@ async::task<bool> skill_test::test_loot_spell(std::vector<std::shared_ptr<fb::bo
     fb::logger::info("Dropping items and money");
 
     // Drop item
-    co_await caster->request<fb::protocol::game::response::item_remove>(
+    std::ignore = co_await caster->request<fb::protocol::game::response::item_remove>(
         fb::protocol::game::request::item_drop(1, item_count),
         timeout);
 
     // Drop money
-    co_await caster->request<fb::protocol::game::response::update_internal>(
+    std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
         fb::protocol::game::request::item_drop_money(money_amount),
         timeout);
 
@@ -54,23 +54,23 @@ async::task<bool> skill_test::test_loot_spell(std::vector<std::shared_ptr<fb::bo
     // Step 4: Move back to original position and face BOTTOM direction
     fb::logger::info("Moving back to original position");
     co_await caster->move(DIRECTION::TOP, 1, interval);
-    caster->thread()->sleep(500ms);
+    co_await caster->thread()->sleep(500ms);
     caster->direction(DIRECTION::BOTTOM);
 
     // Step 5: Learn and cast loot spell
     fb::logger::info("Learning loot spell");
     auto spell_names = std::vector<std::string>{"노획"};
-    co_await this->learn_spells(caster, spell_names, timeout);
+    std::ignore      = co_await this->learn_spells(caster, spell_names, timeout);
 
     // Set current hp and mp
-    co_await this->set_current_hp_mp(caster, 10000, 1000, timeout);
+    std::ignore = co_await this->set_current_hp_mp(caster, 10000, 1000, timeout);
 
     fb::logger::info("Casting loot spell");
     auto before_mp   = caster->mp();
     auto expected_mp = before_mp - 30; // MP cost for loot spell
 
     // Cast loot spell and wait for item pickup response
-    co_await caster->request<fb::protocol::game::response::item_update>(
+    std::ignore = co_await caster->request<fb::protocol::game::response::item_update>(
         fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 1, "", 0, {0, 0}),
         [item_name, item_count](auto& resp) -> bool {
             return resp.name.starts_with(item_name) && resp.count == item_count;

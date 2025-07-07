@@ -82,7 +82,7 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
         auto [expected_hp, expected_mp] = spell.calculator(caster);
 
         // Cast the spell targeting the monster in front
-        co_await caster->request<fb::protocol::game::response::update_internal>(
+        std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
             fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", target.oid, target.position),
             [=](auto& resp) -> bool {
                 return resp.ch_hp == expected_hp && resp.ch_mp == expected_mp;

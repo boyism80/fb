@@ -302,7 +302,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
             auto before_caster_mp = caster->mp();
             expected_caster_mp    = before_caster_mp - spell.expected_mp_cost;
 
-            auto&& resp = co_await caster->request<fb::protocol::game::response::message>(
+            auto resp = co_await caster->request<fb::protocol::game::response::message>(
                 fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", target_oid, target_position),
                 timeout);
 
@@ -321,7 +321,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
         co_await caster->thread()->sleep(interval);
 
         // Request self_info from target to check buff/debuff
-        co_await actual_target->request<fb::protocol::game::response::spell_buff>(
+        std::ignore = co_await actual_target->request<fb::protocol::game::response::spell_buff>(
             fb::protocol::game::request::self_info(),
             [&](auto& resp) -> bool {
                 return resp.name == spell.name;

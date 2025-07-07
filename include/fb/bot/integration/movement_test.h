@@ -57,7 +57,7 @@ public:
      *
      * @return     "Movement Test" as the identifier.
      */
-    std::string name() const
+    std::string name() const override final
     {
         return "Movement Test";
     }
@@ -77,26 +77,26 @@ public:
     /**
      * @brief      Resets the test state to idle.
      */
-    void reset();
+    void reset() override final;
 
     /**
      * @brief      Checks if the test is ready to start execution.
      *
      * @return     True if the test is ready to start, false otherwise.
      */
-    bool is_ready() const;
+    bool is_ready() const override final;
 
     /**
      * @brief      Called when a bot connects to the test.
      *
      * @param[in]  bot  Shared pointer to the connected bot.
      */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot);
+    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override final;
 
     /**
      * @brief      Performs cleanup operations when the test is destroyed.
      */
-    void cleanup();
+    void cleanup() override final;
 };
 
 } // namespace fb::bot::integration

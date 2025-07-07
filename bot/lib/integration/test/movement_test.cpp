@@ -105,9 +105,6 @@ async::task<bool> movement_test::execute()
 
     fb::logger::info("Movement test completed successfully");
 
-    // Cleanup bots after test completion
-    this->cleanup();
-
     // Notify controller that this test is completed
     this->_controller.notify_test_completed(this);
 
@@ -123,11 +120,12 @@ void movement_test::reset()
 
 bool movement_test::is_ready() const
 {
-    if (this->get_test_bots().empty())
+    auto bots = this->get_test_bots();
+    if (bots.empty())
         return false;
 
     // Movement test requires all bots to have non-zero oid
-    for (const auto& bot : this->get_test_bots())
+    for (const auto& bot : bots)
     {
         if (bot->oid() == 0)
             return false;
@@ -144,8 +142,7 @@ void movement_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
 
 void movement_test::cleanup()
 {
-    auto bots = this->get_test_bots();
-    for (auto bot : bots)
+    for (auto bot : this->get_test_bots())
     {
         if (bot)
         {

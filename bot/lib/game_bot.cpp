@@ -461,8 +461,20 @@ async::task<void>
 game_bot::map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/맵이동 {} {} {}", map_name, x, y);
-    co_await this->request<fb::protocol::game::response::position>(fb::protocol::game::request::chat{false, command},
-                                                                   timeout);
+    std::ignore  = co_await this->request<fb::protocol::game::response::position>(
+        fb::protocol::game::request::chat{false, command},
+        timeout);
+}
+
+async::task<void> game_bot::change_level(uint8_t level, std::chrono::milliseconds timeout)
+{
+    auto command = std::format("/레벨바꾸기 {}", level);
+    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, command},
+        [level](auto& resp) -> bool {
+            return resp.level == STATE_LEVEL::BASED && resp.ch_level == level;
+        },
+        timeout);
 }
 
 void game_bot::direction(DIRECTION direction)
@@ -635,7 +647,7 @@ void game_bot::chat(const std::string& message)
 async::task<void> game_bot::create_item(const std::string& item_name, uint32_t count, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/아이템생성 {} {}", item_name, count);
-    co_await this->request<fb::protocol::game::response::item_update>(
+    std::ignore  = co_await this->request<fb::protocol::game::response::item_update>(
         fb::protocol::game::request::chat{false, command},
         [item_name, count](auto& resp) -> bool {
             return resp.name.starts_with(item_name) && resp.count == count;
@@ -646,7 +658,7 @@ async::task<void> game_bot::create_item(const std::string& item_name, uint32_t c
 async::task<void> game_bot::change_money(uint32_t amount, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/금전 {}", amount);
-    co_await this->request<fb::protocol::game::response::update_internal>(
+    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
         fb::protocol::game::request::chat{false, command},
         [amount](auto& resp) -> bool {
             return resp.ch_money == amount;

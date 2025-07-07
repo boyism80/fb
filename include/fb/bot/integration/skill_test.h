@@ -15,10 +15,6 @@ namespace fb::bot::integration {
 class skill_test : public bot_integration_test
 {
 private:
-    // Spell learning tracking
-    bool    _waiting_for_spell_update{false};
-    uint8_t _spell_learned_index{0};
-
     // Test function queue management
     using test_function =
         std::function<async::task<bool>(std::vector<std::shared_ptr<fb::bot::game_bot>>&, std::chrono::milliseconds)>;
@@ -60,14 +56,14 @@ public:
     /**
      * @brief      Resets the skill test state to initial conditions.
      */
-    void reset() override;
+    void reset() override final;
 
     /**
      * @brief      Gets the test name.
      *
      * @return     "Skill Test" as the identifier.
      */
-    std::string name() const
+    std::string name() const override final
     {
         return "Skill Test";
     }
@@ -80,7 +76,7 @@ public:
      *
      * @return     True if all spawned bots are ready for skill test, false otherwise.
      */
-    bool is_ready() const override;
+    bool is_ready() const override final;
 
     /**
      * @brief      Called when a bot connects to the skill test.
@@ -89,18 +85,7 @@ public:
      *
      * @param[in]  bot  The connected bot to store for testing.
      */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override;
-
-    /**
-     * @brief      Handles spell_update response from the server.
-     *
-     *             Called when a bot receives a spell_update packet after learning a spell.
-     *             Stores the spell index for subsequent spell casting.
-     *
-     * @param[in]  bot    The bot that received the spell_update.
-     * @param[in]  index  The index of the newly learned spell.
-     */
-    void on_spell_update_received(std::shared_ptr<fb::bot::game_bot> bot, uint8_t index);
+    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override final;
 
     /**
      * @brief      Called when a bot receives an object ID response.

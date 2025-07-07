@@ -15,7 +15,7 @@ async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<f
     }
 
     constexpr auto interval = 100ms;
-    auto&          caster   = bots[0];
+    auto&          caster   = bots.front();
     auto&          target   = bots[1];
 
     fb::logger::info("Starting teleport spell test with {} bots", bots.size());

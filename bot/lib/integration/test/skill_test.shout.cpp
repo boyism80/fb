@@ -23,7 +23,7 @@ async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::
         co_return false;
     }
 
-    auto caster = bots[0];
+    auto caster = bots.front();
 
     constexpr auto interval = 100ms;
 
@@ -46,7 +46,7 @@ async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::
         fb::logger::info("Learning spell: {}", spell.spell_name);
         spell_names.push_back(spell.spell_name);
     }
-    co_await this->learn_spells(caster, spell_names, timeout);
+    std::ignore = co_await this->learn_spells(caster, spell_names, timeout);
 
     // Test each shout spell
     auto spell_slot = 0;
@@ -56,7 +56,7 @@ async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::
         fb::logger::info("Testing {} spell", spell.spell_name);
 
         // Set current hp and mp
-        co_await this->set_current_hp_mp(caster, 10000, 1000, timeout);
+        std::ignore = co_await this->set_current_hp_mp(caster, 10000, 1000, timeout);
 
         fb::logger::info("Testing {} with message: {}", spell.spell_name, spell.test_message);
 
@@ -68,7 +68,7 @@ async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::
 
         // Cast the spell and wait for message response
         caster->chat(std::format("Testing {}", spell.spell_name));
-        co_await caster->request<fb::protocol::game::response::message>(
+        std::ignore = co_await caster->request<fb::protocol::game::response::message>(
             fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, spell_slot, spell.test_message, 0, {0, 0}),
             [&spell](auto& resp) -> bool {
                 return resp.type == spell.message_type;

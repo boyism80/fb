@@ -2,6 +2,7 @@
 #include <fb/bot/integration/movement_test.h>
 #include <fb/bot/integration/attack_test.h>
 #include <fb/bot/integration/skill_test.h>
+#include <fb/bot/integration/bulletin_test.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
@@ -33,8 +34,10 @@ void game_bot_controller::initialize()
     this->enqueue_test(std::make_unique<movement_test>(*this));
     this->enqueue_test(std::make_unique<attack_test>(*this));
     this->enqueue_test(std::make_unique<skill_test>(*this));
+    this->enqueue_test(std::make_unique<bulletin_test>(*this));
 
-    fb::logger::info("Integration test controller initialized with test queue (movement -> attack -> skill)");
+    fb::logger::info(
+        "Integration test controller initialized with test queue (movement -> attack -> skill -> bulletin)");
 
     // Activate the first test
     std::ignore = this->activate_first_test();
@@ -61,6 +64,9 @@ void game_bot_controller::notify_test_completed(bot_integration_test* test)
     if (this->_current_test == test)
     {
         fb::logger::info("Test '{}' completed", test->name());
+
+        // Call cleanup before moving to next test
+        this->_current_test->cleanup();
         this->_current_test = nullptr;
 
         // Start the next test in the queue

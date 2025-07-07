@@ -611,6 +611,19 @@ public:
     async::task<void> map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
 
     /**
+     * @brief      Change the bot's level using the '/레벨바꾸기' command.
+     *
+     *             Executes the level change command and waits for the update_internal
+     *             response to confirm the level has been changed to the target level.
+     *
+     * @param[in]  level   The target level to change to.
+     * @param[in]  timeout The timeout for the level change operation.
+     *
+     * @return     An async task that completes when level change is finished.
+     */
+    async::task<void> change_level(uint8_t level, std::chrono::milliseconds timeout);
+
+    /**
      * @brief      Change the bot's facing direction.
      *
      * @param[in]  direction  The direction to face.

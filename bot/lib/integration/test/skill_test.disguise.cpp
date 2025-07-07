@@ -20,15 +20,15 @@ struct disguise_spell_test
 async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
                                                    std::chrono::milliseconds                        timeout)
 {
+    constexpr auto interval = 100ms;
+
     if (bots.size() < 1)
     {
         fb::logger::fatal("Disguise spell test requires at least 1 bot");
         co_return false;
     }
 
-    auto caster = bots[0];
-
-    constexpr auto interval = 100ms;
+    auto caster = bots.front();
 
     // Define disguise spells with their available monster transformations
     auto disguise_spells = std::vector<disguise_spell_test>{
@@ -48,7 +48,7 @@ async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<f
         fb::logger::info("Learning spell: {}", spell.spell_name);
         spell_names.push_back(spell.spell_name);
     }
-    co_await this->learn_spells(caster, spell_names, timeout);
+    std::ignore = co_await this->learn_spells(caster, spell_names, timeout);
 
     // Test each disguise spell with all available monster transformations
     auto spell_slot = 0;
@@ -61,7 +61,7 @@ async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<f
         for (const auto& mob_name : spell.available_mobs)
         {
             // Set current hp and mp
-            co_await this->set_current_hp_mp(caster, 10000, 1000, timeout);
+            std::ignore = co_await this->set_current_hp_mp(caster, 10000, 1000, timeout);
 
             fb::logger::info("Testing {} transformation to {}", spell.spell_name, mob_name);
 

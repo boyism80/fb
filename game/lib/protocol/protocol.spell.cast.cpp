@@ -33,12 +33,11 @@ async::task<void> spell_cast::deserialize(fb::stream_reader<big_endian>& reader)
     this->slot = reader.read<uint8_t>();
 
     auto remained = reader.readable_size();
-    auto buffer   = new uint8_t[remained];
-    reader.read(buffer, remained);
+    auto buffer   = std::make_unique<uint8_t[]>(remained);
+    reader.read(buffer.get(), remained);
 
     auto writer = fb::stream_writer(this->buffer);
-    writer.write(buffer, remained);
-    delete[] buffer;
+    writer.write(buffer.get(), remained);
 }
 
 void spell_cast::parse(SPELL_TYPE type)

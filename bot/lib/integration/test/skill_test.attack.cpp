@@ -117,7 +117,7 @@ async::task<bool> skill_test::test_attack_cast_spells(std::vector<std::shared_pt
         auto [expected_hp, expected_mp] = spell.calculator(caster);
 
         // Cast the spell
-        co_await caster->request<fb::protocol::game::response::update_internal>(
+        std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
             fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", 0, {0, 0}),
             [=](auto& resp) -> bool {
                 return resp.ch_hp == expected_hp && resp.ch_mp == expected_mp;

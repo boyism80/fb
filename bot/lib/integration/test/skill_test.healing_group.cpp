@@ -13,8 +13,8 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
     }
 
     constexpr auto interval = 100ms;
-    auto&          caster   = bots[0];
-    auto&          target   = bots.size() > 1 ? bots[1] : bots[0];
+    auto&          caster   = bots.front();
+    auto&          target   = bots.size() > 1 ? bots[1] : bots.front();
 
     fb::logger::info("Starting group healing spell test with {} bots", bots.size());
     caster->chat("Starting group healing spell test");
@@ -45,7 +45,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names, timeout);
+    std::ignore = co_await this->learn_spells(caster, spell_names, timeout);
 
     // Form group with all available bots
     fb::logger::info("Forming group with {} bots for group healing test", bots.size());
@@ -59,7 +59,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
         fb::logger::info("Testing group healing spell: {}", spell_info.name);
         caster->chat(std::format("Testing {}", spell_info.name));
 
-        co_await set_current_hp_mp(caster, 10000, 10000, timeout);
+        std::ignore = co_await set_current_hp_mp(caster, 10000, 10000, timeout);
 
         // Calculate expected values
         auto [expected_hp_gain, expected_mp_cost] = spell_info.calculator(caster.get());
@@ -118,7 +118,7 @@ async::task<void> skill_test::form_group(std::vector<std::shared_ptr<fb::bot::ga
                                          std::chrono::milliseconds                        timeout)
 {
     constexpr auto interval = 100ms;
-    auto&          caster   = bots[0];
+    auto&          caster   = bots.front();
 
     // Caster invites all other bots to the group
     for (size_t i = 1; i < bots.size(); ++i)
@@ -209,7 +209,7 @@ async::task<void> skill_test::cleanup_group(std::vector<std::shared_ptr<fb::bot:
     {
         for (int i = 0; i < 2; i++)
         {
-            co_await bot->request<fb::protocol::game::response::message>(
+            std::ignore = co_await bot->request<fb::protocol::game::response::message>(
                 fb::protocol::game::request::update_option(OPTION::GROUP, false),
                 timeout);
         }

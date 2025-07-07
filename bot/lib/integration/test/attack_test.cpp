@@ -68,19 +68,19 @@ async::task<bool> attack_test::execute()
         co_return false;
     }
 
-    auto target_bot = bots[0];
+    auto bot = bots.front();
 
-    fb::logger::info("Attack test: Bot {} will perform attack sequences", target_bot->fd());
+    fb::logger::info("Attack test: Bot {} will perform attack sequences", bot->fd());
 
     // Perform attack sequences - simple attack to air 5 times
     constexpr int ATTACK_COUNT = 5;
     for (auto i = 0; i < ATTACK_COUNT; i++)
     {
-        target_bot->send(fb::protocol::game::request::attack{});
+        bot->send(fb::protocol::game::request::attack{});
 
-        fb::logger::debug("Attack sequence {}: bot {} performed attack", i + 1, target_bot->fd());
+        fb::logger::debug("Attack sequence {}: bot {} performed attack", i + 1, bot->fd());
 
-        auto thread = target_bot->thread();
+        auto thread = bot->thread();
         co_await thread->switching();
         co_await thread->sleep(interval);
     }
@@ -88,9 +88,6 @@ async::task<bool> attack_test::execute()
     this->set_state(test_state::completed);
 
     fb::logger::info("Attack test completed successfully");
-
-    // Cleanup bots after test completion
-    this->cleanup();
 
     // Notify controller that this test is completed
     this->_controller.notify_test_completed(this);
@@ -106,11 +103,12 @@ void attack_test::reset()
 
 bool attack_test::is_ready() const
 {
-    if (this->get_test_bots().empty())
+    auto bots = this->get_test_bots();
+    if (bots.empty())
         return false;
 
     // Movement test requires all bots to have non-zero oid
-    for (const auto& bot : this->get_test_bots())
+    for (const auto& bot : bots)
     {
         if (bot->oid() == 0)
             return false;
@@ -127,8 +125,7 @@ void attack_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
 
 void attack_test::cleanup()
 {
-    auto bots = this->get_test_bots();
-    for (auto bot : bots)
+    for (auto bot : this->get_test_bots())
     {
         if (bot)
         {

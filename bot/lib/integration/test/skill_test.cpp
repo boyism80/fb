@@ -97,16 +97,12 @@ async::task<bool> skill_test::execute()
     if (test_result == false)
     {
         fb::logger::fatal("One or more test functions failed");
-        this->cleanup();
         co_return false;
     }
 
     this->set_state(test_state::completed);
 
     fb::logger::info("Skill test completed successfully");
-
-    // Cleanup bots after test completion
-    this->cleanup();
 
     // Notify controller that this test is completed
     this->_controller.notify_test_completed(this);
@@ -119,9 +115,6 @@ void skill_test::reset()
     // Call base class reset
     bot_integration_test::reset();
 
-    this->_waiting_for_spell_update = false;
-    this->_spell_learned_index      = 0;
-
     // Re-initialize test functions
     this->initialize_test_functions();
 
@@ -130,10 +123,11 @@ void skill_test::reset()
 
 bool skill_test::is_ready() const
 {
-    if (this->get_test_bots().empty())
+    auto bots = this->get_test_bots();
+    if (bots.empty())
         return false;
 
-    for (auto& bot : this->get_test_bots())
+    for (auto& bot : bots)
     {
         if (bot->oid() == 0)
             return false;
@@ -150,14 +144,6 @@ void skill_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
     // Call base class implementation
     bot_integration_test::on_bot_connected(bot);
     fb::logger::debug("Skill test: Bot {} added to collection", bot->fd());
-}
-
-void skill_test::on_spell_update_received(std::shared_ptr<fb::bot::game_bot> bot, uint8_t index)
-{
-    fb::logger::info("Skill test: Bot {} received spell_update with index {}", bot->fd(), index);
-
-    this->_spell_learned_index      = index;
-    this->_waiting_for_spell_update = false;
 }
 
 async::task<void> skill_test::on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response)
@@ -274,7 +260,7 @@ async::task<bool> skill_test::execute_test_functions(std::vector<std::shared_ptr
         // Clean up all spells after each test function completes
         if (bots.empty() == false)
         {
-            auto& caster = bots[0]; // Use first bot as caster for cleanup
+            auto& caster = bots.front(); // Use first bot as caster for cleanup
             fb::logger::debug("Cleaning up all spells after test function '{}'", test_name);
             co_await this->clear_all_spells(caster, timeout);
 
