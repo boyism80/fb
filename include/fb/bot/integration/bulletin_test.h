@@ -1,6 +1,7 @@
 #ifndef __BOT_INTEGRATION_BULLETIN_TEST_H__
 #define __BOT_INTEGRATION_BULLETIN_TEST_H__
 
+#include <optional>
 #include <fb/bot/integration/test_case.h>
 
 namespace fb::bot::integration {
@@ -48,6 +49,41 @@ public:
     async::task<bool> write(std::shared_ptr<fb::bot::game_bot> bot,
                             const std::string&                 title,
                             const std::string&                 contents);
+
+    /**
+     * @brief      Finds an article written by the current bot.
+     *
+     * @param[in]  bot      The bot to use for finding the article.
+     * @param[in]  section  The bulletin section ID to search in.
+     * @param[in]  offset   The starting offset for pagination.
+     * @return     A task that completes when article search finishes, returning the article ID if found,
+     * or std::nullopt if no article written by the bot is found.
+     */
+    async::task<std::optional<uint16_t>> find_my_article(std::shared_ptr<fb::bot::game_bot> bot,
+                                                         uint16_t                           section,
+                                                         uint16_t                           offset);
+
+    /**
+     * @brief      Tests bulletin article read functionality.
+     *
+     * @param[in]  bot         The bot to use for the bulletin article read test.
+     * @param[in]  section     The bulletin section ID containing the article.
+     * @param[in]  article_id  The unique identifier of the article to read.
+     * @return     A task that completes when bulletin article read test finishes, returning true if the response
+     * contains valid article data.
+     */
+    async::task<bool> read_article(std::shared_ptr<fb::bot::game_bot> bot, uint16_t section, uint16_t article_id);
+
+    /**
+     * @brief      Tests bulletin article delete functionality.
+     *
+     * @param[in]  bot         The bot to use for the bulletin article delete test.
+     * @param[in]  section     The bulletin section ID containing the article.
+     * @param[in]  article_id  The unique identifier of the article to delete.
+     * @return     A task that completes when bulletin article delete test finishes, returning true if the response
+     * indicates successful deletion.
+     */
+    async::task<bool> delete_article(std::shared_ptr<fb::bot::game_bot> bot, uint16_t section, uint16_t article_id);
 
     /**
      * @brief      Resets the bulletin test state to initial conditions.
