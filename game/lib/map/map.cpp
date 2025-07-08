@@ -183,7 +183,7 @@ bool map::movable(const fb::model::point16_t& position, const std::function<bool
 bool map::movable(const object& object, const fb::model::point16_t position) const
 {
     return this->movable(position, [&object](const auto& x) {
-        return object.hidden(x);
+        return !object.hidden(x);
     });
 }
 
@@ -284,6 +284,60 @@ std::vector<std::shared_ptr<fb::game::object>> map::belows(const fb::model::poin
     { }
 
     return std::move(objects);
+}
+
+void map::bulk_update(const std::vector<uint32_t>& oids)
+{
+    if (oids.empty())
+        return;
+
+    // Use unordered_set for better performance (O(1) vs O(log n))
+    auto sectors = std::unordered_set<std::shared_ptr<fb::game::sector>>();
+    auto targets = std::unordered_set<std::shared_ptr<fb::game::character>>();
+    auto oid_set = std::unordered_set<uint32_t>(oids.begin(), oids.end());
+
+    // Collect sectors containing changed objects
+    for (auto oid : oids)
+    {
+        auto obj = this->objects.at(oid);
+        if (obj == nullptr)
+            continue;
+
+        for (const auto& sector : this->_sectors->nears(obj->position()))
+        {
+            sectors.insert(sector);
+        }
+    }
+
+    // Collect all characters in affected sectors
+    for (const auto& sector : sectors)
+    {
+        for (const auto& obj : *sector)
+        {
+            if (obj->is(OBJECT_TYPE::CHARACTER))
+                targets.insert(std::static_pointer_cast<fb::game::character>(obj));
+        }
+    }
+
+    // Send updates to each character
+    for (const auto& target : targets)
+    {
+        auto changed_objects = std::vector<object*>();
+        changed_objects.reserve(oids.size()); // Pre-allocate for efficiency
+
+        for (const auto& nearby_obj : target->nears())
+        {
+            if (oid_set.contains(nearby_obj->oid()))
+            {
+                changed_objects.push_back(nearby_obj.get());
+            }
+        }
+
+        if (!changed_objects.empty())
+        {
+            target->send(fb::protocol::game::response::update(changed_objects));
+        }
+    }
 }
 
 fb::thread* map::thread() const

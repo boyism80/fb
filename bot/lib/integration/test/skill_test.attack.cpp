@@ -4,8 +4,7 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                      std::chrono::milliseconds                        timeout)
+async::task<bool> skill_test::test_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
     constexpr auto interval = 100ms;
 
@@ -21,7 +20,7 @@ async::task<bool> skill_test::test_attack_cast_spells(std::vector<std::shared_pt
     // Setup all bots with max HP/MP
     for (auto& bot : bots)
     {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
+        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt);
     }
 
     std::vector<attack_cast_spell_test> attack_cast_spells = {
@@ -97,7 +96,7 @@ async::task<bool> skill_test::test_attack_cast_spells(std::vector<std::shared_pt
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names, timeout);
+    auto learned_count = co_await this->learn_spells(caster, spell_names);
     fb::logger::info("Successfully learned {} out of {} attack_cast spells", learned_count, attack_cast_spells.size());
 
     fb::logger::info("Learning {} attack_cast spells", attack_cast_spells.size());
@@ -108,10 +107,10 @@ async::task<bool> skill_test::test_attack_cast_spells(std::vector<std::shared_pt
         fb::logger::info("Testing spell: {}", spell.name);
 
         // Spawn a monster in front of the caster
-        std::ignore = co_await this->spawn_monster_relative_by_look(caster, "다람쥐", 0, 1, 32793, timeout);
+        std::ignore = co_await this->spawn_monster_relative_by_look(caster, "다람쥐", 0, 1, 32793);
 
         // Set caster's current HP/MP for testing
-        std::ignore = co_await this->set_current_hp_mp(caster, 1000, 1000, timeout);
+        std::ignore = co_await this->set_current_hp_mp(caster, 1000, 1000);
 
         // Calculate expected values using the spell calculator function
         auto [expected_hp, expected_mp] = spell.calculator(caster);
@@ -122,7 +121,7 @@ async::task<bool> skill_test::test_attack_cast_spells(std::vector<std::shared_pt
             [=](auto& resp) -> bool {
                 return resp.ch_hp == expected_hp && resp.ch_mp == expected_mp;
             },
-            timeout);
+            DEFAULT_TIMEOUT);
 
         spell_slot++;
         co_await caster->thread()->sleep(interval);

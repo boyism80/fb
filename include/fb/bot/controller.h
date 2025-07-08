@@ -356,11 +356,7 @@ public:
                         if (shared == nullptr)
                             co_return;
 
-                        [[maybe_unused]] volatile auto holder     = protocol;
-                        [[maybe_unused]] volatile auto controller = this;
                         co_await handler(*shared, *protocol.get());
-                        co_await controller->on_integration_hook_execution(cmd, *shared, *protocol.get());
-                        shared->process_hooks(cmd, *protocol.get());
                     });
                 }
 
@@ -446,8 +442,8 @@ public:
 
         this->_handler.insert(
             {ResponseType::header, [this, fn](auto& bot, auto& header) -> async::task<void> {
-                 auto                           protocol   = static_cast<ResponseType&>(header);
-                 [[maybe_unused]] volatile auto controller = this;
+                 auto          protocol   = static_cast<ResponseType&>(header);
+                 volatile auto controller = this;
 
                  // 1. Execute the main handler
                  co_await fn(bot, protocol);

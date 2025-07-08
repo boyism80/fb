@@ -45,6 +45,16 @@ public:
     async::task<bool> execute() override;
 
     /**
+     * @brief   Get the name of the test
+     *
+     * @return  "Communication Test" as the identifier.
+     */
+    std::string name() const override final
+    {
+        return "Communication Test";
+    }
+
+    /**
      * @brief   Reset the test state
      */
     void reset() override;
@@ -62,11 +72,6 @@ public:
      * @param[in]  bot  Shared pointer to the connected bot
      */
     void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override;
-
-    /**
-     * @brief   Clean up resources used by the test
-     */
-    void cleanup() override;
 
 private:
     /**
@@ -93,57 +98,44 @@ private:
      *
      * @param[in]  bot1     First bot for testing
      * @param[in]  bot2     Second bot for testing
-     * @param[in]  timeout  Timeout for the test
      * @return  Task that returns true if test passes, false otherwise
      */
-    async::task<bool> test_normal_chat(std::shared_ptr<game_bot>& bot1,
-                                       std::shared_ptr<game_bot>& bot2,
-                                       std::chrono::milliseconds  timeout);
+    async::task<bool> test_normal_chat(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
 
     /**
      * @brief   Test shout functionality
      *
      * @param[in]  bot1     First bot for testing
      * @param[in]  bot2     Second bot for testing
-     * @param[in]  timeout  Timeout for the test
      * @return  Task that returns true if test passes, false otherwise
      */
-    async::task<bool> test_shout_chat(std::shared_ptr<game_bot>& bot1,
-                                      std::shared_ptr<game_bot>& bot2,
-                                      std::chrono::milliseconds  timeout);
+    async::task<bool> test_shout_chat(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
 
     /**
      * @brief   Test whisper functionality
      *
      * @param[in]  bot1     First bot for testing
      * @param[in]  bot2     Second bot for testing
-     * @param[in]  timeout  Timeout for the test
      * @return  Task that returns true if test passes, false otherwise
      */
-    async::task<bool> test_whisper(std::shared_ptr<game_bot>& bot1,
-                                   std::shared_ptr<game_bot>& bot2,
-                                   std::chrono::milliseconds  timeout);
+    async::task<bool> test_whisper(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
 
     /**
      * @brief   Test whisper blocking functionality
      *
      * @param[in]  bot1     First bot for testing
      * @param[in]  bot2     Second bot for testing
-     * @param[in]  timeout  Timeout for the test
      * @return  Task that returns true if test passes, false otherwise
      */
-    async::task<bool> test_whisper_block(std::shared_ptr<game_bot>& bot1,
-                                         std::shared_ptr<game_bot>& bot2,
-                                         std::chrono::milliseconds  timeout);
+    async::task<bool> test_whisper_block(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
 
     /**
      * @brief   Reset bot state for testing
      *
      * @param[in]  bot      Bot to reset
-     * @param[in]  timeout  Timeout for the operation
      * @return  Task that completes when reset is finished
      */
-    async::task<void> reset_bot_state(std::shared_ptr<game_bot>& bot, std::chrono::milliseconds timeout);
+    async::task<void> reset_bot_state(std::shared_ptr<game_bot>& bot);
 
 private:
     static constexpr int REQUIRED_BOTS = 2; ///< Number of bots required for testing

@@ -44,13 +44,6 @@ async::task<void> skill_test::initialize(game_bot_controller& controller)
 
 async::task<bool> skill_test::execute()
 {
-    constexpr auto interval = 100ms; // Increased from 100ms to reduce server load
-#if defined DEBUG || defined _DEBUG
-    constexpr auto timeout = 1h;
-#else
-    constexpr auto timeout = 5s;
-#endif
-
     if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
         co_return false;
 
@@ -79,7 +72,7 @@ async::task<bool> skill_test::execute()
 
         // Move bot i steps to the right
         co_await thread->switching();
-        co_await bot->move(DIRECTION::RIGHT, i, 50ms);
+        co_await bot->move(DIRECTION::RIGHT, i, DEFAULT_INTERVAL);
 
         // Set direction to BOTTOM
         bot->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
@@ -93,7 +86,7 @@ async::task<bool> skill_test::execute()
     fb::logger::info("Bot line formation completed");
 
     // Step 2: Execute all registered test functions
-    auto test_result = co_await this->execute_test_functions(bots, timeout);
+    auto test_result = co_await this->execute_test_functions(bots);
     if (test_result == false)
     {
         fb::logger::fatal("One or more test functions failed");
@@ -183,63 +176,62 @@ void skill_test::initialize_test_functions()
     this->_test_functions.clear();
 
     // Register all test functions in execution order
-    this->_test_functions.emplace_back("Healing Spells", [this](auto& bots, auto timeout) {
-        return this->test_healing_spells(bots, timeout);
+    this->_test_functions.emplace_back("Healing Spells", [this](auto& bots) {
+        return this->test_healing_spells(bots);
     });
 
-    this->_test_functions.emplace_back("Group Healing Spells", [this](auto& bots, auto timeout) {
-        return this->test_group_healing_spells(bots, timeout);
+    this->_test_functions.emplace_back("Group Healing Spells", [this](auto& bots) {
+        return this->test_group_healing_spells(bots);
     });
 
-    this->_test_functions.emplace_back("Damage Spells", [this](auto& bots, auto timeout) {
-        return this->test_damage_spells(bots, timeout);
+    this->_test_functions.emplace_back("Damage Spells", [this](auto& bots) {
+        return this->test_damage_spells(bots);
     });
 
-    this->_test_functions.emplace_back("Near Damage Spells", [this](auto& bots, auto timeout) {
-        return this->test_near_damage_spells(bots, timeout);
+    this->_test_functions.emplace_back("Near Damage Spells", [this](auto& bots) {
+        return this->test_near_damage_spells(bots);
     });
 
-    this->_test_functions.emplace_back("Near Target Damage Spells", [this](auto& bots, auto timeout) {
-        return this->test_near_target_damage_spells(bots, timeout);
+    this->_test_functions.emplace_back("Near Target Damage Spells", [this](auto& bots) {
+        return this->test_near_target_damage_spells(bots);
     });
 
-    this->_test_functions.emplace_back("Attack Cast Spells", [this](auto& bots, auto timeout) {
-        return this->test_attack_cast_spells(bots, timeout);
+    this->_test_functions.emplace_back("Attack Cast Spells", [this](auto& bots) {
+        return this->test_attack_cast_spells(bots);
     });
 
-    this->_test_functions.emplace_back("Multi-Target Attack Cast Spells", [this](auto& bots, auto timeout) {
-        return this->test_multi_target_attack_cast_spells(bots, timeout);
+    this->_test_functions.emplace_back("Multi-Target Attack Cast Spells", [this](auto& bots) {
+        return this->test_multi_target_attack_cast_spells(bots);
     });
 
-    this->_test_functions.emplace_back("Area Damage Spells", [this](auto& bots, auto timeout) {
-        return this->test_area_damage_spells(bots, timeout);
+    this->_test_functions.emplace_back("Area Damage Spells", [this](auto& bots) {
+        return this->test_area_damage_spells(bots);
     });
 
-    this->_test_functions.emplace_back("Buff/Debuff Spells", [this](auto& bots, auto timeout) {
-        return this->test_buff_debuff_spells(bots, timeout);
+    this->_test_functions.emplace_back("Buff/Debuff Spells", [this](auto& bots) {
+        return this->test_buff_debuff_spells(bots);
     });
 
-    this->_test_functions.emplace_back("Teleport Spells", [this](auto& bots, auto timeout) {
-        return this->test_teleport_spells(bots, timeout);
+    this->_test_functions.emplace_back("Teleport Spells", [this](auto& bots) {
+        return this->test_teleport_spells(bots);
     });
 
-    this->_test_functions.emplace_back("Disguise Spells", [this](auto& bots, auto timeout) {
-        return this->test_disguise_spells(bots, timeout);
+    this->_test_functions.emplace_back("Disguise Spells", [this](auto& bots) {
+        return this->test_disguise_spells(bots);
     });
 
-    this->_test_functions.emplace_back("Shout Spells", [this](auto& bots, auto timeout) {
-        return this->test_shout_spells(bots, timeout);
+    this->_test_functions.emplace_back("Shout Spells", [this](auto& bots) {
+        return this->test_shout_spells(bots);
     });
 
-    this->_test_functions.emplace_back("Loot Spell", [this](auto& bots, auto timeout) {
-        return this->test_loot_spell(bots, timeout);
+    this->_test_functions.emplace_back("Loot Spell", [this](auto& bots) {
+        return this->test_loot_spell(bots);
     });
 
     fb::logger::info("Initialized {} test functions", this->_test_functions.size());
 }
 
-async::task<bool> skill_test::execute_test_functions(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                     std::chrono::milliseconds                        timeout)
+async::task<bool> skill_test::execute_test_functions(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
     fb::logger::info("Executing {} test functions", this->_test_functions.size());
 
@@ -248,7 +240,7 @@ async::task<bool> skill_test::execute_test_functions(std::vector<std::shared_ptr
         const auto& [test_name, test_func] = this->_test_functions[i];
         fb::logger::info("Executing test function {} of {}: {}", i + 1, this->_test_functions.size(), test_name);
 
-        auto result = co_await test_func(bots, timeout);
+        auto result = co_await test_func(bots);
         if (result == false)
         {
             fb::logger::fatal("Test function '{}' failed", test_name);
@@ -262,10 +254,10 @@ async::task<bool> skill_test::execute_test_functions(std::vector<std::shared_ptr
         {
             auto& caster = bots.front(); // Use first bot as caster for cleanup
             fb::logger::debug("Cleaning up all spells after test function '{}'", test_name);
-            co_await this->clear_all_spells(caster, timeout);
+            co_await this->clear_all_spells(caster);
 
             fb::logger::debug("Clearing all items after test function '{}'", test_name);
-            co_await this->clear_all_items(caster, timeout);
+            co_await this->clear_all_items(caster);
             co_await caster->thread()->sleep(500ms);
         }
     }

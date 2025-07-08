@@ -18,6 +18,7 @@ IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
 {"belows",              map::builtin::builtin_belows},
 {"tile",                map::builtin::builtin_tile},
 {"at",                  map::builtin::builtin_at},
+{"bulk_update",         map::builtin::builtin_bulk_update},
 END_LUA_EXTENSION; // clang-format on
 
 int map::builtin::builtin_model(lua_State* L)
@@ -392,4 +393,33 @@ int map::builtin::builtin_at(lua_State* L)
             return 1;
         });
     });
+}
+
+int map::builtin::builtin_bulk_update(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    if (lua->is_table(2) == false)
+        return 0;
+
+    auto oids = std::vector<uint32_t>();
+    auto size = lua->rawlen(2);
+    for (auto i = 1; i <= size; i++)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            lua->rawgeti(2, i + 1);
+            if (lua->is_number(-1))
+                oids.push_back((uint32_t)lua->tointeger(-1));
+        }
+    }
+
+    map->bulk_update(oids);
+    return 0;
 }

@@ -4,11 +4,8 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                             std::chrono::milliseconds                        timeout)
+async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
-    constexpr auto interval = 100ms;
-
     auto& caster = bots.at(0);
 
     fb::logger::info("Bot {} starting near target damage spell test", caster->oid());
@@ -20,7 +17,7 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
     // Setup all bots with max HP/MP
     for (auto& bot : bots)
     {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
+        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt);
     }
 
     auto near_target_spells = std::vector<near_target_damage_spell_test>{
@@ -48,7 +45,7 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names, timeout);
+    auto learned_count = co_await this->learn_spells(caster, spell_names);
     fb::logger::info("Successfully learned {} out of {} near target damage spells",
                      learned_count,
                      near_target_spells.size());
@@ -61,7 +58,7 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
         fb::logger::info("Testing near target spell: {}", spell.name);
 
         // Spawn a target monster in front of the caster
-        auto target = co_await this->spawn_monster_relative_by_look(caster, "다람쥐", 0, 2, 32793, timeout);
+        auto target = co_await this->spawn_monster_relative_by_look(caster, "다람쥐", 0, 2, 32793);
 
         // Spawn monsters around the target position (relative to target)
         std::ignore = co_await this->spawn_monsters_relative_by_look(caster,
@@ -72,11 +69,10 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
                                                                          {1,  2},
                                                                          {0,  3}
         },
-                                                                     32793,
-                                                                     timeout);
+                                                                     32793);
 
         // Set caster's current HP/MP for testing
-        std::ignore = co_await this->set_current_hp_mp(caster, 1000, 1000, timeout);
+        std::ignore = co_await this->set_current_hp_mp(caster, 1000, 1000);
 
         // Calculate expected values using the spell calculator function
         auto [expected_hp, expected_mp] = spell.calculator(caster);
@@ -86,11 +82,10 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
             fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", target.oid, target.position),
             [=](auto& resp) -> bool {
                 return resp.ch_hp == expected_hp && resp.ch_mp == expected_mp;
-            },
-            timeout);
+            });
 
         spell_slot++;
-        co_await caster->thread()->sleep(interval);
+        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     caster->chat("=== NEAR TARGET DAMAGE SPELL TEST COMPLETED ===");

@@ -123,17 +123,4 @@ void attack_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
     fb::logger::debug("Attack test: Bot {} added to collection", bot->fd());
 }
 
-void attack_test::cleanup()
-{
-    for (auto bot : this->get_test_bots())
-    {
-        if (bot)
-        {
-            bot->close();
-        }
-    }
-
-    fb::logger::info("Attack test cleanup completed - all bots disconnected");
-}
-
 } // namespace fb::bot::integration

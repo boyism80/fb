@@ -18,8 +18,7 @@ public:
 
 public:
 #ifndef BOT
-    const fb::game::object*               object;
-    const std::vector<fb::game::object*>* objects;
+    const std::vector<fb::game::object*> objects;
 #else
     struct object_data
     {

@@ -423,12 +423,14 @@ public:
      * @param      map           The target map to move to
      * @param[in]  position      The position on the target map
      * @param[in]  destroy_type  How to handle the object when leaving current map
+     * @param[in]  notify        Whether to notify other objects about the move
      *
      * @return     True if the map change was successful, false otherwise
      */
     virtual async::task<bool> map(std::shared_ptr<fb::game::map> map,
                                   const fb::model::point16_t&    position,
-                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT);
+                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT,
+                                  bool                           notify       = true);
 
     /**
      * @brief      Gets the map that this object is currently on.

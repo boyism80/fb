@@ -143,12 +143,14 @@ public:
      * @param      map           The target map to place the item on
      * @param[in]  position      The position coordinates on the map
      * @param[in]  destroy_type  The destruction type when placing the item
+     * @param[in]  notify        Whether to notify other objects about the move
      *
      * @return     Async task that returns true if placement was successful
      */
     virtual async::task<bool> map(std::shared_ptr<fb::game::map> map,
                                   const fb::model::point16_t&    position,
-                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT) override;
+                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT,
+                                  bool                           notify       = true) override;
 
     /**
      * @brief      Gets the tooltip message for the item.

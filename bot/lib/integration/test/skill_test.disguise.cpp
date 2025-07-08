@@ -17,11 +17,8 @@ struct disguise_spell_test
     std::vector<std::string> available_mobs;
 };
 
-async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                   std::chrono::milliseconds                        timeout)
+async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
-    constexpr auto interval = 100ms;
-
     if (bots.size() < 1)
     {
         fb::logger::fatal("Disguise spell test requires at least 1 bot");
@@ -48,7 +45,7 @@ async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<f
         fb::logger::info("Learning spell: {}", spell.spell_name);
         spell_names.push_back(spell.spell_name);
     }
-    std::ignore = co_await this->learn_spells(caster, spell_names, timeout);
+    std::ignore = co_await this->learn_spells(caster, spell_names);
 
     // Test each disguise spell with all available monster transformations
     auto spell_slot = 0;
@@ -61,7 +58,7 @@ async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<f
         for (const auto& mob_name : spell.available_mobs)
         {
             // Set current hp and mp
-            std::ignore = co_await this->set_current_hp_mp(caster, 10000, 1000, timeout);
+            std::ignore = co_await this->set_current_hp_mp(caster, 10000, 1000);
 
             fb::logger::info("Testing {} transformation to {}", spell.spell_name, mob_name);
 
@@ -82,7 +79,7 @@ async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<f
                 [expected_mp](auto& resp) -> bool {
                     return resp.ch_mp == expected_mp;
                 },
-                timeout);
+                DEFAULT_TIMEOUT);
 
             fb::logger::info("{} spell cast completed successfully for {}", spell.spell_name, mob_name);
 
@@ -95,7 +92,7 @@ async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<f
             // Step 3: Remove buff to prepare for next test
             fb::logger::info("Removing buff to prepare for next test");
             caster->remove_buffs();
-            co_await caster->thread()->sleep(interval);
+            co_await caster->thread()->sleep(DEFAULT_INTERVAL);
         }
 
         fb::logger::info("Completed testing all transformations for {} spell", spell.spell_name);

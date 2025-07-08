@@ -1954,6 +1954,7 @@ int character::builtin::builtin_spawn_mob(lua_State* L)
     }
 
     uint16_t x, y;
+    uint16_t offset = 3;
     if (argc > 3)
     {
         if (lua->is_table(3))
@@ -1968,6 +1969,8 @@ int character::builtin::builtin_spawn_mob(lua_State* L)
             lua->rawgeti(3, 2);
             y = (uint16_t)lua->tointeger(-1);
             lua->remove(-1);
+
+            offset += 1;
         }
         else
         {
@@ -1976,10 +1979,13 @@ int character::builtin::builtin_spawn_mob(lua_State* L)
 
             x = (uint16_t)lua->tointeger(3);
             y = (uint16_t)lua->tointeger(4);
+
+            offset += 2;
         }
     }
 
-    auto weak = ch->weak_from_this_as<fb::game::character>();
+    auto notify = lua->toboolean(offset, true);
+    auto weak   = ch->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*ctx, weak, [=](auto is_yield) mutable {
         if (argc < 3)
         {
@@ -1987,7 +1993,7 @@ int character::builtin::builtin_spawn_mob(lua_State* L)
             y = ch->y();
         }
 
-        auto mob = ch->spawn_mob(*model, fb::model::point16_t(x, y), owned);
+        auto mob = ch->spawn_mob(*model, fb::model::point16_t(x, y), owned, notify);
         return lua->ensure_resume(*ctx, weak, [=]() {
             if (mob == nullptr)
                 lua->pushnil();

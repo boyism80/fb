@@ -54,7 +54,13 @@ protected:
     test_state                                      _state{test_state::idle}; ///< Current state of the test
 
 protected:
-    // No additional protected members
+#ifdef _DEBUG
+    static constexpr auto DEFAULT_TIMEOUT  = 1h;
+    static constexpr auto DEFAULT_INTERVAL = 100ms;
+#else
+    static constexpr auto DEFAULT_TIMEOUT  = 10s;
+    static constexpr auto DEFAULT_INTERVAL = 100ms;
+#endif
 
 public:
     /**
@@ -136,7 +142,13 @@ public:
      */
     virtual void cleanup()
     {
-        // Default implementation does nothing
+        for (auto bot : this->get_test_bots())
+        {
+            if (bot)
+                bot->close();
+        }
+
+        fb::logger::info("{} test cleanup completed - all bots disconnected", this->name());
     }
 
     /**
@@ -218,7 +230,6 @@ protected:
      * @param[in]  monster_name  Name of the monster to spawn (e.g., "다람쥐")
      * @param[in]  x         X coordinate for monster spawn
      * @param[in]  y         Y coordinate for monster spawn
-     * @param[in]  timeout   Request timeout duration
      * @param[in]  validator Custom validator function to check spawn success
      *
      * @return     An async task that returns spawned monster information
@@ -229,7 +240,6 @@ protected:
                                  const std::string&                                               monster_name,
                                  uint16_t                                                         x,
                                  uint16_t                                                         y,
-                                 std::chrono::milliseconds                                        timeout,
                                  std::function<bool(const fb::protocol::game::response::update&)> validator);
 
     /**
@@ -240,7 +250,6 @@ protected:
      * @param[in]  x         X coordinate for monster spawn
      * @param[in]  y         Y coordinate for monster spawn
      * @param[in]  expected_look  Expected look value for the spawned monster
-     * @param[in]  timeout   Request timeout duration
      *
      * @return     An async task that returns spawned monster information
      * @throws     std::runtime_error if monster spawning fails
@@ -249,8 +258,7 @@ protected:
                                                             const std::string&                 monster_name,
                                                             uint16_t                           x,
                                                             uint16_t                           y,
-                                                            uint32_t                           expected_look,
-                                                            std::chrono::milliseconds          timeout);
+                                                            uint32_t                           expected_look);
 
     /**
      * @brief      Spawns multiple monsters at relative positions from a bot with custom validator
@@ -258,7 +266,6 @@ protected:
      * @param[in]  bot       The bot that will spawn the monsters
      * @param[in]  monster_name  Name of the monster to spawn
      * @param[in]  relative_positions  Vector of {x, y} relative positions from bot
-     * @param[in]  timeout   Request timeout duration
      * @param[in]  validator Custom validator function to check spawn success
      *
      * @return     An async task that returns vector of spawned monster information
@@ -268,7 +275,6 @@ protected:
     spawn_monsters_relative_with_validator(std::shared_ptr<fb::bot::game_bot>      bot,
                                            const std::string&                      monster_name,
                                            const std::vector<std::pair<int, int>>& relative_positions,
-                                           std::chrono::milliseconds               timeout,
                                            std::function<bool(const fb::protocol::game::response::update&)> validator);
 
     /**
@@ -278,7 +284,6 @@ protected:
      * @param[in]  monster_name  Name of the monster to spawn
      * @param[in]  relative_positions  Vector of {x, y} relative positions from bot
      * @param[in]  expected_look  Expected look value for the spawned monsters
-     * @param[in]  timeout   Request timeout duration
      *
      * @return     An async task that returns vector of spawned monster information
      * @throws     std::runtime_error if any monster spawning fails
@@ -287,8 +292,7 @@ protected:
     spawn_monsters_relative_by_look(std::shared_ptr<fb::bot::game_bot>      bot,
                                     const std::string&                      monster_name,
                                     const std::vector<std::pair<int, int>>& relative_positions,
-                                    uint32_t                                expected_look,
-                                    std::chrono::milliseconds               timeout);
+                                    uint32_t                                expected_look);
 
     /**
      * @brief      Spawns a single monster at relative position from a bot with look validation
@@ -298,7 +302,6 @@ protected:
      * @param[in]  relative_x  X coordinate relative to bot position
      * @param[in]  relative_y  Y coordinate relative to bot position
      * @param[in]  expected_look  Expected look value for the spawned monster
-     * @param[in]  timeout   Request timeout duration
      *
      * @return     An async task that returns spawned monster information
      * @throws     std::runtime_error if monster spawning fails
@@ -307,8 +310,7 @@ protected:
                                                                      const std::string&                 monster_name,
                                                                      int                                relative_x,
                                                                      int                                relative_y,
-                                                                     uint32_t                           expected_look,
-                                                                     std::chrono::milliseconds          timeout);
+                                                                     uint32_t                           expected_look);
 
     /**
      * @brief      Sets maximum HP and MP for a bot
@@ -316,12 +318,10 @@ protected:
      * @param[in]  bot       The bot to modify
      * @param[in]  max_hp    Maximum HP value to set
      * @param[in]  max_mp    Maximum MP value to set
-     * @param[in]  timeout   Request timeout duration
      *
      * @return     An async task that returns true if HP/MP were set successfully
      */
-    async::task<bool>
-    set_max_hp_mp(std::shared_ptr<fb::bot::game_bot> bot, int max_hp, int max_mp, std::chrono::milliseconds timeout);
+    async::task<bool> set_max_hp_mp(std::shared_ptr<fb::bot::game_bot> bot, int max_hp, int max_mp);
 
     /**
      * @brief      Sets current HP and MP for a bot
@@ -329,66 +329,55 @@ protected:
      * @param[in]  bot       The bot to modify
      * @param[in]  current_hp  Current HP value to set
      * @param[in]  current_mp  Current MP value to set
-     * @param[in]  timeout   Request timeout duration
      *
      * @return     An async task that returns true if HP/MP were set successfully
      */
-    async::task<bool> set_current_hp_mp(std::shared_ptr<fb::bot::game_bot> bot,
-                                        int                                current_hp,
-                                        int                                current_mp,
-                                        std::chrono::milliseconds          timeout);
+    async::task<bool> set_current_hp_mp(std::shared_ptr<fb::bot::game_bot> bot, int current_hp, int current_mp);
 
     async::task<bool> setup_bot_stats(std::shared_ptr<fb::bot::game_bot> bot,
                                       int                                max_hp,
                                       int                                max_mp,
                                       std::optional<int>                 current_hp,
-                                      std::optional<int>                 current_mp,
-                                      std::chrono::milliseconds          timeout);
+                                      std::optional<int>                 current_mp);
 
     /**
      * @brief      Learns multiple spells for a bot
      *
      * @param[in]  bot       The bot that will learn the spells
      * @param[in]  spell_names  Vector of spell names to learn
-     * @param[in]  timeout   Request timeout duration
      *
      * @return     An async task that returns the number of successfully learned spells
      */
     async::task<size_t> learn_spells(std::shared_ptr<fb::bot::game_bot> bot,
-                                     const std::vector<std::string>&    spell_names,
-                                     std::chrono::milliseconds          timeout);
+                                     const std::vector<std::string>&    spell_names);
 
     /**
      * @brief      Removes all spells from a bot
      *
      * @param[in]  bot       The bot that will have spells removed
-     * @param[in]  timeout   Request timeout duration
      *
      */
-    async::task<void> clear_all_spells(std::shared_ptr<fb::bot::game_bot>& bot, std::chrono::milliseconds timeout);
+    async::task<void> clear_all_spells(std::shared_ptr<fb::bot::game_bot>& bot);
 
     /**
      * @brief      Removes all items from a map
      *
      * @param[in]  bot       The bot that will have items removed
-     * @param[in]  timeout   Request timeout duration
      *
      * @return     An async task that completes when the items are removed
      */
-    async::task<void> clear_all_items(std::shared_ptr<fb::bot::game_bot>& bot, fb::model::timespan timeout);
+    async::task<void> clear_all_items(std::shared_ptr<fb::bot::game_bot>& bot);
 
     /**
      * @brief      Moves a bot back to its original position after movement spells
      *
      * @param[in]  bot       The bot to move back
      * @param[in]  original_position  The original position to return to
-     * @param[in]  interval  Delay between movement commands
      *
      * @return     An async task that completes when the bot has returned to original position
      */
     async::task<void> move_bot_back_to_position(std::shared_ptr<fb::bot::game_bot> bot,
-                                                const fb::model::point<uint16_t>&  original_position,
-                                                const fb::model::timespan&         interval = 100ms);
+                                                const fb::model::point<uint16_t>&  original_position);
 };
 
 } // namespace fb::bot::integration

@@ -48,9 +48,6 @@ async::task<void> trade_test::initialize(game_bot_controller& controller)
 
 async::task<bool> trade_test::execute()
 {
-    constexpr auto timeout  = 1h;
-    constexpr auto interval = 100ms;
-
     if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
         co_return false;
 
@@ -66,33 +63,33 @@ async::task<bool> trade_test::execute()
 
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
-    co_await bot2->move(DIRECTION::RIGHT, 1, interval);
+    co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
     co_await bot2->thread()->switching();
-    co_await bot2->thread()->sleep(interval);
+    co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
     bot2->direction(DIRECTION::BOTTOM);
 
     fb::logger::info("Starting trade test with bot1: '{}' and bot2: '{}'", bot1->name(), bot2->name());
 
     using scenario_fn = std::function<async::task<bool>()>;
     std::queue<scenario_fn> scenarios;
-    scenarios.push([this, &bot1, &bot2, timeout] {
-        return this->test_scenario_1(bot1, bot2, timeout);
+    scenarios.push([this, &bot1, &bot2] {
+        return this->test_scenario_1(bot1, bot2);
     });
-    scenarios.push([this, &bot1, &bot2, timeout] {
-        return this->test_scenario_2(bot1, bot2, timeout);
+    scenarios.push([this, &bot1, &bot2] {
+        return this->test_scenario_2(bot1, bot2);
     });
-    scenarios.push([this, &bot1, &bot2, timeout] {
-        return this->test_scenario_3(bot1, bot2, timeout);
+    scenarios.push([this, &bot1, &bot2] {
+        return this->test_scenario_3(bot1, bot2);
     });
-    scenarios.push([this, &bot1, &bot2, timeout] {
-        return this->test_scenario_4(bot1, bot2, timeout);
+    scenarios.push([this, &bot1, &bot2] {
+        return this->test_scenario_4(bot1, bot2);
     });
 
     int i = 1;
     while (scenarios.empty() == false)
     {
-        co_await this->reset_bot_state(bot1, timeout);
-        co_await this->reset_bot_state(bot2, timeout);
+        co_await this->reset_bot_state(bot1);
+        co_await this->reset_bot_state(bot2);
 
         auto& scenario = scenarios.front();
         if (co_await scenario() == false)
@@ -168,10 +165,10 @@ async::task<void> trade_test::on_hook_position(fb::bot::game_bot&               
     co_return;
 }
 
-async::task<void> trade_test::reset_bot_state(std::shared_ptr<game_bot>& bot, const fb::model::timespan& timeout)
+async::task<void> trade_test::reset_bot_state(std::shared_ptr<game_bot>& bot)
 {
     bot->chat("/아이템초기화");
-    co_await bot->change_money(0, timeout);
+    co_await bot->change_money(0, DEFAULT_TIMEOUT);
 }
 
 bool trade_test::has_item(const std::shared_ptr<game_bot>& bot, const std::string& name)
@@ -196,19 +193,17 @@ uint16_t trade_test::get_item_count(const std::shared_ptr<game_bot>& bot, const 
     return 0;
 }
 
-async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
-                                              std::shared_ptr<game_bot>& bot2,
-                                              const fb::model::timespan& timeout)
+async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
 {
     // 2. Bot1 creates 150 도토리, 1 부적, and changes money to 10000.
-    co_await bot1->create_item("도토리", 150, timeout); // slot 0
-    co_await bot1->create_item("부적", 1, timeout);     // slot 1
-    co_await bot1->change_money(10000, timeout);
+    co_await bot1->create_item("도토리", 150, DEFAULT_TIMEOUT); // slot 0
+    co_await bot1->create_item("부적", 1, DEFAULT_TIMEOUT);     // slot 1
+    co_await bot1->change_money(10000, DEFAULT_TIMEOUT);
 
     // 3. Bot2 creates 200 도토리, 1 양첨목봉, and changes money to 20000.
-    co_await bot2->create_item("도토리", 200, timeout); // slot 0
-    co_await bot2->create_item("양첨목봉", 1, timeout); // slot 1
-    co_await bot2->change_money(20000, timeout);
+    co_await bot2->create_item("도토리", 200, DEFAULT_TIMEOUT); // slot 0
+    co_await bot2->create_item("양첨목봉", 1, DEFAULT_TIMEOUT); // slot 1
+    co_await bot2->change_money(20000, DEFAULT_TIMEOUT);
 
     // 3. Start trade (Bot1 initiates trade with Bot2).
     std::ignore = co_await bot1->request<fb::bot::integration::trade_bot>(
@@ -222,7 +217,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     bot1->chat("Scenario 1: Bot1 -> Bot2 trade initiated");
 
@@ -231,7 +226,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::UP_ITEM,
                                            bot2->oid(),
                                            {.index = uint8_t(1 + 1)}),
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 1: Bot1 tried to trade a charm.");
     if (charm_response.text.find(_TEXT(MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE)) == std::string::npos)
     {
@@ -247,7 +242,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::bundle;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 1: Bot1 puts up an item.");
     std::ignore = co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::ITEM_COUNT,
@@ -256,7 +251,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::upload;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 1: Bot1 sets item count.");
     std::ignore = co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::UP_MONEY,
@@ -265,7 +260,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::money;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 1: Bot1 puts up money.");
 
     std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
@@ -275,7 +270,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::bundle;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 1: Bot2 puts up an item.");
     std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::ITEM_COUNT,
@@ -284,7 +279,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::upload;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 1: Bot2 sets item count.");
     std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::UP_ITEM,
@@ -293,7 +288,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::upload;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 1: Bot2 puts up another item.");
     std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::UP_MONEY,
@@ -302,7 +297,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::money;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 1: Bot2 puts up money.");
 
     // 5. Bot2 cancels the trade.
@@ -317,7 +312,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 1: Bot2 cancelled the trade.");
 
     // 6. Bot2 initiates trade with Bot1.
@@ -332,7 +327,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 1: Bot2 -> Bot1 trade re-initiated.");
 
     // 7. Both bots put up all their created items again.
@@ -343,7 +338,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::bundle;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 1: Bot1 puts up an item again.");
     std::ignore = co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::ITEM_COUNT,
@@ -352,7 +347,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::upload;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 1: Bot1 sets item count again.");
     std::ignore = co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::UP_MONEY,
@@ -361,7 +356,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::money;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 1: Bot1 puts up money again.");
 
     std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
@@ -371,7 +366,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::bundle;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 1: Bot2 puts up an item again.");
     std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::ITEM_COUNT,
@@ -380,7 +375,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::upload;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 1: Bot2 sets item count again.");
     std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::UP_ITEM,
@@ -389,7 +384,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::upload;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 1: Bot2 puts up another item again.");
     std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::UP_MONEY,
@@ -398,7 +393,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::money;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 1: Bot2 puts up money again.");
 
     // 8. Both bots lock the trade & 9. Check for trade success message.
@@ -407,7 +402,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::lock;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 1: Bot1 locked the trade.");
     std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::LOCK, bot1->oid(), {}),
@@ -420,7 +415,7 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 1: Bot2 locked the trade, completing it.");
 
     auto thread = bot1->thread();
@@ -466,13 +461,11 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1,
     co_return true;
 }
 
-async::task<bool> trade_test::test_scenario_2(std::shared_ptr<game_bot>& bot1,
-                                              std::shared_ptr<game_bot>& bot2,
-                                              const fb::model::timespan& timeout)
+async::task<bool> trade_test::test_scenario_2(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
 {
     // 1. Set bot1's money to max and bot2's to 1.
-    co_await bot1->change_money(0xFFFFFFFF, timeout);
-    co_await bot2->change_money(1, timeout);
+    co_await bot1->change_money(0xFFFFFFFF, DEFAULT_TIMEOUT);
+    co_await bot2->change_money(1, DEFAULT_TIMEOUT);
 
     // 2. Start trade.
     std::ignore = co_await bot1->request<fb::bot::integration::trade_bot>(
@@ -486,7 +479,7 @@ async::task<bool> trade_test::test_scenario_2(std::shared_ptr<game_bot>& bot1,
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 2: Trade initiated for money overflow test.");
 
     // 3. Bot2 puts up 1 gold.
@@ -497,7 +490,7 @@ async::task<bool> trade_test::test_scenario_2(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::money;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 2: Bot2 puts up 1 gold.");
 
     // 4. Both bots lock the trade, expecting failure.
@@ -506,7 +499,7 @@ async::task<bool> trade_test::test_scenario_2(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::lock;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 2: Bot1 locked the trade.");
 
     std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
@@ -526,7 +519,7 @@ async::task<bool> trade_test::test_scenario_2(std::shared_ptr<game_bot>& bot1,
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 2: Bot2 tried to lock, trade failed as expected.");
 
     auto thread = bot1->thread();
@@ -543,13 +536,11 @@ async::task<bool> trade_test::test_scenario_2(std::shared_ptr<game_bot>& bot1,
     co_return true;
 }
 
-async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1,
-                                              std::shared_ptr<game_bot>& bot2,
-                                              const fb::model::timespan& timeout)
+async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
 {
     // 1. Give each bot 150 도토리.
-    co_await bot1->create_item("도토리", 150, timeout);
-    co_await bot2->create_item("도토리", 150, timeout);
+    co_await bot1->create_item("도토리", 150, DEFAULT_TIMEOUT);
+    co_await bot2->create_item("도토리", 150, DEFAULT_TIMEOUT);
 
     // 2. Start trade.
     std::ignore = co_await bot1->request<fb::bot::integration::trade_bot>(
@@ -563,7 +554,7 @@ async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1,
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 3: Trade initiated for item stack overflow test.");
 
     // 3. Bot1 puts up 150 도토리.
@@ -574,7 +565,7 @@ async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::bundle;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 3: Bot1 puts up 도토리.");
     std::ignore = co_await bot1->request<fb::bot::integration::trade_bot>(
         fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::ITEM_COUNT,
@@ -583,7 +574,7 @@ async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::upload;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 3: Bot1 sets item count.");
 
     // 4. Both bots lock the trade, expecting failure.
@@ -592,7 +583,7 @@ async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::lock;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 3: Bot1 locked the trade.");
 
     std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
@@ -613,7 +604,7 @@ async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1,
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 3: Bot2 tried to lock, trade failed as expected.");
 
     auto thread = bot1->thread();
@@ -630,18 +621,16 @@ async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1,
     co_return true;
 }
 
-async::task<bool> trade_test::test_scenario_4(std::shared_ptr<game_bot>& bot1,
-                                              std::shared_ptr<game_bot>& bot2,
-                                              const fb::model::timespan& timeout)
+async::task<bool> trade_test::test_scenario_4(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
 {
     constexpr auto CONTAINER_CAPACITY = 52;
 
     // 1. Fill bot1's inventory and give bot2 one item.
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
-        co_await bot1->create_item("목도", 1, timeout);
+        co_await bot1->create_item("목도", 1, DEFAULT_TIMEOUT);
     }
-    co_await bot2->create_item("현철중검", 1, timeout);
+    co_await bot2->create_item("현철중검", 1, DEFAULT_TIMEOUT);
 
     // 2. Start trade.
     std::ignore = co_await bot1->request<fb::bot::integration::trade_bot>(
@@ -655,7 +644,7 @@ async::task<bool> trade_test::test_scenario_4(std::shared_ptr<game_bot>& bot1,
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 4: Trade initiated for inventory full test.");
 
     // 3. Bot2 puts up its item.
@@ -666,7 +655,7 @@ async::task<bool> trade_test::test_scenario_4(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::upload;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 4: Bot2 puts up an item.");
 
     // 4. Both bots lock the trade, expecting failure.
@@ -675,7 +664,7 @@ async::task<bool> trade_test::test_scenario_4(std::shared_ptr<game_bot>& bot1,
         [](auto& resp) {
             return resp.type == fb::bot::integration::trade_bot::trade_type::lock;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot1->chat("Scenario 4: Bot1 locked the trade.");
 
     std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
@@ -695,7 +684,7 @@ async::task<bool> trade_test::test_scenario_4(std::shared_ptr<game_bot>& bot1,
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
     bot2->chat("Scenario 4: Bot2 tried to lock, trade failed as expected.");
 
     auto thread = bot1->thread();

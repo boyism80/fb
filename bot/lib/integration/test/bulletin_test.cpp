@@ -91,8 +91,8 @@ async::task<bool> bulletin_test::execute()
 
     // Change level to 10 for both bots
     fb::logger::info("Changing level to 10 for both bots");
-    co_await bot1->change_level(10, 10s);
-    co_await bot2->change_level(10, 10s);
+    co_await bot1->change_level(10, DEFAULT_TIMEOUT);
+    co_await bot2->change_level(10, DEFAULT_TIMEOUT);
 
     fb::logger::info("Level changed to 10, testing bulletin write again");
     bot1->chat("=== LEVEL CHANGED TO 10, TESTING BULLETIN WRITE AGAIN ===");
@@ -248,8 +248,8 @@ async::task<bool> bulletin_test::execute()
     co_await bot1->thread()->sleep(1s);
 
     fb::logger::info("Checking {}'s mailbox", bot2->name());
-    auto mails   = co_await this->get_mails(bot2);
-    auto mail_it = std::find_if(mails.begin(), mails.end(), [&](const auto& mail) {
+    auto&& mails   = co_await this->get_mails(bot2);
+    auto   mail_it = std::find_if(mails.begin(), mails.end(), [&](const auto& mail) {
         return mail.sender_name == bot1_name;
     });
 
@@ -307,15 +307,13 @@ async::task<bool> bulletin_test::write(std::shared_ptr<fb::bot::game_bot> bot,
                                        const std::string&                 title,
                                        const std::string&                 contents)
 {
-    constexpr auto timeout = 10s;
-
     if (bot == nullptr)
         co_return false;
 
     // Send the request and wait for response
     auto&& resp = co_await bot->request<fb::bot::integration::bulletin_bot>(
         fb::protocol::game::request::bulletin(BULLETIN_ACTION::WRITE, 1, 0, 0, title, contents),
-        timeout);
+        DEFAULT_TIMEOUT);
 
     // Check if the response indicates success
     auto expected_message = _TEXT(MESSAGE_BULLETIN_WRITE);
@@ -328,8 +326,6 @@ async::task<bool> bulletin_test::write(std::shared_ptr<fb::bot::game_bot> bot,
 
 async::task<std::vector<fb::bot::bulletin>> bulletin_test::get_sections(std::shared_ptr<fb::bot::game_bot> bot)
 {
-    constexpr auto timeout = 10s;
-
     if (bot == nullptr)
         co_return {};
 
@@ -342,7 +338,7 @@ async::task<std::vector<fb::bot::bulletin>> bulletin_test::get_sections(std::sha
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     fb::logger::info("Bulletin sections retrieved successfully - Sections: {}", resp.bulletins.size());
 
@@ -352,8 +348,6 @@ async::task<std::vector<fb::bot::bulletin>> bulletin_test::get_sections(std::sha
 async::task<std::vector<fb::bot::integration::bulletin_bot::article_data>>
 bulletin_test::get_articles(std::shared_ptr<fb::bot::game_bot> bot, uint16_t section, uint16_t offset)
 {
-    constexpr auto timeout = 10s;
-
     if (bot == nullptr)
         co_return {};
 
@@ -369,7 +363,7 @@ bulletin_test::get_articles(std::shared_ptr<fb::bot::game_bot> bot, uint16_t sec
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     fb::logger::info("Bulletin articles retrieved successfully - Section: {}, Name: {}, Articles: {}",
                      resp.articles_bulletin_id,
@@ -385,8 +379,6 @@ async::task<bool> bulletin_test::read_article(std::shared_ptr<fb::bot::game_bot>
                                               const std::string&                 expected_title,
                                               const std::string&                 expected_contents)
 {
-    constexpr auto timeout = 10s;
-
     if (bot == nullptr || article_id == 0)
         co_return false;
 
@@ -402,7 +394,7 @@ async::task<bool> bulletin_test::read_article(std::shared_ptr<fb::bot::game_bot>
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     fb::logger::info("Bulletin article read successfully - ID: {}, Title: {}, Author: {}",
                      resp.article_id,
@@ -430,8 +422,6 @@ async::task<bool> bulletin_test::delete_article(std::shared_ptr<fb::bot::game_bo
                                                 uint16_t                           section,
                                                 uint16_t                           article_id)
 {
-    constexpr auto timeout = 10s;
-
     if (bot == nullptr || article_id == 0)
         co_return false;
 
@@ -441,7 +431,7 @@ async::task<bool> bulletin_test::delete_article(std::shared_ptr<fb::bot::game_bo
         [](auto& resp) -> bool {
             return resp.type == fb::bot::integration::bulletin_bot::bulletin_type::message;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     if (resp.message_text == _TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE))
     {
@@ -458,8 +448,6 @@ async::task<bool> bulletin_test::send_mail(std::shared_ptr<fb::bot::game_bot> bo
                                            const std::string&                 title,
                                            const std::string&                 contents)
 {
-    constexpr auto timeout = 10s;
-
     if (bot == nullptr)
         co_return false;
 
@@ -469,7 +457,7 @@ async::task<bool> bulletin_test::send_mail(std::shared_ptr<fb::bot::game_bot> bo
         [](auto& resp) -> bool {
             return resp.type == fb::bot::integration::bulletin_bot::bulletin_type::message_mail;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     if (resp.message_success)
     {
@@ -484,18 +472,16 @@ async::task<bool> bulletin_test::send_mail(std::shared_ptr<fb::bot::game_bot> bo
 async::task<std::vector<fb::bot::integration::bulletin_bot::mail_data>>
 bulletin_test::get_mails(std::shared_ptr<fb::bot::game_bot> bot)
 {
-    constexpr auto timeout = 10s;
-
     if (bot == nullptr)
         co_return {};
 
     // Send the request and wait for response
     auto&& resp = co_await bot->request<fb::bot::integration::bulletin_bot>(
-        fb::protocol::game::request::bulletin(BULLETIN_ACTION::ARTICLES, 0xFFFF, 0, 0), // section 0xFFFF for mail
+        fb::protocol::game::request::bulletin(BULLETIN_ACTION::ARTICLES, 0xFFFF, 0, 0x7FFF), // section 0xFFFF for mail
         [](auto& resp) -> bool {
             return resp.type == fb::bot::integration::bulletin_bot::bulletin_type::mails;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     fb::logger::info("Mails retrieved successfully - Mails: {}", resp.mails.size());
 
@@ -507,8 +493,6 @@ async::task<bool> bulletin_test::read_mail(std::shared_ptr<fb::bot::game_bot> bo
                                            const std::string&                 expected_title,
                                            const std::string&                 expected_contents)
 {
-    constexpr auto timeout = 10s;
-
     if (bot == nullptr)
         co_return false;
 
@@ -524,7 +508,7 @@ async::task<bool> bulletin_test::read_mail(std::shared_ptr<fb::bot::game_bot> bo
 
             return true;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     if (resp.mail_title != expected_title)
     {
@@ -543,8 +527,6 @@ async::task<bool> bulletin_test::read_mail(std::shared_ptr<fb::bot::game_bot> bo
 
 async::task<bool> bulletin_test::delete_mail(std::shared_ptr<fb::bot::game_bot> bot, uint16_t mail_id)
 {
-    constexpr auto timeout = 10s;
-
     if (bot == nullptr)
         co_return false;
 
@@ -552,9 +534,9 @@ async::task<bool> bulletin_test::delete_mail(std::shared_ptr<fb::bot::game_bot> 
     auto&& resp = co_await bot->request<fb::bot::integration::bulletin_bot>(
         fb::protocol::game::request::bulletin(BULLETIN_ACTION::DELETE, 0xFFFF, mail_id, 0),
         [](auto& resp) -> bool {
-            return resp.type == fb::bot::integration::bulletin_bot::bulletin_type::message;
+            return resp.type == fb::bot::integration::bulletin_bot::bulletin_type::message_mail;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     if (resp.message_text == _TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE))
     {

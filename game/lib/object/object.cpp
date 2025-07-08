@@ -471,7 +471,8 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map, DESTROY_TYPE d
 
 async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
                               const fb::model::point16_t&    position,
-                              DESTROY_TYPE                   destroy_type)
+                              DESTROY_TYPE                   destroy_type,
+                              bool                           notify)
 {
     this->assert_thread();
 
@@ -574,15 +575,18 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         this->update_id();
         this->update_map(*map);
         this->update_position();
-        this->update_external(true);
+        this->update_external(*this, true);
         this->update_bgm(map->model.bgm, 100);
 
-        for (auto& obj : map->nears(this->_position))
+        if (notify)
         {
-            if (obj.get() == this)
-                continue;
+            for (auto& obj : map->nears(this->_position))
+            {
+                if (obj.get() == this)
+                    continue;
 
-            obj->update_external(*this, true);
+                obj->update_external(*this, true);
+            }
         }
 
         co_return true;

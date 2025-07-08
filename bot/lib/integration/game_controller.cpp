@@ -4,6 +4,7 @@
 #include <fb/bot/integration/skill_test.h>
 #include <fb/bot/integration/bulletin_test.h>
 #include <fb/bot/integration/trade_test.h>
+#include <fb/bot/integration/communication_test.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
@@ -37,6 +38,7 @@ void game_bot_controller::initialize()
     this->enqueue_test(std::make_unique<skill_test>(*this));
     this->enqueue_test(std::make_unique<bulletin_test>(*this));
     this->enqueue_test(std::make_unique<trade_test>(*this));
+    this->enqueue_test(std::make_unique<communication_test>(*this));
 
     fb::logger::info(
         "Integration test controller initialized with test queue (movement -> attack -> skill -> bulletin -> trade)");

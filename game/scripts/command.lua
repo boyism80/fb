@@ -137,6 +137,66 @@ command_funcs = {
         return true
     end,
 
+    ['몬스터범위생성'] =
+    function (me, args)
+        local name, distance = table.unpack(args)
+        
+        -- Validate arguments
+        if not name or not distance then
+            me:message("사용법: /몬스터범위생성 <몬스터이름> <거리>")
+            return false
+        end
+        
+        distance = tonumber(distance)
+        if not distance or distance < 0 then
+            me:message("거리는 0 이상의 숫자여야 합니다.")
+            return false
+        end
+        
+        -- Get player's current position
+        local player_x, player_y = me:position()
+        local spawned_count = 0
+        local oids = {}
+        
+        -- Spawn monsters within the specified distance using squared distance
+        local distance_squared = distance * distance
+        for dx = -distance, distance do
+            for dy = -distance, distance do
+                -- Skip the center position (player's position)
+                if dx ~= 0 or dy ~= 0 then
+                    -- Calculate squared distance (faster than sqrt)
+                    local distance_sq = dx * dx + dy * dy
+                    
+                    -- Only spawn if within the specified distance
+                    if distance_sq <= distance_squared then
+                        local target_x = player_x + dx
+                        local target_y = player_y + dy
+                        
+                        -- Validate position bounds
+                        if target_x >= 0 and target_y >= 0 and target_x < 1000 and target_y < 1000 then
+                            local monster = me:spawn_mob(name, target_x, target_y, false, false)
+                            if monster then
+                                spawned_count = spawned_count + 1
+                                table.insert(oids, monster:id())
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        
+        -- Call bulk_update if monsters were spawned
+        if spawned_count > 0 then
+            local map = me:map()
+            map:bulk_update(oids)
+            me:message(string.format("'%s' 몬스터를 %d마리 생성했습니다. (거리: %d)", name, spawned_count, distance))
+        else
+            me:message(string.format("'%s' 몬스터 생성에 실패했습니다.", name))
+        end
+        
+        return true
+    end,
+
     ['직업바꾸기'] = 
     function (me, args)
         local name = table.unpack(args)

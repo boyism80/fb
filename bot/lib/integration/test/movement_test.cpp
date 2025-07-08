@@ -140,17 +140,4 @@ void movement_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
     fb::logger::debug("Movement test: Bot {} added to collection", bot->fd());
 }
 
-void movement_test::cleanup()
-{
-    for (auto bot : this->get_test_bots())
-    {
-        if (bot)
-        {
-            bot->close();
-        }
-    }
-
-    fb::logger::info("Movement test cleanup completed - all bots disconnected");
-}
-
 } // namespace fb::bot::integration

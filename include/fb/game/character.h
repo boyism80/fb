@@ -218,12 +218,14 @@ public:
      * @param      map           The target map to move to
      * @param[in]  position      The position on the target map
      * @param[in]  destroy_type  How to handle the character when leaving current map
+     * @param[in]  notify        Whether to notify other objects about the move
      *
      * @return     True if the map change was successful, false otherwise
      */
     [[nodiscard]] async::task<bool> map(std::shared_ptr<fb::game::map> map,
                                         const fb::model::point16_t&    position,
-                                        DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+                                        DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT,
+                                        bool                           notify       = true) override final;
 
 public:
     /**
@@ -1068,12 +1070,12 @@ public:
      * @param[in]  model     The mob model to spawn
      * @param[in]  position  The position where to spawn the mob
      * @param[in]  owned     Whether the mob is owned by this character
+     * @param[in]  notify    Whether to notify the character about the mob
      *
      * @return     Pointer to the spawned mob, or nullptr if failed
      */
-    std::shared_ptr<fb::game::mob> spawn_mob(const fb::model::mob&       model,
-                                             const fb::model::point16_t& position,
-                                             bool                        owned = true);
+    std::shared_ptr<fb::game::mob>
+    spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned = true, bool notify = true);
 
     /**
      * @brief      Gets the list of mobs spawned by this character.

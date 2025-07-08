@@ -36,9 +36,6 @@ async::task<void> communication_test::initialize(game_bot_controller& controller
 
 async::task<bool> communication_test::execute()
 {
-    constexpr auto timeout  = 30s;
-    constexpr auto interval = 100ms;
-
     if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
         co_return false;
 
@@ -56,9 +53,9 @@ async::task<bool> communication_test::execute()
     auto& bot2 = bots[1];
 
     // Position bot2 next to bot1 for proximity-based tests
-    co_await bot2->move(DIRECTION::RIGHT, 1, interval);
+    co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
     co_await bot2->thread()->switching();
-    co_await bot2->thread()->sleep(interval);
+    co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
     bot2->direction(DIRECTION::LEFT);
 
     // Position bot1 to face bot2
@@ -70,27 +67,27 @@ async::task<bool> communication_test::execute()
     using scenario_fn = std::function<async::task<bool>()>;
     std::queue<scenario_fn> scenarios;
 
-    scenarios.push([this, &bot1, &bot2, timeout] {
-        return this->test_normal_chat(bot1, bot2, timeout);
+    scenarios.push([this, &bot1, &bot2] {
+        return this->test_normal_chat(bot1, bot2);
     });
 
-    scenarios.push([this, &bot1, &bot2, timeout] {
-        return this->test_shout_chat(bot1, bot2, timeout);
+    scenarios.push([this, &bot1, &bot2] {
+        return this->test_shout_chat(bot1, bot2);
     });
 
-    scenarios.push([this, &bot1, &bot2, timeout] {
-        return this->test_whisper(bot1, bot2, timeout);
+    scenarios.push([this, &bot1, &bot2] {
+        return this->test_whisper(bot1, bot2);
     });
 
-    scenarios.push([this, &bot1, &bot2, timeout] {
-        return this->test_whisper_block(bot1, bot2, timeout);
+    scenarios.push([this, &bot1, &bot2] {
+        return this->test_whisper_block(bot1, bot2);
     });
 
     int scenario_count = 1;
     while (scenarios.empty() == false)
     {
-        co_await this->reset_bot_state(bot1, timeout);
-        co_await this->reset_bot_state(bot2, timeout);
+        co_await this->reset_bot_state(bot1);
+        co_await this->reset_bot_state(bot2);
 
         auto& scenario = scenarios.front();
         if (co_await scenario() == false)
@@ -141,19 +138,6 @@ void communication_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot
     fb::logger::debug("Communication test: Bot {} added to collection", bot->fd());
 }
 
-void communication_test::cleanup()
-{
-    for (auto bot : this->get_test_bots())
-    {
-        if (bot)
-        {
-            bot->close();
-        }
-    }
-
-    fb::logger::info("Communication test cleanup completed - all bots disconnected");
-}
-
 async::task<void> communication_test::on_hook_sequence(fb::bot::game_bot&                      bot,
                                                        const fb::protocol::game::response::id& response)
 {
@@ -186,9 +170,7 @@ async::task<void> communication_test::on_hook_position(fb::bot::game_bot&       
     co_return;
 }
 
-async::task<bool> communication_test::test_normal_chat(std::shared_ptr<game_bot>& bot1,
-                                                       std::shared_ptr<game_bot>& bot2,
-                                                       std::chrono::milliseconds  timeout)
+async::task<bool> communication_test::test_normal_chat(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
 {
     fb::logger::info("Starting normal chat test");
 
@@ -202,15 +184,13 @@ async::task<bool> communication_test::test_normal_chat(std::shared_ptr<game_bot>
             std::string expected_text = std::format("{}: {}", bot1->name(), test_message);
             return response.text == expected_text && response.oid == bot1->oid() && response.type == CHAT_TYPE::NORMAL;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     fb::logger::info("Normal chat test PASSED");
     co_return true;
 }
 
-async::task<bool> communication_test::test_shout_chat(std::shared_ptr<game_bot>& bot1,
-                                                      std::shared_ptr<game_bot>& bot2,
-                                                      std::chrono::milliseconds  timeout)
+async::task<bool> communication_test::test_shout_chat(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
 {
     fb::logger::info("Starting shout chat test");
 
@@ -224,15 +204,13 @@ async::task<bool> communication_test::test_shout_chat(std::shared_ptr<game_bot>&
             std::string expected_text = std::format("{}! {}", bot1->name(), test_message);
             return response.text == expected_text && response.oid == bot1->oid() && response.type == CHAT_TYPE::SHOUT;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     fb::logger::info("Shout chat test PASSED");
     co_return true;
 }
 
-async::task<bool> communication_test::test_whisper(std::shared_ptr<game_bot>& bot1,
-                                                   std::shared_ptr<game_bot>& bot2,
-                                                   std::chrono::milliseconds  timeout)
+async::task<bool> communication_test::test_whisper(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
 {
     fb::logger::info("Starting whisper test");
 
@@ -253,22 +231,21 @@ async::task<bool> communication_test::test_whisper(std::shared_ptr<game_bot>& bo
             std::string message = text.substr(pos + 2);
             return target == bot2->name() && message == test_message;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     fb::logger::info("Whisper test PASSED");
     co_return true;
 }
 
 async::task<bool> communication_test::test_whisper_block(std::shared_ptr<game_bot>& bot1,
-                                                         std::shared_ptr<game_bot>& bot2,
-                                                         std::chrono::milliseconds  timeout)
+                                                         std::shared_ptr<game_bot>& bot2)
 {
     fb::logger::info("Starting whisper block test");
 
     // First, disable whisper option for bot2 (block whispers)
     auto&& disable_resp = co_await bot2->request<fb::protocol::game::response::message>(
         fb::protocol::game::request::update_option(OPTION::WHISPER, false),
-        timeout);
+        DEFAULT_TIMEOUT);
 
     fb::logger::debug("Whisper option disabled for bot2: {}", disable_resp.text);
 
@@ -283,7 +260,7 @@ async::task<bool> communication_test::test_whisper_block(std::shared_ptr<game_bo
                 // Look for error message indicating whisper is blocked
                 return response.type == MESSAGE_TYPE::NOTIFY && response.text.find("귓속말 거부") != std::string::npos;
             },
-            timeout);
+            DEFAULT_TIMEOUT);
 
         fb::logger::info("Whisper block test PASSED - whisper was successfully blocked");
     }
@@ -296,22 +273,16 @@ async::task<bool> communication_test::test_whisper_block(std::shared_ptr<game_bo
     // Re-enable whisper option for bot2
     std::ignore = co_await bot2->request<fb::protocol::game::response::message>(
         fb::protocol::game::request::update_option(OPTION::WHISPER, false),
-        timeout);
+        DEFAULT_TIMEOUT);
 
     fb::logger::debug("Whisper option re-enabled for bot2");
 
     co_return true;
 }
 
-async::task<void> communication_test::reset_bot_state(std::shared_ptr<game_bot>& bot, std::chrono::milliseconds timeout)
+async::task<void> communication_test::reset_bot_state(std::shared_ptr<game_bot>& bot)
 {
-    // Reset bot to a clean state
-    bot->remove_buffs();
-
-    // Ensure whisper option is enabled
-    std::ignore = co_await bot->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::update_option(OPTION::WHISPER, false),
-        timeout);
+    co_return;
 }
 
 } // namespace fb::bot::integration

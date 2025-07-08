@@ -4,11 +4,8 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                      std::chrono::milliseconds                        timeout)
+async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
-    constexpr auto interval = 100ms;
-
     if (bots.size() < 2)
         co_return false;
 
@@ -23,7 +20,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
     // Setup all bots with max HP/MP
     for (auto& bot : bots)
     {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
+        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt);
     }
 
     struct area_damage_spell_test
@@ -98,22 +95,22 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names, timeout);
+    auto learned_count = co_await this->learn_spells(caster, spell_names);
     fb::logger::info("Successfully learned {} out of {} area damage spells", learned_count, area_spells.size());
 
     fb::logger::info("Testing {} area damage spells", area_spells.size());
     auto spell_slot = 1;
 
-    co_await caster->move(DIRECTION::BOTTOM, 3, interval);
-    co_await bots[1]->move(DIRECTION::LEFT, 2, interval);
-    co_await bots[1]->move(DIRECTION::BOTTOM, 3, interval);
-    co_await bots[2]->move(DIRECTION::LEFT, 2, interval);
-    co_await bots[2]->move(DIRECTION::BOTTOM, 2, interval);
-    co_await bots[3]->move(DIRECTION::LEFT, 2, interval);
-    co_await bots[3]->move(DIRECTION::BOTTOM, 4, interval);
-    co_await bots[3]->move(DIRECTION::LEFT, 1, interval);
-    co_await bots[4]->move(DIRECTION::LEFT, 3, interval);
-    co_await bots[4]->move(DIRECTION::BOTTOM, 3, interval);
+    co_await caster->move(DIRECTION::BOTTOM, 3, DEFAULT_INTERVAL);
+    co_await bots[1]->move(DIRECTION::LEFT, 2, DEFAULT_INTERVAL);
+    co_await bots[1]->move(DIRECTION::BOTTOM, 3, DEFAULT_INTERVAL);
+    co_await bots[2]->move(DIRECTION::LEFT, 2, DEFAULT_INTERVAL);
+    co_await bots[2]->move(DIRECTION::BOTTOM, 2, DEFAULT_INTERVAL);
+    co_await bots[3]->move(DIRECTION::LEFT, 2, DEFAULT_INTERVAL);
+    co_await bots[3]->move(DIRECTION::BOTTOM, 4, DEFAULT_INTERVAL);
+    co_await bots[3]->move(DIRECTION::LEFT, 1, DEFAULT_INTERVAL);
+    co_await bots[4]->move(DIRECTION::LEFT, 3, DEFAULT_INTERVAL);
+    co_await bots[4]->move(DIRECTION::BOTTOM, 3, DEFAULT_INTERVAL);
     co_await caster->thread()->sleep(500ms);
     caster->direction(DIRECTION::BOTTOM);
     bots[1]->direction(DIRECTION::BOTTOM);
@@ -165,16 +162,16 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
         fb::logger::info("Spawning {} monsters in spell range for {}", spawn_positions.size(), spell.name);
         for (const auto& pos : spawn_positions)
         {
-            std::ignore = co_await this->spawn_monster_by_look(caster, "다람쥐", pos.x, pos.y, 32793, timeout);
+            std::ignore = co_await this->spawn_monster_by_look(caster, "다람쥐", pos.x, pos.y, 32793);
         }
 
         // Set caster's current HP/MP for testing
-        std::ignore = co_await this->set_current_hp_mp(caster, 1000, 1000, timeout);
+        std::ignore = co_await this->set_current_hp_mp(caster, 1000, 1000);
 
         // Set other bots' HP for damage testing
         for (size_t i = 1; i < bots.size(); ++i)
         {
-            std::ignore = co_await this->set_current_hp_mp(bots[i], 10000, 10000, timeout);
+            std::ignore = co_await this->set_current_hp_mp(bots[i], 10000, 10000);
         }
 
         // Calculate expected values using the spell calculator function
@@ -195,10 +192,10 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
             [=](auto& resp) -> bool {
                 return resp.ch_hp == expected_caster_hp && resp.ch_mp == expected_caster_mp;
             },
-            timeout);
+            DEFAULT_TIMEOUT);
 
         // Wait for spell effect to propagate
-        co_await caster->thread()->sleep(interval);
+        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
 
         // Verify other bots took damage
         for (size_t i = 1; i < bots.size(); ++i)
@@ -217,19 +214,19 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
         }
 
         spell_slot++;
-        co_await caster->thread()->sleep(interval);
+        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
-    co_await bots[4]->move(DIRECTION::TOP, 3, interval);
-    co_await bots[4]->move(DIRECTION::RIGHT, 3, interval);
-    co_await bots[3]->move(DIRECTION::RIGHT, 1, interval);
-    co_await bots[3]->move(DIRECTION::TOP, 4, interval);
-    co_await bots[3]->move(DIRECTION::RIGHT, 2, interval);
-    co_await bots[2]->move(DIRECTION::TOP, 2, interval);
-    co_await bots[2]->move(DIRECTION::RIGHT, 2, interval);
-    co_await bots[1]->move(DIRECTION::TOP, 3, interval);
-    co_await bots[1]->move(DIRECTION::RIGHT, 2, interval);
-    co_await caster->move(DIRECTION::TOP, 3, interval);
+    co_await bots[4]->move(DIRECTION::TOP, 3, DEFAULT_INTERVAL);
+    co_await bots[4]->move(DIRECTION::RIGHT, 3, DEFAULT_INTERVAL);
+    co_await bots[3]->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
+    co_await bots[3]->move(DIRECTION::TOP, 4, DEFAULT_INTERVAL);
+    co_await bots[3]->move(DIRECTION::RIGHT, 2, DEFAULT_INTERVAL);
+    co_await bots[2]->move(DIRECTION::TOP, 2, DEFAULT_INTERVAL);
+    co_await bots[2]->move(DIRECTION::RIGHT, 2, DEFAULT_INTERVAL);
+    co_await bots[1]->move(DIRECTION::TOP, 3, DEFAULT_INTERVAL);
+    co_await bots[1]->move(DIRECTION::RIGHT, 2, DEFAULT_INTERVAL);
+    co_await caster->move(DIRECTION::TOP, 3, DEFAULT_INTERVAL);
     co_await caster->thread()->sleep(500ms);
     bots[4]->direction(DIRECTION::BOTTOM);
     bots[3]->direction(DIRECTION::BOTTOM);

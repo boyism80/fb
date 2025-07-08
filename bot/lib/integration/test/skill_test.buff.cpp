@@ -4,11 +4,8 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                      std::chrono::milliseconds                        timeout)
+async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
-    constexpr auto interval = 100ms;
-
     if (bots.size() < 2)
         co_return false;
 
@@ -24,7 +21,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
     // Setup all bots with max HP/MP
     for (auto& bot : bots)
     {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
+        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt);
     }
 
     struct buff_debuff_spell_test
@@ -257,7 +254,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names, timeout);
+    auto learned_count = co_await this->learn_spells(caster, spell_names);
     fb::logger::info("Successfully learned {} out of {} buff/debuff spells", learned_count, buff_debuff_spells.size());
 
     fb::logger::info("Testing {} buff/debuff spells", buff_debuff_spells.size());
@@ -285,23 +282,23 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
         while (true)
         {
             // Set caster's current HP/MP for testing
-            std::ignore = co_await this->set_current_hp_mp(caster, 10000, 10000, timeout);
+            std::ignore = co_await this->set_current_hp_mp(caster, 10000, 10000);
 
             // Set target's current HP/MP for testing
-            std::ignore = co_await this->set_current_hp_mp(target, 10000, 10000, timeout);
+            std::ignore = co_await this->set_current_hp_mp(target, 10000, 10000);
 
             auto before_caster_mp = caster->mp();
             expected_caster_mp    = before_caster_mp - spell.expected_mp_cost;
 
             auto&& resp = co_await caster->request<fb::protocol::game::response::message>(
                 fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", target_oid, target_position),
-                timeout);
+                DEFAULT_TIMEOUT);
 
             if (resp.text == std::format("{} 외웠습니다.", name_with(spell.name)))
                 break;
 
             caster->chat(resp.text);
-            co_await caster->thread()->sleep(interval);
+            co_await caster->thread()->sleep(DEFAULT_INTERVAL);
             actual_target->remove_buffs();
         }
 
@@ -309,7 +306,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
             throw std::runtime_error(std::format("MP cost mismatch for '{}'", spell.name));
 
         // Wait for spell effect to propagate
-        co_await caster->thread()->sleep(interval);
+        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
 
         // Request self_info from target to check buff/debuff
         std::ignore = co_await actual_target->request<fb::protocol::game::response::spell_buff>(
@@ -317,7 +314,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
             [&](auto& resp) -> bool {
                 return resp.name == spell.name;
             },
-            timeout);
+            DEFAULT_TIMEOUT);
 
         fb::logger::info("Buff/Debuff '{}' successfully applied and verified", spell.name);
 
@@ -335,7 +332,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
         actual_target->remove_buffs();
 
         spell_slot++;
-        co_await caster->thread()->sleep(interval);
+        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     caster->chat("=== BUFF/DEBUFF SPELL TEST COMPLETED ===");

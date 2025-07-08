@@ -161,7 +161,10 @@ namespace Internal.Controllers
         {
             try
             {
-                await _dbContext.Mail.Delete(request.User, request.Id);
+                var success = await _dbContext.Mail.Delete(request.User, request.Id);
+                if (!success)
+                    throw new LogicException(ErrorCode.MailNotExists);
+
                 return new Response.DeleteMail
                 {
                     Unread = await _dbContext.Mail.Unread(request.User),

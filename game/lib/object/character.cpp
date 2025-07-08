@@ -81,7 +81,8 @@ OBJECT_TYPE character::what() const
 
 async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
                                  const fb::model::point16_t&    position,
-                                 DESTROY_TYPE                   destroy_type)
+                                 DESTROY_TYPE                   destroy_type,
+                                 bool                           notify)
 {
     if (this->_thread == nullptr)
         co_return true;
@@ -1364,9 +1365,8 @@ bool character::detect() const
     return this->_detect;
 }
 
-std::shared_ptr<fb::game::mob> character::spawn_mob(const fb::model::mob&       model,
-                                                    const fb::model::point16_t& position,
-                                                    bool                        owned)
+std::shared_ptr<fb::game::mob>
+character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify)
 {
     auto map = this->_map;
     if (map == nullptr)
@@ -1375,7 +1375,7 @@ std::shared_ptr<fb::game::mob> character::spawn_mob(const fb::model::mob&       
     auto  params    = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr};
     auto& mob_model = static_cast<const fb::model::mob&>(model);
     auto  mob       = std::make_shared<fb::game::mob>(this->context, mob_model, params);
-    mob->map(map, position);
+    mob->map(map, position, DESTROY_TYPE::DEFAULT, notify);
 
     if (owned)
         this->_spawned_mobs.push_back(mob);

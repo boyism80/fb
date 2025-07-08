@@ -4,11 +4,8 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                      std::chrono::milliseconds                        timeout)
+async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
-    constexpr auto interval = 100ms;
-
     auto& caster = bots.at(0);
     auto& target = bots.at(1);
 
@@ -20,7 +17,7 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
 
     // Step 1: Move caster down by 1 tile
     co_await caster->move(DIRECTION::BOTTOM);
-    co_await caster->thread()->sleep(100ms);
+    co_await caster->thread()->sleep(DEFAULT_INTERVAL);
 
     // Step 2: Spawn 4 monsters around the caster
     auto spawn_points     = std::vector<fb::model::point<uint16_t>>();
@@ -44,7 +41,7 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
     // Setup all bots with max HP/MP
     for (auto& bot : bots)
     {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
+        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt);
     }
 
     auto near_damage_spells = std::vector<near_damage_spell_test>{
@@ -82,7 +79,7 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names, timeout);
+    auto learned_count = co_await this->learn_spells(caster, spell_names);
     fb::logger::info("Successfully learned {} out of {} near damage spells", learned_count, near_damage_spells.size());
 
     fb::logger::info("Learning {} near damage spells", near_damage_spells.size());
@@ -106,11 +103,10 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
             {0,  1 }  // bottom
         };
 
-        std::ignore =
-            co_await this->spawn_monsters_relative_by_look(caster, "다람쥐", relative_positions, 32793, timeout);
+        std::ignore = co_await this->spawn_monsters_relative_by_look(caster, "다람쥐", relative_positions, 32793);
 
         // Set caster's current HP/MP for testing
-        std::ignore = co_await this->set_current_hp_mp(caster, 50, 100000, timeout);
+        std::ignore = co_await this->set_current_hp_mp(caster, 50, 100000);
 
         auto before_caster_hp = caster->hp();
         auto before_caster_mp = caster->mp();
@@ -123,10 +119,10 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
             [=](auto& resp) -> bool {
                 return resp.ch_hp == expected_hp && resp.ch_mp == expected_mp;
             },
-            timeout);
+            DEFAULT_TIMEOUT);
 
         spell_slot++;
-        co_await caster->thread()->sleep(interval);
+        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     co_await caster->move(DIRECTION::TOP);

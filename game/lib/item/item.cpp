@@ -27,9 +27,10 @@ void item::durability(uint32_t value)
 
 async::task<bool> item::map(std::shared_ptr<fb::game::map> map,
                             const fb::model::point16_t&    position,
-                            DESTROY_TYPE                   destroy_type)
+                            DESTROY_TYPE                   destroy_type,
+                            bool                           notify)
 {
-    auto result = co_await object::map(map, position);
+    auto result = co_await object::map(map, position, destroy_type, notify);
     if (!result)
         co_return false;
 

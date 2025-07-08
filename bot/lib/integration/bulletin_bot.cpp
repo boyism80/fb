@@ -89,7 +89,6 @@ async::task<void> bulletin_bot::deserialize(fb::stream_reader<big_endian>& reade
 
     case bulletin_type::mail:
     {
-        reader.read<uint8_t>(); // 0x05
         this->mail_flag = static_cast<MAIL_BUTTON_ENABLE>(reader.read<uint8_t>());
         reader.read<uint8_t>(); // 0x00
         this->mail_id          = reader.read<uint16_t>();

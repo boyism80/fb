@@ -54,22 +54,14 @@ public:
 
 private:
     // Test scenarios
-    async::task<bool> test_scenario_1(std::shared_ptr<game_bot>& bot1,
-                                      std::shared_ptr<game_bot>& bot2,
-                                      const fb::model::timespan& timeout);
-    async::task<bool> test_scenario_2(std::shared_ptr<game_bot>& bot1,
-                                      std::shared_ptr<game_bot>& bot2,
-                                      const fb::model::timespan& timeout);
-    async::task<bool> test_scenario_3(std::shared_ptr<game_bot>& bot1,
-                                      std::shared_ptr<game_bot>& bot2,
-                                      const fb::model::timespan& timeout);
-    async::task<bool> test_scenario_4(std::shared_ptr<game_bot>& bot1,
-                                      std::shared_ptr<game_bot>& bot2,
-                                      const fb::model::timespan& timeout);
+    async::task<bool> test_scenario_1(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
+    async::task<bool> test_scenario_2(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
+    async::task<bool> test_scenario_3(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
+    async::task<bool> test_scenario_4(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
 
 private:
     // Helper functions
-    async::task<void> reset_bot_state(std::shared_ptr<game_bot>& bot, const fb::model::timespan& timeout);
+    async::task<void> reset_bot_state(std::shared_ptr<game_bot>& bot);
     bool              has_item(const std::shared_ptr<game_bot>& bot, const std::string& name);
     uint16_t          get_item_count(const std::shared_ptr<game_bot>& bot, const std::string& name);
 };

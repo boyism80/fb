@@ -14,8 +14,7 @@ struct shout_spell_test
     MESSAGE_TYPE message_type;
 };
 
-async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                std::chrono::milliseconds                        timeout)
+async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
     if (bots.size() < 1)
     {
@@ -24,8 +23,6 @@ async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::
     }
 
     auto caster = bots.front();
-
-    constexpr auto interval = 100ms;
 
     // Define shout spells with their test parameters
     auto shout_spells = std::vector<shout_spell_test>{
@@ -46,7 +43,7 @@ async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::
         fb::logger::info("Learning spell: {}", spell.spell_name);
         spell_names.push_back(spell.spell_name);
     }
-    std::ignore = co_await this->learn_spells(caster, spell_names, timeout);
+    std::ignore = co_await this->learn_spells(caster, spell_names);
 
     // Test each shout spell
     auto spell_slot = 0;
@@ -56,7 +53,7 @@ async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::
         fb::logger::info("Testing {} spell", spell.spell_name);
 
         // Set current hp and mp
-        std::ignore = co_await this->set_current_hp_mp(caster, 10000, 1000, timeout);
+        std::ignore = co_await this->set_current_hp_mp(caster, 10000, 1000);
 
         fb::logger::info("Testing {} with message: {}", spell.spell_name, spell.test_message);
 
@@ -73,7 +70,7 @@ async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::
             [&spell](auto& resp) -> bool {
                 return resp.type == spell.message_type;
             },
-            timeout);
+            DEFAULT_TIMEOUT);
 
         fb::logger::info("{} spell cast completed, received message response", spell.spell_name);
 
@@ -90,7 +87,7 @@ async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::
         fb::logger::info("{} shout spell test completed successfully", spell.spell_name);
 
         // Wait between spells
-        co_await caster->thread()->sleep(interval);
+        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     fb::logger::info("Shout spell testing completed");

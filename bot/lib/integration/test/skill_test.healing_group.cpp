@@ -3,8 +3,7 @@
 
 namespace fb::bot::integration {
 
-async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                        std::chrono::milliseconds                        timeout)
+async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
     if (bots.empty())
     {
@@ -12,9 +11,8 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
         co_return false;
     }
 
-    constexpr auto interval = 100ms;
-    auto&          caster   = bots.front();
-    auto&          target   = bots.size() > 1 ? bots[1] : bots.front();
+    auto& caster = bots.front();
+    auto& target = bots.size() > 1 ? bots[1] : bots.front();
 
     fb::logger::info("Starting group healing spell test with {} bots", bots.size());
     caster->chat("Starting group healing spell test");
@@ -45,11 +43,11 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
         spell_names.push_back(spell.name);
     }
 
-    std::ignore = co_await this->learn_spells(caster, spell_names, timeout);
+    std::ignore = co_await this->learn_spells(caster, spell_names);
 
     // Form group with all available bots
     fb::logger::info("Forming group with {} bots for group healing test", bots.size());
-    co_await this->form_group(bots, timeout);
+    co_await this->form_group(bots);
 
     uint8_t spell_slot = 0;
 
@@ -59,7 +57,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
         fb::logger::info("Testing group healing spell: {}", spell_info.name);
         caster->chat(std::format("Testing {}", spell_info.name));
 
-        std::ignore = co_await set_current_hp_mp(caster, 10000, 10000, timeout);
+        std::ignore = co_await set_current_hp_mp(caster, 10000, 10000);
 
         // Calculate expected values
         auto [expected_hp_gain, expected_mp_cost] = spell_info.calculator(caster.get());
@@ -69,7 +67,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
                          expected_mp_cost);
 
         // Prepare all bots for testing - set low HP to see healing effect
-        co_await this->prepare_bots_for_group_healing(bots, expected_hp_gain, timeout);
+        co_await this->prepare_bots_for_group_healing(bots, expected_hp_gain);
 
         // Record HP values before casting
         std::vector<int> before_hp_values;
@@ -90,7 +88,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
             [before_caster_mp, expected_mp_cost](auto& resp) -> bool {
                 return resp.ch_mp == before_caster_mp - expected_mp_cost;
             },
-            timeout);
+            DEFAULT_TIMEOUT);
 
         // Wait for group heal effects to apply
         co_await caster->thread()->switching();
@@ -102,11 +100,11 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
         fb::logger::info("Group healing spell {} test completed successfully", spell_info.name);
         caster->chat(std::format("{} test completed", spell_info.name));
 
-        co_await caster->thread()->sleep(interval);
+        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     // Cleanup group
-    co_await this->cleanup_group(bots, timeout);
+    co_await this->cleanup_group(bots);
 
     fb::logger::info("Group healing spell test completed successfully - {} spells tested", group_healing_spells.size());
     caster->chat("All group healing spell tests completed successfully!");
@@ -114,11 +112,9 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
     co_return true;
 }
 
-async::task<void> skill_test::form_group(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                         std::chrono::milliseconds                        timeout)
+async::task<void> skill_test::form_group(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
-    constexpr auto interval = 100ms;
-    auto&          caster   = bots.front();
+    auto& caster = bots.front();
 
     // Caster invites all other bots to the group
     for (size_t i = 1; i < bots.size(); ++i)
@@ -129,17 +125,16 @@ async::task<void> skill_test::form_group(std::vector<std::shared_ptr<fb::bot::ga
         // Send group invitation
         auto group_request = fb::protocol::game::request::group{};
         group_request.name = target_bot->name();
-        auto&& resp        = co_await caster->request<fb::protocol::game::response::message>(group_request, timeout);
+        auto&& resp        = co_await caster->request<fb::protocol::game::response::message>(group_request);
         caster->chat(resp.text);
-        co_await caster->thread()->sleep(interval);
+        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     fb::logger::info("Group formation completed with {} members", bots.size());
 }
 
 async::task<void> skill_test::prepare_bots_for_group_healing(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                             int                       expected_hp_gain,
-                                                             std::chrono::milliseconds timeout)
+                                                             int expected_hp_gain)
 {
     // Set all bots to low HP for visible healing effect
     constexpr int base_hp = 50;
@@ -162,7 +157,7 @@ async::task<void> skill_test::prepare_bots_for_group_healing(std::vector<std::sh
             [required_low_hp](auto& resp) -> bool {
                 return resp.ch_hp == required_low_hp;
             },
-            timeout);
+            DEFAULT_TIMEOUT);
     }
 
     fb::logger::info("All bots prepared for group healing test");
@@ -199,8 +194,7 @@ async::task<void> skill_test::verify_group_healing_effects(std::vector<std::shar
     co_return;
 }
 
-async::task<void> skill_test::cleanup_group(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                            std::chrono::milliseconds                        timeout)
+async::task<void> skill_test::cleanup_group(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
     fb::logger::info("Cleaning up group formation");
 
@@ -211,7 +205,7 @@ async::task<void> skill_test::cleanup_group(std::vector<std::shared_ptr<fb::bot:
         {
             std::ignore = co_await bot->request<fb::protocol::game::response::message>(
                 fb::protocol::game::request::update_option(OPTION::GROUP, false),
-                timeout);
+                DEFAULT_TIMEOUT);
         }
     }
 

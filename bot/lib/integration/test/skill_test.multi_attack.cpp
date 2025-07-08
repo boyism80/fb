@@ -5,11 +5,8 @@ using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
 async::task<bool>
-skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                 std::chrono::milliseconds                        timeout)
+skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
-    constexpr auto interval = 100ms;
-
     auto& caster = bots.at(0);
 
     fb::logger::info("Bot {} starting multi-target attack_cast spell test", caster->oid());
@@ -21,7 +18,7 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
     // Setup all bots with max HP/MP
     for (auto& bot : bots)
     {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
+        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt);
     }
 
     auto multi_target_spells = std::vector<multi_target_attack_cast_spell_test>{
@@ -94,7 +91,7 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names, timeout);
+    auto learned_count = co_await this->learn_spells(caster, spell_names);
     fb::logger::info("Successfully learned {} out of {} multi-target attack_cast spells",
                      learned_count,
                      multi_target_spells.size());
@@ -109,11 +106,10 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
         auto caster_pos = caster->position();
 
         // Spawn monsters at the calculated positions
-        std::ignore =
-            co_await this->spawn_monsters_relative_by_look(caster, "다람쥐", spell.spawn_positions, 32793, timeout);
+        std::ignore = co_await this->spawn_monsters_relative_by_look(caster, "다람쥐", spell.spawn_positions, 32793);
 
         // Set caster's current HP/MP for testing
-        std::ignore = co_await this->set_current_hp_mp(caster, 1000, 1000, timeout);
+        std::ignore = co_await this->set_current_hp_mp(caster, 1000, 1000);
 
         // Calculate expected values using the spell calculator function
         auto [expected_hp, expected_mp, expected_position] = spell.calculator(caster);
@@ -131,13 +127,13 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
                 }
                 return success;
             },
-            timeout);
+            DEFAULT_TIMEOUT);
 
         spell_slot++;
 
         // Move bot back to original position if it moved
-        co_await this->move_bot_back_to_position(caster, caster_pos, interval);
-        co_await caster->thread()->sleep(interval);
+        co_await this->move_bot_back_to_position(caster, caster_pos);
+        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     caster->chat("=== MULTI-TARGET ATTACK_CAST SPELL TEST COMPLETED ===");

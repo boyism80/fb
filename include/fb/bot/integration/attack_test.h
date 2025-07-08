@@ -89,11 +89,6 @@ public:
      * @param[in]  bot  Shared pointer to the connected bot.
      */
     void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override final;
-
-    /**
-     * @brief      Performs cleanup operations when the test is destroyed.
-     */
-    void cleanup() override final;
 };
 
 } // namespace fb::bot::integration

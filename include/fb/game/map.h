@@ -279,6 +279,13 @@ public:
                                                           OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
+     * @brief      Updates the external appearance of multiple objects.
+     *
+     * @param[in]  oids  The list of object IDs to update
+     */
+    void bulk_update(const std::vector<uint32_t>& oids);
+
+    /**
      * @brief      Gets the thread that manages this map's execution context.
      *
      * @return     Pointer to the thread managing this map
@@ -415,6 +422,15 @@ struct map::builtin
      * @return     Number of return values pushed to Lua stack
      */
     static int builtin_at(lua_State* L);
+
+    /**
+     * @brief      Lua binding for updating multiple objects on the map.
+     *
+     * @param[in]  L  The Lua state
+     *
+     * @return     Number of return values pushed to Lua stack
+     */
+    static int builtin_bulk_update(lua_State* L);
 };
 
 /**

@@ -18,7 +18,6 @@ async::task<spawned_monster_info> bot_integration_test::spawn_monster_with_valid
     const std::string&                                               monster_name,
     uint16_t                                                         x,
     uint16_t                                                         y,
-    std::chrono::milliseconds                                        timeout,
     std::function<bool(const fb::protocol::game::response::update&)> validator)
 {
     auto thread = bot->thread();
@@ -27,7 +26,7 @@ async::task<spawned_monster_info> bot_integration_test::spawn_monster_with_valid
     auto&& spawn_response = co_await bot->request<fb::protocol::game::response::update>(
         fb::protocol::game::request::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
         validator,
-        timeout);
+        DEFAULT_TIMEOUT);
 
     if (spawn_response.objects_data.empty())
     {
@@ -44,11 +43,10 @@ async::task<spawned_monster_info> bot_integration_test::spawn_monster_with_valid
 }
 
 async::task<spawned_monster_info> bot_integration_test::spawn_monster_by_look(std::shared_ptr<fb::bot::game_bot> bot,
-                                                                              const std::string&        monster_name,
-                                                                              uint16_t                  x,
-                                                                              uint16_t                  y,
-                                                                              uint32_t                  expected_look,
-                                                                              std::chrono::milliseconds timeout)
+                                                                              const std::string& monster_name,
+                                                                              uint16_t           x,
+                                                                              uint16_t           y,
+                                                                              uint32_t           expected_look)
 {
     auto thread = bot->thread();
     co_await thread->switching();
@@ -61,7 +59,7 @@ async::task<spawned_monster_info> bot_integration_test::spawn_monster_by_look(st
             auto& mob = resp.objects_data.front();
             return mob.look == expected_look;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     if (spawn_response.objects_data.empty())
     {
@@ -82,7 +80,6 @@ async::task<std::vector<spawned_monster_info>> bot_integration_test::spawn_monst
     std::shared_ptr<fb::bot::game_bot>                               bot,
     const std::string&                                               monster_name,
     const std::vector<std::pair<int, int>>&                          relative_positions,
-    std::chrono::milliseconds                                        timeout,
     std::function<bool(const fb::protocol::game::response::update&)> validator)
 {
     auto thread = bot->thread();
@@ -100,7 +97,7 @@ async::task<std::vector<spawned_monster_info>> bot_integration_test::spawn_monst
             fb::protocol::game::request::chat{false,
                                               std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
             validator,
-            timeout);
+            DEFAULT_TIMEOUT);
 
         if (spawn_response.objects_data.empty())
         {
@@ -123,8 +120,7 @@ async::task<std::vector<spawned_monster_info>>
 bot_integration_test::spawn_monsters_relative_by_look(std::shared_ptr<fb::bot::game_bot>      bot,
                                                       const std::string&                      monster_name,
                                                       const std::vector<std::pair<int, int>>& relative_positions,
-                                                      uint32_t                                expected_look,
-                                                      std::chrono::milliseconds               timeout)
+                                                      uint32_t                                expected_look)
 {
     auto thread = bot->thread();
     co_await thread->switching();
@@ -146,7 +142,7 @@ bot_integration_test::spawn_monsters_relative_by_look(std::shared_ptr<fb::bot::g
                 auto& mob = resp.objects_data.front();
                 return mob.look == expected_look;
             },
-            timeout);
+            DEFAULT_TIMEOUT);
 
         if (spawn_response.objects_data.empty())
         {
@@ -173,8 +169,7 @@ bot_integration_test::spawn_monster_relative_by_look(std::shared_ptr<fb::bot::ga
                                                      const std::string&                 monster_name,
                                                      int                                relative_x,
                                                      int                                relative_y,
-                                                     uint32_t                           expected_look,
-                                                     std::chrono::milliseconds          timeout)
+                                                     uint32_t                           expected_look)
 {
     auto thread = bot->thread();
     co_await thread->switching();
@@ -192,7 +187,7 @@ bot_integration_test::spawn_monster_relative_by_look(std::shared_ptr<fb::bot::ga
             auto& mob = resp.objects_data.front();
             return mob.look == expected_look;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     if (spawn_response.objects_data.empty())
     {
@@ -212,29 +207,25 @@ bot_integration_test::spawn_monster_relative_by_look(std::shared_ptr<fb::bot::ga
     co_return monster_info;
 }
 
-async::task<bool> bot_integration_test::set_max_hp_mp(std::shared_ptr<fb::bot::game_bot> bot,
-                                                      int                                max_hp,
-                                                      int                                max_mp,
-                                                      std::chrono::milliseconds          timeout)
+async::task<bool> bot_integration_test::set_max_hp_mp(std::shared_ptr<fb::bot::game_bot> bot, int max_hp, int max_mp)
 {
     auto thread = bot->thread();
     co_await thread->switching();
 
     auto hp_result = co_await bot->request<fb::protocol::game::response::update_internal>(
         fb::protocol::game::request::chat{false, std::format("/체력바꾸기 {}", max_hp)},
-        timeout);
+        DEFAULT_TIMEOUT);
 
     auto mp_result = co_await bot->request<fb::protocol::game::response::update_internal>(
         fb::protocol::game::request::chat{false, std::format("/마력바꾸기 {}", max_mp)},
-        timeout);
+        DEFAULT_TIMEOUT);
 
     co_return true; // Both commands should succeed if bot is valid
 }
 
 async::task<bool> bot_integration_test::set_current_hp_mp(std::shared_ptr<fb::bot::game_bot> bot,
                                                           int                                current_hp,
-                                                          int                                current_mp,
-                                                          std::chrono::milliseconds          timeout)
+                                                          int                                current_mp)
 {
     auto thread = bot->thread();
     co_await thread->switching();
@@ -244,14 +235,14 @@ async::task<bool> bot_integration_test::set_current_hp_mp(std::shared_ptr<fb::bo
         [current_hp](auto& resp) -> bool {
             return resp.ch_hp == current_hp;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     auto mp_result = co_await bot->request<fb::protocol::game::response::update_internal>(
         fb::protocol::game::request::chat{false, std::format("/현재마력 {}", current_mp)},
         [current_mp](auto& resp) -> bool {
             return resp.ch_mp == current_mp;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     co_return true; // Both commands should succeed if bot is valid
 }
@@ -260,8 +251,7 @@ async::task<bool> bot_integration_test::setup_bot_stats(std::shared_ptr<fb::bot:
                                                         int                                max_hp,
                                                         int                                max_mp,
                                                         std::optional<int>                 current_hp,
-                                                        std::optional<int>                 current_mp,
-                                                        std::chrono::milliseconds          timeout)
+                                                        std::optional<int>                 current_mp)
 {
     auto thread = bot->thread();
     co_await thread->switching();
@@ -269,11 +259,11 @@ async::task<bool> bot_integration_test::setup_bot_stats(std::shared_ptr<fb::bot:
     // Set max HP/MP
     std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
         fb::protocol::game::request::chat{false, std::format("/체력바꾸기 {}", max_hp)},
-        timeout);
+        DEFAULT_TIMEOUT);
 
     std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
         fb::protocol::game::request::chat{false, std::format("/마력바꾸기 {}", max_mp)},
-        timeout);
+        DEFAULT_TIMEOUT);
 
     // Set current HP/MP if specified
     if (current_hp.has_value())
@@ -283,7 +273,7 @@ async::task<bool> bot_integration_test::setup_bot_stats(std::shared_ptr<fb::bot:
             [current_hp](auto& resp) -> bool {
                 return resp.ch_hp == current_hp.value();
             },
-            timeout);
+            DEFAULT_TIMEOUT);
     }
 
     if (current_mp.has_value())
@@ -293,15 +283,14 @@ async::task<bool> bot_integration_test::setup_bot_stats(std::shared_ptr<fb::bot:
             [current_mp](auto& resp) -> bool {
                 return resp.ch_mp == current_mp.value();
             },
-            timeout);
+            DEFAULT_TIMEOUT);
     }
 
     co_return true;
 }
 
 async::task<size_t> bot_integration_test::learn_spells(std::shared_ptr<fb::bot::game_bot> bot,
-                                                       const std::vector<std::string>&    spell_names,
-                                                       std::chrono::milliseconds          timeout)
+                                                       const std::vector<std::string>&    spell_names)
 {
     auto thread = bot->thread();
     co_await thread->switching();
@@ -311,7 +300,7 @@ async::task<size_t> bot_integration_test::learn_spells(std::shared_ptr<fb::bot::
     {
         auto result = co_await bot->request<fb::protocol::game::response::spell_update>(
             fb::protocol::game::request::chat{false, std::format("/마법배우기 {}", spell_name)},
-            timeout);
+            DEFAULT_TIMEOUT);
 
         if (result.index != 0xFF) // Success if index is not 0xFF
         {
@@ -326,8 +315,7 @@ async::task<size_t> bot_integration_test::learn_spells(std::shared_ptr<fb::bot::
     co_return learned_count;
 }
 
-async::task<void> bot_integration_test::clear_all_spells(std::shared_ptr<fb::bot::game_bot>& bot,
-                                                         std::chrono::milliseconds           timeout)
+async::task<void> bot_integration_test::clear_all_spells(std::shared_ptr<fb::bot::game_bot>& bot)
 {
     auto thread = bot->thread();
     co_await thread->switching();
@@ -346,8 +334,7 @@ async::task<void> bot_integration_test::clear_all_spells(std::shared_ptr<fb::bot
     co_return; // Command should succeed if bot is valid
 }
 
-async::task<void> bot_integration_test::clear_all_items(std::shared_ptr<fb::bot::game_bot>& bot,
-                                                        fb::model::timespan                 timeout)
+async::task<void> bot_integration_test::clear_all_items(std::shared_ptr<fb::bot::game_bot>& bot)
 {
     auto thread = bot->thread();
     co_await thread->switching();
@@ -357,8 +344,7 @@ async::task<void> bot_integration_test::clear_all_items(std::shared_ptr<fb::bot:
 }
 
 async::task<void> bot_integration_test::move_bot_back_to_position(std::shared_ptr<fb::bot::game_bot> bot,
-                                                                  const fb::model::point<uint16_t>&  original_position,
-                                                                  const fb::model::timespan&         interval)
+                                                                  const fb::model::point<uint16_t>&  original_position)
 {
     auto thread = bot->thread();
     co_await thread->switching();
@@ -371,7 +357,7 @@ async::task<void> bot_integration_test::move_bot_back_to_position(std::shared_pt
         for (auto i = 0; i < move_y_axis; i++)
         {
             bot->send(fb::protocol::game::request::move{DIRECTION::TOP, bot->oid(), current_position});
-            co_await thread->sleep(interval);
+            co_await thread->sleep(DEFAULT_INTERVAL);
             current_position.y--;
             bot->set_position(current_position);
         }
