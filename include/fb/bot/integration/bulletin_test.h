@@ -52,17 +52,69 @@ public:
                             const std::string&                 contents);
 
     /**
-     * @brief      Finds an article written by the current bot.
+     * @brief      Gets a list of bulletin sections.
      *
-     * @param[in]  bot      The bot to use for finding the article.
+     * @param[in]  bot      The bot to use for getting sections.
+     * @return     A task that completes with a vector of bulletin sections.
+     */
+    async::task<std::vector<fb::bot::bulletin>> get_sections(std::shared_ptr<fb::bot::game_bot> bot);
+
+    /**
+     * @brief      Gets a list of articles from a bulletin section.
+     *
+     * @param[in]  bot      The bot to use for finding articles.
      * @param[in]  section  The bulletin section ID to search in.
      * @param[in]  offset   The starting offset for pagination.
-     * @return     A task that completes when article search finishes, returning the article ID if found,
-     * or std::nullopt if no article written by the bot is found.
+     * @return     A task that completes with a vector of article data.
      */
-    async::task<std::optional<uint16_t>> find_my_article(std::shared_ptr<fb::bot::game_bot> bot,
-                                                         uint16_t                           section,
-                                                         uint16_t                           offset);
+    async::task<std::vector<fb::bot::integration::bulletin_bot::article_data>>
+    get_articles(std::shared_ptr<fb::bot::game_bot> bot, uint16_t section, uint16_t offset);
+
+    /**
+     * @brief      Sends a mail to another user.
+     *
+     * @param[in]  bot       The bot sending the mail.
+     * @param[in]  to        The name of the recipient.
+     * @param[in]  title     The title of the mail.
+     * @param[in]  contents  The contents of the mail.
+     * @return     A task that completes with true if the mail was sent successfully.
+     */
+    async::task<bool> send_mail(std::shared_ptr<fb::bot::game_bot> bot,
+                                const std::string&                 to,
+                                const std::string&                 title,
+                                const std::string&                 contents);
+
+    /**
+     * @brief      Gets a list of mails from the mail box.
+     *
+     * @param[in]  bot      The bot to use for getting mails.
+     * @return     A task that completes with a vector of mail data.
+     */
+    async::task<std::vector<fb::bot::integration::bulletin_bot::mail_data>>
+    get_mails(std::shared_ptr<fb::bot::game_bot> bot);
+
+    /**
+     * @brief      Tests mail read functionality.
+     *
+     * @param[in]  bot       The bot to use for the mail read test.
+     * @param[in]  mail_id   The unique identifier of the mail to read.
+     * @param[in]  expected_title The expected title of the mail.
+     * @param[in]  expected_contents The expected contents of the mail.
+     * @return     A task that completes with true if the mail contents match.
+     */
+    async::task<bool> read_mail(std::shared_ptr<fb::bot::game_bot> bot,
+                                uint16_t                           mail_id,
+                                const std::string&                 expected_title,
+                                const std::string&                 expected_contents);
+
+    /**
+     * @brief      Tests mail delete functionality.
+     *
+     * @param[in]  bot       The bot to use for the mail delete test.
+     * @param[in]  mail_id   The unique identifier of the mail to delete.
+     * @return     A task that completes with true if the mail was deleted successfully.
+     */
+    async::task<bool> delete_mail(std::shared_ptr<fb::bot::game_bot> bot, uint16_t mail_id);
 
     /**
      * @brief      Tests bulletin article read functionality.
@@ -70,10 +122,15 @@ public:
      * @param[in]  bot         The bot to use for the bulletin article read test.
      * @param[in]  section     The bulletin section ID containing the article.
      * @param[in]  article_id  The unique identifier of the article to read.
-     * @return     A task that completes when bulletin article read test finishes, returning true if the response
-     * contains valid article data.
+     * @param[in]  expected_title The expected title of the article.
+     * @param[in]  expected_contents The expected contents of the article.
+     * @return     A task that completes with true if the article contents match.
      */
-    async::task<void> read_article(std::shared_ptr<fb::bot::game_bot> bot, uint16_t section, uint16_t article_id);
+    async::task<bool> read_article(std::shared_ptr<fb::bot::game_bot> bot,
+                                   uint16_t                           section,
+                                   uint16_t                           article_id,
+                                   const std::string&                 expected_title,
+                                   const std::string&                 expected_contents);
 
     /**
      * @brief      Tests bulletin article delete functionality.
@@ -81,10 +138,9 @@ public:
      * @param[in]  bot         The bot to use for the bulletin article delete test.
      * @param[in]  section     The bulletin section ID containing the article.
      * @param[in]  article_id  The unique identifier of the article to delete.
-     * @return     A task that completes when bulletin article delete test finishes, returning true if the response
-     * indicates successful deletion.
+     * @return     A task that completes when bulletin article delete test finishes, returning true on success.
      */
-    async::task<void> delete_article(std::shared_ptr<fb::bot::game_bot> bot, uint16_t section, uint16_t article_id);
+    async::task<bool> delete_article(std::shared_ptr<fb::bot::game_bot> bot, uint16_t section, uint16_t article_id);
 
     /**
      * @brief      Resets the bulletin test state to initial conditions.

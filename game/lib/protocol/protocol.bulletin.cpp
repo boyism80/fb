@@ -45,13 +45,15 @@ bulletin::bulletin(BULLETIN_ACTION    action,
                    uint16_t           article,
                    uint16_t           offset,
                    const std::string& title,
-                   const std::string& contents) :
+                   const std::string& contents,
+                   const std::string& user) :
     action(action),
     section(section),
     article(article),
     offset(offset),
     title(title),
-    contents(contents)
+    contents(contents),
+    user(user)
 { }
 
 async::task<void> bulletin::serialize(fb::stream_writer<big_endian>& writer) const
@@ -80,6 +82,13 @@ async::task<void> bulletin::serialize(fb::stream_writer<big_endian>& writer) con
     case BULLETIN_ACTION::DELETE:
         writer.write<uint16_t>(this->section);
         writer.write<uint16_t>(this->article);
+        break;
+
+    case BULLETIN_ACTION::SEND_MAIL:
+        writer.write<uint16_t>(this->section);
+        writer.write<std::string>(this->user);
+        writer.write<std::string>(this->title);
+        writer.write<std::string, uint16_t>(this->contents);
         break;
     }
 }
