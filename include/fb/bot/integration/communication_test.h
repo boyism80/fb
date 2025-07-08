@@ -35,7 +35,7 @@ public:
      * @param[in]  controller  Reference to the game bot controller
      * @return  Task that completes when initialization is finished
      */
-    static async::task<void> initialize(game_bot_controller& controller);
+    async::task<void> initialize(game_bot_controller& controller);
 
     /**
      * @brief   Execute the communication test scenarios
