@@ -661,9 +661,9 @@ public:
     /**
      * @brief      Automated pattern for picking up items.
      *
-     * @return     An async task that completes when pickup action is finished.
+     * @return     An async task that completes when loot action is finished.
      */
-    async::task<void> pattern_pickup();
+    async::task<void> pattern_loot();
 
     /**
      * @brief      Automated pattern for displaying emotions.
@@ -722,6 +722,30 @@ public:
      * @return     A constant reference to the items map.
      */
     const std::map<uint8_t, simple_item>& items() const;
+
+    /**
+     * @brief      Checks if bot has a specific item by name.
+     *
+     * @param[in]  name  The item name to search for.
+     * @return     True if bot has the item, false otherwise.
+     */
+    bool has_item_by_name(const std::string& name) const;
+
+    /**
+     * @brief      Gets the count of a specific item in bot's inventory.
+     *
+     * @param[in]  name  The item name to search for.
+     * @return     The item count.
+     */
+    uint16_t get_item_count_by_name(const std::string& name) const;
+
+    /**
+     * @brief      Gets the inventory slot index of a specific item.
+     *
+     * @param[in]  name  The item name to search for.
+     * @return     The slot index, or 0xFF if not found.
+     */
+    uint8_t get_item_slot_by_name(const std::string& name) const;
 
     /**
      * @brief      Remove all buffs from the bot.

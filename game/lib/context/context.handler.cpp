@@ -196,13 +196,13 @@ async::task<bool> context::handle_attack(fb::socket<character>& socket, const fb
     co_return true;
 }
 
-async::task<bool> context::handle_pickup(fb::socket<character>& socket, const fb_reqs::pick_up& request)
+async::task<bool> context::handle_loot(fb::socket<character>& socket, const fb_reqs::loot& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
         co_return true;
 
-    ch->items.pickup(request.boost);
+    ch->items.loot(request.boost);
     co_return true;
 }
 

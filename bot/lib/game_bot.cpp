@@ -12,7 +12,7 @@ game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id) :
     this->pattern(&game_bot::pattern_attack, 250ms, 1000ms);
     this->pattern(&game_bot::pattern_direction, 250ms, 1000ms);
     this->pattern(&game_bot::pattern_move, 250ms, 1000ms);
-    this->pattern(&game_bot::pattern_pickup, 250ms, 1000ms);
+    this->pattern(&game_bot::pattern_loot, 250ms, 1000ms);
     this->pattern(&game_bot::pattern_emotion, 250ms, 1000ms);
     // this->pattern(&game_bot::pattern_bulletin_sections, 250ms, 1000ms);
 }
@@ -570,9 +570,9 @@ async::task<void> game_bot::pattern_move()
     co_return;
 }
 
-async::task<void> game_bot::pattern_pickup()
+async::task<void> game_bot::pattern_loot()
 {
-    this->send(fb::protocol::game::request::pick_up{false});
+    this->send(fb::protocol::game::request::loot{false});
     co_return;
 }
 
@@ -632,6 +632,36 @@ bool game_bot::has_item(uint8_t slot) const
 const std::map<uint8_t, game_bot::simple_item>& game_bot::items() const
 {
     return this->_items;
+}
+
+bool game_bot::has_item_by_name(const std::string& name) const
+{
+    for (const auto& [slot, item] : this->_items)
+    {
+        if (item.name.find(name) != std::string::npos)
+            return true;
+    }
+    return false;
+}
+
+uint16_t game_bot::get_item_count_by_name(const std::string& name) const
+{
+    for (const auto& [slot, item] : this->_items)
+    {
+        if (item.name.find(name) != std::string::npos)
+            return item.count;
+    }
+    return 0;
+}
+
+uint8_t game_bot::get_item_slot_by_name(const std::string& name) const
+{
+    for (const auto& [slot, item] : this->_items)
+    {
+        if (item.name.find(name) != std::string::npos)
+            return slot;
+    }
+    return 0xFF;
 }
 
 void game_bot::remove_buffs()

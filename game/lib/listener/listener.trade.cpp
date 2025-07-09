@@ -40,6 +40,7 @@ void listener_impl::on_trade_success(character& me, character& you)
 {
     me.send(fb_resp::trade_close(_TEXT(MESSAGE_TRADE_SUCCESS)));
     you.send(fb_resp::trade_close(_TEXT(MESSAGE_TRADE_SUCCESS)));
+    .
 }
 
 void listener_impl::on_trade_item(character& me, character& you, uint8_t index, const fb::game::item& item)

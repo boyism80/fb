@@ -20,7 +20,7 @@ async::task<bool> skill_test::test_loot_spell(std::vector<std::shared_ptr<fb::bo
 
     auto& caster = bots.front();
 
-    fb::logger::info("Testing loot spell with item and money pickup");
+    fb::logger::info("Testing loot spell with item and money loot");
     caster->chat("=== LOOT SPELL TEST STARTED ===");
 
     // Step 1: Create items and change money
@@ -67,7 +67,7 @@ async::task<bool> skill_test::test_loot_spell(std::vector<std::shared_ptr<fb::bo
     auto before_mp   = caster->mp();
     auto expected_mp = before_mp - 30; // MP cost for loot spell
 
-    // Cast loot spell and wait for item pickup response
+    // Cast loot spell and wait for item loot response
     std::ignore = co_await caster->request<fb::protocol::game::response::item_update>(
         fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 1, "", 0, {0, 0}),
         [item_name, item_count](auto& resp) -> bool {

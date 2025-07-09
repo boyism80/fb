@@ -17,7 +17,7 @@
  *          - Durability system for equipment degradation and repair mechanics
  *          - Comprehensive inventory management with storage and retrieval
  *          - Trade system integration with item transfer capabilities
- *          - Drop and pickup mechanics with timing and ownership tracking
+ *          - Drop and loot mechanics with timing and ownership tracking
  *          - Death-related item handling for player death scenarios
  *          - Custom naming system for weapons and special items
  *          - Protocol serialization for network communication
@@ -61,7 +61,7 @@ class items;
  *             - Durability system for equipment degradation
  *             - Trade system integration with trade counts
  *             - Container management for inventory systems
- *             - Drop and pickup mechanics with timing
+ *             - Drop and loot mechanics with timing
  *             - Death-related item handling
  *             - Lua scripting integration for dynamic behavior
  *             - Protocol serialization for network communication
@@ -1340,9 +1340,9 @@ public:
     /**
      * @brief      Picks up items from the ground automatically.
      *
-     * @param[in]  boost  Whether to use pickup boost/enhancement
+     * @param[in]  boost  Whether to use loot boost/enhancement
      */
-    void pickup(bool boost);
+    void loot(bool boost);
     /**
      * @brief      Throws an item from inventory.
      *

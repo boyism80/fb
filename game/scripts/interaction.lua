@@ -248,7 +248,7 @@ function on_equipment_inactive(me, parts, equipment)
     any_action(me)
 end
 
-function on_pickup(me)
+function on_loot(me)
     for _, buff_name in pairs(relative_buff_name('투명')) do
         if me:isbuff(buff_name) then
             me:state(STATE_NORMAL)

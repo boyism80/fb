@@ -751,7 +751,7 @@ fb::game::items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYP
     return nullptr;
 }
 
-void fb::game::items::pickup(bool boost)
+void fb::game::items::loot(bool boost)
 {
 
     try
@@ -766,7 +766,7 @@ void fb::game::items::pickup(bool boost)
 #if defined DEBUG | defined _DEBUG
             lua->load("scripts/interaction.lua");
 #endif
-            lua->func("on_pickup");
+            lua->func("on_loot");
             lua->pushobject(this->owner);
             std::ignore = lua->call(1);
         }

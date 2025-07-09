@@ -874,14 +874,14 @@ public:
     [[nodiscard]] async::task<bool> handle_attack(fb::socket<fb::game::character>&, const fb_reqs::attack&);
 
     /**
-     * @brief      Handles player item pickup request packet.
+     * @brief      Handles player item loot request packet.
      *
      * @param      socket  The client socket connection.
-     * @param[in]  packet  The pickup request packet containing item information.
+     * @param[in]  packet  The loot request packet containing item information.
      *
-     * @return     True if pickup was processed successfully, false otherwise.
+     * @return     True if loot was processed successfully, false otherwise.
      */
-    [[nodiscard]] async::task<bool> handle_pickup(fb::socket<fb::game::character>&, const fb_reqs::pick_up&);
+    [[nodiscard]] async::task<bool> handle_loot(fb::socket<fb::game::character>&, const fb_reqs::loot&);
 
     /**
      * @brief      Handles player emotion/gesture packet.

@@ -141,7 +141,7 @@ async::task<void> context::handle_start()
     this->handler.protocol.bind(&context::handle_update_move);      // 이동과 맵 데이터 업데이트 핸들러
     this->handler.protocol.bind(&context::handle_move, 1s, 6);      // 이동 핸들러
     this->handler.protocol.bind(&context::handle_attack, 500ms, 2); // 공격 핸들러
-    this->handler.protocol.bind(&context::handle_pickup);           // 아이템 줍기 핸들러
+    this->handler.protocol.bind(&context::handle_loot);             // 아이템 줍기 핸들러
     this->handler.protocol.bind(&context::handle_emotion);          // 감정표현 핸들러
     this->handler.protocol.bind(&context::handle_update_map);       // 맵 데이터 업데이트 핸들러
     this->handler.protocol.bind(&context::handle_update_screen);    // 새로고침 핸들러

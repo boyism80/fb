@@ -137,7 +137,7 @@ public:
     async::task<bool> test_shout_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
 
     /**
-     * @brief      Tests loot spell (노획) with item and money pickup scenarios.
+     * @brief      Tests loot spell (노획) with item and money loot scenarios.
      *
      * @param[in]  bots     The bot instances to use for testing.
      *
