@@ -17,7 +17,13 @@ public:
     uint8_t index;
 
 public:
+#ifndef BOT
     item_active() = default;
+#else
+    item_active(uint8_t index) :
+        index(index)
+    { }
+#endif
 
 public:
 #ifdef BOT

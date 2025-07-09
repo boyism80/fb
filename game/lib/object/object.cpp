@@ -84,6 +84,9 @@ bool object::hidden(const object& target) const
     return false;
 }
 
+void object::on_init()
+{ }
+
 async::task<void> object::destroy(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
@@ -575,7 +578,8 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         this->update_id();
         this->update_map(*map);
         this->update_position();
-        this->update_external(*this, true);
+        if (notify)
+            this->update_external(true);
         this->update_bgm(map->model.bgm, 100);
 
         if (notify)

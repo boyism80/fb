@@ -37,11 +37,6 @@ namespace fb { namespace game {
 static constexpr uint8_t CONTAINER_CAPACITY = 52; ///< Maximum number of items that can be stored in an inventory
 
 /**
- * @brief      Forward declaration of the life class.
- */
-class life;
-
-/**
  * @brief      Template class for managing inventories of game objects.
  *
  *             This template class provides a generic container system for managing
@@ -51,7 +46,6 @@ class life;
  *
  *             Key features:
  *             - Fixed capacity of 52 slots for consistent memory usage
- *             - Owner-based association with life entities
  *             - Slot-based item management with automatic positioning
  *             - STL-compatible iterator interface
  *             - Virtual methods for specialized inventory behaviors
@@ -68,21 +62,17 @@ public:
     using const_iterator = typename array_type::const_iterator;
 
 private:
-    life&      _owner;
     array_type _elements = {};
 
 protected:
     /**
-     * @brief      Constructs a new inventory for the specified owner.
+     * @brief      Constructs a new inventory.
      *
-     *             Initializes an empty inventory associated with the given life entity.
+     *             Initializes an empty inventory.
      *             All slots are initially set to nullptr.
      *
-     * @param      owner  The life entity that owns this inventory.
      */
-    inventory(life& owner) :
-        _owner(owner)
-    { }
+    inventory() = default;
 
     /**
      * @brief      Destroys the inventory and cleans up resources.
@@ -125,32 +115,6 @@ public:
                 return i;
         }
         return 0xFF;
-    }
-
-    /**
-     * @brief      Gets a reference to the inventory owner.
-     *
-     *             Returns a mutable reference to the life entity that owns this inventory,
-     *             allowing modification of the owner's properties.
-     *
-     * @return     Reference to the owning life entity.
-     */
-    life& owner()
-    {
-        return this->_owner;
-    }
-
-    /**
-     * @brief      Gets a const reference to the inventory owner.
-     *
-     *             Returns a read-only reference to the life entity that owns this inventory,
-     *             for accessing owner properties without modification.
-     *
-     * @return     Const reference to the owning life entity.
-     */
-    const life& owner() const
-    {
-        return this->_owner;
     }
 
     /**

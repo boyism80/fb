@@ -335,12 +335,12 @@ void game_bot::set_sex(uint8_t value)
     this->_sex = value;
 }
 
-uint8_t game_bot::state() const
+STATE game_bot::state() const
 {
     return this->_state;
 }
 
-void game_bot::set_state(uint8_t value)
+void game_bot::set_state(STATE value)
 {
     this->_state = value;
 }
@@ -692,6 +692,27 @@ async::task<void> game_bot::change_money(uint32_t amount, std::chrono::milliseco
         fb::protocol::game::request::chat{false, command},
         [amount](auto& resp) -> bool {
             return resp.ch_money == amount;
+        },
+        timeout);
+}
+
+async::task<void> game_bot::drop_item(uint8_t index, bool all, std::chrono::milliseconds timeout)
+{
+    std::ignore = co_await this->request<fb::protocol::game::response::item_remove>(
+        fb::protocol::game::request::item_drop(index + 1, all),
+        [index, all](auto& resp) -> bool {
+            return resp.type == ITEM_DELETE_TYPE::DROP && resp.index == index;
+        },
+        timeout);
+}
+
+async::task<void> game_bot::drop_money(uint32_t amount, std::chrono::milliseconds timeout)
+{
+    auto before = this->money();
+    std::ignore = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::item_drop_money(amount),
+        [before, amount](auto& resp) -> bool {
+            return resp.ch_money == before - amount;
         },
         timeout);
 }

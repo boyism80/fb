@@ -41,21 +41,19 @@ std::string fb::game::cash::inven_name() const
     return sstream.str();
 }
 
-fb::game::cash* fb::game::cash::replace(uint32_t value)
+std::shared_ptr<fb::game::cash> fb::game::cash::replace(uint32_t value)
 {
-    fb::game::cash* result = nullptr;
+    std::shared_ptr<fb::game::cash> result = nullptr;
     if (this->empty())
     {
         result = nullptr;
     }
     else
     {
-        // TODO: Phase 3 - Convert to smart pointer return type
-        auto result_shared = this->context.make<fb::game::cash>(value);
-        result             = result_shared.get();
+        result = this->context.make<fb::game::cash>(value);
     }
     std::ignore = this->destroy();
-    return result;
+    return std::move(result);
 }
 
 uint32_t fb::game::cash::reduce(uint32_t value)

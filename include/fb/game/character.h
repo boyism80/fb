@@ -129,8 +129,8 @@ private:
     };
 
 public:
-    fb::game::trade                                  trade  = fb::game::trade(*this);
-    fb::game::items                                  items  = fb::game::items(*this);
+    fb::game::trade                                  trade;
+    fb::game::items                                  items;
     fb::lua::context*                                dialog = nullptr;
     std::map<uint32_t, std::unique_ptr<achievement>> achievements; // order required
     listener_t&                                      listener;
@@ -161,6 +161,9 @@ public:
      *             memberships, and any other resources associated with the character.
      */
     ~character();
+
+public:
+    void on_init() override final;
 
 private:
     /**

@@ -29,7 +29,7 @@ public:
     uint32_t    oid;
     uint8_t     disguised;
     uint8_t     sex;
-    uint8_t     state;
+    STATE       state;
     uint16_t    look;
     uint8_t     color;
     uint8_t     armor_dress;
@@ -160,7 +160,7 @@ public:
         this->oid       = reader.read<uint32_t>();
         this->disguised = reader.read<uint8_t>();
         this->sex       = reader.read<uint8_t>();
-        this->state     = reader.read<uint8_t>();
+        this->state     = static_cast<STATE>(reader.read<uint8_t>());
 
         if (this->disguised)
         {

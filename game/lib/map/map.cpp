@@ -272,18 +272,20 @@ std::vector<std::shared_ptr<fb::game::object>> map::belows(const fb::model::poin
             throw std::exception();
 
         auto sector = this->_sectors->at(pivot);
-        std::copy_if(sector->begin(), sector->end(), std::back_inserter(objects), [type, &pivot](auto x) {
-            return (type == OBJECT_TYPE::UNKNOWN || x->is(type)) && x->position() == pivot;
-        });
-
-        std::sort(objects.begin(), objects.end(), [](auto obj1, auto obj2) {
-            return obj1->oid() > obj2->oid();
-        });
+        for (auto& obj : *sector)
+        {
+            if (type == OBJECT_TYPE::UNKNOWN || obj->is(type))
+            {
+                if (obj->position() == pivot)
+                    objects.push_back(obj);
+            }
+        }
     }
     catch (std::exception&)
     { }
 
-    return std::move(objects);
+    std::reverse(objects.begin(), objects.end());
+    return objects;
 }
 
 void map::bulk_update(const std::vector<uint32_t>& oids)

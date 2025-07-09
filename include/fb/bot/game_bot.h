@@ -113,17 +113,17 @@ private:
     uint8_t  _fast_move     = 0; ///< Fast move option setting
 
     // Character external appearance information from update_external
-    uint8_t     _disguised    = 0; ///< Character's disguise state
-    uint8_t     _sex          = 0; ///< Character's sex
-    uint8_t     _state        = 0; ///< Character's current state (dead, paralyzed, etc)
-    uint8_t     _armor_dress  = 0; ///< Armor appearance ID
-    uint8_t     _armor_color  = 0; ///< Armor color
-    uint16_t    _weapon_dress = 0; ///< Weapon appearance ID
-    uint8_t     _weapon_color = 0; ///< Weapon color
-    uint8_t     _shield_dress = 0; ///< Shield appearance ID
-    uint8_t     _shield_color = 0; ///< Shield color
-    uint8_t     _head_marker  = 0; ///< Head marker (clan mark, etc)
-    std::string _name;             ///< Character name
+    uint8_t     _disguised    = 0;             ///< Character's disguise state
+    uint8_t     _sex          = 0;             ///< Character's sex
+    STATE       _state        = STATE::NORMAL; ///< Character's current state (dead, paralyzed, etc)
+    uint8_t     _armor_dress  = 0;             ///< Armor appearance ID
+    uint8_t     _armor_color  = 0;             ///< Armor color
+    uint16_t    _weapon_dress = 0;             ///< Weapon appearance ID
+    uint8_t     _weapon_color = 0;             ///< Weapon color
+    uint8_t     _shield_dress = 0;             ///< Shield appearance ID
+    uint8_t     _shield_color = 0;             ///< Shield color
+    uint8_t     _head_marker  = 0;             ///< Head marker (clan mark, etc)
+    std::string _name;                         ///< Character name
 
 public:
     /**
@@ -465,14 +465,14 @@ public:
      *
      * @return     The state value (dead, paralyzed, etc.).
      */
-    uint8_t state() const;
+    STATE state() const;
 
     /**
      * @brief      Sets the character's current state.
      *
      * @param[in]  value  The state value to set.
      */
-    void set_state(uint8_t value);
+    void set_state(STATE value);
 
     /**
      * @brief      Gets the character's armor appearance ID.
@@ -781,6 +781,25 @@ public:
      * @return     An async task that completes when money change is finished.
      */
     async::task<void> change_money(uint32_t amount, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Drop an item from the inventory.
+     *
+     * @param[in]  index    The index of the item to drop.
+     * @param[in]  all      Whether to drop all items.
+     * @param[in]  timeout  The timeout for the operation.
+     */
+    async::task<void> drop_item(uint8_t index, bool all, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Drop money from the inventory.
+     *
+     * @param[in]  amount   The amount of money to drop.
+     * @param[in]  timeout  The timeout for the operation.
+     *
+     * @return     An async task that completes when money drop is finished.
+     */
+    async::task<void> drop_money(uint32_t amount, std::chrono::milliseconds timeout);
 };
 
 } // namespace fb::bot

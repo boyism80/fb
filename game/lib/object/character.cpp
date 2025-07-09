@@ -16,6 +16,13 @@ character::~character()
         this->dialog->release();
 }
 
+void character::on_init()
+{
+    life::on_init();
+    this->items.owner(this->shared_from_this_as<character>());
+    this->trade.owner(this->shared_from_this_as<character>());
+}
+
 /**
  * @brief      Sends a binary stream to the character's client with socket validation.
  *

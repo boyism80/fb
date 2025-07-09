@@ -509,7 +509,7 @@ async::task<bool> context::handle_trade(fb::socket<character>& socket, const fb_
     {
     case trade::state::REQUEST:
     {
-        me->trade.begin(*you);
+        me->trade.begin(you->shared_from_this_as<character>());
         break;
     }
 

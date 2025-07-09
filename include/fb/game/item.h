@@ -137,6 +137,9 @@ public:
     virtual ~item();
 
 public:
+    std::shared_ptr<fb::game::character> owner() const;
+
+public:
     /**
      * @brief      Places the item on a map at the specified position.
      *
@@ -427,9 +430,9 @@ public:
      *
      * @param[in]  value  The new cash value
      *
-     * @return     Pointer to the new cash item, or nullptr if failed
+     * @return     Shared pointer to the new cash item, or nullptr if failed
      */
-    fb::game::cash* replace(uint32_t value);
+    std::shared_ptr<fb::game::cash> replace(uint32_t value);
     /**
      * @brief      Reduces the cash amount by the specified value.
      *
@@ -989,6 +992,7 @@ private:
     using super = fb::game::inventory<fb::game::item>;
 
 private:
+    std::weak_ptr<fb::game::character>           _owner;
     std::shared_ptr<fb::game::weapon>            _weapon         = nullptr;
     std::shared_ptr<fb::game::armor>             _armor          = nullptr;
     std::shared_ptr<fb::game::helmet>            _helmet         = nullptr;
@@ -999,21 +1003,30 @@ private:
     uint32_t                                     _deposited = 0;
 
 public:
-    fb::game::character& owner;
-
-public:
     /**
      * @brief      Constructs a new instance.
-     *
-     * @param      owner  The character who owns this inventory
      */
-    items(fb::game::character& owner);
+    items();
     /**
      * @brief      Destroys the object.
      */
     ~items();
 
 public:
+    /**
+     * @brief      Sets the owner of this item container.
+     *
+     * @param[in]  owner  The character who owns this container
+     */
+    void owner(std::shared_ptr<fb::game::character> owner);
+
+    /**
+     * @brief      Gets the owner of this item container.
+     *
+     * @return     The character who owns this container
+     */
+    std::shared_ptr<fb::game::character> owner() const;
+
     /**
      * @brief      Adds the specified item to the inventory.
      *

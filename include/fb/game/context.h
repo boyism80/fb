@@ -412,7 +412,12 @@ public:
     template <typename T, typename... Args>
     std::shared_ptr<T> make(Args&&... args)
     {
-        return std::make_shared<T>(*this, std::forward<Args>(args)...);
+        auto ptr = std::make_shared<T>(*this, std::forward<Args>(args)...);
+        if constexpr (std::is_base_of_v<fb::game::object, T>)
+        {
+            ptr->on_init();
+        }
+        return ptr;
     }
 
     /**

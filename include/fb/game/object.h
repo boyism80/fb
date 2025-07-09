@@ -191,6 +191,8 @@ public:
         return static_cast<const T&>(this->_model);
     }
 
+    virtual void on_init();
+
 public:
     [[nodiscard]] virtual async::task<void> destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
 

@@ -493,7 +493,7 @@ void context::init_achievements(const std::vector<fb::protocol::internal::Achiev
 
 std::shared_ptr<fb::game::character> context::handle_accepted(fb::socket<character>& socket)
 {
-    return std::make_shared<character>(*this, socket);
+    return this->make<character>(socket);
 }
 
 async::task<void> context::send(object&                     object,
