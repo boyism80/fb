@@ -145,7 +145,7 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
         for (auto& [ch, equipments] : concast)
         {
             auto weak = ch->weak_from_this();
-            for (auto equipment : equipments)
+            for (auto& equipment : equipments)
             {
                 try
                 {

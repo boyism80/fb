@@ -430,6 +430,9 @@ async::task<bool> drop_loot_test::test_scenario_5(std::shared_ptr<game_bot>& bot
     bot1->chat("Scenario 5: Cast hellfire on bot2");
     bot2->chat("Scenario 5: Killed by hellfire");
 
+    co_await bot2->thread()->switching();
+    co_await bot2->thread()->sleep(500ms);
+
     // 8. Bot2 moves right 1 tile
     co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
 

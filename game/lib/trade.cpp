@@ -98,14 +98,12 @@ void fb::game::trade::end()
         return;
 
     auto you = this->_you.lock();
-    if (you == nullptr)
-        return;
-
     if (you != nullptr)
     {
         auto& trade = you->trade;
         trade._you.reset();
         trade.end();
+        this->_you.reset();
     }
 
     this->_locked = false;
@@ -129,7 +127,8 @@ void fb::game::trade::end()
 
 bool fb::game::trade::trading() const
 {
-    return this->_you.expired() == false;
+    auto you = this->_you.lock();
+    return you != nullptr;
 }
 
 bool fb::game::trade::up_item(uint8_t index)

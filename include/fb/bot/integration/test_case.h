@@ -261,6 +261,21 @@ protected:
                                                             uint32_t                           expected_look);
 
     /**
+     * @brief      Spawns multiple monsters at the specified position with look validation
+     *
+     * @param[in]  bot       The bot that will spawn the monsters
+     * @param[in]  monster_name  Name of the monster to spawn (e.g., "다람쥐")
+     * @param[in]  range     Range of the monster spawn
+     * @param[in]  expected_look  Expected look value for the spawned monster
+     *
+     * @return     An async task that completes when the monsters are spawned
+     */
+    async::task<void> spawn_monsters_by_look_bulk(std::shared_ptr<fb::bot::game_bot> bot,
+                                                  const std::string&                 monster_name,
+                                                  uint8_t                            range,
+                                                  uint32_t                           expected_look);
+
+    /**
      * @brief      Spawns multiple monsters at relative positions from a bot with custom validator
      *
      * @param[in]  bot       The bot that will spawn the monsters

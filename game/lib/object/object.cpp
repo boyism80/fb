@@ -548,9 +548,8 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         if (this->_map != nullptr)
             std::ignore = co_await this->map(nullptr);
 
-        this->_map = map;
-        if (this->is(OBJECT_TYPE::CHARACTER))
-            static_cast<character*>(this)->thread(map->thread());
+        this->_map    = map;
+        this->_thread = map->thread();
 
         co_await this->context.threads.switching(weak);
 
@@ -802,12 +801,17 @@ void object::hide(object& to, DESTROY_TYPE destroy_type)
     this->listener.on_hide(*this, to, destroy_type);
 }
 
+void object::thread(fb::thread* value)
+{
+    this->_thread = value;
+}
+
 fb::thread* object::thread() const
 {
-    if (this->_map == nullptr)
-        return this->context.threads.modular(this->_oid);
+    if (this->_thread != nullptr)
+        return this->_thread;
     else
-        return this->context.threads.modular(this->_map->model.id);
+        return this->context.threads.modular(this->_model.id);
 }
 
 void object::update_id()

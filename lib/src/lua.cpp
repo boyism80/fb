@@ -466,6 +466,9 @@ void root::release(context& ctx)
         lua_settop(ctx, 0);
         ctx.parent(nullptr);
 
+        // Force garbage collection before moving to idle pool
+        lua_gc(ctx, LUA_GCCOLLECT, 0);
+
         auto key = (lua_State*)ctx;
         this->idle.insert({key, std::move(this->busy[key])});
         this->busy.erase(key);
@@ -566,12 +569,16 @@ fb::lua::context_pool& fb::lua::context_pool::ist()
 thread::thread(context& owner, context* parent) :
     context(::lua_newthread(owner), owner, parent),
     ref(luaL_ref(owner, LUA_REGISTRYINDEX))
-{ }
+{
+    lua_checkstack(*this, 10000);
+}
 
 thread::thread(thread&& ctx) :
     context(ctx._ctx, *ctx.owner, ctx.parent()),
     ref(ctx.ref)
-{ }
+{
+    lua_checkstack(*this, 10000);
+}
 
 thread::~thread()
 {

@@ -1189,7 +1189,7 @@ fb::thread* character::thread() const
         return this->context.threads.modular(this->_id);
 }
 
-void fb::game::character::thread(fb::thread* value)
+void character::thread(fb::thread* value)
 {
     this->_thread = value;
 }
@@ -1913,6 +1913,7 @@ async::task<void> character::death_penalty()
         if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
         {
             this->items.drop(i, item->count(), false, ITEM_DELETE_TYPE::NONE);
+            item->container(nullptr);
             item->death_cid(this->id());
             std::ignore = co_await item->map(this->map(), this->position());
         }
@@ -1936,6 +1937,7 @@ async::task<void> character::death_penalty()
         if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
         {
             this->items.equipment_off(parts);
+            equipment->container(nullptr);
             equipment->death_cid(this->id());
             std::ignore = co_await equipment->map(this->map(), this->position());
         }

@@ -90,7 +90,6 @@ public:
 private:
     uint32_t                                    _id;
     std::weak_ptr<fb::socket<character>>        _socket;
-    fb::thread*                                 _thread = nullptr;
     std::string                                 _name;
     ROLE                                        _role;
     std::string                                 _pw;
@@ -903,9 +902,9 @@ public:
     fb::thread* thread() const override final;
 
     /**
-     * @brief      Sets the thread for this character.
+     * @brief      Sets the thread that this character belongs to.
      *
-     * @param      value  The thread to assign to this character
+     * @param[in]  value  Pointer to the thread managing this character
      */
     void thread(fb::thread* value);
 

@@ -103,7 +103,7 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
             {0,  1 }  // bottom
         };
 
-        std::ignore = co_await this->spawn_monsters_relative_by_look(caster, "다람쥐", relative_positions, 32793);
+        co_await this->spawn_monsters_by_look_bulk(caster, "다람쥐", 1, 32793);
 
         // Set caster's current HP/MP for testing
         std::ignore = co_await this->set_current_hp_mp(caster, 50, 100000);

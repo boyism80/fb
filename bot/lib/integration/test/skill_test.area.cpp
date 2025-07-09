@@ -28,8 +28,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
         std::string name;
         SPELL_TYPE  type;
         std::function<std::tuple<int, int, int>(const std::shared_ptr<fb::bot::game_bot>&)>
-                            calculator; // caster_hp, caster_mp, target_damage
-        std::pair<int, int> range;      // range_x, range_y for monster spawning
+            calculator; // caster_hp, caster_mp, target_damage
     };
 
     auto area_spells = std::vector<area_damage_spell_test>{
@@ -42,7 +41,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
              auto mp_cost    = 200;                  // mp = 200
              auto damage     = (current_hp * 3) / 4; // damage = (me:hp()*3)//4
              return std::tuple<int, int, int>{current_hp - hp_cost, current_mp - mp_cost, damage};
-         }, {7, 6}}, // range 7x6
+         }                                        },
 
         {"혈겁만파",
          SPELL_TYPE::NORMAL,
@@ -53,7 +52,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
              auto mp_cost    = 600;                  // mp = 600
              auto damage     = (current_hp * 3) / 4; // damage = (me:hp()*3)//4
              return std::tuple<int, int, int>{current_hp - hp_cost, current_mp - mp_cost, damage};
-         }, {6, 5}}, // range 6x5
+         }                                        },
 
         {"폭류유성",
          SPELL_TYPE::NORMAL,
@@ -65,7 +64,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
              auto damage     = static_cast<int>(current_hp * 0.75 +
                                             current_mp * 1.5); // damage = math.floor(me:hp()*0.75 + me:mp()*1.5)
              return std::tuple<int, int, int>{hp_final, current_mp - mp_cost, damage};
-         }, {6, 5}}, // range 6x5
+         }                                        },
 
         {"포효검황",
          SPELL_TYPE::NORMAL,
@@ -76,17 +75,15 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
              auto mp_cost    = 600;                    // mp = 600
              auto damage     = (current_hp * 11) / 10; // damage = (me:hp()*11)//10
              return std::tuple<int, int, int>{current_hp - hp_cost, current_mp - mp_cost, damage};
-         }, {8, 7}}, // range 8x7
+         }                                        },
 
-        {"지폭지술",
-         SPELL_TYPE::NORMAL,
-         [](const auto& bot) {
+        {"지폭지술", SPELL_TYPE::NORMAL, [](const auto& bot) {
              auto current_hp = bot->hp();
              auto current_mp = bot->mp();
              auto mp_cost    = std::max(uint32_t{current_mp}, uint32_t{30}); // mp = math.max(me:mp(), 30)
              auto damage     = (current_mp * 3) / 2;                         // damage = (me:mp()*3)//2
              return std::tuple<int, int, int>{current_hp, current_mp - mp_cost, damage};
-         }, {8, 7}}  // range 8x7
+         }}
     };
 
     std::vector<std::string> spell_names;
@@ -122,48 +119,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
     {
         fb::logger::info("Testing area spell: {}", spell.name);
 
-        // Get current bot positions to exclude from monster spawning
-        auto occupied_positions = std::set<std::pair<int, int>>{};
-        for (const auto& bot : bots)
-        {
-            auto pos = bot->position();
-            occupied_positions.insert({pos.x, pos.y});
-        }
-
-        // Generate monster spawn positions within spell range, excluding bot positions
-        auto spawn_positions = std::vector<fb::model::point<uint16_t>>{};
-        auto caster_pos      = caster->position();
-        auto range_x         = spell.range.first;
-        auto range_y         = spell.range.second;
-
-        // Calculate range bounds centered on caster
-        int start_x = caster_pos.x - range_x / 2;
-        int end_x   = caster_pos.x + range_x / 2;
-        int start_y = caster_pos.y - range_y / 2;
-        int end_y   = caster_pos.y + range_y / 2;
-
-        for (int x = start_x; x <= end_x; ++x)
-        {
-            for (int y = start_y; y <= end_y; ++y)
-            {
-                // Skip if position is occupied by a bot
-                if (occupied_positions.find({x, y}) != occupied_positions.end())
-                    continue;
-
-                // Skip if position is out of valid map bounds
-                if (x < 0 || y < 0 || x > 65535 || y > 65535)
-                    continue;
-
-                spawn_positions.push_back({static_cast<uint16_t>(x), static_cast<uint16_t>(y)});
-            }
-        }
-
-        // Spawn monsters at calculated positions
-        fb::logger::info("Spawning {} monsters in spell range for {}", spawn_positions.size(), spell.name);
-        for (const auto& pos : spawn_positions)
-        {
-            std::ignore = co_await this->spawn_monster_by_look(caster, "다람쥐", pos.x, pos.y, 32793);
-        }
+        co_await this->spawn_monsters_by_look_bulk(caster, "다람쥐", 5, 32793);
 
         // Set caster's current HP/MP for testing
         std::ignore = co_await this->set_current_hp_mp(caster, 1000, 1000);

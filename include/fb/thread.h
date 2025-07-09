@@ -81,9 +81,9 @@ private:
     std::thread       _thread;
 
 private:
-    std::unordered_set<const void*>  _ptrs;
-    fb::recursive_locker<timer_list> _timers;
-    void*                            _data = nullptr;
+    std::unordered_set<const void*> _ptrs;
+    timer_list                      _timers;
+    void*                           _data = nullptr;
 
 private:
     fb::locker<std::queue<std::function<void()>>> _queue;

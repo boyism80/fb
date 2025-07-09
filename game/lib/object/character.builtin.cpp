@@ -1960,7 +1960,10 @@ int character::builtin::builtin_spawn_mob(lua_State* L)
         if (lua->is_table(3))
         {
             if (argc >= 4)
-                owned = lua->toboolean(4);
+            {
+                owned   = lua->toboolean(4);
+                offset += 1;
+            }
 
             lua->rawgeti(3, 1);
             x = (uint16_t)lua->tointeger(-1);
@@ -1975,7 +1978,10 @@ int character::builtin::builtin_spawn_mob(lua_State* L)
         else
         {
             if (argc >= 5)
-                owned = lua->toboolean(5);
+            {
+                owned   = lua->toboolean(5);
+                offset += 1;
+            }
 
             x = (uint16_t)lua->tointeger(3);
             y = (uint16_t)lua->tointeger(4);

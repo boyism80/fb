@@ -469,7 +469,8 @@ public:
     {
         if constexpr (std::is_same_v<T, fb::game::object>)
         {
-            std::ignore = co_await obj.map(nullptr, fb::model::point16_t{0, 0}, destroy_type);
+            auto shared_ptr = obj.shared_from_this_as<fb::game::object>();
+            std::ignore     = co_await shared_ptr->map(nullptr, fb::model::point16_t{0, 0}, destroy_type);
         }
         co_return;
     }

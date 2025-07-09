@@ -56,6 +56,7 @@ async::task<spawned_monster_info> bot_integration_test::spawn_monster_by_look(st
         [expected_look](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
+
             auto& mob = resp.objects_data.front();
             return mob.look == expected_look;
         },
@@ -74,6 +75,24 @@ async::task<spawned_monster_info> bot_integration_test::spawn_monster_by_look(st
     monster_info.look     = mob.look;
 
     co_return monster_info;
+}
+
+async::task<void> bot_integration_test::spawn_monsters_by_look_bulk(std::shared_ptr<fb::bot::game_bot> bot,
+                                                                    const std::string&                 monster_name,
+                                                                    uint8_t                            range,
+                                                                    uint32_t                           expected_look)
+{
+    co_await bot->request<fb::protocol::game::response::update>(
+        fb::protocol::game::request::chat{false, std::format("/몬스터범위생성 {} {}", monster_name, range)},
+        [expected_look](auto& resp) -> bool {
+            for (const auto& mob : resp.objects_data)
+            {
+                if (mob.look != expected_look)
+                    return false;
+            }
+            return true;
+        },
+        DEFAULT_TIMEOUT);
 }
 
 async::task<std::vector<spawned_monster_info>> bot_integration_test::spawn_monsters_relative_with_validator(
