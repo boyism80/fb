@@ -721,7 +721,7 @@ void context::rezen_force()
     for (int i = 0; i < this->threads.count(); i++)
     {
         auto thread = this->threads.at(i);
-        thread->dispatch([](auto& thread) -> async::task<void> {
+        std::ignore = thread->dispatch([](auto& thread) -> async::task<void> {
             auto params = thread.template data<thread_params>();
             for (auto& rezen : params->rezens)
             {
@@ -735,7 +735,7 @@ void context::rezen_force()
 void context::rezen_force(const fb::game::map& map)
 {
     auto thread = map.thread();
-    thread->dispatch([map_id = map.model.id](auto& thread) -> async::task<void> {
+    std::ignore = thread->dispatch([map_id = map.model.id](auto& thread) -> async::task<void> {
         auto params = thread.template data<thread_params>();
         for (auto& rezen : params->rezens)
         {
