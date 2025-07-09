@@ -2057,6 +2057,22 @@ public:
      * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_slot(lua_State* L);
+
+    /**
+     * @brief      Lua builtin function to force a rezen spawn.
+     *
+     *             This function forces a rezen spawn regardless of normal spawn
+     *             conditions. It bypasses the normal spawn restrictions and
+     *             immediately spawns mobs at the specified rezen point.
+     *
+     *             This function is useful for special events, GM commands, or
+     *             scripted scenarios that need to override normal spawn logic.
+     *
+     * @param      L     The Lua state containing function arguments.
+     *
+     * @return     Number of return values pushed to the Lua stack.
+     */
+    static int builtin_rezen_force(lua_State* L);
 };
 
 /**

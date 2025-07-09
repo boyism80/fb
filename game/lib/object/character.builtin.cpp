@@ -70,6 +70,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"input",               character::builtin::builtin_input},
 {"menu",                character::builtin::builtin_menu},
 {"slot",                character::builtin::builtin_slot},
+{"rezen_force",         character::builtin::builtin_rezen_force},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin::builtin_look(lua_State* L)
@@ -3143,4 +3144,28 @@ int fb::game::character::builtin::builtin_slot(lua_State* L)
         });
 
     return lua->yield(1);
+}
+
+int fb::game::character::builtin::builtin_rezen_force(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto map = ch->map();
+    if (map == nullptr)
+        return 0;
+
+    auto is_global = lua->toboolean(2, false);
+    if (is_global)
+        ctx->rezen_force();
+    else
+        ctx->rezen_force(*map);
+
+    return 0;
 }

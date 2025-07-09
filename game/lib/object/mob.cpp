@@ -9,7 +9,7 @@ using namespace fb::game;
 
 rezen::rezen(context& context, const fb::model::mob_spawn& model) :
     _context(context),
-    _model(model)
+    model(model)
 {
     this->_respawn_time = fb::model::datetime();
 }
@@ -19,41 +19,42 @@ void rezen::decrease()
     auto now = fb::model::datetime();
 
     if (!this->_respawn_time.has_value())
-        this->_respawn_time = now + this->_model.rezen;
+        this->_respawn_time = now + this->model.rezen;
     this->_count = std::max(0, this->_count - 1);
 }
 
-void rezen::spawn(std::thread::id thread_id)
+async::task<void> rezen::spawn(std::thread::id thread_id)
 {
-    if (this->_context.maps.contains(this->_model.parent) == false)
-        return;
+    if (this->_context.maps.contains(this->model.parent) == false)
+        co_return;
 
-    auto map = this->_context.maps[this->_model.parent];
+    auto map = this->_context.maps[this->model.parent];
     if (map->active == false)
-        return;
+        co_return;
 
     if (map->is_active() == false)
-        return;
+        co_return;
 
     auto thread = this->_context.threads.at(thread_id);
     if (thread == nullptr || thread->id() != thread_id)
-        return;
+        co_return;
 
     auto now = fb::model::datetime();
     if (!this->_respawn_time.has_value())
-        return;
+        co_return;
 
     if (now < this->_respawn_time)
-        return;
+        co_return;
 
-    auto spawn_count = this->_model.count - this->_count;
+    auto spawn_count = this->model.count - this->_count;
     if (spawn_count < 1)
-        return;
+        co_return;
 
+    auto mobs = std::vector<std::shared_ptr<fb::game::mob>>();
     for (int i = 0; i < spawn_count; i++)
     {
         // Use smart pointer for mob creation
-        auto mob = this->_context.make<fb::game::mob>(this->_context.model.mob[this->_model.mob],
+        auto mob = this->_context.make<fb::game::mob>(this->_context.model.mob[this->model.mob],
                                                       mob::initial_params{.alive = true, .rezen = this});
 
         mob->direction(DIRECTION(std::rand() % 4));
@@ -61,11 +62,11 @@ void rezen::spawn(std::thread::id thread_id)
 
         while (true)
         {
-            auto width    = this->_model.end.x - this->_model.begin.x;
-            auto height   = this->_model.end.y - this->_model.begin.y;
-            auto map      = this->_context.maps[this->_model.parent];
-            auto position = fb::model::point16_t(this->_model.begin.x + (width > 0 ? std::rand() % width : 0),
-                                                 this->_model.begin.y + (height > 0 ? std::rand() % height : 0));
+            auto width    = this->model.end.x - this->model.begin.x;
+            auto height   = this->model.end.y - this->model.begin.y;
+            auto map      = this->_context.maps[this->model.parent];
+            auto position = fb::model::point16_t(this->model.begin.x + (width > 0 ? std::rand() % width : 0),
+                                                 this->model.begin.y + (height > 0 ? std::rand() % height : 0));
 
             if (position.x > map->width() - 1 || position.y > map->height() - 1)
                 continue;
@@ -74,15 +75,32 @@ void rezen::spawn(std::thread::id thread_id)
                 continue;
 
             mob->position(position, true);
-            std::ignore = mob->map(map, position);
+            co_await mob->map(map, position, DESTROY_TYPE::DEFAULT, false);
             break;
         }
 
+        mobs.push_back(mob);
+    }
+
+    for (auto& mob : mobs)
+    {
         mob->action_time(now);
         mob->hidden(false);
     }
 
+    auto oids = std::vector<uint32_t>();
+    for (auto& mob : mobs)
+    {
+        oids.push_back(mob->oid());
+    }
+    map->bulk_update(oids);
+
     this->_respawn_time.reset();
+}
+
+void rezen::force_spawn(std::thread::id thread_id)
+{
+    this->_respawn_time = fb::model::datetime();
 }
 
 mob::mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params) :

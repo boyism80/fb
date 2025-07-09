@@ -40,7 +40,7 @@ async::task<void> context::handle_mob_respawn(const fb::model::datetime& now, st
 
     for (auto& rezen : params->rezens)
     {
-        rezen.spawn(id);
+        std::ignore = rezen.spawn(id);
     }
     co_return;
 }

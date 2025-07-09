@@ -715,3 +715,33 @@ void context::on_broadcast(const internal_resp::Broadcast& resp)
 {
     std::ignore = this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type), BROADCAST_TYPE::WORLD);
 }
+
+void context::rezen_force()
+{
+    for (int i = 0; i < this->threads.count(); i++)
+    {
+        auto thread = this->threads.at(i);
+        thread->dispatch([](auto& thread) -> async::task<void> {
+            auto params = thread.template data<thread_params>();
+            for (auto& rezen : params->rezens)
+            {
+                rezen.force_spawn(thread.id());
+            }
+            co_return;
+        });
+    }
+}
+
+void context::rezen_force(const fb::game::map& map)
+{
+    auto thread = map.thread();
+    thread->dispatch([map_id = map.model.id](auto& thread) -> async::task<void> {
+        auto params = thread.template data<thread_params>();
+        for (auto& rezen : params->rezens)
+        {
+            if (rezen.model.parent == map_id)
+                rezen.force_spawn(thread.id());
+        }
+        co_return;
+    });
+}

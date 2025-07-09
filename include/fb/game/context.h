@@ -421,37 +421,26 @@ public:
     }
 
     /**
-     * @brief      Safely checks if an object is alive using smart pointer semantics.
+     * @brief      Forces a rezen spawn regardless of normal spawn conditions.
      *
-     *             This method provides a more efficient alternative to hash-based alive() checks
-     *             by using weak pointer expiration checking.
-     *
-     * @param[in]  weak_obj  A weak pointer to the object to check
-     *
-     * @tparam     T         The type of object to check
-     *
-     * @return     True if the object is still alive, false otherwise
+     *             This method bypasses the normal spawn restrictions and immediately
+     *             spawns mobs at this spawn point. Useful for special events,
+     *             GM commands, or scripted scenarios that need to override normal
+     *             spawn logic.
      */
-    template <typename T>
-    bool alive_smart(const std::weak_ptr<T>& weak_obj) const
-    {
-        return !weak_obj.expired();
-    }
+    void rezen_force();
 
     /**
-     * @brief      Safely checks if an object is alive using shared pointer.
+     * @brief      Forces a rezen spawn regardless of normal spawn conditions.
      *
-     * @param[in]  shared_obj  A shared pointer to the object to check
+     *             This method bypasses the normal spawn restrictions and immediately
+     *             spawns mobs at this spawn point. Useful for special events,
+     *             GM commands, or scripted scenarios that need to override normal
+     *             spawn logic.
      *
-     * @tparam     T           The type of object to check
-     *
-     * @return     True if the object is not null, false otherwise
+     * @param[in]  map  The map to spawn mobs on.
      */
-    template <typename T>
-    bool alive_smart(const std::shared_ptr<T>& shared_obj) const
-    {
-        return shared_obj != nullptr;
-    }
+    void rezen_force(const fb::game::map& map);
 
 public:
     /**
