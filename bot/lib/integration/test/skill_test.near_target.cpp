@@ -17,7 +17,7 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
     // Setup all bots with max HP/MP
     for (auto& bot : bots)
     {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt);
+        std::ignore = co_await bot->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
     }
 
     auto near_target_spells = std::vector<near_target_damage_spell_test>{
@@ -45,7 +45,7 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names);
+    auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
     fb::logger::info("Successfully learned {} out of {} near target damage spells",
                      learned_count,
                      near_target_spells.size());
@@ -58,21 +58,21 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
         fb::logger::info("Testing near target spell: {}", spell.name);
 
         // Spawn a target monster in front of the caster
-        auto target = co_await this->spawn_monster_relative_by_look(caster, "다람쥐", 0, 2, 32793);
+        auto target = co_await caster->spawn_monster_relative_by_look("다람쥐", 0, 2, 32793, DEFAULT_TIMEOUT);
 
         // Spawn monsters around the target position (relative to target)
-        std::ignore = co_await this->spawn_monsters_relative_by_look(caster,
-                                                                     "다람쥐",
-                                                                     {
-                                                                         {0,  1},
-                                                                         {-1, 2},
-                                                                         {1,  2},
-                                                                         {0,  3}
+        std::ignore = co_await caster->spawn_monsters_relative_by_look("다람쥐",
+                                                                       {
+                                                                           {0,  1},
+                                                                           {-1, 2},
+                                                                           {1,  2},
+                                                                           {0,  3}
         },
-                                                                     32793);
+                                                                       32793,
+                                                                       DEFAULT_TIMEOUT);
 
         // Set caster's current HP/MP for testing
-        std::ignore = co_await this->set_current_hp_mp(caster, 1000, 1000);
+        std::ignore = co_await caster->set_current_hp_mp(1000, 1000, DEFAULT_TIMEOUT);
 
         // Calculate expected values using the spell calculator function
         auto [expected_hp, expected_mp] = spell.calculator(caster);

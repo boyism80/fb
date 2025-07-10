@@ -1,12 +1,9 @@
 #ifndef __ITEM_TEST_H__
 #define __ITEM_TEST_H__
 
-#include <fb/bot/integration/bot_integration_test.h>
-#include <fb/bot/game_bot.h>
-#include <chrono>
-#include <memory>
-#include <string>
-#include <vector>
+#include <fb/bot/integration/test_case.h>
+#include <stdexcept>
+#include <fb/game/protocol.h>
 
 namespace fb::bot::integration {
 
@@ -20,6 +17,20 @@ namespace fb::bot::integration {
  */
 class item_test : public bot_integration_test
 {
+    /**
+     * @brief      Simple item test data without condition information.
+     */
+    struct equipment_item_data
+    {
+        using condition_function = std::function<async::task<void>(fb::bot::game_bot&)>;
+
+        std::string        item_name;       ///< Name of the item to test
+        std::string        success_message; ///< Expected success message pattern when equipped
+        EQUIPMENT_PARTS    equipment_part;  ///< Equipment part for unequipping
+        condition_function condition;       ///< Condition function
+        condition_function rollback;        ///< Rollback function
+    };
+
 public:
     /**
      * @brief      Constructs a new item test instance.
@@ -40,7 +51,7 @@ public:
      *
      * @return     An async task that completes when initialization is finished.
      */
-    static async::task<void> initialize(game_bot_controller& controller);
+    async::task<void> initialize(game_bot_controller& controller);
 
     /**
      * @brief      Executes the item test sequence.
@@ -53,6 +64,16 @@ public:
      * @brief      Resets the test state for re-execution.
      */
     void reset() override;
+
+    /**
+     * @brief      Gets the test name.
+     *
+     * @return     "Item Test" as the identifier.
+     */
+    std::string name() const override final
+    {
+        return "Item Test";
+    }
 
     /**
      * @brief      Checks if the test is ready to execute.
@@ -138,31 +159,27 @@ private:
     // Test function implementations
     /**
      * @brief      Tests equipment activation with success scenarios.
-     * Tests that items can be properly equipped by characters with appropriate stats
+     *
+     *             This function tests the successful equipping of items by characters
+     *             with appropriate stats. It ensures that items can be equipped
+     *             without any issues when the character meets the required conditions.
+     *
      * @return     An async task that completes with true if test passed, false otherwise.
      */
     async::task<bool> test_equipment_success();
 
     /**
      * @brief      Tests equipment activation with failure scenarios.
-     * Tests that items fail to equip when characters have insufficient stats
+     *
+     *             This function tests the failure scenarios when attempting to equip
+     *             items by characters with insufficient stats. It ensures that items
+     *             fail to equip when the character does not meet the required conditions.
+     *
      * @return     An async task that completes with true if test passed, false otherwise.
      */
     async::task<bool> test_equipment_failure();
 
-    /**
-     * @brief      Tests equipment deactivation (unequip) functionality.
-     * Tests that items can be properly unequipped/deactivated
-     * @return     An async task that completes with true if test passed, false otherwise.
-     */
-    async::task<bool> test_equipment_deactivation();
-
-    /**
-     * @brief      Tests gender-specific item equipping.
-     * Tests that gender-specific items can only be equipped by appropriate characters
-     * @return     An async task that completes with true if test passed, false otherwise.
-     */
-    async::task<bool> test_gender_specific_items();
+    async::task<bool> test_equipment_overflow();
 
     /**
      * @brief      Resets bot state to clean initial conditions.

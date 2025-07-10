@@ -43,7 +43,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
         spell_names.push_back(spell.name);
     }
 
-    std::ignore = co_await this->learn_spells(caster, spell_names);
+    std::ignore = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
 
     // Form group with all available bots
     fb::logger::info("Forming group with {} bots for group healing test", bots.size());
@@ -57,7 +57,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
         fb::logger::info("Testing group healing spell: {}", spell_info.name);
         caster->chat(std::format("Testing {}", spell_info.name));
 
-        std::ignore = co_await set_current_hp_mp(caster, 10000, 10000);
+        std::ignore = co_await caster->set_current_hp_mp(10000, 10000, DEFAULT_TIMEOUT);
 
         // Calculate expected values
         auto [expected_hp_gain, expected_mp_cost] = spell_info.calculator(caster.get());
@@ -152,12 +152,7 @@ async::task<void> skill_test::prepare_bots_for_group_healing(std::vector<std::sh
             fb::logger::info("Adjusting bot {} HP to {} for accurate group healing test", bot->name(), required_low_hp);
         }
 
-        std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat{false, std::format("/현재체력 {}", required_low_hp)},
-            [required_low_hp](auto& resp) -> bool {
-                return resp.ch_hp == required_low_hp;
-            },
-            DEFAULT_TIMEOUT);
+        co_await bot->change_hp(required_low_hp, DEFAULT_TIMEOUT);
     }
 
     fb::logger::info("All bots prepared for group healing test");

@@ -33,6 +33,7 @@ command_funcs = {
             "/몬스터범위생성 <몬스터이름> <거리> - 범위 내 몬스터 생성",
             "/직업바꾸기 <직업이름> - 직업 변경",
             "/레벨바꾸기 <레벨> - 레벨 설정",
+            "/스탯바꾸기 <스탯값> - 스탯 설정",
             "/힘바꾸기 <힘값> - 힘 설정",
             "/민첩바꾸기 <민첩값> - 민첩 설정",
             "/지력바꾸기 <지력값> - 지력 설정",
@@ -448,6 +449,26 @@ command_funcs = {
         return true
     end,
 
+    ['스탯바꾸기'] = 
+    function (me, args)
+        local str, dex, int = table.unpack(args)
+        if not str or not dex or not int then
+            me:message("사용법: /스탯바꾸기 <힘> <민첩> <지력>")
+            return true
+        end
+        str = tonumber(str)
+        dex = tonumber(dex)
+        int = tonumber(int)
+        if not str or not dex or not int or str < 0 or dex < 0 or int < 0 then
+            me:message("힘, 민첩, 지력은 0 이상의 숫자여야 합니다.")
+            return true
+        end
+        me:base_str(str)
+        me:base_dex(dex)
+        me:base_int(int)
+        return true
+    end,
+
     ['체력바꾸기'] = 
     function (me, args)
         local value = table.unpack(args)
@@ -831,6 +852,23 @@ command_funcs = {
         else
             me:sex(SEX_MAN)
         end
+        return true
+    end,
+
+    ['성별바꾸기'] = 
+    function (me, args)
+        local sex = table.unpack(args)
+        if not sex then
+            me:message("사용법: /성별바꾸기 <성별>")
+            return true
+        end
+
+        sex = tonumber(sex)
+        if not sex or sex < 0 or sex > 1 then
+            me:message("성별은 0 또는 1이어야 합니다.")
+            return true
+        end
+        me:sex(sex)
         return true
     end,
 

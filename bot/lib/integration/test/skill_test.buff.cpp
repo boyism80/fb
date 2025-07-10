@@ -21,7 +21,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
     // Setup all bots with max HP/MP
     for (auto& bot : bots)
     {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt);
+        std::ignore = co_await bot->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
     }
 
     struct buff_debuff_spell_test
@@ -254,7 +254,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names);
+    auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
     fb::logger::info("Successfully learned {} out of {} buff/debuff spells", learned_count, buff_debuff_spells.size());
 
     fb::logger::info("Testing {} buff/debuff spells", buff_debuff_spells.size());
@@ -282,10 +282,10 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
         while (true)
         {
             // Set caster's current HP/MP for testing
-            std::ignore = co_await this->set_current_hp_mp(caster, 10000, 10000);
+            std::ignore = co_await caster->set_current_hp_mp(10000, 10000, DEFAULT_TIMEOUT);
 
             // Set target's current HP/MP for testing
-            std::ignore = co_await this->set_current_hp_mp(target, 10000, 10000);
+            std::ignore = co_await target->set_current_hp_mp(10000, 10000, DEFAULT_TIMEOUT);
 
             auto before_caster_mp = caster->mp();
             expected_caster_mp    = before_caster_mp - spell.expected_mp_cost;

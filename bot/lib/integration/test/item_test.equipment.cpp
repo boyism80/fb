@@ -4,264 +4,296 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-namespace fb::bot::integration::test {
-// Test data based on real game/json/item.json
-struct item_test_data
-{
-    uint32_t                       item_id;
-    std::string                    name;
-    std::string                    expected_message;
-    std::string                    type;
-    std::string                    condition_type;
-    std::variant<int, std::string> condition_value;
-};
-
-// Real test data from game/json/item.json
-const std::vector<item_test_data> HIGH_LEVEL_ITEMS = {
-    // High level weapons
-    {18,    "목검",           "w:목검",           "WEAPON", "strength", 5                 },
-    {19,    "사두목도",       "w:사두목도",       "WEAPON", "strength", 10                },
-
-    // High level armor
-    {600,   "연두색남자도복", "a:연두색남자도복", "ARMOR",  "sex",      std::string("MAN")},
-    {601,   "연두색짧은도포", "a:연두색짧은도포", "ARMOR",  "sex",      std::string("MAN")},
-
-    // High level shields
-    {1007,  "여신의방패",     "s:여신의방패",     "SHIELD", "level",    77                },
-    {1008,  "문신방패",       "s:문신방패",       "SHIELD", "level",    20                },
-
-    // High level helmets
-    {1315,  "주술투구",       "h:주술투구",       "HELMET", "level",    75                },
-    {1316,  "낭아투구",       "h:낭아투구",       "HELMET", "level",    56                },
-
-    // High level auxiliary items
-    {10183, "나무화살통",     "q:나무화살통",     "BOW",    "none",     0                 }
-};
-
-const std::vector<item_test_data> LOW_LEVEL_ITEMS = {
-    // Low level weapons (no conditions)
-    {15,   "초심자의목도",     "w:초심자의목도",     "WEAPON", "none", 0                   },
-    {17,   "목도",             "w:목도",             "WEAPON", "none", 0                   },
-
-    // Low level armor (gender specific)
-    {10,   "초심자의남자갑주", "a:초심자의남자갑주", "ARMOR",  "sex",  std::string("MAN")  },
-    {11,   "초심자의여자갑주", "a:초심자의여자갑주", "ARMOR",  "sex",  std::string("WOMAN")},
-
-    // Low level shields (no conditions)
-    {14,   "초심자의방패",     "s:초심자의방패",     "SHIELD", "none", 0                   },
-    {1005, "역사수호연등",     "s:역사수호연등",     "SHIELD", "none", 0                   },
-
-    // Low level helmets (no conditions)
-    {12,   "초심자의머리띠",   "h:초심자의머리띠",   "HELMET", "none", 0                   }
-};
-
-const std::vector<item_test_data> EXTREME_LEVEL_ITEMS = {
-    // Extreme level items for failure testing
-    {1006, "팔세지도", "s:팔세지도", "SHIELD", "level", 90},
-    {1317, "진취양모", "h:진취양모", "HELMET", "level", 90},
-    {1318, "현취월모", "h:현취월모", "HELMET", "level", 90}
-};
-} // namespace fb::bot::integration::test
-
 async::task<bool> item_test::test_equipment_success()
 {
-    // Set high stats for success testing
-    for (const auto& bot : this->_bots)
+    fb::logger::info("Starting scenario 1-1: Equip items without conditions");
+
+    auto equipments = std::vector<equipment_item_data>{
+        {"쇠도끼",           "w:무기  :쇠도끼",           EQUIPMENT_PARTS::WEAPON, nullptr, nullptr},
+        {"초심자의방패",     "s:방패  :초심자의방패",     EQUIPMENT_PARTS::SHIELD, nullptr, nullptr},
+        {"초심자의머리띠",   "h:머리  :초심자의머리띠",   EQUIPMENT_PARTS::HELMET, nullptr, nullptr},
+        {"초심자의남자갑주", "a:갑옷  :초심자의남자갑주", EQUIPMENT_PARTS::ARMOR,  nullptr, nullptr}
+    };
+
+    // Set basic stats for testing
+    for (const auto& bot : this->get_test_bots())
     {
         if (bot == nullptr)
             continue;
 
-        // Give high level and stats to ensure success
-        bot->level(99);
-        bot->strength(99);
-        bot->intelligence(99);
-        bot->dexterity(99);
-        bot->sex(fb::character::sex::MAN); // Set male for gender-specific items
+        co_await bot->change_level(10, DEFAULT_TIMEOUT);
+        co_await bot->change_stats(10, 10, 10, DEFAULT_TIMEOUT);
+        co_await bot->change_sex(fb::model::enum_value::SEX::MAN, DEFAULT_TIMEOUT);
     }
 
-    bool all_passed = true;
-
-    for (const auto& item : HIGH_LEVEL_ITEMS)
+    auto bot_index = 0;
+    for (auto& bot : this->get_test_bots())
     {
-        for (const auto& bot : this->_bots)
+        auto slot = 0;
+        for (const auto& item : equipments)
         {
-            if (bot == nullptr)
-                continue;
-
-            // Give item to bot
-            bot->give(item.item_id, 1);
-
-            // Test equip
-            auto success = co_await bot->equip(0, item.expected_message, DEFAULT_TIMEOUT);
+            co_await bot->create_item(item.item_name, 1, DEFAULT_TIMEOUT);
+            auto success = co_await bot->equip(slot++, item.success_message, DEFAULT_TIMEOUT);
             if (!success)
             {
-                this->_log->error("Failed to equip {} (id: {})", item.name, item.item_id);
-                all_passed = false;
-                continue;
+                fb::logger::fatal("Scenario 1-1: Failed to equip {}", item.item_name);
+                co_return false;
             }
 
-            // Test unequip
-            success = co_await bot->unequip(0, DEFAULT_TIMEOUT);
-            if (!success)
-            {
-                this->_log->error("Failed to unequip {} (id: {})", item.name, item.item_id);
-                all_passed = false;
-            }
-
-            // Remove item from inventory
-            bot->remove(item.item_id, 1);
+            co_await bot->unequip(item.equipment_part, DEFAULT_TIMEOUT);
+            fb::logger::info("Scenario 1-1: Successfully equipped {}", item.item_name);
         }
+        bot_index++;
     }
 
-    co_return all_passed;
+    co_return true;
 }
 
 async::task<bool> item_test::test_equipment_failure()
 {
-    // Set low stats for failure testing
-    for (const auto& bot : this->_bots)
+    fb::logger::info("Starting scenario 2-1: Equip items with conditions - expect failure");
+
+    // Set low stats to ensure failure
+    for (const auto& bot : this->get_test_bots())
     {
         if (bot == nullptr)
             continue;
 
-        // Give low level and stats to ensure failure
-        bot->level(1);
-        bot->strength(1);
-        bot->intelligence(1);
-        bot->dexterity(1);
-        bot->sex(fb::character::sex::WOMAN); // Set female for male-specific items
+        bot->change_level(1, DEFAULT_TIMEOUT);
+        bot->change_stats(1, 1, 1, DEFAULT_TIMEOUT);
+        bot->change_sex(fb::model::enum_value::SEX::MAN, DEFAULT_TIMEOUT);
     }
 
-    bool all_passed = true;
-
-    for (const auto& item : EXTREME_LEVEL_ITEMS)
-    {
-        for (const auto& bot : this->_bots)
+    auto equipments = std::vector<std::vector<equipment_item_data>>{
         {
-            if (bot == nullptr)
-                continue;
+         {"검성기검",
+             "w:무기  :검성기검",
+             EQUIPMENT_PARTS::WEAPON,
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(99, timeout);
+                 co_await bot.change_class("검성", timeout);
+             },
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(1, timeout);
+                 co_await bot.change_class("평민", timeout);
+             }},
+         {"검황의영혼",
+             "a:갑옷  :검황의영혼",
+             EQUIPMENT_PARTS::ARMOR,
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(99, timeout);
+                 co_await bot.change_class("검황", timeout);
+                 co_await bot.change_sex(fb::model::enum_value::SEX::MAN, timeout);
+             },
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(1, timeout);
+                 co_await bot.change_class("평민", timeout);
+                 co_await bot.change_sex(fb::model::enum_value::SEX::WOMAN, timeout);
+             }},
+         {"팔세지도",
+             "s:방패  :팔세지도",
+             EQUIPMENT_PARTS::SHIELD,
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(90, timeout);
+             },
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(1, timeout);
+             }},
+         },
+        {
+         {"태성태도",
+             "w:무기  :태성태도",
+             EQUIPMENT_PARTS::WEAPON,
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(99, timeout);
+                 co_await bot.change_class("태성", timeout);
+             },
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(1, timeout);
+                 co_await bot.change_class("평민", timeout);
+             }},
+         {"귀검의영혼",
+             "a:갑옷  :귀검의영혼",
+             EQUIPMENT_PARTS::ARMOR,
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_class("귀검", timeout);
+                 co_await bot.change_level(99, timeout);
+                 co_await bot.change_sex(fb::model::enum_value::SEX::MAN, timeout);
+             },
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(1, timeout);
+                 co_await bot.change_class("평민", timeout);
+                 co_await bot.change_sex(fb::model::enum_value::SEX::WOMAN, timeout);
+             }},
+         {"여신의방패",
+             "s:방패  :여신의방패",
+             EQUIPMENT_PARTS::SHIELD,
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(77, timeout);
+             },
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(1, timeout);
+             }},
+         },
+        {
+         {"진선역봉",
+             "w:무기  :진선역봉",
+             EQUIPMENT_PARTS::WEAPON,
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(99, timeout);
+                 co_await bot.change_class("진선", timeout);
+             },
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(1, timeout);
+                 co_await bot.change_class("평민", timeout);
+             }},
+         {"진인의심장",
+             "a:갑옷  :진인의심장",
+             EQUIPMENT_PARTS::ARMOR,
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_class("진인", timeout);
+                 co_await bot.change_level(99, timeout);
+                 co_await bot.change_sex(fb::model::enum_value::SEX::WOMAN, timeout);
+             },
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(1, timeout);
+                 co_await bot.change_class("평민", timeout);
+                 co_await bot.change_sex(fb::model::enum_value::SEX::MAN, timeout);
+             }},
+         {"문신방패",
+             "s:방패  :문신방패",
+             EQUIPMENT_PARTS::SHIELD,
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(20, timeout);
+             },
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(1, timeout);
+             }},
+         },
+        {
+         {"현자금봉",
+             "w:무기  :현자금봉",
+             EQUIPMENT_PARTS::WEAPON,
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(99, timeout);
+                 co_await bot.change_class("현자", timeout);
+             },
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(1, timeout);
+                 co_await bot.change_class("평민", timeout);
+             }},
+         {"현인의심장",
+             "a:갑옷  :현인의심장",
+             EQUIPMENT_PARTS::ARMOR,
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_class("현인", timeout);
+                 co_await bot.change_level(99, timeout);
+                 co_await bot.change_sex(fb::model::enum_value::SEX::WOMAN, timeout);
+             },
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(1, timeout);
+                 co_await bot.change_class("평민", timeout);
+                 co_await bot.change_sex(fb::model::enum_value::SEX::MAN, timeout);
+             }},
+         {"정화의방패",
+             "s:방패  :정화의방패",
+             EQUIPMENT_PARTS::SHIELD,
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(50, timeout);
+             },
+             [timeout = DEFAULT_TIMEOUT](auto& bot) -> async::task<void> {
+                 co_await bot.change_level(1, timeout);
+             }},
+         }
+    };
 
-            // Give item to bot
-            bot->give(item.item_id, 1);
+    auto bot_index = 0;
+    for (const auto& bot : this->get_test_bots())
+    {
+        if (bot == nullptr)
+            continue;
 
-            // Test equip (should fail)
-            auto success = co_await bot->equip(0, item.expected_message, DEFAULT_TIMEOUT);
+        auto slot = 0;
+        for (const auto& item : equipments[bot_index])
+        {
+            if (item.rollback != nullptr)
+            {
+                co_await item.rollback(*bot);
+            }
+
+            co_await bot->create_item(item.item_name, 1, DEFAULT_TIMEOUT);
+            auto success = co_await bot->equip(slot, item.success_message, DEFAULT_TIMEOUT);
             if (success)
             {
-                this->_log->error("Unexpectedly succeeded to equip {} (id: {}) with low stats",
-                                  item.name,
-                                  item.item_id);
-                all_passed = false;
-
-                // Unequip if somehow equipped
-                co_await bot->unequip(0, DEFAULT_TIMEOUT);
+                fb::logger::fatal("Scenario 2-1: Unexpectedly succeeded to equip {} with insufficient conditions",
+                                  item.item_name);
+                co_return false;
             }
 
-            // Remove item from inventory
-            bot->remove(item.item_id, 1);
-        }
-    }
-
-    co_return all_passed;
-}
-
-async::task<bool> item_test::test_equipment_deactivation()
-{
-    // Set appropriate stats for basic items
-    for (const auto& bot : this->_bots)
-    {
-        if (bot == nullptr)
-            continue;
-
-        bot->level(50);
-        bot->strength(50);
-        bot->intelligence(50);
-        bot->dexterity(50);
-        bot->sex(fb::character::sex::MAN);
-    }
-
-    bool all_passed = true;
-
-    for (const auto& item : LOW_LEVEL_ITEMS)
-    {
-        for (const auto& bot : this->_bots)
-        {
-            if (bot == nullptr)
-                continue;
-
-            // Skip gender-specific items for opposite gender
-            if (item.condition_type == "sex" && std::holds_alternative<std::string>(item.condition_value) &&
-                std::get<std::string>(item.condition_value) == "WOMAN")
+            if (item.condition != nullptr)
             {
-                continue;
+                co_await item.condition(*bot);
             }
 
-            // Give item to bot
-            bot->give(item.item_id, 1);
-
-            // Test equip
-            auto success = co_await bot->equip(0, item.expected_message, DEFAULT_TIMEOUT);
+            success = co_await bot->equip(slot, item.success_message, DEFAULT_TIMEOUT);
             if (!success)
             {
-                this->_log->error("Failed to equip {} (id: {})", item.name, item.item_id);
-                all_passed = false;
-                continue;
+                fb::logger::fatal("Scenario 2-1: Failed to equip {}", item.item_name);
+                co_return false;
             }
 
-            // Test unequip
-            success = co_await bot->unequip(0, DEFAULT_TIMEOUT);
-            if (!success)
+            co_await bot->unequip(item.equipment_part, DEFAULT_TIMEOUT);
+            if (item.rollback != nullptr)
             {
-                this->_log->error("Failed to unequip {} (id: {})", item.name, item.item_id);
-                all_passed = false;
+                co_await item.rollback(*bot);
             }
-
-            // Remove item from inventory
-            bot->remove(item.item_id, 1);
+            slot++;
         }
+        bot_index++;
     }
 
-    co_return all_passed;
+    co_return true;
 }
 
-async::task<bool> item_test::test_gender_specific_items()
+async::task<bool> item_test::test_equipment_overflow()
 {
-    bool all_passed = true;
+    fb::logger::info("Starting scenario 3-1: Equip items with overflow");
 
-    // Test male-specific items
-    for (const auto& bot : this->_bots)
+    constexpr auto CONTAINER_CAPACITY = 52;
+
+    auto  bots = this->get_test_bots();
+    auto& bot  = bots.front();
+
+    co_await bot->thread()->switching();
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
-        if (bot == nullptr)
-            continue;
+        co_await bot->create_item("목도", 1, DEFAULT_TIMEOUT);
+        bot->chat(std::format("Scenario 3-1: Created {} 목도", i + 1));
+    }
+    bot->chat(std::format("Scenario 3-1: Full inventory"));
 
-        bot->sex(fb::character::sex::MAN);
-        bot->level(50);
+    if (co_await bot->equip(0, "w:무기  :목도", DEFAULT_TIMEOUT) == false)
+    {
+        fb::logger::fatal("Scenario 3-1: Failed to equip 목도");
+        co_return false;
+    }
+    bot->chat(std::format("Scenario 3-1: Equipped 1 목도 and created 1 more"));
 
-        // Test male armor
-        bot->give(600, 1); // 연두색남자도복
-        auto success = co_await bot->equip(0, "a:연두색남자도복", DEFAULT_TIMEOUT);
-        if (!success)
-        {
-            this->_log->error("Failed to equip male armor as male character");
-            all_passed = false;
-        }
-        else
-        {
-            co_await bot->unequip(0, DEFAULT_TIMEOUT);
-        }
-        bot->remove(600, 1);
+    co_await bot->create_item("목도", 1, DEFAULT_TIMEOUT);
+    bot->chat(std::format("Scenario 3-1: Full inventory again"));
 
-        // Test female armor (should fail)
-        bot->give(11, 1); // 초심자의여자갑주
-        success = co_await bot->equip(0, "a:초심자의여자갑주", DEFAULT_TIMEOUT);
-        if (success)
-        {
-            this->_log->error("Unexpectedly succeeded to equip female armor as male character");
-            all_passed = false;
-            co_await bot->unequip(0, DEFAULT_TIMEOUT);
-        }
-        bot->remove(11, 1);
+    auto&& resp = co_await bot->request<fb::protocol::game::response::message>(
+        fb::protocol::game::request::item_inactive(EQUIPMENT_PARTS::WEAPON),
+        [](auto& resp) -> bool {
+            return resp.type == MESSAGE_TYPE::STATE;
+        },
+        DEFAULT_TIMEOUT);
+
+    if (resp.text.find(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW)) == std::string::npos)
+    {
+        fb::logger::fatal("Scenario 3-1: Failed to unequip 목도");
+        co_return false;
     }
 
-    co_return all_passed;
+    co_return true;
 }

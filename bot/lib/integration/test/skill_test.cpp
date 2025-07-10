@@ -141,8 +141,6 @@ void skill_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
 
 async::task<void> skill_test::on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response)
 {
-    fb::logger::debug("Skill test: Bot {} received object ID {}", bot.fd(), response.oid);
-
     if (this->is_ready() == false)
         co_return;
 
@@ -254,10 +252,10 @@ async::task<bool> skill_test::execute_test_functions(std::vector<std::shared_ptr
         {
             auto& caster = bots.front(); // Use first bot as caster for cleanup
             fb::logger::debug("Cleaning up all spells after test function '{}'", test_name);
-            co_await this->clear_all_spells(caster);
+            co_await caster->clear_all_spells(DEFAULT_TIMEOUT);
 
             fb::logger::debug("Clearing all items after test function '{}'", test_name);
-            co_await this->clear_all_items(caster);
+            co_await caster->clear_all_items(DEFAULT_TIMEOUT);
             co_await caster->thread()->sleep(500ms);
         }
     }

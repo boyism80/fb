@@ -58,10 +58,10 @@ async::task<bool> skill_test::test_loot_spell(std::vector<std::shared_ptr<fb::bo
     // Step 5: Learn and cast loot spell
     fb::logger::info("Learning loot spell");
     auto spell_names = std::vector<std::string>{"노획"};
-    std::ignore      = co_await this->learn_spells(caster, spell_names);
+    std::ignore      = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
 
     // Set current hp and mp
-    std::ignore = co_await this->set_current_hp_mp(caster, 10000, 1000);
+    std::ignore = co_await caster->set_current_hp_mp(10000, 1000, DEFAULT_TIMEOUT);
 
     fb::logger::info("Casting loot spell");
     auto before_mp   = caster->mp();

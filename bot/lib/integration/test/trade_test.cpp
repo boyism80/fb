@@ -136,8 +136,6 @@ void trade_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
 
 async::task<void> trade_test::on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response)
 {
-    fb::logger::debug("Trade test: Bot {} received object ID {}", bot.fd(), response.oid);
-
     if (this->is_ready() == false)
         co_return;
 

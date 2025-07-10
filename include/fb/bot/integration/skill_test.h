@@ -362,16 +362,6 @@ private:
         std::vector<std::pair<int, int>> spawn_positions; ///< Relative positions from caster for monster spawning
         bool                             has_movement;    ///< Whether the spell moves the caster
     };
-
-    /**
-     * @brief      Structure for spawned monster information
-     */
-    struct spawned_monster_info
-    {
-        uint32_t                   oid;      ///< Monster object ID
-        fb::model::point<uint16_t> position; ///< Monster position
-        uint32_t                   look;     ///< Monster look value
-    };
 };
 
 } // namespace fb::bot::integration

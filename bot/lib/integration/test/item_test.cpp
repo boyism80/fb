@@ -21,7 +21,7 @@ item_test::item_test(game_bot_controller& controller) :
 
 async::task<void> item_test::initialize(game_bot_controller& controller)
 {
-    constexpr auto REQUIRED_BOTS = 3;
+    constexpr auto REQUIRED_BOTS = 4;
 
     auto ip = controller.container.ipv4(fb::config<std::string>("ip"));
     auto endpoint =
@@ -138,8 +138,6 @@ void item_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
 
 async::task<void> item_test::on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response)
 {
-    fb::logger::debug("Item test: Bot {} received object ID {}", bot.fd(), response.oid);
-
     if (this->is_ready() == false)
         co_return;
 
@@ -181,12 +179,8 @@ void item_test::initialize_test_functions()
         return this->test_equipment_failure();
     });
 
-    this->_test_functions.emplace_back("Equipment Deactivation Test", [this](auto& bots) {
-        return this->test_equipment_deactivation();
-    });
-
-    this->_test_functions.emplace_back("Gender-specific Equipment Test", [this](auto& bots) {
-        return this->test_gender_specific_items();
+    this->_test_functions.emplace_back("Equipment Overflow Test", [this](auto& bots) {
+        return this->test_equipment_overflow();
     });
 
     fb::logger::info("Initialized {} item test functions", this->_test_functions.size());
@@ -211,11 +205,10 @@ async::task<bool> item_test::execute_test_functions(std::vector<std::shared_ptr<
         fb::logger::info("Test function '{}' completed successfully", test_name);
 
         // Reset bot state after each test function completes
-        if (bots.empty() == false)
+        for (auto& bot : bots)
         {
-            auto& test_bot = bots.front(); // Use first bot for cleanup
             fb::logger::debug("Resetting bot state after test function '{}'", test_name);
-            co_await this->reset_bot_state(test_bot);
+            co_await this->reset_bot_state(bot);
         }
     }
 
@@ -234,72 +227,21 @@ async::task<void> item_test::reset_bot_state(std::shared_ptr<fb::bot::game_bot>&
     bot->chat("/아이템초기화");
     co_await bot->thread()->sleep(500ms);
 
-    // Remove all buffs
-    bot->chat("/버프해제");
-    co_await bot->thread()->sleep(200ms);
-
     // Reset money to 0
     co_await bot->change_money(0, DEFAULT_TIMEOUT);
 
     // Reset to default level (level 1)
-    std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, "/레벨바꾸기 1"},
-        [](auto& resp) -> bool {
-            return resp.ch_level == 1;
-        },
-        DEFAULT_TIMEOUT);
+    co_await bot->change_level(1, DEFAULT_TIMEOUT);
 
     // Reset all stats to 1
-    std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, "/힘바꾸기 1"},
-        [](auto& resp) -> bool {
-            return resp.ch_str == 1;
-        },
-        DEFAULT_TIMEOUT);
+    co_await bot->change_stats(1, 1, 1, DEFAULT_TIMEOUT);
 
-    std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, "/민첩바꾸기 1"},
-        [](auto& resp) -> bool {
-            return resp.ch_dex == 1;
-        },
-        DEFAULT_TIMEOUT);
-
-    std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, "/지력바꾸기 1"},
-        [](auto& resp) -> bool {
-            return resp.ch_int == 1;
-        },
-        DEFAULT_TIMEOUT);
+    // Reset sex to male
+    co_await bot->change_sex(fb::model::enum_value::SEX::MAN, DEFAULT_TIMEOUT);
 
     // Reset base HP and MP to reasonable defaults
-    std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, "/체력바꾸기 1000"},
-        [](auto& resp) -> bool {
-            return resp.ch_base_hp == 1000;
-        },
-        DEFAULT_TIMEOUT);
-
-    std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, "/마력바꾸기 1000"},
-        [](auto& resp) -> bool {
-            return resp.ch_base_mp == 1000;
-        },
-        DEFAULT_TIMEOUT);
-
-    // Reset current HP and MP to full
-    std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, "/현재체력 1000"},
-        [](auto& resp) -> bool {
-            return resp.ch_hp == 1000;
-        },
-        DEFAULT_TIMEOUT);
-
-    std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, "/현재마력 1000"},
-        [](auto& resp) -> bool {
-            return resp.ch_mp == 1000;
-        },
-        DEFAULT_TIMEOUT);
+    co_await bot->change_base_hp(1000, DEFAULT_TIMEOUT);
+    co_await bot->change_base_mp(1000, DEFAULT_TIMEOUT);
 
     fb::logger::debug("Bot {} state reset completed", bot->oid());
 }

@@ -18,7 +18,7 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
     // Setup all bots with max HP/MP
     for (auto& bot : bots)
     {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt);
+        std::ignore = co_await bot->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
     }
 
     auto multi_target_spells = std::vector<multi_target_attack_cast_spell_test>{
@@ -91,7 +91,7 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names);
+    auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
     fb::logger::info("Successfully learned {} out of {} multi-target attack_cast spells",
                      learned_count,
                      multi_target_spells.size());
@@ -106,10 +106,11 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
         auto caster_pos = caster->position();
 
         // Spawn monsters at the calculated positions
-        std::ignore = co_await this->spawn_monsters_relative_by_look(caster, "다람쥐", spell.spawn_positions, 32793);
+        std::ignore =
+            co_await caster->spawn_monsters_relative_by_look("다람쥐", spell.spawn_positions, 32793, DEFAULT_TIMEOUT);
 
         // Set caster's current HP/MP for testing
-        std::ignore = co_await this->set_current_hp_mp(caster, 1000, 1000);
+        std::ignore = co_await caster->set_current_hp_mp(1000, 1000, DEFAULT_TIMEOUT);
 
         // Calculate expected values using the spell calculator function
         auto [expected_hp, expected_mp, expected_position] = spell.calculator(caster);
@@ -132,7 +133,7 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
         spell_slot++;
 
         // Move bot back to original position if it moved
-        co_await this->move_bot_back_to_position(caster, caster_pos);
+        co_await caster->move_bot_back_to_position(caster_pos, DEFAULT_INTERVAL);
         co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 

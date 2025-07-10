@@ -41,8 +41,6 @@ async::task<void> movement_test::initialize(game_bot_controller& controller)
 async::task<void> movement_test::on_hook_sequence(fb::bot::game_bot&                      bot,
                                                   const fb::protocol::game::response::id& response)
 {
-    fb::logger::debug("Movement test: Bot {} received object ID {}", bot.fd(), response.oid);
-
     if (this->is_ready() == false)
         co_return;
 

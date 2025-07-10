@@ -39,13 +39,13 @@ async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<f
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names);
+    auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
     fb::logger::info("Successfully learned {} out of {} teleport spells", learned_count, teleport_spells.size());
 
     // Setup all bots with max HP/MP
     for (auto& bot : bots)
     {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt);
+        std::ignore = co_await bot->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
     }
 
     uint8_t spell_slot = 1;

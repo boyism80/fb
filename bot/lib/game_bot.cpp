@@ -325,12 +325,12 @@ void game_bot::set_disguised(uint8_t value)
     this->_disguised = value;
 }
 
-uint8_t game_bot::sex() const
+SEX game_bot::sex() const
 {
     return this->_sex;
 }
 
-void game_bot::set_sex(uint8_t value)
+void game_bot::set_sex(SEX value)
 {
     this->_sex = value;
 }
@@ -473,6 +473,73 @@ async::task<void> game_bot::change_level(uint8_t level, std::chrono::millisecond
         fb::protocol::game::request::chat{false, command},
         [level](auto& resp) -> bool {
             return ENUM_IN(resp.level, STATE_LEVEL::BASED) && resp.ch_level == level;
+        },
+        timeout);
+}
+
+async::task<void>
+game_bot::change_stats(uint8_t str, uint8_t dex, uint8_t intelligence, std::chrono::milliseconds timeout)
+{
+    auto command = std::format("/스탯바꾸기 {} {} {}", str, dex, intelligence);
+    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, command},
+        [str, dex, intelligence](auto& resp) -> bool {
+            return resp.ch_strength == str && resp.ch_dexterity == dex && resp.ch_intelligence == intelligence;
+        },
+        timeout);
+}
+
+async::task<void> game_bot::change_sex(SEX sex, std::chrono::milliseconds timeout)
+{
+    auto command = std::format("/성별바꾸기 {}", (uint8_t)sex);
+    std::ignore  = co_await this->request<fb::protocol::game::response::update_external<true>>(
+        fb::protocol::game::request::chat{false, command},
+        [sex](auto& resp) -> bool {
+            return resp.sex == sex;
+        },
+        timeout);
+}
+
+async::task<void> game_bot::change_base_hp(uint32_t hp, std::chrono::milliseconds timeout)
+{
+    auto command = std::format("/체력바꾸기 {}", hp);
+    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, command},
+        [hp](auto& resp) -> bool {
+            return resp.ch_base_hp == hp;
+        },
+        timeout);
+}
+
+async::task<void> game_bot::change_base_mp(uint32_t mp, std::chrono::milliseconds timeout)
+{
+    auto command = std::format("/마력바꾸기 {}", mp);
+    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, command},
+        [mp](auto& resp) -> bool {
+            return resp.ch_base_mp == mp;
+        },
+        timeout);
+}
+
+async::task<void> game_bot::change_hp(uint32_t hp, std::chrono::milliseconds timeout)
+{
+    auto command = std::format("/현재체력 {}", hp);
+    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, command},
+        [hp](auto& resp) -> bool {
+            return resp.ch_hp == hp;
+        },
+        timeout);
+}
+
+async::task<void> game_bot::change_mp(uint32_t mp, std::chrono::milliseconds timeout)
+{
+    auto command = std::format("/현재마력 {}", mp);
+    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, command},
+        [mp](auto& resp) -> bool {
+            return resp.ch_mp == mp;
         },
         timeout);
 }
@@ -721,11 +788,27 @@ async::task<bool> game_bot::equip(uint8_t slot, const std::string& expected_msg,
 {
     try
     {
-        auto&& response = co_await this->request<fb::protocol::game::response::message>(
+        auto&& resp = co_await this->request<fb::protocol::game::response::message>(
             fb::protocol::game::request::item_active(slot + 1),
-            [expected_msg](auto& resp) -> bool {
-                return resp.text.find(expected_msg) != std::string::npos;
+            [](auto& resp) -> bool {
+                return resp.type == MESSAGE_TYPE::STATE;
             },
+            timeout);
+
+        co_return resp.text.find(expected_msg) != std::string::npos;
+    }
+    catch (const std::exception& e)
+    {
+        co_return false;
+    }
+}
+
+async::task<bool> game_bot::unequip(EQUIPMENT_PARTS parts, std::chrono::milliseconds timeout)
+{
+    try
+    {
+        std::ignore = co_await this->request<fb::protocol::game::response::item_update>(
+            fb::protocol::game::request::item_inactive(parts),
             timeout);
 
         co_return true;
@@ -736,21 +819,399 @@ async::task<bool> game_bot::equip(uint8_t slot, const std::string& expected_msg,
     }
 }
 
-async::task<bool> game_bot::unequip(uint8_t slot, std::chrono::milliseconds timeout)
+async::task<void> game_bot::sleep(std::chrono::milliseconds timeout)
 {
-    try
+    auto thread = this->thread();
+    if (thread == nullptr)
+        co_return;
+
+    co_await thread->switching();
+    co_await thread->sleep(timeout);
+}
+
+async::task<void> game_bot::change_class(const std::string& class_name, std::chrono::milliseconds timeout)
+{
+    auto command = std::format("/직업바꾸기 {}", class_name);
+    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, command},
+        timeout);
+}
+
+async::task<spawned_monster_info>
+game_bot::spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot>                               bot,
+                                       const std::string&                                               monster_name,
+                                       uint16_t                                                         x,
+                                       uint16_t                                                         y,
+                                       std::function<bool(const fb::protocol::game::response::update&)> validator,
+                                       std::chrono::milliseconds                                        timeout)
+{
+    auto thread = this->thread();
+    co_await thread->switching();
+
+    auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
+        fb::protocol::game::request::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
+        validator,
+        timeout);
+
+    if (spawn_response.objects_data.empty())
     {
-        std::ignore = co_await this->request<fb::protocol::game::response::item_update>(
-            fb::protocol::game::request::item_inactive(slot + 1),
-            [](auto& resp) -> bool {
-                return true; // Any item_update response is considered success
+        throw std::runtime_error(std::format("Failed to spawn monster {} at ({}, {})", monster_name, x, y));
+    }
+
+    auto&                mob = spawn_response.objects_data.front();
+    spawned_monster_info monster_info;
+    monster_info.oid      = mob.oid;
+    monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
+    monster_info.look     = mob.look;
+
+    co_return monster_info;
+}
+
+async::task<spawned_monster_info> game_bot::spawn_monster_by_look(const std::string&        monster_name,
+                                                                  uint16_t                  x,
+                                                                  uint16_t                  y,
+                                                                  uint32_t                  expected_look,
+                                                                  std::chrono::milliseconds timeout)
+{
+    auto thread = this->thread();
+    co_await thread->switching();
+
+    auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
+        fb::protocol::game::request::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
+        [expected_look](auto& resp) -> bool {
+            if (resp.objects_data.empty())
+                return false;
+
+            auto& mob = resp.objects_data.front();
+            return mob.look == expected_look;
+        },
+        timeout);
+
+    if (spawn_response.objects_data.empty())
+    {
+        throw std::runtime_error(
+            std::format("Failed to spawn monster {} with look {} at ({}, {})", monster_name, expected_look, x, y));
+    }
+
+    auto&                mob = spawn_response.objects_data.front();
+    spawned_monster_info monster_info;
+    monster_info.oid      = mob.oid;
+    monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
+    monster_info.look     = mob.look;
+
+    co_return monster_info;
+}
+
+async::task<void> game_bot::spawn_monsters_by_look_bulk(const std::string&        monster_name,
+                                                        uint8_t                   range,
+                                                        uint32_t                  expected_look,
+                                                        std::chrono::milliseconds timeout)
+{
+    co_await this->request<fb::protocol::game::response::update>(
+        fb::protocol::game::request::chat{false, std::format("/몬스터범위생성 {} {}", monster_name, range)},
+        [expected_look](auto& resp) -> bool {
+            for (const auto& mob : resp.objects_data)
+            {
+                if (mob.look != expected_look)
+                    return false;
+            }
+            return true;
+        },
+        timeout);
+}
+
+async::task<std::vector<spawned_monster_info>> game_bot::spawn_monsters_relative_with_validator(
+    std::shared_ptr<fb::bot::game_bot>                               bot,
+    const std::string&                                               monster_name,
+    const std::vector<std::pair<int, int>>&                          relative_positions,
+    std::function<bool(const fb::protocol::game::response::update&)> validator,
+    std::chrono::milliseconds                                        timeout)
+{
+    auto thread = this->thread();
+    co_await thread->switching();
+
+    auto                              caster_pos = this->position();
+    std::vector<spawned_monster_info> spawned_monsters;
+
+    for (const auto& [rel_x, rel_y] : relative_positions)
+    {
+        auto monster_x = caster_pos.x + rel_x;
+        auto monster_y = caster_pos.y + rel_y;
+
+        auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
+            fb::protocol::game::request::chat{false,
+                                              std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
+            validator,
+            timeout);
+
+        if (spawn_response.objects_data.empty())
+        {
+            throw std::runtime_error(
+                std::format("Failed to spawn monster {} at ({}, {})", monster_name, monster_x, monster_y));
+        }
+
+        auto&                mob = spawn_response.objects_data.front();
+        spawned_monster_info monster_info;
+        monster_info.oid      = mob.oid;
+        monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
+        monster_info.look     = mob.look;
+        spawned_monsters.push_back(monster_info);
+    }
+
+    co_return spawned_monsters;
+}
+
+async::task<std::vector<spawned_monster_info>>
+game_bot::spawn_monsters_relative_by_look(const std::string&                      monster_name,
+                                          const std::vector<std::pair<int, int>>& relative_positions,
+                                          uint32_t                                expected_look,
+                                          std::chrono::milliseconds               timeout)
+{
+    auto thread = this->thread();
+    co_await thread->switching();
+
+    auto                              caster_pos = this->position();
+    std::vector<spawned_monster_info> spawned_monsters;
+
+    for (const auto& [rel_x, rel_y] : relative_positions)
+    {
+        auto monster_x = caster_pos.x + rel_x;
+        auto monster_y = caster_pos.y + rel_y;
+
+        auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
+            fb::protocol::game::request::chat{false,
+                                              std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
+            [expected_look](auto& resp) -> bool {
+                if (resp.objects_data.empty())
+                    return false;
+                auto& mob = resp.objects_data.front();
+                return mob.look == expected_look;
             },
             timeout);
 
-        co_return true;
+        if (spawn_response.objects_data.empty())
+        {
+            throw std::runtime_error(std::format("Failed to spawn monster {} with look {} at ({}, {})",
+                                                 monster_name,
+                                                 expected_look,
+                                                 monster_x,
+                                                 monster_y));
+        }
+
+        auto&                mob = spawn_response.objects_data.front();
+        spawned_monster_info monster_info;
+        monster_info.oid      = mob.oid;
+        monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
+        monster_info.look     = mob.look;
+        spawned_monsters.push_back(monster_info);
     }
-    catch (const std::exception& e)
+
+    co_return spawned_monsters;
+}
+
+async::task<spawned_monster_info> game_bot::spawn_monster_relative_by_look(const std::string&        monster_name,
+                                                                           int                       relative_x,
+                                                                           int                       relative_y,
+                                                                           uint32_t                  expected_look,
+                                                                           std::chrono::milliseconds timeout)
+{
+    auto thread = this->thread();
+    co_await thread->switching();
+
+    auto caster_pos = this->position();
+    auto monster_x  = caster_pos.x + relative_x;
+    auto monster_y  = caster_pos.y + relative_y;
+
+    auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
+        fb::protocol::game::request::chat{false,
+                                          std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
+        [expected_look](auto& resp) -> bool {
+            if (resp.objects_data.empty())
+                return false;
+            auto& mob = resp.objects_data.front();
+            return mob.look == expected_look;
+        },
+        timeout);
+
+    if (spawn_response.objects_data.empty())
     {
-        co_return false;
+        throw std::runtime_error(std::format("Failed to spawn monster {} with look {} at relative position ({}, {})",
+                                             monster_name,
+                                             expected_look,
+                                             relative_x,
+                                             relative_y));
+    }
+
+    auto&                mob = spawn_response.objects_data.front();
+    spawned_monster_info monster_info;
+    monster_info.oid      = mob.oid;
+    monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
+    monster_info.look     = mob.look;
+
+    co_return monster_info;
+}
+
+async::task<bool> game_bot::set_max_hp_mp(int max_hp, int max_mp, std::chrono::milliseconds timeout)
+{
+    auto thread = this->thread();
+    co_await thread->switching();
+
+    auto hp_result = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, std::format("/체력바꾸기 {}", max_hp)},
+        timeout);
+
+    auto mp_result = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, std::format("/마력바꾸기 {}", max_mp)},
+        timeout);
+
+    co_return true; // Both commands should succeed if bot is valid
+}
+
+async::task<bool> game_bot::set_current_hp_mp(int current_hp, int current_mp, std::chrono::milliseconds timeout)
+{
+    auto thread = this->thread();
+    co_await thread->switching();
+
+    auto hp_result = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, std::format("/현재체력 {}", current_hp)},
+        [current_hp](auto& resp) -> bool {
+            return resp.ch_hp == current_hp;
+        },
+        timeout);
+
+    auto mp_result = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, std::format("/현재마력 {}", current_mp)},
+        [current_mp](auto& resp) -> bool {
+            return resp.ch_mp == current_mp;
+        },
+        timeout);
+
+    co_return true; // Both commands should succeed if bot is valid
+}
+
+async::task<bool> game_bot::setup_bot_stats(int                       max_hp,
+                                            int                       max_mp,
+                                            std::optional<int>        current_hp,
+                                            std::optional<int>        current_mp,
+                                            std::chrono::milliseconds timeout)
+{
+    auto thread = this->thread();
+    co_await thread->switching();
+
+    // Set max HP/MP
+    std::ignore = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, std::format("/체력바꾸기 {}", max_hp)},
+        timeout);
+
+    std::ignore = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, std::format("/마력바꾸기 {}", max_mp)},
+        timeout);
+
+    // Set current HP/MP if specified
+    if (current_hp.has_value())
+    {
+        std::ignore = co_await this->request<fb::protocol::game::response::update_internal>(
+            fb::protocol::game::request::chat{false, std::format("/현재체력 {}", current_hp.value())},
+            [current_hp](auto& resp) -> bool {
+                return resp.ch_hp == current_hp.value();
+            },
+            timeout);
+    }
+
+    if (current_mp.has_value())
+    {
+        std::ignore = co_await this->request<fb::protocol::game::response::update_internal>(
+            fb::protocol::game::request::chat{false, std::format("/현재마력 {}", current_mp.value())},
+            [current_mp](auto& resp) -> bool {
+                return resp.ch_mp == current_mp.value();
+            },
+            timeout);
+    }
+
+    co_return true;
+}
+
+async::task<uint8_t> game_bot::lean_spell(const std::string& spell_name, std::chrono::milliseconds timeout)
+{
+    auto&& resp = co_await this->request<fb::protocol::game::response::spell_update>(
+        fb::protocol::game::request::chat{false, std::format("/마법배우기 {}", spell_name)},
+        [](auto& resp) -> bool {
+            return resp.index != 0xFF;
+        },
+        timeout);
+
+    co_return resp.index;
+}
+
+async::task<size_t> game_bot::learn_spells(const std::vector<std::string>& spell_names,
+                                           std::chrono::milliseconds       timeout)
+{
+    auto thread = this->thread();
+    co_await thread->switching();
+
+    size_t learned_count = 0;
+    for (const auto& spell_name : spell_names)
+    {
+        auto index = co_await this->lean_spell(spell_name, timeout);
+        if (index != 0xFF)
+        {
+            learned_count++;
+        }
+        else
+        {
+            fb::logger::warn("Failed to learn spell: {}", spell_name);
+        }
+    }
+
+    co_return learned_count;
+}
+
+async::task<void> game_bot::clear_all_spells(std::chrono::milliseconds timeout)
+{
+    auto thread = this->thread();
+    co_await thread->switching();
+
+    auto count = this->spells().size();
+    if (count == 0)
+        co_return;
+
+    auto last_slot = uint8_t{0};
+    for (auto& [slot, spell] : this->spells())
+    {
+        last_slot = std::max<uint8_t>(last_slot, slot);
+    }
+
+    this->send(fb::protocol::game::request::chat{false, "/마법지우기"});
+    co_return; // Command should succeed if bot is valid
+}
+
+async::task<void> game_bot::clear_all_items(std::chrono::milliseconds timeout)
+{
+    auto thread = this->thread();
+    co_await thread->switching();
+
+    this->send(fb::protocol::game::request::chat{false, "/아이템삭제"});
+    co_return;
+}
+
+async::task<void> game_bot::move_bot_back_to_position(const fb::model::point<uint16_t>& original_position,
+                                                      std::chrono::milliseconds         interval)
+{
+    auto thread = this->thread();
+    co_await thread->switching();
+
+    auto current_position = this->position();
+    auto move_y_axis      = current_position.y - original_position.y;
+
+    if (move_y_axis > 0)
+    {
+        for (auto i = 0; i < move_y_axis; i++)
+        {
+            this->send(fb::protocol::game::request::move{DIRECTION::TOP, this->oid(), current_position});
+            co_await thread->sleep(interval);
+            current_position.y--;
+            this->set_position(current_position);
+        }
+        this->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
     }
 }

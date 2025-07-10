@@ -15,6 +15,13 @@ namespace fb::bot {
 class game_bot_controller;
 template <typename ControllerType> class bot;
 
+struct spawned_monster_info
+{
+    uint32_t                   oid;      ///< Monster object ID
+    fb::model::point<uint16_t> position; ///< Monster position
+    uint32_t                   look;     ///< Monster look value
+};
+
 /**
  * @brief      Automated bot for testing game server functionality.
  *
@@ -114,7 +121,7 @@ private:
 
     // Character external appearance information from update_external
     uint8_t     _disguised    = 0;             ///< Character's disguise state
-    uint8_t     _sex          = 0;             ///< Character's sex
+    SEX         _sex          = SEX::MAN;      ///< Character's sex
     STATE       _state        = STATE::NORMAL; ///< Character's current state (dead, paralyzed, etc)
     uint8_t     _armor_dress  = 0;             ///< Armor appearance ID
     uint8_t     _armor_color  = 0;             ///< Armor color
@@ -451,14 +458,14 @@ public:
      *
      * @return     The sex value (0 = male, 1 = female).
      */
-    uint8_t sex() const;
+    SEX sex() const;
 
     /**
      * @brief      Sets the character's sex.
      *
      * @param[in]  value  The sex value to set.
      */
-    void set_sex(uint8_t value);
+    void set_sex(SEX value);
 
     /**
      * @brief      Gets the character's current state.
@@ -622,6 +629,71 @@ public:
      * @return     An async task that completes when level change is finished.
      */
     async::task<void> change_level(uint8_t level, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Change the bot's stats using the '/스탯바꾸기' command.
+     *
+     *             Executes the stats change command and waits for the update_internal
+     *             response to confirm the stats have been changed to the target stats.
+     *
+     * @param[in]  str         The target strength value.
+     * @param[in]  dex         The target dexterity value.
+     * @param[in]  intelligence The target intelligence value.
+     * @param[in]  timeout     The timeout for the stats change operation.
+     *
+     * @return     An async task that completes when stats change is finished.
+     */
+    async::task<void> change_stats(uint8_t str, uint8_t dex, uint8_t intelligence, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Change the bot's sex using the '/성별바꾸기' command.
+     *
+     * @param[in]  sex       The target sex value.
+     * @param[in]  timeout   The timeout for the sex change operation.
+     *
+     * @return     An async task that completes when sex change is finished.
+     */
+    async::task<void> change_sex(SEX sex, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Change the bot's base HP using the '/체력바꾸기' command.
+     *
+     * @param[in]  hp        The target base HP value.
+     * @param[in]  timeout   The timeout for the base HP change operation.
+     *
+     * @return     An async task that completes when base HP change is finished.
+     */
+    async::task<void> change_base_hp(uint32_t hp, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Change the bot's base MP using the '/마력바꾸기' command.
+     *
+     * @param[in]  mp        The target base MP value.
+     * @param[in]  timeout   The timeout for the base MP change operation.
+     *
+     * @return     An async task that completes when base MP change is finished.
+     */
+    async::task<void> change_base_mp(uint32_t mp, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Change the bot's current HP using the '/현재체력' command.
+     *
+     * @param[in]  hp        The target current HP value.
+     * @param[in]  timeout   The timeout for the current HP change operation.
+     *
+     * @return     An async task that completes when current HP change is finished.
+     */
+    async::task<void> change_hp(uint32_t hp, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Change the bot's current MP using the '/현재마력' command.
+     *
+     * @param[in]  mp        The target current MP value.
+     * @param[in]  timeout   The timeout for the current MP change operation.
+     *
+     * @return     An async task that completes when current MP change is finished.
+     */
+    async::task<void> change_mp(uint32_t mp, std::chrono::milliseconds timeout);
 
     /**
      * @brief      Change the bot's facing direction.
@@ -815,12 +887,227 @@ public:
     /**
      * @brief      Unequip an item from the equipped slots.
      *
-     * @param[in]  slot     The equipped slot index to unequip.
+     * @param[in]  parts    The equipped parts to unequip.
      * @param[in]  timeout  The timeout for the operation.
      *
      * @return     An async task that completes with true if operation succeeded, false otherwise.
      */
-    async::task<bool> unequip(uint8_t slot, std::chrono::milliseconds timeout);
+    async::task<bool> unequip(EQUIPMENT_PARTS parts, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Sleep for a specified duration.
+     *
+     *             This function is used to pause the bot's execution for a specified duration.
+     *
+     * @param[in]  timeout  The duration to sleep.
+     *
+     * @return     An async task that completes when sleep is finished.
+     */
+    async::task<void> sleep(std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Change the bot's class using the '/직업바꾸기' command.
+     *
+     *             Executes the class change command and waits for the update_internal
+     *             response to confirm the class has been changed to the target class.
+     *
+     * @param[in]  class_name  The name of the class to change to.
+     * @param[in]  timeout     The timeout for the operation.
+     *
+     * @return     An async task that completes when class change is finished.
+     */
+    async::task<void> change_class(const std::string& class_name, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Spawns a monster at the specified position with custom validator
+     *
+     * @param[in]  bot           The bot instance to use for spawning
+     * @param[in]  monster_name  Name of the monster to spawn (e.g., "다람쥐")
+     * @param[in]  x             X coordinate for monster spawn
+     * @param[in]  y             Y coordinate for monster spawn
+     * @param[in]  validator     Custom validator function to check spawn success
+     * @param[in]  timeout       The timeout for the operation
+     *
+     * @return     An async task that returns spawned monster information
+     */
+    async::task<spawned_monster_info>
+    spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot>                               bot,
+                                 const std::string&                                               monster_name,
+                                 uint16_t                                                         x,
+                                 uint16_t                                                         y,
+                                 std::function<bool(const fb::protocol::game::response::update&)> validator,
+                                 std::chrono::milliseconds                                        timeout);
+
+    /**
+     * @brief      Spawns a monster at the specified position with look validation
+     *
+     * @param[in]  monster_name   Name of the monster to spawn (e.g., "다람쥐")
+     * @param[in]  x              X coordinate for monster spawn
+     * @param[in]  y              Y coordinate for monster spawn
+     * @param[in]  expected_look  Expected look value for the spawned monster
+     * @param[in]  timeout        The timeout for the operation
+     *
+     * @return     An async task that returns spawned monster information
+     */
+    async::task<spawned_monster_info> spawn_monster_by_look(const std::string&        monster_name,
+                                                            uint16_t                  x,
+                                                            uint16_t                  y,
+                                                            uint32_t                  expected_look,
+                                                            std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Spawns multiple monsters at the specified position with look validation
+     *
+     * @param[in]  monster_name   Name of the monster to spawn (e.g., "다람쥐")
+     * @param[in]  range          Range of the monster spawn
+     * @param[in]  expected_look  Expected look value for the spawned monster
+     * @param[in]  timeout        The timeout for the operation
+     *
+     * @return     An async task that completes when the monsters are spawned
+     */
+    async::task<void> spawn_monsters_by_look_bulk(const std::string&        monster_name,
+                                                  uint8_t                   range,
+                                                  uint32_t                  expected_look,
+                                                  std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Spawns multiple monsters at relative positions from a bot with custom validator
+     *
+     * @param[in]  bot               The bot instance to use for spawning
+     * @param[in]  monster_name      Name of the monster to spawn
+     * @param[in]  relative_positions Vector of {x, y} relative positions from bot
+     * @param[in]  validator         Custom validator function to check spawn success
+     * @param[in]  timeout           The timeout for the operation
+     *
+     * @return     An async task that returns vector of spawned monster information
+     */
+    async::task<std::vector<spawned_monster_info>>
+    spawn_monsters_relative_with_validator(std::shared_ptr<fb::bot::game_bot>      bot,
+                                           const std::string&                      monster_name,
+                                           const std::vector<std::pair<int, int>>& relative_positions,
+                                           std::function<bool(const fb::protocol::game::response::update&)> validator,
+                                           std::chrono::milliseconds                                        timeout);
+
+    /**
+     * @brief      Spawns multiple monsters at relative positions from a bot with look validation
+     *
+     * @param[in]  monster_name       Name of the monster to spawn
+     * @param[in]  relative_positions Vector of {x, y} relative positions from bot
+     * @param[in]  expected_look      Expected look value for the spawned monsters
+     * @param[in]  timeout            The timeout for the operation
+     *
+     * @return     An async task that returns vector of spawned monster information
+     */
+    async::task<std::vector<spawned_monster_info>>
+    spawn_monsters_relative_by_look(const std::string&                      monster_name,
+                                    const std::vector<std::pair<int, int>>& relative_positions,
+                                    uint32_t                                expected_look,
+                                    std::chrono::milliseconds               timeout);
+
+    /**
+     * @brief      Spawns a single monster at relative position from a bot with look validation
+     *
+     * @param[in]  monster_name   Name of the monster to spawn
+     * @param[in]  relative_x     X coordinate relative to bot position
+     * @param[in]  relative_y     Y coordinate relative to bot position
+     * @param[in]  expected_look  Expected look value for the spawned monster
+     * @param[in]  timeout        The timeout for the operation
+     *
+     * @return     An async task that returns spawned monster information
+     */
+    async::task<spawned_monster_info> spawn_monster_relative_by_look(const std::string&        monster_name,
+                                                                     int                       relative_x,
+                                                                     int                       relative_y,
+                                                                     uint32_t                  expected_look,
+                                                                     std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Sets maximum HP and MP for a bot
+     *
+     * @param[in]  max_hp   Maximum HP value to set
+     * @param[in]  max_mp   Maximum MP value to set
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that returns true if HP/MP were set successfully
+     */
+    async::task<bool> set_max_hp_mp(int max_hp, int max_mp, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Sets current HP and MP for a bot
+     *
+     * @param[in]  current_hp  Current HP value to set
+     * @param[in]  current_mp  Current MP value to set
+     * @param[in]  timeout     The timeout for the operation
+     *
+     * @return     An async task that returns true if HP/MP were set successfully
+     */
+    async::task<bool> set_current_hp_mp(int current_hp, int current_mp, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Sets the bot's stats
+     *
+     * @param[in]  max_hp       Maximum HP value to set
+     * @param[in]  max_mp       Maximum MP value to set
+     * @param[in]  current_hp   Current HP value to set
+     * @param[in]  current_mp   Current MP value to set
+     * @param[in]  timeout      The timeout for the operation
+     *
+     * @return     An async task that returns true if stats were set successfully
+     */
+    async::task<bool> setup_bot_stats(int                       max_hp,
+                                      int                       max_mp,
+                                      std::optional<int>        current_hp,
+                                      std::optional<int>        current_mp,
+                                      std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Learns a spell for a bot
+     *
+     * @param[in]  spell_name  The name of the spell to learn
+     * @param[in]  timeout     The timeout for the operation
+     *
+     * @return     An async task that returns the spell index if spell was learned successfully, 0xFF otherwise
+     */
+    async::task<uint8_t> lean_spell(const std::string& spell_name, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Learns multiple spells for a bot
+     *
+     * @param[in]  spell_names  Vector of spell names to learn
+     * @param[in]  timeout      The timeout for the operation
+     *
+     * @return     An async task that returns the number of successfully learned spells
+     */
+    async::task<size_t> learn_spells(const std::vector<std::string>& spell_names, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Removes all spells from a bot
+     *
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that completes when the spells are removed
+     */
+    async::task<void> clear_all_spells(std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Removes all items from a map
+     *
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that completes when the items are removed
+     */
+    async::task<void> clear_all_items(std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Moves a bot back to its original position after movement spells
+     *
+     * @param[in]  original_position  The original position to return to
+     * @param[in]  interval           The interval to move the bot back to the original position
+     *
+     * @return     An async task that completes when the bot has returned to original position
+     */
+    async::task<void> move_bot_back_to_position(const fb::model::point<uint16_t>& original_position,
+                                                std::chrono::milliseconds         interval);
 };
 
 } // namespace fb::bot

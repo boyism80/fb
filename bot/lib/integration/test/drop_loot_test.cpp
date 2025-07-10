@@ -104,7 +104,7 @@ async::task<bool> drop_loot_test::execute()
         scenarios.pop();
 
         // Clear all items from map after each scenario
-        co_await this->clear_all_items(bot1);
+        co_await bot1->clear_all_items(DEFAULT_TIMEOUT);
     }
 
     auto thread = bot1->thread();
@@ -145,8 +145,6 @@ void drop_loot_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
 async::task<void> drop_loot_test::on_hook_sequence(fb::bot::game_bot&                      bot,
                                                    const fb::protocol::game::response::id& response)
 {
-    fb::logger::debug("Drop loot test: Bot {} received object ID {}", bot.fd(), response.oid);
-
     if (this->is_ready() == false)
         co_return;
 
@@ -386,12 +384,12 @@ async::task<bool> drop_loot_test::test_scenario_5(std::shared_ptr<game_bot>& bot
     fb::logger::info("Scenario 5: PK loot test with hellfire spell");
 
     // 1. Bot1 learns hellfire and sets mana to 10000
-    std::vector<std::string> spell_names = {"헬파이어"};
-    co_await this->learn_spells(bot1, spell_names);
-    std::ignore = co_await this->setup_bot_stats(bot1, 100000, 10000, std::nullopt, std::nullopt);
+    auto spell_names = std::vector<std::string>{"헬파이어"};
+    std::ignore      = co_await bot1->learn_spells(spell_names, DEFAULT_TIMEOUT);
+    std::ignore      = co_await bot1->setup_bot_stats(100000, 10000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
 
     // 2. Bot2 sets health to 50
-    std::ignore = co_await this->setup_bot_stats(bot2, 100000, 100000, 50, std::nullopt);
+    std::ignore = co_await bot2->setup_bot_stats(100000, 100000, 50, std::nullopt, DEFAULT_TIMEOUT);
 
     // 3. Bot2 moves right 1 tile and sets direction to bottom
     co_await bot2->thread()->switching();

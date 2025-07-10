@@ -45,7 +45,7 @@ async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<f
         fb::logger::info("Learning spell: {}", spell.spell_name);
         spell_names.push_back(spell.spell_name);
     }
-    std::ignore = co_await this->learn_spells(caster, spell_names);
+    std::ignore = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
 
     // Test each disguise spell with all available monster transformations
     auto spell_slot = 0;
@@ -58,7 +58,7 @@ async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<f
         for (const auto& mob_name : spell.available_mobs)
         {
             // Set current hp and mp
-            std::ignore = co_await this->set_current_hp_mp(caster, 10000, 1000);
+            std::ignore = co_await caster->set_current_hp_mp(10000, 1000, DEFAULT_TIMEOUT);
 
             fb::logger::info("Testing {} transformation to {}", spell.spell_name, mob_name);
 

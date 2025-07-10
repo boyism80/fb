@@ -20,7 +20,7 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
     // Setup all bots with max HP/MP and current HP
     for (auto& bot : bots)
     {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, 50, std::nullopt);
+        std::ignore = co_await bot->setup_bot_stats(100000, 100000, 50, std::nullopt, DEFAULT_TIMEOUT);
     }
 
     caster->chat("Bot setup completed - ready for spell testing");
@@ -52,7 +52,7 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names);
+    auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
     fb::logger::info("Successfully learned {} out of {} healing spells", learned_count, healing_spells.size());
     caster->chat("All healing spells learned - starting test sequence");
 
@@ -128,23 +128,15 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
     fb::logger::info("Testing special dynamic spell: 백호의희원");
 
     // Learn the dynamic spell
-    std::ignore = co_await caster->request<fb::protocol::game::response::spell_update>(
-        fb::protocol::game::request::chat{false, "/마법배우기 백호의희원"},
-        DEFAULT_TIMEOUT);
+    auto index = co_await caster->lean_spell("백호의희원", DEFAULT_TIMEOUT);
+    if (index == 0xFF)
+    {
+        fb::logger::warn("Failed to learn spell: 백호의희원");
+        co_return false;
+    }
 
-    std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, "/현재마력 100"},
-        [](auto& resp) -> bool {
-            return resp.ch_mp == 100;
-        },
-        DEFAULT_TIMEOUT);
-
-    std::ignore = co_await target->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, "/현재체력 50"},
-        [](auto& resp) -> bool {
-            return resp.ch_hp == 50;
-        },
-        DEFAULT_TIMEOUT);
+    co_await caster->change_mp(100, DEFAULT_TIMEOUT);
+    co_await target->change_hp(50, DEFAULT_TIMEOUT);
 
     // Calculate based on current MP
     auto current_mp          = caster->mp();
@@ -176,9 +168,7 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
 
         fb::logger::info("Adjusting target HP to {} for accurate dynamic spell test", new_target_hp);
 
-        std::ignore = co_await target->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat{false, std::format("/현재체력 {}", new_target_hp)},
-            DEFAULT_TIMEOUT);
+        co_await target->change_hp(new_target_hp, DEFAULT_TIMEOUT);
 
         // Recalculate actual recovery amount
         actual_expected_hp_gain = theoretical_hp_gain;
