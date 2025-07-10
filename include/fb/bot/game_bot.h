@@ -800,6 +800,27 @@ public:
      * @return     An async task that completes when money drop is finished.
      */
     async::task<void> drop_money(uint32_t amount, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Equip an item from the inventory.
+     *
+     * @param[in]  slot           The inventory slot index of the item to equip.
+     * @param[in]  expected_msg   The expected message to verify (for both success and failure cases).
+     * @param[in]  timeout        The timeout for the operation.
+     *
+     * @return     An async task that completes with true if operation succeeded, false otherwise.
+     */
+    async::task<bool> equip(uint8_t slot, const std::string& expected_msg, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Unequip an item from the equipped slots.
+     *
+     * @param[in]  slot     The equipped slot index to unequip.
+     * @param[in]  timeout  The timeout for the operation.
+     *
+     * @return     An async task that completes with true if operation succeeded, false otherwise.
+     */
+    async::task<bool> unequip(uint8_t slot, std::chrono::milliseconds timeout);
 };
 
 } // namespace fb::bot

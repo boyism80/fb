@@ -716,3 +716,41 @@ async::task<void> game_bot::drop_money(uint32_t amount, std::chrono::millisecond
         },
         timeout);
 }
+
+async::task<bool> game_bot::equip(uint8_t slot, const std::string& expected_msg, std::chrono::milliseconds timeout)
+{
+    try
+    {
+        auto&& response = co_await this->request<fb::protocol::game::response::message>(
+            fb::protocol::game::request::item_active(slot + 1),
+            [expected_msg](auto& resp) -> bool {
+                return resp.text.find(expected_msg) != std::string::npos;
+            },
+            timeout);
+
+        co_return true;
+    }
+    catch (const std::exception& e)
+    {
+        co_return false;
+    }
+}
+
+async::task<bool> game_bot::unequip(uint8_t slot, std::chrono::milliseconds timeout)
+{
+    try
+    {
+        std::ignore = co_await this->request<fb::protocol::game::response::item_update>(
+            fb::protocol::game::request::item_inactive(slot + 1),
+            [](auto& resp) -> bool {
+                return true; // Any item_update response is considered success
+            },
+            timeout);
+
+        co_return true;
+    }
+    catch (const std::exception& e)
+    {
+        co_return false;
+    }
+}
