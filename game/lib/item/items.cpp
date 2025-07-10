@@ -331,7 +331,7 @@ const std::vector<std::shared_ptr<fb::game::item>>& fb::game::items::stored() co
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return {};
+        throw std::runtime_error("owner is nullptr");
 
     owner->assert_thread();
 
