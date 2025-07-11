@@ -30,7 +30,7 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
         {"하늘의기원", SPELL_TYPE::NORMAL, 200,   120  },
         {"대지의기원", SPELL_TYPE::TARGET, 50,    50   },
         {"동해의기원", SPELL_TYPE::TARGET, 100,   30   },
-        {"바다의기원", SPELL_TYPE::TARGET, 100,   50   },
+        {"바다의기원", SPELL_TYPE::NORMAL, 100,   50   },
         {"천공의기원", SPELL_TYPE::TARGET, 200,   100  },
         {"구름의기원", SPELL_TYPE::TARGET, 500,   120  },
         {"태양의기원", SPELL_TYPE::TARGET, 1000,  240  },
