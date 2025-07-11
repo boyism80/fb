@@ -1,5 +1,5 @@
 -- 바다의기원 캐스팅
-function ON_CAST_1024(me, you, spell)
+function ON_CAST_4026(me, you, spell)
     local hp = 100
     local mp = 50
     local sound = 3
