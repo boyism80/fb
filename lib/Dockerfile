@@ -11,6 +11,9 @@ RUN mv output /output
 
 FROM --platform=$BUILDPLATFORM ubuntu:24.04
 
+# Build type argument - Release as default for Dockerfile
+ARG BUILD_TYPE=Release
+
 RUN apt-get update -y
 RUN apt-get upgrade -y
 RUN apt-get install git gcc-14 g++-14 gdb make cmake libssl-dev libstdc++-14-dev wget -y
@@ -89,7 +92,7 @@ WORKDIR /app
 COPY include ./include
 COPY lib ./lib
 WORKDIR /app/lib/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} .. 
 RUN cmake --build . --parallel
 RUN make install
 

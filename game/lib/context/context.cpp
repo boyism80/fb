@@ -45,6 +45,7 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     lua::build<weapon, equipment>();
     lua::build<character, life>();
 
+    lua::build("log", builtin::builtin_log);
     lua::build("seed", builtin::builtin_seed);
     lua::build("sleep", builtin::builtin_sleep);
     lua::build("baram_time", builtin::builtin_baram_time);

@@ -6,6 +6,17 @@ using namespace fb::game;
 IMPLEMENT_LUA_EXTENSION(fb::game::context, "")
 END_LUA_EXTENSION; // clang-format on
 
+int context::builtin::builtin_log(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto message = lua->tostring(1);
+    fb::logger::info(message);
+    return 0;
+}
+
 int context::builtin::builtin_seed(lua_State* L)
 {
     static std::random_device random;

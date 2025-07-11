@@ -1592,6 +1592,15 @@ public:
 struct context::builtin
 {
     /**
+     * @brief      Lua builtin function to log a message.
+     *
+     * @param      L   The Lua state containing log message arguments.
+     *
+     * @return     Number of return values pushed to Lua stack.
+     */
+    static int builtin_log(lua_State* L);
+
+    /**
      * @brief      Lua builtin function to seed the random number generator.
      *
      * @param      L   The Lua state containing function arguments.
