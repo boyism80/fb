@@ -124,7 +124,6 @@ async::task<bool> skill_test::test_attack_cast_spells(std::vector<std::shared_pt
             DEFAULT_TIMEOUT);
 
         spell_slot++;
-        co_await caster->thread()->sleep(interval);
     }
 
     caster->chat("=== ATTACK_CAST SPELL TEST COMPLETED ===");

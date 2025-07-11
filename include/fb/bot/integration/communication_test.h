@@ -30,14 +30,6 @@ public:
 
 public:
     /**
-     * @brief   Initialize the communication test with required bots
-     *
-     * @param[in]  controller  Reference to the game bot controller
-     * @return  Task that completes when initialization is finished
-     */
-    async::task<void> initialize(game_bot_controller& controller);
-
-    /**
      * @brief   Execute the communication test scenarios
      *
      * @return  Task that returns true if all tests pass, false otherwise
@@ -49,48 +41,14 @@ public:
      *
      * @return  "Communication Test" as the identifier.
      */
-    std::string name() const override final
-    {
-        return "Communication Test";
-    }
+    std::string name() const override final;
 
     /**
      * @brief   Reset the test state
      */
     void reset() override;
 
-    /**
-     * @brief   Check if all bots are ready for testing
-     *
-     * @return  True if all bots are ready, false otherwise
-     */
-    bool is_ready() const override;
-
-    /**
-     * @brief   Handle bot connection event
-     *
-     * @param[in]  bot  Shared pointer to the connected bot
-     */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override;
-
 private:
-    /**
-     * @brief   Hook for handling sequence (object ID) responses
-     *
-     * @param[in]  bot       Reference to the bot that received the response
-     * @param[in]  response  The sequence response containing object ID
-     * @return  Task that completes when hook processing is finished
-     */
-    async::task<void> on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response);
-
-    /**
-     * @brief   Hook for handling position responses
-     *
-     * @param[in]  bot       Reference to the bot that received the response
-     * @param[in]  response  The position response
-     * @return  Task that completes when hook processing is finished
-     */
-    async::task<void> on_hook_position(fb::bot::game_bot& bot, const fb::protocol::game::response::position& response);
 
 private:
     /**

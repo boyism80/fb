@@ -103,8 +103,6 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
                 },
                 DEFAULT_TIMEOUT);
 
-            // Wait for target's HP to update and verify
-            co_await caster->thread()->sleep(DEFAULT_INTERVAL);
             auto after_target_hp = target->hp();
             if (after_target_hp != before_target_hp + spell.expected_hp_gain)
             {
@@ -121,7 +119,6 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
         }
 
         spell_slot++;
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     // Step 4: Special test for dynamic spell
@@ -190,8 +187,6 @@ async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb
         },
         DEFAULT_TIMEOUT);
 
-    // Verify target HP update
-    co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     auto after_target_hp = target->hp();
     if (after_target_hp != before_target_hp + actual_expected_hp_gain)
     {

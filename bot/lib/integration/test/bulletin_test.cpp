@@ -7,33 +7,9 @@ using namespace std::chrono_literals;
 namespace fb::bot::integration {
 
 bulletin_test::bulletin_test(game_bot_controller& controller) :
-    bot_integration_test(controller)
+    bot_integration_test(controller, 2)
 {
-    // Register hook for object ID (sequence) responses
-    this->_controller.hook_external(this, this, &bulletin_test::on_hook_sequence);
-    this->_controller.hook_external(this, this, &bulletin_test::on_hook_position);
-
     fb::logger::debug("Bulletin test constructed");
-}
-
-async::task<void> bulletin_test::initialize(game_bot_controller& controller)
-{
-    constexpr auto REQUIRED_BOTS = 2;
-
-    auto ip = controller.container.ipv4(fb::config<std::string>("ip"));
-    auto endpoint =
-        boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
-
-    fb::logger::info("Bulletin test initializing and spawning {} bot", REQUIRED_BOTS);
-
-    for (auto i = 0; i < REQUIRED_BOTS; i++)
-    {
-        auto gateway_bot = controller.container.gateway->create();
-        gateway_bot->connect(endpoint);
-    }
-
-    fb::logger::info("Bulletin test initialization completed - {} bot spawned", REQUIRED_BOTS);
-    co_return;
 }
 
 async::task<bool> bulletin_test::execute()
@@ -298,7 +274,7 @@ async::task<bool> bulletin_test::execute()
     this->set_state(test_state::completed);
 
     // Notify controller that this test is completed
-    this->_controller.notify_test_completed(this);
+    this->notify_completed();
 
     co_return true;
 }
@@ -556,59 +532,9 @@ void bulletin_test::reset()
     fb::logger::info("Bulletin test reset");
 }
 
-bool bulletin_test::is_ready() const
+std::string bulletin_test::name() const
 {
-    auto bots = this->get_test_bots();
-    if (bots.empty())
-        return false;
-
-    for (auto& bot : bots)
-    {
-        if (bot->oid() == 0)
-            return false;
-
-        if (bot->position().x == 0 && bot->position().y == 0)
-            return false;
-    }
-
-    return true;
-}
-
-void bulletin_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
-{
-    // Call base class implementation
-    bot_integration_test::on_bot_connected(bot);
-    fb::logger::debug("Bulletin test: Bot {} added to collection", bot->fd());
-}
-
-async::task<void> bulletin_test::on_hook_sequence(fb::bot::game_bot&                      bot,
-                                                  const fb::protocol::game::response::id& response)
-{
-    if (this->is_ready() == false)
-        co_return;
-
-    if (this->get_state() == test_state::running)
-        co_return;
-
-    fb::logger::info("Bulletin test: All bots ready, notifying controller");
-    this->set_state(test_state::ready);
-    this->notify_ready();
-    co_return;
-}
-
-async::task<void> bulletin_test::on_hook_position(fb::bot::game_bot&                            bot,
-                                                  const fb::protocol::game::response::position& response)
-{
-    if (this->is_ready() == false)
-        co_return;
-
-    if (this->get_state() == test_state::running)
-        co_return;
-
-    fb::logger::info("Bulletin test: All bots ready, notifying controller");
-    this->set_state(test_state::ready);
-    this->notify_ready();
-    co_return;
+    return "Bulletin Test";
 }
 
 } // namespace fb::bot::integration

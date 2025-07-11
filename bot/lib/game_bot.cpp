@@ -546,6 +546,9 @@ async::task<void> game_bot::change_mp(uint32_t mp, std::chrono::milliseconds tim
 
 async::task<void> game_bot::direction(DIRECTION direction, std::chrono::milliseconds timeout)
 {
+    if (this->_direction == direction)
+        co_return;
+
     std::ignore = co_await this->request<fb::protocol::game::response::direction>(
         fb::protocol::game::request::direction{direction},
         [direction](auto& resp) -> bool {
@@ -1176,6 +1179,7 @@ async::task<size_t> game_bot::learn_spells(const std::vector<std::string>& spell
     for (const auto& spell_name : spell_names)
     {
         auto index = co_await this->lean_spell(spell_name, timeout);
+        this->chat(std::format("Learned spell: {} at index: {}", spell_name, index));
         if (index != 0xFF)
         {
             learned_count++;

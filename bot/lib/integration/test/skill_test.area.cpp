@@ -150,9 +150,6 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
             },
             DEFAULT_TIMEOUT);
 
-        // Wait for spell effect to propagate
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
-
         // Verify other bots took damage
         for (size_t i = 1; i < bots.size(); ++i)
         {
@@ -170,7 +167,6 @@ async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_pt
         }
 
         spell_slot++;
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     co_await bots[4]->move(DIRECTION::TOP, 3, DEFAULT_INTERVAL);

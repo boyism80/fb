@@ -92,7 +92,6 @@ async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<f
             // Step 3: Remove buff to prepare for next test
             fb::logger::info("Removing buff to prepare for next test");
             caster->remove_buffs();
-            co_await caster->thread()->sleep(DEFAULT_INTERVAL);
         }
 
         fb::logger::info("Completed testing all transformations for {} spell", spell.spell_name);

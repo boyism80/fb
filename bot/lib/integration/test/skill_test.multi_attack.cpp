@@ -134,7 +134,6 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
 
         // Move bot back to original position if it moved
         co_await caster->move_bot_back_to_position(caster_pos, DEFAULT_INTERVAL, DEFAULT_TIMEOUT);
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     caster->chat("=== MULTI-TARGET ATTACK_CAST SPELL TEST COMPLETED ===");

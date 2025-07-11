@@ -77,7 +77,6 @@ async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<f
         caster->chat(std::format("{} test completed", spell_info.name));
 
         spell_slot++;
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     fb::logger::info("Teleport spell test completed successfully - {} spells tested", teleport_spells.size());

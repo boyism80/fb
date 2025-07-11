@@ -298,15 +298,11 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
                 break;
 
             caster->chat(resp.text);
-            co_await caster->thread()->sleep(DEFAULT_INTERVAL);
             actual_target->remove_buffs();
         }
 
         if (caster->mp() != expected_caster_mp)
             throw std::runtime_error(std::format("MP cost mismatch for '{}'", spell.name));
-
-        // Wait for spell effect to propagate
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
 
         // Request self_info from target to check buff/debuff
         std::ignore = co_await actual_target->request<fb::protocol::game::response::spell_buff>(
@@ -332,7 +328,6 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::vector<std::shared_pt
         actual_target->remove_buffs();
 
         spell_slot++;
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     caster->chat("=== BUFF/DEBUFF SPELL TEST COMPLETED ===");

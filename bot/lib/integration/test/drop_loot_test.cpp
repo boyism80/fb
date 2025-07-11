@@ -11,37 +11,14 @@ using namespace std::chrono_literals;
 namespace fb::bot::integration {
 
 drop_loot_test::drop_loot_test(game_bot_controller& controller) :
-    bot_integration_test(controller)
+    bot_integration_test(controller, 2)
 {
-    this->_controller.hook_external(this, this, &drop_loot_test::on_hook_sequence);
-    this->_controller.hook_external(this, this, &drop_loot_test::on_hook_position);
-
     fb::logger::debug("Drop loot test constructed");
 }
 
 void drop_loot_test::reset()
 {
     // Nothing to do
-}
-
-async::task<void> drop_loot_test::initialize(game_bot_controller& controller)
-{
-    constexpr auto REQUIRED_BOTS = 2;
-
-    auto ip = controller.container.ipv4(fb::config<std::string>("ip"));
-    auto endpoint =
-        boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
-
-    fb::logger::info("Drop loot test initializing and spawning {} bots", REQUIRED_BOTS);
-
-    for (auto i = 0; i < REQUIRED_BOTS; i++)
-    {
-        auto gateway_bot = controller.container.gateway->create();
-        gateway_bot->connect(endpoint);
-    }
-
-    fb::logger::info("Drop loot test initialization completed - {} bots spawned", REQUIRED_BOTS);
-    co_return;
 }
 
 async::task<bool> drop_loot_test::execute()
@@ -113,63 +90,8 @@ async::task<bool> drop_loot_test::execute()
 
     fb::logger::info("All drop loot test scenarios PASSED");
     this->set_state(test_state::completed);
-    this->_controller.notify_test_completed(this);
+    this->notify_completed();
     co_return true;
-}
-
-bool drop_loot_test::is_ready() const
-{
-    auto bots = this->get_test_bots();
-    if (bots.size() < 2)
-        return false;
-
-    for (auto& bot : bots)
-    {
-        if (bot->oid() == 0)
-            return false;
-
-        if (bot->position().x == 0 && bot->position().y == 0)
-            return false;
-    }
-
-    return true;
-}
-
-void drop_loot_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
-{
-    // Call base class implementation
-    bot_integration_test::on_bot_connected(bot);
-    fb::logger::debug("Drop loot test: Bot {} added to collection", bot->fd());
-}
-
-async::task<void> drop_loot_test::on_hook_sequence(fb::bot::game_bot&                      bot,
-                                                   const fb::protocol::game::response::id& response)
-{
-    if (this->is_ready() == false)
-        co_return;
-
-    if (this->get_state() == test_state::running)
-        co_return;
-
-    fb::logger::info("Drop loot test: All bots ready, notifying controller");
-    this->set_state(test_state::ready);
-    this->notify_ready();
-    co_return;
-}
-
-async::task<void> drop_loot_test::on_hook_position(fb::bot::game_bot&                            bot,
-                                                   const fb::protocol::game::response::position& response)
-{
-    if (this->is_ready() == false)
-        co_return;
-
-    if (this->get_state() == test_state::running)
-        co_return;
-
-    fb::logger::info("Drop loot test: All bots ready, notifying controller");
-    this->set_state(test_state::ready);
-    this->notify_ready();
-    co_return;
 }
 
 async::task<void> drop_loot_test::reset_bot_state(std::shared_ptr<game_bot>& bot)
@@ -455,6 +377,11 @@ async::task<bool> drop_loot_test::test_scenario_5(std::shared_ptr<game_bot>& bot
     bot1->chat("Scenario 5: Successfully looted items from PK");
 
     co_return true;
+}
+
+std::string drop_loot_test::name() const
+{
+    return "Drop Loot Test";
 }
 
 } // namespace fb::bot::integration

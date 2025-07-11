@@ -35,14 +35,6 @@ public:
 
 public:
     /**
-     * @brief      Initializes the drop_loot_test with required bots.
-     *
-     * @param[in]  controller  The game bot controller.
-     * @return     An async task that completes when initialization is finished.
-     */
-    async::task<void> initialize(game_bot_controller& controller) override;
-
-    /**
      * @brief      Executes all drop and loot test scenarios.
      *
      * @return     An async task that returns true if all tests pass, false otherwise.
@@ -59,42 +51,7 @@ public:
      *
      * @return     The test name as a string.
      */
-    std::string name() const override
-    {
-        return "Drop Loot Test";
-    }
-
-    /**
-     * @brief      Checks if all spawned bots are ready for the drop_loot_test.
-     *
-     * @return     True if all bots are ready, false otherwise.
-     */
-    bool is_ready() const override final;
-
-    /**
-     * @brief      Called when a bot connects.
-     *
-     * @param[in]  bot  The connected bot.
-     */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override final;
-
-    /**
-     * @brief      Called when a bot receives an object ID response.
-     *
-     * @param[in]  bot       The bot that received the response.
-     * @param[in]  response  The object ID response.
-     * @return     An async task.
-     */
-    async::task<void> on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response);
-
-    /**
-     * @brief      Called when a bot receives a position response.
-     *
-     * @param[in]  bot       The bot that received the response.
-     * @param[in]  response  The position response.
-     * @return     An async task.
-     */
-    async::task<void> on_hook_position(fb::bot::game_bot& bot, const fb::protocol::game::response::position& response);
+    std::string name() const override;
 
 private:
     // Test scenarios

@@ -99,8 +99,6 @@ async::task<bool> skill_test::test_group_healing_spells(std::vector<std::shared_
 
         fb::logger::info("Group healing spell {} test completed successfully", spell_info.name);
         caster->chat(std::format("{} test completed", spell_info.name));
-
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     // Cleanup group
@@ -125,9 +123,13 @@ async::task<void> skill_test::form_group(std::vector<std::shared_ptr<fb::bot::ga
         // Send group invitation
         auto group_request = fb::protocol::game::request::group{};
         group_request.name = target_bot->name();
-        auto&& resp        = co_await caster->request<fb::protocol::game::response::message>(group_request);
+        auto&& resp        = co_await caster->request<fb::protocol::game::response::message>(
+            group_request,
+            [](auto& resp) -> bool {
+                return resp.type == MESSAGE_TYPE::STATE;
+            },
+            DEFAULT_TIMEOUT);
         caster->chat(resp.text);
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     fb::logger::info("Group formation completed with {} members", bots.size());
@@ -200,6 +202,9 @@ async::task<void> skill_test::cleanup_group(std::vector<std::shared_ptr<fb::bot:
         {
             std::ignore = co_await bot->request<fb::protocol::game::response::message>(
                 fb::protocol::game::request::update_option(OPTION::GROUP, false),
+                [](auto& resp) -> bool {
+                    return resp.type == MESSAGE_TYPE::STATE;
+                },
                 DEFAULT_TIMEOUT);
         }
     }

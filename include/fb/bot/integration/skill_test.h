@@ -25,22 +25,11 @@ public:
     /**
      * @brief      Constructs a new skill test with controller reference.
      *
-     *             Initializes the skill test and registers hooks for specific
-     *             protocol types to enable event-driven test execution.
+     *             Initializes the skill test with 5 bots and registers common hooks.
      *
      * @param[in]  controller  Reference to the parent game bot controller.
      */
     skill_test(game_bot_controller& controller);
-    /**
-     * @brief      Initializes the skill test and spawns required bots.
-     *
-     *             Spawns 1 bot for skill testing and waits for it to connect.
-     *
-     * @param[in]  controller  The game bot controller to use for spawning bots.
-     *
-     * @return     A task that completes when initialization is finished.
-     */
-    async::task<void> initialize(game_bot_controller& controller);
 
     /**
      * @brief      Executes the skill test.
@@ -50,7 +39,7 @@ public:
      *
      * @return     A task that completes when skill test finishes, returning true on success.
      */
-    async::task<bool> execute();
+    async::task<bool> execute() override final;
 
     /**
      * @brief      Resets the skill test state to initial conditions.
@@ -62,51 +51,7 @@ public:
      *
      * @return     "Skill Test" as the identifier.
      */
-    std::string name() const override final
-    {
-        return "Skill Test";
-    }
-
-    /**
-     * @brief      Checks if all spawned bots are ready for skill test.
-     *
-     *             Skill test requires all bots to have received their oid IDs
-     *             and be in proper spell-casting ready state before starting.
-     *
-     * @return     True if all spawned bots are ready for skill test, false otherwise.
-     */
-    bool is_ready() const override final;
-
-    /**
-     * @brief      Called when a bot connects to the skill test.
-     *
-     *             Stores the connected bot for skill testing and sets up protocol handlers.
-     *
-     * @param[in]  bot  The connected bot to store for testing.
-     */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override final;
-
-    /**
-     * @brief      Called when a bot receives an object ID response.
-     *
-     *             Checks if all bots are ready and starts the test if conditions are met.
-     *
-     * @param[in]  bot       The bot that received the object ID.
-     * @param[in]  response  The object ID response containing the new ID.
-     *
-     * @return     An async task that completes when hook processing is finished.
-     */
-    async::task<void> on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response);
-
-    /**
-     * @brief      Called when a bot receives a position response.
-     *
-     * @param[in]  bot       The bot that received the position.
-     * @param[in]  response  The position response containing the new position.
-     *
-     * @return     An async task that completes when hook processing is finished.
-     */
-    async::task<void> on_hook_position(fb::bot::game_bot& bot, const fb::protocol::game::response::position& response);
+    std::string name() const override final;
 
     /**
      * @brief      Tests teleport spells (출두, 소환) with map movement scenarios.

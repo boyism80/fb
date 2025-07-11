@@ -9,34 +9,10 @@ namespace fb::bot::integration {
 item_test::item_test(game_bot_controller& controller) :
     bot_integration_test(controller)
 {
-    // Register hook for object ID (sequence) responses
-    this->_controller.hook_external(this, this, &item_test::on_hook_sequence);
-    this->_controller.hook_external(this, this, &item_test::on_hook_position);
-
     // Initialize test function queue
     this->initialize_test_functions();
 
     fb::logger::debug("Item test constructed");
-}
-
-async::task<void> item_test::initialize(game_bot_controller& controller)
-{
-    constexpr auto REQUIRED_BOTS = 4;
-
-    auto ip = controller.container.ipv4(fb::config<std::string>("ip"));
-    auto endpoint =
-        boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
-
-    fb::logger::info("Item test initializing and spawning {} bots", REQUIRED_BOTS);
-
-    for (auto i = 0; i < REQUIRED_BOTS; i++)
-    {
-        auto gateway_bot = controller.container.gateway->create();
-        gateway_bot->connect(endpoint);
-    }
-
-    fb::logger::info("Item test initialization completed - {} bots spawned", REQUIRED_BOTS);
-    co_return;
 }
 
 async::task<bool> item_test::execute()
@@ -95,7 +71,7 @@ async::task<bool> item_test::execute()
     fb::logger::info("Item test completed successfully");
 
     // Notify controller that this test is completed
-    this->_controller.notify_test_completed(this);
+    this->notify_completed();
 
     co_return true;
 }
@@ -109,60 +85,6 @@ void item_test::reset()
     this->initialize_test_functions();
 
     fb::logger::info("Item test reset");
-}
-
-bool item_test::is_ready() const
-{
-    auto bots = this->get_test_bots();
-    if (bots.empty())
-        return false;
-
-    for (auto& bot : bots)
-    {
-        if (bot->oid() == 0)
-            return false;
-
-        if (bot->position().x == 0 && bot->position().y == 0)
-            return false;
-    }
-
-    return true;
-}
-
-void item_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
-{
-    // Call base class implementation
-    bot_integration_test::on_bot_connected(bot);
-    fb::logger::debug("Item test: Bot {} added to collection", bot->fd());
-}
-
-async::task<void> item_test::on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response)
-{
-    if (this->is_ready() == false)
-        co_return;
-
-    if (this->get_state() == test_state::running)
-        co_return;
-
-    fb::logger::info("Item test: All bots ready, notifying controller");
-    this->set_state(test_state::ready);
-    this->notify_ready();
-    co_return;
-}
-
-async::task<void> item_test::on_hook_position(fb::bot::game_bot&                            bot,
-                                              const fb::protocol::game::response::position& response)
-{
-    if (this->is_ready() == false)
-        co_return;
-
-    if (this->get_state() == test_state::running)
-        co_return;
-
-    fb::logger::info("Item test: All bots ready, notifying controller");
-    this->set_state(test_state::ready);
-    this->notify_ready();
-    co_return;
 }
 
 void item_test::initialize_test_functions()
@@ -244,6 +166,11 @@ async::task<void> item_test::reset_bot_state(std::shared_ptr<fb::bot::game_bot>&
     co_await bot->change_base_mp(1000, DEFAULT_TIMEOUT);
 
     fb::logger::debug("Bot {} state reset completed", bot->oid());
+}
+
+std::string item_test::name() const
+{
+    return "Item Test";
 }
 
 } // namespace fb::bot::integration

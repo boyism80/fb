@@ -7,31 +7,9 @@ using namespace std::chrono_literals;
 namespace fb::bot::integration {
 
 communication_test::communication_test(game_bot_controller& controller) :
-    bot_integration_test(controller)
+    bot_integration_test(controller, REQUIRED_BOTS) // Spawn required bots
 {
-    // Register hooks for basic responses
-    this->_controller.hook_external(this, this, &communication_test::on_hook_sequence);
-    this->_controller.hook_external(this, this, &communication_test::on_hook_position);
-
     fb::logger::debug("Communication test constructed");
-}
-
-async::task<void> communication_test::initialize(game_bot_controller& controller)
-{
-    auto ip = controller.container.ipv4(fb::config<std::string>("ip"));
-    auto endpoint =
-        boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
-
-    fb::logger::info("Communication test initializing and spawning {} bots", REQUIRED_BOTS);
-
-    for (auto i = 0; i < REQUIRED_BOTS; i++)
-    {
-        auto gateway_bot = controller.container.gateway->create();
-        gateway_bot->connect(endpoint);
-    }
-
-    fb::logger::info("Communication test initialization completed - {} bots spawned", REQUIRED_BOTS);
-    co_return;
 }
 
 async::task<bool> communication_test::execute()
@@ -103,69 +81,14 @@ async::task<bool> communication_test::execute()
 
     fb::logger::info("All communication test scenarios PASSED");
     this->set_state(test_state::completed);
-    this->_controller.notify_test_completed(this);
+    this->notify_completed();
     co_return true;
 }
 
 void communication_test::reset()
 {
     bot_integration_test::reset();
-
     fb::logger::info("Communication test reset");
-}
-
-bool communication_test::is_ready() const
-{
-    auto bots = this->get_test_bots();
-    if (bots.size() < REQUIRED_BOTS)
-        return false;
-
-    for (auto& bot : bots)
-    {
-        if (bot->oid() == 0)
-            return false;
-
-        if (bot->position().x == 0 && bot->position().y == 0)
-            return false;
-    }
-
-    return true;
-}
-
-void communication_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
-{
-    bot_integration_test::on_bot_connected(bot);
-    fb::logger::debug("Communication test: Bot {} added to collection", bot->fd());
-}
-
-async::task<void> communication_test::on_hook_sequence(fb::bot::game_bot&                      bot,
-                                                       const fb::protocol::game::response::id& response)
-{
-    if (this->is_ready() == false)
-        co_return;
-
-    if (this->get_state() == test_state::running)
-        co_return;
-
-    fb::logger::info("Communication test: All bots ready, notifying controller");
-    this->set_state(test_state::ready);
-    this->notify_ready();
-    co_return;
-}
-
-async::task<void> communication_test::on_hook_position(fb::bot::game_bot&                            bot,
-                                                       const fb::protocol::game::response::position& response)
-{
-    if (this->is_ready() == false)
-        co_return;
-
-    if (this->get_state() == test_state::running)
-        co_return;
-
-    fb::logger::info("Communication test: All bots ready, notifying controller");
-    this->set_state(test_state::ready);
-    this->notify_ready();
-    co_return;
 }
 
 async::task<bool> communication_test::test_normal_chat(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
@@ -281,6 +204,11 @@ async::task<bool> communication_test::test_whisper_block(std::shared_ptr<game_bo
 async::task<void> communication_test::reset_bot_state(std::shared_ptr<game_bot>& bot)
 {
     co_return;
+}
+
+std::string communication_test::name() const
+{
+    return "Communication Test";
 }
 
 } // namespace fb::bot::integration

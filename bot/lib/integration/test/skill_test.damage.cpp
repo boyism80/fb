@@ -91,7 +91,6 @@ async::task<bool> skill_test::test_damage_spells(std::vector<std::shared_ptr<fb:
             },
             DEFAULT_TIMEOUT);
         spell_slot++;
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     caster->chat("=== DAMAGE SPELL TEST COMPLETED ===");

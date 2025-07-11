@@ -45,15 +45,6 @@ public:
     ~item_test() = default;
 
     /**
-     * @brief      Initializes the item test with required bots.
-     *
-     * @param      controller  Reference to the game bot controller.
-     *
-     * @return     An async task that completes when initialization is finished.
-     */
-    async::task<void> initialize(game_bot_controller& controller);
-
-    /**
      * @brief      Executes the item test sequence.
      *
      * @return     An async task that completes with true if all tests passed, false otherwise.
@@ -70,24 +61,7 @@ public:
      *
      * @return     "Item Test" as the identifier.
      */
-    std::string name() const override final
-    {
-        return "Item Test";
-    }
-
-    /**
-     * @brief      Checks if the test is ready to execute.
-     *
-     * @return     True if ready, false otherwise.
-     */
-    bool is_ready() const override;
-
-    /**
-     * @brief      Handles bot connection events.
-     *
-     * @param[in]  bot  The connected bot instance.
-     */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override;
+    std::string name() const override final;
 
 private:
     /**
@@ -135,26 +109,6 @@ private:
      * @return     An async task that completes with true if all tests passed, false otherwise.
      */
     async::task<bool> execute_test_functions(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
-
-    /**
-     * @brief      Hook handler for object ID responses.
-     *
-     * @param      bot       The bot that received the response.
-     * @param[in]  response  The ID response data.
-     *
-     * @return     An async task that completes when handling is finished.
-     */
-    async::task<void> on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response);
-
-    /**
-     * @brief      Hook handler for position responses.
-     *
-     * @param      bot       The bot that received the response.
-     * @param[in]  response  The position response data.
-     *
-     * @return     An async task that completes when handling is finished.
-     */
-    async::task<void> on_hook_position(fb::bot::game_bot& bot, const fb::protocol::game::response::position& response);
 
     // Test function implementations
     /**

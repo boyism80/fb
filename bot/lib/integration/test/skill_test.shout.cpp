@@ -85,9 +85,6 @@ async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::
         }
 
         fb::logger::info("{} shout spell test completed successfully", spell.spell_name);
-
-        // Wait between spells
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     fb::logger::info("Shout spell testing completed");

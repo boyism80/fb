@@ -23,15 +23,6 @@ public:
     bulletin_test(game_bot_controller& controller);
 
     /**
-     * @brief      Initializes the bulletin test and spawns required bots.
-     *
-     * @param[in]  controller  The game bot controller to use for spawning bots.
-     *
-     * @return     A task that completes when initialization is finished.
-     */
-    async::task<void> initialize(game_bot_controller& controller);
-
-    /**
      * @brief      Executes the bulletin test.
      *
      * @return     A task that completes when bulletin test finishes, returning true on success.
@@ -152,44 +143,7 @@ public:
      *
      * @return     "Bulletin Test" as the identifier.
      */
-    std::string name() const override final
-    {
-        return "Bulletin Test";
-    }
-
-    /**
-     * @brief      Checks if all spawned bots are ready for bulletin test.
-     *
-     * @return     True if all spawned bots are ready for bulletin test, false otherwise.
-     */
-    bool is_ready() const override final;
-
-    /**
-     * @brief      Called when a bot connects to the bulletin test.
-     *
-     * @param[in]  bot  The connected bot to store for testing.
-     */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override final;
-
-    /**
-     * @brief      Called when a bot receives an object ID response.
-     *
-     * @param[in]  bot       The bot that received the object ID.
-     * @param[in]  response  The object ID response containing the new ID.
-     *
-     * @return     An async task that completes when hook processing is finished.
-     */
-    async::task<void> on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response);
-
-    /**
-     * @brief      Called when a bot receives a position response.
-     *
-     * @param[in]  bot       The bot that received the position.
-     * @param[in]  response  The position response containing the new position.
-     *
-     * @return     An async task that completes when hook processing is finished.
-     */
-    async::task<void> on_hook_position(fb::bot::game_bot& bot, const fb::protocol::game::response::position& response);
+    std::string name() const override final;
 };
 
 } // namespace fb::bot::integration

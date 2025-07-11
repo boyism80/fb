@@ -85,7 +85,6 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::sh
             });
 
         spell_slot++;
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
     caster->chat("=== NEAR TARGET DAMAGE SPELL TEST COMPLETED ===");

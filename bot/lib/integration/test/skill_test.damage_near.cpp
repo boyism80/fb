@@ -122,10 +122,10 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
             DEFAULT_TIMEOUT);
 
         spell_slot++;
-        co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
-    co_await caster->move(DIRECTION::TOP, 1, DEFAULT_INTERVAL);
+    co_await caster->thread()->sleep(DEFAULT_INTERVAL);
+    co_await caster->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
     co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     caster->chat("=== NEAR DAMAGE SPELL TEST COMPLETED ===");
