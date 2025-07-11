@@ -5,14 +5,9 @@ using namespace std::chrono_literals;
 
 namespace fb::bot::integration {
 
-async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
+async::task<bool> skill_test::test_teleport_spells()
 {
-    if (bots.size() < 2)
-    {
-        fb::logger::fatal("Teleport spell test requires at least 2 bots");
-        co_return false;
-    }
-
+    auto  bots   = this->get_test_bots();
     auto& caster = bots.front();
     auto& target = bots[1];
 

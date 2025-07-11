@@ -47,11 +47,10 @@ void game_bot_controller::initialize()
     fb::logger::info("Integration test controller initialized with test queue (movement -> attack -> skill -> bulletin "
                      "-> trade -> drop_loot -> item)");
 
-    // Activate the first test
-    std::ignore = this->activate_first_test();
+    this->active_test();
 }
 
-async::task<void> game_bot_controller::activate_first_test()
+async::task<void> game_bot_controller::active_test()
 {
     if (this->_current_test == nullptr)
     {
@@ -60,26 +59,8 @@ async::task<void> game_bot_controller::activate_first_test()
     }
 
     fb::logger::info("Activating first test: '{}'", this->_current_test->name());
-
-    // Initialize the test (creates bots, etc.)
-    co_await this->_current_test->initialize(*this);
-
+    std::ignore = this->_current_test->on_active(*this);
     fb::logger::info("Test '{}' activated and ready to receive bot connections", this->_current_test->name());
-}
-
-void game_bot_controller::notify_test_completed(bot_integration_test* test)
-{
-    if (this->_current_test == test)
-    {
-        fb::logger::info("Test '{}' completed", test->name());
-
-        // Call cleanup before moving to next test
-        this->_current_test->cleanup();
-        this->_current_test = nullptr;
-
-        // Start the next test in the queue
-        this->start_next_test();
-    }
 }
 
 void game_bot_controller::notify_test_ready()
@@ -106,7 +87,14 @@ async::task<void> game_bot_controller::start_current_test()
     }
 
     fb::logger::info("Starting test '{}'", this->_current_test->name());
-    std::ignore = co_await this->_current_test->execute();
+    auto success = co_await this->_current_test->execute();
+    if (success)
+        fb::logger::info("Test '{}' completed successfully", this->_current_test->name());
+    else
+        fb::logger::fatal("Test '{}' failed", this->_current_test->name());
+
+    this->_current_test = nullptr;
+    this->start_next_test();
 }
 
 async::task<void> game_bot_controller::handle_timer()
@@ -311,7 +299,7 @@ void game_bot_controller::start_next_test()
     fb::logger::info("Starting next test: '{}'", this->_current_test->name());
 
     // Activate the next test
-    std::ignore = this->activate_first_test();
+    std::ignore = this->active_test();
 }
 
 bool game_bot_controller::has_more_tests() const

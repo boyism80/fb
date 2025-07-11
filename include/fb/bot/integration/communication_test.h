@@ -15,6 +15,9 @@ namespace fb::bot::integration {
  */
 class communication_test : public bot_integration_test
 {
+private:
+    using super = bot_integration_test;
+
 public:
     /**
      * @brief   Constructor for communication test
@@ -28,14 +31,13 @@ public:
      */
     ~communication_test() override = default;
 
-public:
-    /**
-     * @brief   Execute the communication test scenarios
-     *
-     * @return  Task that returns true if all tests pass, false otherwise
-     */
-    async::task<bool> execute() override;
+protected:
+    generator<scenario_t> on_generate_scenario() override final;
+    async::task<void>     on_initialize(game_bot_controller& controller) override final;
+    async::task<void>     on_scenario_started(uint32_t scenario_index) override final;
+    async::task<void>     on_scenario_finished(uint32_t scenario_index) override final;
 
+public:
     /**
      * @brief   Get the name of the test
      *
@@ -43,57 +45,34 @@ public:
      */
     std::string name() const override final;
 
-    /**
-     * @brief   Reset the test state
-     */
-    void reset() override;
-
-private:
-
 private:
     /**
      * @brief   Test normal chat functionality
      *
-     * @param[in]  bot1     First bot for testing
-     * @param[in]  bot2     Second bot for testing
      * @return  Task that returns true if test passes, false otherwise
      */
-    async::task<bool> test_normal_chat(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
+    async::task<bool> test_normal_chat();
 
     /**
      * @brief   Test shout functionality
      *
-     * @param[in]  bot1     First bot for testing
-     * @param[in]  bot2     Second bot for testing
      * @return  Task that returns true if test passes, false otherwise
      */
-    async::task<bool> test_shout_chat(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
+    async::task<bool> test_shout_chat();
 
     /**
      * @brief   Test whisper functionality
      *
-     * @param[in]  bot1     First bot for testing
-     * @param[in]  bot2     Second bot for testing
      * @return  Task that returns true if test passes, false otherwise
      */
-    async::task<bool> test_whisper(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
+    async::task<bool> test_whisper();
 
     /**
      * @brief   Test whisper blocking functionality
      *
-     * @param[in]  bot1     First bot for testing
-     * @param[in]  bot2     Second bot for testing
      * @return  Task that returns true if test passes, false otherwise
      */
-    async::task<bool> test_whisper_block(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
-
-    /**
-     * @brief   Reset bot state for testing
-     *
-     * @param[in]  bot      Bot to reset
-     * @return  Task that completes when reset is finished
-     */
-    async::task<void> reset_bot_state(std::shared_ptr<game_bot>& bot);
+    async::task<bool> test_whisper_block();
 
 private:
     static constexpr int REQUIRED_BOTS = 2; ///< Number of bots required for testing

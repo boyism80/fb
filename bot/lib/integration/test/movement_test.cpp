@@ -16,26 +16,19 @@ movement_test::movement_test(game_bot_controller& controller) :
     fb::logger::debug("Movement test constructed");
 }
 
-async::task<bool> movement_test::execute()
+generator<bot_integration_test::scenario_t> movement_test::on_generate_scenario()
 {
-    constexpr auto interval = 100ms;
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->move_bot_downward();
+    };
+}
 
-    if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
-        co_return false;
-
-    this->set_state(test_state::running);
-
+async::task<bool> movement_test::move_bot_downward()
+{
     auto bots = this->get_test_bots();
-    fb::logger::info("Starting movement test with {} bots", bots.size());
-
     if (bots.empty())
-    {
-        fb::logger::fatal("No bots available for movement test");
-        this->set_state(test_state::failed);
-        co_return false;
-    }
+        throw std::runtime_error("No bots available for movement test");
 
-    // Use the last bot for movement
     auto target_bot = bots.back();
 
     fb::logger::info("Moving bot {} downward {} steps", target_bot->fd(), MOVEMENT_STEPS);
@@ -59,23 +52,10 @@ async::task<bool> movement_test::execute()
 
         auto thread = target_bot->thread();
         co_await thread->switching();
-        co_await thread->sleep(interval);
+        co_await thread->sleep(DEFAULT_INTERVAL);
     }
 
-    this->set_state(test_state::completed);
-
-    fb::logger::info("Movement test completed successfully");
-
-    // Notify controller that this test is completed
-    this->notify_completed();
-
-    co_return true; // 성공
-}
-
-void movement_test::reset()
-{
-    bot_integration_test::reset();
-    fb::logger::info("Movement test reset");
+    co_return true;
 }
 
 std::string movement_test::name() const

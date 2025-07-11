@@ -20,6 +20,9 @@ namespace fb::bot::integration {
  */
 class drop_loot_test : public bot_integration_test
 {
+private:
+    using super = bot_integration_test;
+
 public:
     /**
      * @brief      Constructs a drop_loot_test instance.
@@ -33,83 +36,59 @@ public:
      */
     ~drop_loot_test() = default;
 
+protected:
+    generator<scenario_t> on_generate_scenario() override final;
+
+    async::task<void> on_initialize(game_bot_controller& controller) override final;
+    async::task<void> on_scenario_started(uint32_t scenario_index) override final;
+    async::task<void> on_scenario_finished(uint32_t scenario_index) override final;
+
 public:
-    /**
-     * @brief      Executes all drop and loot test scenarios.
-     *
-     * @return     An async task that returns true if all tests pass, false otherwise.
-     */
-    async::task<bool> execute() override;
-
-    /**
-     * @brief      Resets the test state.
-     */
-    void reset() override;
-
     /**
      * @brief      Gets the name of this test.
      *
      * @return     The test name as a string.
      */
-    std::string name() const override;
+    std::string name() const override final;
 
 private:
     // Test scenarios
     /**
      * @brief      Tests basic item drop and loot functionality.
      *
-     * @param[in]  bot1  First bot for testing.
-     * @param[in]  bot2  Second bot for testing.
      * @return     An async task that returns true if test passes.
      */
-    async::task<bool> test_scenario_1(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
+    async::task<bool> test_scenario_1();
 
     /**
      * @brief      Tests inventory full item loot failure.
      *
-     * @param[in]  bot1  First bot for testing.
-     * @param[in]  bot2  Second bot for testing.
      * @return     An async task that returns true if test passes.
      */
-    async::task<bool> test_scenario_2(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
+    async::task<bool> test_scenario_2();
 
     /**
      * @brief      Tests item stack overflow loot failure.
      *
-     * @param[in]  bot1  First bot for testing.
-     * @param[in]  bot2  Second bot for testing.
      * @return     An async task that returns true if test passes.
      */
-    async::task<bool> test_scenario_3(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
+    async::task<bool> test_scenario_3();
 
     /**
      * @brief      Tests money overflow loot failure.
      *
-     * @param[in]  bot1  First bot for testing.
-     * @param[in]  bot2  Second bot for testing.
      * @return     An async task that returns true if test passes.
      */
-    async::task<bool> test_scenario_4(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
+    async::task<bool> test_scenario_4();
 
     /**
      * @brief      Tests PK-related loot mechanics with hellfire spell.
      *
-     * @param[in]  bot1  First bot for testing.
-     * @param[in]  bot2  Second bot for testing.
      * @return     An async task that returns true if test passes.
      */
-    async::task<bool> test_scenario_5(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
+    async::task<bool> test_scenario_5();
 
 private:
-    // Helper functions
-    /**
-     * @brief      Resets bot state for clean testing.
-     *
-     * @param[in]  bot  The bot to reset.
-     * @return     An async task.
-     */
-    async::task<void> reset_bot_state(std::shared_ptr<game_bot>& bot);
-
     /**
      * @brief      Checks if bot has a specific item.
      *

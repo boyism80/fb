@@ -7,27 +7,33 @@ namespace fb::bot::integration {
 
 class trade_test : public bot_integration_test
 {
+private:
+    using super = bot_integration_test;
+
 public:
     trade_test(game_bot_controller& controller);
     ~trade_test() = default;
 
+protected:
+    generator<scenario_t> on_generate_scenario() override final;
+    async::task<void>     on_initialize(game_bot_controller& controller) override final;
+    async::task<void>     on_scenario_started(uint32_t scenario_index) override final;
+    async::task<void>     on_scenario_finished(uint32_t scenario_index) override final;
+
 public:
-    async::task<bool> execute() override;
-    void              reset() override;
-    std::string       name() const override;
+    std::string name() const override final;
 
 private:
     // Test scenarios
-    async::task<bool> test_scenario_1(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
-    async::task<bool> test_scenario_2(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
-    async::task<bool> test_scenario_3(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
-    async::task<bool> test_scenario_4(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2);
+    async::task<bool> test_scenario_1();
+    async::task<bool> test_scenario_2();
+    async::task<bool> test_scenario_3();
+    async::task<bool> test_scenario_4();
 
 private:
     // Helper functions
-    async::task<void> reset_bot_state(std::shared_ptr<game_bot>& bot);
-    bool              has_item(const std::shared_ptr<game_bot>& bot, const std::string& name);
-    uint16_t          get_item_count(const std::shared_ptr<game_bot>& bot, const std::string& name);
+    bool     has_item(const std::shared_ptr<game_bot>& bot, const std::string& name);
+    uint16_t get_item_count(const std::shared_ptr<game_bot>& bot, const std::string& name);
 };
 
 } // namespace fb::bot::integration

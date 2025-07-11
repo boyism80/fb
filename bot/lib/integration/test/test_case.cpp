@@ -55,20 +55,16 @@ void bot_integration_test::notify_ready()
     this->_controller.notify_test_ready();
 }
 
-void bot_integration_test::notify_completed()
+async::task<void> bot_integration_test::on_finished()
 {
-    this->_controller.notify_test_completed(this);
-}
-
-void bot_integration_test::cleanup()
-{
-    for (auto bot : this->get_test_bots())
+    for (auto& bot : this->get_test_bots())
     {
         if (bot)
             bot->close();
     }
 
-    fb::logger::info("{} test cleanup completed - all bots disconnected", this->name());
+    fb::logger::info("{} test finished - all bots disconnected", this->name());
+    co_return;
 }
 
 bool bot_integration_test::is_ready() const
@@ -94,7 +90,7 @@ std::vector<std::shared_ptr<fb::bot::game_bot>> bot_integration_test::get_test_b
     return this->_test_bots;
 }
 
-async::task<void> bot_integration_test::initialize(game_bot_controller& controller)
+async::task<void> bot_integration_test::on_active(game_bot_controller& controller)
 {
     auto ip = controller.container.ipv4(fb::config<std::string>("ip"));
     auto endpoint =
@@ -109,12 +105,74 @@ async::task<void> bot_integration_test::initialize(game_bot_controller& controll
     }
 
     fb::logger::info("{} initialization completed - {} bots spawned", this->name(), this->bot_count);
+
+    auto scenario_generator = this->on_generate_scenario();
+    while (scenario_generator.next())
+    {
+        auto scenario = scenario_generator.value();
+        this->_scenario_queue.push(scenario);
+    }
+
     co_return;
 }
 
-void bot_integration_test::reset()
+async::task<void> bot_integration_test::on_initialize(game_bot_controller& controller)
 {
-    this->_state = test_state::idle;
+    co_return;
+}
+
+async::task<bool> bot_integration_test::execute()
+{
+    if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
+        co_return false;
+
+    this->set_state(test_state::running);
+
+    auto failed         = false;
+    auto scenario_index = 0;
+    fb::logger::info("{}: Starting test execution", this->name());
+    co_await this->on_initialize(this->_controller);
+    while (this->_scenario_queue.empty() == false)
+    {
+        auto scenario = this->_scenario_queue.front();
+        this->_scenario_queue.pop();
+        try
+        {
+            co_await this->on_scenario_started(scenario_index);
+            if (co_await scenario() == false)
+                failed = true;
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::fatal("{}: Scenario {} failed: {}", this->name(), scenario_index, e.what());
+            failed = true;
+        }
+
+        co_await this->on_scenario_finished(scenario_index);
+        scenario_index++;
+    }
+
+    co_await this->on_finished();
+    if (failed)
+    {
+        fb::logger::fatal("{}: Test failed", this->name());
+        this->set_state(test_state::failed);
+        co_return false;
+    }
+
+    fb::logger::info("{}: Test completed successfully", this->name());
+    this->set_state(test_state::completed);
+    co_return true;
+}
+
+async::task<void> bot_integration_test::on_scenario_started(uint32_t scenario_index)
+{
+    co_return;
+}
+
+async::task<void> bot_integration_test::on_scenario_finished(uint32_t scenario_index)
+{
+    co_return;
 }
 
 async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot&                      bot,

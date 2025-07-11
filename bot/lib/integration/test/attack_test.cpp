@@ -15,24 +15,12 @@ attack_test::attack_test(game_bot_controller& controller) :
     fb::logger::debug("Attack test constructed");
 }
 
-async::task<bool> attack_test::execute()
+async::task<bool> attack_test::attack_scenario()
 {
-    constexpr auto interval = 100ms;
-
-    if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
-        co_return false;
-
-    this->set_state(test_state::running);
-
     auto bots = this->get_test_bots();
-    fb::logger::info("Starting attack test with {} bots", bots.size());
 
     if (bots.empty())
-    {
-        fb::logger::fatal("No bots available for attack test");
-        this->set_state(test_state::failed);
-        co_return false;
-    }
+        throw std::runtime_error("No bots available for attack test");
 
     auto bot = bots.front();
 
@@ -48,23 +36,17 @@ async::task<bool> attack_test::execute()
 
         auto thread = bot->thread();
         co_await thread->switching();
-        co_await thread->sleep(interval);
+        co_await thread->sleep(DEFAULT_INTERVAL);
     }
 
-    this->set_state(test_state::completed);
-
-    fb::logger::info("Attack test completed successfully");
-
-    // Notify controller that this test is completed
-    this->notify_completed();
-
-    co_return true; // 성공
+    co_return true;
 }
 
-void attack_test::reset()
+generator<bot_integration_test::scenario_t> attack_test::on_generate_scenario()
 {
-    this->set_state(test_state::idle);
-    fb::logger::info("Attack test reset");
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->attack_scenario();
+    };
 }
 
 std::string attack_test::name() const

@@ -17,53 +17,9 @@ namespace fb::bot::integration {
  */
 class item_test : public bot_integration_test
 {
-    /**
-     * @brief      Simple item test data without condition information.
-     */
-    struct equipment_item_data
-    {
-        using condition_function = std::function<async::task<void>(fb::bot::game_bot&)>;
-
-        std::string        item_name;       ///< Name of the item to test
-        std::string        success_message; ///< Expected success message pattern when equipped
-        EQUIPMENT_PARTS    equipment_part;  ///< Equipment part for unequipping
-        condition_function condition;       ///< Condition function
-        condition_function rollback;        ///< Rollback function
-    };
-
-public:
-    /**
-     * @brief      Constructs a new item test instance.
-     *
-     * @param      controller  Reference to the game bot controller.
-     */
-    item_test(game_bot_controller& controller);
-
-    /**
-     * @brief      Destroys the item test instance.
-     */
-    ~item_test() = default;
-
-    /**
-     * @brief      Executes the item test sequence.
-     *
-     * @return     An async task that completes with true if all tests passed, false otherwise.
-     */
-    async::task<bool> execute() override;
-
-    /**
-     * @brief      Resets the test state for re-execution.
-     */
-    void reset() override;
-
-    /**
-     * @brief      Gets the test name.
-     *
-     * @return     "Item Test" as the identifier.
-     */
-    std::string name() const override final;
-
 private:
+    using super = bot_integration_test;
+
     /**
      * @brief      Equipment test structure for organizing test data.
      */
@@ -79,28 +35,46 @@ private:
     };
 
     /**
-     * @brief      Test function structure for organizing test execution.
+     * @brief      Simple item test data without condition information.
      */
-    struct test_function
+    struct equipment_item_data
     {
-        std::string                                                                        name;
-        std::function<async::task<bool>(std::vector<std::shared_ptr<fb::bot::game_bot>>&)> function;
+        using condition_function = std::function<async::task<void>(fb::bot::game_bot&)>;
 
-        test_function(const std::string&                                                                 n,
-                      std::function<async::task<bool>(std::vector<std::shared_ptr<fb::bot::game_bot>>&)> f) :
-            name(n),
-            function(f)
-        { }
+        std::string        item_name;       ///< Name of the item to test
+        std::string        success_message; ///< Expected success message pattern when equipped
+        EQUIPMENT_PARTS    equipment_part;  ///< Equipment part for unequipping
+        condition_function condition;       ///< Condition function
+        condition_function rollback;        ///< Rollback function
     };
 
-private:
-    std::vector<test_function> _test_functions; ///< Collection of test functions to execute
+protected:
+    generator<scenario_t> on_generate_scenario() override final;
+    async::task<void>     on_initialize(game_bot_controller& controller) override final;
+    async::task<void>     on_scenario_started(uint32_t scenario_index) override final;
+    async::task<void>     on_scenario_finished(uint32_t scenario_index) override final;
+
+public:
+    /**
+     * @brief      Constructs a new item test instance.
+     *
+     * @param      controller  Reference to the game bot controller.
+     */
+    item_test(game_bot_controller& controller);
 
     /**
-     * @brief      Initializes the test function queue.
+     * @brief      Destroys the item test instance.
      */
-    void initialize_test_functions();
+    ~item_test() = default;
 
+    /**
+     * @brief      Gets the test name.
+     *
+     * @return     "Item Test" as the identifier.
+     */
+    std::string name() const override final;
+
+private:
     /**
      * @brief      Executes all registered test functions.
      *
@@ -133,19 +107,16 @@ private:
      */
     async::task<bool> test_equipment_failure();
 
-    async::task<bool> test_equipment_overflow();
-
     /**
-     * @brief      Resets bot state to clean initial conditions.
+     * @brief      Tests equipment overflow scenarios.
      *
-     *             This function clears all items, resets stats to default values,
-     *             removes all buffs, and restores character to a clean state for testing.
+     *             This function tests the overflow scenarios when attempting to equip
+     *             items by characters with insufficient inventory space. It ensures that
+     *             items fail to equip when the character's inventory is full.
      *
-     * @param      bot  The bot instance to reset.
-     *
-     * @return     An async task that completes when reset is finished.
+     * @return     An async task that completes with true if test passed, false otherwise.
      */
-    async::task<void> reset_bot_state(std::shared_ptr<fb::bot::game_bot>& bot);
+    async::task<bool> test_equipment_overflow();
 };
 
 } // namespace fb::bot::integration

@@ -12,24 +12,14 @@ bulletin_test::bulletin_test(game_bot_controller& controller) :
     fb::logger::debug("Bulletin test constructed");
 }
 
-async::task<bool> bulletin_test::execute()
+async::task<bool> bulletin_test::get_sections_scenario()
 {
-    if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
-        co_return false;
-
-    this->set_state(test_state::running);
-
     auto bots = this->get_test_bots();
     if (bots.size() < 2)
-    {
-        fb::logger::fatal("Not enough bots for this test, requires 2.");
-        this->set_state(test_state::failed);
-        co_return false;
-    }
+        throw std::runtime_error("Not enough bots for this test, requires 2.");
 
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
-    fb::logger::info("Starting bulletin test with {} bots", bots.size());
 
     // Test getting bulletin sections
     fb::logger::info("Testing getting bulletin sections");
@@ -272,9 +262,6 @@ async::task<bool> bulletin_test::execute()
     fb::logger::info("Bulletin test completed successfully");
 
     this->set_state(test_state::completed);
-
-    // Notify controller that this test is completed
-    this->notify_completed();
 
     co_return true;
 }
@@ -524,17 +511,41 @@ async::task<bool> bulletin_test::delete_mail(std::shared_ptr<fb::bot::game_bot> 
     co_return false;
 }
 
-void bulletin_test::reset()
+generator<bot_integration_test::scenario_t> bulletin_test::on_generate_scenario()
 {
-    // Call base class reset
-    bot_integration_test::reset();
-
-    fb::logger::info("Bulletin test reset");
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->get_sections_scenario();
+    };
 }
 
 std::string bulletin_test::name() const
 {
     return "Bulletin Test";
+}
+
+async::task<void> bulletin_test::on_initialize(game_bot_controller& controller)
+{
+    co_await super::on_initialize(controller);
+
+    auto  bots = this->get_test_bots();
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
+    co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
+    co_await bot2->thread()->switching();
+    co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
+    co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
+
+    co_return;
+}
+
+async::task<void> bulletin_test::on_scenario_started(uint32_t scenario_index)
+{
+    co_return;
+}
+
+async::task<void> bulletin_test::on_scenario_finished(uint32_t scenario_index)
+{
+    co_return;
 }
 
 } // namespace fb::bot::integration

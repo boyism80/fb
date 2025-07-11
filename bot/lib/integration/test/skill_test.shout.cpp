@@ -14,15 +14,10 @@ struct shout_spell_test
     MESSAGE_TYPE message_type;
 };
 
-async::task<bool> skill_test::test_shout_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
+async::task<bool> skill_test::test_shout_spells()
 {
-    if (bots.size() < 1)
-    {
-        fb::logger::fatal("Shout spell test requires at least 1 bot");
-        co_return false;
-    }
-
-    auto caster = bots.front();
+    auto  bots   = this->get_test_bots();
+    auto& caster = bots.front();
 
     // Define shout spells with their test parameters
     auto shout_spells = std::vector<shout_spell_test>{

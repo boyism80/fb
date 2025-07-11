@@ -6,18 +6,13 @@ using namespace std::chrono_literals;
 
 namespace fb::bot::integration {
 
-async::task<bool> skill_test::test_loot_spell(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
+async::task<bool> skill_test::test_loot_spell()
 {
     constexpr auto item_name    = "도토리";
     constexpr auto item_count   = 200;
     constexpr auto money_amount = 10000;
 
-    if (bots.size() < 1)
-    {
-        fb::logger::fatal("Loot spell test requires at least 1 bot");
-        co_return false;
-    }
-
+    auto  bots   = this->get_test_bots();
     auto& caster = bots.front();
 
     fb::logger::info("Testing loot spell with item and money loot");

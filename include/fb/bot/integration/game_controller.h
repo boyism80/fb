@@ -78,15 +78,6 @@ public:
 
 public:
     /**
-     * @brief      Notifies the controller that a test has completed.
-     *
-     *             Called by test instances when they finish execution.
-     *
-     * @param[in]  test  Pointer to the test that has completed.
-     */
-    void notify_test_completed(bot_integration_test* test);
-
-    /**
      * @brief      Notifies the controller that the current test is ready to start.
      *
      *             Called by test instances when they detect they are ready to begin execution.
@@ -129,7 +120,7 @@ public:
      *             This is different from starting the test - activation
      *             prepares the test to become ready.
      */
-    async::task<void> activate_first_test();
+    async::task<void> active_test();
 
     /**
      * @brief      Registers a hook for a specific protocol type for a test.

@@ -4,11 +4,9 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_area_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
+async::task<bool> skill_test::test_area_damage_spells()
 {
-    if (bots.size() < 2)
-        co_return false;
-
+    auto  bots   = this->get_test_bots();
     auto& caster = bots.front();
 
     fb::logger::info("Bot {} starting area damage spell test", caster->oid());

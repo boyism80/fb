@@ -15,11 +15,20 @@ namespace fb::bot::integration {
 class skill_test : public bot_integration_test
 {
 private:
+    using super = bot_integration_test;
+
+private:
     // Test function queue management
     using test_function = std::function<async::task<bool>(std::vector<std::shared_ptr<fb::bot::game_bot>>&)>;
     std::vector<std::pair<std::string, test_function>> _test_functions;
 
     static constexpr int SPELL_CAST_COUNT = 10;
+
+protected:
+    generator<scenario_t> on_generate_scenario() override final;
+    async::task<void>     on_initialize(game_bot_controller& controller) override final;
+    async::task<void>     on_scenario_started(uint32_t scenario_index) override final;
+    async::task<void>     on_scenario_finished(uint32_t scenario_index) override final;
 
 public:
     /**
@@ -32,81 +41,13 @@ public:
     skill_test(game_bot_controller& controller);
 
     /**
-     * @brief      Executes the skill test.
-     *
-     *             Tests various skill functionalities by spawning monsters and
-     *             having the bot use skills against them.
-     *
-     * @return     A task that completes when skill test finishes, returning true on success.
-     */
-    async::task<bool> execute() override final;
-
-    /**
-     * @brief      Resets the skill test state to initial conditions.
-     */
-    void reset() override final;
-
-    /**
      * @brief      Gets the test name.
      *
      * @return     "Skill Test" as the identifier.
      */
     std::string name() const override final;
 
-    /**
-     * @brief      Tests teleport spells (출두, 소환) with map movement scenarios.
-     *
-     * @param[in]  bots     The bot instances to use for testing.
-     *
-     * @return     An async task that completes when teleport testing is finished.
-     */
-    async::task<bool> test_teleport_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
-
-    /**
-     * @brief      Tests disguise spells (경수, 맹수, 야수, 금수) with all available monster transformations.
-     *
-     * @param[in]  bots     The bot instances to use for testing.
-     *
-     * @return     An async task that completes when disguise testing is finished.
-     */
-    async::task<bool> test_disguise_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
-
-    /**
-     * @brief      Tests shout spells (사자후전사, 사자후도사, 사자후술사, 사자후도적) with message input and SHOUT
-     * verification.
-     *
-     * @param[in]  bots     The bot instances to use for testing.
-     *
-     * @return     An async task that completes when shout testing is finished.
-     */
-    async::task<bool> test_shout_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
-
-    /**
-     * @brief      Tests loot spell (노획) with item and money loot scenarios.
-     *
-     * @param[in]  bots     The bot instances to use for testing.
-     *
-     * @return     An async task that completes when loot testing is finished.
-     */
-    async::task<bool> test_loot_spell(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
-
 private:
-    /**
-     * @brief      Initializes the test function queue with all test functions.
-     *
-     *             Registers all test functions in the order they should be executed.
-     */
-    void initialize_test_functions();
-
-    /**
-     * @brief      Executes all registered test functions in sequence.
-     *
-     * @param[in]  bots     The list of bots to use for testing.
-     *
-     * @return     A task that completes when all test functions finish.
-     */
-    async::task<bool> execute_test_functions(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
-
     /**
      * @brief      Tests healing spells with comprehensive spell coverage.
      *
@@ -119,21 +60,58 @@ private:
      *
      * @return     A task that completes when all healing spell tests finish.
      */
-    async::task<bool> test_healing_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
+    async::task<bool> test_healing_spells();
 
-    async::task<bool> test_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
+    async::task<bool> test_damage_spells();
 
-    async::task<bool> test_near_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
+    async::task<bool> test_near_damage_spells();
 
-    async::task<bool> test_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
+    async::task<bool> test_attack_cast_spells();
 
-    async::task<bool> test_near_target_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
+    async::task<bool> test_near_target_damage_spells();
 
-    async::task<bool> test_area_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
+    async::task<bool> test_area_damage_spells();
 
-    async::task<bool> test_buff_debuff_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
+    async::task<bool> test_buff_debuff_spells();
 
-    async::task<bool> test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
+    async::task<bool> test_multi_target_attack_cast_spells();
+
+    /**
+     * @brief      Tests teleport spells (출두, 소환) with map movement scenarios.
+     *
+     * @param[in]  bots     The bot instances to use for testing.
+     *
+     * @return     An async task that completes when teleport testing is finished.
+     */
+    async::task<bool> test_teleport_spells();
+
+    /**
+     * @brief      Tests disguise spells (경수, 맹수, 야수, 금수) with all available monster transformations.
+     *
+     * @param[in]  bots     The bot instances to use for testing.
+     *
+     * @return     An async task that completes when disguise testing is finished.
+     */
+    async::task<bool> test_disguise_spells();
+
+    /**
+     * @brief      Tests shout spells (사자후전사, 사자후도사, 사자후술사, 사자후도적) with message input and SHOUT
+     * verification.
+     *
+     * @param[in]  bots     The bot instances to use for testing.
+     *
+     * @return     An async task that completes when shout testing is finished.
+     */
+    async::task<bool> test_shout_spells();
+
+    /**
+     * @brief      Tests loot spell (노획) with item and money loot scenarios.
+     *
+     * @param[in]  bots     The bot instances to use for testing.
+     *
+     * @return     An async task that completes when loot testing is finished.
+     */
+    async::task<bool> test_loot_spell();
 
     /**
      * @brief      Tests group healing spells with comprehensive group management.
@@ -148,7 +126,7 @@ private:
      *
      * @return     A task that completes when all group healing spell tests finish.
      */
-    async::task<bool> test_group_healing_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
+    async::task<bool> test_group_healing_spells();
 
     /**
      * @brief      Forms a group with all provided bots.
@@ -159,7 +137,7 @@ private:
      *
      * @return     A task that completes when group formation is finished.
      */
-    async::task<void> form_group(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
+    async::task<void> form_group();
 
     /**
      * @brief      Prepares all bots for group healing test by setting appropriate HP levels.
@@ -172,8 +150,7 @@ private:
      *
      * @return     A task that completes when all bots are prepared.
      */
-    async::task<void> prepare_bots_for_group_healing(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                     int                                              expected_hp_gain);
+    async::task<void> prepare_bots_for_group_healing(int expected_hp_gain);
 
     /**
      * @brief      Verifies that group healing effects were applied correctly to all group members.
@@ -184,9 +161,7 @@ private:
      *
      * @return     A task that completes when verification is finished.
      */
-    async::task<void> verify_group_healing_effects(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                   const std::vector<int>&                          before_hp_values,
-                                                   int                                              expected_hp_gain);
+    async::task<void> verify_group_healing_effects(const std::vector<int>& before_hp_values, int expected_hp_gain);
 
     /**
      * @brief      Cleans up group formation by removing all bots from the group.
@@ -195,7 +170,7 @@ private:
      *
      * @return     A task that completes when group cleanup is finished.
      */
-    async::task<void> cleanup_group(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
+    async::task<void> cleanup_group();
 
     /**
      * @brief      Tests the 출두 (teleport to target) spell.

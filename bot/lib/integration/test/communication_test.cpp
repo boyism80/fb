@@ -12,21 +12,11 @@ communication_test::communication_test(game_bot_controller& controller) :
     fb::logger::debug("Communication test constructed");
 }
 
-async::task<bool> communication_test::execute()
+async::task<void> communication_test::on_initialize(game_bot_controller& controller)
 {
-    if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
-        co_return false;
+    super::on_initialize(controller);
 
-    this->set_state(test_state::running);
-
-    auto bots = this->get_test_bots();
-    if (bots.size() < REQUIRED_BOTS)
-    {
-        fb::logger::fatal("Need at least {} bots for communication test", REQUIRED_BOTS);
-        this->set_state(test_state::failed);
-        co_return false;
-    }
-
+    auto  bots = this->get_test_bots();
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
 
@@ -38,62 +28,46 @@ async::task<bool> communication_test::execute()
 
     // Position bot1 to face bot2
     co_await bot1->direction(DIRECTION::RIGHT, DEFAULT_TIMEOUT);
-
-    fb::logger::info("Starting communication test with bot1: '{}' and bot2: '{}'", bot1->name(), bot2->name());
-
-    // Queue of test scenarios
-    using scenario_fn = std::function<async::task<bool>()>;
-    std::queue<scenario_fn> scenarios;
-
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_normal_chat(bot1, bot2);
-    });
-
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_shout_chat(bot1, bot2);
-    });
-
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_whisper(bot1, bot2);
-    });
-
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_whisper_block(bot1, bot2);
-    });
-
-    int scenario_count = 1;
-    while (scenarios.empty() == false)
-    {
-        co_await this->reset_bot_state(bot1);
-        co_await this->reset_bot_state(bot2);
-
-        auto& scenario = scenarios.front();
-        if (co_await scenario() == false)
-        {
-            fb::logger::fatal("Communication test scenario {} FAILED", scenario_count);
-            this->set_state(test_state::failed);
-            co_return false;
-        }
-
-        fb::logger::info("Communication test scenario {} PASSED", scenario_count++);
-        scenarios.pop();
-    }
-
-    fb::logger::info("All communication test scenarios PASSED");
-    this->set_state(test_state::completed);
-    this->notify_completed();
-    co_return true;
+    co_return;
 }
 
-void communication_test::reset()
+async::task<void> communication_test::on_scenario_started(uint32_t scenario_index)
 {
-    bot_integration_test::reset();
-    fb::logger::info("Communication test reset");
+    co_return;
 }
 
-async::task<bool> communication_test::test_normal_chat(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
+async::task<void> communication_test::on_scenario_finished(uint32_t scenario_index)
 {
-    fb::logger::info("Starting normal chat test");
+    co_return;
+}
+
+generator<bot_integration_test::scenario_t> communication_test::on_generate_scenario()
+{
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_normal_chat();
+    };
+
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_shout_chat();
+    };
+
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_whisper();
+    };
+
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_whisper_block();
+    };
+}
+
+async::task<bool> communication_test::test_normal_chat()
+{
+    auto bots = this->get_test_bots();
+    if (bots.size() < 2)
+        throw std::runtime_error("Not enough bots for this test, requires 2.");
+
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
 
     const std::string test_message = "Hello, this is a normal chat test!";
 
@@ -111,9 +85,14 @@ async::task<bool> communication_test::test_normal_chat(std::shared_ptr<game_bot>
     co_return true;
 }
 
-async::task<bool> communication_test::test_shout_chat(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
+async::task<bool> communication_test::test_shout_chat()
 {
-    fb::logger::info("Starting shout chat test");
+    auto bots = this->get_test_bots();
+    if (bots.size() < 2)
+        throw std::runtime_error("Not enough bots for this test, requires 2.");
+
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
 
     const std::string test_message = "HELLO EVERYONE, THIS IS A SHOUT TEST!";
 
@@ -131,9 +110,14 @@ async::task<bool> communication_test::test_shout_chat(std::shared_ptr<game_bot>&
     co_return true;
 }
 
-async::task<bool> communication_test::test_whisper(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
+async::task<bool> communication_test::test_whisper()
 {
-    fb::logger::info("Starting whisper test");
+    auto bots = this->get_test_bots();
+    if (bots.size() < 2)
+        throw std::runtime_error("Not enough bots for this test, requires 2.");
+
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
 
     const std::string test_message = "This is a secret whisper message!";
 
@@ -158,10 +142,14 @@ async::task<bool> communication_test::test_whisper(std::shared_ptr<game_bot>& bo
     co_return true;
 }
 
-async::task<bool> communication_test::test_whisper_block(std::shared_ptr<game_bot>& bot1,
-                                                         std::shared_ptr<game_bot>& bot2)
+async::task<bool> communication_test::test_whisper_block()
 {
-    fb::logger::info("Starting whisper block test");
+    auto bots = this->get_test_bots();
+    if (bots.size() < 2)
+        throw std::runtime_error("Not enough bots for this test, requires 2.");
+
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
 
     // First, disable whisper option for bot2 (block whispers)
     auto&& disable_resp = co_await bot2->request<fb::protocol::game::response::message>(
@@ -199,11 +187,6 @@ async::task<bool> communication_test::test_whisper_block(std::shared_ptr<game_bo
     fb::logger::debug("Whisper option re-enabled for bot2");
 
     co_return true;
-}
-
-async::task<void> communication_test::reset_bot_state(std::shared_ptr<game_bot>& bot)
-{
-    co_return;
 }
 
 std::string communication_test::name() const

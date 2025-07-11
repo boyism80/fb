@@ -31,26 +31,27 @@ public:
     movement_test(game_bot_controller& controller);
 
     /**
-     * @brief      Executes the movement test.
-     *
-     *             Moves the last bot downward by MOVEMENT_STEPS positions to test movement functionality.
-     *             This method is called only when all bots are ready (have non-zero oid and valid position).
-     *
-     * @return     A task that completes when movement test finishes, returning true on success.
-     */
-    async::task<bool> execute() override final;
-
-    /**
      * @brief      Gets the test name.
      *
      * @return     "Movement Test" as the identifier.
      */
     std::string name() const override final;
 
+private:
     /**
-     * @brief      Resets the test state to idle.
+     * @brief      Moves the last bot downward by MOVEMENT_STEPS positions.
+     *
+     * @return     A task that completes when the bot is moved.
      */
-    void reset() override final;
+    async::task<bool> move_bot_downward();
+
+protected:
+    /**
+     * @brief      Generates a scenario function for the test.
+     *
+     * @return     A generator that yields scenario functions.
+     */
+    generator<scenario_t> on_generate_scenario() override final;
 };
 
 } // namespace fb::bot::integration

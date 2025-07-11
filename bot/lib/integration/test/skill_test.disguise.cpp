@@ -17,15 +17,10 @@ struct disguise_spell_test
     std::vector<std::string> available_mobs;
 };
 
-async::task<bool> skill_test::test_disguise_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
+async::task<bool> skill_test::test_disguise_spells()
 {
-    if (bots.size() < 1)
-    {
-        fb::logger::fatal("Disguise spell test requires at least 1 bot");
-        co_return false;
-    }
-
-    auto caster = bots.front();
+    auto  bots   = this->get_test_bots();
+    auto& caster = bots.front();
 
     // Define disguise spells with their available monster transformations
     auto disguise_spells = std::vector<disguise_spell_test>{

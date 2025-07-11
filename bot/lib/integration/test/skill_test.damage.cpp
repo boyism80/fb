@@ -4,9 +4,10 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
+async::task<bool> skill_test::test_damage_spells()
 {
-    auto& caster = bots.at(0);
+    auto  bots   = this->get_test_bots();
+    auto& caster = bots.front();
     auto& target = bots.at(1);
     auto& other1 = bots.at(2);
     auto& other2 = bots.at(3);

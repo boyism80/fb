@@ -12,6 +12,7 @@
 #include <chrono>
 #include <functional>
 #include <optional>
+#include <fb/generator.h>
 
 namespace fb::bot::integration {
 
@@ -48,10 +49,14 @@ public:
         failed     ///< Test has failed
     };
 
+    using test_bots_t = std::vector<std::shared_ptr<fb::bot::game_bot>>;
+    using scenario_t  = std::function<async::task<bool>()>;
+
 private:
-    std::vector<std::shared_ptr<fb::bot::game_bot>> _test_bots; ///< Collection of bots managed by this test
-    test_state                                      _state{test_state::idle}; ///< Current state of the test
-    game_bot_controller&                            _controller; ///< Reference to the parent game bot controller
+    test_bots_t            _test_bots;               ///< Collection of bots managed by this test
+    test_state             _state{test_state::idle}; ///< Current state of the test
+    game_bot_controller&   _controller;              ///< Reference to the parent game bot controller
+    std::queue<scenario_t> _scenario_queue;          ///< Queue of scenario functions to execute
 
 public:
     const uint32_t bot_count; ///< Number of bots required for this test
@@ -65,7 +70,7 @@ protected:
     static constexpr auto DEFAULT_INTERVAL = 100ms;
 #endif
 
-public:
+protected:
     /**
      * @brief      Constructs a new bot integration test with controller reference.
      *
@@ -74,8 +79,18 @@ public:
      */
     bot_integration_test(game_bot_controller& controller, uint32_t bot_count = 1);
 
+public:
     virtual ~bot_integration_test() = default;
 
+protected:
+    /**
+     * @brief      Generates a scenario function for the test.
+     *
+     * @return     A task that completes when the scenario is generated.
+     */
+    virtual generator<scenario_t> on_generate_scenario() = 0;
+
+public:
     /**
      * @brief      Gets the current state of the test.
      *
@@ -131,20 +146,6 @@ public:
     void notify_ready();
 
     /**
-     * @brief      Notifies the controller that this test has completed.
-     *
-     *             Called by derived classes when they detect they have completed execution.
-     */
-    void notify_completed();
-
-    /**
-     * @brief      Performs cleanup operations when the test is destroyed.
-     *
-     *             Default implementation disconnects all bots and logs cleanup completion.
-     */
-    virtual void cleanup();
-
-    /**
      * @brief      Checks if the test is ready to start execution.
      *
      *             Default implementation checks if we have the required number of bots
@@ -162,6 +163,18 @@ public:
     std::vector<std::shared_ptr<fb::bot::game_bot>> get_test_bots() const;
 
     /**
+     * @brief      Called when the test is activated.
+     *
+     *             This method is called when the test is activated by the controller.
+     *             It is used to perform any initialization that needs to be done when the test is activated.
+     *
+     * @param[in]  controller  The game bot controller.
+     *
+     * @return     A task that completes when the test is activated.
+     */
+    virtual async::task<void> on_active(game_bot_controller& controller);
+
+    /**
      * @brief      Initializes the test case and spawns required bots.
      *
      *             Default implementation spawns the required number of gateway bots
@@ -171,7 +184,14 @@ public:
      *
      * @return     A task that completes when initialization is finished.
      */
-    virtual async::task<void> initialize(game_bot_controller& controller);
+    virtual async::task<void> on_initialize(game_bot_controller& controller);
+
+    /**
+     * @brief      Performs cleanup operations when the test is destroyed.
+     *
+     *             Default implementation disconnects all bots and logs cleanup completion.
+     */
+    virtual async::task<void> on_finished();
 
     /**
      * @brief      Executes the integration test with the spawned bots.
@@ -181,7 +201,7 @@ public:
      *
      * @return     A task that completes when the test finishes, returning true on success.
      */
-    virtual async::task<bool> execute() = 0;
+    async::task<bool> execute();
 
     /**
      * @brief      Gets the name of the test for logging and identification.
@@ -192,12 +212,18 @@ public:
 
 protected:
     /**
-     * @brief      Resets the test state to idle.
+     * @brief      Called when a scenario is started.
      *
-     *             This method should be overridden by derived classes to
-     *             implement specific reset logic.
+     * @param[in]  scenario_index  The index of the scenario.
      */
-    virtual void reset();
+    virtual async::task<void> on_scenario_started(uint32_t scenario_index);
+
+    /**
+     * @brief      Called when a scenario is finished.
+     *
+     * @param[in]  scenario_index  The index of the scenario.
+     */
+    virtual async::task<void> on_scenario_finished(uint32_t scenario_index);
 
     /**
      * @brief      Common hook handler for sequence (object ID) responses.

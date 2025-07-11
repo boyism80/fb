@@ -14,6 +14,9 @@ namespace fb::bot::integration {
  */
 class bulletin_test : public bot_integration_test
 {
+private:
+    using super = bot_integration_test;
+
 public:
     /**
      * @brief      Constructs a new bulletin test with controller reference.
@@ -22,12 +25,17 @@ public:
      */
     bulletin_test(game_bot_controller& controller);
 
-    /**
-     * @brief      Executes the bulletin test.
-     *
-     * @return     A task that completes when bulletin test finishes, returning true on success.
-     */
-    async::task<bool> execute();
+private:
+    async::task<bool> get_sections_scenario();
+
+protected:
+    async::task<void> on_initialize(game_bot_controller& controller) override final;
+
+    generator<scenario_t> on_generate_scenario() override final;
+
+    async::task<void> on_scenario_started(uint32_t scenario_index) override final;
+
+    async::task<void> on_scenario_finished(uint32_t scenario_index) override final;
 
     /**
      * @brief      Tests bulletin write functionality.
@@ -132,11 +140,6 @@ public:
      * @return     A task that completes when bulletin article delete test finishes, returning true on success.
      */
     async::task<bool> delete_article(std::shared_ptr<fb::bot::game_bot> bot, uint16_t section, uint16_t article_id);
-
-    /**
-     * @brief      Resets the bulletin test state to initial conditions.
-     */
-    void reset() override final;
 
     /**
      * @brief      Gets the test name.

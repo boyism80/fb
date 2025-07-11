@@ -29,26 +29,17 @@ public:
     attack_test(game_bot_controller& controller);
 
     /**
-     * @brief      Executes the attack test.
-     *
-     *             Spawns a monster and has the bot attack it until defeated.
-     *             This method is called only when all bots are ready (have non-zero oid).
-     *
-     * @return     A task that completes when attack test finishes, returning true on success.
-     */
-    async::task<bool> execute();
-
-    /**
      * @brief      Gets the test name.
      *
      * @return     "Attack Test" as the identifier.
      */
     std::string name() const override final;
 
-    /**
-     * @brief      Resets the test state to idle.
-     */
-    void reset() override final;
+private:
+    async::task<bool> attack_scenario();
+
+protected:
+    generator<scenario_t> on_generate_scenario() override final;
 };
 
 } // namespace fb::bot::integration

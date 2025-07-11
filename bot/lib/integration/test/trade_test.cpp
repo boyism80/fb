@@ -18,26 +18,32 @@ trade_test::trade_test(game_bot_controller& controller) :
     fb::logger::debug("Trade test constructed");
 }
 
-void trade_test::reset()
+generator<bot_integration_test::scenario_t> trade_test::on_generate_scenario()
 {
-    // Nothing to do
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_scenario_1();
+    };
+
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_scenario_2();
+    };
+
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_scenario_3();
+    };
+
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_scenario_4();
+    };
+
+    co_return;
 }
 
-async::task<bool> trade_test::execute()
+async::task<void> trade_test::on_initialize(game_bot_controller& controller)
 {
-    if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
-        co_return false;
+    co_await super::on_initialize(controller);
 
-    this->set_state(test_state::running);
-
-    auto bots = this->get_test_bots();
-    if (bots.size() < 2)
-    {
-        fb::logger::fatal("Need at least 2 bots for trade test");
-        this->set_state(test_state::failed);
-        co_return false;
-    }
-
+    auto  bots = this->get_test_bots();
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
     co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
@@ -45,51 +51,27 @@ async::task<bool> trade_test::execute()
     co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
-    fb::logger::info("Starting trade test with bot1: '{}' and bot2: '{}'", bot1->name(), bot2->name());
-
-    using scenario_fn = std::function<async::task<bool>()>;
-    std::queue<scenario_fn> scenarios;
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_scenario_1(bot1, bot2);
-    });
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_scenario_2(bot1, bot2);
-    });
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_scenario_3(bot1, bot2);
-    });
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_scenario_4(bot1, bot2);
-    });
-
-    int i = 1;
-    while (scenarios.empty() == false)
-    {
-        co_await this->reset_bot_state(bot1);
-        co_await this->reset_bot_state(bot2);
-
-        auto& scenario = scenarios.front();
-        if (co_await scenario() == false)
-        {
-            fb::logger::fatal("Trade test scenario {} FAILED", i);
-            this->set_state(test_state::failed);
-            co_return false;
-        }
-
-        fb::logger::info("Trade test scenario {} PASSED", i++);
-        scenarios.pop();
-    }
-
-    fb::logger::info("All trade test scenarios PASSED");
-    this->set_state(test_state::completed);
-    this->notify_completed();
-    co_return true;
+    co_return;
 }
 
-async::task<void> trade_test::reset_bot_state(std::shared_ptr<game_bot>& bot)
+async::task<void> trade_test::on_scenario_started(uint32_t scenario_index)
 {
-    bot->chat("/아이템초기화");
-    co_await bot->change_money(0, DEFAULT_TIMEOUT);
+    co_return;
+}
+
+async::task<void> trade_test::on_scenario_finished(uint32_t scenario_index)
+{
+    for (auto& bot : this->get_test_bots())
+    {
+        auto thread = bot->thread();
+        co_await thread->switching();
+
+        bot->chat("/아이템초기화");
+        bot->chat("/아이템삭제");
+        co_await bot->change_money(0, DEFAULT_TIMEOUT);
+    }
+
+    co_return;
 }
 
 bool trade_test::has_item(const std::shared_ptr<game_bot>& bot, const std::string& name)
@@ -114,8 +96,12 @@ uint16_t trade_test::get_item_count(const std::shared_ptr<game_bot>& bot, const 
     return 0;
 }
 
-async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
+async::task<bool> trade_test::test_scenario_1()
 {
+    auto  bots = this->get_test_bots();
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
+
     // 2. Bot1 creates 150 도토리, 1 부적, and changes money to 10000.
     co_await bot1->create_item("도토리", 150, DEFAULT_TIMEOUT); // slot 0
     co_await bot1->create_item("부적", 1, DEFAULT_TIMEOUT);     // slot 1
@@ -382,8 +368,12 @@ async::task<bool> trade_test::test_scenario_1(std::shared_ptr<game_bot>& bot1, s
     co_return true;
 }
 
-async::task<bool> trade_test::test_scenario_2(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
+async::task<bool> trade_test::test_scenario_2()
 {
+    auto  bots = this->get_test_bots();
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
+
     // 1. Set bot1's money to max and bot2's to 1.
     co_await bot1->change_money(0xFFFFFFFF, DEFAULT_TIMEOUT);
     co_await bot2->change_money(1, DEFAULT_TIMEOUT);
@@ -457,8 +447,12 @@ async::task<bool> trade_test::test_scenario_2(std::shared_ptr<game_bot>& bot1, s
     co_return true;
 }
 
-async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
+async::task<bool> trade_test::test_scenario_3()
 {
+    auto  bots = this->get_test_bots();
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
+
     // 1. Give each bot 150 도토리.
     co_await bot1->create_item("도토리", 150, DEFAULT_TIMEOUT);
     co_await bot2->create_item("도토리", 150, DEFAULT_TIMEOUT);
@@ -542,8 +536,12 @@ async::task<bool> trade_test::test_scenario_3(std::shared_ptr<game_bot>& bot1, s
     co_return true;
 }
 
-async::task<bool> trade_test::test_scenario_4(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
+async::task<bool> trade_test::test_scenario_4()
 {
+    auto  bots = this->get_test_bots();
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
+
     constexpr auto CONTAINER_CAPACITY = 52;
 
     // 1. Fill bot1's inventory and give bot2 one item.

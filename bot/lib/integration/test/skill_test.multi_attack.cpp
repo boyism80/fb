@@ -4,9 +4,9 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool>
-skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
+async::task<bool> skill_test::test_multi_target_attack_cast_spells()
 {
+    auto  bots   = this->get_test_bots();
     auto& caster = bots.front();
 
     fb::logger::info("Bot {} starting multi-target attack_cast spell test", caster->oid());

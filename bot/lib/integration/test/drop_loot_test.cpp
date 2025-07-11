@@ -16,88 +16,58 @@ drop_loot_test::drop_loot_test(game_bot_controller& controller) :
     fb::logger::debug("Drop loot test constructed");
 }
 
-void drop_loot_test::reset()
+async::task<void> drop_loot_test::on_initialize(game_bot_controller& controller)
 {
-    // Nothing to do
-}
-
-async::task<bool> drop_loot_test::execute()
-{
-    if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
-        co_return false;
-
-    this->set_state(test_state::running);
+    super::on_initialize(controller);
 
     auto bots = this->get_test_bots();
     if (bots.size() < 2)
-    {
-        fb::logger::fatal("Need at least 2 bots for drop loot test");
-        this->set_state(test_state::failed);
-        co_return false;
-    }
+        throw std::runtime_error("Not enough bots for this test, requires 2.");
 
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
     co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
-    co_await bot2->thread()->switching();
-    co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
-
-    fb::logger::info("Starting drop loot test with bot1: '{}' and bot2: '{}'", bot1->name(), bot2->name());
-
-    using scenario_fn = std::function<async::task<bool>()>;
-    std::queue<scenario_fn> scenarios;
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_scenario_1(bot1, bot2);
-    });
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_scenario_2(bot1, bot2);
-    });
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_scenario_3(bot1, bot2);
-    });
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_scenario_4(bot1, bot2);
-    });
-    scenarios.push([this, &bot1, &bot2] {
-        return this->test_scenario_5(bot1, bot2);
-    });
-
-    int i = 1;
-    while (scenarios.empty() == false)
-    {
-        co_await this->reset_bot_state(bot1);
-        co_await this->reset_bot_state(bot2);
-
-        auto& scenario = scenarios.front();
-        if (co_await scenario() == false)
-        {
-            fb::logger::fatal("Drop loot test scenario {} FAILED", i);
-            this->set_state(test_state::failed);
-            co_return false;
-        }
-
-        fb::logger::info("Drop loot test scenario {} PASSED", i++);
-        scenarios.pop();
-
-        // Clear all items from map after each scenario
-        co_await bot1->clear_all_items(DEFAULT_TIMEOUT);
-    }
-
-    auto thread = bot1->thread();
-    co_await thread->switching();
-    co_await thread->sleep(1s);
-
-    fb::logger::info("All drop loot test scenarios PASSED");
-    this->set_state(test_state::completed);
-    this->notify_completed();
-    co_return true;
+    co_return;
 }
 
-async::task<void> drop_loot_test::reset_bot_state(std::shared_ptr<game_bot>& bot)
+async::task<void> drop_loot_test::on_scenario_started(uint32_t scenario_index)
 {
-    bot->chat("/아이템초기화");
-    co_await bot->change_money(0, DEFAULT_TIMEOUT);
+    co_return;
+}
+
+async::task<void> drop_loot_test::on_scenario_finished(uint32_t scenario_index)
+{
+    for (auto& bot : this->get_test_bots())
+    {
+        auto thread = bot->thread();
+        co_await thread->switching();
+
+        bot->chat("/아이템삭제");
+        bot->chat("/아이템초기화");
+        co_await bot->change_money(0, DEFAULT_TIMEOUT);
+    }
+
+    co_return;
+}
+
+generator<bot_integration_test::scenario_t> drop_loot_test::on_generate_scenario()
+{
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_scenario_1();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_scenario_2();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_scenario_3();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_scenario_4();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_scenario_5();
+    };
 }
 
 bool drop_loot_test::has_item(const std::shared_ptr<game_bot>& bot, const std::string& name)
@@ -115,9 +85,11 @@ uint8_t drop_loot_test::get_item_slot(const std::shared_ptr<game_bot>& bot, cons
     return bot->get_item_slot_by_name(name);
 }
 
-async::task<bool> drop_loot_test::test_scenario_1(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
+async::task<bool> drop_loot_test::test_scenario_1()
 {
-    fb::logger::info("Scenario 1: Basic item drop and loot test");
+    auto  bots = this->get_test_bots();
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
 
     // 1. Create items (5 different items: 목도, 목검, 양첨목봉, 현철중검, 도토리 200개)
     co_await bot1->create_item("목도", 1, DEFAULT_TIMEOUT);
@@ -195,9 +167,11 @@ async::task<bool> drop_loot_test::test_scenario_1(std::shared_ptr<game_bot>& bot
     co_return true;
 }
 
-async::task<bool> drop_loot_test::test_scenario_2(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
+async::task<bool> drop_loot_test::test_scenario_2()
 {
-    fb::logger::info("Scenario 2: Inventory full item loot test");
+    auto  bots = this->get_test_bots();
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
 
     constexpr auto CONTAINER_CAPACITY = 52;
 
@@ -229,9 +203,11 @@ async::task<bool> drop_loot_test::test_scenario_2(std::shared_ptr<game_bot>& bot
     co_return true;
 }
 
-async::task<bool> drop_loot_test::test_scenario_3(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
+async::task<bool> drop_loot_test::test_scenario_3()
 {
-    fb::logger::info("Scenario 3: Item stack overflow loot test");
+    auto  bots = this->get_test_bots();
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
 
     // 1. Create 200 도토리
     co_await bot1->create_item("도토리", 200, DEFAULT_TIMEOUT);
@@ -266,9 +242,11 @@ async::task<bool> drop_loot_test::test_scenario_3(std::shared_ptr<game_bot>& bot
     co_return true;
 }
 
-async::task<bool> drop_loot_test::test_scenario_4(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
+async::task<bool> drop_loot_test::test_scenario_4()
 {
-    fb::logger::info("Scenario 4: Money overflow loot test");
+    auto  bots = this->get_test_bots();
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
 
     // 1. Set money to 1
     co_await bot1->change_money(2, DEFAULT_TIMEOUT);
@@ -301,9 +279,11 @@ async::task<bool> drop_loot_test::test_scenario_4(std::shared_ptr<game_bot>& bot
     co_return true;
 }
 
-async::task<bool> drop_loot_test::test_scenario_5(std::shared_ptr<game_bot>& bot1, std::shared_ptr<game_bot>& bot2)
+async::task<bool> drop_loot_test::test_scenario_5()
 {
-    fb::logger::info("Scenario 5: PK loot test with hellfire spell");
+    auto  bots = this->get_test_bots();
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
 
     // 1. Bot1 learns hellfire and sets mana to 10000
     auto spell_names = std::vector<std::string>{"헬파이어"};
