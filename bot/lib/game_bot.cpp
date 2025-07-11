@@ -464,6 +464,8 @@ game_bot::map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chr
     std::ignore  = co_await this->request<fb::protocol::game::response::position>(
         fb::protocol::game::request::chat{false, command},
         timeout);
+    this->chat(std::format("Position: {} {}", this->_position.x, this->_position.y));
+    co_return;
 }
 
 async::task<void> game_bot::change_level(uint8_t level, std::chrono::milliseconds timeout)

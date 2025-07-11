@@ -59,6 +59,7 @@ async::task<void> skill_test::on_scenario_finished(uint32_t scenario_index)
     auto  thread = caster->thread();
 
     co_await thread->switching();
+    co_await caster->change_level(5, DEFAULT_TIMEOUT);
     co_await caster->clear_all_spells(DEFAULT_TIMEOUT);
     co_await caster->clear_all_items(DEFAULT_TIMEOUT);
     co_await thread->sleep(DEFAULT_INTERVAL);

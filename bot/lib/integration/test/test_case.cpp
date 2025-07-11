@@ -118,7 +118,15 @@ async::task<void> bot_integration_test::on_active(game_bot_controller& controlle
 
 async::task<void> bot_integration_test::on_initialize(game_bot_controller& controller)
 {
-    co_return;
+    auto bots = this->get_test_bots();
+    for (int i = 0; i < bots.size(); i++)
+    {
+        auto& bot = bots[i];
+        if (bot->position().x == 6 && bot->position().y == 6)
+            continue;
+
+        co_await bot->map_move("낙랑의방", 6, 6, DEFAULT_TIMEOUT);
+    }
 }
 
 async::task<bool> bot_integration_test::execute()

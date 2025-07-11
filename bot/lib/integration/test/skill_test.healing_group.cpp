@@ -82,6 +82,7 @@ async::task<bool> skill_test::test_group_healing_spells()
                 return resp.ch_mp == before_caster_mp - expected_mp_cost;
             },
             DEFAULT_TIMEOUT);
+        caster->chat(std::format("Testing {}", spell_info.name));
 
         // Verify HP recovery for all group members
         co_await this->verify_group_healing_effects(before_hp_values, expected_hp_gain);

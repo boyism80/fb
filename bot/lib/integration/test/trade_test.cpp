@@ -327,7 +327,7 @@ async::task<bool> trade_test::test_scenario_1()
 
     auto thread = bot1->thread();
     co_await thread->switching();
-    co_await thread->sleep(500ms);
+    co_await thread->sleep(DEFAULT_INTERVAL);
 
     // 10. Verify that items and money have been swapped between Bot1 and Bot2.
     if (bot1->money() != 20000)
@@ -435,7 +435,7 @@ async::task<bool> trade_test::test_scenario_2()
 
     auto thread = bot1->thread();
     co_await thread->switching();
-    co_await thread->sleep(500ms);
+    co_await thread->sleep(DEFAULT_INTERVAL);
 
     // 5. Verify money has not changed.
     if (bot1->money() != 0xFFFFFFFF || bot2->money() != 1)
@@ -524,7 +524,7 @@ async::task<bool> trade_test::test_scenario_3()
 
     auto thread = bot1->thread();
     co_await thread->switching();
-    co_await thread->sleep(500ms);
+    co_await thread->sleep(DEFAULT_INTERVAL);
 
     // 5. Verify item counts have not changed.
     if (this->get_item_count(bot1, "도토리") != 150 || this->get_item_count(bot2, "도토리") != 150)
@@ -548,6 +548,7 @@ async::task<bool> trade_test::test_scenario_4()
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         co_await bot1->create_item("목도", 1, DEFAULT_TIMEOUT);
+        bot1->chat(std::format("Scenario 4: Bot1 created item {}", i));
     }
     co_await bot2->create_item("현철중검", 1, DEFAULT_TIMEOUT);
 
@@ -608,7 +609,7 @@ async::task<bool> trade_test::test_scenario_4()
 
     auto thread = bot1->thread();
     co_await thread->switching();
-    co_await thread->sleep(500ms);
+    co_await thread->sleep(DEFAULT_INTERVAL);
 
     // 5. Verify items have not been swapped.
     if (this->has_item(bot1, "현철중검") || !this->has_item(bot2, "현철중검"))
