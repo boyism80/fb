@@ -64,7 +64,7 @@ async::task<bool> drop_loot_test::execute()
     co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
     co_await bot2->thread()->switching();
     co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
-    bot2->direction(DIRECTION::BOTTOM);
+    co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     fb::logger::info("Starting drop loot test with bot1: '{}' and bot2: '{}'", bot1->name(), bot2->name());
 
@@ -394,7 +394,7 @@ async::task<bool> drop_loot_test::test_scenario_5(std::shared_ptr<game_bot>& bot
     // 3. Bot2 moves right 1 tile and sets direction to bottom
     co_await bot2->thread()->switching();
     co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
-    bot2->direction(DIRECTION::BOTTOM);
+    co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     // 4. Bot2 creates items
     co_await bot2->create_item("도토리", 200, DEFAULT_TIMEOUT);

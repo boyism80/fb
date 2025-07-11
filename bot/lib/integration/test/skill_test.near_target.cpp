@@ -6,7 +6,7 @@ using namespace fb::bot::integration;
 
 async::task<bool> skill_test::test_near_target_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
-    auto& caster = bots.at(0);
+    auto& caster = bots.front();
 
     fb::logger::info("Bot {} starting near target damage spell test", caster->oid());
     caster->chat("=== NEAR TARGET DAMAGE SPELL TEST STARTED ===");

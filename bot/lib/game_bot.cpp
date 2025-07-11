@@ -544,9 +544,14 @@ async::task<void> game_bot::change_mp(uint32_t mp, std::chrono::milliseconds tim
         timeout);
 }
 
-void game_bot::direction(DIRECTION direction)
+async::task<void> game_bot::direction(DIRECTION direction, std::chrono::milliseconds timeout)
 {
-    this->send(fb::protocol::game::request::direction{direction});
+    std::ignore = co_await this->request<fb::protocol::game::response::direction>(
+        fb::protocol::game::request::direction{direction},
+        [direction](auto& resp) -> bool {
+            return resp.value == direction;
+        },
+        timeout);
 }
 
 async::task<void> game_bot::process_random_pattern(const fb::model::datetime& now)
@@ -981,11 +986,20 @@ game_bot::spawn_monsters_relative_by_look(const std::string&                    
         auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
             fb::protocol::game::request::chat{false,
                                               std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
-            [expected_look](auto& resp) -> bool {
+            [expected_look, monster_x, monster_y](auto& resp) -> bool {
                 if (resp.objects_data.empty())
                     return false;
                 auto& mob = resp.objects_data.front();
-                return mob.look == expected_look;
+                if (mob.look != expected_look)
+                    return false;
+
+                if (mob.x != monster_x)
+                    return false;
+
+                if (mob.y != monster_y)
+                    return false;
+
+                return true;
             },
             timeout);
 
@@ -1025,11 +1039,20 @@ async::task<spawned_monster_info> game_bot::spawn_monster_relative_by_look(const
     auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
         fb::protocol::game::request::chat{false,
                                           std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
-        [expected_look](auto& resp) -> bool {
+        [expected_look, monster_x, monster_y](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
             auto& mob = resp.objects_data.front();
-            return mob.look == expected_look;
+            if (mob.look != expected_look)
+                return false;
+
+            if (mob.x != monster_x)
+                return false;
+
+            if (mob.y != monster_y)
+                return false;
+
+            return true;
         },
         timeout);
 
@@ -1195,7 +1218,8 @@ async::task<void> game_bot::clear_all_items(std::chrono::milliseconds timeout)
 }
 
 async::task<void> game_bot::move_bot_back_to_position(const fb::model::point<uint16_t>& original_position,
-                                                      std::chrono::milliseconds         interval)
+                                                      std::chrono::milliseconds         interval,
+                                                      std::chrono::milliseconds         timeout)
 {
     auto thread = this->thread();
     co_await thread->switching();
@@ -1212,6 +1236,7 @@ async::task<void> game_bot::move_bot_back_to_position(const fb::model::point<uin
             current_position.y--;
             this->set_position(current_position);
         }
-        this->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
+
+        co_await this->direction(DIRECTION::BOTTOM, timeout);
     }
 }

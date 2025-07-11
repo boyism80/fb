@@ -56,10 +56,10 @@ async::task<bool> communication_test::execute()
     co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
     co_await bot2->thread()->switching();
     co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
-    bot2->direction(DIRECTION::LEFT);
+    co_await bot2->direction(DIRECTION::LEFT, DEFAULT_TIMEOUT);
 
     // Position bot1 to face bot2
-    bot1->direction(DIRECTION::RIGHT);
+    co_await bot1->direction(DIRECTION::RIGHT, DEFAULT_TIMEOUT);
 
     fb::logger::info("Starting communication test with bot1: '{}' and bot2: '{}'", bot1->name(), bot2->name());
 

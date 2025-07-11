@@ -53,7 +53,7 @@ async::task<bool> skill_test::test_loot_spell(std::vector<std::shared_ptr<fb::bo
     fb::logger::info("Moving back to original position");
     co_await caster->move(DIRECTION::TOP, 1, DEFAULT_INTERVAL);
     co_await caster->thread()->sleep(500ms);
-    caster->direction(DIRECTION::BOTTOM);
+    co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     // Step 5: Learn and cast loot spell
     fb::logger::info("Learning loot spell");

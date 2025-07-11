@@ -7,7 +7,7 @@ using namespace fb::bot::integration;
 async::task<bool>
 skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
-    auto& caster = bots.at(0);
+    auto& caster = bots.front();
 
     fb::logger::info("Bot {} starting multi-target attack_cast spell test", caster->oid());
     caster->chat("=== MULTI-TARGET ATTACK_CAST SPELL TEST STARTED ===");
@@ -133,7 +133,7 @@ skill_test::test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb:
         spell_slot++;
 
         // Move bot back to original position if it moved
-        co_await caster->move_bot_back_to_position(caster_pos, DEFAULT_INTERVAL);
+        co_await caster->move_bot_back_to_position(caster_pos, DEFAULT_INTERVAL, DEFAULT_TIMEOUT);
         co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 

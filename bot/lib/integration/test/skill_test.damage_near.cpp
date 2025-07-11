@@ -6,8 +6,7 @@ using namespace fb::bot::integration;
 
 async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
-    auto& caster = bots.at(0);
-    auto& target = bots.at(1);
+    auto& caster = bots.front();
 
     fb::logger::info("Bot {} starting near damage spell test", caster->oid());
     caster->chat("=== NEAR DAMAGE SPELL TEST STARTED ===");
@@ -16,8 +15,9 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
     co_await thread->switching();
 
     // Step 1: Move caster down by 1 tile
-    co_await caster->move(DIRECTION::BOTTOM);
+    co_await caster->move(DIRECTION::LEFT);
     co_await caster->thread()->sleep(DEFAULT_INTERVAL);
+    co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     // Step 2: Spawn 4 monsters around the caster
     auto spawn_points     = std::vector<fb::model::point<uint16_t>>();
@@ -125,8 +125,8 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
         co_await caster->thread()->sleep(DEFAULT_INTERVAL);
     }
 
-    co_await caster->move(DIRECTION::TOP);
-    caster->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
+    co_await caster->move(DIRECTION::TOP, 1, DEFAULT_INTERVAL);
+    co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     caster->chat("=== NEAR DAMAGE SPELL TEST COMPLETED ===");
     fb::logger::info("Near damage spell test completed.");

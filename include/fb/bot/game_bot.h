@@ -699,8 +699,11 @@ public:
      * @brief      Change the bot's facing direction.
      *
      * @param[in]  direction  The direction to face.
+     * @param[in]  timeout    The timeout for the direction change operation.
+     *
+     * @return     An async task that completes when direction change is finished.
      */
-    void direction(DIRECTION direction);
+    async::task<void> direction(DIRECTION direction, std::chrono::milliseconds timeout);
 
     /**
      * @brief      Automated pattern for sending chat messages.
@@ -1103,11 +1106,13 @@ public:
      *
      * @param[in]  original_position  The original position to return to
      * @param[in]  interval           The interval to move the bot back to the original position
+     * @param[in]  timeout            The timeout for the operation
      *
      * @return     An async task that completes when the bot has returned to original position
      */
     async::task<void> move_bot_back_to_position(const fb::model::point<uint16_t>& original_position,
-                                                std::chrono::milliseconds         interval);
+                                                std::chrono::milliseconds         interval,
+                                                std::chrono::milliseconds         timeout);
 };
 
 } // namespace fb::bot

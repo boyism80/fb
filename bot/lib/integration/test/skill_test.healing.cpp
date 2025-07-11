@@ -7,8 +7,8 @@ using namespace fb::bot::integration;
 async::task<bool> skill_test::test_healing_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots)
 {
     // Select the test bot for skill operations
-    auto caster = bots.at(0);
-    auto target = bots.at(1);
+    auto& caster = bots.at(0);
+    auto& target = bots.at(1);
 
     fb::logger::info("Bot {} starting healing spell test", caster->oid());
     caster->chat("=== HEALING SPELL TEST STARTED ===");
