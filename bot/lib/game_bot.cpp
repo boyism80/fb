@@ -60,13 +60,13 @@ void game_bot::set_position(const point<uint16_t>& value)
     this->_position = value;
 }
 
-bool game_bot::is_initialized() const
+bool game_bot::inited() const
 {
     this->assert_thread();
     return this->_inited;
 }
 
-void game_bot::set_initialized(bool value)
+void game_bot::inited(bool value)
 {
     this->assert_thread();
     this->_inited = value;
@@ -519,7 +519,7 @@ async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model:
             break;
         }
 
-        this->_position = after;
+        this->set_position(after);
         co_await this->thread()->sleep(delay);
     }
 }

@@ -21,14 +21,30 @@ public:
     static constexpr uint8_t header = 0x17;
 
 public:
+#ifndef BOT
     bool    all;
     uint8_t index;
+#else
+    const bool    all;
+    const uint8_t index;
+#endif
 
 public:
+#ifndef BOT
     item_throws() = default;
+#else
+    item_throws(const bool all, const uint8_t index) :
+        all(all),
+        index(index)
+    { }
+#endif
 
 public:
+#ifdef BOT
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;
+#else
     [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
+#endif
 };
 
 } // namespace fb::protocol::game::request
@@ -46,10 +62,10 @@ public:
     const fb::game::item&            item;
     const fb::model::point<uint16_t> to;
 #else
-    uint32_t ch_sequence;
+    uint32_t ch_oid;
     uint16_t look;
     uint8_t  color;
-    uint32_t item_sequence;
+    uint32_t item_oid;
     uint16_t from_x;
     uint16_t from_y;
     uint16_t to_x;

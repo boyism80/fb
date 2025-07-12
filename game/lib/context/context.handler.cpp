@@ -1096,7 +1096,7 @@ async::task<bool> context::handle_throw_item(fb::socket<character>& socket, cons
     if (ch->inited() == false)
         co_return true;
 
-    ch->items.throws(request.index);
+    ch->items.throws(request.index, request.all);
     co_return true;
 }
 

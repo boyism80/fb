@@ -953,7 +953,7 @@ void fb::game::items::loot(bool boost)
     }
 }
 
-bool fb::game::items::throws(uint8_t index)
+bool fb::game::items::throws(uint8_t index, bool all)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -973,7 +973,8 @@ bool fb::game::items::throws(uint8_t index)
         if (map == nullptr)
             throw std::exception();
 
-        auto dropped  = this->remove(index, 1, ITEM_DELETE_TYPE::THROW);
+        auto count    = all ? item->count() : 1;
+        auto dropped  = this->remove(index, count, ITEM_DELETE_TYPE::THROW);
         auto position = owner->position();
         for (int i = 0; i < 7; i++)
         {

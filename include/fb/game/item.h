@@ -1360,10 +1360,11 @@ public:
      * @brief      Throws an item from inventory.
      *
      * @param[in]  index  The inventory slot index to throw
+     * @param[in]  all    Whether to throw all items
      *
      * @return     True if the item was successfully thrown, false otherwise
      */
-    bool throws(uint8_t index);
+    bool throws(uint8_t index, bool all);
     /**
      * @brief      Gets all currently equipped items.
      *

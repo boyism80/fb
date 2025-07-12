@@ -303,6 +303,15 @@ protected:
      */
     virtual async::task<void> on_hook_position(fb::bot::game_bot&                            bot,
                                                const fb::protocol::game::response::position& response);
+
+    /**
+     * @brief      Common hook handler for update external responses.
+     *
+     *             Checks if all bots are ready and notifies the controller when ready.
+     */
+    virtual async::task<void>
+    on_hook_update_external(fb::bot::game_bot&                                         bot,
+                            const fb::protocol::game::response::update_external<true>& response);
 };
 
 } // namespace fb::bot::integration

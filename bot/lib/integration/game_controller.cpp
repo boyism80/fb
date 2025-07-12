@@ -8,6 +8,7 @@
 #include <fb/bot/integration/drop_loot_test.h>
 #include <fb/bot/integration/item_test.h>
 #include <fb/bot/integration/swap_test.h>
+#include <fb/bot/integration/throw_test.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
@@ -36,18 +37,19 @@ void game_bot_controller::initialize()
     this->bind_timer(&game_bot_controller::handle_timer, 1000ms);
 
     // Create tests and add them to the queue
-    // this->enqueue_test(std::make_unique<movement_test>(*this));
-    // this->enqueue_test(std::make_unique<attack_test>(*this));
-    // this->enqueue_test(std::make_unique<skill_test>(*this));
-    // this->enqueue_test(std::make_unique<bulletin_test>(*this));
-    // this->enqueue_test(std::make_unique<trade_test>(*this));
-    // this->enqueue_test(std::make_unique<communication_test>(*this));
-    // this->enqueue_test(std::make_unique<drop_loot_test>(*this));
-    // this->enqueue_test(std::make_unique<item_test>(*this));
+    this->enqueue_test(std::make_unique<movement_test>(*this));
+    this->enqueue_test(std::make_unique<attack_test>(*this));
+    this->enqueue_test(std::make_unique<skill_test>(*this));
+    this->enqueue_test(std::make_unique<bulletin_test>(*this));
+    this->enqueue_test(std::make_unique<trade_test>(*this));
+    this->enqueue_test(std::make_unique<communication_test>(*this));
+    this->enqueue_test(std::make_unique<drop_loot_test>(*this));
+    this->enqueue_test(std::make_unique<item_test>(*this));
     this->enqueue_test(std::make_unique<swap_test>(*this));
+    this->enqueue_test(std::make_unique<throw_test>(*this));
 
     fb::logger::info("Integration test controller initialized with test queue (movement -> attack -> skill -> bulletin "
-                     "-> trade -> drop_loot -> item -> swap)");
+                     "-> trade -> drop_loot -> item -> swap -> throw)");
 
     this->active_test();
 }
@@ -176,9 +178,6 @@ async::task<void> game_bot_controller::handle_move(game_bot& bot, const fb::prot
 async::task<void> game_bot_controller::handle_map(game_bot&                                       bot,
                                                   const fb::protocol::game::response::map_config& response)
 {
-    // Integration test: Validate map loading and configuration
-    bot.set_initialized(true);
-
     // TODO: Execute map-specific test scenarios
     // Example: Test NPC interactions, item spawning, area transitions, etc.
     co_return;

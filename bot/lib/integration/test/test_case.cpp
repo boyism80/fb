@@ -17,6 +17,7 @@ bot_integration_test::bot_integration_test(game_bot_controller& controller, uint
     // Register common hooks for sequence and position responses
     this->_controller.hook_external(this, this, &bot_integration_test::on_hook_sequence);
     this->_controller.hook_external(this, this, &bot_integration_test::on_hook_position);
+    this->_controller.hook_external(this, this, &bot_integration_test::on_hook_update_external);
 }
 
 bot_integration_test::test_state bot_integration_test::get_state() const
@@ -75,10 +76,7 @@ bool bot_integration_test::is_ready() const
 
     for (auto& bot : bots)
     {
-        if (bot->oid() == 0)
-            return false;
-
-        if (bot->position().x == 0 && bot->position().y == 0)
+        if (bot->inited() == false)
             return false;
     }
 
@@ -280,6 +278,25 @@ async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot&     
 async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot&                            bot,
                                                          const fb::protocol::game::response::position& response)
 {
+    if (this->is_ready() == false)
+        co_return;
+
+    if (this->get_state() == test_state::running)
+        co_return;
+
+    fb::logger::info("{}: All bots ready, notifying controller", this->name());
+    this->set_state(test_state::ready);
+    this->notify_ready();
+    co_return;
+}
+
+async::task<void>
+bot_integration_test::on_hook_update_external(fb::bot::game_bot&                                         bot,
+                                              const fb::protocol::game::response::update_external<true>& response)
+{
+    if (bot.inited() == false)
+        bot.inited(true);
+
     if (this->is_ready() == false)
         co_return;
 

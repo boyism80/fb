@@ -197,8 +197,8 @@ public:
     point<uint16_t> position() const;
     void            set_position(const point<uint16_t>& value);
 
-    bool is_initialized() const;
-    void set_initialized(bool value);
+    bool inited() const;
+    void inited(bool value);
 
     const fb::stream& transfer_buffer() const;
 

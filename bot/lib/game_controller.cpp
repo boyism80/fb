@@ -189,7 +189,6 @@ async::task<void> game_bot_controller::handle_map(game_bot&                     
     else
     {
     }
-    bot.set_initialized(true);
     co_return;
 }
 
