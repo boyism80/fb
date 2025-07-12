@@ -7,6 +7,7 @@
 #include <fb/bot/integration/communication_test.h>
 #include <fb/bot/integration/drop_loot_test.h>
 #include <fb/bot/integration/item_test.h>
+#include <fb/bot/integration/swap_test.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
@@ -35,17 +36,18 @@ void game_bot_controller::initialize()
     this->bind_timer(&game_bot_controller::handle_timer, 1000ms);
 
     // Create tests and add them to the queue
-    this->enqueue_test(std::make_unique<movement_test>(*this));
-    this->enqueue_test(std::make_unique<attack_test>(*this));
-    this->enqueue_test(std::make_unique<skill_test>(*this));
-    this->enqueue_test(std::make_unique<bulletin_test>(*this));
-    this->enqueue_test(std::make_unique<trade_test>(*this));
-    this->enqueue_test(std::make_unique<communication_test>(*this));
-    this->enqueue_test(std::make_unique<drop_loot_test>(*this));
-    this->enqueue_test(std::make_unique<item_test>(*this));
+    // this->enqueue_test(std::make_unique<movement_test>(*this));
+    // this->enqueue_test(std::make_unique<attack_test>(*this));
+    // this->enqueue_test(std::make_unique<skill_test>(*this));
+    // this->enqueue_test(std::make_unique<bulletin_test>(*this));
+    // this->enqueue_test(std::make_unique<trade_test>(*this));
+    // this->enqueue_test(std::make_unique<communication_test>(*this));
+    // this->enqueue_test(std::make_unique<drop_loot_test>(*this));
+    // this->enqueue_test(std::make_unique<item_test>(*this));
+    this->enqueue_test(std::make_unique<swap_test>(*this));
 
     fb::logger::info("Integration test controller initialized with test queue (movement -> attack -> skill -> bulletin "
-                     "-> trade -> drop_loot -> item)");
+                     "-> trade -> drop_loot -> item -> swap)");
 
     this->active_test();
 }

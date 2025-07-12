@@ -224,7 +224,6 @@ public:
     // Spell management methods
     void                                   update_spell(uint8_t slot, const std::string& name, uint8_t type);
     void                                   remove_spell(uint8_t slot);
-    std::optional<simple_spell>            get_spell(uint8_t slot) const;
     bool                                   has_spell(uint8_t slot) const;
     const std::map<uint8_t, simple_spell>& spells() const;
 
@@ -783,6 +782,15 @@ public:
     std::optional<simple_item> get_item(uint8_t slot) const;
 
     /**
+     * @brief      Gets a spell from the spell book by slot.
+     *
+     * @param[in]  slot  The inventory slot index.
+     *
+     * @return     An optional containing the spell if found, otherwise nullopt.
+     */
+    std::optional<simple_spell> get_spell(uint8_t slot) const;
+
+    /**
      * @brief      Checks if an inventory slot has an item.
      *
      * @param[in]  slot  The inventory slot index to check.
@@ -821,6 +829,14 @@ public:
      * @return     The slot index, or 0xFF if not found.
      */
     uint8_t get_item_slot_by_name(const std::string& name) const;
+
+    /**
+     * @brief      Gets the spell slot index of a specific spell.
+     *
+     * @param[in]  name  The spell name to search for.
+     * @return     The slot index, or 0xFF if not found.
+     */
+    uint8_t get_spell_slot_by_name(const std::string& name) const;
 
     /**
      * @brief      Remove all buffs from the bot.
@@ -1071,7 +1087,7 @@ public:
      *
      * @return     An async task that returns the spell index if spell was learned successfully, 0xFF otherwise
      */
-    async::task<uint8_t> lean_spell(const std::string& spell_name, std::chrono::milliseconds timeout);
+    async::task<uint8_t> learn_spell(const std::string& spell_name, std::chrono::milliseconds timeout);
 
     /**
      * @brief      Learns multiple spells for a bot

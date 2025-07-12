@@ -165,17 +165,6 @@ void game_bot::remove_spell(uint8_t slot)
     this->_spells.erase(slot);
 }
 
-std::optional<game_bot::simple_spell> game_bot::get_spell(uint8_t slot) const
-{
-    this->assert_thread();
-    auto it = this->_spells.find(slot);
-    if (it != this->_spells.end())
-    {
-        return it->second;
-    }
-    return std::nullopt;
-}
-
 bool game_bot::has_spell(uint8_t slot) const
 {
     this->assert_thread();
@@ -799,6 +788,17 @@ std::optional<game_bot::simple_item> game_bot::get_item(uint8_t slot) const
     return std::nullopt;
 }
 
+std::optional<game_bot::simple_spell> game_bot::get_spell(uint8_t slot) const
+{
+    this->assert_thread();
+    auto it = this->_spells.find(slot);
+    if (it != this->_spells.end())
+    {
+        return it->second;
+    }
+    return std::nullopt;
+}
+
 bool game_bot::has_item(uint8_t slot) const
 {
     this->assert_thread();
@@ -840,6 +840,15 @@ uint8_t game_bot::get_item_slot_by_name(const std::string& name) const
         return item.second.name.find(name) != std::string::npos;
     });
     return it != this->_items.end() ? it->first : 0xFF;
+}
+
+uint8_t game_bot::get_spell_slot_by_name(const std::string& name) const
+{
+    this->assert_thread();
+    auto it = std::find_if(this->_spells.begin(), this->_spells.end(), [&name](const auto& spell) {
+        return spell.second.name.find(name) != std::string::npos;
+    });
+    return it != this->_spells.end() ? it->first : 0xFF;
 }
 
 void game_bot::remove_buffs()
@@ -1031,7 +1040,7 @@ async::task<void> game_bot::spawn_monsters_by_look_bulk(const std::string&      
                                                         std::chrono::milliseconds timeout)
 {
     this->assert_thread();
-    co_await this->request<fb::protocol::game::response::update>(
+    std::ignore = co_await this->request<fb::protocol::game::response::update>(
         fb::protocol::game::request::chat{false, std::format("/몬스터범위생성 {} {}", monster_name, range)},
         [expected_look](auto& resp) -> bool {
             for (const auto& mob : resp.objects_data)
@@ -1273,7 +1282,7 @@ async::task<bool> game_bot::setup_bot_stats(int                       max_hp,
     co_return true;
 }
 
-async::task<uint8_t> game_bot::lean_spell(const std::string& spell_name, std::chrono::milliseconds timeout)
+async::task<uint8_t> game_bot::learn_spell(const std::string& spell_name, std::chrono::milliseconds timeout)
 {
     this->assert_thread();
     auto&& resp = co_await this->request<fb::protocol::game::response::spell_update>(
@@ -1294,7 +1303,7 @@ async::task<size_t> game_bot::learn_spells(const std::vector<std::string>& spell
     size_t learned_count = 0;
     for (const auto& spell_name : spell_names)
     {
-        auto index = co_await this->lean_spell(spell_name, timeout);
+        auto index = co_await this->learn_spell(spell_name, timeout);
         this->chat(std::format("Learned spell: {} at index: {}", spell_name, index));
         if (index != 0xFF)
         {

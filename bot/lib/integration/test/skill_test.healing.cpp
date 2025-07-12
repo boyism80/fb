@@ -120,7 +120,7 @@ async::task<bool> skill_test::test_healing_spells(std::shared_ptr<fb::bot::game_
     fb::logger::info("Testing special dynamic spell: 백호의희원");
 
     // Learn the dynamic spell
-    auto index = co_await caster->lean_spell("백호의희원", DEFAULT_TIMEOUT);
+    auto index = co_await caster->learn_spell("백호의희원", DEFAULT_TIMEOUT);
     if (index == 0xFF)
     {
         fb::logger::warn("Failed to learn spell: 백호의희원");

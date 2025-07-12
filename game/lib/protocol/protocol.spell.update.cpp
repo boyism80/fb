@@ -29,7 +29,7 @@ async::task<void> spell_update::serialize(fb::stream_writer<big_endian>& writer)
 async::task<void> spell_update::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->index = reader.read<uint8_t>();
+    this->index = reader.read<uint8_t>() - 1;
     this->type  = reader.read<uint8_t>();
     this->name  = reader.read<std::string, uint8_t>();
     if (type < 3)

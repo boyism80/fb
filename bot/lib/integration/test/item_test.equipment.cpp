@@ -34,7 +34,11 @@ async::task<bool> item_test::test_equipment_success(uint32_t index)
             co_return false;
         }
 
-        co_await bot->unequip(item.equipment_part, DEFAULT_TIMEOUT);
+        if (co_await bot->unequip(item.equipment_part, DEFAULT_TIMEOUT) == false)
+        {
+            fb::logger::fatal("Scenario 1-1: Failed to unequip {}", item.item_name);
+            co_return false;
+        }
         fb::logger::info("Scenario 1-1: Successfully equipped {}", item.item_name);
     }
 
@@ -229,7 +233,12 @@ async::task<bool> item_test::test_equipment_failure(uint32_t index)
             co_return false;
         }
 
-        co_await bot->unequip(item.equipment_part, DEFAULT_TIMEOUT);
+        if (co_await bot->unequip(item.equipment_part, DEFAULT_TIMEOUT) == false)
+        {
+            fb::logger::fatal("Scenario 2-1: Failed to unequip {}", item.item_name);
+            co_return false;
+        }
+
         if (item.rollback != nullptr)
         {
             co_await item.rollback(*bot);
