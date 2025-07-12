@@ -92,6 +92,14 @@ async::task<void> game_bot_controller::start_current_test()
 
     fb::logger::info("Starting test '{}'", this->_current_test->name());
     auto success = co_await this->_current_test->execute();
+
+    // Store test result
+    test_result result;
+    result.name    = this->_current_test->name();
+    result.success = success;
+    result.message = success ? "PASSED" : "FAILED";
+    this->_test_results.push_back(result);
+
     if (success)
         fb::logger::info("Test '{}' completed successfully", this->_current_test->name());
     else
@@ -291,7 +299,7 @@ void game_bot_controller::start_next_test()
 
     if (this->_test_queue.empty())
     {
-        fb::logger::info("All tests completed");
+        this->print_final_test_results();
         this->container.exit();
         return;
     }
@@ -307,4 +315,46 @@ void game_bot_controller::start_next_test()
 bool game_bot_controller::has_more_tests() const
 {
     return !this->_test_queue.empty();
+}
+
+void game_bot_controller::print_final_test_results()
+{
+    fb::logger::info("=== INTEGRATION TEST RESULTS ===");
+
+    int total_tests  = this->_test_results.size();
+    int passed_tests = 0;
+    int failed_tests = 0;
+
+    // Print individual test results
+    for (const auto& result : this->_test_results)
+    {
+        if (result.success)
+        {
+            fb::logger::info("[PASS] {}: {}", result.name, result.message);
+            passed_tests++;
+        }
+        else
+        {
+            fb::logger::fatal("[FAIL] {}: {}", result.name, result.message);
+            failed_tests++;
+        }
+    }
+
+    // Print summary
+    fb::logger::info("=== SUMMARY ===");
+    fb::logger::info("Total tests: {}", total_tests);
+    fb::logger::info("Passed: {}", passed_tests);
+    fb::logger::info("Failed: {}", failed_tests);
+
+    // Print overall result
+    if (failed_tests == 0)
+    {
+        fb::logger::info("ALL TESTS PASSED! Integration test suite completed successfully.");
+    }
+    else
+    {
+        fb::logger::fatal("{} TEST(S) FAILED! Integration test suite has failures.", failed_tests);
+    }
+
+    fb::logger::info("=== END OF INTEGRATION TEST RESULTS ===");
 }

@@ -26,12 +26,10 @@ async::task<void> skill_test::on_initialize(game_bot_controller& controller)
 
     for (int i = static_cast<int>(bots.size()) - 1; i >= 1; --i)
     {
-        auto& bot              = bots[i];
-        auto  current_position = bot->position();
-        auto  target_position  = current_position;
-        auto  thread           = bot->thread();
+        auto& bot = bots[i];
 
-        co_await thread->switching();
+        auto current_position = bot->position();
+        auto target_position  = current_position;
         co_await bot->move(DIRECTION::RIGHT, i, DEFAULT_INTERVAL);
 
         bot->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
@@ -58,7 +56,6 @@ async::task<void> skill_test::on_scenario_finished(uint32_t scenario_index)
     auto& caster = bots.front();
     auto  thread = caster->thread();
 
-    co_await thread->switching();
     co_await caster->change_level(5, DEFAULT_TIMEOUT);
     co_await caster->clear_all_spells(DEFAULT_TIMEOUT);
     co_await caster->clear_all_items(DEFAULT_TIMEOUT);

@@ -22,8 +22,7 @@ async::task<void> communication_test::on_initialize(game_bot_controller& control
 
     // Position bot2 next to bot1 for proximity-based tests
     co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
-    co_await bot2->thread()->switching();
-    co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
     co_await bot2->direction(DIRECTION::LEFT, DEFAULT_TIMEOUT);
 
     // Position bot1 to face bot2

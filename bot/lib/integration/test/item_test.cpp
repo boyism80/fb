@@ -25,7 +25,6 @@ async::task<void> item_test::on_initialize(game_bot_controller& controller)
         auto  thread = bot->thread();
 
         // Move bot i steps to the right
-        co_await thread->switching();
         co_await bot->move(DIRECTION::RIGHT, i, DEFAULT_INTERVAL);
 
         // Set direction to BOTTOM
@@ -65,7 +64,7 @@ async::task<void> item_test::on_parallel_scenario_finished(uint32_t id)
     // Clear all items from inventory
     bot->chat("/아이템삭제");
     bot->chat("/아이템초기화");
-    co_await bot->thread()->sleep(500ms);
+    co_await this->sleep(500ms);
 
     // Reset money to 0
     co_await bot->change_money(0, DEFAULT_TIMEOUT);

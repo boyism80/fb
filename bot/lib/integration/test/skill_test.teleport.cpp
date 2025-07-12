@@ -80,7 +80,7 @@ async::task<bool> skill_test::test_teleport_spells(std::shared_ptr<fb::bot::game
     auto move_y_axis = end_position.y - begin_position.y;
     auto direction_y = move_y_axis > 0 ? DIRECTION::TOP : DIRECTION::BOTTOM;
     co_await caster->move(direction_y, std::abs(move_y_axis), DEFAULT_INTERVAL);
-    co_await caster->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
     co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     co_return true;
@@ -106,7 +106,7 @@ async::task<void> skill_test::test_chuldu_spell(std::shared_ptr<fb::bot::game_bo
     // Step 2: Move caster to different map (가상계)
     fb::logger::info("Moving caster to 가상계 map");
     co_await caster->map_move("가상계", 1, 1, DEFAULT_TIMEOUT);
-    co_await caster->thread()->sleep(500ms); // Wait for map transition to complete
+    co_await this->sleep(500ms); // Wait for map transition to complete
 
     auto caster_virtual_position = caster->position();
     fb::logger::debug("Caster moved to 가상계 at position: ({}, {})",
@@ -128,7 +128,7 @@ async::task<void> skill_test::test_chuldu_spell(std::shared_ptr<fb::bot::game_bo
         DEFAULT_TIMEOUT);
 
     // Step 4: Wait for teleport effect and verify caster moved to target
-    co_await caster->thread()->sleep(1000ms); // Wait for teleport to complete
+    co_await this->sleep(1000ms); // Wait for teleport to complete
 
     auto final_caster_position = caster->position();
     auto final_target_position = target->position();
@@ -177,7 +177,7 @@ async::task<void> skill_test::test_sohwan_spell(std::shared_ptr<fb::bot::game_bo
     // Step 2: Move target to different map (가상계)
     fb::logger::info("Moving target to 가상계 map");
     co_await target->map_move("가상계", 1, 1, DEFAULT_TIMEOUT);
-    co_await target->thread()->sleep(500ms); // Wait for map transition to complete
+    co_await this->sleep(500ms); // Wait for map transition to complete
 
     auto target_virtual_position = target->position();
     fb::logger::debug("Target moved to 가상계 at position: ({}, {})",
@@ -199,7 +199,7 @@ async::task<void> skill_test::test_sohwan_spell(std::shared_ptr<fb::bot::game_bo
         DEFAULT_TIMEOUT);
 
     // Step 4: Wait for summon effect and verify target moved to caster
-    co_await caster->thread()->sleep(1000ms); // Wait for summon to complete
+    co_await this->sleep(1000ms); // Wait for summon to complete
 
     auto final_caster_position = caster->position();
     auto final_target_position = target->position();

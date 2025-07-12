@@ -35,7 +35,7 @@ async::task<void> throw_test::on_scenario_finished(uint32_t scenario_index)
     auto  bots = this->get_test_bots();
     auto& bot  = bots[0];
     bot->chat("/아이템삭제");
-    co_await bot->thread()->sleep(500ms);
+    co_await this->sleep(500ms);
 }
 
 async::task<void> throw_test::on_parallel_scenario_started(uint32_t id)
@@ -69,11 +69,9 @@ async::task<bool> throw_test::test_throw_single_item()
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
 
-    co_await bot2->thread()->switching();
     co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
-    co_await bot2->thread()->sleep(500ms);
+    co_await this->sleep(500ms);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
-    co_await bot1->thread()->switching();
 
     fb::logger::info("Starting single item throw test for bot {}", bot1->name());
 
@@ -81,7 +79,7 @@ async::task<bool> throw_test::test_throw_single_item()
     co_await bot1->create_item("도토리", 201, DEFAULT_TIMEOUT);
 
     // Wait a bit for item to be created
-    co_await bot1->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
 
     // Test: Throw single item (all = false)
     fb::logger::info("Test: Throwing single item");
@@ -125,12 +123,10 @@ async::task<bool> throw_test::test_throw_all_items()
     fb::logger::info("Starting all items throw test for bot {}", bot1->name());
 
     // Move bot2 to position: down 4, left 1 (so bot1 and bot2 are in a straight line)
-    co_await bot2->thread()->switching();
     co_await bot2->move(DIRECTION::BOTTOM, 4, DEFAULT_INTERVAL);
     co_await bot2->move(DIRECTION::LEFT, 1, DEFAULT_INTERVAL);
-    co_await bot2->thread()->sleep(500ms);
+    co_await this->sleep(500ms);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
-    co_await bot1->thread()->switching();
 
     // Test: Throw all items (all = true)
     fb::logger::info("Test: Throwing all items");

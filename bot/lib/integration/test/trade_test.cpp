@@ -47,8 +47,7 @@ async::task<void> trade_test::on_initialize(game_bot_controller& controller)
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
     co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
-    co_await bot2->thread()->switching();
-    co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     co_return;
@@ -63,9 +62,6 @@ async::task<void> trade_test::on_scenario_finished(uint32_t scenario_index)
 {
     for (auto& bot : this->get_test_bots())
     {
-        auto thread = bot->thread();
-        co_await thread->switching();
-
         bot->chat("/아이템초기화");
         bot->chat("/아이템삭제");
         co_await bot->change_money(0, DEFAULT_TIMEOUT);
@@ -326,7 +322,6 @@ async::task<bool> trade_test::test_scenario_1()
     bot2->chat("Scenario 1: Bot2 locked the trade, completing it.");
 
     auto thread = bot1->thread();
-    co_await thread->switching();
     co_await thread->sleep(DEFAULT_INTERVAL);
 
     // 10. Verify that items and money have been swapped between Bot1 and Bot2.
@@ -434,7 +429,6 @@ async::task<bool> trade_test::test_scenario_2()
     bot2->chat("Scenario 2: Bot2 tried to lock, trade failed as expected.");
 
     auto thread = bot1->thread();
-    co_await thread->switching();
     co_await thread->sleep(DEFAULT_INTERVAL);
 
     // 5. Verify money has not changed.
@@ -523,7 +517,6 @@ async::task<bool> trade_test::test_scenario_3()
     bot2->chat("Scenario 3: Bot2 tried to lock, trade failed as expected.");
 
     auto thread = bot1->thread();
-    co_await thread->switching();
     co_await thread->sleep(DEFAULT_INTERVAL);
 
     // 5. Verify item counts have not changed.
@@ -608,7 +601,6 @@ async::task<bool> trade_test::test_scenario_4()
     bot2->chat("Scenario 4: Bot2 tried to lock, trade failed as expected.");
 
     auto thread = bot1->thread();
-    co_await thread->switching();
     co_await thread->sleep(DEFAULT_INTERVAL);
 
     // 5. Verify items have not been swapped.

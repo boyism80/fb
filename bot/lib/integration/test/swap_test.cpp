@@ -23,7 +23,7 @@ async::task<void> swap_test::on_initialize(game_bot_controller& controller)
 
     auto bot2 = bots[1];
     bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
-    co_await bot2->thread()->sleep(500ms);
+    co_await this->sleep(500ms);
     bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     fb::logger::info("Swap test initialization completed");
@@ -108,7 +108,7 @@ async::task<bool> swap_test::test_item_swap_1(uint32_t index)
         DEFAULT_TIMEOUT);
 
     // Wait a bit for item swap to complete
-    co_await bot->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
 
     if (bot->get_item_slot_by_name("도토리") != 1)
     {
@@ -150,7 +150,7 @@ async::task<bool> swap_test::test_item_swap_2(uint32_t index)
         DEFAULT_TIMEOUT);
 
     // Wait a bit for item swap to complete
-    co_await bot->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
 
     // Verify empty slot after swap
     if (bot->get_item(0).has_value())
@@ -186,7 +186,7 @@ async::task<bool> swap_test::test_item_swap_3(uint32_t index)
         DEFAULT_TIMEOUT);
 
     // Wait a bit for item swap to complete
-    co_await bot->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
 
     // Verify empty slot after swap
     if (bot->get_item(2).has_value())
@@ -226,7 +226,7 @@ async::task<bool> swap_test::test_spell_swap_1(uint32_t index)
         DEFAULT_TIMEOUT);
 
     // Wait a bit for spell swap to complete
-    co_await bot->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
 
     // Verify spells are in correct slots after swap
     if (bot->get_spell_slot_by_name("누리의기원") != 1)
@@ -268,7 +268,7 @@ async::task<bool> swap_test::test_spell_swap_2(uint32_t index)
         DEFAULT_TIMEOUT);
 
     // Wait a bit for spell swap to complete
-    co_await bot->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
 
     // Verify spells are in correct slots after swap
     if (bot->get_spell_slot_by_name("바다의기원") != 2)
@@ -302,7 +302,7 @@ async::task<bool> swap_test::test_spell_swap_3(uint32_t index)
         DEFAULT_TIMEOUT);
 
     // Wait a bit for spell swap to complete
-    co_await bot->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
 
     if (bot->get_spell(2).has_value())
     {

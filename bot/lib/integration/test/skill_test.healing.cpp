@@ -11,10 +11,6 @@ async::task<bool> skill_test::test_healing_spells(std::shared_ptr<fb::bot::game_
     caster->chat("=== HEALING SPELL TEST STARTED ===");
 
     // Step 1: Setup bots with HP/MP for spell testing
-    auto thread = caster->thread();
-    co_await thread->switching();
-
-    // Setup all bots with max HP/MP and current HP
     std::ignore = co_await caster->setup_bot_stats(100000, 100000, 50, std::nullopt, DEFAULT_TIMEOUT);
     std::ignore = co_await target->setup_bot_stats(100000, 100000, 50, std::nullopt, DEFAULT_TIMEOUT);
 

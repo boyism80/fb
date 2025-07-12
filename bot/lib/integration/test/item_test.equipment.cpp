@@ -258,7 +258,6 @@ async::task<bool> item_test::test_equipment_overflow()
     auto  bots = this->get_test_bots();
     auto& bot  = bots.front();
 
-    co_await bot->thread()->switching();
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         co_await bot->create_item("목도", 1, DEFAULT_TIMEOUT);

@@ -9,9 +9,6 @@ async::task<bool> skill_test::test_multi_target_attack_cast_spells(std::shared_p
     fb::logger::info("Bot {} starting multi-target attack_cast spell test", caster->oid());
     caster->chat("=== MULTI-TARGET ATTACK_CAST SPELL TEST STARTED ===");
 
-    auto thread = caster->thread();
-    co_await thread->switching();
-
     // Setup all bots with max HP/MP
     std::ignore = co_await caster->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
 

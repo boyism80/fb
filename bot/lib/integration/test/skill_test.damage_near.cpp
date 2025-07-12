@@ -9,12 +9,9 @@ async::task<bool> skill_test::test_near_damage_spells(std::shared_ptr<fb::bot::g
     fb::logger::info("Bot {} starting near damage spell test", caster->oid());
     caster->chat("=== NEAR DAMAGE SPELL TEST STARTED ===");
 
-    auto thread = caster->thread();
-    co_await thread->switching();
-
     // Step 1: Move caster down by 1 tile
     co_await caster->move(DIRECTION::LEFT);
-    co_await caster->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
     co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     // Step 2: Spawn 4 monsters around the caster
@@ -119,7 +116,7 @@ async::task<bool> skill_test::test_near_damage_spells(std::shared_ptr<fb::bot::g
         spell_slot++;
     }
 
-    co_await caster->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
     co_await caster->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
     co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 

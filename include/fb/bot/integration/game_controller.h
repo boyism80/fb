@@ -34,6 +34,15 @@ private:
     std::queue<bot_integration_test*>                  _test_queue;     ///< Queue of tests to execute
     bot_integration_test* _current_test{nullptr};                       ///< Currently active test (non-owning pointer)
 
+    // Test result tracking
+    struct test_result
+    {
+        std::string name;    ///< Test name
+        bool        success; ///< Whether the test passed
+        std::string message; ///< Additional result message
+    };
+    std::vector<test_result> _test_results; ///< Results of completed tests
+
     // Hook system for integration tests - per test
     using hook_function = std::function<async::task<void>(game_bot&, const fb::protocol::header&)>;
     std::unordered_map<bot_integration_test*, std::unordered_map<uint8_t, std::vector<hook_function>>> _test_hooks;
@@ -111,6 +120,14 @@ public:
      * @return     True if there are more tests, false otherwise.
      */
     bool has_more_tests() const;
+
+    /**
+     * @brief      Prints the final test results summary.
+     *
+     *             Called when all tests have completed to show individual test results
+     *             and overall success/failure status.
+     */
+    void print_final_test_results();
 
     /**
      * @brief      Activates the first test in the queue.

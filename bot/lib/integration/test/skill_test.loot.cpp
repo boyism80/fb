@@ -44,7 +44,7 @@ async::task<bool> skill_test::test_loot_spell(std::shared_ptr<fb::bot::game_bot>
     // Step 4: Move back to original position and face BOTTOM direction
     fb::logger::info("Moving back to original position");
     co_await caster->move(DIRECTION::TOP, 1, DEFAULT_INTERVAL);
-    co_await caster->thread()->sleep(500ms);
+    co_await this->sleep(500ms);
     co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     // Step 5: Learn and cast loot spell

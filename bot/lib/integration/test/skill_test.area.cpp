@@ -11,9 +11,6 @@ async::task<bool> skill_test::test_area_damage_spells(std::shared_ptr<fb::bot::g
     fb::logger::info("Bot {} starting area damage spell test", caster->oid());
     caster->chat("=== AREA DAMAGE SPELL TEST STARTED ===");
 
-    auto thread = caster->thread();
-    co_await thread->switching();
-
     // Setup all bots with max HP/MP
     for (auto& bot : bots)
     {
@@ -105,7 +102,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::shared_ptr<fb::bot::g
     co_await bots[3]->move(DIRECTION::LEFT, 1, DEFAULT_INTERVAL);
     co_await bots[4]->move(DIRECTION::LEFT, 3, DEFAULT_INTERVAL);
     co_await bots[4]->move(DIRECTION::BOTTOM, 3, DEFAULT_INTERVAL);
-    co_await caster->thread()->sleep(500ms);
+    co_await this->sleep(500ms);
     co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
     co_await bots[1]->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
     co_await bots[2]->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
@@ -176,7 +173,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::shared_ptr<fb::bot::g
     co_await bots[1]->move(DIRECTION::TOP, 3, DEFAULT_INTERVAL);
     co_await bots[1]->move(DIRECTION::RIGHT, 2, DEFAULT_INTERVAL);
     co_await caster->move(DIRECTION::TOP, 3, DEFAULT_INTERVAL);
-    co_await caster->thread()->sleep(500ms);
+    co_await this->sleep(500ms);
     co_await bots[4]->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
     co_await bots[3]->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
     co_await bots[2]->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);

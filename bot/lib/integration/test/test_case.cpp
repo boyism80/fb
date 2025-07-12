@@ -227,7 +227,7 @@ async::task<bool> bot_integration_test::parallel_scenarios(std::vector<std::pair
     auto context       = std::make_shared<parallel_scenarios_context>();
     context->promise   = std::make_shared<async::task_completion_source<bool>>();
     context->processed = 0;
-    context->success   = false;
+    context->success   = true;
     context->queues    = std::unordered_map<uint32_t, std::queue<scenario_t>>();
 
     for (auto& [index, scenario] : scenarios)
@@ -307,6 +307,11 @@ bot_integration_test::on_hook_update_external(fb::bot::game_bot&                
     this->set_state(test_state::ready);
     this->notify_ready();
     co_return;
+}
+
+async::task<void> bot_integration_test::sleep(std::chrono::milliseconds duration)
+{
+    co_await this->_controller.container.threads.current()->sleep(duration);
 }
 
 } // namespace fb::bot::integration

@@ -29,7 +29,8 @@ async::task<bool> movement_test::move_bot_downward()
     if (bots.empty())
         throw std::runtime_error("No bots available for movement test");
 
-    auto target_bot = bots.back();
+    auto& target_bot = bots.back();
+    auto  thread     = target_bot->thread();
 
     fb::logger::info("Moving bot {} downward {} steps", target_bot->fd(), MOVEMENT_STEPS);
 
@@ -50,8 +51,6 @@ async::task<bool> movement_test::move_bot_downward()
                           position.x,
                           position.y);
 
-        auto thread = target_bot->thread();
-        co_await thread->switching();
         co_await thread->sleep(DEFAULT_INTERVAL);
     }
 

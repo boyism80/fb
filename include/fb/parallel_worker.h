@@ -255,7 +255,7 @@ public:
     void run()
     {
         fb::locker<std::queue<T>> queue;
-        fb::locker<int>           processed(0);
+        std::atomic<int>          processed{0};
 
         auto gen = this->on_ready();
         while (gen.next())
@@ -287,16 +287,12 @@ public:
                 try
                 {
                     this->on_work(input.value());
-                    auto current_progress = processed.write([count](auto& p) {
-                        return (++p * 100) / count;
-                    });
+                    auto current_progress = (++processed * 100) / count;
                     this->on_worked(input.value(), current_progress);
                 }
                 catch (std::exception& e)
                 {
-                    processed.write([](auto& p) {
-                        p++;
-                    });
+                    processed++;
                     this->on_error(input.value(), e);
                 }
             }

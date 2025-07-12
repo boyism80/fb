@@ -312,6 +312,15 @@ protected:
     virtual async::task<void>
     on_hook_update_external(fb::bot::game_bot&                                         bot,
                             const fb::protocol::game::response::update_external<true>& response);
+
+    /**
+     * @brief      Sleeps for a specified duration.
+     *
+     * @param[in]  duration  The duration to sleep.
+     *
+     * @return     A task that completes when the sleep is finished.
+     */
+    async::task<void> sleep(std::chrono::milliseconds duration);
 };
 
 } // namespace fb::bot::integration

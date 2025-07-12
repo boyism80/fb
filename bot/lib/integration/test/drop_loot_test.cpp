@@ -27,7 +27,7 @@ async::task<void> drop_loot_test::on_initialize(game_bot_controller& controller)
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
     co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
-    co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
     co_return;
 }
@@ -42,7 +42,6 @@ async::task<void> drop_loot_test::on_scenario_finished(uint32_t scenario_index)
     for (auto& bot : this->get_test_bots())
     {
         auto thread = bot->thread();
-        co_await thread->switching();
 
         bot->chat("/아이템삭제");
         bot->chat("/아이템초기화");
@@ -295,8 +294,7 @@ async::task<bool> drop_loot_test::test_scenario_5()
     std::ignore = co_await bot2->setup_bot_stats(100000, 100000, 50, std::nullopt, DEFAULT_TIMEOUT);
 
     // 3. Bot2 moves right 1 tile and sets direction to bottom
-    co_await bot2->thread()->switching();
-    co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     // 4. Bot2 creates items
@@ -331,8 +329,7 @@ async::task<bool> drop_loot_test::test_scenario_5()
     bot1->chat("Scenario 5: Cast hellfire on bot2");
     bot2->chat("Scenario 5: Killed by hellfire");
 
-    co_await bot2->thread()->switching();
-    co_await bot2->thread()->sleep(500ms);
+    co_await this->sleep(500ms);
 
     // 8. Bot2 moves right 1 tile
     co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);

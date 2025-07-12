@@ -11,9 +11,6 @@ async::task<bool> skill_test::test_attack_cast_spells(std::shared_ptr<fb::bot::g
     fb::logger::info("Bot {} starting attack_cast spell test", caster->oid());
     caster->chat("=== ATTACK_CAST SPELL TEST STARTED ===");
 
-    auto thread = caster->thread();
-    co_await thread->switching();
-
     // Setup all bots with max HP/MP
     std::ignore = co_await caster->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
 

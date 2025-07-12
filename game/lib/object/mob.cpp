@@ -75,7 +75,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
                 continue;
 
             mob->position(position, true);
-            co_await mob->map(map, position, DESTROY_TYPE::DEFAULT, false);
+            std::ignore = co_await mob->map(map, position, DESTROY_TYPE::DEFAULT, false);
             break;
         }
 

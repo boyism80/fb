@@ -35,7 +35,6 @@ async::task<bool> attack_test::attack_scenario()
         fb::logger::debug("Attack sequence {}: bot {} performed attack", i + 1, bot->fd());
 
         auto thread = bot->thread();
-        co_await thread->switching();
         co_await thread->sleep(DEFAULT_INTERVAL);
     }
 
