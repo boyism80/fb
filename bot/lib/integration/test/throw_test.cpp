@@ -7,21 +7,19 @@ using namespace fb::bot::integration;
 
 throw_test::throw_test(game_bot_controller& controller) :
     bot_integration_test(controller, 2) // Spawn 2 bots for testing
-{
-    fb::logger::debug("Throw test constructed");
-}
+{ }
 
 async::task<void> throw_test::on_initialize(game_bot_controller& controller)
 {
     co_await super::on_initialize(controller);
 
     auto bots = this->get_test_bots();
-    fb::logger::info("Starting throw test with {} bots", bots.size());
+    fb::logger::debug("Starting throw test with {} bots", bots.size());
 
     if (bots.empty())
         throw std::runtime_error("No bots available for throw test");
 
-    fb::logger::info("Throw test initialization completed");
+    fb::logger::debug("Throw test initialization completed");
     co_return;
 }
 
@@ -73,7 +71,7 @@ async::task<bool> throw_test::test_throw_single_item()
     co_await this->sleep(500ms);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
-    fb::logger::info("Starting single item throw test for bot {}", bot1->name());
+    fb::logger::debug("Starting single item throw test for bot {}", bot1->name());
 
     // Create test item: 도토리 201개
     co_await bot1->create_item("도토리", 201, DEFAULT_TIMEOUT);
@@ -82,7 +80,7 @@ async::task<bool> throw_test::test_throw_single_item()
     co_await this->sleep(DEFAULT_INTERVAL);
 
     // Test: Throw single item (all = false)
-    fb::logger::info("Test: Throwing single item");
+    fb::logger::debug("Test: Throwing single item");
     bot1->chat("Starting single item throw test");
 
     std::ignore = co_await bot1->request<fb::protocol::game::response::item_throws>(
@@ -110,7 +108,7 @@ async::task<bool> throw_test::test_throw_single_item()
     }
 
     bot1->chat("Single item throw test successful");
-    fb::logger::info("Single item throw test completed successfully for bot {}", bot1->name());
+    fb::logger::debug("Single item throw test completed successfully for bot {}", bot1->name());
     co_return true;
 }
 
@@ -120,7 +118,7 @@ async::task<bool> throw_test::test_throw_all_items()
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
 
-    fb::logger::info("Starting all items throw test for bot {}", bot1->name());
+    fb::logger::debug("Starting all items throw test for bot {}", bot1->name());
 
     // Move bot2 to position: down 4, left 1 (so bot1 and bot2 are in a straight line)
     co_await bot2->move(DIRECTION::BOTTOM, 4, DEFAULT_INTERVAL);
@@ -129,7 +127,7 @@ async::task<bool> throw_test::test_throw_all_items()
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     // Test: Throw all items (all = true)
-    fb::logger::info("Test: Throwing all items");
+    fb::logger::debug("Test: Throwing all items");
     bot1->chat("Starting all items throw test");
 
     std::ignore = co_await bot1->request<fb::protocol::game::response::item_throws>(
@@ -159,7 +157,7 @@ async::task<bool> throw_test::test_throw_all_items()
     }
 
     bot1->chat("All items throw test successful");
-    fb::logger::info("All items throw test completed successfully for bot {}", bot1->name());
+    fb::logger::debug("All items throw test completed successfully for bot {}", bot1->name());
     co_return true;
 }
 

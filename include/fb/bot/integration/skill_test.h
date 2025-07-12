@@ -73,12 +73,10 @@ private:
      *             - Group healing spell (백호의희원'첨)
      *
      * @param[in]  caster   The bot casting the healing spells.
-     * @param[in]  target   The target bot for healing spell tests.
      *
      * @return     A task that completes when all healing spell tests finish.
      */
-    async::task<bool> test_healing_spells(std::shared_ptr<fb::bot::game_bot> caster,
-                                          std::shared_ptr<fb::bot::game_bot> target);
+    async::task<bool> test_healing_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
     /**
      * @brief      Tests damage spells with target-based damage calculation.
@@ -232,19 +230,6 @@ private:
     async::task<void> form_group();
 
     /**
-     * @brief      Prepares all bots for group healing test by setting appropriate HP levels.
-     *
-     *             Sets bots to low HP values to ensure visible healing effects.
-     *             Adjusts HP based on expected healing amount to prevent overflow.
-     *
-     * @param[in]  bots              The list of bots to prepare.
-     * @param[in]  expected_hp_gain  The expected HP gain from the group healing spell.
-     *
-     * @return     A task that completes when all bots are prepared.
-     */
-    async::task<void> prepare_bots_for_group_healing(int expected_hp_gain);
-
-    /**
      * @brief      Verifies that group healing effects were applied correctly to all group members.
      *
      * @param[in]  bots              The list of bots to verify.
@@ -253,7 +238,7 @@ private:
      *
      * @return     A task that completes when verification is finished.
      */
-    async::task<void> verify_group_healing_effects(const std::vector<int>& before_hp_values, int expected_hp_gain);
+    async::task<bool> verify_group_healing_effects(const std::vector<int>& before_hp_values, int expected_hp_gain);
 
     /**
      * @brief      Cleans up group formation by removing all bots from the group.

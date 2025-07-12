@@ -14,9 +14,7 @@ namespace fb::bot::integration {
 
 trade_test::trade_test(game_bot_controller& controller) :
     bot_integration_test(controller, 2) // Spawn 2 bots
-{
-    fb::logger::debug("Trade test constructed");
-}
+{ }
 
 generator<bot_integration_test::scenario_t> trade_test::on_generate_scenario()
 {

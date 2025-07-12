@@ -8,7 +8,7 @@ async::task<bool> skill_test::test_attack_cast_spells(std::shared_ptr<fb::bot::g
 {
     constexpr auto interval = 100ms;
 
-    fb::logger::info("Bot {} starting attack_cast spell test", caster->oid());
+    fb::logger::debug("Bot {} starting attack_cast spell test", caster->oid());
     caster->chat("=== ATTACK_CAST SPELL TEST STARTED ===");
 
     // Setup all bots with max HP/MP
@@ -88,14 +88,14 @@ async::task<bool> skill_test::test_attack_cast_spells(std::shared_ptr<fb::bot::g
     }
 
     auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
-    fb::logger::info("Successfully learned {} out of {} attack_cast spells", learned_count, attack_cast_spells.size());
+    fb::logger::debug("Successfully learned {} out of {} attack_cast spells", learned_count, attack_cast_spells.size());
 
-    fb::logger::info("Learning {} attack_cast spells", attack_cast_spells.size());
+    fb::logger::debug("Learning {} attack_cast spells", attack_cast_spells.size());
     auto spell_slot = 1;
 
     for (const auto& spell : attack_cast_spells)
     {
-        fb::logger::info("Testing spell: {}", spell.name);
+        fb::logger::debug("Testing spell: {}", spell.name);
 
         // Spawn a monster in front of the caster
         std::ignore = co_await caster->spawn_monster_relative_by_look("다람쥐", 0, 1, 32793, DEFAULT_TIMEOUT);
@@ -118,6 +118,6 @@ async::task<bool> skill_test::test_attack_cast_spells(std::shared_ptr<fb::bot::g
     }
 
     caster->chat("=== ATTACK_CAST SPELL TEST COMPLETED ===");
-    fb::logger::info("Attack_cast spell test completed.");
+    fb::logger::debug("Attack_cast spell test completed.");
     co_return true;
 }

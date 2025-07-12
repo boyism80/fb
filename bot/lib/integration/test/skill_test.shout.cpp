@@ -27,14 +27,14 @@ async::task<bool> skill_test::test_shout_spells(std::shared_ptr<fb::bot::game_bo
         {"세계후",     0, "세계후 테스트 메시지입니다!",      MESSAGE_TYPE::WORLD}
     };
 
-    fb::logger::info("Testing shout spells with message input and SHOUT verification");
+    fb::logger::debug("Testing shout spells with message input and SHOUT verification");
     caster->chat("=== SHOUT SPELL TEST STARTED ===");
 
     // Learn all shout spells
     auto spell_names = std::vector<std::string>{};
     for (const auto& spell : shout_spells)
     {
-        fb::logger::info("Learning spell: {}", spell.spell_name);
+        fb::logger::debug("Learning spell: {}", spell.spell_name);
         spell_names.push_back(spell.spell_name);
     }
     std::ignore = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
@@ -44,18 +44,18 @@ async::task<bool> skill_test::test_shout_spells(std::shared_ptr<fb::bot::game_bo
     for (const auto& spell : shout_spells)
     {
         spell_slot++;
-        fb::logger::info("Testing {} spell", spell.spell_name);
+        fb::logger::debug("Testing {} spell", spell.spell_name);
 
         // Set current hp and mp
         std::ignore = co_await caster->set_current_hp_mp(10000, 1000, DEFAULT_TIMEOUT);
 
-        fb::logger::info("Testing {} with message: {}", spell.spell_name, spell.test_message);
+        fb::logger::debug("Testing {} with message: {}", spell.spell_name, spell.test_message);
 
         // Step 1: Cast shout spell with test message
         auto before_mp   = caster->mp();
         auto expected_mp = before_mp - spell.mp_cost;
 
-        fb::logger::info("Casting {} spell with message (MP: {} -> {})", spell.spell_name, before_mp, expected_mp);
+        fb::logger::debug("Casting {} spell with message (MP: {} -> {})", spell.spell_name, before_mp, expected_mp);
 
         // Cast the spell and wait for message response
         caster->chat(std::format("Testing {}", spell.spell_name));
@@ -66,7 +66,7 @@ async::task<bool> skill_test::test_shout_spells(std::shared_ptr<fb::bot::game_bo
             },
             DEFAULT_TIMEOUT);
 
-        fb::logger::info("{} spell cast completed, received message response", spell.spell_name);
+        fb::logger::debug("{} spell cast completed, received message response", spell.spell_name);
 
         // Step 2: Verify MP consumption separately
         auto after_mp = caster->mp();
@@ -78,10 +78,10 @@ async::task<bool> skill_test::test_shout_spells(std::shared_ptr<fb::bot::game_bo
             throw std::runtime_error(sstream.str());
         }
 
-        fb::logger::info("{} shout spell test completed successfully", spell.spell_name);
+        fb::logger::debug("{} shout spell test completed successfully", spell.spell_name);
     }
 
-    fb::logger::info("Shout spell testing completed");
+    fb::logger::debug("Shout spell testing completed");
     caster->chat("=== SHOUT SPELL TEST COMPLETED ===");
     co_return true;
 }

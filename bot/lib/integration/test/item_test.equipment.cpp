@@ -9,7 +9,7 @@ async::task<bool> item_test::test_equipment_success(uint32_t index)
     auto  bots = this->get_test_bots();
     auto& bot  = bots[index];
 
-    fb::logger::info("Starting scenario 1-1: Equip items without conditions");
+    fb::logger::debug("Starting scenario 1-1: Equip items without conditions");
 
     auto equipments = std::vector<equipment_item_data>{
         {"쇠도끼",           "w:무기  :쇠도끼",           EQUIPMENT_PARTS::WEAPON, nullptr, nullptr},
@@ -39,7 +39,7 @@ async::task<bool> item_test::test_equipment_success(uint32_t index)
             fb::logger::fatal("Scenario 1-1: Failed to unequip {}", item.item_name);
             co_return false;
         }
-        fb::logger::info("Scenario 1-1: Successfully equipped {}", item.item_name);
+        fb::logger::debug("Scenario 1-1: Successfully equipped {}", item.item_name);
     }
 
     co_return true;
@@ -47,7 +47,7 @@ async::task<bool> item_test::test_equipment_success(uint32_t index)
 
 async::task<bool> item_test::test_equipment_failure(uint32_t index)
 {
-    fb::logger::info("Starting scenario 2-1: Equip items with conditions - expect failure");
+    fb::logger::debug("Starting scenario 2-1: Equip items with conditions - expect failure");
 
     // Set low stats to ensure failure
     auto  bots = this->get_test_bots();
@@ -251,7 +251,7 @@ async::task<bool> item_test::test_equipment_failure(uint32_t index)
 
 async::task<bool> item_test::test_equipment_overflow()
 {
-    fb::logger::info("Starting scenario 3-1: Equip items with overflow");
+    fb::logger::debug("Starting scenario 3-1: Equip items with overflow");
 
     constexpr auto CONTAINER_CAPACITY = 52;
 

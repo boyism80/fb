@@ -7,7 +7,7 @@ using namespace fb::bot::integration;
 async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::game_bot> caster,
                                                       std::shared_ptr<fb::bot::game_bot> target)
 {
-    fb::logger::info("Bot {} starting buff/debuff spell test", caster->oid());
+    fb::logger::debug("Bot {} starting buff/debuff spell test", caster->oid());
     caster->chat("=== BUFF/DEBUFF SPELL TEST STARTED ===");
 
     // Setup all bots with max HP/MP
@@ -245,9 +245,9 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
     }
 
     auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
-    fb::logger::info("Successfully learned {} out of {} buff/debuff spells", learned_count, buff_debuff_spells.size());
+    fb::logger::debug("Successfully learned {} out of {} buff/debuff spells", learned_count, buff_debuff_spells.size());
 
-    fb::logger::info("Testing {} buff/debuff spells", buff_debuff_spells.size());
+    fb::logger::debug("Testing {} buff/debuff spells", buff_debuff_spells.size());
     auto spell_slot = 1;
 
     for (const auto& spell : buff_debuff_spells)
@@ -258,7 +258,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
             continue;
         }
 
-        fb::logger::info("Testing buff/debuff spell: {}", spell.name);
+        fb::logger::debug("Testing buff/debuff spell: {}", spell.name);
 
         // Determine the actual target for the spell
         auto& actual_target   = spell.is_self_cast ? caster : target;
@@ -302,13 +302,13 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
             },
             DEFAULT_TIMEOUT);
 
-        fb::logger::info("Buff/Debuff '{}' successfully applied and verified", spell.name);
+        fb::logger::debug("Buff/Debuff '{}' successfully applied and verified", spell.name);
 
         // Run additional condition check
         auto condition_result = co_await spell.condition_check(caster, actual_target);
         if (condition_result)
         {
-            fb::logger::info("Additional condition check passed for '{}'", spell.name);
+            fb::logger::debug("Additional condition check passed for '{}'", spell.name);
         }
         else
         {
@@ -321,6 +321,6 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
     }
 
     caster->chat("=== BUFF/DEBUFF SPELL TEST COMPLETED ===");
-    fb::logger::info("Buff/debuff spell test completed.");
+    fb::logger::debug("Buff/debuff spell test completed.");
     co_return true;
 }

@@ -6,7 +6,7 @@ using namespace fb::bot::integration;
 
 async::task<bool> skill_test::test_near_damage_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
-    fb::logger::info("Bot {} starting near damage spell test", caster->oid());
+    fb::logger::debug("Bot {} starting near damage spell test", caster->oid());
     caster->chat("=== NEAR DAMAGE SPELL TEST STARTED ===");
 
     // Step 1: Move caster down by 1 tile
@@ -72,20 +72,20 @@ async::task<bool> skill_test::test_near_damage_spells(std::shared_ptr<fb::bot::g
     }
 
     auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
-    fb::logger::info("Successfully learned {} out of {} near damage spells", learned_count, near_damage_spells.size());
+    fb::logger::debug("Successfully learned {} out of {} near damage spells", learned_count, near_damage_spells.size());
 
-    fb::logger::info("Learning {} near damage spells", near_damage_spells.size());
+    fb::logger::debug("Learning {} near damage spells", near_damage_spells.size());
     auto spell_slot       = 1;
     auto current_position = caster->position();
 
     for (const auto& spell : near_damage_spells)
     {
-        fb::logger::info("Testing spell: {} (Damage: {}, MP: -{})",
-                         spell.name,
-                         spell.expected_damage,
-                         spell.expected_mp_cost);
+        fb::logger::debug("Testing spell: {} (Damage: {}, MP: -{})",
+                          spell.name,
+                          spell.expected_damage,
+                          spell.expected_mp_cost);
 
-        fb::logger::info("Spawning 4 monsters around caster at ({}, {})", target_position.x, target_position.y);
+        fb::logger::debug("Spawning 4 monsters around caster at ({}, {})", target_position.x, target_position.y);
 
         // Spawn monsters in 4 directions using relative positions
         std::vector<std::pair<int, int>> relative_positions = {
@@ -121,6 +121,6 @@ async::task<bool> skill_test::test_near_damage_spells(std::shared_ptr<fb::bot::g
     co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     caster->chat("=== NEAR DAMAGE SPELL TEST COMPLETED ===");
-    fb::logger::info("Near damage spell test completed.");
+    fb::logger::debug("Near damage spell test completed.");
     co_return true;
 }

@@ -12,9 +12,7 @@ namespace fb::bot::integration {
 
 movement_test::movement_test(game_bot_controller& controller) :
     bot_integration_test(controller, 5) // Spawn 5 bots
-{
-    fb::logger::debug("Movement test constructed");
-}
+{ }
 
 generator<bot_integration_test::scenario_t> movement_test::on_generate_scenario()
 {
@@ -32,7 +30,7 @@ async::task<bool> movement_test::move_bot_downward()
     auto& target_bot = bots.back();
     auto  thread     = target_bot->thread();
 
-    fb::logger::info("Moving bot {} downward {} steps", target_bot->fd(), MOVEMENT_STEPS);
+    fb::logger::debug("Moving bot {} downward {} steps", target_bot->fd(), MOVEMENT_STEPS);
 
     // Perform movement steps
     for (auto i = 0; i < MOVEMENT_STEPS; i++)

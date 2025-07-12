@@ -6,7 +6,7 @@ using namespace fb::bot::integration;
 
 async::task<bool> skill_test::test_damage_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
-    fb::logger::info("Bot {} starting damage spell test", caster->oid());
+    fb::logger::debug("Bot {} starting damage spell test", caster->oid());
     caster->chat("=== DAMAGE SPELL TEST STARTED ===");
 
     // Setup all bots with max HP/MP
@@ -46,16 +46,16 @@ async::task<bool> skill_test::test_damage_spells(std::shared_ptr<fb::bot::game_b
     }
 
     auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
-    fb::logger::info("Successfully learned {} out of {} damage spells", learned_count, damage_spells.size());
+    fb::logger::debug("Successfully learned {} out of {} damage spells", learned_count, damage_spells.size());
 
-    fb::logger::info("Learning {} damage spells", damage_spells.size());
+    fb::logger::debug("Learning {} damage spells", damage_spells.size());
     auto spell_slot = 1;
     for (const auto& spell : damage_spells)
     {
-        fb::logger::info("Testing spell: {} (Damage: {}, MP: -{})",
-                         spell.name,
-                         spell.expected_damage,
-                         spell.expected_mp_cost);
+        fb::logger::debug("Testing spell: {} (Damage: {}, MP: -{})",
+                          spell.name,
+                          spell.expected_damage,
+                          spell.expected_mp_cost);
 
         auto mob_info = co_await caster->spawn_monster_relative_by_look("다람쥐", 0, 1, 32793, DEFAULT_TIMEOUT);
 
@@ -83,6 +83,6 @@ async::task<bool> skill_test::test_damage_spells(std::shared_ptr<fb::bot::game_b
     }
 
     caster->chat("=== DAMAGE SPELL TEST COMPLETED ===");
-    fb::logger::info("Damage spell test completed.");
+    fb::logger::debug("Damage spell test completed.");
     co_return true;
 }

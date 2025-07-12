@@ -8,7 +8,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::shared_ptr<fb::bot::g
 {
     auto bots = this->get_test_bots();
 
-    fb::logger::info("Bot {} starting area damage spell test", caster->oid());
+    fb::logger::debug("Bot {} starting area damage spell test", caster->oid());
     caster->chat("=== AREA DAMAGE SPELL TEST STARTED ===");
 
     // Setup all bots with max HP/MP
@@ -87,9 +87,9 @@ async::task<bool> skill_test::test_area_damage_spells(std::shared_ptr<fb::bot::g
     }
 
     auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
-    fb::logger::info("Successfully learned {} out of {} area damage spells", learned_count, area_spells.size());
+    fb::logger::debug("Successfully learned {} out of {} area damage spells", learned_count, area_spells.size());
 
-    fb::logger::info("Testing {} area damage spells", area_spells.size());
+    fb::logger::debug("Testing {} area damage spells", area_spells.size());
     auto spell_slot = 1;
 
     co_await caster->move(DIRECTION::BOTTOM, 3, DEFAULT_INTERVAL);
@@ -111,7 +111,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::shared_ptr<fb::bot::g
 
     for (const auto& spell : area_spells)
     {
-        fb::logger::info("Testing area spell: {}", spell.name);
+        fb::logger::debug("Testing area spell: {}", spell.name);
 
         co_await caster->spawn_monsters_by_look_bulk("다람쥐", 5, 32793, DEFAULT_TIMEOUT);
 
@@ -144,22 +144,6 @@ async::task<bool> skill_test::test_area_damage_spells(std::shared_ptr<fb::bot::g
             },
             DEFAULT_TIMEOUT);
 
-        // Verify other bots took damage
-        for (size_t i = 1; i < bots.size(); ++i)
-        {
-            auto actual_hp   = bots[i]->hp();
-            auto expected_hp = expected_target_hp[i - 1];
-
-            if (actual_hp != expected_hp)
-            {
-                fb::logger::warn("Bot {} HP mismatch: expected {}, actual {}", bots[i]->oid(), expected_hp, actual_hp);
-            }
-            else
-            {
-                fb::logger::info("Bot {} HP correctly reduced to {}", bots[i]->oid(), actual_hp);
-            }
-        }
-
         spell_slot++;
     }
 
@@ -181,6 +165,6 @@ async::task<bool> skill_test::test_area_damage_spells(std::shared_ptr<fb::bot::g
     co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     caster->chat("=== AREA DAMAGE SPELL TEST COMPLETED ===");
-    fb::logger::info("Area damage spell test completed.");
+    fb::logger::debug("Area damage spell test completed.");
     co_return true;
 }

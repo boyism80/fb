@@ -6,7 +6,7 @@ using namespace fb::bot::integration;
 
 async::task<bool> skill_test::test_near_target_damage_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
-    fb::logger::info("Bot {} starting near target damage spell test", caster->oid());
+    fb::logger::debug("Bot {} starting near target damage spell test", caster->oid());
     caster->chat("=== NEAR TARGET DAMAGE SPELL TEST STARTED ===");
 
     // Setup all bots with max HP/MP
@@ -38,16 +38,16 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::shared_ptr<fb:
     }
 
     auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
-    fb::logger::info("Successfully learned {} out of {} near target damage spells",
-                     learned_count,
-                     near_target_spells.size());
+    fb::logger::debug("Successfully learned {} out of {} near target damage spells",
+                      learned_count,
+                      near_target_spells.size());
 
-    fb::logger::info("Learning {} near target damage spells", near_target_spells.size());
+    fb::logger::debug("Learning {} near target damage spells", near_target_spells.size());
     auto spell_slot = 1;
 
     for (const auto& spell : near_target_spells)
     {
-        fb::logger::info("Testing near target spell: {}", spell.name);
+        fb::logger::debug("Testing near target spell: {}", spell.name);
 
         // Spawn a target monster in front of the caster
         auto target = co_await caster->spawn_monster_relative_by_look("다람쥐", 0, 2, 32793, DEFAULT_TIMEOUT);
@@ -80,6 +80,6 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::shared_ptr<fb:
     }
 
     caster->chat("=== NEAR TARGET DAMAGE SPELL TEST COMPLETED ===");
-    fb::logger::info("Near target damage spell test completed.");
+    fb::logger::debug("Near target damage spell test completed.");
     co_return true;
 }

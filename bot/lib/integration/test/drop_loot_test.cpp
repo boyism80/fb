@@ -12,9 +12,7 @@ namespace fb::bot::integration {
 
 drop_loot_test::drop_loot_test(game_bot_controller& controller) :
     bot_integration_test(controller, 2)
-{
-    fb::logger::debug("Drop loot test constructed");
-}
+{ }
 
 async::task<void> drop_loot_test::on_initialize(game_bot_controller& controller)
 {

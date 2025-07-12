@@ -33,6 +33,8 @@ game_bot_controller::game_bot_controller(bot_container& container) :
 
 void game_bot_controller::initialize()
 {
+    fb::console::set_mode(fb::console::mode::plain);
+
     // Set up integration test timer with different interval (slower for detailed testing)
     this->bind_timer(&game_bot_controller::handle_timer, 1000ms);
 
@@ -48,8 +50,17 @@ void game_bot_controller::initialize()
     this->enqueue_test(std::make_unique<swap_test>(*this));
     this->enqueue_test(std::make_unique<throw_test>(*this));
 
-    fb::logger::info("Integration test controller initialized with test queue (movement -> attack -> skill -> bulletin "
-                     "-> trade -> drop_loot -> item -> swap -> throw)");
+    // Log the test queue in a more manageable format
+    fb::logger::info("Integration test controller initialized with {} tests in queue", this->_test_queue.size());
+    fb::logger::info("Test execution order:");
+
+    auto temp_queue  = this->_test_queue;
+    int  test_number = 1;
+    while (!temp_queue.empty())
+    {
+        fb::logger::info("  {}. {}", test_number++, temp_queue.front()->name());
+        temp_queue.pop();
+    }
 
     this->active_test();
 }
@@ -62,16 +73,16 @@ async::task<void> game_bot_controller::active_test()
         co_return;
     }
 
-    fb::logger::info("Activating first test: '{}'", this->_current_test->name());
+    fb::logger::debug("Activating first test: '{}'", this->_current_test->name());
     std::ignore = this->_current_test->on_active(*this);
-    fb::logger::info("Test '{}' activated and ready to receive bot connections", this->_current_test->name());
+    fb::logger::debug("Test '{}' activated and ready to receive bot connections", this->_current_test->name());
 }
 
 void game_bot_controller::notify_test_ready()
 {
     if (this->_current_test)
     {
-        fb::logger::info("Test '{}' is ready, starting execution", this->_current_test->name());
+        fb::logger::debug("Test '{}' is ready, starting execution", this->_current_test->name());
         std::ignore = this->start_current_test();
     }
 }
@@ -119,7 +130,7 @@ async::task<void> game_bot_controller::handle_timer()
     {
         first_test_started = true;
         // No longer need to start tests - they start automatically via hooks
-        fb::logger::info("Integration test controller initialized - tests will start automatically");
+        fb::logger::debug("Integration test controller initialized - tests will start automatically");
     }
 
     co_return;
@@ -207,7 +218,7 @@ async::task<void> game_bot_controller::handle_transfer(game_bot& bot, const fb::
 
 async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
 {
-    fb::logger::info("Bot {} connected for integration testing", bot.fd());
+    fb::logger::debug("Bot {} connected for integration testing", bot.fd());
 
     // Notify current test about bot connection
     if (this->_current_test)
@@ -236,7 +247,7 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
 
 async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
 {
-    fb::logger::info("Bot {} disconnected from integration testing", bot.name());
+    fb::logger::debug("Bot {} disconnected from integration testing", bot.name());
 
     // Integration test: Collect test results and perform cleanup
     // TODO: Generate test report for this bot session
@@ -282,15 +293,13 @@ void game_bot_controller::enqueue_test(std::unique_ptr<bot_integration_test> tes
     {
         this->_current_test = this->_test_queue.front();
     }
-
-    fb::logger::debug("Test '{}' added to queue", this->_test_instances.back()->name());
 }
 
 void game_bot_controller::start_next_test()
 {
     if (this->_test_queue.empty())
     {
-        fb::logger::info("No more tests in queue");
+        fb::logger::debug("No more tests in queue");
         return;
     }
 
@@ -306,7 +315,7 @@ void game_bot_controller::start_next_test()
 
     // Set the next test as current
     this->_current_test = this->_test_queue.front();
-    fb::logger::info("Starting next test: '{}'", this->_current_test->name());
+    fb::logger::debug("Starting next test: '{}'", this->_current_test->name());
 
     // Activate the next test
     std::ignore = this->active_test();

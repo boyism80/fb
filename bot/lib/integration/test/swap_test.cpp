@@ -7,16 +7,14 @@ using namespace fb::bot::integration;
 
 swap_test::swap_test(game_bot_controller& controller) :
     bot_integration_test(controller, 2) // Spawn 2 bots for testing
-{
-    fb::logger::debug("Swap test constructed");
-}
+{ }
 
 async::task<void> swap_test::on_initialize(game_bot_controller& controller)
 {
     co_await super::on_initialize(controller);
 
     auto bots = this->get_test_bots();
-    fb::logger::info("Starting swap test with {} bots", bots.size());
+    fb::logger::debug("Starting swap test with {} bots", bots.size());
 
     if (bots.empty())
         throw std::runtime_error("No bots available for swap test");
@@ -26,7 +24,7 @@ async::task<void> swap_test::on_initialize(game_bot_controller& controller)
     co_await this->sleep(500ms);
     bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
-    fb::logger::info("Swap test initialization completed");
+    fb::logger::debug("Swap test initialization completed");
     co_return;
 }
 
@@ -88,14 +86,14 @@ async::task<bool> swap_test::test_item_swap_1(uint32_t index)
     auto  bots = this->get_test_bots();
     auto& bot  = bots[index];
 
-    fb::logger::info("Starting item swap test 1 for bot {}", bot->name());
+    fb::logger::debug("Starting item swap test 1 for bot {}", bot->name());
 
     // Create test items: 도토리 200개, 토끼고기 100개
     co_await bot->create_item("도토리", 200, DEFAULT_TIMEOUT);
     co_await bot->create_item("토끼고기", 100, DEFAULT_TIMEOUT);
 
     // Test 1: Swap items between slots 0 and 1 (both have items)
-    fb::logger::info("Test 1: Swapping items between slots 0 and 1");
+    fb::logger::debug("Test 1: Swapping items between slots 0 and 1");
     bot->chat("Starting item swap test 1: swapping 도토리 and 토끼고기");
 
     auto swap_request = fb::protocol::game::request::swap(SWAP_TYPE::ITEM, 1, 2);
@@ -125,7 +123,7 @@ async::task<bool> swap_test::test_item_swap_1(uint32_t index)
     }
 
     bot->chat("Item swap test 1 successful");
-    fb::logger::info("Item swap test 1 completed successfully for bot {}", bot->name());
+    fb::logger::debug("Item swap test 1 completed successfully for bot {}", bot->name());
     co_return true;
 }
 
@@ -134,10 +132,10 @@ async::task<bool> swap_test::test_item_swap_2(uint32_t index)
     auto  bots = this->get_test_bots();
     auto& bot  = bots[index];
 
-    fb::logger::info("Starting item swap test 2 for bot {}", bot->name());
+    fb::logger::debug("Starting item swap test 2 for bot {}", bot->name());
 
     // Test 2: Swap slot 0 (now 토끼고기) with slot 2 (empty slot)
-    fb::logger::info("Test 2: Swapping slot 0 with empty slot 2");
+    fb::logger::debug("Test 2: Swapping slot 0 with empty slot 2");
     bot->chat("Starting item swap test 2: swapping with empty slot");
 
     auto swap_request2 = fb::protocol::game::request::swap(SWAP_TYPE::ITEM, 1, 3);
@@ -161,7 +159,7 @@ async::task<bool> swap_test::test_item_swap_2(uint32_t index)
     }
 
     bot->chat("Item swap test 2 successful");
-    fb::logger::info("Item swap test 2 completed successfully for bot {}", bot->name());
+    fb::logger::debug("Item swap test 2 completed successfully for bot {}", bot->name());
     co_return true;
 }
 
@@ -170,10 +168,10 @@ async::task<bool> swap_test::test_item_swap_3(uint32_t index)
     auto  bots = this->get_test_bots();
     auto& bot  = bots[index];
 
-    fb::logger::info("Starting item swap test 3 for bot {}", bot->name());
+    fb::logger::debug("Starting item swap test 3 for bot {}", bot->name());
 
     // Test 3: Swap slot 0 (now empty) with slot 2 (now 토끼고기)
-    fb::logger::info("Test 3: Swapping empty slot 0 with slot 2 (토끼고기)");
+    fb::logger::debug("Test 3: Swapping empty slot 0 with slot 2 (토끼고기)");
     bot->chat("Starting item swap test 3: reverse empty slot swap");
 
     auto swap_request3 = fb::protocol::game::request::swap(SWAP_TYPE::ITEM, 1, 3);
@@ -197,7 +195,7 @@ async::task<bool> swap_test::test_item_swap_3(uint32_t index)
     }
 
     bot->chat("Item swap test 3 successful");
-    fb::logger::info("Item swap test 3 completed successfully for bot {}", bot->name());
+    fb::logger::debug("Item swap test 3 completed successfully for bot {}", bot->name());
     co_return true;
 }
 
@@ -206,14 +204,14 @@ async::task<bool> swap_test::test_spell_swap_1(uint32_t index)
     auto  bots = this->get_test_bots();
     auto& bot  = bots[index];
 
-    fb::logger::info("Starting spell swap test 1 for bot {}", bot->name());
+    fb::logger::debug("Starting spell swap test 1 for bot {}", bot->name());
 
     // Learn test spells: 누리의기원, 바다의기원
     std::ignore = co_await bot->learn_spell("누리의기원", DEFAULT_TIMEOUT);
     std::ignore = co_await bot->learn_spell("바다의기원", DEFAULT_TIMEOUT);
 
     // Test 1: Swap spells between slots 0 and 1 (both have spells)
-    fb::logger::info("Test 1: Swapping spells between slots 0 and 1");
+    fb::logger::debug("Test 1: Swapping spells between slots 0 and 1");
     bot->chat("Starting spell swap test 1: swapping 누리의기원 and 바다의기원");
 
     auto spell_swap_request1 = fb::protocol::game::request::swap(SWAP_TYPE::SPELL, 1, 2);
@@ -244,7 +242,7 @@ async::task<bool> swap_test::test_spell_swap_1(uint32_t index)
     }
 
     bot->chat("Spell swap test 1 successful");
-    fb::logger::info("Spell swap test 1 completed successfully for bot {}", bot->name());
+    fb::logger::debug("Spell swap test 1 completed successfully for bot {}", bot->name());
     co_return true;
 }
 
@@ -253,10 +251,10 @@ async::task<bool> swap_test::test_spell_swap_2(uint32_t index)
     auto  bots = this->get_test_bots();
     auto& bot  = bots[index];
 
-    fb::logger::info("Starting spell swap test 2 for bot {}", bot->name());
+    fb::logger::debug("Starting spell swap test 2 for bot {}", bot->name());
 
     // Test 2: Swap slot 0 (now 바다의기원) with slot 2 (empty slot)
-    fb::logger::info("Test 2: Swapping slot 0 with empty slot 2");
+    fb::logger::debug("Test 2: Swapping slot 0 with empty slot 2");
 
     auto spell_swap_request2 = fb::protocol::game::request::swap(SWAP_TYPE::SPELL, 1, 3);
 
@@ -278,7 +276,7 @@ async::task<bool> swap_test::test_spell_swap_2(uint32_t index)
     }
 
     bot->chat("Spell swap test 2 successful");
-    fb::logger::info("Spell swap test 2 completed successfully for bot {}", bot->name());
+    fb::logger::debug("Spell swap test 2 completed successfully for bot {}", bot->name());
     co_return true;
 }
 
@@ -287,10 +285,10 @@ async::task<bool> swap_test::test_spell_swap_3(uint32_t index)
     auto  bots = this->get_test_bots();
     auto& bot  = bots[index];
 
-    fb::logger::info("Starting spell swap test 3 for bot {}", bot->name());
+    fb::logger::debug("Starting spell swap test 3 for bot {}", bot->name());
 
     // Test 3: Swap slot 0 (now empty) with slot 2 (now 바다의기원)
-    fb::logger::info("Test 3: Swapping empty slot 0 with slot 2 (바다의기원)");
+    fb::logger::debug("Test 3: Swapping empty slot 0 with slot 2 (바다의기원)");
 
     auto spell_swap_request3 = fb::protocol::game::request::swap(SWAP_TYPE::SPELL, 1, 3);
 
@@ -318,7 +316,7 @@ async::task<bool> swap_test::test_spell_swap_3(uint32_t index)
     }
 
     bot->chat("Spell swap test 3 successful");
-    fb::logger::info("Spell swap test 3 completed successfully for bot {}", bot->name());
+    fb::logger::debug("Spell swap test 3 completed successfully for bot {}", bot->name());
     co_return true;
 }
 

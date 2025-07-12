@@ -8,9 +8,7 @@ namespace fb::bot::integration {
 
 communication_test::communication_test(game_bot_controller& controller) :
     bot_integration_test(controller, REQUIRED_BOTS) // Spawn required bots
-{
-    fb::logger::debug("Communication test constructed");
-}
+{ }
 
 async::task<void> communication_test::on_initialize(game_bot_controller& controller)
 {
@@ -80,7 +78,7 @@ async::task<bool> communication_test::test_normal_chat()
         },
         DEFAULT_TIMEOUT);
 
-    fb::logger::info("Normal chat test PASSED");
+    fb::logger::debug("Normal chat test PASSED");
     co_return true;
 }
 
@@ -105,7 +103,7 @@ async::task<bool> communication_test::test_shout_chat()
         },
         DEFAULT_TIMEOUT);
 
-    fb::logger::info("Shout chat test PASSED");
+    fb::logger::debug("Shout chat test PASSED");
     co_return true;
 }
 
@@ -137,7 +135,7 @@ async::task<bool> communication_test::test_whisper()
         },
         DEFAULT_TIMEOUT);
 
-    fb::logger::info("Whisper test PASSED");
+    fb::logger::debug("Whisper test PASSED");
     co_return true;
 }
 
@@ -170,12 +168,12 @@ async::task<bool> communication_test::test_whisper_block()
             },
             DEFAULT_TIMEOUT);
 
-        fb::logger::info("Whisper block test PASSED - whisper was successfully blocked");
+        fb::logger::debug("Whisper block test PASSED - whisper was successfully blocked");
     }
     catch (...)
     {
         // If no response is received, that's also a valid blocking behavior
-        fb::logger::info("Whisper block test PASSED - whisper was blocked (no response)");
+        fb::logger::debug("Whisper block test PASSED - whisper was blocked (no response)");
     }
 
     // Re-enable whisper option for bot2

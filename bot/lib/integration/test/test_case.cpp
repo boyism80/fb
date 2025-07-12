@@ -64,7 +64,7 @@ async::task<void> bot_integration_test::on_finished()
             bot->close();
     }
 
-    fb::logger::info("{} test finished - all bots disconnected", this->name());
+    fb::logger::debug("{} test finished - all bots disconnected", this->name());
     co_return;
 }
 
@@ -94,7 +94,7 @@ async::task<void> bot_integration_test::on_active(game_bot_controller& controlle
     auto endpoint =
         boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
 
-    fb::logger::info("{} initializing and spawning {} bots", this->name(), this->bot_count);
+    fb::logger::debug("{} initializing and spawning {} bots", this->name(), this->bot_count);
 
     for (auto i = 0u; i < this->bot_count; i++)
     {
@@ -102,7 +102,7 @@ async::task<void> bot_integration_test::on_active(game_bot_controller& controlle
         gateway_bot->connect(endpoint);
     }
 
-    fb::logger::info("{} initialization completed - {} bots spawned", this->name(), this->bot_count);
+    fb::logger::debug("{} initialization completed - {} bots spawned", this->name(), this->bot_count);
 
     auto scenario_generator = this->on_generate_scenario();
     while (scenario_generator.next())
@@ -136,7 +136,7 @@ async::task<bool> bot_integration_test::execute()
 
     auto failed         = false;
     auto scenario_index = 0;
-    fb::logger::info("{}: Starting test execution", this->name());
+    fb::logger::debug("{}: Starting test execution", this->name());
     co_await this->on_initialize(this->_controller);
     while (this->_scenario_queue.empty() == false)
     {
@@ -160,15 +160,11 @@ async::task<bool> bot_integration_test::execute()
 
     co_await this->on_finished();
     if (failed)
-    {
-        fb::logger::fatal("{}: Test failed", this->name());
         this->set_state(test_state::failed);
-        co_return false;
-    }
+    else
+        this->set_state(test_state::completed);
 
-    fb::logger::info("{}: Test completed successfully", this->name());
-    this->set_state(test_state::completed);
-    co_return true;
+    co_return !failed;
 }
 
 async::task<void> bot_integration_test::on_scenario_started(uint32_t scenario_index)
@@ -269,7 +265,7 @@ async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot&     
     if (this->get_state() == test_state::running)
         co_return;
 
-    fb::logger::info("{}: All bots ready, notifying controller", this->name());
+    fb::logger::debug("{}: All bots ready, notifying controller", this->name());
     this->set_state(test_state::ready);
     this->notify_ready();
     co_return;
@@ -284,7 +280,7 @@ async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot&     
     if (this->get_state() == test_state::running)
         co_return;
 
-    fb::logger::info("{}: All bots ready, notifying controller", this->name());
+    fb::logger::debug("{}: All bots ready, notifying controller", this->name());
     this->set_state(test_state::ready);
     this->notify_ready();
     co_return;
@@ -303,7 +299,7 @@ bot_integration_test::on_hook_update_external(fb::bot::game_bot&                
     if (this->get_state() == test_state::running)
         co_return;
 
-    fb::logger::info("{}: All bots ready, notifying controller", this->name());
+    fb::logger::debug("{}: All bots ready, notifying controller", this->name());
     this->set_state(test_state::ready);
     this->notify_ready();
     co_return;

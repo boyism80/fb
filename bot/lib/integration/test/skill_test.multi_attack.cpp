@@ -6,7 +6,7 @@ using namespace fb::bot::integration;
 
 async::task<bool> skill_test::test_multi_target_attack_cast_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
-    fb::logger::info("Bot {} starting multi-target attack_cast spell test", caster->oid());
+    fb::logger::debug("Bot {} starting multi-target attack_cast spell test", caster->oid());
     caster->chat("=== MULTI-TARGET ATTACK_CAST SPELL TEST STARTED ===");
 
     // Setup all bots with max HP/MP
@@ -83,16 +83,16 @@ async::task<bool> skill_test::test_multi_target_attack_cast_spells(std::shared_p
     }
 
     auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
-    fb::logger::info("Successfully learned {} out of {} multi-target attack_cast spells",
-                     learned_count,
-                     multi_target_spells.size());
+    fb::logger::debug("Successfully learned {} out of {} multi-target attack_cast spells",
+                      learned_count,
+                      multi_target_spells.size());
 
-    fb::logger::info("Learning {} multi-target attack_cast spells", multi_target_spells.size());
+    fb::logger::debug("Learning {} multi-target attack_cast spells", multi_target_spells.size());
     auto spell_slot = 1;
 
     for (const auto& spell : multi_target_spells)
     {
-        fb::logger::info("Testing multi-target spell: {}", spell.name);
+        fb::logger::debug("Testing multi-target spell: {}", spell.name);
 
         auto caster_pos = caster->position();
 
@@ -128,6 +128,6 @@ async::task<bool> skill_test::test_multi_target_attack_cast_spells(std::shared_p
     }
 
     caster->chat("=== MULTI-TARGET ATTACK_CAST SPELL TEST COMPLETED ===");
-    fb::logger::info("Multi-target attack_cast spell test completed.");
+    fb::logger::debug("Multi-target attack_cast spell test completed.");
     co_return true;
 }

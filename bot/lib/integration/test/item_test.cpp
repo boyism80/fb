@@ -8,9 +8,7 @@ namespace fb::bot::integration {
 
 item_test::item_test(game_bot_controller& controller) :
     bot_integration_test(controller, 4)
-{
-    fb::logger::debug("Item test constructed");
-}
+{ }
 
 async::task<void> item_test::on_initialize(game_bot_controller& controller)
 {

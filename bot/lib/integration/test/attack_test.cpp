@@ -11,9 +11,7 @@ namespace fb::bot::integration {
 
 attack_test::attack_test(game_bot_controller& controller) :
     bot_integration_test(controller)
-{
-    fb::logger::debug("Attack test constructed");
-}
+{ }
 
 async::task<bool> attack_test::attack_scenario()
 {
@@ -24,7 +22,7 @@ async::task<bool> attack_test::attack_scenario()
 
     auto bot = bots.front();
 
-    fb::logger::info("Attack test: Bot {} will perform attack sequences", bot->fd());
+    fb::logger::debug("Attack test: Bot {} will perform attack sequences", bot->fd());
 
     // Perform attack sequences - simple attack to air 5 times
     constexpr int ATTACK_COUNT = 5;
