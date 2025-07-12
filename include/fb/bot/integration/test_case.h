@@ -40,6 +40,9 @@ struct spawned_monster_info
 class bot_integration_test
 {
 public:
+    using test_bots_t = std::vector<std::shared_ptr<fb::bot::game_bot>>;
+    using scenario_t  = std::function<async::task<bool>()>;
+
     enum class test_state : uint8_t
     {
         idle,      ///< Test is not started yet
@@ -49,8 +52,14 @@ public:
         failed     ///< Test has failed
     };
 
-    using test_bots_t = std::vector<std::shared_ptr<fb::bot::game_bot>>;
-    using scenario_t  = std::function<async::task<bool>()>;
+    struct parallel_scenarios_context
+    {
+        std::unordered_map<uint32_t, std::queue<scenario_t>> queues;
+        std::shared_ptr<async::task_completion_source<bool>> promise;
+        std::atomic<int>                                     processed;
+        std::atomic<bool>                                    success;
+        int                                                  count;
+    };
 
 private:
     test_bots_t            _test_bots;               ///< Collection of bots managed by this test
@@ -81,6 +90,24 @@ protected:
 
 public:
     virtual ~bot_integration_test() = default;
+
+private:
+    /**
+     * @brief      Executes a single parallel scenario within the context.
+     *
+     *             This method processes scenarios from the specified queue index
+     *             within the parallel scenarios context. It handles scenario execution,
+     *             progress tracking, and result aggregation in a thread-safe manner.
+     *
+     * @param[in]  context  Shared pointer to the parallel scenarios context.
+     * @param[in]  index    The queue index to process scenarios from.
+     *
+     * @return     A task that completes when the scenario execution is finished.
+     *
+     * @note       This method is called internally by parallel_scenarios()
+     * @note       Each call processes scenarios from a specific queue index
+     */
+    async::task<void> execute_parallel_scenario(std::shared_ptr<parallel_scenarios_context> context, uint32_t index);
 
 protected:
     /**
@@ -224,6 +251,32 @@ protected:
      * @param[in]  scenario_index  The index of the scenario.
      */
     virtual async::task<void> on_scenario_finished(uint32_t scenario_index);
+
+    /**
+     * @brief      Called when a parallel scenario is started.
+     *
+     * @param[in]  id  The id of the scenario.
+     */
+    virtual async::task<void> on_parallel_scenario_started(uint32_t id);
+
+    /**
+     * @brief      Called when a parallel scenario is finished.
+     *
+     * @param[in]  id  The id of the scenario.
+     */
+    virtual async::task<void> on_parallel_scenario_finished(uint32_t id);
+
+    /**
+     * @brief      Executes a vector of scenarios in parallel.
+     *
+     *             This method is used to execute a vector of scenarios in parallel.
+     *             The scenarios are executed in parallel and the result is returned.
+     *
+     * @param[in]  scenarios  The vector of scenarios to execute.
+     *
+     * @return     A task that completes when all scenarios are finished.
+     */
+    async::task<bool> parallel_scenarios(std::vector<std::pair<uint32_t, scenario_t>> scenarios);
 
     /**
      * @brief      Common hook handler for sequence (object ID) responses.

@@ -227,7 +227,7 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
 
 async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
 {
-    fb::logger::info("Bot {} disconnected from integration testing", bot.fd());
+    fb::logger::info("Bot {} disconnected from integration testing", bot.name());
 
     // Integration test: Collect test results and perform cleanup
     // TODO: Generate test report for this bot session
@@ -291,6 +291,7 @@ void game_bot_controller::start_next_test()
     if (this->_test_queue.empty())
     {
         fb::logger::info("All tests completed");
+        this->container.exit();
         return;
     }
 

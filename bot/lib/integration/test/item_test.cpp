@@ -47,46 +47,61 @@ async::task<void> item_test::on_scenario_started(uint32_t scenario_index)
 
 async::task<void> item_test::on_scenario_finished(uint32_t scenario_index)
 {
-    for (auto& bot : this->get_test_bots())
-    {
-        auto thread = bot->thread();
-        co_await thread->switching();
+    co_return;
+}
 
-        fb::logger::debug("Resetting bot {} state to clean initial conditions", bot->oid());
+async::task<void> item_test::on_parallel_scenario_started(uint32_t id)
+{
+    co_return;
+}
 
-        // Clear all items from inventory
-        bot->chat("/아이템삭제");
-        bot->chat("/아이템초기화");
-        co_await bot->thread()->sleep(500ms);
+async::task<void> item_test::on_parallel_scenario_finished(uint32_t id)
+{
+    auto  bots = this->get_test_bots();
+    auto& bot  = bots[id];
 
-        // Reset money to 0
-        co_await bot->change_money(0, DEFAULT_TIMEOUT);
+    fb::logger::debug("Resetting bot {} state to clean initial conditions", bot->oid());
 
-        // Reset to default level (level 1)
-        co_await bot->change_level(1, DEFAULT_TIMEOUT);
+    // Clear all items from inventory
+    bot->chat("/아이템삭제");
+    bot->chat("/아이템초기화");
+    co_await bot->thread()->sleep(500ms);
 
-        // Reset all stats to 1
-        co_await bot->change_stats(1, 1, 1, DEFAULT_TIMEOUT);
+    // Reset money to 0
+    co_await bot->change_money(0, DEFAULT_TIMEOUT);
 
-        // Reset sex to male
-        co_await bot->change_sex(fb::model::enum_value::SEX::MAN, DEFAULT_TIMEOUT);
+    // Reset to default level (level 1)
+    co_await bot->change_level(1, DEFAULT_TIMEOUT);
 
-        // Reset base HP and MP to reasonable defaults
-        co_await bot->change_base_hp(1000, DEFAULT_TIMEOUT);
-        co_await bot->change_base_mp(1000, DEFAULT_TIMEOUT);
-    }
+    // Reset all stats to 1
+    co_await bot->change_stats(1, 1, 1, DEFAULT_TIMEOUT);
 
+    // Reset sex to male
+    co_await bot->change_sex(fb::model::enum_value::SEX::MAN, DEFAULT_TIMEOUT);
+
+    // Reset base HP and MP to reasonable defaults
+    co_await bot->change_base_hp(1000, DEFAULT_TIMEOUT);
+    co_await bot->change_base_mp(1000, DEFAULT_TIMEOUT);
     co_return;
 }
 
 generator<bot_integration_test::scenario_t> item_test::on_generate_scenario()
 {
-    co_yield [this]() -> async::task<bool> {
-        co_return co_await this->test_equipment_success();
-    };
+    auto scenarios = std::vector<std::pair<uint32_t, scenario_t>>{};
 
-    co_yield [this]() -> async::task<bool> {
-        co_return co_await this->test_equipment_failure();
+    for (int i = 0; i < this->bot_count; i++)
+    {
+        scenarios.push_back({i, [this, i]() -> async::task<bool> {
+                                 co_return co_await this->test_equipment_success(i);
+                             }});
+
+        scenarios.push_back({i, [this, i]() -> async::task<bool> {
+                                 co_return co_await this->test_equipment_failure(i);
+                             }});
+    }
+
+    co_yield [this, scenarios]() -> async::task<bool> {
+        co_return co_await this->parallel_scenarios(scenarios);
     };
 
     co_yield [this]() -> async::task<bool> {

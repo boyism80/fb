@@ -4,12 +4,9 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_healing_spells()
+async::task<bool> skill_test::test_healing_spells(std::shared_ptr<fb::bot::game_bot> caster,
+                                                  std::shared_ptr<fb::bot::game_bot> target)
 {
-    auto  bots   = this->get_test_bots();
-    auto& caster = bots.front();
-    auto& target = bots.at(1);
-
     fb::logger::info("Bot {} starting healing spell test", caster->oid());
     caster->chat("=== HEALING SPELL TEST STARTED ===");
 
@@ -18,10 +15,8 @@ async::task<bool> skill_test::test_healing_spells()
     co_await thread->switching();
 
     // Setup all bots with max HP/MP and current HP
-    for (auto& bot : bots)
-    {
-        std::ignore = co_await bot->setup_bot_stats(100000, 100000, 50, std::nullopt, DEFAULT_TIMEOUT);
-    }
+    std::ignore = co_await caster->setup_bot_stats(100000, 100000, 50, std::nullopt, DEFAULT_TIMEOUT);
+    std::ignore = co_await target->setup_bot_stats(100000, 100000, 50, std::nullopt, DEFAULT_TIMEOUT);
 
     caster->chat("Bot setup completed - ready for spell testing");
 

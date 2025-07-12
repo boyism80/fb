@@ -4,8 +4,11 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> item_test::test_equipment_success()
+async::task<bool> item_test::test_equipment_success(uint32_t index)
 {
+    auto  bots = this->get_test_bots();
+    auto& bot  = bots[index];
+
     fb::logger::info("Starting scenario 1-1: Equip items without conditions");
 
     auto equipments = std::vector<equipment_item_data>{
@@ -16,53 +19,39 @@ async::task<bool> item_test::test_equipment_success()
     };
 
     // Set basic stats for testing
-    for (const auto& bot : this->get_test_bots())
-    {
-        if (bot == nullptr)
-            continue;
+    co_await bot->change_level(10, DEFAULT_TIMEOUT);
+    co_await bot->change_stats(10, 10, 10, DEFAULT_TIMEOUT);
+    co_await bot->change_sex(fb::model::enum_value::SEX::MAN, DEFAULT_TIMEOUT);
 
-        co_await bot->change_level(10, DEFAULT_TIMEOUT);
-        co_await bot->change_stats(10, 10, 10, DEFAULT_TIMEOUT);
-        co_await bot->change_sex(fb::model::enum_value::SEX::MAN, DEFAULT_TIMEOUT);
-    }
-
-    auto bot_index = 0;
-    for (auto& bot : this->get_test_bots())
+    auto slot = 0;
+    for (const auto& item : equipments)
     {
-        auto slot = 0;
-        for (const auto& item : equipments)
+        co_await bot->create_item(item.item_name, 1, DEFAULT_TIMEOUT);
+        auto success = co_await bot->equip(slot++, item.success_message, DEFAULT_TIMEOUT);
+        if (!success)
         {
-            co_await bot->create_item(item.item_name, 1, DEFAULT_TIMEOUT);
-            auto success = co_await bot->equip(slot++, item.success_message, DEFAULT_TIMEOUT);
-            if (!success)
-            {
-                fb::logger::fatal("Scenario 1-1: Failed to equip {}", item.item_name);
-                co_return false;
-            }
-
-            co_await bot->unequip(item.equipment_part, DEFAULT_TIMEOUT);
-            fb::logger::info("Scenario 1-1: Successfully equipped {}", item.item_name);
+            fb::logger::fatal("Scenario 1-1: Failed to equip {}", item.item_name);
+            co_return false;
         }
-        bot_index++;
+
+        co_await bot->unequip(item.equipment_part, DEFAULT_TIMEOUT);
+        fb::logger::info("Scenario 1-1: Successfully equipped {}", item.item_name);
     }
 
     co_return true;
 }
 
-async::task<bool> item_test::test_equipment_failure()
+async::task<bool> item_test::test_equipment_failure(uint32_t index)
 {
     fb::logger::info("Starting scenario 2-1: Equip items with conditions - expect failure");
 
     // Set low stats to ensure failure
-    for (const auto& bot : this->get_test_bots())
-    {
-        if (bot == nullptr)
-            continue;
+    auto  bots = this->get_test_bots();
+    auto& bot  = bots[index];
 
-        bot->change_level(1, DEFAULT_TIMEOUT);
-        bot->change_stats(1, 1, 1, DEFAULT_TIMEOUT);
-        bot->change_sex(fb::model::enum_value::SEX::MAN, DEFAULT_TIMEOUT);
-    }
+    co_await bot->change_level(1, DEFAULT_TIMEOUT);
+    co_await bot->change_stats(1, 1, 1, DEFAULT_TIMEOUT);
+    co_await bot->change_sex(fb::model::enum_value::SEX::MAN, DEFAULT_TIMEOUT);
 
     auto equipments = std::vector<std::vector<equipment_item_data>>{
         {
@@ -207,49 +196,45 @@ async::task<bool> item_test::test_equipment_failure()
          }
     };
 
-    auto bot_index = 0;
-    for (const auto& bot : this->get_test_bots())
+    co_await bot->change_level(1, DEFAULT_TIMEOUT);
+    co_await bot->change_stats(1, 1, 1, DEFAULT_TIMEOUT);
+    co_await bot->change_sex(fb::model::enum_value::SEX::MAN, DEFAULT_TIMEOUT);
+
+    auto slot = 0;
+    for (const auto& item : equipments[index])
     {
-        if (bot == nullptr)
-            continue;
-
-        auto slot = 0;
-        for (const auto& item : equipments[bot_index])
+        if (item.rollback != nullptr)
         {
-            if (item.rollback != nullptr)
-            {
-                co_await item.rollback(*bot);
-            }
-
-            co_await bot->create_item(item.item_name, 1, DEFAULT_TIMEOUT);
-            auto success = co_await bot->equip(slot, item.success_message, DEFAULT_TIMEOUT);
-            if (success)
-            {
-                fb::logger::fatal("Scenario 2-1: Unexpectedly succeeded to equip {} with insufficient conditions",
-                                  item.item_name);
-                co_return false;
-            }
-
-            if (item.condition != nullptr)
-            {
-                co_await item.condition(*bot);
-            }
-
-            success = co_await bot->equip(slot, item.success_message, DEFAULT_TIMEOUT);
-            if (!success)
-            {
-                fb::logger::fatal("Scenario 2-1: Failed to equip {}", item.item_name);
-                co_return false;
-            }
-
-            co_await bot->unequip(item.equipment_part, DEFAULT_TIMEOUT);
-            if (item.rollback != nullptr)
-            {
-                co_await item.rollback(*bot);
-            }
-            slot++;
+            co_await item.rollback(*bot);
         }
-        bot_index++;
+
+        co_await bot->create_item(item.item_name, 1, DEFAULT_TIMEOUT);
+        auto success = co_await bot->equip(slot, item.success_message, DEFAULT_TIMEOUT);
+        if (success)
+        {
+            fb::logger::fatal("Scenario 2-1: Unexpectedly succeeded to equip {} with insufficient conditions",
+                              item.item_name);
+            co_return false;
+        }
+
+        if (item.condition != nullptr)
+        {
+            co_await item.condition(*bot);
+        }
+
+        success = co_await bot->equip(slot, item.success_message, DEFAULT_TIMEOUT);
+        if (!success)
+        {
+            fb::logger::fatal("Scenario 2-1: Failed to equip {}", item.item_name);
+            co_return false;
+        }
+
+        co_await bot->unequip(item.equipment_part, DEFAULT_TIMEOUT);
+        if (item.rollback != nullptr)
+        {
+            co_await item.rollback(*bot);
+        }
+        slot++;
     }
 
     co_return true;

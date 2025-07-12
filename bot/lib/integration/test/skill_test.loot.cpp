@@ -6,14 +6,11 @@ using namespace std::chrono_literals;
 
 namespace fb::bot::integration {
 
-async::task<bool> skill_test::test_loot_spell()
+async::task<bool> skill_test::test_loot_spell(std::shared_ptr<fb::bot::game_bot> caster)
 {
     constexpr auto item_name    = "도토리";
     constexpr auto item_count   = 200;
     constexpr auto money_amount = 10000;
-
-    auto  bots   = this->get_test_bots();
-    auto& caster = bots.front();
 
     fb::logger::info("Testing loot spell with item and money loot");
     caster->chat("=== LOOT SPELL TEST STARTED ===");

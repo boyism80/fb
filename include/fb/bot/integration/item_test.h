@@ -53,6 +53,8 @@ protected:
     async::task<void>     on_initialize(game_bot_controller& controller) override final;
     async::task<void>     on_scenario_started(uint32_t scenario_index) override final;
     async::task<void>     on_scenario_finished(uint32_t scenario_index) override final;
+    async::task<void>     on_parallel_scenario_started(uint32_t id) override final;
+    async::task<void>     on_parallel_scenario_finished(uint32_t id) override final;
 
 public:
     /**
@@ -92,9 +94,11 @@ private:
      *             with appropriate stats. It ensures that items can be equipped
      *             without any issues when the character meets the required conditions.
      *
+     * @param[in]  index    The index of the test bot to use for equipment testing.
+     *
      * @return     An async task that completes with true if test passed, false otherwise.
      */
-    async::task<bool> test_equipment_success();
+    async::task<bool> test_equipment_success(uint32_t index);
 
     /**
      * @brief      Tests equipment activation with failure scenarios.
@@ -103,9 +107,11 @@ private:
      *             items by characters with insufficient stats. It ensures that items
      *             fail to equip when the character does not meet the required conditions.
      *
+     * @param[in]  index    The index of the test bot to use for equipment testing.
+     *
      * @return     An async task that completes with true if test passed, false otherwise.
      */
-    async::task<bool> test_equipment_failure();
+    async::task<bool> test_equipment_failure(uint32_t index);
 
     /**
      * @brief      Tests equipment overflow scenarios.

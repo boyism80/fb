@@ -4,14 +4,8 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_damage_spells()
+async::task<bool> skill_test::test_damage_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
-    auto  bots   = this->get_test_bots();
-    auto& caster = bots.front();
-    auto& target = bots.at(1);
-    auto& other1 = bots.at(2);
-    auto& other2 = bots.at(3);
-
     fb::logger::info("Bot {} starting damage spell test", caster->oid());
     caster->chat("=== DAMAGE SPELL TEST STARTED ===");
 
@@ -19,10 +13,7 @@ async::task<bool> skill_test::test_damage_spells()
     co_await thread->switching();
 
     // Setup all bots with max HP/MP
-    for (auto& bot : bots)
-    {
-        std::ignore = co_await bot->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
-    }
+    std::ignore = co_await caster->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
 
     std::vector<damage_spell_test> damage_spells = {
         {"뢰진주",       SPELL_TYPE::TARGET, 320,  120},

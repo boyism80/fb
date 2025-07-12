@@ -4,10 +4,9 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_area_damage_spells()
+async::task<bool> skill_test::test_area_damage_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
-    auto  bots   = this->get_test_bots();
-    auto& caster = bots.front();
+    auto bots = this->get_test_bots();
 
     fb::logger::info("Bot {} starting area damage spell test", caster->oid());
     caster->chat("=== AREA DAMAGE SPELL TEST STARTED ===");

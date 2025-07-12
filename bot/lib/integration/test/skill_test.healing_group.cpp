@@ -3,11 +3,9 @@
 
 namespace fb::bot::integration {
 
-async::task<bool> skill_test::test_group_healing_spells()
+async::task<bool> skill_test::test_group_healing_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
-    auto  bots   = this->get_test_bots();
-    auto& caster = bots.front();
-    auto& target = bots.size() > 1 ? bots[1] : bots.front();
+    auto bots = this->get_test_bots();
 
     fb::logger::info("Starting group healing spell test with {} bots", bots.size());
     caster->chat("Starting group healing spell test");

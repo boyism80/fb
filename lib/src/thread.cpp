@@ -78,22 +78,17 @@ void fb::thread::assert_exec() const
         throw std::runtime_error("cannot push pointer value. thread mismatched.");
 }
 
+void fb::thread::join()
+{
+    this->_thread.join();
+}
+
 void fb::thread::exit()
 {
     if (this->_exit)
         return;
 
     this->_exit = true;
-    try
-    {
-        if (this->_thread.joinable())
-            this->_thread.join();
-    }
-    catch (std::exception& e)
-    {
-        fb::logger::fatal(e.what());
-    }
-
     this->_timers.clear();
 }
 

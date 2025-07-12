@@ -596,8 +596,6 @@ async::task<ResponseType> bot<BotType>::request(const fb::protocol::header&     
                                                 bool                                                 encrypt,
                                                 bool                                                 wrap)
 {
-    this->assert_thread();
-
     // Ensure deserializer is registered for hook processing
     this->_controller.template ensure_handler_registered<ResponseType>();
 

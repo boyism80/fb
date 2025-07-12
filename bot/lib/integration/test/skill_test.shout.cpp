@@ -14,10 +14,9 @@ struct shout_spell_test
     MESSAGE_TYPE message_type;
 };
 
-async::task<bool> skill_test::test_shout_spells()
+async::task<bool> skill_test::test_shout_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
-    auto  bots   = this->get_test_bots();
-    auto& caster = bots.front();
+    auto bots = this->get_test_bots();
 
     // Define shout spells with their test parameters
     auto shout_spells = std::vector<shout_spell_test>{

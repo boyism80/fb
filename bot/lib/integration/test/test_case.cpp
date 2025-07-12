@@ -183,6 +183,85 @@ async::task<void> bot_integration_test::on_scenario_finished(uint32_t scenario_i
     co_return;
 }
 
+async::task<void> bot_integration_test::on_parallel_scenario_started(uint32_t id)
+{
+    co_return;
+}
+
+async::task<void> bot_integration_test::on_parallel_scenario_finished(uint32_t id)
+{
+    co_return;
+}
+
+async::task<void> bot_integration_test::execute_parallel_scenario(std::shared_ptr<parallel_scenarios_context> context,
+                                                                  uint32_t                                    index)
+{
+    auto& queue = context->queues[index];
+    while (queue.empty() == false)
+    {
+        auto scenario = queue.front();
+        queue.pop();
+
+        try
+        {
+            co_await this->on_parallel_scenario_started(index);
+            if (co_await scenario() == false)
+                context->success = false;
+        }
+        catch (const std::exception& e)
+        {
+            context->success = false;
+        }
+        catch (...)
+        {
+            context->success = false;
+        }
+
+        co_await this->on_parallel_scenario_finished(index);
+        context->processed++;
+        if (context->processed == context->count)
+            context->promise->set_value(context->success);
+    }
+}
+
+async::task<bool> bot_integration_test::parallel_scenarios(std::vector<std::pair<uint32_t, scenario_t>> scenarios)
+{
+    auto context       = std::make_shared<parallel_scenarios_context>();
+    context->promise   = std::make_shared<async::task_completion_source<bool>>();
+    context->processed = 0;
+    context->success   = false;
+    context->queues    = std::unordered_map<uint32_t, std::queue<scenario_t>>();
+
+    for (auto& [index, scenario] : scenarios)
+    {
+        if (context->queues.contains(index) == false)
+            context->queues.insert({index, std::queue<scenario_t>()});
+
+        context->queues[index].push(scenario);
+        context->count++;
+    }
+
+    for (auto& [index, queue] : context->queues)
+    {
+        async::awaitable_then(this->execute_parallel_scenario(context, index), [this](auto result) {
+            try
+            {
+                result();
+            }
+            catch (const std::exception& e)
+            {
+                fb::logger::fatal("{}: Parallel scenario failed: {}", this->name(), e.what());
+            }
+            catch (...)
+            {
+                fb::logger::fatal("{}: Parallel scenario failed", this->name());
+            }
+        });
+    }
+
+    return context->promise->task();
+}
+
 async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot&                      bot,
                                                          const fb::protocol::game::response::id& response)
 {

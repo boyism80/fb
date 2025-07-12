@@ -4,13 +4,9 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_attack_cast_spells()
+async::task<bool> skill_test::test_attack_cast_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
     constexpr auto interval = 100ms;
-
-    auto  bots   = this->get_test_bots();
-    auto& caster = bots.front();
-    auto& target = bots.at(1);
 
     fb::logger::info("Bot {} starting attack_cast spell test", caster->oid());
     caster->chat("=== ATTACK_CAST SPELL TEST STARTED ===");
@@ -19,10 +15,7 @@ async::task<bool> skill_test::test_attack_cast_spells()
     co_await thread->switching();
 
     // Setup all bots with max HP/MP
-    for (auto& bot : bots)
-    {
-        std::ignore = co_await bot->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
-    }
+    std::ignore = co_await caster->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
 
     std::vector<attack_cast_spell_test> attack_cast_spells = {
         // Single target attack spells (front target)

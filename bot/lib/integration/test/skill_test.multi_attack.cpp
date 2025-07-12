@@ -4,11 +4,8 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_multi_target_attack_cast_spells()
+async::task<bool> skill_test::test_multi_target_attack_cast_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
-    auto  bots   = this->get_test_bots();
-    auto& caster = bots.front();
-
     fb::logger::info("Bot {} starting multi-target attack_cast spell test", caster->oid());
     caster->chat("=== MULTI-TARGET ATTACK_CAST SPELL TEST STARTED ===");
 
@@ -16,10 +13,7 @@ async::task<bool> skill_test::test_multi_target_attack_cast_spells()
     co_await thread->switching();
 
     // Setup all bots with max HP/MP
-    for (auto& bot : bots)
-    {
-        std::ignore = co_await bot->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
-    }
+    std::ignore = co_await caster->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
 
     auto multi_target_spells = std::vector<multi_target_attack_cast_spell_test>{
         // Multi-target attack spells

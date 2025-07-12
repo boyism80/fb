@@ -29,6 +29,8 @@ protected:
     async::task<void>     on_initialize(game_bot_controller& controller) override final;
     async::task<void>     on_scenario_started(uint32_t scenario_index) override final;
     async::task<void>     on_scenario_finished(uint32_t scenario_index) override final;
+    async::task<void>     on_parallel_scenario_started(uint32_t id) override final;
+    async::task<void>     on_parallel_scenario_finished(uint32_t id) override final;
 
 public:
     /**
@@ -49,6 +51,20 @@ public:
 
 private:
     /**
+     * @brief      Executes the main skill test scenario.
+     *
+     *             This method orchestrates the complete skill testing sequence,
+     *             including all spell categories and their respective test cases.
+     *             It manages bot coordination and ensures proper test execution order.
+     *
+     * @return     A task that completes with true if all skill tests passed, false otherwise.
+     *
+     * @note       This is the primary entry point for skill testing execution
+     */
+    async::task<bool> scenario_1();
+
+private:
+    /**
      * @brief      Tests healing spells with comprehensive spell coverage.
      *
      *             Performs healing spell tests including:
@@ -56,62 +72,138 @@ private:
      *             - Dynamic healing spell (백호의희원)
      *             - Group healing spell (백호의희원'첨)
      *
-     * @param[in]  bots     The list of bots to use for testing.
+     * @param[in]  caster   The bot casting the healing spells.
+     * @param[in]  target   The target bot for healing spell tests.
      *
      * @return     A task that completes when all healing spell tests finish.
      */
-    async::task<bool> test_healing_spells();
+    async::task<bool> test_healing_spells(std::shared_ptr<fb::bot::game_bot> caster,
+                                          std::shared_ptr<fb::bot::game_bot> target);
 
-    async::task<bool> test_damage_spells();
+    /**
+     * @brief      Tests damage spells with target-based damage calculation.
+     *
+     *             Performs damage spell tests including various target-based
+     *             damage spells with proper damage calculation and verification.
+     *
+     * @param[in]  caster   The bot casting the damage spells.
+     *
+     * @return     A task that completes when all damage spell tests finish.
+     */
+    async::task<bool> test_damage_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
-    async::task<bool> test_near_damage_spells();
+    /**
+     * @brief      Tests near damage spells with area-based damage calculation.
+     *
+     *             Performs near damage spell tests including area-based
+     *             damage spells that affect nearby targets.
+     *
+     * @param[in]  caster   The bot casting the near damage spells.
+     *
+     * @return     A task that completes when all near damage spell tests finish.
+     */
+    async::task<bool> test_near_damage_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
-    async::task<bool> test_attack_cast_spells();
+    /**
+     * @brief      Tests attack-cast spells with dynamic effect calculation.
+     *
+     *             Performs attack-cast spell tests including spells that
+     *             combine attack mechanics with spell casting effects.
+     *
+     * @param[in]  caster   The bot casting the attack-cast spells.
+     *
+     * @return     A task that completes when all attack-cast spell tests finish.
+     */
+    async::task<bool> test_attack_cast_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
-    async::task<bool> test_near_target_damage_spells();
+    /**
+     * @brief      Tests near target damage spells with proximity-based targeting.
+     *
+     *             Performs near target damage spell tests including spells that
+     *             target nearby enemies with damage effects.
+     *
+     * @param[in]  caster   The bot casting the near target damage spells.
+     *
+     * @return     A task that completes when all near target damage spell tests finish.
+     */
+    async::task<bool> test_near_target_damage_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
-    async::task<bool> test_area_damage_spells();
+    /**
+     * @brief      Tests area damage spells with wide-range effect calculation.
+     *
+     *             Performs area damage spell tests including spells that
+     *             affect multiple targets in a wide area.
+     *
+     * @param[in]  caster   The bot casting the area damage spells.
+     *
+     * @return     A task that completes when all area damage spell tests finish.
+     */
+    async::task<bool> test_area_damage_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
-    async::task<bool> test_buff_debuff_spells();
+    /**
+     * @brief      Tests buff and debuff spells with status effect verification.
+     *
+     *             Performs buff and debuff spell tests including spells that
+     *             apply positive or negative status effects to targets.
+     *
+     * @param[in]  caster   The bot casting the buff/debuff spells.
+     * @param[in]  target   The target bot for buff/debuff spell tests.
+     *
+     * @return     A task that completes when all buff/debuff spell tests finish.
+     */
+    async::task<bool> test_buff_debuff_spells(std::shared_ptr<fb::bot::game_bot> caster,
+                                              std::shared_ptr<fb::bot::game_bot> target);
 
-    async::task<bool> test_multi_target_attack_cast_spells();
+    /**
+     * @brief      Tests multi-target attack-cast spells with complex effect calculation.
+     *
+     *             Performs multi-target attack-cast spell tests including spells that
+     *             affect multiple targets with combined attack and spell effects.
+     *
+     * @param[in]  caster   The bot casting the multi-target attack-cast spells.
+     *
+     * @return     A task that completes when all multi-target attack-cast spell tests finish.
+     */
+    async::task<bool> test_multi_target_attack_cast_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
     /**
      * @brief      Tests teleport spells (출두, 소환) with map movement scenarios.
      *
-     * @param[in]  bots     The bot instances to use for testing.
+     * @param[in]  caster   The bot casting the teleport spells.
+     * @param[in]  target   The target bot for teleport spell tests.
      *
      * @return     An async task that completes when teleport testing is finished.
      */
-    async::task<bool> test_teleport_spells();
+    async::task<bool> test_teleport_spells(std::shared_ptr<fb::bot::game_bot> caster,
+                                           std::shared_ptr<fb::bot::game_bot> target);
 
     /**
      * @brief      Tests disguise spells (경수, 맹수, 야수, 금수) with all available monster transformations.
      *
-     * @param[in]  bots     The bot instances to use for testing.
+     * @param[in]  caster   The bot casting the disguise spells.
      *
      * @return     An async task that completes when disguise testing is finished.
      */
-    async::task<bool> test_disguise_spells();
+    async::task<bool> test_disguise_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
     /**
      * @brief      Tests shout spells (사자후전사, 사자후도사, 사자후술사, 사자후도적) with message input and SHOUT
      * verification.
      *
-     * @param[in]  bots     The bot instances to use for testing.
+     * @param[in]  caster   The bot casting the shout spells.
      *
      * @return     An async task that completes when shout testing is finished.
      */
-    async::task<bool> test_shout_spells();
+    async::task<bool> test_shout_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
     /**
      * @brief      Tests loot spell (노획) with item and money loot scenarios.
      *
-     * @param[in]  bots     The bot instances to use for testing.
+     * @param[in]  caster   The bot casting the loot spell.
      *
      * @return     An async task that completes when loot testing is finished.
      */
-    async::task<bool> test_loot_spell();
+    async::task<bool> test_loot_spell(std::shared_ptr<fb::bot::game_bot> caster);
 
     /**
      * @brief      Tests group healing spells with comprehensive group management.
@@ -122,11 +214,11 @@ private:
      *             - Fixed-value group healing (신령의기원'첨)
      *             - Group cleanup after testing
      *
-     * @param[in]  bots     The list of bots to use for testing.
+     * @param[in]  caster   The bot casting the group healing spells.
      *
      * @return     A task that completes when all group healing spell tests finish.
      */
-    async::task<bool> test_group_healing_spells();
+    async::task<bool> test_group_healing_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
     /**
      * @brief      Forms a group with all provided bots.

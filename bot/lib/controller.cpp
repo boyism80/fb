@@ -12,6 +12,11 @@ bot_container::bot_container(boost::asio::io_context& context) :
     _context(context),
     fb::context(context, "BOT", fb::config<uint32_t>("thread:logic"))
 {
+    this->threads.deletor = [](void* data) {
+        auto params = static_cast<bot_thread_params*>(data);
+        delete params;
+    };
+
     for (int i = 0; i < this->threads.count(); i++)
     {
         auto thread = this->threads.at(i);
@@ -50,13 +55,7 @@ void bot_container::initialize()
 }
 
 bot_container::~bot_container()
-{
-    for (int i = 0; i < this->threads.count(); i++)
-    {
-        auto thread = this->threads.at(i);
-        delete thread->data<bot_thread_params>();
-    }
-}
+{ }
 
 boost::asio::io_context& bot_container::context() const
 {

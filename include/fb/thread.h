@@ -149,6 +149,7 @@ private:
      * @param[in]  index  The index of the thread.
      */
     void handle_thread(uint8_t index);
+
     /**
      * @brief      Handles idle state processing.
      */
@@ -166,16 +167,37 @@ public:
      * @return     The thread ID.
      */
     std::thread::id id() const;
+
     /**
      * @brief      Gets the thread index.
      *
      * @return     The thread index.
      */
     uint8_t index() const;
+
+    /**
+     * @brief      Waits for the thread to complete execution.
+     *
+     *             This method blocks the calling thread until this thread completes
+     *             its execution. It ensures that all pending tasks and timers are
+     *             properly processed before the thread terminates.
+     *
+     *             Thread Safety:
+     *             - Can be called from any thread context
+     *             - Blocks until thread completion
+     *             - Ensures proper resource cleanup
+     *
+     * @note       This method should be called after exit() to ensure clean shutdown
+     * @warning    Calling this method from within the thread's own execution context
+     *             will cause deadlock. Use external thread management instead.
+     */
+    void join();
+
     /**
      * @brief      Exits the thread.
      */
     void exit();
+
     /**
      * @brief      Sets thread-local data.
      *
@@ -189,6 +211,7 @@ public:
         this->assert_exec();
         this->_data = static_cast<void*>(value);
     }
+
     /**
      * @brief      Gets thread-local data.
      *
@@ -216,6 +239,7 @@ public:
     std::shared_ptr<fb::timer> settimer(const fb::timer::handle_callback_type& fn,
                                         const fb::model::timespan&             duration,
                                         fb::timer::repeat_type                 repeat = fb::timer::repeat_type::repeat);
+
     /**
      * @brief      Sleeps for the specified duration.
      *

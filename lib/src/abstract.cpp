@@ -34,6 +34,7 @@ void context::exit()
     }
 
     this->threads.exit();
+    this->io_context.stop();
 }
 
 acceptable::acceptable(boost::asio::io_context& ctx, const std::string& name, uint32_t thread_count, uint16_t port) :

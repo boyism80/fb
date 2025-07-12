@@ -27,6 +27,7 @@ async::task<void> drop_loot_test::on_initialize(game_bot_controller& controller)
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
     co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
+    co_await bot2->thread()->sleep(DEFAULT_INTERVAL);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
     co_return;
 }

@@ -4,12 +4,9 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_buff_debuff_spells()
+async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::game_bot> caster,
+                                                      std::shared_ptr<fb::bot::game_bot> target)
 {
-    auto  bots   = this->get_test_bots();
-    auto& caster = bots.front();
-    auto& target = bots.at(1);
-
     fb::logger::info("Bot {} starting buff/debuff spell test", caster->oid());
     caster->chat("=== BUFF/DEBUFF SPELL TEST STARTED ===");
 
@@ -17,10 +14,8 @@ async::task<bool> skill_test::test_buff_debuff_spells()
     co_await thread->switching();
 
     // Setup all bots with max HP/MP
-    for (auto& bot : bots)
-    {
-        std::ignore = co_await bot->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
-    }
+    std::ignore = co_await caster->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
+    std::ignore = co_await target->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
 
     struct buff_debuff_spell_test
     {

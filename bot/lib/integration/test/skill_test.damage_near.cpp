@@ -4,11 +4,8 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_near_damage_spells()
+async::task<bool> skill_test::test_near_damage_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
-    auto  bots   = this->get_test_bots();
-    auto& caster = bots.front();
-
     fb::logger::info("Bot {} starting near damage spell test", caster->oid());
     caster->chat("=== NEAR DAMAGE SPELL TEST STARTED ===");
 
@@ -40,10 +37,7 @@ async::task<bool> skill_test::test_near_damage_spells()
     spawn_points.push_back(bottom_pos);
 
     // Setup all bots with max HP/MP
-    for (auto& bot : bots)
-    {
-        std::ignore = co_await bot->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
-    }
+    std::ignore = co_await caster->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
 
     auto near_damage_spells = std::vector<near_damage_spell_test>{
         // spell_damage_near spells (caster area) - sorted by MP cost and element
