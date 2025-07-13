@@ -32,8 +32,8 @@ encryption::encryption(uint8_t pattern, const uint8_t* iv) :
     }
 }
 
-encryption::encryption(const encryption& encryption) :
-    encryption(encryption._pattern, encryption._iv.get())
+encryption::encryption(const encryption& other) :
+    encryption(other._pattern, other._iv.get())
 { }
 
 void encryption::crypt(const uint8_t* src, uint8_t* dst, uint32_t size, const uint8_t* key, uint32_t ksize)
@@ -223,13 +223,13 @@ uint32_t encryption::unwrap(stream& data) const
     return this->unwrap(data, 0);
 }
 
-encryption& encryption::operator= (const encryption& encryption)
+encryption& encryption::operator= (const encryption& other)
 {
-    this->_pattern = encryption._pattern;
+    this->_pattern = other._pattern;
     this->_iv      = std::make_unique<uint8_t[]>(KEY_SIZE * 4);
     for (int i = 0; i < 4; i++)
     {
-        std::memcpy(this->_iv.get() + KEY_SIZE * i, encryption._iv.get() + KEY_SIZE * i, KEY_SIZE);
+        std::memcpy(this->_iv.get() + KEY_SIZE * i, other._iv.get() + KEY_SIZE * i, KEY_SIZE);
     }
     return *this;
 }
