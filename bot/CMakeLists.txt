@@ -46,7 +46,7 @@ include_directories("${ROOT_DIR}/include")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 IF(WIN32)
-  set(CMAKE_CXX_FLAGS "/source-charset:utf-8 /EHsc")
+  set(CMAKE_CXX_FLAGS "/source-charset:utf-8 /EHsc /bigobj")
   string(REPLACE "/" "\\" DEPENDENCY_LIBDIR ${ROOT_DIR}/dependency/lib\\;${ROOT_DIR}/dependency/lib/boost\\;$(LibraryPath))
   set(CMAKE_VS_SDK_LIBRARY_DIRECTORIES ${DEPENDENCY_LIBDIR})
   set(CMAKE_CXX_STANDARD_LIBRARIES "$(CMAKE_CXX_STANDARD_LIBRARIES) %(AdditionalDependencies) ")
