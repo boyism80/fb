@@ -896,12 +896,12 @@ public:
      * @brief      Equip an item from the inventory.
      *
      * @param[in]  slot           The inventory slot index of the item to equip.
-     * @param[in]  expected_msg   The expected message to verify (for both success and failure cases).
+     * @param[in]  item_name      The name of the item to equip.
      * @param[in]  timeout        The timeout for the operation.
      *
      * @return     An async task that completes with true if operation succeeded, false otherwise.
      */
-    async::task<bool> equip(uint8_t slot, const std::string& expected_msg, std::chrono::milliseconds timeout);
+    async::task<bool> equip(uint8_t slot, const std::string& item_name, std::chrono::milliseconds timeout);
 
     /**
      * @brief      Unequip an item from the equipped slots.
@@ -963,31 +963,25 @@ public:
      * @param[in]  monster_name   Name of the monster to spawn (e.g., "다람쥐")
      * @param[in]  x              X coordinate for monster spawn
      * @param[in]  y              Y coordinate for monster spawn
-     * @param[in]  expected_look  Expected look value for the spawned monster
      * @param[in]  timeout        The timeout for the operation
      *
      * @return     An async task that returns spawned monster information
      */
-    async::task<spawned_monster_info> spawn_monster_by_look(const std::string&        monster_name,
-                                                            uint16_t                  x,
-                                                            uint16_t                  y,
-                                                            uint32_t                  expected_look,
-                                                            std::chrono::milliseconds timeout);
+    async::task<spawned_monster_info>
+    spawn_monster(const std::string& monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
 
     /**
      * @brief      Spawns multiple monsters at the specified position with look validation
      *
      * @param[in]  monster_name   Name of the monster to spawn (e.g., "다람쥐")
      * @param[in]  range          Range of the monster spawn
-     * @param[in]  expected_look  Expected look value for the spawned monster
      * @param[in]  timeout        The timeout for the operation
      *
      * @return     An async task that completes when the monsters are spawned
      */
-    async::task<void> spawn_monsters_by_look_bulk(const std::string&        monster_name,
-                                                  uint8_t                   range,
-                                                  uint32_t                  expected_look,
-                                                  std::chrono::milliseconds timeout);
+    async::task<void> spawn_monsters_bulk(const std::string&        monster_name,
+                                          uint8_t                   range,
+                                          std::chrono::milliseconds timeout);
 
     /**
      * @brief      Spawns multiple monsters at relative positions from a bot with custom validator
@@ -1012,16 +1006,14 @@ public:
      *
      * @param[in]  monster_name       Name of the monster to spawn
      * @param[in]  relative_positions Vector of {x, y} relative positions from bot
-     * @param[in]  expected_look      Expected look value for the spawned monsters
      * @param[in]  timeout            The timeout for the operation
      *
      * @return     An async task that returns vector of spawned monster information
      */
     async::task<std::vector<spawned_monster_info>>
-    spawn_monsters_relative_by_look(const std::string&                      monster_name,
-                                    const std::vector<std::pair<int, int>>& relative_positions,
-                                    uint32_t                                expected_look,
-                                    std::chrono::milliseconds               timeout);
+    spawn_monsters_relative(const std::string&                      monster_name,
+                            const std::vector<std::pair<int, int>>& relative_positions,
+                            std::chrono::milliseconds               timeout);
 
     /**
      * @brief      Spawns a single monster at relative position from a bot with look validation
@@ -1029,16 +1021,14 @@ public:
      * @param[in]  monster_name   Name of the monster to spawn
      * @param[in]  relative_x     X coordinate relative to bot position
      * @param[in]  relative_y     Y coordinate relative to bot position
-     * @param[in]  expected_look  Expected look value for the spawned monster
      * @param[in]  timeout        The timeout for the operation
      *
      * @return     An async task that returns spawned monster information
      */
-    async::task<spawned_monster_info> spawn_monster_relative_by_look(const std::string&        monster_name,
-                                                                     int                       relative_x,
-                                                                     int                       relative_y,
-                                                                     uint32_t                  expected_look,
-                                                                     std::chrono::milliseconds timeout);
+    async::task<spawned_monster_info> spawn_monster_relative(const std::string&        monster_name,
+                                                             int                       relative_x,
+                                                             int                       relative_y,
+                                                             std::chrono::milliseconds timeout);
 
     /**
      * @brief      Sets maximum HP and MP for a bot

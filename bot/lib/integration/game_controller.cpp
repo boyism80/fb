@@ -33,7 +33,38 @@ game_bot_controller::game_bot_controller(bot_container& container) :
 
 void game_bot_controller::initialize()
 {
-    fb::console::set_mode(fb::console::mode::plain);
+    this->container.model.item.hook.build = [](const Json::Value& json) -> fb::model::item* {
+        auto type = fb::model::build<ITEM_TYPE>(json["type"]);
+        switch (type)
+        {
+        case ITEM_TYPE::STUFF:
+            return fb::model::build<fb::model::item*>(json);
+        case ITEM_TYPE::CASH:
+            return fb::model::build<fb::model::cash*>(json);
+        case ITEM_TYPE::CONSUME:
+            return fb::model::build<fb::model::consume*>(json);
+        case ITEM_TYPE::WEAPON:
+            return fb::model::build<fb::model::weapon*>(json);
+        case ITEM_TYPE::ARMOR:
+            return fb::model::build<fb::model::armor*>(json);
+        case ITEM_TYPE::HELMET:
+            return fb::model::build<fb::model::helmet*>(json);
+        case ITEM_TYPE::RING:
+            return fb::model::build<fb::model::ring*>(json);
+        case ITEM_TYPE::SHIELD:
+            return fb::model::build<fb::model::shield*>(json);
+        case ITEM_TYPE::AUXILIARY:
+            return fb::model::build<fb::model::auxiliary*>(json);
+        case ITEM_TYPE::BOW:
+            return fb::model::build<fb::model::bow*>(json);
+        case ITEM_TYPE::PACKAGE:
+            return fb::model::build<fb::model::pack*>(json);
+        default:
+            return nullptr;
+        }
+    };
+
+    fb::model::loader(this->container.model).run();
 
     // Set up integration test timer with different interval (slower for detailed testing)
     this->bind_timer(&game_bot_controller::handle_timer, 1000ms);

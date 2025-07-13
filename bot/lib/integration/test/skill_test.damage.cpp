@@ -57,7 +57,7 @@ async::task<bool> skill_test::test_damage_spells(std::shared_ptr<fb::bot::game_b
                           spell.expected_damage,
                           spell.expected_mp_cost);
 
-        auto mob_info = co_await caster->spawn_monster_relative_by_look("다람쥐", 0, 1, 32793, DEFAULT_TIMEOUT);
+        auto mob_info = co_await caster->spawn_monster_relative("다람쥐", 0, 1, DEFAULT_TIMEOUT);
 
         // Set caster's current HP/MP for testing
         std::ignore = co_await caster->set_current_hp_mp(50, 100000, DEFAULT_TIMEOUT);

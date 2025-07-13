@@ -11,13 +11,13 @@ using namespace std::chrono_literals;
 namespace fb::bot::integration {
 
 bot_integration_test::bot_integration_test(game_bot_controller& controller, uint32_t bot_count) :
-    _controller(controller),
+    controller(controller),
     bot_count(bot_count)
 {
     // Register common hooks for sequence and position responses
-    this->_controller.hook_external(this, this, &bot_integration_test::on_hook_sequence);
-    this->_controller.hook_external(this, this, &bot_integration_test::on_hook_position);
-    this->_controller.hook_external(this, this, &bot_integration_test::on_hook_update_external);
+    this->controller.hook_external(this, this, &bot_integration_test::on_hook_sequence);
+    this->controller.hook_external(this, this, &bot_integration_test::on_hook_position);
+    this->controller.hook_external(this, this, &bot_integration_test::on_hook_update_external);
 }
 
 bot_integration_test::test_state bot_integration_test::get_state() const
@@ -53,7 +53,7 @@ void bot_integration_test::on_bot_disconnected(std::shared_ptr<fb::bot::game_bot
 
 void bot_integration_test::notify_ready()
 {
-    this->_controller.notify_test_ready();
+    this->controller.notify_test_ready();
 }
 
 async::task<void> bot_integration_test::on_finished()
@@ -137,7 +137,7 @@ async::task<bool> bot_integration_test::execute()
     auto failed         = false;
     auto scenario_index = 0;
     fb::logger::debug("{}: Starting test execution", this->name());
-    co_await this->on_initialize(this->_controller);
+    co_await this->on_initialize(this->controller);
     while (this->_scenario_queue.empty() == false)
     {
         auto scenario = this->_scenario_queue.front();
@@ -307,7 +307,7 @@ bot_integration_test::on_hook_update_external(fb::bot::game_bot&                
 
 async::task<void> bot_integration_test::sleep(std::chrono::milliseconds duration)
 {
-    co_await this->_controller.container.threads.current()->sleep(duration);
+    co_await this->controller.container.threads.current()->sleep(duration);
 }
 
 } // namespace fb::bot::integration

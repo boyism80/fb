@@ -182,6 +182,39 @@ public:
      */
     template <class... Args>
     static fb::logger& fatal(const std::string& fmt, Args&&... args);
+
+    /**
+     * @brief      Logs a comment message with formatted arguments and optional color.
+     *
+     *             Outputs the message with optional color through the console system.
+     *             Uses std::format for string formatting.
+     *
+     * @param[in]  color  The text color (optional).
+     * @param[in]  fmt    The format string.
+     * @param[in]  args   Arguments for string formatting.
+     *
+     * @tparam     Args   Parameter pack for format arguments.
+     *
+     * @return     Reference to the logger instance for method chaining.
+     */
+    template <class... Args>
+    static fb::logger& comment(fb::console::color color, const std::string& fmt, Args&&... args);
+
+    /**
+     * @brief      Logs a comment message with formatted arguments.
+     *
+     *             Outputs the message through the console system.
+     *             Uses std::format for string formatting.
+     *
+     * @param[in]  fmt   The format string.
+     * @param[in]  args  Arguments for string formatting.
+     *
+     * @tparam     Args  Parameter pack for format arguments.
+     *
+     * @return     Reference to the logger instance for method chaining.
+     */
+    template <class... Args>
+    static fb::logger& comment(const std::string& fmt, Args&&... args);
 };
 
 } // namespace fb
@@ -207,7 +240,11 @@ fb::logger& fb::logger::debug(const std::string& fmt, Args&&... args)
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts("{:<7} {} {}", "[DEBUG]", fb::model::datetime().to_string(), message);
+    fb::console::puts(fb::console::color::light_gray,
+                      "{:<7} {} {}",
+                      "[DEBUG]",
+                      fb::model::datetime().to_string(),
+                      message);
 
     return ist;
 }
@@ -259,7 +296,7 @@ fb::logger& fb::logger::warn(const std::string& fmt, Args&&... args)
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts("{:<7} {} {}", "[WARN]", fb::model::datetime().to_string(), message);
+    fb::console::puts(fb::console::color::yellow, "{:<7} {} {}", "[WARN]", fb::model::datetime().to_string(), message);
 
     return ist;
 }
@@ -285,7 +322,54 @@ fb::logger& fb::logger::fatal(const std::string& fmt, Args&&... args)
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts("{:<7} {} {}", "[FATAL]", fb::model::datetime().to_string(), message);
+    fb::console::puts(fb::console::color::red, "{:<7} {} {}", "[FATAL]", fb::model::datetime().to_string(), message);
+
+    return ist;
+}
+
+/**
+ * @brief      Template implementation for comment logging with color.
+ *
+ *             Outputs the message with specified color through the console system.
+ *             Uses std::vformat for string formatting.
+ *
+ * @param[in]  color  The text color.
+ * @param[in]  fmt    The format string.
+ * @param[in]  args   Arguments for string formatting.
+ *
+ * @tparam     Args   Parameter pack for format arguments.
+ *
+ * @return     Reference to the logger instance for method chaining.
+ */
+template <class... Args>
+fb::logger& fb::logger::comment(fb::console::color color, const std::string& fmt, Args&&... args)
+{
+    auto& ist     = get();
+    auto  message = std::vformat(fmt, std::make_format_args(args...));
+    fb::console::comment(color, message);
+
+    return ist;
+}
+
+/**
+ * @brief      Template implementation for comment logging.
+ *
+ *             Outputs the message through the console system.
+ *             Uses std::vformat for string formatting.
+ *
+ * @param[in]  fmt   The format string.
+ * @param[in]  args  Arguments for string formatting.
+ *
+ * @tparam     Args  Parameter pack for format arguments.
+ *
+ * @return     Reference to the logger instance for method chaining.
+ */
+template <class... Args>
+fb::logger& fb::logger::comment(const std::string& fmt, Args&&... args)
+{
+    auto& ist     = get();
+    auto  message = std::vformat(fmt, std::make_format_args(args...));
+    fb::console::comment(message);
 
     return ist;
 }

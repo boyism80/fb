@@ -64,11 +64,11 @@ public:
 private:
     test_bots_t            _test_bots;               ///< Collection of bots managed by this test
     test_state             _state{test_state::idle}; ///< Current state of the test
-    game_bot_controller&   _controller;              ///< Reference to the parent game bot controller
     std::queue<scenario_t> _scenario_queue;          ///< Queue of scenario functions to execute
 
 public:
-    const uint32_t bot_count; ///< Number of bots required for this test
+    game_bot_controller& controller; ///< Reference to the parent game bot controller
+    const uint32_t       bot_count;  ///< Number of bots required for this test
 
 protected:
 #ifdef _DEBUG

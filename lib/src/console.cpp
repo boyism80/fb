@@ -90,6 +90,12 @@ bool console::is_effective_tty()
     return _system_tty && (_mode == mode::tty);
 }
 
+std::string console::colorize(color color)
+{
+    auto it = _color_codes.find(color);
+    return (it != _color_codes.end()) ? it->second : _color_codes[color::reset];
+}
+
 void console::newline()
 {
     auto _ = std::lock_guard(_mutex);

@@ -50,18 +50,17 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::shared_ptr<fb:
         fb::logger::debug("Testing near target spell: {}", spell.name);
 
         // Spawn a target monster in front of the caster
-        auto target = co_await caster->spawn_monster_relative_by_look("다람쥐", 0, 2, 32793, DEFAULT_TIMEOUT);
+        auto target = co_await caster->spawn_monster_relative("다람쥐", 0, 2, DEFAULT_TIMEOUT);
 
         // Spawn monsters around the target position (relative to target)
-        std::ignore = co_await caster->spawn_monsters_relative_by_look("다람쥐",
-                                                                       {
-                                                                           {0,  1},
-                                                                           {-1, 2},
-                                                                           {1,  2},
-                                                                           {0,  3}
+        std::ignore = co_await caster->spawn_monsters_relative("다람쥐",
+                                                               {
+                                                                   {0,  1},
+                                                                   {-1, 2},
+                                                                   {1,  2},
+                                                                   {0,  3}
         },
-                                                                       32793,
-                                                                       DEFAULT_TIMEOUT);
+                                                               DEFAULT_TIMEOUT);
 
         // Set caster's current HP/MP for testing
         std::ignore = co_await caster->set_current_hp_mp(1000, 1000, DEFAULT_TIMEOUT);

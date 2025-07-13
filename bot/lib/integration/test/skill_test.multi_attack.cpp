@@ -97,8 +97,7 @@ async::task<bool> skill_test::test_multi_target_attack_cast_spells(std::shared_p
         auto caster_pos = caster->position();
 
         // Spawn monsters at the calculated positions
-        std::ignore =
-            co_await caster->spawn_monsters_relative_by_look("다람쥐", spell.spawn_positions, 32793, DEFAULT_TIMEOUT);
+        std::ignore = co_await caster->spawn_monsters_relative("다람쥐", spell.spawn_positions, DEFAULT_TIMEOUT);
 
         // Set caster's current HP/MP for testing
         std::ignore = co_await caster->set_current_hp_mp(1000, 1000, DEFAULT_TIMEOUT);

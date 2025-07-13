@@ -6,6 +6,7 @@
 #include <fb/bot/game_bot.h>
 #include <fb/bot/integration/test_case.h>
 #include <fb/locker.h>
+#include <fb/model/loader.h>
 #include <memory>
 #include <queue>
 #include <vector>

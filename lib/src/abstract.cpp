@@ -8,12 +8,15 @@ context::context(boost::asio::io_context& context, const std::string& name, uint
 {
     static auto flag = std::once_flag{};
     std::call_once(flag, [name] {
-        console::newline();
+        auto mode = console::get_mode();
+        console::set_mode(console::mode::plain);
+        console::puts("");
         console::puts(console::align_type::center, "The Kingdom of the wind [{}]", name);
-        console::newline();
+        console::puts("");
         console::puts(console::align_type::right, "https://github.com/boyism80/fb");
         console::puts(console::align_type::right, "made by cshyeon");
-        console::newline();
+        console::puts("");
+        console::set_mode(mode);
     });
 }
 

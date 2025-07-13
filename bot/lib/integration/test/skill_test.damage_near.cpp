@@ -95,7 +95,7 @@ async::task<bool> skill_test::test_near_damage_spells(std::shared_ptr<fb::bot::g
             {0,  1 }  // bottom
         };
 
-        co_await caster->spawn_monsters_by_look_bulk("다람쥐", 1, 32793, DEFAULT_TIMEOUT);
+        co_await caster->spawn_monsters_bulk("다람쥐", 1, DEFAULT_TIMEOUT);
 
         // Set caster's current HP/MP for testing
         std::ignore = co_await caster->set_current_hp_mp(50, 100000, DEFAULT_TIMEOUT);

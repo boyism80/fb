@@ -801,18 +801,33 @@ async::task<void> game_bot::drop_money(uint32_t amount, std::chrono::millisecond
         timeout);
 }
 
-async::task<bool> game_bot::equip(uint8_t slot, const std::string& expected_msg, std::chrono::milliseconds timeout)
+async::task<bool> game_bot::equip(uint8_t slot, const std::string& item_name, std::chrono::milliseconds timeout)
 {
+    static const auto prefix_map = std::unordered_map<fb::model::enum_value::ITEM_TYPE, std::string>{
+        {fb::model::enum_value::ITEM_TYPE::WEAPON, "w:무기  :"},
+        {fb::model::enum_value::ITEM_TYPE::ARMOR,  "a:갑옷  :"},
+        {fb::model::enum_value::ITEM_TYPE::SHIELD, "s:방패  :"},
+        {fb::model::enum_value::ITEM_TYPE::HELMET, "h:머리  :"}
+    };
+
     try
     {
-        auto&& resp = co_await this->request<fb::protocol::game::response::message>(
+        auto item_model = this->controller.container.model.item.name2item(item_name);
+        if (!item_model)
+        {
+            fb::logger::fatal("Failed to find item model for {}", item_name);
+            co_return false;
+        }
+
+        auto   prefix = prefix_map.at(item_model->type);
+        auto&& resp   = co_await this->request<fb::protocol::game::response::message>(
             fb::protocol::game::request::item_active(slot + 1),
-            [](auto& resp) -> bool {
+            [prefix](auto& resp) -> bool {
                 return resp.type == MESSAGE_TYPE::STATE;
             },
             timeout);
 
-        co_return resp.text.find(expected_msg) != std::string::npos;
+        co_return resp.text.find(prefix) != std::string::npos;
     }
     catch (const std::exception& e)
     {
@@ -877,12 +892,10 @@ game_bot::spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot>       
     co_return monster_info;
 }
 
-async::task<spawned_monster_info> game_bot::spawn_monster_by_look(const std::string&        monster_name,
-                                                                  uint16_t                  x,
-                                                                  uint16_t                  y,
-                                                                  uint32_t                  expected_look,
-                                                                  std::chrono::milliseconds timeout)
+async::task<spawned_monster_info>
+game_bot::spawn_monster(const std::string& monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
 {
+    auto expected_look = this->controller.container.model.mob.name2mob(monster_name)->look;
 
     auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
         fb::protocol::game::request::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
@@ -897,8 +910,7 @@ async::task<spawned_monster_info> game_bot::spawn_monster_by_look(const std::str
 
     if (spawn_response.objects_data.empty())
     {
-        throw std::runtime_error(
-            std::format("Failed to spawn monster {} with look {} at ({}, {})", monster_name, expected_look, x, y));
+        throw std::runtime_error(std::format("Failed to spawn monster {} at ({}, {})", monster_name, x, y));
     }
 
     auto&                mob = spawn_response.objects_data.front();
@@ -910,11 +922,12 @@ async::task<spawned_monster_info> game_bot::spawn_monster_by_look(const std::str
     co_return monster_info;
 }
 
-async::task<void> game_bot::spawn_monsters_by_look_bulk(const std::string&        monster_name,
-                                                        uint8_t                   range,
-                                                        uint32_t                  expected_look,
-                                                        std::chrono::milliseconds timeout)
+async::task<void> game_bot::spawn_monsters_bulk(const std::string&        monster_name,
+                                                uint8_t                   range,
+                                                std::chrono::milliseconds timeout)
 {
+    auto expected_look = this->controller.container.model.mob.name2mob(monster_name)->look;
+
     std::ignore = co_await this->request<fb::protocol::game::response::update>(
         fb::protocol::game::request::chat{false, std::format("/몬스터범위생성 {} {}", monster_name, range)},
         [expected_look](auto& resp) -> bool {
@@ -968,11 +981,11 @@ async::task<std::vector<spawned_monster_info>> game_bot::spawn_monsters_relative
 }
 
 async::task<std::vector<spawned_monster_info>>
-game_bot::spawn_monsters_relative_by_look(const std::string&                      monster_name,
-                                          const std::vector<std::pair<int, int>>& relative_positions,
-                                          uint32_t                                expected_look,
-                                          std::chrono::milliseconds               timeout)
+game_bot::spawn_monsters_relative(const std::string&                      monster_name,
+                                  const std::vector<std::pair<int, int>>& relative_positions,
+                                  std::chrono::milliseconds               timeout)
 {
+    auto expected_look = this->controller.container.model.mob.name2mob(monster_name)->look;
 
     auto                              caster_pos = this->position();
     std::vector<spawned_monster_info> spawned_monsters;
@@ -1004,11 +1017,8 @@ game_bot::spawn_monsters_relative_by_look(const std::string&                    
 
         if (spawn_response.objects_data.empty())
         {
-            throw std::runtime_error(std::format("Failed to spawn monster {} with look {} at ({}, {})",
-                                                 monster_name,
-                                                 expected_look,
-                                                 monster_x,
-                                                 monster_y));
+            throw std::runtime_error(
+                std::format("Failed to spawn monster {} at ({}, {})", monster_name, monster_x, monster_y));
         }
 
         auto&                mob = spawn_response.objects_data.front();
@@ -1022,12 +1032,12 @@ game_bot::spawn_monsters_relative_by_look(const std::string&                    
     co_return spawned_monsters;
 }
 
-async::task<spawned_monster_info> game_bot::spawn_monster_relative_by_look(const std::string&        monster_name,
-                                                                           int                       relative_x,
-                                                                           int                       relative_y,
-                                                                           uint32_t                  expected_look,
-                                                                           std::chrono::milliseconds timeout)
+async::task<spawned_monster_info> game_bot::spawn_monster_relative(const std::string&        monster_name,
+                                                                   int                       relative_x,
+                                                                   int                       relative_y,
+                                                                   std::chrono::milliseconds timeout)
 {
+    auto expected_look = this->controller.container.model.mob.name2mob(monster_name)->look;
 
     auto caster_pos = this->position();
     auto monster_x  = caster_pos.x + relative_x;
@@ -1055,9 +1065,8 @@ async::task<spawned_monster_info> game_bot::spawn_monster_relative_by_look(const
 
     if (spawn_response.objects_data.empty())
     {
-        throw std::runtime_error(std::format("Failed to spawn monster {} with look {} at relative position ({}, {})",
+        throw std::runtime_error(std::format("Failed to spawn monster {} at relative position ({}, {})",
                                              monster_name,
-                                             expected_look,
                                              relative_x,
                                              relative_y));
     }

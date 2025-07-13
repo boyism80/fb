@@ -34,18 +34,12 @@ private:
         uint8_t     required_int;    ///< Required intelligence for the item
     };
 
-    /**
-     * @brief      Simple item test data without condition information.
-     */
-    struct equipment_item_data
-    {
-        using condition_function = std::function<async::task<void>(fb::bot::game_bot&)>;
-
-        std::string        item_name;       ///< Name of the item to test
-        std::string        success_message; ///< Expected success message pattern when equipped
-        EQUIPMENT_PARTS    equipment_part;  ///< Equipment part for unequipping
-        condition_function condition;       ///< Condition function
-        condition_function rollback;        ///< Rollback function
+    // Type to equipment part mapping
+    static inline const auto type_equipment_map = std::unordered_map<fb::model::enum_value::ITEM_TYPE, EQUIPMENT_PARTS>{
+        {fb::model::enum_value::ITEM_TYPE::WEAPON, EQUIPMENT_PARTS::WEAPON},
+        {fb::model::enum_value::ITEM_TYPE::ARMOR,  EQUIPMENT_PARTS::ARMOR },
+        {fb::model::enum_value::ITEM_TYPE::SHIELD, EQUIPMENT_PARTS::SHIELD},
+        {fb::model::enum_value::ITEM_TYPE::HELMET, EQUIPMENT_PARTS::HELMET}
     };
 
 protected:
