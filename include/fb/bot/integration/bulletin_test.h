@@ -27,6 +27,10 @@ public:
 
 private:
     async::task<bool> get_sections_scenario();
+    async::task<bool> bulletin_write_scenario();
+    async::task<bool> bulletin_read_scenario();
+    async::task<bool> bulletin_delete_scenario();
+    async::task<bool> mail_scenario();
 
 protected:
     async::task<void> on_initialize(game_bot_controller& controller) override final;
