@@ -33,8 +33,18 @@ async::task<bool> bulletin_test::get_sections_scenario()
     fb::logger::debug("Successfully retrieved {} bulletin sections", sections.size());
     bot1->chat(std::format("=== SUCCESSFULLY RETRIEVED {} SECTIONS ===", sections.size()));
 
-    // Test bulletin write functionality
-    fb::logger::debug("Testing bulletin write functionality");
+    co_return true;
+}
+
+async::task<bool> bulletin_test::bulletin_write_scenario()
+{
+    auto bots = this->get_test_bots();
+    if (bots.size() < 2)
+        throw std::runtime_error("Not enough bots for this test, requires 2.");
+
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
+
     const std::string bot1_article_title    = "Bot1 Article Title";
     const std::string bot1_article_contents = "Bot1's test article contents.";
     const std::string bot2_article_title    = "Bot2 Article Title";
@@ -83,6 +93,23 @@ async::task<bool> bulletin_test::get_sections_scenario()
     fb::logger::debug("Bot2 write test successful with level 10");
     bot2->chat("=== BOT2 WRITE TEST COMPLETED SUCCESSFULLY WITH LEVEL 10 ===");
 
+    co_return true;
+}
+
+async::task<bool> bulletin_test::bulletin_read_scenario()
+{
+    auto bots = this->get_test_bots();
+    if (bots.size() < 2)
+        throw std::runtime_error("Not enough bots for this test, requires 2.");
+
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
+
+    const std::string bot1_article_title    = "Bot1 Article Title";
+    const std::string bot1_article_contents = "Bot1's test article contents.";
+    const std::string bot2_article_title    = "Bot2 Article Title";
+    const std::string bot2_article_contents = "Bot2's test article contents.";
+
     // Test bulletin article list functionality to find our written article
     fb::logger::debug("Testing bulletin article list functionality to find our article");
     bot1->chat("=== TESTING BULLETIN ARTICLE LIST TO FIND OUR ARTICLE ===");
@@ -119,34 +146,7 @@ async::task<bool> bulletin_test::get_sections_scenario()
     }
     bot1->chat("=== BULLETIN ARTICLE READ TEST COMPLETED SUCCESSFULLY ===");
 
-    // Test deleting our article
-    fb::logger::debug("Testing bulletin article delete functionality");
-    bot1->chat("=== TESTING BULLETIN ARTICLE DELETE ===");
-
-    if (!co_await this->delete_article(bot1, 1, found_article_id))
-    {
-        fb::logger::fatal("Failed to delete our own article");
-        bot1->chat("=== FAILED TO DELETE OUR OWN ARTICLE ===");
-        this->set_state(test_state::failed);
-        co_return false;
-    }
-    fb::logger::debug("Bulletin article delete test successful");
-    bot1->chat("=== BULLETIN ARTICLE DELETE TEST COMPLETED SUCCESSFULLY ===");
-
-    // Test deleting a non-existent article
-    fb::logger::debug("Testing deleting a non-existent article (should fail)");
-    bot1->chat("=== TESTING DELETING NON-EXISTENT ARTICLE (SHOULD FAIL) ===");
-    if (co_await this->delete_article(bot1, 1, found_article_id))
-    {
-        fb::logger::fatal("Deleting a non-existent article succeeded, but it should have failed.");
-        bot1->chat("=== FAILED: DELETING NON-EXISTENT ARTICLE SUCCEEDED (UNEXPECTED) ===");
-        this->set_state(test_state::failed);
-        co_return false;
-    }
-    fb::logger::debug("Successfully failed to delete non-existent article, as expected.");
-    bot1->chat("=== SUCCESS: FAILED TO DELETE NON-EXISTENT ARTICLE AS EXPECTED ===");
-
-    // Test reading and deleting another user's article
+    // Test reading another user's article
     fb::logger::debug("Testing with another user's article");
     bot1->chat("=== TESTING WITH ANOTHER USER'S ARTICLE ===");
 
@@ -179,6 +179,86 @@ async::task<bool> bulletin_test::get_sections_scenario()
             co_return false;
         }
         bot1->chat("=== READ OTHER'S ARTICLE SUCCESSFUL ===");
+    }
+
+    co_return true;
+}
+
+async::task<bool> bulletin_test::bulletin_delete_scenario()
+{
+    auto bots = this->get_test_bots();
+    if (bots.size() < 2)
+        throw std::runtime_error("Not enough bots for this test, requires 2.");
+
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
+
+    const std::string bot1_article_title    = "Bot1 Article Title";
+    const std::string bot1_article_contents = "Bot1's test article contents.";
+    const std::string bot2_article_title    = "Bot2 Article Title";
+    const std::string bot2_article_contents = "Bot2's test article contents.";
+
+    // Find our written article from section 1 (general section)
+    auto  articles      = co_await this->get_articles(bot1, 1, 0x7FFF);
+    auto& bot1_name     = bot1->name();
+    auto  my_article_it = std::find_if(articles.begin(), articles.end(), [&](const auto& article) {
+        return article.uname == bot1_name;
+    });
+
+    if (my_article_it == articles.end())
+    {
+        fb::logger::fatal("Failed to find our written article for delete test");
+        bot1->chat("=== FAILED TO FIND OUR WRITTEN ARTICLE FOR DELETE TEST ===");
+        this->set_state(test_state::failed);
+        co_return false;
+    }
+
+    auto found_article_id = my_article_it->id;
+    fb::logger::debug("Found our written article for delete test - ID: {}", found_article_id);
+
+    // Test deleting our article
+    fb::logger::debug("Testing bulletin article delete functionality");
+    bot1->chat("=== TESTING BULLETIN ARTICLE DELETE ===");
+
+    if (!co_await this->delete_article(bot1, 1, found_article_id))
+    {
+        fb::logger::fatal("Failed to delete our own article");
+        bot1->chat("=== FAILED TO DELETE OUR OWN ARTICLE ===");
+        this->set_state(test_state::failed);
+        co_return false;
+    }
+    fb::logger::debug("Bulletin article delete test successful");
+    bot1->chat("=== BULLETIN ARTICLE DELETE TEST COMPLETED SUCCESSFULLY ===");
+
+    // Test deleting a non-existent article
+    fb::logger::debug("Testing deleting a non-existent article (should fail)");
+    bot1->chat("=== TESTING DELETING NON-EXISTENT ARTICLE (SHOULD FAIL) ===");
+    if (co_await this->delete_article(bot1, 1, found_article_id))
+    {
+        fb::logger::fatal("Deleting a non-existent article succeeded, but it should have failed.");
+        bot1->chat("=== FAILED: DELETING NON-EXISTENT ARTICLE SUCCEEDED (UNEXPECTED) ===");
+        this->set_state(test_state::failed);
+        co_return false;
+    }
+    fb::logger::debug("Successfully failed to delete non-existent article, as expected.");
+    bot1->chat("=== SUCCESS: FAILED TO DELETE NON-EXISTENT ARTICLE AS EXPECTED ===");
+
+    // Test deleting another user's article
+    fb::logger::debug("Testing with another user's article");
+    bot1->chat("=== TESTING WITH ANOTHER USER'S ARTICLE ===");
+
+    // Find an article written by someone else
+    articles               = co_await this->get_articles(bot1, 1, 0x7FFF);
+    auto& bot2_name        = bot2->name();
+    auto  other_article_it = std::find_if(articles.begin(), articles.end(), [&](const auto& article) {
+        return article.uname == bot2_name;
+    });
+
+    if (other_article_it != articles.end())
+    {
+        uint16_t article_id_to_test = other_article_it->id;
+        fb::logger::debug("Found another user's article - ID: {}", article_id_to_test);
+        bot1->chat(std::format("=== FOUND OTHER'S ARTICLE - ID: {} ===", article_id_to_test));
 
         // Try to delete it - should fail
         fb::logger::debug("Testing to delete another user's article (should fail)");
@@ -194,6 +274,18 @@ async::task<bool> bulletin_test::get_sections_scenario()
         fb::logger::debug("Successfully failed to delete another user's article, as expected.");
         bot1->chat("=== SUCCESS: FAILED TO DELETE OTHER'S ARTICLE AS EXPECTED ===");
     }
+
+    co_return true;
+}
+
+async::task<bool> bulletin_test::mail_scenario()
+{
+    auto bots = this->get_test_bots();
+    if (bots.size() < 2)
+        throw std::runtime_error("Not enough bots for this test, requires 2.");
+
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
 
     // Mail test
     fb::logger::debug("Testing mail functionality");
@@ -212,8 +304,9 @@ async::task<bool> bulletin_test::get_sections_scenario()
     co_await this->sleep(1s);
 
     fb::logger::debug("Checking {}'s mailbox", bot2->name());
-    auto&& mails   = co_await this->get_mails(bot2);
-    auto   mail_it = std::find_if(mails.begin(), mails.end(), [&](const auto& mail) {
+    auto&& mails     = co_await this->get_mails(bot2);
+    auto&  bot1_name = bot1->name();
+    auto   mail_it   = std::find_if(mails.begin(), mails.end(), [&](const auto& mail) {
         return mail.sender_name == bot1_name;
     });
 
@@ -256,10 +349,6 @@ async::task<bool> bulletin_test::get_sections_scenario()
     }
     fb::logger::debug("Successfully failed to delete non-existent mail, as expected.");
     bot2->chat("=== SUCCESS: FAILED TO DELETE NON-EXISTENT MAIL AS EXPECTED ===");
-
-    fb::logger::debug("Bulletin test completed successfully");
-
-    this->set_state(test_state::completed);
 
     co_return true;
 }
@@ -492,6 +581,18 @@ generator<bot_integration_test::scenario_t> bulletin_test::on_generate_scenario(
 {
     co_yield [this]() -> async::task<bool> {
         co_return co_await this->get_sections_scenario();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->bulletin_write_scenario();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->bulletin_read_scenario();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->bulletin_delete_scenario();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->mail_scenario();
     };
 }
 

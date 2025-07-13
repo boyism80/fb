@@ -32,8 +32,8 @@ encryption::encryption(uint8_t pattern, const uint8_t* iv) :
     }
 }
 
-encryption::encryption(const encryption& encryption) :
-    encryption(encryption._pattern, encryption._iv.get())
+encryption::encryption(const encryption& other) :
+    encryption(other._pattern, other._iv.get())
 { }
 
 void encryption::crypt(const uint8_t* src, uint8_t* dst, uint32_t size, const uint8_t* key, uint32_t ksize)
@@ -145,7 +145,7 @@ uint32_t encryption::decrypt(stream& data, uint32_t offset, uint32_t size)
 {
     auto extended_size = size + 0x100;
     auto buffer_src    = (uint8_t*)data.data() + offset;
-    auto buffer_dst    = new uint8_t[extended_size];
+    auto buffer_dst    = std::make_unique<uint8_t[]>(extended_size);
 
     try
     {
@@ -156,20 +156,20 @@ uint32_t encryption::decrypt(stream& data, uint32_t offset, uint32_t size)
             throw nullptr;
 
         this->crypt(buffer_src + 2,
-                    buffer_dst + 1,
+                    buffer_dst.get() + 1,
                     size - 2,
                     ((const uint8_t*)HEX_TABLE[this->_pattern]) + sequence * 4,
                     1);
         for (int i = 0, loop = (size - 3) / KEY_SIZE + 1; i < loop; i++)
         {
-            uint8_t* offset = buffer_dst + (KEY_SIZE * i) + 1;
+            uint8_t* offset = buffer_dst.get() + (KEY_SIZE * i) + 1;
             if (sequence == i)
                 continue;
 
             this->crypt(offset, offset, KEY_SIZE, ((const uint8_t*)HEX_TABLE[this->_pattern]) + i * 4, 1);
         }
 
-        this->crypt(buffer_dst + 1, buffer_dst + 1, size - 2, this->_iv.get(), KEY_SIZE);
+        this->crypt(buffer_dst.get() + 1, buffer_dst.get() + 1, size - 2, this->_iv.get(), KEY_SIZE);
     }
     catch (...)
     { }
@@ -178,8 +178,7 @@ uint32_t encryption::decrypt(stream& data, uint32_t offset, uint32_t size)
 
     buffer_dst[new_size] = 0;
     data.erase(data.begin() + offset, data.begin() + offset + size);
-    data.insert(data.begin() + offset, buffer_dst, buffer_dst + new_size);
-    delete[] buffer_dst;
+    data.insert(data.begin() + offset, buffer_dst.get(), buffer_dst.get() + new_size);
 
     return new_size;
 }
@@ -224,13 +223,13 @@ uint32_t encryption::unwrap(stream& data) const
     return this->unwrap(data, 0);
 }
 
-encryption& encryption::operator= (const encryption& encryption)
+encryption& encryption::operator= (const encryption& other)
 {
-    this->_pattern = encryption._pattern;
+    this->_pattern = other._pattern;
     this->_iv      = std::make_unique<uint8_t[]>(KEY_SIZE * 4);
     for (int i = 0; i < 4; i++)
     {
-        std::memcpy(this->_iv.get() + KEY_SIZE * i, encryption._iv.get() + KEY_SIZE * i, KEY_SIZE);
+        std::memcpy(this->_iv.get() + KEY_SIZE * i, other._iv.get() + KEY_SIZE * i, KEY_SIZE);
     }
     return *this;
 }
