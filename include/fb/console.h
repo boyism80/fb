@@ -45,6 +45,7 @@
 #include <cmath>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 #ifdef _WIN32
 #define CONSOLE_TITLE "Private kingdom of the wind - http://cshyeon.com"
@@ -114,12 +115,75 @@ public:
     };
 
 private:
-    inline static std::recursive_mutex                   _mutex;
-    inline static uint16_t                               _comment_line = 0;
-    inline static uint16_t                               _width, _height;
-    inline static bool                                   _system_tty;              ///< System TTY capability
-    inline static mode                                   _mode        = mode::tty; ///< User-configured output mode
-    inline static std::unordered_map<color, std::string> _color_codes = {
+    // Inheritance-based policy pattern
+    class console_policy
+    {
+    protected:
+        console_policy() = default;
+
+    public:
+        virtual ~console_policy()                                                 = default;
+        virtual void put(align_type align, color color, const std::string& text)  = 0;
+        virtual void puts(align_type align, color color, const std::string& text) = 0;
+        virtual void comment(color color, const std::string& text)                = 0;
+        virtual void newline()                                                    = 0;
+        virtual void clear()                                                      = 0;
+        virtual void save_point()                                                 = 0;
+        virtual void restore_point()                                              = 0;
+        virtual void up(uint8_t line)                                             = 0;
+        virtual void down(uint8_t line)                                           = 0;
+        virtual void progress(const std::string& text, float progress)            = 0;
+
+    protected:
+        // Common alignment logic used by both policies
+        std::string get_aligned_text(align_type align, const std::string& text);
+    };
+
+    class tty_policy : public console_policy
+    {
+    private:
+        uint16_t _comment_line = 0;
+
+    public:
+        void put(align_type align, color color, const std::string& text) override;
+        void puts(align_type align, color color, const std::string& text) override;
+        void comment(color color, const std::string& text) override;
+        void newline() override;
+        void clear() override;
+        void save_point() override;
+        void restore_point() override;
+        void up(uint8_t line) override;
+        void down(uint8_t line) override;
+        void progress(const std::string& text, float progress) override;
+    };
+
+    class plain_policy : public console_policy
+    {
+    public:
+        void put(align_type align, color color, const std::string& text) override;
+        void puts(align_type align, color color, const std::string& text) override;
+        void comment(color color, const std::string& text) override;
+        void newline() override;
+        void clear() override;
+        void save_point() override;
+        void restore_point() override;
+        void up(uint8_t line) override;
+        void down(uint8_t line) override;
+        void progress(const std::string& text, float progress) override;
+    };
+
+private:
+    using policy_map = std::unordered_map<mode, std::unique_ptr<console_policy>>;
+    using color_map  = std::unordered_map<color, std::string>;
+
+private:
+    inline static std::recursive_mutex _mutex;
+    inline static uint16_t             _width, _height;
+    inline static bool                 _system_tty;       ///< System TTY capability
+    inline static mode                 _mode = mode::tty; ///< User-configured output mode
+    inline static policy_map           _policies;         ///< Policy instances by mode
+    inline static console_policy*      _current_policy;   ///< Current active policy
+    inline static color_map            _color_codes = {
         {color::reset,         "\033[0m" },
         {color::black,         "\033[30m"},
         {color::red,           "\033[31m"},
@@ -175,13 +239,11 @@ public:
     static void set_mode(mode new_mode);
 
     /**
-     * @brief      Determines if TTY features should be used.
+     * @brief      Updates the current policy based on system TTY and mode.
      *
-     *             This considers both system TTY capability and user mode setting.
-     *
-     * @return     True if TTY features should be used, False for plain text.
+     * @note       This function is called internally when mode changes.
      */
-    static bool is_effective_tty();
+    static void update_policy();
 
     /**
      * @brief      Converts a color enum to ANSI color code string.
@@ -235,185 +297,62 @@ public:
      */
     static void progress(const std::string& text, float progress);
 
-    /**
-     * @brief      Prints formatted text with specified alignment, color, and formatting.
-     *
-     * @param[in]  align  The text alignment (left, right, center).
-     * @param[in]  color  The text color.
-     * @param[in]  fmt    The format string.
-     * @param      args   The arguments for formatting.
-     *
-     * @tparam     Args   The types of the formatting arguments.
-     */
+public:
     template <class... Args>
     static void put(align_type align, color color, const std::string& fmt, Args&&... args)
     {
-        auto _ = std::lock_guard(_mutex);
-
-        auto text    = std::vformat(fmt, std::make_format_args(args...));
-        auto padding = uint16_t{0};
-        switch (align)
-        {
-        case align_type::right:
-            padding = _width - text.size() - 1;
-            break;
-
-        case align_type::center:
-            padding = (_width - text.size() - 1) / 2;
-            break;
-
-        default:
-            padding = 0;
-            break;
-        }
-
-        text = std::string(padding, ' ') + text;
-        if (!is_effective_tty())
-        {
-            std::cout << colorize(color) << text << colorize(color::reset) << std::endl;
-            return;
-        }
-
-        save_point();
-        clear();
-        std::cout << "\r" << colorize(color) << text << colorize(color::reset);
-        restore_point();
+        auto _    = std::lock_guard(_mutex);
+        auto text = std::vformat(fmt, std::make_format_args(args...));
+        _current_policy->put(align, color, text);
     }
-
-    /**
-     * @brief      Prints formatted text with specified alignment and formatting.
-     *
-     * @param[in]  align  The text alignment (left, right, center).
-     * @param[in]  fmt    The format string.
-     * @param      args   The arguments for formatting.
-     *
-     * @tparam     Args   The types of the formatting arguments.
-     */
     template <class... Args>
     static void put(align_type align, const std::string& fmt, Args&&... args)
     {
+        auto _ = std::lock_guard(_mutex);
         put(align, color::reset, fmt, std::forward<Args>(args)...);
     }
-
-    /**
-     * @brief      Prints formatted text with left alignment and formatting.
-     *
-     * @param[in]  fmt   The format string.
-     * @param      args  The arguments for formatting.
-     *
-     * @tparam     Args  The types of the formatting arguments.
-     */
     template <class... Args>
     static void put(const std::string& fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         put(align_type::left, color::reset, fmt, std::forward<Args>(args)...);
     }
-
-    /**
-     * @brief      Prints formatted text with specified alignment, color, and formatting, then moves to new line.
-     *
-     * @param[in]  align  The text alignment (left, right, center).
-     * @param[in]  color  The text color.
-     * @param[in]  fmt    The format string.
-     * @param      args   The arguments for formatting.
-     *
-     * @tparam     Args   The types of the formatting arguments.
-     */
     template <class... Args>
     static void puts(align_type align, color color, const std::string& fmt, Args&&... args)
     {
-        auto _ = std::lock_guard(_mutex);
-        put(align, color, fmt, std::forward<Args>(args)...);
-        if (is_effective_tty())
-        {
-            newline();
-        }
+        auto _    = std::lock_guard(_mutex);
+        auto text = std::vformat(fmt, std::make_format_args(args...));
+        _current_policy->puts(align, color, text);
     }
-
-    /**
-     * @brief      Prints formatted text with left alignment and formatting, then moves to new line.
-     *
-     * @param[in]  color  The text color.
-     * @param[in]  fmt    The format string.
-     * @param      args   The arguments for formatting.
-     *
-     * @tparam     Args   The types of the formatting arguments.
-     */
     template <class... Args>
     static void puts(color color, const std::string& fmt, Args&&... args)
     {
+        auto _ = std::lock_guard(_mutex);
         puts(align_type::left, color, fmt, std::forward<Args>(args)...);
     }
-
-    /**
-     * @brief      Prints formatted text with specified alignment and formatting, then moves to new line.
-     *
-     * @param[in]  align  The text alignment (left, right, center).
-     * @param[in]  fmt    The format string.
-     * @param      args   The arguments for formatting.
-     *
-     * @tparam     Args   The types of the formatting arguments.
-     */
     template <class... Args>
     static void puts(align_type align, const std::string& fmt, Args&&... args)
     {
+        auto _ = std::lock_guard(_mutex);
         puts(align, color::reset, fmt, std::forward<Args>(args)...);
     }
-
-    /**
-     * @brief      Prints formatted text with left alignment and formatting, then moves to new line.
-     *
-     * @param[in]  fmt   The format string.
-     * @param      args  The arguments for formatting.
-     *
-     * @tparam     Args  The types of the formatting arguments.
-     */
     template <class... Args>
     static void puts(const std::string& fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         puts(align_type::left, color::reset, fmt, std::forward<Args>(args)...);
     }
-
-    /**
-     * @brief      Prints a comment below the current line without affecting cursor position.
-     *
-     * @param[in]  color  The text color.
-     * @param[in]  fmt    The format string.
-     * @param      args   The arguments for formatting.
-     *
-     * @tparam     Args   The types of the formatting arguments.
-     */
     template <class... Args>
     static void comment(color color, const std::string& fmt, Args&&... args)
     {
         auto _    = std::lock_guard(_mutex);
         auto text = std::vformat(fmt, std::make_format_args(args...));
-        if (!is_effective_tty())
-        {
-            std::cout << colorize(color) << text << colorize(color::reset) << std::endl;
-        }
-        else
-        {
-            save_point();
-            down(++_comment_line);
-            std::cout << "\r" << colorize(color) << text << colorize(color::reset);
-            restore_point();
-        }
+        _current_policy->comment(color, text);
     }
-
-    /**
-     * @brief      Prints a comment below the current line without affecting cursor position.
-     *
-     * @param[in]  fmt   The format string.
-     * @param      args  The arguments for formatting.
-     *
-     * @tparam     Args  The types of the formatting arguments.
-     */
     template <class... Args>
     static void comment(const std::string& fmt, Args&&... args)
     {
+        auto _ = std::lock_guard(_mutex);
         comment(color::reset, fmt, std::forward<Args>(args)...);
     }
 } __console;

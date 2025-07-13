@@ -143,9 +143,11 @@ async::task<void> game_bot_controller::start_current_test()
     this->_test_results.push_back(result);
 
     if (success)
-        fb::logger::info("Test '{}' completed successfully", this->_current_test->name());
+        fb::logger::info(fb::console::color::light_green,
+                         "Test '{}' completed successfully",
+                         this->_current_test->name());
     else
-        fb::logger::fatal("Test '{}' failed", this->_current_test->name());
+        fb::logger::fatal(fb::console::color::light_red, "Test '{}' failed", this->_current_test->name());
 
     this->_current_test = nullptr;
     this->start_next_test();
@@ -359,7 +361,7 @@ bool game_bot_controller::has_more_tests() const
 
 void game_bot_controller::print_final_test_results()
 {
-    fb::logger::info("=== INTEGRATION TEST RESULTS ===");
+    fb::logger::info(fb::console::color::cyan, "=== INTEGRATION TEST RESULTS ===");
 
     int total_tests  = this->_test_results.size();
     int passed_tests = 0;
@@ -370,31 +372,34 @@ void game_bot_controller::print_final_test_results()
     {
         if (result.success)
         {
-            fb::logger::info("[PASS] {}: {}", result.name, result.message);
+            fb::logger::info(fb::console::color::light_green, "[PASS] {}: {}", result.name, result.message);
             passed_tests++;
         }
         else
         {
-            fb::logger::fatal("[FAIL] {}: {}", result.name, result.message);
+            fb::logger::fatal(fb::console::color::light_red, "[FAIL] {}: {}", result.name, result.message);
             failed_tests++;
         }
     }
 
     // Print summary
-    fb::logger::info("=== SUMMARY ===");
-    fb::logger::info("Total tests: {}", total_tests);
-    fb::logger::info("Passed: {}", passed_tests);
-    fb::logger::info("Failed: {}", failed_tests);
+    fb::logger::info(fb::console::color::cyan, "=== SUMMARY ===");
+    fb::logger::info(fb::console::color::light_blue, "Total tests: {}", total_tests);
+    fb::logger::info(fb::console::color::light_green, "Passed: {}", passed_tests);
+    fb::logger::info(fb::console::color::light_red, "Failed: {}", failed_tests);
 
     // Print overall result
     if (failed_tests == 0)
     {
-        fb::logger::info("ALL TESTS PASSED! Integration test suite completed successfully.");
+        fb::logger::info(fb::console::color::light_green,
+                         "ALL TESTS PASSED! Integration test suite completed successfully.");
     }
     else
     {
-        fb::logger::fatal("{} TEST(S) FAILED! Integration test suite has failures.", failed_tests);
+        fb::logger::fatal(fb::console::color::light_red,
+                          "{} TEST(S) FAILED! Integration test suite has failures.",
+                          failed_tests);
     }
 
-    fb::logger::info("=== END OF INTEGRATION TEST RESULTS ===");
+    fb::logger::info(fb::console::color::cyan, "=== END OF INTEGRATION TEST RESULTS ===");
 }
