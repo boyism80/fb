@@ -2,29 +2,31 @@
 #define __PROTOCOL_GATEWAY_CRT_H__
 
 #include <fb/protocol/header.h>
-#include <fb/crypto.h>
+#include <fb/encryption.h>
 
 namespace fb::protocol::gateway::response {
 
-class crypto : public fb::protocol::header
+class encryption : public fb::protocol::header
 {
 public:
     static constexpr uint8_t header = 0x00;
 
 public:
 #ifdef BOT
-    fb::crypto crt;
-    uint32_t   crc;
+    fb::encryption cryptor;
+    uint32_t       crc;
 #else
-    const fb::crypto crt;
-    const uint32_t   crc;
+    const fb::encryption cryptor;
+    const uint32_t       crc;
 #endif
 
 public:
 #ifdef BOT
-    crypto() = default;
+    encryption() = default;
+    encryption(const encryption& other);
+    encryption(encryption&& other);
 #else
-    crypto(const fb::crypto& crypto, uint32_t crc);
+    encryption(const fb::encryption& cryptor, uint32_t crc);
 #endif
 
 public:

@@ -90,11 +90,11 @@ private:
      *             sent to clients during the connection establishment process. This
      *             includes encryption keys and algorithm information.
      *
-     * @param[in]  crt   The cryptographic context to serialize.
+     * @param[in]  encryption   The cryptographic context to serialize.
      *
      * @return     A stream containing the serialized cryptographic data.
      */
-    fb::stream make_crt_stream(const fb::crypto& crt);
+    fb::stream make_crt_stream(const fb::encryption& encryption);
 
     // override
 

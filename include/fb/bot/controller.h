@@ -247,7 +247,7 @@ public:
     /**
      * @brief      Creates a new bot instance with initialization parameters.
      *
-     * @param[in]  params  Transfer parameters containing crypto information.
+     * @param[in]  params  Transfer parameters containing encryption information.
      *
      * @return     Shared pointer to the newly created bot instance.
      */
@@ -312,8 +312,8 @@ public:
                 processed_cmd = cmd;
                 if (this->decrypt_policy(cmd))
                 {
-                    auto& crypto = bot.crt();
-                    size         = crypto.decrypt(stream, reader.seek() - 1, size);
+                    auto& encryption = bot.encryption();
+                    size             = encryption.decrypt(stream, reader.seek() - 1, size);
                 }
 
                 reader.flush();

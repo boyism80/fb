@@ -31,16 +31,16 @@ async::task<void> context::load_entries()
     this->_endpoint_crc = this->_endpoint_bytes.crc();
 }
 
-fb::stream context::make_crt_stream(const fb::crypto& crt)
+fb::stream context::make_crt_stream(const fb::encryption& encryption)
 {
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);
     writer.write<uint8_t>(0x00); // cmd : 0x00
     writer.write<uint8_t>(0x00);
     writer.write<uint32_t>(this->_endpoint_crc);
-    writer.write<uint8_t>(crt.type());
-    writer.write<uint8_t>(0x09);
-    writer.write(crt.key(), 0x09);
+    writer.write<uint8_t>(encryption.pattern());
+    writer.write<uint8_t>(fb::encryption::KEY_SIZE);
+    writer.write(encryption.iv(), fb::encryption::KEY_SIZE);
     writer.write<uint8_t>(0x00);
 
     return stream;
@@ -101,10 +101,10 @@ async::task<bool> context::handle_check_version(fb::socket<session>&            
     {
         util::assert_client(request);
 
-        auto crt = crypto::generate();
-        socket.crt(crt);
+        auto encryption = encryption::generate();
+        socket.encryption(encryption);
 
-        this->send(socket, response::crypto(crt, this->_endpoint_crc), false);
+        this->send(socket, response::encryption(encryption, this->_endpoint_crc), false);
         co_return true;
     }
     catch (std::exception&)

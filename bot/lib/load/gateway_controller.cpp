@@ -46,10 +46,10 @@ async::task<void> gateway_bot_controller::handle_welcome(gateway_bot&           
     co_return;
 }
 
-async::task<void> gateway_bot_controller::handle_crt(gateway_bot&                                   bot,
-                                                     const fb::protocol::gateway::response::crypto& response)
+async::task<void> gateway_bot_controller::handle_crt(gateway_bot&                                       bot,
+                                                     const fb::protocol::gateway::response::encryption& response)
 {
-    bot.crt(response.crt);
+    bot.encryption(response.cryptor);
     bot.send(fb::protocol::gateway::request::endpoint{0x01, 0});
     co_return;
 }

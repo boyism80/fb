@@ -1,8 +1,8 @@
-#ifndef __FB_CRYPTOR_H__
-#define __FB_CRYPTOR_H__
+#ifndef __FB_ENCRYPTION_H__
+#define __FB_ENCRYPTION_H__
 
 /**
- * @file    crypto.h
+ * @file    encryption.h
  * @brief   Cryptographic system for secure data transmission and protocol protection
  * @author  FB Development Team
  *
@@ -31,6 +31,7 @@
 #include <fb/stream.h>
 #include <algorithm>
 #include <cstring>
+#include <memory>
 
 namespace fb {
 
@@ -41,7 +42,7 @@ namespace fb {
  *             algorithm with lookup tables and sequence-based operations. It supports
  *             wrapping/unwrapping data with headers and maintains encryption state.
  */
-class crypto
+class encryption
 {
 public:
     /**
@@ -55,37 +56,37 @@ public:
     static constexpr uint32_t KEY_SIZE = 0x09;
 
 private:
-    uint8_t  _type     = 0;
-    uint8_t* _key      = nullptr;
-    uint8_t  _sequence = 0;
+    uint8_t                    _pattern = 0;
+    std::unique_ptr<uint8_t[]> _iv;
+    uint8_t                    _sequence = 0;
 
 public:
     /**
-     * @brief      Constructs a crypto object with default parameters.
+     * @brief      Constructs a encryption object with default parameters.
      *
-     *             Uses type 0 and default key "NexonInc.".
+     *             Uses pattern 0 and default IV "NexonInc.".
      */
-    crypto();
+    encryption();
 
     /**
-     * @brief      Constructs a crypto object with specified type and key.
+     * @brief      Constructs a encryption object with specified type and key.
      *
-     * @param[in]  types  The encryption type (used as index into HEX_TABLE).
-     * @param[in]  key    The encryption key (must be at least KEY_SIZE bytes).
+     * @param[in]  pattern  The encryption pattern (used as index into HEX_TABLE).
+     * @param[in]  iv       The encryption IV (must be at least KEY_SIZE bytes).
      */
-    crypto(uint8_t types, const uint8_t* key);
+    encryption(uint8_t pattern, const uint8_t* iv);
 
     /**
      * @brief      Copy constructor.
      *
-     * @param[in]  crt   The crypto object to copy.
+     * @param[in]  encryption   The encryption object to copy.
      */
-    crypto(const crypto& crt);
+    encryption(const encryption& encryption);
 
     /**
      * @brief      Destructor that cleans up allocated key memory.
      */
-    ~crypto();
+    ~encryption() = default;
 
 private:
     /**
@@ -98,6 +99,16 @@ private:
      * @param[in]  ksize   The key size for cycling through key data.
      */
     void crypt(const uint8_t* source, uint8_t* dest, uint32_t size, const uint8_t* key, uint32_t ksize);
+
+public:
+    inline uint8_t pattern() const
+    {
+        return this->_pattern;
+    }
+    inline const uint8_t* iv() const
+    {
+        return this->_iv.get();
+    }
 
 public:
     /**
@@ -179,40 +190,18 @@ public:
     uint32_t unwrap(fb::stream& data) const;
 
 public:
-    /**
-     * @brief      Gets the encryption type.
-     *
-     * @return     The current encryption type.
-     */
-    uint8_t type() const;
-
-    /**
-     * @brief      Gets the encryption key.
-     *
-     * @return     A pointer to the encryption key data.
-     */
-    const uint8_t* key() const;
+    encryption& operator= (const encryption&);
 
 public:
     /**
-     * @brief      Assignment operator.
-     *
-     * @param[in]  crt   The crypto object to assign from.
-     *
-     * @return     A reference to this crypto object.
-     */
-    crypto& operator= (const crypto& crt);
-
-public:
-    /**
-     * @brief      Generates a new crypto object with random parameters.
+     * @brief      Generates a new encryption object with random parameters.
      *
      *             In debug builds, uses predictable values for testing.
      *             In release builds, uses random type and key values.
      *
-     * @return     A new crypto object with generated parameters.
+     * @return     A new encryption object with generated parameters.
      */
-    static crypto generate();
+    static encryption generate();
 
     /**
      * @brief      Validates encryption parameters.
@@ -228,4 +217,4 @@ public:
 
 } // namespace fb
 
-#endif // !__FB_CRYPTOR_H__
+#endif // !__FB_ENCRYPTION_H__

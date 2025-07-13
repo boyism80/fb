@@ -146,7 +146,7 @@ public:
      *
      * @param      bot_controller  The game bot bot_controller that manages this bot.
      * @param[in]  id          The unique identifier for this bot instance.
-     * @param[in]  params      Transfer parameters containing crypto information.
+     * @param[in]  params      Transfer parameters containing encryption information.
      */
     game_bot(bot_controller<game_bot>& bot_controller, uint32_t id, const fb::stream& params);
 

@@ -73,11 +73,11 @@ private:
      *             security parameter correctness.
      *
      * @param[in]  bot       The gateway bot instance.
-     * @param[in]  response  The crypto response containing security parameters.
+     * @param[in]  response  The encryption response containing security parameters.
      *
-     * @return     An async task that completes when crypto setup is finished.
+     * @return     An async task that completes when encryption setup is finished.
      */
-    async::task<void> handle_crt(gateway_bot& bot, const fb::protocol::gateway::response::crypto& response);
+    async::task<void> handle_crt(gateway_bot& bot, const fb::protocol::gateway::response::encryption& response);
 
     /**
      * @brief      Handles host discovery with endpoint validation.
