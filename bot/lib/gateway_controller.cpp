@@ -14,9 +14,9 @@ bool gateway_bot_controller::decrypt_policy(int cmd) const
 {
     switch (cmd)
     {
-    case fb::protocol::gateway::response::crypto::header:  // Welcome message
-    case fb::protocol::gateway::response::welcome::header: // Crypto exchange
-    case fb::protocol::response::transfer::header:         // Host discovery
+    case fb::protocol::gateway::response::encryption::header: // Welcome message
+    case fb::protocol::gateway::response::welcome::header:    // Crypto exchange
+    case fb::protocol::response::transfer::header:            // Host discovery
         return false;
 
     default:

@@ -201,7 +201,7 @@ private:
 
                 auto cmd = reader.read<uint8_t>();
                 if (this->decrypt_policy(cmd))
-                    size = socket.crt().decrypt(stream, reader.seek() - 1, size);
+                    size = socket.encryption().decrypt(stream, reader.seek() - 1, size);
 
                 reader.flush(); // remove magic code and size
 
@@ -457,8 +457,8 @@ public:
      *
      *             Transfer Packet Format:
      *             - Encryption type (1 byte)
-     *             - Key size (1 byte, always crypto::KEY_SIZE)
-     *             - Encryption key (crypto::KEY_SIZE bytes)
+     *             - Key size (1 byte, always encryption::KEY_SIZE)
+     *             - Encryption key (encryption::KEY_SIZE bytes)
      *             - Source service type (1 byte)
      *
      * @param      socket  The socket connection to transfer to another service.
@@ -471,13 +471,13 @@ public:
     [[nodiscard]] async::task<void>
     transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::Service from)
     {
-        auto& crt    = socket.crt();
-        auto  params = fb::stream();
+        auto& encryption = socket.encryption();
+        auto  params     = fb::stream();
         {
             auto writer = fb::stream_writer<big_endian>(params);
-            writer.write<uint8_t>(crt.type());
-            writer.write<uint8_t>(crypto::KEY_SIZE);
-            writer.write(crt.key(), crypto::KEY_SIZE);
+            writer.write<uint8_t>(encryption.pattern());
+            writer.write<uint8_t>(fb::encryption::KEY_SIZE);
+            writer.write(encryption.iv(), fb::encryption::KEY_SIZE);
             writer.write<uint8_t>(static_cast<uint8_t>(from));
         }
 
@@ -487,7 +487,7 @@ public:
             co_await fb::protocol::response::transfer(ip, port, params).serialize(writer);
         }
 
-        crt.wrap(stream);
+        encryption.wrap(stream);
         std::ignore = co_await socket.send(stream, false, false);
     }
 
@@ -515,8 +515,8 @@ public:
      *
      *             Extended Transfer Packet Format:
      *             - Encryption type (1 byte)
-     *             - Key size (1 byte, always crypto::KEY_SIZE)
-     *             - Encryption key (crypto::KEY_SIZE bytes)
+     *             - Key size (1 byte, always encryption::KEY_SIZE)
+     *             - Encryption key (encryption::KEY_SIZE bytes)
      *             - Source service type (1 byte)
      *             - Additional parameter data (variable length)
      *
@@ -534,13 +534,13 @@ public:
                                              fb::protocol::internal::Service from,
                                              const fb::stream&               parameter)
     {
-        auto& crt    = socket.crt();
-        auto  header = fb::stream();
+        auto& encryption = socket.encryption();
+        auto  header     = fb::stream();
         {
             auto writer = fb::stream_writer<big_endian>(header);
-            writer.write<uint8_t>(crt.type());
-            writer.write<uint8_t>(crypto::KEY_SIZE);
-            writer.write(crt.key(), crypto::KEY_SIZE);
+            writer.write<uint8_t>(encryption.pattern());
+            writer.write<uint8_t>(fb::encryption::KEY_SIZE);
+            writer.write(encryption.iv(), fb::encryption::KEY_SIZE);
             writer.write<uint8_t>(static_cast<uint8_t>(from));
             writer.write<fb::stream>(parameter);
         }
@@ -551,7 +551,7 @@ public:
             co_await fb::protocol::response::transfer(ip, port, header).serialize(writer);
         }
 
-        crt.wrap(stream);
+        encryption.wrap(stream);
         std::ignore = co_await socket.send(stream, false, false);
     }
 

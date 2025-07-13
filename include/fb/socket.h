@@ -14,7 +14,7 @@
  *
  *          Key features:
  *          - High-performance TCP socket operations with boost::asio integration
- *          - Built-in encryption/decryption support with configurable crypto policies
+ *          - Built-in encryption/decryption support with configurable encryption policies
  *          - Advanced rate limiting system with both global and per-command TPS limits
  *          - Thread-safe operations with proper synchronization mechanisms
  *          - Asynchronous I/O operations with customizable event handlers
@@ -37,7 +37,7 @@
 #include <boost/bind/bind.hpp>
 #include <boost/system/error_code.hpp>
 #include <fb/protocol/header.h>
-#include <fb/crypto.h>
+#include <fb/encryption.h>
 #include <fb/logger.h>
 #include <async/task.h>
 #include <async/task_completion_source.h>
@@ -173,7 +173,7 @@ public:
 
 private:
     context&          _context;
-    fb::crypto        _crypto;
+    fb::encryption    _encryption;
     handle_read_event _handle_received;
     handler_event     _handle_closed;
     fb::stream        _stream;
@@ -214,19 +214,19 @@ public:
      * @brief      Constructs a new instance.
      *
      * @param[in]  context  The context.
-     * @param[in]  crt  The crypto.
+     * @param[in]  encryption  The encryption.
      * @param[in]  handle_received  The read event handler.
      * @param[in]  handle_closed  The closed event handler.
      */
     socket(context&                 context,
-           const fb::crypto&        crt,
+           const fb::encryption&    encryption,
            const handle_read_event& handle_received,
            const handler_event&     handle_closed) :
         boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(context)),
         _context(context),
         _handle_received(handle_received),
         _handle_closed(handle_closed),
-        _crypto(crt)
+        _encryption(encryption)
     { }
 
 public:
@@ -245,7 +245,7 @@ protected:
      */
     virtual bool on_encrypt(fb::stream& out)
     {
-        return this->_crypto.encrypt(out);
+        return this->_encryption.encrypt(out);
     }
 
 protected:
@@ -258,7 +258,7 @@ protected:
      */
     virtual bool on_wrap(fb::stream& out)
     {
-        return this->_crypto.wrap(out);
+        return this->_encryption.wrap(out);
     }
 
 public:
@@ -464,36 +464,36 @@ public:
 
 public:
     /**
-     * @brief      Gets the crypto.
+     * @brief      Gets the encryption.
      *
-     * @return     The crypto.
+     * @return     The encryption.
      */
-    fb::crypto& crt()
+    fb::encryption& encryption()
     {
-        return this->_crypto;
+        return this->_encryption;
     }
 
 public:
     /**
-     * @brief      Sets the crypto.
+     * @brief      Sets the encryption.
      *
-     * @param[in]  crt  The crypto.
+     * @param[in]  encryption  The encryption.
      */
-    void crt(const fb::crypto& crt)
+    void encryption(const fb::encryption& encryption)
     {
-        this->_crypto = fb::crypto(crt);
+        this->_encryption = encryption;
     }
 
 public:
     /**
-     * @brief      Sets the crypto.
+     * @brief      Sets the encryption.
      *
      * @param[in]  enctype  The encryption type.
      * @param[in]  enckey  The encryption key.
      */
-    void crt(uint8_t enctype, const uint8_t* enckey)
+    void encryption(uint8_t enctype, const uint8_t* enckey)
     {
-        this->_crypto = fb::crypto(enctype, enckey);
+        this->_encryption = fb::encryption(enctype, enckey);
     }
 
 public:

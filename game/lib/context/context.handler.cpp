@@ -10,7 +10,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         co_return false;
 
     auto weak = ch->weak_from_this();
-    socket.crt(request.enc_type, request.enc_key);
+    socket.encryption(request.enc_type, request.enc_key);
 
     ch->name(request.name);
     fb::logger::info("{} has connected.", request.name);

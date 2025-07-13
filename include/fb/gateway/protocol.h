@@ -5,6 +5,6 @@
 #include <fb/gateway/protocol/version.h>
 #include <fb/gateway/protocol/endpoint.h>
 #include <fb/gateway/protocol/welcome.h>
-#include <fb/gateway/protocol/crypto.h>
+#include <fb/gateway/protocol/encryption.h>
 
 #endif

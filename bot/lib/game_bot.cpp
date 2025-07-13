@@ -24,11 +24,9 @@ game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id, const 
     auto reader   = fb::stream_reader<>(clone);
     auto enc_type = reader.read<uint8_t>();
     auto key_size = reader.read<uint8_t>();
-    auto enc_key  = new uint8_t[key_size];
-    reader.read(enc_key, key_size);
-    this->crt() = fb::crypto(enc_type, enc_key);
-    delete[] enc_key;
-
+    auto enc_key  = std::make_unique<uint8_t[]>(key_size);
+    reader.read(enc_key.get(), key_size);
+    this->encryption(enc_type, enc_key.get());
     this->_transfer_buffer = params;
 }
 

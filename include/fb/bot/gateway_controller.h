@@ -47,7 +47,7 @@ public:
      * @brief      Gateway-specific decryption policy.
      *
      *             Gateway bots do not decrypt certain protocol commands
-     *             like welcome (0x00) and crypto exchange (0x7E).
+     *             like welcome (0x00) and encryption exchange (0x7E).
      *
      * @param[in]  cmd  The protocol command identifier.
      *

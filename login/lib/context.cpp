@@ -109,10 +109,10 @@ async::task<bool> context::handle_agreement(fb::socket<session>& socket, const r
 {
     try
     {
-        if (crypto::validate(request.enc_type, request.enc_key, request.enc_key_size) == false)
+        if (encryption::validate(request.enc_type, request.enc_key, request.enc_key_size) == false)
             throw std::exception();
 
-        socket.crt(request.enc_type, request.enc_key);
+        socket.encryption(request.enc_type, request.enc_key);
         socket.send(this->_agreement);
         co_return true;
     }
