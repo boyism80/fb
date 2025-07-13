@@ -16,6 +16,13 @@ character::~character()
         this->dialog->release();
 }
 
+void character::on_init()
+{
+    life::on_init();
+    this->items.owner(this->shared_from_this_as<character>());
+    this->trade.owner(this->shared_from_this_as<character>());
+}
+
 /**
  * @brief      Sends a binary stream to the character's client with socket validation.
  *
@@ -81,7 +88,8 @@ OBJECT_TYPE character::what() const
 
 async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
                                  const fb::model::point16_t&    position,
-                                 DESTROY_TYPE                   destroy_type)
+                                 DESTROY_TYPE                   destroy_type,
+                                 bool                           notify)
 {
     if (this->_thread == nullptr)
         co_return true;
@@ -1181,7 +1189,7 @@ fb::thread* character::thread() const
         return this->context.threads.modular(this->_id);
 }
 
-void fb::game::character::thread(fb::thread* value)
+void character::thread(fb::thread* value)
 {
     this->_thread = value;
 }
@@ -1364,9 +1372,8 @@ bool character::detect() const
     return this->_detect;
 }
 
-std::shared_ptr<fb::game::mob> character::spawn_mob(const fb::model::mob&       model,
-                                                    const fb::model::point16_t& position,
-                                                    bool                        owned)
+std::shared_ptr<fb::game::mob>
+character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify)
 {
     auto map = this->_map;
     if (map == nullptr)
@@ -1375,7 +1382,7 @@ std::shared_ptr<fb::game::mob> character::spawn_mob(const fb::model::mob&       
     auto  params    = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr};
     auto& mob_model = static_cast<const fb::model::mob&>(model);
     auto  mob       = std::make_shared<fb::game::mob>(this->context, mob_model, params);
-    mob->map(map, position);
+    mob->map(map, position, DESTROY_TYPE::DEFAULT, notify);
 
     if (owned)
         this->_spawned_mobs.push_back(mob);
@@ -1856,6 +1863,11 @@ bool character::hidden(const fb::game::object& target) const
     return this->role() > ch.role();
 }
 
+bool character::hidden(ROLE role) const
+{
+    return this->role() > role;
+}
+
 async::task<void> character::death_penalty()
 {
     auto buff_keys = std::vector<uint32_t>{};
@@ -1901,6 +1913,7 @@ async::task<void> character::death_penalty()
         if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
         {
             this->items.drop(i, item->count(), false, ITEM_DELETE_TYPE::NONE);
+            item->container(nullptr);
             item->death_cid(this->id());
             std::ignore = co_await item->map(this->map(), this->position());
         }
@@ -1924,6 +1937,7 @@ async::task<void> character::death_penalty()
         if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
         {
             this->items.equipment_off(parts);
+            equipment->container(nullptr);
             equipment->death_cid(this->id());
             std::ignore = co_await equipment->map(this->map(), this->position());
         }

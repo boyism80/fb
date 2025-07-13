@@ -281,7 +281,10 @@ void context::pending(bool value)
     this->_state = value ? LUA_PENDING : LUA_YIELD;
 }
 
-int context::ensure_yield(fb::context& ctx, std::weak_ptr<fb::thread_switchable> weak, std::function<int()> fn)
+int context::ensure_yield(fb::context&                         ctx,
+                          std::weak_ptr<fb::thread_switchable> weak,
+                          std::function<int(bool)>             fn,
+                          bool                                 no_yield)
 {
     auto shared = weak.lock();
     if (shared == nullptr)
@@ -289,7 +292,7 @@ int context::ensure_yield(fb::context& ctx, std::weak_ptr<fb::thread_switchable>
 
     if (this->_initial_thread.id() == shared->thread()->id())
     {
-        return fn();
+        return fn(false);
     }
     else
     {
@@ -297,7 +300,7 @@ int context::ensure_yield(fb::context& ctx, std::weak_ptr<fb::thread_switchable>
             try
             {
                 result();
-                return fn();
+                return fn(true);
             }
             catch (std::exception& e)
             {
@@ -306,7 +309,10 @@ int context::ensure_yield(fb::context& ctx, std::weak_ptr<fb::thread_switchable>
                 return 0;
             }
         });
-        return this->yield(0);
+        if (no_yield)
+            return 0;
+        else
+            return this->yield(0);
     }
 }
 
@@ -460,6 +466,9 @@ void root::release(context& ctx)
         lua_settop(ctx, 0);
         ctx.parent(nullptr);
 
+        // Force garbage collection before moving to idle pool
+        lua_gc(ctx, LUA_GCCOLLECT, 0);
+
         auto key = (lua_State*)ctx;
         this->idle.insert({key, std::move(this->busy[key])});
         this->busy.erase(key);
@@ -560,12 +569,16 @@ fb::lua::context_pool& fb::lua::context_pool::ist()
 thread::thread(context& owner, context* parent) :
     context(::lua_newthread(owner), owner, parent),
     ref(luaL_ref(owner, LUA_REGISTRYINDEX))
-{ }
+{
+    lua_checkstack(*this, 10000);
+}
 
 thread::thread(thread&& ctx) :
     context(ctx._ctx, *ctx.owner, ctx.parent()),
     ref(ctx.ref)
-{ }
+{
+    lua_checkstack(*this, 10000);
+}
 
 thread::~thread()
 {

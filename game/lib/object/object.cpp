@@ -84,6 +84,9 @@ bool object::hidden(const object& target) const
     return false;
 }
 
+void object::on_init()
+{ }
+
 async::task<void> object::destroy(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
@@ -148,6 +151,8 @@ void object::chat(const std::string& message, CHAT_TYPE chat_type, bool decorate
 
 const fb::model::point16_t& object::position() const
 {
+    this->assert_thread();
+
     return this->_position;
 }
 
@@ -469,7 +474,8 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map, DESTROY_TYPE d
 
 async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
                               const fb::model::point16_t&    position,
-                              DESTROY_TYPE                   destroy_type)
+                              DESTROY_TYPE                   destroy_type,
+                              bool                           notify)
 {
     this->assert_thread();
 
@@ -542,9 +548,8 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         if (this->_map != nullptr)
             std::ignore = co_await this->map(nullptr);
 
-        this->_map = map;
-        if (this->is(OBJECT_TYPE::CHARACTER))
-            static_cast<character*>(this)->thread(map->thread());
+        this->_map    = map;
+        this->_thread = map->thread();
 
         co_await this->context.threads.switching(weak);
 
@@ -572,15 +577,19 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         this->update_id();
         this->update_map(*map);
         this->update_position();
-        this->update_external(true);
+        if (notify)
+            this->update_external(true);
         this->update_bgm(map->model.bgm, 100);
 
-        for (auto& obj : map->nears(this->_position))
+        if (notify)
         {
-            if (obj.get() == this)
-                continue;
+            for (auto& obj : map->nears(this->_position))
+            {
+                if (obj.get() == this)
+                    continue;
 
-            obj->update_external(*this, true);
+                obj->update_external(*this, true);
+            }
         }
 
         co_return true;
@@ -792,12 +801,17 @@ void object::hide(object& to, DESTROY_TYPE destroy_type)
     this->listener.on_hide(*this, to, destroy_type);
 }
 
+void object::thread(fb::thread* value)
+{
+    this->_thread = value;
+}
+
 fb::thread* object::thread() const
 {
-    if (this->_map == nullptr)
-        return this->context.threads.modular(this->_oid);
+    if (this->_thread != nullptr)
+        return this->_thread;
     else
-        return this->context.threads.modular(this->_map->model.id);
+        return this->context.threads.modular(this->_model.id);
 }
 
 void object::update_id()

@@ -45,33 +45,31 @@ void fb::thread::handle_thread(uint8_t index)
 
 void fb::thread::handle_idle()
 {
-    this->_timers.write([&](auto& timers) {
-        auto now = fb::model::datetime();
-        for (int i = timers.size() - 1; i >= 0; i--)
+    auto now = fb::model::datetime();
+    for (int i = this->_timers.size() - 1; i >= 0; i--)
+    {
+        auto timer = this->_timers[i].get();
+        if (timer->canceled())
         {
-            auto timer = timers[i].get();
-            if (timer->canceled())
-            {
-                timers.erase(timers.begin() + i);
-                continue;
-            }
-
-            if (now < timer->begin + timer->duration)
-                continue;
-
-            auto repeat = timer->repeat;
-            auto fn     = fb::timer::handle_callback_type{timer->fn};
-            async::awaitable_then(fn(now, this->_thread.get_id()), [timer, repeat, now](auto result) {
-                if (repeat == fb::timer::repeat_type::repeat)
-                    timer->begin = now;
-            });
-
-            if (timer->repeat == fb::timer::repeat_type::once)
-            {
-                timers.erase(timers.begin() + i);
-            }
+            this->_timers.erase(this->_timers.begin() + i);
+            continue;
         }
-    });
+
+        if (now < timer->begin + timer->duration)
+            continue;
+
+        auto repeat = timer->repeat;
+        auto fn     = fb::timer::handle_callback_type{timer->fn};
+        async::awaitable_then(fn(now, this->_thread.get_id()), [timer, repeat, now](auto result) {
+            if (repeat == fb::timer::repeat_type::repeat)
+                timer->begin = now;
+        });
+
+        if (timer->repeat == fb::timer::repeat_type::once)
+        {
+            this->_timers.erase(this->_timers.begin() + i);
+        }
+    }
 }
 
 void fb::thread::assert_exec() const
@@ -80,25 +78,18 @@ void fb::thread::assert_exec() const
         throw std::runtime_error("cannot push pointer value. thread mismatched.");
 }
 
+void fb::thread::join()
+{
+    this->_thread.join();
+}
+
 void fb::thread::exit()
 {
     if (this->_exit)
         return;
 
     this->_exit = true;
-    try
-    {
-        if (this->_thread.joinable())
-            this->_thread.join();
-    }
-    catch (std::exception& e)
-    {
-        fb::logger::fatal(e.what());
-    }
-
-    this->_timers.write([](auto& timers) {
-        timers.clear();
-    });
+    this->_timers.clear();
 }
 
 std::shared_ptr<fb::timer> fb::thread::settimer(const fb::timer::handle_callback_type& fn,
@@ -107,33 +98,29 @@ std::shared_ptr<fb::timer> fb::thread::settimer(const fb::timer::handle_callback
 {
     if (this->id() != std::this_thread::get_id())
     {
-        auto sstream = std::stringstream();
-        sstream << boost::stacktrace::stacktrace();
-        fb::logger::fatal("cannot set timer. thread mismatched.\nStacktrace:\n{}", sstream.str());
-        throw std::runtime_error("cannot set timer. thread mismatched.");
+        throw std::runtime_error(std::format("cannot set timer. thread mismatched. stacktrace : {}",
+                                             boost::stacktrace::to_string(boost::stacktrace::stacktrace())));
     }
 
-    return this->_timers.write([&](auto& timers) {
-        auto ptr = new fb::timer(
-            [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {
-                auto index = this->_index;
-                try
-                {
-                    co_await fn(fb::model::datetime(), this->_thread.get_id());
-                }
-                catch (std::exception& e)
-                {
-                    fb::logger::fatal(std::format("timer error in thread {} : {}", index, e.what()));
-                }
-                co_return;
-            },
-            duration,
-            repeat);
+    auto ptr = new fb::timer(
+        [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {
+            auto index = this->_index;
+            try
+            {
+                co_await fn(fb::model::datetime(), this->_thread.get_id());
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal(std::format("timer error in thread {} : {}", index, e.what()));
+            }
+            co_return;
+        },
+        duration,
+        repeat);
 
-        auto shared_ptr = std::shared_ptr<fb::timer>(ptr);
-        timers.push_back(shared_ptr);
-        return shared_ptr;
-    });
+    auto shared_ptr = std::shared_ptr<fb::timer>(ptr);
+    this->_timers.push_back(shared_ptr);
+    return shared_ptr;
 }
 
 async::task<void> fb::thread::sleep(const fb::model::timespan& delay)

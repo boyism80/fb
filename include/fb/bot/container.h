@@ -48,6 +48,7 @@ private:
     bool                     _exit = false;          ///< Flag indicating if the container is shutting down
 
 public:
+    fb::model::model                        model;
     std::unique_ptr<gateway_bot_controller> gateway;
     std::unique_ptr<login_bot_controller>   login;
     std::unique_ptr<game_bot_controller>    game;

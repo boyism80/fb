@@ -6,6 +6,7 @@
 #include <fb/bot/game_bot.h>
 #include <fb/bot/integration/test_case.h>
 #include <fb/locker.h>
+#include <fb/model/loader.h>
 #include <memory>
 #include <queue>
 #include <vector>
@@ -33,6 +34,15 @@ private:
     std::vector<std::unique_ptr<bot_integration_test>> _test_instances; ///< Test instances for lifetime management
     std::queue<bot_integration_test*>                  _test_queue;     ///< Queue of tests to execute
     bot_integration_test* _current_test{nullptr};                       ///< Currently active test (non-owning pointer)
+
+    // Test result tracking
+    struct test_result
+    {
+        std::string name;    ///< Test name
+        bool        success; ///< Whether the test passed
+        std::string message; ///< Additional result message
+    };
+    std::vector<test_result> _test_results; ///< Results of completed tests
 
     // Hook system for integration tests - per test
     using hook_function = std::function<async::task<void>(game_bot&, const fb::protocol::header&)>;
@@ -78,15 +88,6 @@ public:
 
 public:
     /**
-     * @brief      Notifies the controller that a test has completed.
-     *
-     *             Called by test instances when they finish execution.
-     *
-     * @param[in]  test  Pointer to the test that has completed.
-     */
-    void notify_test_completed(bot_integration_test* test);
-
-    /**
      * @brief      Notifies the controller that the current test is ready to start.
      *
      *             Called by test instances when they detect they are ready to begin execution.
@@ -122,6 +123,14 @@ public:
     bool has_more_tests() const;
 
     /**
+     * @brief      Prints the final test results summary.
+     *
+     *             Called when all tests have completed to show individual test results
+     *             and overall success/failure status.
+     */
+    void print_final_test_results();
+
+    /**
      * @brief      Activates the first test in the queue.
      *
      *             This method initializes the first test by creating bots,
@@ -129,7 +138,7 @@ public:
      *             This is different from starting the test - activation
      *             prepares the test to become ready.
      */
-    async::task<void> activate_first_test();
+    async::task<void> active_test();
 
     /**
      * @brief      Registers a hook for a specific protocol type for a test.

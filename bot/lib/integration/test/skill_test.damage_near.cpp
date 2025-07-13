@@ -4,23 +4,15 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                      std::chrono::milliseconds                        timeout)
+async::task<bool> skill_test::test_near_damage_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
-    constexpr auto interval = 100ms;
-
-    auto& caster = bots.at(0);
-    auto& target = bots.at(1);
-
-    fb::logger::info("Bot {} starting near damage spell test", caster->oid());
+    fb::logger::debug("Bot {} starting near damage spell test", caster->oid());
     caster->chat("=== NEAR DAMAGE SPELL TEST STARTED ===");
 
-    auto thread = caster->thread();
-    co_await thread->switching();
-
     // Step 1: Move caster down by 1 tile
-    co_await caster->move(DIRECTION::BOTTOM);
-    co_await caster->thread()->sleep(100ms);
+    co_await caster->move(DIRECTION::LEFT);
+    co_await this->sleep(DEFAULT_INTERVAL);
+    co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     // Step 2: Spawn 4 monsters around the caster
     auto spawn_points     = std::vector<fb::model::point<uint16_t>>();
@@ -42,10 +34,7 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
     spawn_points.push_back(bottom_pos);
 
     // Setup all bots with max HP/MP
-    for (auto& bot : bots)
-    {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
-    }
+    std::ignore = co_await caster->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
 
     auto near_damage_spells = std::vector<near_damage_spell_test>{
         // spell_damage_near spells (caster area) - sorted by MP cost and element
@@ -82,21 +71,21 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names, timeout);
-    fb::logger::info("Successfully learned {} out of {} near damage spells", learned_count, near_damage_spells.size());
+    auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
+    fb::logger::debug("Successfully learned {} out of {} near damage spells", learned_count, near_damage_spells.size());
 
-    fb::logger::info("Learning {} near damage spells", near_damage_spells.size());
+    fb::logger::debug("Learning {} near damage spells", near_damage_spells.size());
     auto spell_slot       = 1;
     auto current_position = caster->position();
 
     for (const auto& spell : near_damage_spells)
     {
-        fb::logger::info("Testing spell: {} (Damage: {}, MP: -{})",
-                         spell.name,
-                         spell.expected_damage,
-                         spell.expected_mp_cost);
+        fb::logger::debug("Testing spell: {} (Damage: {}, MP: -{})",
+                          spell.name,
+                          spell.expected_damage,
+                          spell.expected_mp_cost);
 
-        fb::logger::info("Spawning 4 monsters around caster at ({}, {})", target_position.x, target_position.y);
+        fb::logger::debug("Spawning 4 monsters around caster at ({}, {})", target_position.x, target_position.y);
 
         // Spawn monsters in 4 directions using relative positions
         std::vector<std::pair<int, int>> relative_positions = {
@@ -106,11 +95,10 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
             {0,  1 }  // bottom
         };
 
-        std::ignore =
-            co_await this->spawn_monsters_relative_by_look(caster, "다람쥐", relative_positions, 32793, timeout);
+        co_await caster->spawn_monsters_bulk("다람쥐", 1, DEFAULT_TIMEOUT);
 
         // Set caster's current HP/MP for testing
-        std::ignore = co_await this->set_current_hp_mp(caster, 50, 100000, timeout);
+        std::ignore = co_await caster->set_current_hp_mp(50, 100000, DEFAULT_TIMEOUT);
 
         auto before_caster_hp = caster->hp();
         auto before_caster_mp = caster->mp();
@@ -118,21 +106,21 @@ async::task<bool> skill_test::test_near_damage_spells(std::vector<std::shared_pt
         auto expected_mp      = before_caster_mp - spell.expected_mp_cost;
 
         caster->chat(std::format("Testing {}", spell.name));
-        co_await caster->request<fb::protocol::game::response::update_internal>(
+        std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
             fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", 0, {0, 0}),
             [=](auto& resp) -> bool {
                 return resp.ch_hp == expected_hp && resp.ch_mp == expected_mp;
             },
-            timeout);
+            DEFAULT_TIMEOUT);
 
         spell_slot++;
-        co_await caster->thread()->sleep(interval);
     }
 
-    co_await caster->move(DIRECTION::TOP);
-    caster->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
+    co_await this->sleep(DEFAULT_INTERVAL);
+    co_await caster->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
+    co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     caster->chat("=== NEAR DAMAGE SPELL TEST COMPLETED ===");
-    fb::logger::info("Near damage spell test completed.");
+    fb::logger::debug("Near damage spell test completed.");
     co_return true;
 }

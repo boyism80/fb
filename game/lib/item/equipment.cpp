@@ -30,10 +30,13 @@ bool fb::game::equipment::active()
     if (this->_container == nullptr)
         return false;
 
-    auto  before = std::shared_ptr<fb::game::item>();
-    auto& owner  = this->_container->owner;
-    auto  parts  = EQUIPMENT_PARTS::UNKNOWN;
-    auto& model  = this->based<fb::model::equipment>();
+    auto before = std::shared_ptr<fb::game::item>();
+    auto owner  = this->_container->owner();
+    if (owner == nullptr)
+        return false;
+
+    auto  parts = EQUIPMENT_PARTS::UNKNOWN;
+    auto& model = this->based<fb::model::equipment>();
 
     for (auto& dsl : model.condition)
     {
@@ -42,7 +45,7 @@ bool fb::game::equipment::active()
         case DSL::level:
         {
             auto params = fb::model::dsl::level(dsl.params);
-            if (owner.level() < params.min)
+            if (owner->level() < params.min)
                 throw std::runtime_error("레벨이 부족합니다.");
         }
         break;
@@ -50,7 +53,7 @@ bool fb::game::equipment::active()
         case DSL::strength:
         {
             auto params = fb::model::dsl::strength(dsl.params);
-            if (owner.str() < params.value)
+            if (owner->str() < params.value)
                 throw std::runtime_error("너무 무겁습니다.");
         }
         break;
@@ -58,7 +61,7 @@ bool fb::game::equipment::active()
         case DSL::dexterity:
         {
             auto params = fb::model::dsl::dexterity(dsl.params);
-            if (owner.dex() < params.value)
+            if (owner->dex() < params.value)
                 throw std::runtime_error("민첩함이 부족합니다.");
         }
         break;
@@ -66,7 +69,7 @@ bool fb::game::equipment::active()
         case DSL::intelligence:
         {
             auto params = fb::model::dsl::intelligence(dsl.params);
-            if (owner.intelligence() < params.value)
+            if (owner->intelligence() < params.value)
                 throw std::runtime_error("지능이 부족합니다.");
         }
         break;
@@ -74,7 +77,7 @@ bool fb::game::equipment::active()
         case DSL::class_t:
         {
             auto params = fb::model::dsl::class_t(dsl.params);
-            if (owner.cls() != params.value)
+            if (owner->cls() != params.value)
                 throw std::runtime_error("착용할 수 없습니다.");
         }
         break;
@@ -82,7 +85,7 @@ bool fb::game::equipment::active()
         case DSL::promotion:
         {
             auto params = fb::model::dsl::promotion(dsl.params);
-            if (owner.promotion() < params.value)
+            if (owner->promotion() < params.value)
                 throw std::runtime_error("착용할 수 없습니다.");
         }
         break;
@@ -90,7 +93,7 @@ bool fb::game::equipment::active()
         case DSL::sex:
         {
             auto params = fb::model::dsl::sex(dsl.params);
-            if (owner.sex() != params.value)
+            if (owner->sex() != params.value)
                 throw std::runtime_error("착용할 수 없습니다.");
         }
         break;
@@ -99,27 +102,27 @@ bool fb::game::equipment::active()
     switch (model.attr())
     {
     case ITEM_ATTRIBUTE::WEAPON:
-        before = owner.items.weapon(this->shared_from_this_as<fb::game::weapon>());
+        before = owner->items.weapon(this->shared_from_this_as<fb::game::weapon>());
         parts  = EQUIPMENT_PARTS::WEAPON;
         break;
 
     case ITEM_ATTRIBUTE::ARMOR:
-        before = owner.items.armor(this->shared_from_this_as<fb::game::armor>());
+        before = owner->items.armor(this->shared_from_this_as<fb::game::armor>());
         parts  = EQUIPMENT_PARTS::ARMOR;
         break;
 
     case ITEM_ATTRIBUTE::SHIELD:
-        before = owner.items.shield(this->shared_from_this_as<fb::game::shield>());
+        before = owner->items.shield(this->shared_from_this_as<fb::game::shield>());
         parts  = EQUIPMENT_PARTS::SHIELD;
         break;
 
     case ITEM_ATTRIBUTE::HELMET:
-        before = owner.items.helmet(this->shared_from_this_as<fb::game::helmet>());
+        before = owner->items.helmet(this->shared_from_this_as<fb::game::helmet>());
         parts  = EQUIPMENT_PARTS::HELMET;
         break;
 
     case ITEM_ATTRIBUTE::RING:
-        if (owner.items.ring(EQUIPMENT_POSITION::LEFT) == nullptr)
+        if (owner->items.ring(EQUIPMENT_POSITION::LEFT) == nullptr)
         {
             parts = EQUIPMENT_PARTS::LEFT_HAND;
         }
@@ -128,11 +131,11 @@ bool fb::game::equipment::active()
             parts = EQUIPMENT_PARTS::RIGHT_HAND;
         }
 
-        before = owner.items.ring(this->shared_from_this_as<fb::game::ring>());
+        before = owner->items.ring(this->shared_from_this_as<fb::game::ring>());
         break;
 
     case ITEM_ATTRIBUTE::AUXILIARY:
-        if (owner.items.auxiliary(EQUIPMENT_POSITION::LEFT) == nullptr)
+        if (owner->items.auxiliary(EQUIPMENT_POSITION::LEFT) == nullptr)
         {
             parts = EQUIPMENT_PARTS::LEFT_AUX;
         }
@@ -141,7 +144,7 @@ bool fb::game::equipment::active()
             parts = EQUIPMENT_PARTS::RIGHT_AUX;
         }
 
-        before = owner.items.auxiliary(this->shared_from_this_as<fb::game::auxiliary>());
+        before = owner->items.auxiliary(this->shared_from_this_as<fb::game::auxiliary>());
         break;
 
     default:
@@ -150,8 +153,8 @@ bool fb::game::equipment::active()
 
     fb::game::item::active();
 
-    owner.items.remove(this->shared_from_this_as<fb::game::item>(), 1, ITEM_DELETE_TYPE::NONE, false);
-    owner.items.add(before);
+    owner->items.remove(this->shared_from_this_as<fb::game::item>(), 1, ITEM_DELETE_TYPE::NONE, false);
+    owner->items.add(before);
 
     // Execute equipment activation script
     auto lua = fb::lua::new_context();
@@ -168,7 +171,7 @@ bool fb::game::equipment::active()
     }
 
     // Call listener for packet response
-    owner.listener.on_equipment_on(owner, *this, parts);
+    owner->listener.on_equipment_on(*owner, *this, parts);
 
     return true;
 }
@@ -189,7 +192,10 @@ bool fb::game::equipment::durability_down(uint32_t value)
     if (this->_container != nullptr)
         return false;
 
-    auto& owner  = this->_container->owner;
+    auto owner = this->_container->owner();
+    if (owner == nullptr)
+        return false;
+
     auto& model  = this->based<fb::model::equipment>();
     auto  before = this->_durability;
 
@@ -202,7 +208,7 @@ bool fb::game::equipment::durability_down(uint32_t value)
         this->_durability -= value;
     }
 
-    owner.listener.on_durability_down(owner, *this, before, this->_durability);
+    owner->listener.on_durability_down(*owner, *this, before, this->_durability);
     return this->_durability == 0;
 }
 

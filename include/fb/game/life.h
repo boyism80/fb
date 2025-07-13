@@ -94,6 +94,9 @@ protected:
      */
     virtual ~life();
 
+public:
+    virtual void on_init() override;
+
 #pragma region stat
 
 public:

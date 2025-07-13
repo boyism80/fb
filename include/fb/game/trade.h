@@ -32,7 +32,7 @@
 #include <fb/stream.h>
 #include <unordered_map>
 
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      Forward declaration of the character class.
@@ -79,8 +79,8 @@ public:
     struct listener_t;
 
 private:
-    character&                           _owner;
-    character*                           _you = nullptr;
+    std::weak_ptr<character>             _owner;
+    std::weak_ptr<character>             _you;
     std::unordered_map<uint8_t, uint8_t> _items;
     uint8_t                              _selected = 0xFF;
     uint32_t                             _money    = 0;
@@ -92,7 +92,7 @@ public:
      *
      * @param      owner  The character that owns this trade instance
      */
-    trade(character& owner);
+    trade();
     /**
      * @brief      Destroys the object.
      */
@@ -141,11 +141,25 @@ private:
 
 public:
     /**
+     * @brief      Sets the owner of this trade instance.
+     *
+     * @param[in]  owner  The character that owns this trade instance
+     */
+    void owner(std::shared_ptr<character> owner);
+
+    /**
+     * @brief      Gets the owner of this trade instance.
+     *
+     * @return     The character that owns this trade instance
+     */
+    std::shared_ptr<character> owner() const;
+
+    /**
      * @brief      Gets the other character participating in this trade.
      *
      * @return     Pointer to the other character, or nullptr if no active trade
      */
-    character* you() const;
+    std::shared_ptr<character> you() const;
     /**
      * @brief      Initiates a trade session with another character.
      *
@@ -153,7 +167,7 @@ public:
      *
      * @return     True if the trade was successfully initiated, false otherwise
      */
-    bool begin(character& you);
+    bool begin(std::shared_ptr<character> you);
     /**
      * @brief      Checks if this character is currently in an active trade.
      *
@@ -300,6 +314,6 @@ struct trade::listener_t
     virtual void on_trade_success(character& me, character& you) = 0;
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__TRADE_H__

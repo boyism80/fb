@@ -196,13 +196,13 @@ async::task<bool> context::handle_attack(fb::socket<character>& socket, const fb
     co_return true;
 }
 
-async::task<bool> context::handle_pickup(fb::socket<character>& socket, const fb_reqs::pick_up& request)
+async::task<bool> context::handle_loot(fb::socket<character>& socket, const fb_reqs::loot& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
         co_return true;
 
-    ch->items.pickup(request.boost);
+    ch->items.loot(request.boost);
     co_return true;
 }
 
@@ -501,15 +501,15 @@ async::task<bool> context::handle_trade(fb::socket<character>& socket, const fb_
     if (map == nullptr)
         co_return true;
 
-    auto you = static_cast<character*>(map->objects[request.fd]); // 파트너
+    auto you = static_cast<character*>(map->objects[request.oid]); // 파트너
     if (you == nullptr)
         co_return true;
 
-    switch (static_cast<trade::state>(request.action))
+    switch (request.action)
     {
     case trade::state::REQUEST:
     {
-        me->trade.begin(*you);
+        me->trade.begin(you->shared_from_this_as<character>());
         break;
     }
 
@@ -772,7 +772,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
         lua->pushobject(ch);
         lua->pushstring(request.message);
         lua->pushboolean(request.shout);
-        co_await lua->call(3, false);
+        std::ignore = co_await lua->call(3, false);
         if (weak.expired())
         {
             lua->release();
@@ -1096,7 +1096,7 @@ async::task<bool> context::handle_throw_item(fb::socket<character>& socket, cons
     if (ch->inited() == false)
         co_return true;
 
-    ch->items.throws(request.index);
+    ch->items.throws(request.index, request.all);
     co_return true;
 }
 
@@ -1168,7 +1168,7 @@ async::task<bool> context::handle_door(fb::socket<character>& socket, const fb_r
 
     lua->func("on_door");
     lua->pushobject(ch);
-    co_await lua->call(1);
+    std::ignore = co_await lua->call(1);
     co_return true;
 }
 

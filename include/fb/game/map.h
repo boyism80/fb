@@ -189,7 +189,21 @@ public:
     bool in_ground(const fb::model::point16_t position) const;
 
     /**
+     * @brief      Checks if a position is movable with a custom predicate.
+     *
+     * @param[in]  position     The target position to check for movement validity
+     * @param[in]  predicate    The predicate function to check object properties
+     *
+     * @return     True if the position is movable, false if blocked
+     */
+    bool movable(const fb::model::point16_t& position, const std::function<bool(const object&)>& predicate) const;
+
+    /**
      * @brief      Checks if an object can move to a specific position on the map.
+     *
+     * @warning    Care must be taken when calling this method as thread safety issues may arise
+     *             if the object and map are running on different threads. The object's thread
+     *             and map's thread must be properly synchronized to avoid race conditions.
      *
      * @param[in]  position  The target position to check for movement validity
      *
@@ -263,6 +277,13 @@ public:
      */
     std::vector<std::shared_ptr<fb::game::object>> belows(const fb::model::point16_t& pivot,
                                                           OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+
+    /**
+     * @brief      Updates the external appearance of multiple objects.
+     *
+     * @param[in]  oids  The list of object IDs to update
+     */
+    void bulk_update(const std::vector<uint32_t>& oids);
 
     /**
      * @brief      Gets the thread that manages this map's execution context.
@@ -401,6 +422,15 @@ struct map::builtin
      * @return     Number of return values pushed to Lua stack
      */
     static int builtin_at(lua_State* L);
+
+    /**
+     * @brief      Lua binding for updating multiple objects on the map.
+     *
+     * @param[in]  L  The Lua state
+     *
+     * @return     Number of return values pushed to Lua stack
+     */
+    static int builtin_bulk_update(lua_State* L);
 };
 
 /**

@@ -6,20 +6,21 @@ namespace fb::protocol::game::request {
 async::task<void> trade::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(this->action);
-    writer.write<uint32_t>(this->fd);
+    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(static_cast<uint8_t>(this->action));
+    writer.write<uint32_t>(this->oid);
 
     switch (this->action)
     {
-    case 1: // fb::game::trade::state::UP_ITEM
+    case state::UP_ITEM:
         writer.write<uint8_t>(this->parameter.index);
         break;
 
-    case 2: // fb::game::trade::state::ITEM_COUNT
+    case state::ITEM_COUNT:
         writer.write<uint16_t>(this->parameter.count);
         break;
 
-    case 3: // fb::game::trade::state::UP_MONEY
+    case state::UP_MONEY:
         writer.write<uint32_t>(this->parameter.money);
         break;
     }
@@ -28,9 +29,9 @@ async::task<void> trade::serialize(fb::stream_writer<big_endian>& writer) const
 async::task<void> trade::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->action = reader.read<uint8_t>();
-    this->fd     = reader.read<uint32_t>();
-    switch (static_cast<fb::game::trade::state>(this->action))
+    this->action = static_cast<fb::game::trade::state>(reader.read<uint8_t>());
+    this->oid    = reader.read<uint32_t>();
+    switch (this->action)
     {
     case fb::game::trade::state::UP_ITEM:
         this->parameter.index = reader.read<uint8_t>();

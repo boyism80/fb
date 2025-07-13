@@ -8,7 +8,7 @@ using namespace fb::model::enum_value;
 
 namespace fb::protocol::game::request {
 
-class pick_up : public fb::protocol::header
+class loot : public fb::protocol::header
 {
 public:
     static constexpr uint8_t header = 0x07;
@@ -22,9 +22,9 @@ public:
 
 public:
 #ifndef BOT
-    pick_up() = default;
+    loot() = default;
 #else
-    pick_up(bool boost);
+    loot(bool boost);
 #endif
 
 public:

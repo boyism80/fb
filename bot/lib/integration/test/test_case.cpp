@@ -1,382 +1,313 @@
 #include <fb/bot/integration/test_case.h>
 #include <fb/bot/integration/game_controller.h>
+#include <fb/bot/integration/gateway_controller.h>
 #include <fb/logger.h>
 #include <fb/game/protocol.h>
+#include <fb/config.h>
 #include <format>
+
+using namespace std::chrono_literals;
 
 namespace fb::bot::integration {
 
+bot_integration_test::bot_integration_test(game_bot_controller& controller, uint32_t bot_count) :
+    controller(controller),
+    bot_count(bot_count)
+{
+    // Register common hooks for sequence and position responses
+    this->controller.hook_external(this, this, &bot_integration_test::on_hook_sequence);
+    this->controller.hook_external(this, this, &bot_integration_test::on_hook_position);
+    this->controller.hook_external(this, this, &bot_integration_test::on_hook_update_external);
+}
+
+bot_integration_test::test_state bot_integration_test::get_state() const
+{
+    return this->_state;
+}
+
+void bot_integration_test::set_state(test_state state)
+{
+    this->_state = state;
+}
+
+bool bot_integration_test::is_complete() const
+{
+    return this->_state == test_state::completed;
+}
+
+bool bot_integration_test::is_running() const
+{
+    return this->_state == test_state::running;
+}
+
+void bot_integration_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
+{
+    this->_test_bots.push_back(bot);
+    fb::logger::debug("{}: Bot {} added to collection", this->name(), bot->fd());
+}
+
+void bot_integration_test::on_bot_disconnected(std::shared_ptr<fb::bot::game_bot> bot)
+{
+    fb::logger::debug("{}: Bot {} disconnected", this->name(), bot->fd());
+}
+
 void bot_integration_test::notify_ready()
 {
-    this->_controller.notify_test_ready();
+    this->controller.notify_test_ready();
 }
 
-// Utility functions for common bot operations
-
-async::task<spawned_monster_info> bot_integration_test::spawn_monster_with_validator(
-    std::shared_ptr<fb::bot::game_bot>                               bot,
-    const std::string&                                               monster_name,
-    uint16_t                                                         x,
-    uint16_t                                                         y,
-    std::chrono::milliseconds                                        timeout,
-    std::function<bool(const fb::protocol::game::response::update&)> validator)
+async::task<void> bot_integration_test::on_finished()
 {
-    auto thread = bot->thread();
-    co_await thread->switching();
-
-    auto&& spawn_response = co_await bot->request<fb::protocol::game::response::update>(
-        fb::protocol::game::request::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
-        validator,
-        timeout);
-
-    if (spawn_response.objects_data.empty())
+    for (auto& bot : this->get_test_bots())
     {
-        throw std::runtime_error(std::format("Failed to spawn monster {} at ({}, {})", monster_name, x, y));
+        if (bot)
+            bot->close();
     }
 
-    auto&                mob = spawn_response.objects_data.front();
-    spawned_monster_info monster_info;
-    monster_info.oid      = mob.oid;
-    monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
-    monster_info.look     = mob.look;
-
-    co_return monster_info;
-}
-
-async::task<spawned_monster_info> bot_integration_test::spawn_monster_by_look(std::shared_ptr<fb::bot::game_bot> bot,
-                                                                              const std::string&        monster_name,
-                                                                              uint16_t                  x,
-                                                                              uint16_t                  y,
-                                                                              uint32_t                  expected_look,
-                                                                              std::chrono::milliseconds timeout)
-{
-    auto thread = bot->thread();
-    co_await thread->switching();
-
-    auto&& spawn_response = co_await bot->request<fb::protocol::game::response::update>(
-        fb::protocol::game::request::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
-        [expected_look](auto& resp) -> bool {
-            if (resp.objects_data.empty())
-                return false;
-            auto& mob = resp.objects_data.front();
-            return mob.look == expected_look;
-        },
-        timeout);
-
-    if (spawn_response.objects_data.empty())
-    {
-        throw std::runtime_error(
-            std::format("Failed to spawn monster {} with look {} at ({}, {})", monster_name, expected_look, x, y));
-    }
-
-    auto&                mob = spawn_response.objects_data.front();
-    spawned_monster_info monster_info;
-    monster_info.oid      = mob.oid;
-    monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
-    monster_info.look     = mob.look;
-
-    co_return monster_info;
-}
-
-async::task<std::vector<spawned_monster_info>> bot_integration_test::spawn_monsters_relative_with_validator(
-    std::shared_ptr<fb::bot::game_bot>                               bot,
-    const std::string&                                               monster_name,
-    const std::vector<std::pair<int, int>>&                          relative_positions,
-    std::chrono::milliseconds                                        timeout,
-    std::function<bool(const fb::protocol::game::response::update&)> validator)
-{
-    auto thread = bot->thread();
-    co_await thread->switching();
-
-    auto                              caster_pos = bot->position();
-    std::vector<spawned_monster_info> spawned_monsters;
-
-    for (const auto& [rel_x, rel_y] : relative_positions)
-    {
-        auto monster_x = caster_pos.x + rel_x;
-        auto monster_y = caster_pos.y + rel_y;
-
-        auto&& spawn_response = co_await bot->request<fb::protocol::game::response::update>(
-            fb::protocol::game::request::chat{false,
-                                              std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
-            validator,
-            timeout);
-
-        if (spawn_response.objects_data.empty())
-        {
-            throw std::runtime_error(
-                std::format("Failed to spawn monster {} at ({}, {})", monster_name, monster_x, monster_y));
-        }
-
-        auto&                mob = spawn_response.objects_data.front();
-        spawned_monster_info monster_info;
-        monster_info.oid      = mob.oid;
-        monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
-        monster_info.look     = mob.look;
-        spawned_monsters.push_back(monster_info);
-    }
-
-    co_return spawned_monsters;
-}
-
-async::task<std::vector<spawned_monster_info>>
-bot_integration_test::spawn_monsters_relative_by_look(std::shared_ptr<fb::bot::game_bot>      bot,
-                                                      const std::string&                      monster_name,
-                                                      const std::vector<std::pair<int, int>>& relative_positions,
-                                                      uint32_t                                expected_look,
-                                                      std::chrono::milliseconds               timeout)
-{
-    auto thread = bot->thread();
-    co_await thread->switching();
-
-    auto                              caster_pos = bot->position();
-    std::vector<spawned_monster_info> spawned_monsters;
-
-    for (const auto& [rel_x, rel_y] : relative_positions)
-    {
-        auto monster_x = caster_pos.x + rel_x;
-        auto monster_y = caster_pos.y + rel_y;
-
-        auto&& spawn_response = co_await bot->request<fb::protocol::game::response::update>(
-            fb::protocol::game::request::chat{false,
-                                              std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
-            [expected_look](auto& resp) -> bool {
-                if (resp.objects_data.empty())
-                    return false;
-                auto& mob = resp.objects_data.front();
-                return mob.look == expected_look;
-            },
-            timeout);
-
-        if (spawn_response.objects_data.empty())
-        {
-            throw std::runtime_error(std::format("Failed to spawn monster {} with look {} at ({}, {})",
-                                                 monster_name,
-                                                 expected_look,
-                                                 monster_x,
-                                                 monster_y));
-        }
-
-        auto&                mob = spawn_response.objects_data.front();
-        spawned_monster_info monster_info;
-        monster_info.oid      = mob.oid;
-        monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
-        monster_info.look     = mob.look;
-        spawned_monsters.push_back(monster_info);
-    }
-
-    co_return spawned_monsters;
-}
-
-async::task<spawned_monster_info>
-bot_integration_test::spawn_monster_relative_by_look(std::shared_ptr<fb::bot::game_bot> bot,
-                                                     const std::string&                 monster_name,
-                                                     int                                relative_x,
-                                                     int                                relative_y,
-                                                     uint32_t                           expected_look,
-                                                     std::chrono::milliseconds          timeout)
-{
-    auto thread = bot->thread();
-    co_await thread->switching();
-
-    auto caster_pos = bot->position();
-    auto monster_x  = caster_pos.x + relative_x;
-    auto monster_y  = caster_pos.y + relative_y;
-
-    auto&& spawn_response = co_await bot->request<fb::protocol::game::response::update>(
-        fb::protocol::game::request::chat{false,
-                                          std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
-        [expected_look](auto& resp) -> bool {
-            if (resp.objects_data.empty())
-                return false;
-            auto& mob = resp.objects_data.front();
-            return mob.look == expected_look;
-        },
-        timeout);
-
-    if (spawn_response.objects_data.empty())
-    {
-        throw std::runtime_error(std::format("Failed to spawn monster {} with look {} at relative position ({}, {})",
-                                             monster_name,
-                                             expected_look,
-                                             relative_x,
-                                             relative_y));
-    }
-
-    auto&                mob = spawn_response.objects_data.front();
-    spawned_monster_info monster_info;
-    monster_info.oid      = mob.oid;
-    monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
-    monster_info.look     = mob.look;
-
-    co_return monster_info;
-}
-
-async::task<bool> bot_integration_test::set_max_hp_mp(std::shared_ptr<fb::bot::game_bot> bot,
-                                                      int                                max_hp,
-                                                      int                                max_mp,
-                                                      std::chrono::milliseconds          timeout)
-{
-    auto thread = bot->thread();
-    co_await thread->switching();
-
-    auto hp_result = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, std::format("/체력바꾸기 {}", max_hp)},
-        timeout);
-
-    auto mp_result = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, std::format("/마력바꾸기 {}", max_mp)},
-        timeout);
-
-    co_return true; // Both commands should succeed if bot is valid
-}
-
-async::task<bool> bot_integration_test::set_current_hp_mp(std::shared_ptr<fb::bot::game_bot> bot,
-                                                          int                                current_hp,
-                                                          int                                current_mp,
-                                                          std::chrono::milliseconds          timeout)
-{
-    auto thread = bot->thread();
-    co_await thread->switching();
-
-    auto hp_result = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, std::format("/현재체력 {}", current_hp)},
-        [current_hp](auto& resp) -> bool {
-            return resp.ch_hp == current_hp;
-        },
-        timeout);
-
-    auto mp_result = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, std::format("/현재마력 {}", current_mp)},
-        [current_mp](auto& resp) -> bool {
-            return resp.ch_mp == current_mp;
-        },
-        timeout);
-
-    co_return true; // Both commands should succeed if bot is valid
-}
-
-async::task<bool> bot_integration_test::setup_bot_stats(std::shared_ptr<fb::bot::game_bot> bot,
-                                                        int                                max_hp,
-                                                        int                                max_mp,
-                                                        std::optional<int>                 current_hp,
-                                                        std::optional<int>                 current_mp,
-                                                        std::chrono::milliseconds          timeout)
-{
-    auto thread = bot->thread();
-    co_await thread->switching();
-
-    // Set max HP/MP
-    std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, std::format("/체력바꾸기 {}", max_hp)},
-        timeout);
-
-    std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, std::format("/마력바꾸기 {}", max_mp)},
-        timeout);
-
-    // Set current HP/MP if specified
-    if (current_hp.has_value())
-    {
-        std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat{false, std::format("/현재체력 {}", current_hp.value())},
-            [current_hp](auto& resp) -> bool {
-                return resp.ch_hp == current_hp.value();
-            },
-            timeout);
-    }
-
-    if (current_mp.has_value())
-    {
-        std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat{false, std::format("/현재마력 {}", current_mp.value())},
-            [current_mp](auto& resp) -> bool {
-                return resp.ch_mp == current_mp.value();
-            },
-            timeout);
-    }
-
-    co_return true;
-}
-
-async::task<size_t> bot_integration_test::learn_spells(std::shared_ptr<fb::bot::game_bot> bot,
-                                                       const std::vector<std::string>&    spell_names,
-                                                       std::chrono::milliseconds          timeout)
-{
-    auto thread = bot->thread();
-    co_await thread->switching();
-
-    size_t learned_count = 0;
-    for (const auto& spell_name : spell_names)
-    {
-        auto result = co_await bot->request<fb::protocol::game::response::spell_update>(
-            fb::protocol::game::request::chat{false, std::format("/마법배우기 {}", spell_name)},
-            timeout);
-
-        if (result.index != 0xFF) // Success if index is not 0xFF
-        {
-            learned_count++;
-        }
-        else
-        {
-            fb::logger::warn("Failed to learn spell: {}", spell_name);
-        }
-    }
-
-    co_return learned_count;
-}
-
-async::task<void> bot_integration_test::clear_all_spells(std::shared_ptr<fb::bot::game_bot>& bot,
-                                                         std::chrono::milliseconds           timeout)
-{
-    auto thread = bot->thread();
-    co_await thread->switching();
-
-    auto count = bot->spells().size();
-    if (count == 0)
-        co_return;
-
-    auto last_slot = uint8_t{0};
-    for (auto& [slot, spell] : bot->spells())
-    {
-        last_slot = std::max<uint8_t>(last_slot, slot);
-    }
-
-    bot->send(fb::protocol::game::request::chat{false, "/마법지우기"});
-    co_return; // Command should succeed if bot is valid
-}
-
-async::task<void> bot_integration_test::clear_all_items(std::shared_ptr<fb::bot::game_bot>& bot,
-                                                        fb::model::timespan                 timeout)
-{
-    auto thread = bot->thread();
-    co_await thread->switching();
-
-    bot->send(fb::protocol::game::request::chat{false, "/아이템삭제"});
+    fb::logger::debug("{} test finished - all bots disconnected", this->name());
     co_return;
 }
 
-async::task<void> bot_integration_test::move_bot_back_to_position(std::shared_ptr<fb::bot::game_bot> bot,
-                                                                  const fb::model::point<uint16_t>&  original_position,
-                                                                  const fb::model::timespan&         interval)
+bool bot_integration_test::is_ready() const
 {
-    auto thread = bot->thread();
-    co_await thread->switching();
+    auto bots = this->get_test_bots();
+    if (bots.size() < this->bot_count)
+        return false;
 
-    auto current_position = bot->position();
-    auto move_y_axis      = current_position.y - original_position.y;
-
-    if (move_y_axis > 0)
+    for (auto& bot : bots)
     {
-        for (auto i = 0; i < move_y_axis; i++)
-        {
-            bot->send(fb::protocol::game::request::move{DIRECTION::TOP, bot->oid(), current_position});
-            co_await thread->sleep(interval);
-            current_position.y--;
-            bot->set_position(current_position);
-        }
-        bot->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
+        if (bot->inited() == false)
+            return false;
     }
+
+    return true;
+}
+
+std::vector<std::shared_ptr<fb::bot::game_bot>> bot_integration_test::get_test_bots() const
+{
+    return this->_test_bots;
+}
+
+async::task<void> bot_integration_test::on_active(game_bot_controller& controller)
+{
+    auto ip = controller.container.ipv4(fb::config<std::string>("ip"));
+    auto endpoint =
+        boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
+
+    fb::logger::debug("{} initializing and spawning {} bots", this->name(), this->bot_count);
+
+    for (auto i = 0u; i < this->bot_count; i++)
+    {
+        auto gateway_bot = controller.container.gateway->create();
+        gateway_bot->connect(endpoint);
+    }
+
+    fb::logger::debug("{} initialization completed - {} bots spawned", this->name(), this->bot_count);
+
+    auto scenario_generator = this->on_generate_scenario();
+    while (scenario_generator.next())
+    {
+        auto scenario = scenario_generator.value();
+        this->_scenario_queue.push(scenario);
+    }
+
+    co_return;
+}
+
+async::task<void> bot_integration_test::on_initialize(game_bot_controller& controller)
+{
+    auto bots = this->get_test_bots();
+    for (int i = 0; i < bots.size(); i++)
+    {
+        auto& bot = bots[i];
+        if (bot->position().x == 6 && bot->position().y == 6)
+            continue;
+
+        co_await bot->map_move("낙랑의방", 6, 6, DEFAULT_TIMEOUT);
+    }
+}
+
+async::task<bool> bot_integration_test::execute()
+{
+    if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
+        co_return false;
+
+    this->set_state(test_state::running);
+
+    auto failed         = false;
+    auto scenario_index = 0;
+    fb::logger::debug("{}: Starting test execution", this->name());
+    co_await this->on_initialize(this->controller);
+    while (this->_scenario_queue.empty() == false)
+    {
+        auto scenario = this->_scenario_queue.front();
+        this->_scenario_queue.pop();
+        try
+        {
+            co_await this->on_scenario_started(scenario_index);
+            if (co_await scenario() == false)
+                failed = true;
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::fatal("{}: Scenario {} failed: {}", this->name(), scenario_index, e.what());
+            failed = true;
+        }
+
+        co_await this->on_scenario_finished(scenario_index);
+        scenario_index++;
+    }
+
+    co_await this->on_finished();
+    if (failed)
+        this->set_state(test_state::failed);
+    else
+        this->set_state(test_state::completed);
+
+    co_return !failed;
+}
+
+async::task<void> bot_integration_test::on_scenario_started(uint32_t scenario_index)
+{
+    co_return;
+}
+
+async::task<void> bot_integration_test::on_scenario_finished(uint32_t scenario_index)
+{
+    co_return;
+}
+
+async::task<void> bot_integration_test::on_parallel_scenario_started(uint32_t id)
+{
+    co_return;
+}
+
+async::task<void> bot_integration_test::on_parallel_scenario_finished(uint32_t id)
+{
+    co_return;
+}
+
+async::task<void> bot_integration_test::execute_parallel_scenario(std::shared_ptr<parallel_scenarios_context> context,
+                                                                  uint32_t                                    index)
+{
+    auto& queue = context->queues[index];
+    while (queue.empty() == false)
+    {
+        auto scenario = queue.front();
+        queue.pop();
+
+        try
+        {
+            co_await this->on_parallel_scenario_started(index);
+            if (co_await scenario() == false)
+                context->success = false;
+        }
+        catch (const std::exception& e)
+        {
+            context->success = false;
+        }
+        catch (...)
+        {
+            context->success = false;
+        }
+
+        co_await this->on_parallel_scenario_finished(index);
+        context->processed++;
+        if (context->processed == context->count)
+            context->promise->set_value(context->success);
+    }
+}
+
+async::task<bool> bot_integration_test::parallel_scenarios(std::vector<std::pair<uint32_t, scenario_t>> scenarios)
+{
+    auto context       = std::make_shared<parallel_scenarios_context>();
+    context->promise   = std::make_shared<async::task_completion_source<bool>>();
+    context->processed = 0;
+    context->success   = true;
+    context->queues    = std::unordered_map<uint32_t, std::queue<scenario_t>>();
+
+    for (auto& [index, scenario] : scenarios)
+    {
+        if (context->queues.contains(index) == false)
+            context->queues.insert({index, std::queue<scenario_t>()});
+
+        context->queues[index].push(scenario);
+        context->count++;
+    }
+
+    for (auto& [index, queue] : context->queues)
+    {
+        async::awaitable_then(this->execute_parallel_scenario(context, index), [this](auto result) {
+            try
+            {
+                result();
+            }
+            catch (const std::exception& e)
+            {
+                fb::logger::fatal("{}: Parallel scenario failed: {}", this->name(), e.what());
+            }
+            catch (...)
+            {
+                fb::logger::fatal("{}: Parallel scenario failed", this->name());
+            }
+        });
+    }
+
+    return context->promise->task();
+}
+
+async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot&                      bot,
+                                                         const fb::protocol::game::response::id& response)
+{
+    if (this->is_ready() == false)
+        co_return;
+
+    if (this->get_state() == test_state::running)
+        co_return;
+
+    fb::logger::debug("{}: All bots ready, notifying controller", this->name());
+    this->set_state(test_state::ready);
+    this->notify_ready();
+    co_return;
+}
+
+async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot&                            bot,
+                                                         const fb::protocol::game::response::position& response)
+{
+    if (this->is_ready() == false)
+        co_return;
+
+    if (this->get_state() == test_state::running)
+        co_return;
+
+    fb::logger::debug("{}: All bots ready, notifying controller", this->name());
+    this->set_state(test_state::ready);
+    this->notify_ready();
+    co_return;
+}
+
+async::task<void>
+bot_integration_test::on_hook_update_external(fb::bot::game_bot&                                         bot,
+                                              const fb::protocol::game::response::update_external<true>& response)
+{
+    if (bot.inited() == false)
+        bot.inited(true);
+
+    if (this->is_ready() == false)
+        co_return;
+
+    if (this->get_state() == test_state::running)
+        co_return;
+
+    fb::logger::debug("{}: All bots ready, notifying controller", this->name());
+    this->set_state(test_state::ready);
+    this->notify_ready();
+    co_return;
+}
+
+async::task<void> bot_integration_test::sleep(std::chrono::milliseconds duration)
+{
+    co_await this->controller.container.threads.current()->sleep(duration);
 }
 
 } // namespace fb::bot::integration

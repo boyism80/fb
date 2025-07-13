@@ -18,6 +18,7 @@ IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
 {"belows",              map::builtin::builtin_belows},
 {"tile",                map::builtin::builtin_tile},
 {"at",                  map::builtin::builtin_at},
+{"bulk_update",         map::builtin::builtin_bulk_update},
 END_LUA_EXTENSION; // clang-format on
 
 int map::builtin::builtin_model(lua_State* L)
@@ -155,6 +156,8 @@ int map::builtin::builtin_movable(lua_State* L)
         return 0;
 
     auto position = fb::model::point16_t();
+    auto is_front = false;
+    auto step     = 0;
     if (lua->is_table(3))
     {
         lua->rawgeti(3, 1);
@@ -172,8 +175,8 @@ int map::builtin::builtin_movable(lua_State* L)
     }
     else if (lua->is_number(3))
     {
-        auto step = lua->tointeger(3);
-        position  = obj->front_position(step);
+        step     = lua->tointeger(3);
+        is_front = true;
     }
     else
     {
@@ -181,13 +184,34 @@ int map::builtin::builtin_movable(lua_State* L)
         return 1;
     }
 
-    auto weak = map->weak_from_this_as<fb::game::map>();
-    return lua->ensure_yield(*ctx, weak, [=]() {
-        auto result = map->movable(*obj, position);
-        return lua->ensure_resume(*ctx, weak, [=]() {
-            lua->pushboolean(result);
-            return 1;
-        });
+    auto weak = obj->weak_from_this_as<fb::game::object>();
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) mutable {
+        auto role = ROLE::USER;
+        if (obj->is(OBJECT_TYPE::CHARACTER))
+            role = static_cast<character*>(obj.get())->role();
+
+        if (is_front)
+            position = obj->front_position(step);
+
+        auto map_weak = map->weak_from_this_as<fb::game::map>();
+        return lua->ensure_yield(
+            *ctx,
+            map_weak,
+            [=](auto is_yield) {
+                auto result = map->movable(position, [=](const auto& obj) -> bool {
+                    if (obj.is(OBJECT_TYPE::CHARACTER) == false)
+                        return true;
+
+                    auto& ch = static_cast<const character&>(obj);
+                    return !ch.hidden(role);
+                });
+
+                return lua->ensure_resume(*ctx, map_weak, [=]() {
+                    lua->pushboolean(result);
+                    return 1;
+                });
+            },
+            is_yield);
     });
 }
 
@@ -349,7 +373,7 @@ int map::builtin::builtin_at(lua_State* L)
     auto position = fb::model::point16_t{x, y};
 
     auto weak = map->weak_from_this_as<fb::game::map>();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto nears  = map->nears(fb::model::point16_t{x, y}, type);
         auto result = std::shared_ptr<object>(nullptr);
         for (auto obj : nears)
@@ -369,4 +393,33 @@ int map::builtin::builtin_at(lua_State* L)
             return 1;
         });
     });
+}
+
+int map::builtin::builtin_bulk_update(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    if (lua->is_table(2) == false)
+        return 0;
+
+    auto oids = std::vector<uint32_t>();
+    auto size = lua->rawlen(2);
+    for (auto i = 1; i <= size; i++)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            lua->rawgeti(2, i + 1);
+            if (lua->is_number(-1))
+                oids.push_back((uint32_t)lua->tointeger(-1));
+        }
+    }
+
+    map->bulk_update(oids);
+    return 0;
 }

@@ -29,71 +29,17 @@ public:
     attack_test(game_bot_controller& controller);
 
     /**
-     * @brief      Initializes the attack test and spawns required bots.
-     *
-     *             Spawns 1 bot for attack testing and waits for it to connect.
-     *
-     * @param[in]  controller  The game bot controller to use for spawning bots.
-     *
-     * @return     A task that completes when initialization is finished.
-     */
-    async::task<void> initialize(game_bot_controller& controller);
-
-    /**
-     * @brief      Executes the attack test.
-     *
-     *             Spawns a monster and has the bot attack it until defeated.
-     *             This method is called only when all bots are ready (have non-zero oid).
-     *
-     * @return     A task that completes when attack test finishes, returning true on success.
-     */
-    async::task<bool> execute();
-
-    /**
      * @brief      Gets the test name.
      *
      * @return     "Attack Test" as the identifier.
      */
-    std::string name() const
-    {
-        return "Attack Test";
-    }
+    std::string name() const override final;
 
-    /**
-     * @brief      Called when a bot receives an object ID response.
-     *
-     *             Checks if all bots are ready and starts the test if conditions are met.
-     *
-     * @param[in]  bot       The bot that received the object ID.
-     * @param[in]  response  The object ID response containing the new ID.
-     *
-     * @return     An async task that completes when hook processing is finished.
-     */
-    async::task<void> on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response);
+private:
+    async::task<bool> attack_scenario();
 
-    /**
-     * @brief      Resets the test state to idle.
-     */
-    void reset();
-
-    /**
-     * @brief      Checks if the test is ready to start execution.
-     *
-     * @return     True if the test is ready to start, false otherwise.
-     */
-    bool is_ready() const;
-
-    /**
-     * @brief      Called when a bot connects to the test.
-     *
-     * @param[in]  bot  Shared pointer to the connected bot.
-     */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot);
-
-    /**
-     * @brief      Performs cleanup operations when the test is destroyed.
-     */
-    void cleanup();
+protected:
+    generator<scenario_t> on_generate_scenario() override final;
 };
 
 } // namespace fb::bot::integration

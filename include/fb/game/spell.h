@@ -145,17 +145,30 @@ public:
 
     struct listener_t;
 
+private:
+    std::weak_ptr<fb::game::life> _owner;
+
 public:
-    /**
-     * @brief      Constructs a new instance.
-     *
-     * @param      owner  The life entity that owns this spell collection
-     */
-    spells(life& owner);
+    spells();
     /**
      * @brief      Destroys the object.
      */
     ~spells();
+
+public:
+    /**
+     * @brief      Sets the owner of this spell collection.
+     *
+     * @param[in]  owner  The life entity that owns this collection
+     */
+    void owner(std::shared_ptr<fb::game::life> owner);
+
+    /**
+     * @brief      Gets the owner of this spell collection.
+     *
+     * @return     The life entity that owns this collection
+     */
+    std::shared_ptr<fb::game::life> owner() const;
 
     /**
      * @brief      Searches for a spell by name in the collection.

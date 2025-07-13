@@ -25,6 +25,7 @@ public:
     const uint16_t        offset;
     const std::string     title;
     const std::string     contents;
+    const std::string     user;
 #else
     BULLETIN_ACTION action;
     uint16_t        section;
@@ -42,7 +43,8 @@ public:
              uint16_t           article  = 0,
              uint16_t           offset   = 0,
              const std::string& title    = "",
-             const std::string& contents = "");
+             const std::string& contents = "",
+             const std::string& user     = "");
 #else
     bulletin() = default;
 #endif

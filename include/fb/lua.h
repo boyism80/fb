@@ -1194,10 +1194,14 @@ public:
      * @param      ctx   The context.
      * @param      obj   The thread-switchable object.
      * @param[in]  fn    The function to execute.
+     * @param[in]  no_yield  Whether to skip the yield operation.
      *
      * @return     The result of the yield operation.
      */
-    int ensure_yield(fb::context& ctx, std::weak_ptr<fb::thread_switchable> weak, std::function<int()> fn);
+    int ensure_yield(fb::context&                         ctx,
+                     std::weak_ptr<fb::thread_switchable> weak,
+                     std::function<int(bool)>             fn,
+                     bool                                 no_yield = false);
 
     /**
      * @brief      Ensures a resume operation is performed safely.

@@ -356,11 +356,7 @@ public:
                         if (shared == nullptr)
                             co_return;
 
-                        [[maybe_unused]] volatile auto holder     = protocol;
-                        [[maybe_unused]] volatile auto controller = this;
                         co_await handler(*shared, *protocol.get());
-                        co_await controller->on_integration_hook_execution(cmd, *shared, *protocol.get());
-                        shared->process_hooks(cmd, *protocol.get());
                     });
                 }
 
@@ -446,8 +442,8 @@ public:
 
         this->_handler.insert(
             {ResponseType::header, [this, fn](auto& bot, auto& header) -> async::task<void> {
-                 auto                           protocol   = static_cast<ResponseType&>(header);
-                 [[maybe_unused]] volatile auto controller = this;
+                 auto          protocol   = static_cast<ResponseType&>(header);
+                 volatile auto controller = this;
 
                  // 1. Execute the main handler
                  co_await fn(bot, protocol);
@@ -589,7 +585,7 @@ bot<BotType>::bot(bot_controller<BotType>& bot_controller, uint32_t id) :
              std::bind(&base_bot_controller::on_receive, &bot_controller, std::placeholders::_1, std::placeholders::_2),
              std::bind(&base_bot_controller::on_closed, &bot_controller, std::placeholders::_1),
              id),
-    _controller(bot_controller)
+    controller(bot_controller)
 { }
 
 template <typename BotType>
@@ -600,10 +596,8 @@ async::task<ResponseType> bot<BotType>::request(const fb::protocol::header&     
                                                 bool                                                 encrypt,
                                                 bool                                                 wrap)
 {
-    this->assert_thread();
-
     // Ensure deserializer is registered for hook processing
-    this->_controller.template ensure_handler_registered<ResponseType>();
+    this->controller.template ensure_handler_registered<ResponseType>();
 
     // Create request context for RAII management
     auto self_ptr = std::static_pointer_cast<BotType>(this->shared_from_this());

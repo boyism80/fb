@@ -1,4 +1,5 @@
 #include <fb/game/object/container.h>
+#include <fb/thread.h>
 
 using namespace fb::game;
 
@@ -95,14 +96,17 @@ fb::game::object* object_container::try_pop(uint32_t seq)
     if (this->_ptrs.find(seq) == this->_ptrs.end())
         return nullptr;
 
-    auto& ptr = this->_ptrs.at(seq);
-    auto  raw = ptr.get();
+    auto& ptr    = this->_ptrs.at(seq);
+    auto  raw    = ptr.get();
+    auto  thread = raw->thread();
 
     ptr.reset();
     this->_ptrs.erase(seq);
 
     // Add removed sequence to reuse queue
-    this->_available_seq.push(seq);
+    async::awaitable_then(thread->sleep(5s), [this, seq](auto result) {
+        this->_available_seq.push(seq);
+    });
 
     return raw;
 }

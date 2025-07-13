@@ -5,20 +5,10 @@ using namespace std::chrono_literals;
 
 namespace fb::bot::integration {
 
-async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                   std::chrono::milliseconds                        timeout)
+async::task<bool> skill_test::test_teleport_spells(std::shared_ptr<fb::bot::game_bot> caster,
+                                                   std::shared_ptr<fb::bot::game_bot> target)
 {
-    if (bots.size() < 2)
-    {
-        fb::logger::fatal("Teleport spell test requires at least 2 bots");
-        co_return false;
-    }
-
-    constexpr auto interval = 100ms;
-    auto&          caster   = bots[0];
-    auto&          target   = bots[1];
-
-    fb::logger::info("Starting teleport spell test with {} bots", bots.size());
+    fb::logger::debug("Starting teleport spell test");
     caster->chat("=== TELEPORT SPELL TEST STARTED ===");
 
     // Teleport spells with their test parameters
@@ -41,14 +31,12 @@ async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<f
         spell_names.push_back(spell.name);
     }
 
-    auto learned_count = co_await this->learn_spells(caster, spell_names, timeout);
-    fb::logger::info("Successfully learned {} out of {} teleport spells", learned_count, teleport_spells.size());
+    auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
+    fb::logger::debug("Successfully learned {} out of {} teleport spells", learned_count, teleport_spells.size());
 
     // Setup all bots with max HP/MP
-    for (auto& bot : bots)
-    {
-        std::ignore = co_await this->setup_bot_stats(bot, 100000, 100000, std::nullopt, std::nullopt, timeout);
-    }
+    std::ignore = co_await caster->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
+    std::ignore = co_await target->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
 
     uint8_t spell_slot = 1;
 
@@ -56,10 +44,10 @@ async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<f
     auto begin_position = caster->position();
     for (const auto& spell_info : teleport_spells)
     {
-        fb::logger::info("Testing teleport spell: {} (MP cost: {}, caster moves: {})",
-                         spell_info.name,
-                         spell_info.expected_mp_cost,
-                         spell_info.caster_moves);
+        fb::logger::debug("Testing teleport spell: {} (MP cost: {}, caster moves: {})",
+                          spell_info.name,
+                          spell_info.expected_mp_cost,
+                          spell_info.caster_moves);
 
         caster->chat(std::format("Testing {}", spell_info.name));
 
@@ -67,34 +55,33 @@ async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<f
         if (spell_info.caster_moves)
         {
             // 출두 test: Move caster to different map, then teleport to target
-            co_await this->test_chuldu_spell(caster, target, spell_slot, spell_info.expected_mp_cost, timeout);
+            co_await this->test_chuldu_spell(caster, target, spell_slot, spell_info.expected_mp_cost);
         }
         else
         {
             // 소환 test: Move target to different map, then summon target to caster
-            co_await this->test_sohwan_spell(caster, target, spell_slot, spell_info.expected_mp_cost, timeout);
+            co_await this->test_sohwan_spell(caster, target, spell_slot, spell_info.expected_mp_cost);
         }
 
-        fb::logger::info("Teleport spell {} test completed successfully", spell_info.name);
+        fb::logger::debug("Teleport spell {} test completed successfully", spell_info.name);
         caster->chat(std::format("{} test completed", spell_info.name));
 
         spell_slot++;
-        co_await caster->thread()->sleep(interval);
     }
 
-    fb::logger::info("Teleport spell test completed successfully - {} spells tested", teleport_spells.size());
+    fb::logger::debug("Teleport spell test completed successfully - {} spells tested", teleport_spells.size());
     caster->chat("All teleport spell tests completed successfully!");
 
     auto end_position = caster->position();
     auto move_x_axis  = end_position.x - begin_position.x;
     auto direction_x  = move_x_axis > 0 ? DIRECTION::LEFT : DIRECTION::RIGHT;
-    co_await caster->move(direction_x, std::abs(move_x_axis), interval);
+    co_await caster->move(direction_x, std::abs(move_x_axis), DEFAULT_INTERVAL);
 
     auto move_y_axis = end_position.y - begin_position.y;
     auto direction_y = move_y_axis > 0 ? DIRECTION::TOP : DIRECTION::BOTTOM;
-    co_await caster->move(direction_y, std::abs(move_y_axis), interval);
-    co_await caster->thread()->sleep(interval);
-    caster->direction(DIRECTION::BOTTOM);
+    co_await caster->move(direction_y, std::abs(move_y_axis), DEFAULT_INTERVAL);
+    co_await this->sleep(DEFAULT_INTERVAL);
+    co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     co_return true;
 }
@@ -102,12 +89,9 @@ async::task<bool> skill_test::test_teleport_spells(std::vector<std::shared_ptr<f
 async::task<void> skill_test::test_chuldu_spell(std::shared_ptr<fb::bot::game_bot> caster,
                                                 std::shared_ptr<fb::bot::game_bot> target,
                                                 uint8_t                            spell_slot,
-                                                int                                expected_mp_cost,
-                                                std::chrono::milliseconds          timeout)
+                                                int                                expected_mp_cost)
 {
-    constexpr auto interval = 100ms;
-
-    fb::logger::info("Testing 출두 spell: caster moves to target location");
+    fb::logger::debug("Testing 출두 spell: caster moves to target location");
 
     // Step 1: Record initial positions
     auto initial_caster_position = caster->position();
@@ -120,9 +104,9 @@ async::task<void> skill_test::test_chuldu_spell(std::shared_ptr<fb::bot::game_bo
                       initial_target_position.y);
 
     // Step 2: Move caster to different map (가상계)
-    fb::logger::info("Moving caster to 가상계 map");
-    co_await caster->map_move("가상계", 1, 1, timeout);
-    co_await caster->thread()->sleep(500ms); // Wait for map transition to complete
+    fb::logger::debug("Moving caster to 가상계 map");
+    co_await caster->map_move("가상계", 1, 1, DEFAULT_TIMEOUT);
+    co_await this->sleep(500ms); // Wait for map transition to complete
 
     auto caster_virtual_position = caster->position();
     fb::logger::debug("Caster moved to 가상계 at position: ({}, {})",
@@ -133,7 +117,7 @@ async::task<void> skill_test::test_chuldu_spell(std::shared_ptr<fb::bot::game_bo
     auto before_caster_mp = caster->mp();
     auto expected_mp      = before_caster_mp - expected_mp_cost;
 
-    fb::logger::info("Casting 출두 spell on target: {}", target->name());
+    fb::logger::debug("Casting 출두 spell on target: {}", target->name());
 
     // Use SPELL_TYPE::INPUT with target's name as text input
     std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
@@ -141,10 +125,10 @@ async::task<void> skill_test::test_chuldu_spell(std::shared_ptr<fb::bot::game_bo
         [expected_mp](auto& resp) -> bool {
             return resp.ch_mp == expected_mp;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     // Step 4: Wait for teleport effect and verify caster moved to target
-    co_await caster->thread()->sleep(1000ms); // Wait for teleport to complete
+    co_await this->sleep(1000ms); // Wait for teleport to complete
 
     auto final_caster_position = caster->position();
     auto final_target_position = target->position();
@@ -161,7 +145,7 @@ async::task<void> skill_test::test_chuldu_spell(std::shared_ptr<fb::bot::game_bo
 
     if (distance_x <= 2 && distance_y <= 2) // Allow some tolerance for teleport positioning
     {
-        fb::logger::info("출두 spell successful: caster teleported near target");
+        fb::logger::debug("출두 spell successful: caster teleported near target");
     }
     else
     {
@@ -170,18 +154,15 @@ async::task<void> skill_test::test_chuldu_spell(std::shared_ptr<fb::bot::game_bo
                          distance_y);
     }
 
-    fb::logger::info("출두 spell test completed");
+    fb::logger::debug("출두 spell test completed");
 }
 
 async::task<void> skill_test::test_sohwan_spell(std::shared_ptr<fb::bot::game_bot> caster,
                                                 std::shared_ptr<fb::bot::game_bot> target,
                                                 uint8_t                            spell_slot,
-                                                int                                expected_mp_cost,
-                                                std::chrono::milliseconds          timeout)
+                                                int                                expected_mp_cost)
 {
-    constexpr auto interval = 100ms;
-
-    fb::logger::info("Testing 소환 spell: target moves to caster location");
+    fb::logger::debug("Testing 소환 spell: target moves to caster location");
 
     // Step 1: Record initial positions
     auto initial_caster_position = caster->position();
@@ -194,9 +175,9 @@ async::task<void> skill_test::test_sohwan_spell(std::shared_ptr<fb::bot::game_bo
                       initial_target_position.y);
 
     // Step 2: Move target to different map (가상계)
-    fb::logger::info("Moving target to 가상계 map");
-    co_await target->map_move("가상계", 1, 1, timeout);
-    co_await target->thread()->sleep(500ms); // Wait for map transition to complete
+    fb::logger::debug("Moving target to 가상계 map");
+    co_await target->map_move("가상계", 1, 1, DEFAULT_TIMEOUT);
+    co_await this->sleep(500ms); // Wait for map transition to complete
 
     auto target_virtual_position = target->position();
     fb::logger::debug("Target moved to 가상계 at position: ({}, {})",
@@ -207,7 +188,7 @@ async::task<void> skill_test::test_sohwan_spell(std::shared_ptr<fb::bot::game_bo
     auto before_caster_mp = caster->mp();
     auto expected_mp      = before_caster_mp - expected_mp_cost;
 
-    fb::logger::info("Casting 소환 spell on target: {}", target->name());
+    fb::logger::debug("Casting 소환 spell on target: {}", target->name());
 
     // Use SPELL_TYPE::INPUT with target's name as text input
     std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
@@ -215,10 +196,10 @@ async::task<void> skill_test::test_sohwan_spell(std::shared_ptr<fb::bot::game_bo
         [expected_mp](auto& resp) -> bool {
             return resp.ch_mp == expected_mp;
         },
-        timeout);
+        DEFAULT_TIMEOUT);
 
     // Step 4: Wait for summon effect and verify target moved to caster
-    co_await caster->thread()->sleep(1000ms); // Wait for summon to complete
+    co_await this->sleep(1000ms); // Wait for summon to complete
 
     auto final_caster_position = caster->position();
     auto final_target_position = target->position();
@@ -235,7 +216,7 @@ async::task<void> skill_test::test_sohwan_spell(std::shared_ptr<fb::bot::game_bo
 
     if (distance_x <= 2 && distance_y <= 2) // Allow some tolerance for summon positioning
     {
-        fb::logger::info("소환 spell successful: target summoned near caster");
+        fb::logger::debug("소환 spell successful: target summoned near caster");
     }
     else
     {
@@ -244,7 +225,7 @@ async::task<void> skill_test::test_sohwan_spell(std::shared_ptr<fb::bot::game_bo
                          distance_y);
     }
 
-    fb::logger::info("소환 spell test completed");
+    fb::logger::debug("소환 spell test completed");
 }
 
 } // namespace fb::bot::integration

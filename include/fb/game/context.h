@@ -412,41 +412,35 @@ public:
     template <typename T, typename... Args>
     std::shared_ptr<T> make(Args&&... args)
     {
-        return std::make_shared<T>(*this, std::forward<Args>(args)...);
+        auto ptr = std::make_shared<T>(*this, std::forward<Args>(args)...);
+        if constexpr (std::is_base_of_v<fb::game::object, T>)
+        {
+            ptr->on_init();
+        }
+        return ptr;
     }
 
     /**
-     * @brief      Safely checks if an object is alive using smart pointer semantics.
+     * @brief      Forces a rezen spawn regardless of normal spawn conditions.
      *
-     *             This method provides a more efficient alternative to hash-based alive() checks
-     *             by using weak pointer expiration checking.
-     *
-     * @param[in]  weak_obj  A weak pointer to the object to check
-     *
-     * @tparam     T         The type of object to check
-     *
-     * @return     True if the object is still alive, false otherwise
+     *             This method bypasses the normal spawn restrictions and immediately
+     *             spawns mobs at this spawn point. Useful for special events,
+     *             GM commands, or scripted scenarios that need to override normal
+     *             spawn logic.
      */
-    template <typename T>
-    bool alive_smart(const std::weak_ptr<T>& weak_obj) const
-    {
-        return !weak_obj.expired();
-    }
+    void rezen_force();
 
     /**
-     * @brief      Safely checks if an object is alive using shared pointer.
+     * @brief      Forces a rezen spawn regardless of normal spawn conditions.
      *
-     * @param[in]  shared_obj  A shared pointer to the object to check
+     *             This method bypasses the normal spawn restrictions and immediately
+     *             spawns mobs at this spawn point. Useful for special events,
+     *             GM commands, or scripted scenarios that need to override normal
+     *             spawn logic.
      *
-     * @tparam     T           The type of object to check
-     *
-     * @return     True if the object is not null, false otherwise
+     * @param[in]  map  The map to spawn mobs on.
      */
-    template <typename T>
-    bool alive_smart(const std::shared_ptr<T>& shared_obj) const
-    {
-        return shared_obj != nullptr;
-    }
+    void rezen_force(const fb::game::map& map);
 
 public:
     /**
@@ -464,7 +458,8 @@ public:
     {
         if constexpr (std::is_same_v<T, fb::game::object>)
         {
-            std::ignore = co_await obj.map(nullptr, fb::model::point16_t{0, 0}, destroy_type);
+            auto shared_ptr = obj.template shared_from_this_as<fb::game::object>();
+            std::ignore     = co_await shared_ptr->map(nullptr, fb::model::point16_t{0, 0}, destroy_type);
         }
         co_return;
     }
@@ -874,14 +869,14 @@ public:
     [[nodiscard]] async::task<bool> handle_attack(fb::socket<fb::game::character>&, const fb_reqs::attack&);
 
     /**
-     * @brief      Handles player item pickup request packet.
+     * @brief      Handles player item loot request packet.
      *
      * @param      socket  The client socket connection.
-     * @param[in]  packet  The pickup request packet containing item information.
+     * @param[in]  packet  The loot request packet containing item information.
      *
-     * @return     True if pickup was processed successfully, false otherwise.
+     * @return     True if loot was processed successfully, false otherwise.
      */
-    [[nodiscard]] async::task<bool> handle_pickup(fb::socket<fb::game::character>&, const fb_reqs::pick_up&);
+    [[nodiscard]] async::task<bool> handle_loot(fb::socket<fb::game::character>&, const fb_reqs::loot&);
 
     /**
      * @brief      Handles player emotion/gesture packet.
@@ -1596,6 +1591,15 @@ public:
 
 struct context::builtin
 {
+    /**
+     * @brief      Lua builtin function to log a message.
+     *
+     * @param      L   The Lua state containing log message arguments.
+     *
+     * @return     Number of return values pushed to Lua stack.
+     */
+    static int builtin_log(lua_State* L);
+
     /**
      * @brief      Lua builtin function to seed the random number generator.
      *

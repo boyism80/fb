@@ -2,6 +2,13 @@
 #include <fb/bot/integration/movement_test.h>
 #include <fb/bot/integration/attack_test.h>
 #include <fb/bot/integration/skill_test.h>
+#include <fb/bot/integration/bulletin_test.h>
+#include <fb/bot/integration/trade_test.h>
+#include <fb/bot/integration/communication_test.h>
+#include <fb/bot/integration/drop_loot_test.h>
+#include <fb/bot/integration/item_test.h>
+#include <fb/bot/integration/swap_test.h>
+#include <fb/bot/integration/throw_test.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
@@ -26,6 +33,39 @@ game_bot_controller::game_bot_controller(bot_container& container) :
 
 void game_bot_controller::initialize()
 {
+    this->container.model.item.hook.build = [](const Json::Value& json) -> fb::model::item* {
+        auto type = fb::model::build<ITEM_TYPE>(json["type"]);
+        switch (type)
+        {
+        case ITEM_TYPE::STUFF:
+            return fb::model::build<fb::model::item*>(json);
+        case ITEM_TYPE::CASH:
+            return fb::model::build<fb::model::cash*>(json);
+        case ITEM_TYPE::CONSUME:
+            return fb::model::build<fb::model::consume*>(json);
+        case ITEM_TYPE::WEAPON:
+            return fb::model::build<fb::model::weapon*>(json);
+        case ITEM_TYPE::ARMOR:
+            return fb::model::build<fb::model::armor*>(json);
+        case ITEM_TYPE::HELMET:
+            return fb::model::build<fb::model::helmet*>(json);
+        case ITEM_TYPE::RING:
+            return fb::model::build<fb::model::ring*>(json);
+        case ITEM_TYPE::SHIELD:
+            return fb::model::build<fb::model::shield*>(json);
+        case ITEM_TYPE::AUXILIARY:
+            return fb::model::build<fb::model::auxiliary*>(json);
+        case ITEM_TYPE::BOW:
+            return fb::model::build<fb::model::bow*>(json);
+        case ITEM_TYPE::PACKAGE:
+            return fb::model::build<fb::model::pack*>(json);
+        default:
+            return nullptr;
+        }
+    };
+
+    fb::model::loader(this->container.model).run();
+
     // Set up integration test timer with different interval (slower for detailed testing)
     this->bind_timer(&game_bot_controller::handle_timer, 1000ms);
 
@@ -33,14 +73,30 @@ void game_bot_controller::initialize()
     this->enqueue_test(std::make_unique<movement_test>(*this));
     this->enqueue_test(std::make_unique<attack_test>(*this));
     this->enqueue_test(std::make_unique<skill_test>(*this));
+    this->enqueue_test(std::make_unique<bulletin_test>(*this));
+    this->enqueue_test(std::make_unique<trade_test>(*this));
+    this->enqueue_test(std::make_unique<communication_test>(*this));
+    this->enqueue_test(std::make_unique<drop_loot_test>(*this));
+    this->enqueue_test(std::make_unique<item_test>(*this));
+    this->enqueue_test(std::make_unique<swap_test>(*this));
+    this->enqueue_test(std::make_unique<throw_test>(*this));
 
-    fb::logger::info("Integration test controller initialized with test queue (movement -> attack -> skill)");
+    // Log the test queue in a more manageable format
+    fb::logger::info("Integration test controller initialized with {} tests in queue", this->_test_queue.size());
+    fb::logger::info("Test execution order:");
 
-    // Activate the first test
-    std::ignore = this->activate_first_test();
+    auto temp_queue  = this->_test_queue;
+    int  test_number = 1;
+    while (!temp_queue.empty())
+    {
+        fb::logger::info("  {}. {}", test_number++, temp_queue.front()->name());
+        temp_queue.pop();
+    }
+
+    this->active_test();
 }
 
-async::task<void> game_bot_controller::activate_first_test()
+async::task<void> game_bot_controller::active_test()
 {
     if (this->_current_test == nullptr)
     {
@@ -48,31 +104,16 @@ async::task<void> game_bot_controller::activate_first_test()
         co_return;
     }
 
-    fb::logger::info("Activating first test: '{}'", this->_current_test->name());
-
-    // Initialize the test (creates bots, etc.)
-    co_await this->_current_test->initialize(*this);
-
-    fb::logger::info("Test '{}' activated and ready to receive bot connections", this->_current_test->name());
-}
-
-void game_bot_controller::notify_test_completed(bot_integration_test* test)
-{
-    if (this->_current_test == test)
-    {
-        fb::logger::info("Test '{}' completed", test->name());
-        this->_current_test = nullptr;
-
-        // Start the next test in the queue
-        this->start_next_test();
-    }
+    fb::logger::debug("Activating first test: '{}'", this->_current_test->name());
+    std::ignore = this->_current_test->on_active(*this);
+    fb::logger::debug("Test '{}' activated and ready to receive bot connections", this->_current_test->name());
 }
 
 void game_bot_controller::notify_test_ready()
 {
     if (this->_current_test)
     {
-        fb::logger::info("Test '{}' is ready, starting execution", this->_current_test->name());
+        fb::logger::debug("Test '{}' is ready, starting execution", this->_current_test->name());
         std::ignore = this->start_current_test();
     }
 }
@@ -92,7 +133,24 @@ async::task<void> game_bot_controller::start_current_test()
     }
 
     fb::logger::info("Starting test '{}'", this->_current_test->name());
-    std::ignore = co_await this->_current_test->execute();
+    auto success = co_await this->_current_test->execute();
+
+    // Store test result
+    test_result result;
+    result.name    = this->_current_test->name();
+    result.success = success;
+    result.message = success ? "PASSED" : "FAILED";
+    this->_test_results.push_back(result);
+
+    if (success)
+        fb::logger::info(fb::console::color::light_green,
+                         "Test '{}' completed successfully",
+                         this->_current_test->name());
+    else
+        fb::logger::fatal(fb::console::color::light_red, "Test '{}' failed", this->_current_test->name());
+
+    this->_current_test = nullptr;
+    this->start_next_test();
 }
 
 async::task<void> game_bot_controller::handle_timer()
@@ -105,7 +163,7 @@ async::task<void> game_bot_controller::handle_timer()
     {
         first_test_started = true;
         // No longer need to start tests - they start automatically via hooks
-        fb::logger::info("Integration test controller initialized - tests will start automatically");
+        fb::logger::debug("Integration test controller initialized - tests will start automatically");
     }
 
     co_return;
@@ -172,9 +230,6 @@ async::task<void> game_bot_controller::handle_move(game_bot& bot, const fb::prot
 async::task<void> game_bot_controller::handle_map(game_bot&                                       bot,
                                                   const fb::protocol::game::response::map_config& response)
 {
-    // Integration test: Validate map loading and configuration
-    bot.set_initialized(true);
-
     // TODO: Execute map-specific test scenarios
     // Example: Test NPC interactions, item spawning, area transitions, etc.
     co_return;
@@ -196,7 +251,7 @@ async::task<void> game_bot_controller::handle_transfer(game_bot& bot, const fb::
 
 async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
 {
-    fb::logger::info("Bot {} connected for integration testing", bot.fd());
+    fb::logger::debug("Bot {} connected for integration testing", bot.fd());
 
     // Notify current test about bot connection
     if (this->_current_test)
@@ -225,7 +280,7 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
 
 async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
 {
-    fb::logger::info("Bot {} disconnected from integration testing", bot.fd());
+    fb::logger::debug("Bot {} disconnected from integration testing", bot.name());
 
     // Integration test: Collect test results and perform cleanup
     // TODO: Generate test report for this bot session
@@ -271,15 +326,13 @@ void game_bot_controller::enqueue_test(std::unique_ptr<bot_integration_test> tes
     {
         this->_current_test = this->_test_queue.front();
     }
-
-    fb::logger::debug("Test '{}' added to queue", this->_test_instances.back()->name());
 }
 
 void game_bot_controller::start_next_test()
 {
     if (this->_test_queue.empty())
     {
-        fb::logger::info("No more tests in queue");
+        fb::logger::debug("No more tests in queue");
         return;
     }
 
@@ -288,19 +341,65 @@ void game_bot_controller::start_next_test()
 
     if (this->_test_queue.empty())
     {
-        fb::logger::info("All tests completed");
+        this->print_final_test_results();
+        this->container.exit();
         return;
     }
 
     // Set the next test as current
     this->_current_test = this->_test_queue.front();
-    fb::logger::info("Starting next test: '{}'", this->_current_test->name());
+    fb::logger::debug("Starting next test: '{}'", this->_current_test->name());
 
     // Activate the next test
-    std::ignore = this->activate_first_test();
+    std::ignore = this->active_test();
 }
 
 bool game_bot_controller::has_more_tests() const
 {
     return !this->_test_queue.empty();
+}
+
+void game_bot_controller::print_final_test_results()
+{
+    fb::logger::info(fb::console::color::cyan, "=== INTEGRATION TEST RESULTS ===");
+
+    int total_tests  = this->_test_results.size();
+    int passed_tests = 0;
+    int failed_tests = 0;
+
+    // Print individual test results
+    for (const auto& result : this->_test_results)
+    {
+        if (result.success)
+        {
+            fb::logger::info(fb::console::color::light_green, "[PASS] {}: {}", result.name, result.message);
+            passed_tests++;
+        }
+        else
+        {
+            fb::logger::fatal(fb::console::color::light_red, "[FAIL] {}: {}", result.name, result.message);
+            failed_tests++;
+        }
+    }
+
+    // Print summary
+    fb::logger::info(fb::console::color::cyan, "=== SUMMARY ===");
+    fb::logger::info(fb::console::color::light_blue, "Total tests: {}", total_tests);
+    fb::logger::info(fb::console::color::light_green, "Passed: {}", passed_tests);
+    fb::logger::info(fb::console::color::light_red, "Failed: {}", failed_tests);
+
+    // Print overall result
+    if (failed_tests == 0)
+    {
+        fb::logger::info(fb::console::color::light_green,
+                         "ALL TESTS PASSED! Integration test suite completed successfully.");
+    }
+    else
+    {
+        fb::logger::fatal(fb::console::color::light_red,
+                          "{} TEST(S) FAILED! Integration test suite has failures.",
+                          failed_tests);
+    }
+
+    fb::logger::info(fb::console::color::cyan, "=== END OF INTEGRATION TEST RESULTS ===");
 }

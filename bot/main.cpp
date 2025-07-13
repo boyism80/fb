@@ -55,6 +55,10 @@ void display_spawned_bots(const std::vector<std::shared_ptr<fb::bot::bot_contain
 
 int main(int argc, char** argv)
 {
+#ifdef _WIN32
+    fb::model::option::decoding(cp949);
+#endif
+
     // Parse command line options
     po::options_description desc("Bot Test Options");
     desc.add_options()("help,h", "Show help message")(
@@ -149,6 +153,8 @@ int main(int argc, char** argv)
         ios.push_back(std::move(io));
     }
 
+    fb::console::set_mode(fb::console::mode::plain);
+
     auto                         exit = false;
     std::unique_ptr<std::thread> display_thread;
 
@@ -163,8 +169,6 @@ int main(int argc, char** argv)
             }
         });
     }
-
-    fb::console::set_mode(fb::console::mode::plain);
 
     auto threads = boost::asio::thread_pool{io_size};
     for (auto& io : ios)

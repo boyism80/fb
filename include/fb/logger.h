@@ -136,6 +136,23 @@ public:
     static fb::logger& debug(const std::string& fmt, Args&&... args);
 
     /**
+     * @brief      Logs a debug message with color and formatted arguments.
+     *
+     *             Only outputs the message if DEBUG level is enabled in configuration.
+     *             Uses std::format for string formatting and outputs with [DEBUG] prefix and specified color.
+     *
+     * @param[in]  color  The text color.
+     * @param[in]  fmt    The format string.
+     * @param[in]  args   Arguments for string formatting.
+     *
+     * @tparam     Args   Parameter pack for format arguments.
+     *
+     * @return     Reference to the logger instance for method chaining.
+     */
+    template <class... Args>
+    static fb::logger& debug(fb::console::color color, const std::string& fmt, Args&&... args);
+
+    /**
      * @brief      Logs an info message with formatted arguments.
      *
      *             Only outputs the message if INFO level is enabled in configuration.
@@ -150,6 +167,23 @@ public:
      */
     template <class... Args>
     static fb::logger& info(const std::string& fmt, Args&&... args);
+
+    /**
+     * @brief      Logs an info message with color and formatted arguments.
+     *
+     *             Only outputs the message if INFO level is enabled in configuration.
+     *             Uses std::format for string formatting and outputs with [INFO] prefix and specified color.
+     *
+     * @param[in]  color  The text color.
+     * @param[in]  fmt    The format string.
+     * @param[in]  args   Arguments for string formatting.
+     *
+     * @tparam     Args   Parameter pack for format arguments.
+     *
+     * @return     Reference to the logger instance for method chaining.
+     */
+    template <class... Args>
+    static fb::logger& info(fb::console::color color, const std::string& fmt, Args&&... args);
 
     /**
      * @brief      Logs a warning message with formatted arguments.
@@ -168,6 +202,23 @@ public:
     static fb::logger& warn(const std::string& fmt, Args&&... args);
 
     /**
+     * @brief      Logs a warning message with color and formatted arguments.
+     *
+     *             Only outputs the message if WARN level is enabled in configuration.
+     *             Uses std::format for string formatting and outputs with [WARN] prefix and specified color.
+     *
+     * @param[in]  color  The text color.
+     * @param[in]  fmt    The format string.
+     * @param[in]  args   Arguments for string formatting.
+     *
+     * @tparam     Args   Parameter pack for format arguments.
+     *
+     * @return     Reference to the logger instance for method chaining.
+     */
+    template <class... Args>
+    static fb::logger& warn(fb::console::color color, const std::string& fmt, Args&&... args);
+
+    /**
      * @brief      Logs a fatal error message with formatted arguments.
      *
      *             Only outputs the message if FATAL level is enabled in configuration.
@@ -182,6 +233,56 @@ public:
      */
     template <class... Args>
     static fb::logger& fatal(const std::string& fmt, Args&&... args);
+
+    /**
+     * @brief      Logs a fatal error message with color and formatted arguments.
+     *
+     *             Only outputs the message if FATAL level is enabled in configuration.
+     *             Uses std::format for string formatting and outputs with [FATAL] prefix and specified color.
+     *
+     * @param[in]  color  The text color.
+     * @param[in]  fmt    The format string.
+     * @param[in]  args   Arguments for string formatting.
+     *
+     * @tparam     Args   Parameter pack for format arguments.
+     *
+     * @return     Reference to the logger instance for method chaining.
+     */
+    template <class... Args>
+    static fb::logger& fatal(fb::console::color color, const std::string& fmt, Args&&... args);
+
+    /**
+     * @brief      Logs a comment message with formatted arguments and optional color.
+     *
+     *             Outputs the message with optional color through the console system.
+     *             Uses std::format for string formatting.
+     *
+     * @param[in]  color  The text color (optional).
+     * @param[in]  fmt    The format string.
+     * @param[in]  args   Arguments for string formatting.
+     *
+     * @tparam     Args   Parameter pack for format arguments.
+     *
+     * @return     Reference to the logger instance for method chaining.
+     */
+    template <class... Args>
+    static fb::logger& comment(fb::console::color color, const std::string& fmt, Args&&... args);
+
+    /**
+     * @brief      Logs a comment message with formatted arguments.
+     *
+     *             Outputs the message through the console system.
+     *             Uses std::format for string formatting.
+     *
+     * @param[in]  fmt   The format string.
+     * @param[in]  args  Arguments for string formatting.
+     *
+     * @tparam     Args  Parameter pack for format arguments.
+     *
+     * @return     Reference to the logger instance for method chaining.
+     */
+    template <class... Args>
+    static fb::logger& comment(const std::string& fmt, Args&&... args);
 };
 
 } // namespace fb
@@ -202,12 +303,32 @@ public:
 template <class... Args>
 fb::logger& fb::logger::debug(const std::string& fmt, Args&&... args)
 {
+    return debug(fb::console::color::light_gray, fmt, std::forward<Args>(args)...);
+}
+
+/**
+ * @brief      Template implementation for debug logging with color.
+ *
+ *             Checks if DEBUG level is enabled, formats the message using std::vformat,
+ *             and outputs it with [DEBUG] prefix and specified color through the console system.
+ *
+ * @param[in]  color  The text color.
+ * @param[in]  fmt    The format string.
+ * @param[in]  args   Arguments for string formatting.
+ *
+ * @tparam     Args   Parameter pack for format arguments.
+ *
+ * @return     Reference to the logger instance for method chaining.
+ */
+template <class... Args>
+fb::logger& fb::logger::debug(fb::console::color color, const std::string& fmt, Args&&... args)
+{
     auto& ist = get();
     if (ist.has_flag(fb::logger::level::DEBUG) == false)
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts("{:<7} {} {}", "[DEBUG]", fb::model::datetime().to_string(), message);
+    fb::console::puts(color, "{:<7} {} {}", "[DEBUG]", fb::model::datetime().to_string(), message);
 
     return ist;
 }
@@ -228,12 +349,32 @@ fb::logger& fb::logger::debug(const std::string& fmt, Args&&... args)
 template <class... Args>
 fb::logger& fb::logger::info(const std::string& fmt, Args&&... args)
 {
+    return info(fb::console::color::white, fmt, std::forward<Args>(args)...);
+}
+
+/**
+ * @brief      Template implementation for info logging with color.
+ *
+ *             Checks if INFO level is enabled, formats the message using std::vformat,
+ *             and outputs it with [INFO] prefix and specified color through the console system.
+ *
+ * @param[in]  color  The text color.
+ * @param[in]  fmt    The format string.
+ * @param[in]  args   Arguments for string formatting.
+ *
+ * @tparam     Args   Parameter pack for format arguments.
+ *
+ * @return     Reference to the logger instance for method chaining.
+ */
+template <class... Args>
+fb::logger& fb::logger::info(fb::console::color color, const std::string& fmt, Args&&... args)
+{
     auto& ist = get();
     if (ist.has_flag(fb::logger::level::INFO) == false)
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts("{:<7} {} {}", "[INFO]", fb::model::datetime().to_string(), message);
+    fb::console::puts(color, "{:<7} {} {}", "[INFO]", fb::model::datetime().to_string(), message);
 
     return ist;
 }
@@ -254,12 +395,32 @@ fb::logger& fb::logger::info(const std::string& fmt, Args&&... args)
 template <class... Args>
 fb::logger& fb::logger::warn(const std::string& fmt, Args&&... args)
 {
+    return warn(fb::console::color::yellow, fmt, std::forward<Args>(args)...);
+}
+
+/**
+ * @brief      Template implementation for warning logging with color.
+ *
+ *             Checks if WARN level is enabled, formats the message using std::vformat,
+ *             and outputs it with [WARN] prefix and specified color through the console system.
+ *
+ * @param[in]  color  The text color.
+ * @param[in]  fmt    The format string.
+ * @param[in]  args   Arguments for string formatting.
+ *
+ * @tparam     Args   Parameter pack for format arguments.
+ *
+ * @return     Reference to the logger instance for method chaining.
+ */
+template <class... Args>
+fb::logger& fb::logger::warn(fb::console::color color, const std::string& fmt, Args&&... args)
+{
     auto& ist = get();
     if (ist.has_flag(fb::logger::level::WARN) == false)
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts("{:<7} {} {}", "[WARN]", fb::model::datetime().to_string(), message);
+    fb::console::puts(color, "{:<7} {} {}", "[WARN]", fb::model::datetime().to_string(), message);
 
     return ist;
 }
@@ -280,14 +441,77 @@ fb::logger& fb::logger::warn(const std::string& fmt, Args&&... args)
 template <class... Args>
 fb::logger& fb::logger::fatal(const std::string& fmt, Args&&... args)
 {
+    return fatal(fb::console::color::red, fmt, std::forward<Args>(args)...);
+}
+
+/**
+ * @brief      Template implementation for fatal error logging with color.
+ *
+ *             Checks if FATAL level is enabled, formats the message using std::vformat,
+ *             and outputs it with [FATAL] prefix and specified color through the console system.
+ *
+ * @param[in]  color  The text color.
+ * @param[in]  fmt    The format string.
+ * @param[in]  args   Arguments for string formatting.
+ *
+ * @tparam     Args   Parameter pack for format arguments.
+ *
+ * @return     Reference to the logger instance for method chaining.
+ */
+template <class... Args>
+fb::logger& fb::logger::fatal(fb::console::color color, const std::string& fmt, Args&&... args)
+{
     auto& ist = get();
     if (ist.has_flag(fb::logger::level::FATAL) == false)
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts("{:<7} {} {}", "[FATAL]", fb::model::datetime().to_string(), message);
+    fb::console::puts(color, "{:<7} {} {}", "[FATAL]", fb::model::datetime().to_string(), message);
 
     return ist;
+}
+
+/**
+ * @brief      Template implementation for comment logging with color.
+ *
+ *             Outputs the message with specified color through the console system.
+ *             Uses std::vformat for string formatting.
+ *
+ * @param[in]  color  The text color.
+ * @param[in]  fmt    The format string.
+ * @param[in]  args   Arguments for string formatting.
+ *
+ * @tparam     Args   Parameter pack for format arguments.
+ *
+ * @return     Reference to the logger instance for method chaining.
+ */
+template <class... Args>
+fb::logger& fb::logger::comment(fb::console::color color, const std::string& fmt, Args&&... args)
+{
+    auto& ist     = get();
+    auto  message = std::vformat(fmt, std::make_format_args(args...));
+    fb::console::comment(color, message);
+
+    return ist;
+}
+
+/**
+ * @brief      Template implementation for comment logging.
+ *
+ *             Outputs the message through the console system.
+ *             Uses std::vformat for string formatting.
+ *
+ * @param[in]  fmt   The format string.
+ * @param[in]  args  Arguments for string formatting.
+ *
+ * @tparam     Args  Parameter pack for format arguments.
+ *
+ * @return     Reference to the logger instance for method chaining.
+ */
+template <class... Args>
+fb::logger& fb::logger::comment(const std::string& fmt, Args&&... args)
+{
+    return comment(fb::console::color::white, fmt, std::forward<Args>(args)...);
 }
 
 #endif // !__LOGGER_H__

@@ -17,6 +17,14 @@ item::item(const item& right) :
 item::~item()
 { }
 
+std::shared_ptr<fb::game::character> item::owner() const
+{
+    if (this->_container == nullptr)
+        return nullptr;
+
+    return this->_container->owner();
+}
+
 std::optional<uint32_t> item::durability() const
 {
     return std::nullopt;
@@ -27,9 +35,10 @@ void item::durability(uint32_t value)
 
 async::task<bool> item::map(std::shared_ptr<fb::game::map> map,
                             const fb::model::point16_t&    position,
-                            DESTROY_TYPE                   destroy_type)
+                            DESTROY_TYPE                   destroy_type,
+                            bool                           notify)
 {
-    auto result = co_await object::map(map, position);
+    auto result = co_await object::map(map, position, destroy_type, notify);
     if (!result)
         co_return false;
 
@@ -143,6 +152,10 @@ std::optional<uint32_t> fb::game::item::death_cid() const
 
 bool item::active()
 {
+    auto owner = this->owner();
+    if (owner == nullptr)
+        return false;
+
     if (this->_container == nullptr)
         return false;
 
@@ -164,13 +177,12 @@ bool item::active()
         lua->load(model.script);
 #endif
         lua->func(model.on_active);
-        lua->pushobject(this->_container->owner);
+        lua->pushobject(*owner);
         lua->pushobject(*this);
         std::ignore = lua->call(2);
     }
 
-    // Call listener for packet response
-    this->listener.on_item_active(this->_container->owner, *this);
+    this->listener.on_item_active(*owner, *this);
     return true;
 }
 
@@ -200,26 +212,32 @@ void item::merge(std::shared_ptr<fb::game::item> item)
     if (model != item->based())
         return;
 
-    auto& owner  = this->_container->owner;
-    auto  before = this->_count;
-    auto  remain = this->fill(item->count());
+    auto owner = this->owner();
+    if (owner == nullptr)
+        return;
+
+    auto before = this->_count;
+    auto remain = this->fill(item->count());
     item->count(remain);
 
     if (before != this->_count)
-        this->listener.on_item_update(static_cast<character&>(owner),
-                                      owner.items.index(this->shared_from_this_as<fb::game::item>()));
+        this->listener.on_item_update(*owner, owner->items.index(this->shared_from_this_as<fb::game::item>()));
 
     if (remain > 0 && this->_count == model.capacity)
-        owner.message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
+        owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
 }
 
 fb::thread* fb::game::item::thread() const
 {
+    auto owner = this->owner();
+    if (owner == nullptr)
+        return this->context.threads.current();
+
     if (this->_map != nullptr)
         return this->context.threads.modular(this->_map->model.id);
 
     if (this->_container != nullptr)
-        return this->_container->owner.thread();
+        return owner->thread();
 
     return this->context.threads.current();
 }
@@ -227,11 +245,21 @@ fb::thread* fb::game::item::thread() const
 void fb::game::item::assert_thread() const
 {
     if (this->_container != nullptr)
-        this->_container->owner.assert_thread();
+    {
+        auto owner = this->owner();
+        if (owner == nullptr)
+            return;
+
+        owner->assert_thread();
+    }
     else if (this->_map == nullptr)
+    {
         return;
+    }
     else
+    {
         object::assert_thread();
+    }
 }
 
 void fb::game::item::container(fb::game::items* container)
@@ -241,12 +269,16 @@ void fb::game::item::container(fb::game::items* container)
 
 fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const
 {
+    auto owner = this->owner();
+    if (owner == nullptr)
+        throw std::runtime_error("cannot convert to protocol because owner is empty");
+
     if (this->_container == nullptr)
         throw std::runtime_error("cannot convert to protocol because container is empty");
 
     auto& model        = this->based<fb::model::item>();
     auto  result       = fb::protocol::internal::Item();
-    result.user        = this->_container->owner.id();
+    result.user        = owner->id();
     result.index       = -1;
     result.parts       = static_cast<uint16_t>(parts);
     result.stored      = -1;

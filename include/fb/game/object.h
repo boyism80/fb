@@ -114,6 +114,7 @@ protected:
     fb::model::point16_t           _position  = fb::model::point16_t(0, 0);
     DIRECTION                      _direction = DIRECTION::BOTTOM;
     std::shared_ptr<fb::game::map> _map       = nullptr;
+    fb::thread*                    _thread    = nullptr;
 
 public:
     listener_t&        listener;
@@ -191,7 +192,16 @@ public:
         return static_cast<const T&>(this->_model);
     }
 
+    virtual void on_init();
+
 public:
+    /**
+     * @brief      Destroys the object and cleans up all resources.
+     *
+     * @param[in]  destroy_type  The type of destruction to perform
+     *
+     * @return     Task that completes when the destruction is complete
+     */
     [[nodiscard]] virtual async::task<void> destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
 
     /**
@@ -423,12 +433,14 @@ public:
      * @param      map           The target map to move to
      * @param[in]  position      The position on the target map
      * @param[in]  destroy_type  How to handle the object when leaving current map
+     * @param[in]  notify        Whether to notify other objects about the move
      *
      * @return     True if the map change was successful, false otherwise
      */
     virtual async::task<bool> map(std::shared_ptr<fb::game::map> map,
                                   const fb::model::point16_t&    position,
-                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT);
+                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT,
+                                  bool                           notify       = true);
 
     /**
      * @brief      Gets the map that this object is currently on.
@@ -583,11 +595,18 @@ public:
                                                          bool        contains_super_hide = false) const;
 
     /**
+     * @brief      Sets the thread that this object belongs to.
+     *
+     * @param[in]  value  Pointer to the thread managing this object
+     */
+    void thread(fb::thread* value);
+
+    /**
      * @brief      Gets the thread that this object belongs to.
      *
      * @return     Pointer to the thread managing this object
      */
-    fb::thread* thread() const override;
+    virtual fb::thread* thread() const override;
 
     /**
      * @brief      Updates the object's unique identifier.

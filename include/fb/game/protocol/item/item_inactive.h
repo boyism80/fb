@@ -14,10 +14,20 @@ public:
     static constexpr uint8_t header = 0x1F;
 
 public:
+#ifndef BOT
     EQUIPMENT_PARTS parts;
+#else
+    const EQUIPMENT_PARTS parts;
+#endif
 
 public:
+#ifndef BOT
     item_inactive() = default;
+#else
+    item_inactive(EQUIPMENT_PARTS parts) :
+        parts(parts)
+    { }
+#endif
 
 public:
 #ifdef BOT

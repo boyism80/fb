@@ -153,7 +153,7 @@ bool map::in_ground(const fb::model::point16_t position) const
     return position.x < this->_size.width && position.y < this->_size.height;
 }
 
-bool map::movable(const object& object, const fb::model::point16_t position) const
+bool map::movable(const fb::model::point16_t& position, const std::function<bool(const object&)>& predicate) const
 {
     if (this->in_ground(position) == false)
         return false;
@@ -167,10 +167,10 @@ bool map::movable(const object& object, const fb::model::point16_t position) con
 
     for (const auto& [key, value] : this->objects)
     {
-        if (value->hidden(object))
+        if (value->is(OBJECT_TYPE::ITEM))
             continue;
 
-        if (value->is(OBJECT_TYPE::ITEM))
+        if (predicate(*value) == false)
             continue;
 
         if (value->position() == position)
@@ -178,6 +178,13 @@ bool map::movable(const object& object, const fb::model::point16_t position) con
     }
 
     return true;
+}
+
+bool map::movable(const object& object, const fb::model::point16_t position) const
+{
+    return this->movable(position, [&object](const auto& x) {
+        return !object.hidden(x);
+    });
 }
 
 bool map::movable(const object& object, DIRECTION direction) const
@@ -265,18 +272,74 @@ std::vector<std::shared_ptr<fb::game::object>> map::belows(const fb::model::poin
             throw std::exception();
 
         auto sector = this->_sectors->at(pivot);
-        std::copy_if(sector->begin(), sector->end(), std::back_inserter(objects), [type, &pivot](auto x) {
-            return (type == OBJECT_TYPE::UNKNOWN || x->is(type)) && x->position() == pivot;
-        });
-
-        std::sort(objects.begin(), objects.end(), [](auto obj1, auto obj2) {
-            return obj1->oid() > obj2->oid();
-        });
+        for (auto& obj : *sector)
+        {
+            if (type == OBJECT_TYPE::UNKNOWN || obj->is(type))
+            {
+                if (obj->position() == pivot)
+                    objects.push_back(obj);
+            }
+        }
     }
     catch (std::exception&)
     { }
 
-    return std::move(objects);
+    std::reverse(objects.begin(), objects.end());
+    return objects;
+}
+
+void map::bulk_update(const std::vector<uint32_t>& oids)
+{
+    if (oids.empty())
+        return;
+
+    // Use unordered_set for better performance (O(1) vs O(log n))
+    auto sectors = std::unordered_set<std::shared_ptr<fb::game::sector>>();
+    auto targets = std::unordered_set<std::shared_ptr<fb::game::character>>();
+    auto oid_set = std::unordered_set<uint32_t>(oids.begin(), oids.end());
+
+    // Collect sectors containing changed objects
+    for (auto oid : oids)
+    {
+        auto obj = this->objects.at(oid);
+        if (obj == nullptr)
+            continue;
+
+        for (const auto& sector : this->_sectors->nears(obj->position()))
+        {
+            sectors.insert(sector);
+        }
+    }
+
+    // Collect all characters in affected sectors
+    for (const auto& sector : sectors)
+    {
+        for (const auto& obj : *sector)
+        {
+            if (obj->is(OBJECT_TYPE::CHARACTER))
+                targets.insert(std::static_pointer_cast<fb::game::character>(obj));
+        }
+    }
+
+    // Send updates to each character
+    for (const auto& target : targets)
+    {
+        auto changed_objects = std::vector<object*>();
+        changed_objects.reserve(oids.size()); // Pre-allocate for efficiency
+
+        for (const auto& nearby_obj : target->nears())
+        {
+            if (oid_set.contains(nearby_obj->oid()))
+            {
+                changed_objects.push_back(nearby_obj.get());
+            }
+        }
+
+        if (!changed_objects.empty())
+        {
+            target->send(fb::protocol::game::response::update(changed_objects));
+        }
+    }
 }
 
 fb::thread* map::thread() const

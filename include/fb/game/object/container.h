@@ -13,6 +13,9 @@
 #include <fb/stream.h>
 #include <fb/config.h>
 #include <fb/container.h>
+#include <async/awaitable_then.h>
+
+using namespace std::chrono_literals;
 
 namespace fb::game {
 

@@ -428,7 +428,9 @@ private:
             }
             catch (std::exception& e)
             {
-                fb::logger::fatal(e.what());
+                fb::logger::fatal("acceptor::accept: error={}\n{}",
+                                  e.what(),
+                                  boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
                 shared_socket_ptr->close();
             }
         });

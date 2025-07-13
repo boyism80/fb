@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Dapper;
 using fb.protocol._internal;
+using Fb.Model.EnumValue;
 using Http;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
@@ -126,16 +127,33 @@ namespace Internal.Controllers
         [HttpPost("delete")]
         public async Task<Response.DeleteArticle> Delete(Request.DeleteArticle request)
         {
-            await using var conn = _dbContext.Connection(-1);
-            var dynamicParams = new DynamicParameters();
-            dynamicParams.Add("id", request.Id);
-            dynamicParams.Add("user", request.User);
-            var result = await conn.ExecuteScalarAsync<int>($"USP_BULLETIN_DELETE", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
-
-            return new Response.DeleteArticle
+            try
             {
-                Result = result
-            };
+                await using var conn = _dbContext.Connection(-1);
+                var dynamicParams = new DynamicParameters();
+                dynamicParams.Add("id", request.Id);
+                dynamicParams.Add("user", request.User);
+                var result = await conn.ExecuteScalarAsync<int>($"USP_BULLETIN_DELETE", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
+
+                return new Response.DeleteArticle
+                {
+                    Result = result
+                };
+            }
+            catch (LogicException e)
+            {
+                return new Response.DeleteArticle
+                {
+                    Result = (int)e.Error
+                };
+            }
+            catch (Exception e)
+            {
+                return new Response.DeleteArticle
+                {
+                    Result = (int)ErrorCode.Unhandled
+                };
+            }
         }
     }
 }

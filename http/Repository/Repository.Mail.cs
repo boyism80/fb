@@ -49,7 +49,8 @@ namespace Http.Reepository
                         mail.SenderName = name;
                     else
                         mail.SenderName = "Unknown";
-                };
+                }
+                ;
             }
 
             return mails.ToList();
@@ -130,9 +131,10 @@ namespace Http.Reepository
         /// <param name="user">The unique identifier of the user who owns the mail.</param>
         /// <param name="id">The unique identifier of the mail message to delete.</param>
         /// <returns>A task representing the asynchronous delete operation.</returns>
-        public async Task Delete(uint user, uint id)
+        public async Task<bool> Delete(uint user, uint id)
         {
-            await _dbContext.Connection(user).ExecuteAsync($"UPDATE `mail` SET deleted = 1 WHERE `user` = {user} AND `id` = {id}");
+            var affectedRows = await _dbContext.Connection(user).ExecuteAsync($"UPDATE `mail` SET deleted = 1 WHERE `user` = {user} AND `id` = {id} AND `deleted` = 0");
+            return affectedRows == 1;
         }
 
         /// <summary>

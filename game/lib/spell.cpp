@@ -34,17 +34,29 @@ const fb::model::datetime& fb::game::spell::next() const
     return this->_next;
 }
 
-spells::spells(life& owner) :
-    inventory(owner)
+spells::spells()
 { }
 
 spells::~spells()
 { }
 
+void spells::owner(std::shared_ptr<fb::game::life> owner)
+{
+    this->_owner = owner->weak_from_this_as<fb::game::life>();
+}
+
+std::shared_ptr<fb::game::life> spells::owner() const
+{
+    return this->_owner.lock();
+}
+
 std::shared_ptr<fb::game::spell> fb::game::spells::find(const std::string& name) const
 {
-    auto& owner = this->owner();
-    owner.assert_thread();
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return nullptr;
+
+    owner->assert_thread();
 
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -61,8 +73,11 @@ std::shared_ptr<fb::game::spell> fb::game::spells::find(const std::string& name)
 
 std::shared_ptr<fb::game::spell> fb::game::spells::find(const fb::model::spell& model) const
 {
-    auto& owner = this->owner();
-    owner.assert_thread();
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return nullptr;
+
+    owner->assert_thread();
 
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -79,79 +94,97 @@ std::shared_ptr<fb::game::spell> fb::game::spells::find(const fb::model::spell& 
 
 uint8_t spells::add(std::shared_ptr<spell> element)
 {
-    auto& owner = this->owner();
-    owner.assert_thread();
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return 0xFF;
+
+    owner->assert_thread();
 
     auto index = super::add(element);
     if (index != 0xFF)
-        owner.listener.on_spell_update(this->owner(), index);
+        owner->listener.on_spell_update(*owner, index);
 
     return index;
 }
 
 uint8_t spells::add(std::shared_ptr<spell> element, uint8_t index)
 {
-    auto& owner = this->owner();
-    owner.assert_thread();
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return 0xFF;
+
+    owner->assert_thread();
 
     if (super::add(element, index) != 0xFF)
-        owner.listener.on_spell_update(this->owner(), index);
+        owner->listener.on_spell_update(*owner, index);
 
     return index;
 }
 
 uint8_t spells::add(const fb::model::spell& model, uint8_t slot, uint16_t delay)
 {
-    auto& owner = this->owner();
-    owner.assert_thread();
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return 0xFF;
 
-    auto& context = owner.context;
-    auto  created = context.make<spell>(owner, model, delay);
+    owner->assert_thread();
+
+    auto& context = owner->context;
+    auto  created = context.make<spell>(*owner, model, delay);
     return this->add(created, slot);
 }
 
 uint8_t spells::add(const fb::model::spell& model)
 {
-    auto& owner = this->owner();
-    owner.assert_thread();
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return 0xFF;
 
-    auto& context = owner.context;
-    auto  created = context.make<spell>(owner, model, 0);
+    owner->assert_thread();
+
+    auto& context = owner->context;
+    auto  created = context.make<spell>(*owner, model, 0);
     return this->add(created);
 }
 
 bool spells::remove(uint8_t index)
 {
-    auto& owner = this->owner();
-    owner.assert_thread();
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return false;
+
+    owner->assert_thread();
 
     auto success = super::remove(index);
 
     if (success)
-        owner.listener.on_spell_remove(this->owner(), index);
+        owner->listener.on_spell_remove(*owner, index);
 
     return success;
 }
 
 bool spells::swap(uint8_t src, uint8_t dst)
 {
-    auto& owner = this->owner();
-    owner.assert_thread();
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return false;
+
+    owner->assert_thread();
 
     if (super::swap(src, dst) == false)
         return false;
 
     const auto right = this->at(src);
     if (right != nullptr)
-        owner.listener.on_spell_update(this->owner(), src);
+        owner->listener.on_spell_update(*owner, src);
     else
-        owner.listener.on_spell_remove(this->owner(), src);
+        owner->listener.on_spell_remove(*owner, src);
 
     const auto left = this->at(dst);
     if (left != nullptr)
-        owner.listener.on_spell_update(this->owner(), dst);
+        owner->listener.on_spell_update(*owner, dst);
     else
-        owner.listener.on_spell_remove(this->owner(), dst);
+        owner->listener.on_spell_remove(*owner, dst);
 
     return true;
 }

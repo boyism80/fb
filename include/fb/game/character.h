@@ -90,7 +90,6 @@ public:
 private:
     uint32_t                                    _id;
     std::weak_ptr<fb::socket<character>>        _socket;
-    fb::thread*                                 _thread = nullptr;
     std::string                                 _name;
     ROLE                                        _role;
     std::string                                 _pw;
@@ -129,8 +128,8 @@ private:
     };
 
 public:
-    fb::game::trade                                  trade  = fb::game::trade(*this);
-    fb::game::items                                  items  = fb::game::items(*this);
+    fb::game::trade                                  trade;
+    fb::game::items                                  items;
     fb::lua::context*                                dialog = nullptr;
     std::map<uint32_t, std::unique_ptr<achievement>> achievements; // order required
     listener_t&                                      listener;
@@ -161,6 +160,9 @@ public:
      *             memberships, and any other resources associated with the character.
      */
     ~character();
+
+public:
+    void on_init() override final;
 
 private:
     /**
@@ -218,12 +220,14 @@ public:
      * @param      map           The target map to move to
      * @param[in]  position      The position on the target map
      * @param[in]  destroy_type  How to handle the character when leaving current map
+     * @param[in]  notify        Whether to notify other objects about the move
      *
      * @return     True if the map change was successful, false otherwise
      */
     [[nodiscard]] async::task<bool> map(std::shared_ptr<fb::game::map> map,
                                         const fb::model::point16_t&    position,
-                                        DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+                                        DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT,
+                                        bool                           notify       = true) override final;
 
 public:
     /**
@@ -898,9 +902,9 @@ public:
     fb::thread* thread() const override final;
 
     /**
-     * @brief      Sets the thread for this character.
+     * @brief      Sets the thread that this character belongs to.
      *
-     * @param      value  The thread to assign to this character
+     * @param[in]  value  Pointer to the thread managing this character
      */
     void thread(fb::thread* value);
 
@@ -1068,12 +1072,12 @@ public:
      * @param[in]  model     The mob model to spawn
      * @param[in]  position  The position where to spawn the mob
      * @param[in]  owned     Whether the mob is owned by this character
+     * @param[in]  notify    Whether to notify the character about the mob
      *
      * @return     Pointer to the spawned mob, or nullptr if failed
      */
-    std::shared_ptr<fb::game::mob> spawn_mob(const fb::model::mob&       model,
-                                             const fb::model::point16_t& position,
-                                             bool                        owned = true);
+    std::shared_ptr<fb::game::mob>
+    spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned = true, bool notify = true);
 
     /**
      * @brief      Gets the list of mobs spawned by this character.
@@ -1445,6 +1449,15 @@ public:
      * @return     True if this character is hidden from the target, false otherwise
      */
     bool hidden(const fb::game::object& target) const override final;
+
+    /**
+     * @brief      Checks if the character is hidden from a specific role.
+     *
+     * @param[in]  role  The role to check visibility against
+     *
+     * @return     True if the character is hidden from the role, false otherwise
+     */
+    bool hidden(ROLE role) const;
 #pragma endregion
 };
 
@@ -2044,6 +2057,22 @@ public:
      * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_slot(lua_State* L);
+
+    /**
+     * @brief      Lua builtin function to force a rezen spawn.
+     *
+     *             This function forces a rezen spawn regardless of normal spawn
+     *             conditions. It bypasses the normal spawn restrictions and
+     *             immediately spawns mobs at the specified rezen point.
+     *
+     *             This function is useful for special events, GM commands, or
+     *             scripted scenarios that need to override normal spawn logic.
+     *
+     * @param      L     The Lua state containing function arguments.
+     *
+     * @return     Number of return values pushed to the Lua stack.
+     */
+    static int builtin_rezen_force(lua_State* L);
 };
 
 /**

@@ -38,7 +38,7 @@
 #include <fb/game/protocol/exit.h>
 #include <fb/game/protocol/update_move.h>
 #include <fb/game/protocol/attack.h>
-#include <fb/game/protocol/pick_up.h>
+#include <fb/game/protocol/loot.h>
 #include <fb/game/protocol/emotion.h>
 #include <fb/game/protocol/update_screen.h>
 #include <fb/game/protocol/front_info.h>

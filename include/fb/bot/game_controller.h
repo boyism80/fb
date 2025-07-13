@@ -326,6 +326,7 @@ private:
         // Update additional data
         bot.set_head_marker(response.head_marker);
         bot.set_name(response.name);
+        bot.inited(true);
 
         co_return;
     }

@@ -17,7 +17,9 @@ bool fb::game::consume::active()
     if (this->_container == nullptr)
         return false;
 
-    auto& owner = this->_container->owner;
+    auto owner = this->_container->owner();
+    if (owner == nullptr)
+        return false;
 
     if (this->_count == 0)
         return false;
@@ -25,12 +27,12 @@ bool fb::game::consume::active()
     fb::game::item::active();
     this->_count--;
 
-    owner.action(ACTION::EAT, DURATION::EAT);
-    owner.sound(SOUND::EAT);
-    owner.listener.on_item_update(owner, owner.items.index(this->shared_from_this_as<fb::game::item>()));
+    owner->action(ACTION::EAT, DURATION::EAT);
+    owner->sound(SOUND::EAT);
+    owner->listener.on_item_update(*owner, owner->items.index(this->shared_from_this_as<fb::game::item>()));
 
     if (this->empty())
-        std::ignore = owner.items.remove(this->shared_from_this_as<fb::game::item>(), -1, ITEM_DELETE_TYPE::EAT);
+        std::ignore = owner->items.remove(this->shared_from_this_as<fb::game::item>(), -1, ITEM_DELETE_TYPE::EAT);
 
     return true;
 }

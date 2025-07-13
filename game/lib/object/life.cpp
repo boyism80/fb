@@ -8,12 +8,16 @@ life::life(fb::game::context& context, const fb::model::life& model, const initi
     object(context, model, params),
     listener(context.listener),
     _hp(params.hp),
-    _mp(params.mp),
-    spells(*this)
+    _mp(params.mp)
 { }
 
 life::~life()
 { }
+
+void life::on_init()
+{
+    this->spells.owner(this->shared_from_this_as<life>());
+}
 
 uint32_t life::heal(uint32_t value, fb::game::object* from)
 {

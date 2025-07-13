@@ -258,8 +258,8 @@ public:
         }
     };
 
-protected:
-    bot_controller<BotType>& _controller; ///< Reference to the bot bot_controller for this bot type
+public:
+    bot_controller<BotType>& controller; ///< Reference to the bot bot_controller for this bot type
 
 protected:
     /**
@@ -268,7 +268,7 @@ protected:
      * @param      bot_controller  The bot_controller that will manage this bot.
      * @param[in]  id         The unique identifier for this bot.
      */
-    bot(bot_controller<BotType>& _controller, uint32_t id);
+    bot(bot_controller<BotType>& controller, uint32_t id);
 
 public:
     /**
@@ -315,21 +315,6 @@ public:
                                       const fb::model::timespan&  timeout = 0s,
                                       bool                        encrypt = true,
                                       bool                        wrap    = true);
-
-    /**
-     * @brief      Gets the bot_controller managing this bot.
-     *
-     * @return     Reference to the bot_controller.
-     */
-    bot_controller<BotType>& controller()
-    {
-        return this->_controller;
-    }
-
-    const bot_controller<BotType>& controller() const
-    {
-        return this->_controller;
-    }
 };
 
 } // namespace fb::bot

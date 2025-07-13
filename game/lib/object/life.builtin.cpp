@@ -77,7 +77,7 @@ int life::builtin::builtin_message(lua_State* L)
     auto type    = lua->toenum(3, MESSAGE_TYPE::STATE);
 
     auto weak = ch->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         ch->message(message, type);
         return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
@@ -100,7 +100,7 @@ int life::builtin::builtin_hp(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto hp_value = obj->hp();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -113,7 +113,7 @@ int life::builtin::builtin_hp(lua_State* L)
     {
         auto value = (uint32_t)lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->hp(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -138,7 +138,7 @@ int life::builtin::builtin_mp(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto mp_value = obj->mp();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -151,7 +151,7 @@ int life::builtin::builtin_mp(lua_State* L)
     {
         auto value = (uint32_t)lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->mp(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -175,7 +175,7 @@ int life::builtin::builtin_heal(lua_State* L)
 
     auto value = (uint32_t)lua->tointeger(2);
     auto weak  = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         obj->heal(value);
         return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
@@ -199,7 +199,7 @@ int life::builtin::builtin_damage(lua_State* L)
     auto from     = lua->touserdata<fb::game::life>(3);
     auto critical = lua->toboolean(4, false);
     auto weak     = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         obj->damage(value, from, critical);
         return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
@@ -221,7 +221,7 @@ int life::builtin::builtin_mp_up(lua_State* L)
 
     auto value = (uint32_t)lua->tointeger(2);
     auto weak  = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         obj->mp_up(value);
         return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
@@ -243,7 +243,7 @@ int life::builtin::builtin_mp_down(lua_State* L)
 
     auto value = (uint32_t)lua->tointeger(2);
     auto weak  = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         obj->mp_down(value);
         return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
@@ -267,7 +267,7 @@ int life::builtin::builtin_action(lua_State* L)
     auto duration = lua->tointeger(3, static_cast<int>(DURATION::SPELL));
     auto sound    = (uint8_t)lua->tointeger(4, (uint8_t)0x00);
     auto weak     = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         obj->action(ACTION(action), DURATION(duration), sound);
         return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
@@ -291,7 +291,7 @@ int life::builtin::builtin_spell(lua_State* L)
     {
         auto index = (int)lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto spell = obj->spells[index];
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -308,7 +308,7 @@ int life::builtin::builtin_spell(lua_State* L)
     {
         auto name = lua->tostring(2);
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto spell = obj->spells.find(name);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -325,7 +325,7 @@ int life::builtin::builtin_spell(lua_State* L)
     {
         auto model = lua->touserdata<fb::model::spell>(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto spell = obj->spells.find(*model);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -357,7 +357,7 @@ int life::builtin::builtin_spells(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto buffer = std::vector<std::shared_ptr<fb::game::spell>>();
         for (int i = 0; i < CONTAINER_CAPACITY; i++)
         {
@@ -454,7 +454,7 @@ int life::builtin::builtin_cc(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto cc_value = static_cast<uint32_t>(obj->crowd_control());
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -467,7 +467,7 @@ int life::builtin::builtin_cc(lua_State* L)
     {
         auto cc   = static_cast<CROWD_CONTROL>(lua->tointeger(2));
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->crowd_control(cc);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -492,7 +492,7 @@ int life::builtin::builtin_add_cc(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto cc_value = static_cast<uint32_t>(obj->crowd_control());
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -505,7 +505,7 @@ int life::builtin::builtin_add_cc(lua_State* L)
     {
         auto cc   = static_cast<CROWD_CONTROL>(lua->tointeger(2));
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->add_cc(cc);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -529,7 +529,7 @@ int life::builtin::builtin_remove_cc(lua_State* L)
 
     auto cc   = static_cast<CROWD_CONTROL>(lua->tointeger(2));
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         obj->remove_cc(cc);
         return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
@@ -551,7 +551,7 @@ int life::builtin::builtin_attack(lua_State* L)
 
     auto duration = lua->toenum(2, DURATION::ATTACK);
     auto weak     = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         async::awaitable_then(obj->attack(duration), [=](auto result) {
             try
             {
@@ -584,7 +584,7 @@ int life::builtin::builtin_damage_rate(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto damage_rate_value = obj->damage_rate();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -597,7 +597,7 @@ int life::builtin::builtin_damage_rate(lua_State* L)
     {
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->damage_rate(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -622,7 +622,7 @@ int life::builtin::builtin_damage_derate(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto damage_derate_value = obj->damage_derate();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -635,7 +635,7 @@ int life::builtin::builtin_damage_derate(lua_State* L)
     {
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->damage_derate(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -660,7 +660,7 @@ int life::builtin::builtin_skill_damage_rate(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto skill_damage_rate_value = obj->skill_damage_rate();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -673,7 +673,7 @@ int life::builtin::builtin_skill_damage_rate(lua_State* L)
     {
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->skill_damage_rate(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -698,7 +698,7 @@ int life::builtin::builtin_paralysis(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto paralysis_value = obj->paralysis();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -711,7 +711,7 @@ int life::builtin::builtin_paralysis(lua_State* L)
     {
         auto value = lua->toboolean(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->paralysis(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -736,7 +736,7 @@ int life::builtin::builtin_invincible(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto invincible_value = obj->invincible();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -749,7 +749,7 @@ int life::builtin::builtin_invincible(lua_State* L)
     {
         auto value = lua->toboolean(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->invincible(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -774,7 +774,7 @@ int life::builtin::builtin_cover(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto cover_value = obj->cover();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -787,7 +787,7 @@ int life::builtin::builtin_cover(lua_State* L)
     {
         auto value = lua->toboolean(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->cover(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -810,7 +810,7 @@ int life::builtin::builtin_base_hp(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto value = obj->base_hp();
         return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushinteger(value);
@@ -834,7 +834,7 @@ int life::builtin::builtin_buff_hp(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto buff_hp_value = obj->buff_hp();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -847,7 +847,7 @@ int life::builtin::builtin_buff_hp(lua_State* L)
     {
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->buff_hp(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -869,7 +869,7 @@ int life::builtin::builtin_maxhp(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto maxhp_value = obj->maxhp();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -891,7 +891,7 @@ int life::builtin::builtin_base_mp(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto base_mp_value = obj->base_mp();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -916,7 +916,7 @@ int life::builtin::builtin_buff_mp(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto buff_mp_value = obj->buff_mp();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -929,7 +929,7 @@ int life::builtin::builtin_buff_mp(lua_State* L)
     {
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->buff_mp(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -951,7 +951,7 @@ int life::builtin::builtin_maxmp(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto maxmp_value = obj->maxmp();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -973,7 +973,7 @@ int life::builtin::builtin_base_str(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto base_str_value = obj->base_str();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -998,7 +998,7 @@ int life::builtin::builtin_buff_str(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto buff_str_value = obj->buff_str();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1011,7 +1011,7 @@ int life::builtin::builtin_buff_str(lua_State* L)
     {
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->buff_str(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1033,7 +1033,7 @@ int life::builtin::builtin_str(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto str_value = obj->str();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1055,7 +1055,7 @@ int life::builtin::builtin_base_dex(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto base_dex_value = obj->base_dex();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1080,7 +1080,7 @@ int life::builtin::builtin_buff_dex(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto buff_dex_value = obj->buff_dex();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1093,7 +1093,7 @@ int life::builtin::builtin_buff_dex(lua_State* L)
     {
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->buff_dex(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1115,7 +1115,7 @@ int life::builtin::builtin_dex(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto dex_value = obj->dex();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1137,7 +1137,7 @@ int life::builtin::builtin_base_int(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto base_int_value = obj->base_int();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1162,7 +1162,7 @@ int life::builtin::builtin_buff_int(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto buff_int_value = obj->buff_int();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1175,7 +1175,7 @@ int life::builtin::builtin_buff_int(lua_State* L)
     {
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->buff_int(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1197,7 +1197,7 @@ int life::builtin::builtin_intelligence(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto intelligence_value = obj->intelligence();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1219,7 +1219,7 @@ int life::builtin::builtin_base_phydef(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto base_phydef_value = obj->base_phydef();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1244,7 +1244,7 @@ int life::builtin::builtin_buff_phydef(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto buff_phydef_value = obj->buff_phydef();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1257,7 +1257,7 @@ int life::builtin::builtin_buff_phydef(lua_State* L)
     {
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->buff_phydef(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1279,7 +1279,7 @@ int life::builtin::builtin_phydef(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto phydef_value = obj->phydef();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1301,7 +1301,7 @@ int life::builtin::builtin_base_magdef(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto base_magdef_value = obj->base_magdef();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1326,7 +1326,7 @@ int life::builtin::builtin_buff_magdef(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto buff_magdef_value = obj->buff_magdef();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1339,7 +1339,7 @@ int life::builtin::builtin_buff_magdef(lua_State* L)
     {
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->buff_magdef(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1361,7 +1361,7 @@ int life::builtin::builtin_magdef(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto magdef_value = obj->magdef();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1383,7 +1383,7 @@ int life::builtin::builtin_base_dam(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto base_dam_value = obj->base_dam();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1408,7 +1408,7 @@ int life::builtin::builtin_buff_dam(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto buff_dam_value = obj->buff_dam();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1421,7 +1421,7 @@ int life::builtin::builtin_buff_dam(lua_State* L)
     {
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->buff_dam(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1443,7 +1443,7 @@ int life::builtin::builtin_dam(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto dam_value = obj->dam();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1465,7 +1465,7 @@ int life::builtin::builtin_base_hit(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto base_hit_value = obj->base_hit();
 
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1490,7 +1490,7 @@ int life::builtin::builtin_buff_hit(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto buff_hit_value = obj->buff_hit();
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1503,7 +1503,7 @@ int life::builtin::builtin_buff_hit(lua_State* L)
     {
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->buff_hit(value);
 
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -1525,7 +1525,7 @@ int life::builtin::builtin_hit(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto hit_value = obj->hit();
 
         return lua->ensure_resume(*ctx, weak, [=]() {

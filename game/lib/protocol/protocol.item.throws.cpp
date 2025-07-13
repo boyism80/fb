@@ -1,12 +1,22 @@
 #include <fb/game/protocol/item/item_throws.h>
 
 namespace fb::protocol::game::request {
+#ifdef BOT
+async::task<void> item_throws::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    co_await header::serialize(writer);
+    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(this->all ? 0x01 : 0x00);
+    writer.write<uint8_t>(this->index + 1);
+}
+#else
 async::task<void> item_throws::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
     this->all   = reader.read<uint8_t>();
     this->index = reader.read<uint8_t>() - 1;
 }
+#endif
 } // namespace fb::protocol::game::request
 
 namespace fb::protocol::game::response {
@@ -42,14 +52,14 @@ async::task<void> item_throws::serialize(fb::stream_writer<big_endian>& writer) 
 async::task<void> item_throws::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->ch_sequence   = reader.read<uint32_t>();
-    this->look          = reader.read<uint16_t>();
-    this->color         = reader.read<uint8_t>();
-    this->item_sequence = reader.read<uint32_t>();
-    this->from_x        = reader.read<uint16_t>();
-    this->from_y        = reader.read<uint16_t>();
-    this->to_x          = reader.read<uint16_t>();
-    this->to_y          = reader.read<uint16_t>();
+    this->ch_oid   = reader.read<uint32_t>();
+    this->look     = reader.read<uint16_t>();
+    this->color    = reader.read<uint8_t>();
+    this->item_oid = reader.read<uint32_t>();
+    this->from_x   = reader.read<uint16_t>();
+    this->from_y   = reader.read<uint16_t>();
+    this->to_x     = reader.read<uint16_t>();
+    this->to_y     = reader.read<uint16_t>();
     reader.read<uint32_t>(); // 0x00000000
     reader.read<uint8_t>();  // 0x02
     reader.read<uint8_t>();  // 0x00

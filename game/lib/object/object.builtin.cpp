@@ -118,8 +118,10 @@ int object::builtin::builtin_destroy(lua_State* L)
         return 0;
 
     auto weak = obj->weak_from_this_as<object>();
-    return lua->ensure_yield(*ctx, weak, [=]() {
-        obj->destroy();
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
+        // TODO: Need to verify that the destructor is called when the object is destroyed and ensure_resume's callback
+        // is properly invoked
+        std::ignore = obj->destroy();
         return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
         });
@@ -156,7 +158,7 @@ int object::builtin::builtin_sound(lua_State* L)
 
     auto sound = static_cast<SOUND>(lua->tointeger(2));
     auto weak  = obj->weak_from_this_as<object>();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         obj->sound(sound);
         return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
@@ -179,7 +181,7 @@ int object::builtin::builtin_position(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this_as<object>();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             lua->pushinteger(obj->_position.x);
             lua->pushinteger(obj->_position.y);
             return lua->ensure_resume(*ctx, weak, [=]() {
@@ -207,7 +209,7 @@ int object::builtin::builtin_position(lua_State* L)
         }
 
         auto weak = obj->weak_from_this_as<object>();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->position(x, y, true);
             return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
@@ -232,7 +234,7 @@ int object::builtin::builtin_front_position(lua_State* L)
     obj->assert_thread();
 
     auto weak = obj->weak_from_this_as<object>();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto position = obj->front_position(step);
         return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushinteger(position.x);
@@ -257,7 +259,7 @@ int object::builtin::builtin_direction(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this_as<object>();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto direction = obj->_direction;
             return lua->ensure_resume(*ctx, weak, [=]() {
                 lua->pushinteger(direction);
@@ -269,7 +271,7 @@ int object::builtin::builtin_direction(lua_State* L)
     {
         auto direction = static_cast<DIRECTION>(lua->tointeger(2));
         auto weak      = obj->weak_from_this_as<object>();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             obj->direction(direction);
             return lua->ensure_resume(*ctx, weak, [=]() {
                 return 0;
@@ -295,7 +297,7 @@ int object::builtin::builtin_chat(lua_State* L)
     auto decorate = lua->toboolean(4, true);
 
     auto weak = obj->weak_from_this_as<object>();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         if (obj->is(OBJECT_TYPE::ITEM) == false)
             obj->chat(message, type, decorate);
         return lua->ensure_resume(*ctx, weak, [=]() {
@@ -465,7 +467,7 @@ int object::builtin::builtin_effect(lua_State* L)
 
     auto effect = static_cast<uint8_t>(lua->tointeger(2));
     auto weak   = obj->weak_from_this_as<object>();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         obj->effect(effect);
         return lua->ensure_resume(*ctx, weak, [=]() {
             return 0;
@@ -558,7 +560,7 @@ int object::builtin::builtin_map(lua_State* L)
     if (argc == 1)
     {
         auto weak = obj->weak_from_this_as<object>();
-        return lua->ensure_yield(*ctx, weak, [=]() {
+        return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
             auto map = obj->map();
             return lua->ensure_resume(*ctx, weak, [=]() {
                 if (map == nullptr)
@@ -796,7 +798,7 @@ int object::builtin::builtin_is(lua_State* L)
 
     auto type = lua->toenum(2, OBJECT_TYPE::UNKNOWN);
     auto weak = obj->weak_from_this_as<object>();
-    return lua->ensure_yield(*ctx, weak, [=]() {
+    return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
         auto matched = obj->is(type);
         return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushboolean(matched);

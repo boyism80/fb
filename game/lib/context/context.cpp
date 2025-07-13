@@ -45,6 +45,7 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     lua::build<weapon, equipment>();
     lua::build<character, life>();
 
+    lua::build("log", builtin::builtin_log);
     lua::build("seed", builtin::builtin_seed);
     lua::build("sleep", builtin::builtin_sleep);
     lua::build("baram_time", builtin::builtin_baram_time);
@@ -141,7 +142,7 @@ async::task<void> context::handle_start()
     this->handler.protocol.bind(&context::handle_update_move);      // 이동과 맵 데이터 업데이트 핸들러
     this->handler.protocol.bind(&context::handle_move, 1s, 6);      // 이동 핸들러
     this->handler.protocol.bind(&context::handle_attack, 500ms, 2); // 공격 핸들러
-    this->handler.protocol.bind(&context::handle_pickup);           // 아이템 줍기 핸들러
+    this->handler.protocol.bind(&context::handle_loot);             // 아이템 줍기 핸들러
     this->handler.protocol.bind(&context::handle_emotion);          // 감정표현 핸들러
     this->handler.protocol.bind(&context::handle_update_map);       // 맵 데이터 업데이트 핸들러
     this->handler.protocol.bind(&context::handle_update_screen);    // 새로고침 핸들러
@@ -493,7 +494,7 @@ void context::init_achievements(const std::vector<fb::protocol::internal::Achiev
 
 std::shared_ptr<fb::game::character> context::handle_accepted(fb::socket<character>& socket)
 {
-    return std::make_shared<character>(*this, socket);
+    return this->make<character>(socket);
 }
 
 async::task<void> context::send(object&                     object,
@@ -714,4 +715,34 @@ async::task<void> context::broadcast(const std::string& message, MESSAGE_TYPE ty
 void context::on_broadcast(const internal_resp::Broadcast& resp)
 {
     std::ignore = this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type), BROADCAST_TYPE::WORLD);
+}
+
+void context::rezen_force()
+{
+    for (int i = 0; i < this->threads.count(); i++)
+    {
+        auto thread = this->threads.at(i);
+        std::ignore = thread->dispatch([](auto& thread) -> async::task<void> {
+            auto params = thread.template data<thread_params>();
+            for (auto& rezen : params->rezens)
+            {
+                rezen.force_spawn(thread.id());
+            }
+            co_return;
+        });
+    }
+}
+
+void context::rezen_force(const fb::game::map& map)
+{
+    auto thread = map.thread();
+    std::ignore = thread->dispatch([map_id = map.model.id](auto& thread) -> async::task<void> {
+        auto params = thread.template data<thread_params>();
+        for (auto& rezen : params->rezens)
+        {
+            if (rezen.model.parent == map_id)
+                rezen.force_spawn(thread.id());
+        }
+        co_return;
+    });
 }

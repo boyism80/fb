@@ -14,12 +14,26 @@ public:
     static constexpr uint8_t header = 0x30;
 
 public:
+#ifndef BOT
     SWAP_TYPE type;
     uint8_t   src;
     uint8_t   dst;
+#else
+    const SWAP_TYPE type;
+    const uint8_t   src;
+    const uint8_t   dst;
+#endif
 
 public:
+#ifndef BOT
     swap() = default;
+#else
+    swap(const SWAP_TYPE type, const uint8_t src, const uint8_t dst) :
+        type(type),
+        src(src),
+        dst(dst)
+    { }
+#endif
 
 public:
 #ifdef BOT

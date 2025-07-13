@@ -29,6 +29,7 @@
 
 #include <fb/game/life.h>
 #include <fb/game/item.h>
+#include <async/task.h>
 
 using namespace std::chrono_literals;
 
@@ -58,9 +59,11 @@ class rezen
 {
 private:
     fb::game::context&                 _context;
-    const fb::model::mob_spawn&        _model;
     uint16_t                           _count = 0;
     std::optional<fb::model::datetime> _respawn_time;
+
+public:
+    const fb::model::mob_spawn& model;
 
 public:
     /**
@@ -95,8 +98,22 @@ public:
      *             the specified thread.
      *
      * @param[in]  thread_id  The thread identifier responsible for this spawn point.
+     *
+     * @return     Async task that completes when the spawn operation is finished.
      */
-    void spawn(std::thread::id thread_id);
+    [[nodiscard]] async::task<void> spawn(std::thread::id thread_id);
+
+    /**
+     * @brief      Forces a mob spawn regardless of normal spawn conditions.
+     *
+     *             This method bypasses the normal spawn restrictions and immediately
+     *             spawns mobs at this spawn point. Useful for special events,
+     *             GM commands, or scripted scenarios that need to override normal
+     *             spawn logic.
+     *
+     * @param[in]  thread_id  The thread identifier responsible for this spawn point.
+     */
+    void force_spawn(std::thread::id thread_id);
 };
 
 /**

@@ -30,6 +30,12 @@ thread_container::~thread_container()
             this->deletor(thread->_data);
         }
     }
+
+    for (auto& [id, thread] : this->_thread_container)
+    {
+        thread->exit();
+        thread->join();
+    }
 }
 
 thread* thread_container::at(uint8_t index) const

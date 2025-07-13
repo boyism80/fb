@@ -15,179 +15,55 @@ namespace fb::bot::integration {
 class skill_test : public bot_integration_test
 {
 private:
-    // Spell learning tracking
-    bool    _waiting_for_spell_update{false};
-    uint8_t _spell_learned_index{0};
+    using super = bot_integration_test;
 
+private:
     // Test function queue management
-    using test_function =
-        std::function<async::task<bool>(std::vector<std::shared_ptr<fb::bot::game_bot>>&, std::chrono::milliseconds)>;
+    using test_function = std::function<async::task<bool>(std::vector<std::shared_ptr<fb::bot::game_bot>>&)>;
     std::vector<std::pair<std::string, test_function>> _test_functions;
 
     static constexpr int SPELL_CAST_COUNT = 10;
+
+protected:
+    generator<scenario_t> on_generate_scenario() override final;
+    async::task<void>     on_initialize(game_bot_controller& controller) override final;
+    async::task<void>     on_scenario_started(uint32_t scenario_index) override final;
+    async::task<void>     on_scenario_finished(uint32_t scenario_index) override final;
+    async::task<void>     on_parallel_scenario_started(uint32_t id) override final;
+    async::task<void>     on_parallel_scenario_finished(uint32_t id) override final;
 
 public:
     /**
      * @brief      Constructs a new skill test with controller reference.
      *
-     *             Initializes the skill test and registers hooks for specific
-     *             protocol types to enable event-driven test execution.
+     *             Initializes the skill test with 5 bots and registers common hooks.
      *
      * @param[in]  controller  Reference to the parent game bot controller.
      */
     skill_test(game_bot_controller& controller);
-    /**
-     * @brief      Initializes the skill test and spawns required bots.
-     *
-     *             Spawns 1 bot for skill testing and waits for it to connect.
-     *
-     * @param[in]  controller  The game bot controller to use for spawning bots.
-     *
-     * @return     A task that completes when initialization is finished.
-     */
-    async::task<void> initialize(game_bot_controller& controller);
-
-    /**
-     * @brief      Executes the skill test.
-     *
-     *             Tests various skill functionalities by spawning monsters and
-     *             having the bot use skills against them.
-     *
-     * @return     A task that completes when skill test finishes, returning true on success.
-     */
-    async::task<bool> execute();
-
-    /**
-     * @brief      Resets the skill test state to initial conditions.
-     */
-    void reset() override;
 
     /**
      * @brief      Gets the test name.
      *
      * @return     "Skill Test" as the identifier.
      */
-    std::string name() const
-    {
-        return "Skill Test";
-    }
-
-    /**
-     * @brief      Checks if all spawned bots are ready for skill test.
-     *
-     *             Skill test requires all bots to have received their oid IDs
-     *             and be in proper spell-casting ready state before starting.
-     *
-     * @return     True if all spawned bots are ready for skill test, false otherwise.
-     */
-    bool is_ready() const override;
-
-    /**
-     * @brief      Called when a bot connects to the skill test.
-     *
-     *             Stores the connected bot for skill testing and sets up protocol handlers.
-     *
-     * @param[in]  bot  The connected bot to store for testing.
-     */
-    void on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot) override;
-
-    /**
-     * @brief      Handles spell_update response from the server.
-     *
-     *             Called when a bot receives a spell_update packet after learning a spell.
-     *             Stores the spell index for subsequent spell casting.
-     *
-     * @param[in]  bot    The bot that received the spell_update.
-     * @param[in]  index  The index of the newly learned spell.
-     */
-    void on_spell_update_received(std::shared_ptr<fb::bot::game_bot> bot, uint8_t index);
-
-    /**
-     * @brief      Called when a bot receives an object ID response.
-     *
-     *             Checks if all bots are ready and starts the test if conditions are met.
-     *
-     * @param[in]  bot       The bot that received the object ID.
-     * @param[in]  response  The object ID response containing the new ID.
-     *
-     * @return     An async task that completes when hook processing is finished.
-     */
-    async::task<void> on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response);
-
-    /**
-     * @brief      Called when a bot receives a position response.
-     *
-     * @param[in]  bot       The bot that received the position.
-     * @param[in]  response  The position response containing the new position.
-     *
-     * @return     An async task that completes when hook processing is finished.
-     */
-    async::task<void> on_hook_position(fb::bot::game_bot& bot, const fb::protocol::game::response::position& response);
-
-    /**
-     * @brief      Tests teleport spells (출두, 소환) with map movement scenarios.
-     *
-     * @param[in]  bots     The bot instances to use for testing.
-     * @param[in]  timeout  The timeout for each test operation.
-     *
-     * @return     An async task that completes when teleport testing is finished.
-     */
-    async::task<bool> test_teleport_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                           std::chrono::milliseconds                        timeout);
-
-    /**
-     * @brief      Tests disguise spells (경수, 맹수, 야수, 금수) with all available monster transformations.
-     *
-     * @param[in]  bots     The bot instances to use for testing.
-     * @param[in]  timeout  The timeout for each test operation.
-     *
-     * @return     An async task that completes when disguise testing is finished.
-     */
-    async::task<bool> test_disguise_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                           std::chrono::milliseconds                        timeout);
-
-    /**
-     * @brief      Tests shout spells (사자후전사, 사자후도사, 사자후술사, 사자후도적) with message input and SHOUT
-     * verification.
-     *
-     * @param[in]  bots     The bot instances to use for testing.
-     * @param[in]  timeout  The timeout for each test operation.
-     *
-     * @return     An async task that completes when shout testing is finished.
-     */
-    async::task<bool> test_shout_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                        std::chrono::milliseconds                        timeout);
-
-    /**
-     * @brief      Tests loot spell (노획) with item and money pickup scenarios.
-     *
-     * @param[in]  bots     The bot instances to use for testing.
-     * @param[in]  timeout  The timeout for each test operation.
-     *
-     * @return     An async task that completes when loot testing is finished.
-     */
-    async::task<bool> test_loot_spell(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                      std::chrono::milliseconds                        timeout);
+    std::string name() const override final;
 
 private:
     /**
-     * @brief      Initializes the test function queue with all test functions.
+     * @brief      Executes the main skill test scenario.
      *
-     *             Registers all test functions in the order they should be executed.
+     *             This method orchestrates the complete skill testing sequence,
+     *             including all spell categories and their respective test cases.
+     *             It manages bot coordination and ensures proper test execution order.
+     *
+     * @return     A task that completes with true if all skill tests passed, false otherwise.
+     *
+     * @note       This is the primary entry point for skill testing execution
      */
-    void initialize_test_functions();
+    async::task<bool> scenario_1();
 
-    /**
-     * @brief      Executes all registered test functions in sequence.
-     *
-     * @param[in]  bots     The list of bots to use for testing.
-     * @param[in]  timeout  The timeout for each test operation.
-     *
-     * @return     A task that completes when all test functions finish.
-     */
-    async::task<bool> execute_test_functions(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                             std::chrono::milliseconds                        timeout);
-
+private:
     /**
      * @brief      Tests healing spells with comprehensive spell coverage.
      *
@@ -196,34 +72,136 @@ private:
      *             - Dynamic healing spell (백호의희원)
      *             - Group healing spell (백호의희원'첨)
      *
-     * @param[in]  bots     The list of bots to use for testing.
-     * @param[in]  timeout  The timeout for each spell operation.
+     * @param[in]  caster   The bot casting the healing spells.
      *
      * @return     A task that completes when all healing spell tests finish.
      */
-    async::task<bool> test_healing_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                          std::chrono::milliseconds                        timeout);
+    async::task<bool> test_healing_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
-    async::task<bool> test_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                         std::chrono::milliseconds                        timeout);
+    /**
+     * @brief      Tests damage spells with target-based damage calculation.
+     *
+     *             Performs damage spell tests including various target-based
+     *             damage spells with proper damage calculation and verification.
+     *
+     * @param[in]  caster   The bot casting the damage spells.
+     *
+     * @return     A task that completes when all damage spell tests finish.
+     */
+    async::task<bool> test_damage_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
-    async::task<bool> test_near_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                              std::chrono::milliseconds                        timeout);
+    /**
+     * @brief      Tests near damage spells with area-based damage calculation.
+     *
+     *             Performs near damage spell tests including area-based
+     *             damage spells that affect nearby targets.
+     *
+     * @param[in]  caster   The bot casting the near damage spells.
+     *
+     * @return     A task that completes when all near damage spell tests finish.
+     */
+    async::task<bool> test_near_damage_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
-    async::task<bool> test_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                              std::chrono::milliseconds                        timeout);
+    /**
+     * @brief      Tests attack-cast spells with dynamic effect calculation.
+     *
+     *             Performs attack-cast spell tests including spells that
+     *             combine attack mechanics with spell casting effects.
+     *
+     * @param[in]  caster   The bot casting the attack-cast spells.
+     *
+     * @return     A task that completes when all attack-cast spell tests finish.
+     */
+    async::task<bool> test_attack_cast_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
-    async::task<bool> test_near_target_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                     std::chrono::milliseconds                        timeout);
+    /**
+     * @brief      Tests near target damage spells with proximity-based targeting.
+     *
+     *             Performs near target damage spell tests including spells that
+     *             target nearby enemies with damage effects.
+     *
+     * @param[in]  caster   The bot casting the near target damage spells.
+     *
+     * @return     A task that completes when all near target damage spell tests finish.
+     */
+    async::task<bool> test_near_target_damage_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
-    async::task<bool> test_area_damage_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                              std::chrono::milliseconds                        timeout);
+    /**
+     * @brief      Tests area damage spells with wide-range effect calculation.
+     *
+     *             Performs area damage spell tests including spells that
+     *             affect multiple targets in a wide area.
+     *
+     * @param[in]  caster   The bot casting the area damage spells.
+     *
+     * @return     A task that completes when all area damage spell tests finish.
+     */
+    async::task<bool> test_area_damage_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
-    async::task<bool> test_buff_debuff_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                              std::chrono::milliseconds                        timeout);
+    /**
+     * @brief      Tests buff and debuff spells with status effect verification.
+     *
+     *             Performs buff and debuff spell tests including spells that
+     *             apply positive or negative status effects to targets.
+     *
+     * @param[in]  caster   The bot casting the buff/debuff spells.
+     * @param[in]  target   The target bot for buff/debuff spell tests.
+     *
+     * @return     A task that completes when all buff/debuff spell tests finish.
+     */
+    async::task<bool> test_buff_debuff_spells(std::shared_ptr<fb::bot::game_bot> caster,
+                                              std::shared_ptr<fb::bot::game_bot> target);
 
-    async::task<bool> test_multi_target_attack_cast_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                           std::chrono::milliseconds                        timeout);
+    /**
+     * @brief      Tests multi-target attack-cast spells with complex effect calculation.
+     *
+     *             Performs multi-target attack-cast spell tests including spells that
+     *             affect multiple targets with combined attack and spell effects.
+     *
+     * @param[in]  caster   The bot casting the multi-target attack-cast spells.
+     *
+     * @return     A task that completes when all multi-target attack-cast spell tests finish.
+     */
+    async::task<bool> test_multi_target_attack_cast_spells(std::shared_ptr<fb::bot::game_bot> caster);
+
+    /**
+     * @brief      Tests teleport spells (출두, 소환) with map movement scenarios.
+     *
+     * @param[in]  caster   The bot casting the teleport spells.
+     * @param[in]  target   The target bot for teleport spell tests.
+     *
+     * @return     An async task that completes when teleport testing is finished.
+     */
+    async::task<bool> test_teleport_spells(std::shared_ptr<fb::bot::game_bot> caster,
+                                           std::shared_ptr<fb::bot::game_bot> target);
+
+    /**
+     * @brief      Tests disguise spells (경수, 맹수, 야수, 금수) with all available monster transformations.
+     *
+     * @param[in]  caster   The bot casting the disguise spells.
+     *
+     * @return     An async task that completes when disguise testing is finished.
+     */
+    async::task<bool> test_disguise_spells(std::shared_ptr<fb::bot::game_bot> caster);
+
+    /**
+     * @brief      Tests shout spells (사자후전사, 사자후도사, 사자후술사, 사자후도적) with message input and SHOUT
+     * verification.
+     *
+     * @param[in]  caster   The bot casting the shout spells.
+     *
+     * @return     An async task that completes when shout testing is finished.
+     */
+    async::task<bool> test_shout_spells(std::shared_ptr<fb::bot::game_bot> caster);
+
+    /**
+     * @brief      Tests loot spell (노획) with item and money loot scenarios.
+     *
+     * @param[in]  caster   The bot casting the loot spell.
+     *
+     * @return     An async task that completes when loot testing is finished.
+     */
+    async::task<bool> test_loot_spell(std::shared_ptr<fb::bot::game_bot> caster);
 
     /**
      * @brief      Tests group healing spells with comprehensive group management.
@@ -234,13 +212,11 @@ private:
      *             - Fixed-value group healing (신령의기원'첨)
      *             - Group cleanup after testing
      *
-     * @param[in]  bots     The list of bots to use for testing.
-     * @param[in]  timeout  The timeout for each spell operation.
+     * @param[in]  caster   The bot casting the group healing spells.
      *
      * @return     A task that completes when all group healing spell tests finish.
      */
-    async::task<bool> test_group_healing_spells(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                std::chrono::milliseconds                        timeout);
+    async::task<bool> test_group_healing_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
     /**
      * @brief      Forms a group with all provided bots.
@@ -248,28 +224,10 @@ private:
      *             The first bot becomes the group leader and invites all other bots.
      *
      * @param[in]  bots     The list of bots to form into a group.
-     * @param[in]  timeout  The timeout for group formation operations.
      *
      * @return     A task that completes when group formation is finished.
      */
-    async::task<void> form_group(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                 std::chrono::milliseconds                        timeout);
-
-    /**
-     * @brief      Prepares all bots for group healing test by setting appropriate HP levels.
-     *
-     *             Sets bots to low HP values to ensure visible healing effects.
-     *             Adjusts HP based on expected healing amount to prevent overflow.
-     *
-     * @param[in]  bots              The list of bots to prepare.
-     * @param[in]  expected_hp_gain  The expected HP gain from the group healing spell.
-     * @param[in]  timeout           The timeout for HP adjustment operations.
-     *
-     * @return     A task that completes when all bots are prepared.
-     */
-    async::task<void> prepare_bots_for_group_healing(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                     int                                              expected_hp_gain,
-                                                     std::chrono::milliseconds                        timeout);
+    async::task<void> form_group();
 
     /**
      * @brief      Verifies that group healing effects were applied correctly to all group members.
@@ -280,20 +238,16 @@ private:
      *
      * @return     A task that completes when verification is finished.
      */
-    async::task<void> verify_group_healing_effects(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                                   const std::vector<int>&                          before_hp_values,
-                                                   int                                              expected_hp_gain);
+    async::task<bool> verify_group_healing_effects(const std::vector<int>& before_hp_values, int expected_hp_gain);
 
     /**
      * @brief      Cleans up group formation by removing all bots from the group.
      *
      * @param[in]  bots     The list of bots to remove from the group.
-     * @param[in]  timeout  The timeout for group cleanup operations.
      *
      * @return     A task that completes when group cleanup is finished.
      */
-    async::task<void> cleanup_group(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots,
-                                    std::chrono::milliseconds                        timeout);
+    async::task<void> cleanup_group();
 
     /**
      * @brief      Tests the 출두 (teleport to target) spell.
@@ -304,15 +258,13 @@ private:
      * @param[in]  target           The target bot to teleport to.
      * @param[in]  spell_slot       The spell slot index.
      * @param[in]  expected_mp_cost The expected MP cost for the spell.
-     * @param[in]  timeout          The timeout for spell operations.
      *
      * @return     A task that completes when 출두 test is finished.
      */
     async::task<void> test_chuldu_spell(std::shared_ptr<fb::bot::game_bot> caster,
                                         std::shared_ptr<fb::bot::game_bot> target,
                                         uint8_t                            spell_slot,
-                                        int                                expected_mp_cost,
-                                        std::chrono::milliseconds          timeout);
+                                        int                                expected_mp_cost);
 
     /**
      * @brief      Tests the 소환 (summon target) spell.
@@ -323,15 +275,13 @@ private:
      * @param[in]  target           The target bot to summon.
      * @param[in]  spell_slot       The spell slot index.
      * @param[in]  expected_mp_cost The expected MP cost for the spell.
-     * @param[in]  timeout          The timeout for spell operations.
      *
      * @return     A task that completes when 소환 test is finished.
      */
     async::task<void> test_sohwan_spell(std::shared_ptr<fb::bot::game_bot> caster,
                                         std::shared_ptr<fb::bot::game_bot> target,
                                         uint8_t                            spell_slot,
-                                        int                                expected_mp_cost,
-                                        std::chrono::milliseconds          timeout);
+                                        int                                expected_mp_cost);
 
     /**
      * @brief      Structure for healing spell test data
@@ -408,16 +358,6 @@ private:
         multi_target_spell_calculator    calculator;      ///< Function to calculate expected HP/MP/position changes
         std::vector<std::pair<int, int>> spawn_positions; ///< Relative positions from caster for monster spawning
         bool                             has_movement;    ///< Whether the spell moves the caster
-    };
-
-    /**
-     * @brief      Structure for spawned monster information
-     */
-    struct spawned_monster_info
-    {
-        uint32_t                   oid;      ///< Monster object ID
-        fb::model::point<uint16_t> position; ///< Monster position
-        uint32_t                   look;     ///< Monster look value
     };
 };
 
