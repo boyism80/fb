@@ -45,11 +45,14 @@ void fb::crypto::crypt(const uint8_t* src, uint8_t* dst, uint32_t size, const ui
 
     for (uint32_t i = 0; i < num_loop; i++)
     {
-        unsigned int* uint_dst = (unsigned int*)current_dst;
-        unsigned int* uint_src = (unsigned int*)current_src;
-        unsigned int* uint_key = (unsigned int*)key + (i % ksize);
+        // Use memcpy to avoid alignment issues
+        uint32_t src_val, dst_val, key_val;
+        std::memcpy(&src_val, current_src, sizeof(uint32_t));
+        std::memcpy(&key_val, key + (i % ksize) * sizeof(uint32_t), sizeof(uint32_t));
 
-        *uint_dst    = *uint_src ^ *uint_key;
+        dst_val = src_val ^ key_val;
+        std::memcpy(current_dst, &dst_val, sizeof(uint32_t));
+
         current_src += sizeof(uint32_t);
         current_dst += sizeof(uint32_t);
     }
@@ -58,9 +61,9 @@ void fb::crypto::crypt(const uint8_t* src, uint8_t* dst, uint32_t size, const ui
     if (unset_size == 0)
         return;
 
-    uint32_t  result     = unset_size - 1;
-    uint32_t* cvtint_key = (unsigned int*)key + (num_loop % ksize);
-    uint32_t  cvtint_val = *cvtint_key;
+    uint32_t result = unset_size - 1;
+    uint32_t cvtint_val;
+    std::memcpy(&cvtint_val, key + (num_loop % ksize) * sizeof(uint32_t), sizeof(uint32_t));
 
     switch (unset_size)
     {
@@ -69,15 +72,26 @@ void fb::crypto::crypt(const uint8_t* src, uint8_t* dst, uint32_t size, const ui
         break;
 
     case 2:
-        result                  = cvtint_val ^ *(unsigned short*)current_src;
-        *(uint16_t*)current_dst = result;
-        break;
+    {
+        uint16_t src_val, dst_val;
+        std::memcpy(&src_val, current_src, sizeof(uint16_t));
+        result  = cvtint_val ^ src_val;
+        dst_val = static_cast<uint16_t>(result);
+        std::memcpy(current_dst, &dst_val, sizeof(uint16_t));
+    }
+    break;
 
     case 3:
-        *(uint16_t*)current_dst = cvtint_val ^ *(unsigned short*)current_src;
-        result                  = current_src[2];
-        current_dst[2]          = result ^ (cvtint_val >> 16);
-        break;
+    {
+        uint16_t src_val, dst_val;
+        std::memcpy(&src_val, current_src, sizeof(uint16_t));
+        dst_val = static_cast<uint16_t>(cvtint_val ^ src_val);
+        std::memcpy(current_dst, &dst_val, sizeof(uint16_t));
+
+        result         = current_src[2];
+        current_dst[2] = result ^ (cvtint_val >> 16);
+    }
+    break;
     }
 }
 
