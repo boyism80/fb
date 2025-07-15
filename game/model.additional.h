@@ -290,16 +290,6 @@ public:                                                                         
         return enum_value::ITEM_ATTRIBUTE::AUXILIARY;                                                          \
     }
 
-#define DECLARE_BOW_EXTENSION                                                                                  \
-                                                                                                               \
-public:                                                                                                        \
-    std::shared_ptr<fb::game::item> make(fb::game::context& context, uint16_t count = 1) const override final; \
-                                                                                                               \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                            \
-    {                                                                                                          \
-        return enum_value::ITEM_ATTRIBUTE::ARROW;                                                              \
-    }
-
 #define DECLARE_NPC_EXTENSION                          \
                                                        \
 public:                                                \

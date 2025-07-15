@@ -422,7 +422,7 @@ async::task<bool> context::handle_item_info(fb::socket<character>& socket, const
     co_return true;
 }
 
-async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const fb_reqs::item_mix& request)
+async::task<bool> context::handle_item_combine(fb::socket<character>& socket, const fb_reqs::item_combine& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -444,33 +444,52 @@ async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const f
 
     auto found = this->model.recipe.find(dsl);
     if (found == nullptr)
+    {
+        ch->message(_TEXT(MESSAGE_NO_RECIPE));
         co_return true;
+    }
 
-    if (found->success.size() - found->source.size() > ch->items.free_size())
+    if (found->success.size() > ch->items.free_size() + found->source.size())
+    {
+        ch->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
         co_return true;
+    }
 
+    // Record items to be removed (without actually removing them yet)
+    auto items_to_remove = std::vector<std::pair<std::shared_ptr<fb::game::item>, uint32_t>>();
     for (auto& x : found->source)
     {
         auto params        = fb::model::dsl::item(x.params);
         auto deleted_count = uint32_t(0);
-        while (deleted_count <= params.count)
+        while (deleted_count < params.count)
         {
             auto item  = ch->items.find(this->model.item[params.id]);
             auto index = ch->items.index(this->model.item[params.id]);
             if (item == nullptr)
-                throw std::runtime_error("no match exception");
+            {
+                throw std::runtime_error(
+                    std::format("user {} try to combine with {} but has no item", ch->name(), params.id));
+            }
 
-            auto count   = item->count();
-            auto deleted = ch->items.remove(item, count);
-            if (deleted != nullptr)
-                std::ignore = deleted->destroy();
-
+            auto count = item->count();
+            items_to_remove.push_back({item, count});
             deleted_count += count;
         }
     }
 
+    // Remove source items (always consumed regardless of success/failure)
+    for (auto& [item, count] : items_to_remove)
+    {
+        auto deleted = ch->items.remove(item, count);
+        if (deleted != nullptr)
+            std::ignore = deleted->destroy();
+    }
+
+    // Calculate success/failure probability
     auto  success = (std::rand() % 100) < found->percent;
     auto& result  = success ? found->success : found->failed;
+
+    // Add result items (success or failure items)
     for (auto& dsl : result)
     {
         auto  params = fb::model::dsl::item(dsl.params);

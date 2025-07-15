@@ -7,26 +7,30 @@ using namespace std::chrono_literals;
 namespace fb::bot::integration {
 
 item_test::item_test(game_bot_controller& controller) :
-    bot_integration_test(controller, 4)
+    bot_integration_test(controller, 33)
 { }
 
 async::task<void> item_test::on_initialize(game_bot_controller& controller)
 {
-    super::on_initialize(controller);
+    // super::on_initialize(controller); // Do not call this
 
     auto bots = this->get_test_bots();
 
-    // Move bots in reverse order to avoid blocking (2→1→0)
-    for (int i = static_cast<int>(bots.size()) - 1; i >= 1; --i)
+    // Position bots in a 2D grid from (5,5) to (15,13)
+    for (int i = 0; i < static_cast<int>(bots.size()); ++i)
     {
-        auto& bot    = bots[i];
-        auto  thread = bot->thread();
+        auto& bot = bots[i];
 
-        // Move bot i steps to the right
-        co_await bot->move(DIRECTION::RIGHT, i, DEFAULT_INTERVAL);
+        // Calculate grid position: bot 0 = (5,5), bot 1 = (6,5), etc.
+        // Grid size: 11x9 (5 to 15 for x, 5 to 13 for y)
+        int grid_x = 5 + (i % 11); // 5 to 15
+        int grid_y = 5 + (i / 11); // 5 to 13
 
-        // Set direction to BOTTOM
-        bot->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
+        // Move bot to calculated position
+        if (bot == bots.back())
+            co_await bot->map_move("낙랑의방", grid_x, grid_y, DEFAULT_TIMEOUT);
+        else
+            std::ignore = bot->map_move("낙랑의방", grid_x, grid_y, DEFAULT_TIMEOUT);
 
         fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM",
                           bot->fd(),
@@ -60,8 +64,8 @@ async::task<void> item_test::on_parallel_scenario_finished(uint32_t id)
     fb::logger::debug("Resetting bot {} state to clean initial conditions", bot->oid());
 
     // Clear all items from inventory
-    bot->chat("/아이템삭제");
-    bot->chat("/아이템초기화");
+    co_await bot->clear_all_drop_items(DEFAULT_TIMEOUT);
+    co_await bot->clear_inventory(DEFAULT_TIMEOUT);
     co_await this->sleep(500ms);
 
     // Reset money to 0
@@ -85,16 +89,19 @@ async::task<void> item_test::on_parallel_scenario_finished(uint32_t id)
 generator<bot_integration_test::scenario_t> item_test::on_generate_scenario()
 {
     auto scenarios = std::vector<std::pair<uint32_t, scenario_t>>{};
-
     for (int i = 0; i < this->bot_count; i++)
     {
         scenarios.push_back({i, [this, i]() -> async::task<bool> {
-                                 co_return co_await this->test_equipment_success(i);
+                                 co_return co_await this->test_equipment(i);
                              }});
+    }
 
-        scenarios.push_back({i, [this, i]() -> async::task<bool> {
-                                 co_return co_await this->test_equipment_failure(i);
-                             }});
+    auto scenarios_item_combine = std::vector<std::pair<uint32_t, scenario_t>>{};
+    for (int i = 0; i < this->bot_count; i++)
+    {
+        scenarios_item_combine.push_back({i, [this, i]() -> async::task<bool> {
+                                              co_return co_await this->test_item_combine(i);
+                                          }});
     }
 
     co_yield [this, scenarios]() -> async::task<bool> {
@@ -103,6 +110,14 @@ generator<bot_integration_test::scenario_t> item_test::on_generate_scenario()
 
     co_yield [this]() -> async::task<bool> {
         co_return co_await this->test_equipment_overflow();
+    };
+
+    co_yield [this, scenarios_item_combine]() -> async::task<bool> {
+        co_return co_await this->parallel_scenarios(scenarios_item_combine);
+    };
+
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_item_combine_failure();
     };
 
     co_return;

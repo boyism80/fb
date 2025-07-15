@@ -1010,7 +1010,7 @@ public:
      *
      * @return     True if item mixing was processed successfully, false otherwise.
      */
-    [[nodiscard]] async::task<bool> handle_itemmix(fb::socket<fb::game::character>&, const fb_reqs::item_mix&);
+    [[nodiscard]] async::task<bool> handle_item_combine(fb::socket<fb::game::character>&, const fb_reqs::item_combine&);
 
     /**
      * @brief      Handles player trade request packet.

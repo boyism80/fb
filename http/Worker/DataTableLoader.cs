@@ -55,9 +55,6 @@ namespace Http.Worker
                     case ItemType.Auxiliary:
                         return token.ToObject<Auxiliary>();
 
-                    case ItemType.Bow:
-                        return token.ToObject<Bow>();
-
                     case ItemType.Package:
                         return token.ToObject<Pack>();
 

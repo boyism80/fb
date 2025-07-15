@@ -16,7 +16,7 @@ drop_loot_test::drop_loot_test(game_bot_controller& controller) :
 
 async::task<void> drop_loot_test::on_initialize(game_bot_controller& controller)
 {
-    super::on_initialize(controller);
+    co_await super::on_initialize(controller);
 
     auto bots = this->get_test_bots();
     if (bots.size() < 2)

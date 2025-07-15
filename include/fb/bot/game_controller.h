@@ -93,6 +93,16 @@ private:
     async::task<void> handle_time(game_bot& bot, const fb::protocol::game::response::time& response);
 
     /**
+     * @brief      Handles map configuration from the server.
+     *
+     * @param[in]  bot       The game bot instance.
+     * @param[in]  response  The map config response.
+     *
+     * @return     An async task that completes when map processing is finished.
+     */
+    async::task<void> handle_map_config(game_bot& bot, const fb::protocol::game::response::map_config& response);
+
+    /**
      * @brief      Handles character state updates from the server.
      *
      * @param[in]  bot       The game bot instance.

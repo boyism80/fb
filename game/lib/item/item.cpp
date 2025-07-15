@@ -6,7 +6,7 @@ using namespace fb::game;
 item::item(fb::game::context& context, const fb::model::item& model, const initial_params& params) :
     object(context, model, params),
     listener(context.listener),
-    _count(params.count)
+    _count(std::clamp<uint16_t>(params.count, 1, model.capacity))
 { }
 
 item::item(const item& right) :

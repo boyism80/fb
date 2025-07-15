@@ -87,6 +87,7 @@ private:
     datetime                    _next_action_time; ///< Timestamp for the next scheduled action
 
     // Basic bot state
+    uint16_t        _map = 0xFFFF;                  ///< Current map ID
     uint32_t        _oid = 0;                       ///< Object ID for protocol messages
     point<uint16_t> _position;                      ///< Current position of the bot in the game world
     fb::stream      _transfer_buffer;               ///< Buffer for handling server transfers
@@ -193,6 +194,9 @@ public:
     // Game state accessors
     uint32_t oid() const;
     void     set_oid(uint32_t value);
+
+    uint16_t map() const;
+    void     set_map(uint16_t value);
 
     point<uint16_t> position() const;
     void            set_position(const point<uint16_t>& value);
@@ -643,6 +647,9 @@ public:
      * @return     An async task that completes when stats change is finished.
      */
     async::task<void> change_stats(uint8_t str, uint8_t dex, uint8_t intelligence, std::chrono::milliseconds timeout);
+    async::task<void> change_str(uint8_t str, std::chrono::milliseconds timeout);
+    async::task<void> change_dex(uint8_t dex, std::chrono::milliseconds timeout);
+    async::task<void> change_int(uint8_t intelligence, std::chrono::milliseconds timeout);
 
     /**
      * @brief      Change the bot's sex using the '/성별바꾸기' command.
@@ -1105,7 +1112,16 @@ public:
      *
      * @return     An async task that completes when the items are removed
      */
-    async::task<void> clear_all_items(std::chrono::milliseconds timeout);
+    async::task<void> clear_all_drop_items(std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Clears all items from the inventory
+     *
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that completes when the items are removed
+     */
+    async::task<void> clear_inventory(std::chrono::milliseconds timeout);
 
     /**
      * @brief      Moves a bot back to its original position after movement spells
@@ -1119,6 +1135,11 @@ public:
     async::task<void> move_bot_back_to_position(const fb::model::point<uint16_t>& original_position,
                                                 std::chrono::milliseconds         interval,
                                                 std::chrono::milliseconds         timeout);
+
+    async::task<void> reverse_condition(const std::vector<fb::model::dsl>& conditions,
+                                        std::chrono::milliseconds          timeout);
+
+    async::task<void> apply_condition(const std::vector<fb::model::dsl>& conditions, std::chrono::milliseconds timeout);
 };
 
 } // namespace fb::bot

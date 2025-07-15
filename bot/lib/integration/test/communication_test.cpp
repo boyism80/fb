@@ -12,7 +12,7 @@ communication_test::communication_test(game_bot_controller& controller) :
 
 async::task<void> communication_test::on_initialize(game_bot_controller& controller)
 {
-    super::on_initialize(controller);
+    co_await super::on_initialize(controller);
 
     auto  bots = this->get_test_bots();
     auto& bot1 = bots[0];
