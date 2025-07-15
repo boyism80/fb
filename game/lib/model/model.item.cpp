@@ -231,8 +231,3 @@ std::shared_ptr<fb::game::item> fb::model::auxiliary::make(fb::game::context& co
 {
     return context.make<fb::game::auxiliary>(*this);
 }
-
-std::shared_ptr<fb::game::item> fb::model::bow::make(fb::game::context& context, uint16_t count) const
-{
-    return context.make<fb::game::bow>(*this);
-}

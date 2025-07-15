@@ -7,7 +7,7 @@ using namespace std::chrono_literals;
 namespace fb::bot::integration {
 
 item_test::item_test(game_bot_controller& controller) :
-    bot_integration_test(controller, 8)
+    bot_integration_test(controller, 99)
 { }
 
 async::task<void> item_test::on_initialize(game_bot_controller& controller)
@@ -16,17 +16,21 @@ async::task<void> item_test::on_initialize(game_bot_controller& controller)
 
     auto bots = this->get_test_bots();
 
-    // Move bots in reverse order to avoid blocking (2→1→0)
-    for (int i = static_cast<int>(bots.size()) - 1; i >= 1; --i)
+    // Position bots in a 2D grid from (5,5) to (15,13)
+    for (int i = 0; i < static_cast<int>(bots.size()); ++i)
     {
-        auto& bot    = bots[i];
-        auto  thread = bot->thread();
+        auto& bot = bots[i];
 
-        // Move bot i steps to the right
-        co_await bot->move(DIRECTION::RIGHT, i, DEFAULT_INTERVAL);
+        // Calculate grid position: bot 0 = (5,5), bot 1 = (6,5), etc.
+        // Grid size: 11x9 (5 to 15 for x, 5 to 13 for y)
+        int grid_x = 5 + (i % 11); // 5 to 15
+        int grid_y = 5 + (i / 11); // 5 to 13
 
-        // Set direction to BOTTOM
-        bot->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
+        // Move bot to calculated position
+        if (bot == bots.back())
+            co_await bot->map_move("낙랑의방", grid_x, grid_y, DEFAULT_TIMEOUT);
+        else
+            std::ignore = bot->map_move("낙랑의방", grid_x, grid_y, DEFAULT_TIMEOUT);
 
         fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM",
                           bot->fd(),
@@ -88,11 +92,7 @@ generator<bot_integration_test::scenario_t> item_test::on_generate_scenario()
     for (int i = 0; i < this->bot_count; i++)
     {
         scenarios.push_back({i, [this, i]() -> async::task<bool> {
-                                 co_return co_await this->test_equipment_success(i);
-                             }});
-
-        scenarios.push_back({i, [this, i]() -> async::task<bool> {
-                                 co_return co_await this->test_equipment_failure(i);
+                                 co_return co_await this->test_equipment(i);
                              }});
     }
 

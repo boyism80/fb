@@ -44,6 +44,16 @@ void game_bot::set_oid(uint32_t value)
     this->_oid = value;
 }
 
+uint16_t game_bot::map() const
+{
+    return this->_map;
+}
+
+void game_bot::set_map(uint16_t value)
+{
+    this->_map = value;
+}
+
 point<uint16_t> game_bot::position() const
 {
     return this->_position;
@@ -450,11 +460,30 @@ async::task<void>
 game_bot::map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/맵이동 {} {} {}", map_name, x, y);
-    std::ignore  = co_await this->request<fb::protocol::game::response::position>(
-        fb::protocol::game::request::chat{false, command},
-        timeout);
-    this->chat(std::format("Position: {} {}", this->_position.x, this->_position.y));
-    co_return;
+    auto map     = this->controller.container.model.map.name2map(map_name);
+    if (this->_map == map->id && this->_position == fb::model::point<uint16_t>{x, y})
+    {
+        co_return;
+    }
+    else if (this->_map != map->id)
+    {
+        std::ignore = co_await this->request<fb::protocol::game::response::map_config>(
+            fb::protocol::game::request::chat{false, command},
+            [map](auto& resp) -> bool {
+                return resp.id == map->id;
+            },
+            timeout);
+        co_return;
+    }
+    else
+    {
+        std::ignore = co_await this->request<fb::protocol::game::response::position>(
+            fb::protocol::game::request::chat{false, command},
+            [x, y](auto& resp) -> bool {
+                return resp.abs.x == x && resp.abs.y == y;
+            },
+            timeout);
+    }
 }
 
 async::task<void> game_bot::change_level(uint8_t level, std::chrono::milliseconds timeout)
@@ -476,6 +505,39 @@ game_bot::change_stats(uint8_t str, uint8_t dex, uint8_t intelligence, std::chro
         fb::protocol::game::request::chat{false, command},
         [str, dex, intelligence](auto& resp) -> bool {
             return resp.ch_strength == str && resp.ch_dexterity == dex && resp.ch_intelligence == intelligence;
+        },
+        timeout);
+}
+
+async::task<void> game_bot::change_str(uint8_t str, std::chrono::milliseconds timeout)
+{
+    auto command = std::format("/힘바꾸기 {}", str);
+    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, command},
+        [str](auto& resp) -> bool {
+            return resp.ch_strength == str;
+        },
+        timeout);
+}
+
+async::task<void> game_bot::change_dex(uint8_t dex, std::chrono::milliseconds timeout)
+{
+    auto command = std::format("/민첩바꾸기 {}", dex);
+    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, command},
+        [dex](auto& resp) -> bool {
+            return resp.ch_dexterity == dex;
+        },
+        timeout);
+}
+
+async::task<void> game_bot::change_int(uint8_t intelligence, std::chrono::milliseconds timeout)
+{
+    auto command = std::format("/지력바꾸기 {}", intelligence);
+    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
+        fb::protocol::game::request::chat{false, command},
+        [intelligence](auto& resp) -> bool {
+            return resp.ch_intelligence == intelligence;
         },
         timeout);
 }
@@ -802,10 +864,12 @@ async::task<void> game_bot::drop_money(uint32_t amount, std::chrono::millisecond
 async::task<bool> game_bot::equip(uint8_t slot, const std::string& item_name, std::chrono::milliseconds timeout)
 {
     static const auto prefix_map = std::unordered_map<fb::model::enum_value::ITEM_TYPE, std::string>{
-        {fb::model::enum_value::ITEM_TYPE::WEAPON, "w:무기  :"},
-        {fb::model::enum_value::ITEM_TYPE::ARMOR,  "a:갑옷  :"},
-        {fb::model::enum_value::ITEM_TYPE::SHIELD, "s:방패  :"},
-        {fb::model::enum_value::ITEM_TYPE::HELMET, "h:머리  :"}
+        {ITEM_TYPE::WEAPON,    "w:무기  :" },
+        {ITEM_TYPE::ARMOR,     "a:갑옷  :" },
+        {ITEM_TYPE::SHIELD,    "s:방패  :" },
+        {ITEM_TYPE::HELMET,    "h:머리  :" },
+        {ITEM_TYPE::RING,      "l:왼손  :" },
+        {ITEM_TYPE::AUXILIARY, "[:보조1  :"}
     };
 
     try
@@ -1210,7 +1274,21 @@ async::task<void> game_bot::clear_all_drop_items(std::chrono::milliseconds timeo
 
 async::task<void> game_bot::clear_inventory(std::chrono::milliseconds timeout)
 {
-    this->send(fb::protocol::game::request::chat{false, "/아이템초기화"});
+    if (this->_items.size() == 0)
+        co_return;
+
+    auto last_slot = uint8_t{0};
+    for (auto& [slot, item] : this->_items)
+    {
+        last_slot = std::max<uint8_t>(last_slot, slot);
+    }
+
+    std::ignore = co_await this->request<fb::protocol::game::response::item_remove>(
+        fb::protocol::game::request::chat{false, "/아이템초기화"},
+        [last_slot](auto& resp) -> bool {
+            return resp.index == last_slot;
+        },
+        timeout);
     co_return;
 }
 
@@ -1233,5 +1311,135 @@ async::task<void> game_bot::move_bot_back_to_position(const fb::model::point<uin
         }
 
         co_await this->direction(DIRECTION::BOTTOM, timeout);
+    }
+}
+
+async::task<void> game_bot::reverse_condition(const std::vector<fb::model::dsl>& conditions,
+                                              std::chrono::milliseconds          timeout)
+{
+    for (auto& condition : conditions)
+    {
+        switch (condition.header)
+        {
+        case fb::model::enum_value::DSL::sex:
+        {
+            auto params = dsl::sex(condition.params);
+            if (params.value == SEX::MAN)
+                co_await this->change_sex(SEX::WOMAN, timeout);
+            else
+                co_await this->change_sex(SEX::MAN, timeout);
+        }
+        break;
+
+        case fb::model::enum_value::DSL::level:
+        {
+            auto params = dsl::level(condition.params);
+            co_await this->change_level(1, timeout);
+        }
+        break;
+
+        case fb::model::enum_value::DSL::strength:
+        case fb::model::enum_value::DSL::intelligence:
+        case fb::model::enum_value::DSL::dexterity:
+        {
+            auto params = dsl::strength(condition.params);
+            co_await this->change_stats(0, 0, 0, timeout);
+        }
+        break;
+
+        case fb::model::enum_value::DSL::class_t:
+        case fb::model::enum_value::DSL::promotion:
+        {
+            co_await this->change_class("평민", timeout);
+        }
+        break;
+
+        default:
+        {
+            fb::logger::warn("Unknown condition: {}", enum_tostring<fb::model::enum_value::DSL>(condition.header));
+        }
+        break;
+        }
+    }
+}
+
+async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& conditions,
+                                            std::chrono::milliseconds          timeout)
+{
+    static auto class_names = std::unordered_map<CLASS, std::unordered_map<uint8_t, std::string>>{
+        {CLASS::WARRIOR, {{0, "전사"}, {1, "검객"}, {2, "검제"}, {3, "검황"}, {4, "검성"}}  },
+        {CLASS::MAGE,    {{0, "주술사"}, {1, "술사"}, {2, "현사"}, {3, "현인"}, {4, "현자"}}},
+        {CLASS::ROGUE,   {{0, "도적"}, {1, "자객"}, {2, "진검"}, {3, "귀검"}, {4, "태성"}}  },
+        {CLASS::POET,    {{0, "도사"}, {1, "도인"}, {2, "명인"}, {3, "진인"}, {4, "진선"}}  }
+    };
+
+    auto required_class     = CLASS::NONE;
+    auto required_promotion = 0;
+
+    for (auto& condition : conditions)
+    {
+        switch (condition.header)
+        {
+        case fb::model::enum_value::DSL::sex:
+        {
+            auto params = dsl::sex(condition.params);
+            co_await this->change_sex(params.value, timeout);
+        }
+        break;
+
+        case fb::model::enum_value::DSL::level:
+        {
+            auto params = dsl::level(condition.params);
+            co_await this->change_level(params.min.value(), timeout);
+        }
+        break;
+
+        case fb::model::enum_value::DSL::strength:
+        {
+            auto params = dsl::strength(condition.params);
+            co_await this->change_str(params.value, timeout);
+        }
+        break;
+
+        case fb::model::enum_value::DSL::intelligence:
+        {
+            auto params = dsl::intelligence(condition.params);
+            co_await this->change_int(params.value, timeout);
+        }
+        break;
+
+        case fb::model::enum_value::DSL::dexterity:
+        {
+            auto params = dsl::dexterity(condition.params);
+            co_await this->change_dex(params.value, timeout);
+        }
+        break;
+
+        case fb::model::enum_value::DSL::class_t:
+        {
+            auto params    = dsl::class_t(condition.params);
+            required_class = params.value;
+        }
+        break;
+
+        case fb::model::enum_value::DSL::promotion:
+        {
+            auto params        = dsl::promotion(condition.params);
+            required_promotion = params.value;
+        }
+        break;
+
+        default:
+        {
+            fb::logger::warn("Unknown condition: {}", enum_tostring<fb::model::enum_value::DSL>(condition.header));
+        }
+        break;
+        }
+    }
+
+    if (required_class != CLASS::NONE)
+    {
+        auto class_name = class_names[required_class][required_promotion];
+        co_await this->change_class(class_name, timeout);
     }
 }

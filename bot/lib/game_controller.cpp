@@ -7,6 +7,7 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     bot_controller<game_bot>(container)
 {
     this->bind(&game_bot_controller::handle_time);
+    this->bind(&game_bot_controller::handle_map_config);
     this->bind(&game_bot_controller::handle_state);
     this->bind(&game_bot_controller::handle_option);
     this->bind(&game_bot_controller::handle_message);
@@ -46,6 +47,13 @@ bool game_bot_controller::decrypt_policy(int cmd) const
 
 async::task<void> game_bot_controller::handle_time(game_bot& bot, const fb::protocol::game::response::time& response)
 {
+    co_return;
+}
+
+async::task<void> game_bot_controller::handle_map_config(game_bot&                                       bot,
+                                                         const fb::protocol::game::response::map_config& response)
+{
+    bot.set_map(response.id);
     co_return;
 }
 

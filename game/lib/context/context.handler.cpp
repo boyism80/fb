@@ -444,10 +444,16 @@ async::task<bool> context::handle_item_combine(fb::socket<character>& socket, co
 
     auto found = this->model.recipe.find(dsl);
     if (found == nullptr)
+    {
+        ch->message(_TEXT(MESSAGE_NO_RECIPE));
         co_return true;
+    }
 
     if (found->success.size() > ch->items.free_size() + found->source.size())
+    {
+        ch->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
         co_return true;
+    }
 
     // Record items to be removed (without actually removing them yet)
     auto items_to_remove = std::vector<std::pair<std::shared_ptr<fb::game::item>, uint32_t>>();
@@ -460,7 +466,10 @@ async::task<bool> context::handle_item_combine(fb::socket<character>& socket, co
             auto item  = ch->items.find(this->model.item[params.id]);
             auto index = ch->items.index(this->model.item[params.id]);
             if (item == nullptr)
-                throw std::runtime_error("no match exception");
+            {
+                throw std::runtime_error(
+                    std::format("user {} try to combine with {} but has no item", ch->name(), params.id));
+            }
 
             auto count = item->count();
             items_to_remove.push_back({item, count});

@@ -80,20 +80,6 @@ private:
      */
     async::task<bool> execute_test_functions(std::vector<std::shared_ptr<fb::bot::game_bot>>& bots);
 
-    // Test function implementations
-    /**
-     * @brief      Tests equipment activation with success scenarios.
-     *
-     *             This function tests the successful equipping of items by characters
-     *             with appropriate stats. It ensures that items can be equipped
-     *             without any issues when the character meets the required conditions.
-     *
-     * @param[in]  index    The index of the test bot to use for equipment testing.
-     *
-     * @return     An async task that completes with true if test passed, false otherwise.
-     */
-    async::task<bool> test_equipment_success(uint32_t index);
-
     /**
      * @brief      Tests equipment activation with failure scenarios.
      *
@@ -105,7 +91,7 @@ private:
      *
      * @return     An async task that completes with true if test passed, false otherwise.
      */
-    async::task<bool> test_equipment_failure(uint32_t index);
+    async::task<bool> test_equipment(uint32_t index);
 
     /**
      * @brief      Tests equipment overflow scenarios.

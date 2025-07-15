@@ -950,35 +950,6 @@ public:
 };
 
 /**
- * @brief      Represents ranged weapon equipment for archery combat.
- *
- *             This class handles bow weapons that enable ranged combat
- *             capabilities. Bows require arrows for ammunition and provide
- *             different combat mechanics compared to melee weapons.
- */
-class bow : public equipment
-{
-public:
-    /**
-     * @brief      Constructs a new instance.
-     *
-     * @param      context  The game context managing this bow
-     * @param[in]  model    The bow model data containing damage and properties
-     */
-    bow(fb::game::context& context, const fb::model::bow& model);
-    /**
-     * @brief      Constructs a new instance.
-     *
-     * @param[in]  right  The source bow to copy from
-     */
-    bow(const bow& right);
-    /**
-     * @brief      Destroys the object.
-     */
-    ~bow();
-};
-
-/**
  * @brief      Container for managing a character's item inventory.
  *
  *             This class extends the inventory template to provide specialized

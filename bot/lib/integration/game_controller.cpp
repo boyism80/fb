@@ -55,8 +55,6 @@ void game_bot_controller::initialize()
             return fb::model::build<fb::model::shield*>(json);
         case ITEM_TYPE::AUXILIARY:
             return fb::model::build<fb::model::auxiliary*>(json);
-        case ITEM_TYPE::BOW:
-            return fb::model::build<fb::model::bow*>(json);
         case ITEM_TYPE::PACKAGE:
             return fb::model::build<fb::model::pack*>(json);
         default:
