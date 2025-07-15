@@ -65,7 +65,7 @@ CREATE TABLE `bulletin` (
   PRIMARY KEY (`id`),
   KEY `fk.bulletin.owner_idx` (`user`),
   CONSTRAINT `fk.bulletin.user` FOREIGN KEY (`user`) REFERENCES `name` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=214 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -101,7 +101,7 @@ CREATE TABLE `clan` (
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -136,7 +136,7 @@ CREATE TABLE `clan_name` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -200,7 +200,7 @@ CREATE TABLE `mail` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`,`user`),
   KEY `IX_UNAME` (`user`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=euckr;
+) ENGINE=InnoDB AUTO_INCREMENT=75 DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -231,7 +231,7 @@ CREATE TABLE `name` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=9442 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -374,28 +374,25 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BULLETIN_DELETE`(IN id INT, IN user INT)
 BEGIN
-    DECLARE _id INT;
-    DECLARE _user INT;
     DECLARE _deleted TINYINT;
-    
-    SELECT `id`,
-           `user`,
-           `deleted`
-    INTO   _id,
-           _user,
-           _deleted
+
+    SELECT `deleted`
+    INTO _deleted
     FROM bulletin
-    WHERE bulletin.`id` = id LIMIT 1;
-    
-    IF _id IS NULL THEN
+    WHERE `bulletin`.`id` = id AND `bulletin`.`user` = user
+    LIMIT 1;
+
+    IF _deleted IS NULL THEN
         SELECT -1 AS result;
     ELSEIF _deleted = 1 THEN
         SELECT -2 AS result;
-    ELSEIF _user != user THEN
-        SELECT -3 AS result;
     ELSE
-        UPDATE `bulletin` SET `deleted` = 1 WHERE `bulletin`.`id` = id;
-        SELECT 1 AS result;
+        UPDATE bulletin SET deleted = 1 WHERE id = id AND user = user;
+        IF ROW_COUNT() > 0 THEN
+            SELECT 1 AS result;
+        ELSE
+            SELECT -4 AS result;
+        END IF;
     END IF;
 END ;;
 DELIMITER ;
@@ -668,4 +665,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-21 18:11:28
+-- Dump completed on 2025-07-15 22:43:53

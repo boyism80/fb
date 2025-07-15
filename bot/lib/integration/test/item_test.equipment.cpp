@@ -36,11 +36,6 @@ async::task<bool> item_test::test_equipment(uint32_t index)
         if (seq++ % this->bot_count != index)
             continue;
 
-        if (item.name == "황금호박선류")
-        {
-            fb::logger::debug("breakpoint");
-        }
-
         bot->chat(std::format("[{}] Try to equip: {} (no condition)", seq, item.name));
         co_await bot->create_item(item.name, 1, DEFAULT_TIMEOUT);
         auto equipped = false;

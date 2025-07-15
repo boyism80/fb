@@ -7,12 +7,12 @@ using namespace std::chrono_literals;
 namespace fb::bot::integration {
 
 item_test::item_test(game_bot_controller& controller) :
-    bot_integration_test(controller, 99)
+    bot_integration_test(controller, 33)
 { }
 
 async::task<void> item_test::on_initialize(game_bot_controller& controller)
 {
-    super::on_initialize(controller);
+    // super::on_initialize(controller); // Do not call this
 
     auto bots = this->get_test_bots();
 
@@ -114,6 +114,10 @@ generator<bot_integration_test::scenario_t> item_test::on_generate_scenario()
 
     co_yield [this, scenarios_item_combine]() -> async::task<bool> {
         co_return co_await this->parallel_scenarios(scenarios_item_combine);
+    };
+
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_item_combine_failure();
     };
 
     co_return;

@@ -116,6 +116,17 @@ private:
      * @return     An async task that completes with true if test passed, false otherwise.
      */
     async::task<bool> test_item_combine(uint32_t index);
+
+    /**
+     * @brief      Tests item combination failure scenarios.
+     *
+     *             This function tests item combination failure scenarios by creating the required
+     *             materials, performing the combination, and verifying that only
+     *             failure items remain in the inventory.
+     *
+     * @return     An async task that completes with true if test passed, false otherwise.
+     */
+    async::task<bool> test_item_combine_failure();
 };
 
 } // namespace fb::bot::integration
