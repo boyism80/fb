@@ -65,6 +65,9 @@ async::task<bool> item_test::test_equipment_failure(uint32_t index)
         {"현자금봉", "현인의심장", "정화의방패"}
     };
 
+    if (index >= item_sets.size())
+        co_return true;
+
     // Set low stats to ensure failure
     co_await bot->change_level(1, DEFAULT_TIMEOUT);
     co_await bot->change_stats(1, 1, 1, DEFAULT_TIMEOUT);

@@ -155,7 +155,7 @@ async::task<void> context::handle_start()
     this->handler.protocol.bind(&context::handle_option_changed);   // 옵션 설정 핸들러
     this->handler.protocol.bind(&context::handle_click_object);     // 오브젝트 클릭 핸들러
     this->handler.protocol.bind(&context::handle_item_info);        // 인벤토리 우클릭 핸들러
-    this->handler.protocol.bind(&context::handle_itemmix);          // 아이템 조합 핸들러
+    this->handler.protocol.bind(&context::handle_item_combine);     // 아이템 조합 핸들러
     this->handler.protocol.bind(&context::handle_trade);            // 교환 핸들러
     this->handler.protocol.bind(&context::handle_group);            // 그룹 핸들러
     this->handler.protocol.bind(&context::handle_user_list);        // 유저 리스트 핸들러

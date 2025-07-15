@@ -1105,7 +1105,16 @@ public:
      *
      * @return     An async task that completes when the items are removed
      */
-    async::task<void> clear_all_items(std::chrono::milliseconds timeout);
+    async::task<void> clear_all_drop_items(std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Clears all items from the inventory
+     *
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that completes when the items are removed
+     */
+    async::task<void> clear_inventory(std::chrono::milliseconds timeout);
 
     /**
      * @brief      Moves a bot back to its original position after movement spells

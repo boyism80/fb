@@ -117,6 +117,19 @@ private:
      * @return     An async task that completes with true if test passed, false otherwise.
      */
     async::task<bool> test_equipment_overflow();
+
+    /**
+     * @brief      Tests item combination scenarios.
+     *
+     *             This function tests item combination scenarios by creating the required
+     *             materials, performing the combination, and verifying that only
+     *             success or failure items remain in the inventory.
+     *
+     * @param[in]  index    The index of the test bot to use for item combination testing.
+     *
+     * @return     An async task that completes with true if test passed, false otherwise.
+     */
+    async::task<bool> test_item_combine(uint32_t index);
 };
 
 } // namespace fb::bot::integration

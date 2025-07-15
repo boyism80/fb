@@ -8,16 +8,26 @@ using namespace fb::model::enum_value;
 
 namespace fb::protocol::game::request {
 
-class item_mix : public fb::protocol::header
+class item_combine : public fb::protocol::header
 {
 public:
     static constexpr uint8_t header = 0x6B;
 
 public:
+#ifndef BOT
     std::vector<uint8_t> indices;
+#else
+    const std::vector<uint8_t> indices;
+#endif
 
 public:
-    item_mix() = default;
+#ifndef BOT
+    item_combine() = default;
+#else
+    item_combine(const std::vector<uint8_t>& indices) :
+        indices(indices)
+    { }
+#endif
 
 public:
 #ifdef BOT

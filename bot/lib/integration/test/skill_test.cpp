@@ -56,7 +56,7 @@ async::task<void> skill_test::on_scenario_finished(uint32_t scenario_index)
 
     co_await caster->change_level(5, DEFAULT_TIMEOUT);
     co_await caster->clear_all_spells(DEFAULT_TIMEOUT);
-    co_await caster->clear_all_items(DEFAULT_TIMEOUT);
+    co_await caster->clear_all_drop_items(DEFAULT_TIMEOUT);
     co_await thread->sleep(DEFAULT_INTERVAL);
 
     co_return;
@@ -77,7 +77,7 @@ async::task<void> skill_test::on_parallel_scenario_finished(uint32_t id)
     auto& caster = bots[id];
 
     co_await caster->clear_all_spells(DEFAULT_TIMEOUT);
-    co_await caster->clear_all_items(DEFAULT_TIMEOUT);
+    co_await caster->clear_all_drop_items(DEFAULT_TIMEOUT);
     co_return;
 }
 

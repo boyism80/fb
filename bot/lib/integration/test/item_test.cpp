@@ -7,7 +7,7 @@ using namespace std::chrono_literals;
 namespace fb::bot::integration {
 
 item_test::item_test(game_bot_controller& controller) :
-    bot_integration_test(controller, 4)
+    bot_integration_test(controller, 8)
 { }
 
 async::task<void> item_test::on_initialize(game_bot_controller& controller)
@@ -60,8 +60,8 @@ async::task<void> item_test::on_parallel_scenario_finished(uint32_t id)
     fb::logger::debug("Resetting bot {} state to clean initial conditions", bot->oid());
 
     // Clear all items from inventory
-    bot->chat("/아이템삭제");
-    bot->chat("/아이템초기화");
+    co_await bot->clear_all_drop_items(DEFAULT_TIMEOUT);
+    co_await bot->clear_inventory(DEFAULT_TIMEOUT);
     co_await this->sleep(500ms);
 
     // Reset money to 0
@@ -85,7 +85,6 @@ async::task<void> item_test::on_parallel_scenario_finished(uint32_t id)
 generator<bot_integration_test::scenario_t> item_test::on_generate_scenario()
 {
     auto scenarios = std::vector<std::pair<uint32_t, scenario_t>>{};
-
     for (int i = 0; i < this->bot_count; i++)
     {
         scenarios.push_back({i, [this, i]() -> async::task<bool> {
@@ -97,12 +96,24 @@ generator<bot_integration_test::scenario_t> item_test::on_generate_scenario()
                              }});
     }
 
+    auto scenarios_item_combine = std::vector<std::pair<uint32_t, scenario_t>>{};
+    for (int i = 0; i < this->bot_count; i++)
+    {
+        scenarios_item_combine.push_back({i, [this, i]() -> async::task<bool> {
+                                              co_return co_await this->test_item_combine(i);
+                                          }});
+    }
+
     co_yield [this, scenarios]() -> async::task<bool> {
         co_return co_await this->parallel_scenarios(scenarios);
     };
 
     co_yield [this]() -> async::task<bool> {
         co_return co_await this->test_equipment_overflow();
+    };
+
+    co_yield [this, scenarios_item_combine]() -> async::task<bool> {
+        co_return co_await this->parallel_scenarios(scenarios_item_combine);
     };
 
     co_return;

@@ -1201,10 +1201,16 @@ async::task<void> game_bot::clear_all_spells(std::chrono::milliseconds timeout)
     co_return; // Command should succeed if bot is valid
 }
 
-async::task<void> game_bot::clear_all_items(std::chrono::milliseconds timeout)
+async::task<void> game_bot::clear_all_drop_items(std::chrono::milliseconds timeout)
 {
 
     this->send(fb::protocol::game::request::chat{false, "/아이템삭제"});
+    co_return;
+}
+
+async::task<void> game_bot::clear_inventory(std::chrono::milliseconds timeout)
+{
+    this->send(fb::protocol::game::request::chat{false, "/아이템초기화"});
     co_return;
 }
 
