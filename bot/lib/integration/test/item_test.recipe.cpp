@@ -42,14 +42,20 @@ async::task<bool> item_test::test_item_combine(uint32_t index)
                               boost::algorithm::join(expected_success_items, ", "),
                               boost::algorithm::join(expected_failed_items, ", ")));
 
-        for (int i2 = 0; i2 < recipe.source.size(); i2++)
+        auto slot = 0;
+        for (auto& source : recipe.source)
         {
-            auto& source = recipe.source[i2];
             auto  params = dsl::item(source.params);
             auto& item   = this->controller.container.model.item[params.id];
+            auto  remain = params.count;
 
-            co_await bot->create_item(item.name, params.count, DEFAULT_TIMEOUT);
-            slots.push_back(i2);
+            while (remain > 0)
+            {
+                auto count  = std::min<uint16_t>(item.capacity, remain);
+                remain     -= count;
+                co_await bot->create_item(item.name, count, DEFAULT_TIMEOUT);
+                slots.push_back(slot++);
+            }
         }
 
         auto   success = false;
@@ -65,6 +71,7 @@ async::task<bool> item_test::test_item_combine(uint32_t index)
 
         if (resp.text.find(_TEXT(MESSAGE_NO_RECIPE)) != std::string::npos)
         {
+            fb::logger::fatal("Scenario 3-1: No recipe found");
             bot->chat("Scenario 3-1: No recipe found");
             passed = false;
             continue;
