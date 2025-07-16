@@ -50,7 +50,7 @@ async::task<bool> skill_test::test_healing_spells(std::shared_ptr<fb::bot::game_
     co_await caster->change_hp(50, DEFAULT_TIMEOUT);
 
     // Step 3: Test each healing spell
-    auto spell_slot = 1;
+    auto spell_slot = 0;
     for (const auto& spell : healing_spells)
     {
         fb::logger::debug("Testing spell: {} (HP: +{}, MP: -{})",

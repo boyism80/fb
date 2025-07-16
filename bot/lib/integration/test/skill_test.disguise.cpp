@@ -45,7 +45,6 @@ async::task<bool> skill_test::test_disguise_spells(std::shared_ptr<fb::bot::game
     auto spell_slot = 0;
     for (const auto& spell : disguise_spells)
     {
-        spell_slot++;
         fb::logger::debug("Testing {} spell", spell.spell_name);
 
         // Test each available monster transformation
@@ -89,6 +88,7 @@ async::task<bool> skill_test::test_disguise_spells(std::shared_ptr<fb::bot::game
         }
 
         fb::logger::debug("Completed testing all transformations for {} spell", spell.spell_name);
+        spell_slot++;
     }
 
     fb::logger::debug("Disguise spell testing completed");

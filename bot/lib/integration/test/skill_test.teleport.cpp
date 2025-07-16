@@ -38,7 +38,7 @@ async::task<bool> skill_test::test_teleport_spells(std::shared_ptr<fb::bot::game
     std::ignore = co_await caster->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
     std::ignore = co_await target->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
 
-    uint8_t spell_slot = 1;
+    auto spell_slot = 0;
 
     // Test each teleport spell
     auto begin_position = caster->position();

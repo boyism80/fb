@@ -36,7 +36,6 @@ async::task<bool> item_test::test_equipment(uint32_t index)
         if (seq++ % this->bot_count != index)
             continue;
 
-        bot->chat(std::format("[{}] Try to equip: {} (no condition)", seq, item.name));
         co_await bot->create_item(item.name, 1, DEFAULT_TIMEOUT);
         auto equipped = false;
         try
@@ -50,13 +49,10 @@ async::task<bool> item_test::test_equipment(uint32_t index)
                 }
 
                 equipped = true;
-                bot->chat(std::format("[{}] Equip success: {} (no condition)", seq, item.name));
             }
             else
             {
-                bot->chat(std::format("[{}] Reverse condition for: {}", seq, item.name));
                 co_await bot->reverse_condition(item.condition, DEFAULT_TIMEOUT);
-                bot->chat(std::format("[{}] Try to equip: {} (condition reversed)", seq, item.name));
                 if (co_await bot->equip(0, item.name, DEFAULT_TIMEOUT))
                 {
                     equipped = true;
@@ -64,21 +60,14 @@ async::task<bool> item_test::test_equipment(uint32_t index)
                     throw std::runtime_error(
                         std::format("Scenario 1-2: Unexpectedly succeeded to equip {} with conditions", item.name));
                 }
-                else
-                {
-                    bot->chat(std::format("[{}] Equip failed as expected: {} (condition reversed)", seq, item.name));
-                }
 
-                bot->chat(std::format("[{}] Apply condition for: {}", seq, item.name));
                 co_await bot->apply_condition(item.condition, DEFAULT_TIMEOUT);
-                bot->chat(std::format("[{}] Try to equip: {} (condition applied)", seq, item.name));
                 if (co_await bot->equip(0, item.name, DEFAULT_TIMEOUT) == false)
                 {
                     bot->chat(std::format("[{}] Equip failed: {} (condition applied)", seq, item.name));
                     throw std::runtime_error(std::format("Scenario 1-2: Failed to equip {}", item.name));
                 }
                 equipped = true;
-                bot->chat(std::format("[{}] Equip success: {} (condition applied)", seq, item.name));
 
                 if (equipment_parts.contains(item.type) == false)
                 {
@@ -94,11 +83,9 @@ async::task<bool> item_test::test_equipment(uint32_t index)
             passed = false;
         }
 
-        bot->chat(std::format("[{}] Unequip: {}", seq, item.name));
         if (equipped)
             co_await bot->unequip(equipment_parts[item.type], DEFAULT_TIMEOUT);
 
-        bot->chat(std::format("[{}] Clear inventory after test: {}", seq, item.name));
         co_await bot->clear_inventory(DEFAULT_TIMEOUT);
     }
     co_return passed;
@@ -108,16 +95,10 @@ async::task<bool> item_test::test_equipment_overflow()
 {
     fb::logger::debug("Starting scenario 3-1: Equip items with overflow");
 
-    constexpr auto CONTAINER_CAPACITY = 52;
-
     auto  bots = this->get_test_bots();
     auto& bot  = bots.front();
 
-    for (int i = 0; i < CONTAINER_CAPACITY; i++)
-    {
-        co_await bot->create_item("목도", 1, DEFAULT_TIMEOUT);
-        bot->chat(std::format("Scenario 3-1: Created {} 목도", i + 1));
-    }
+    co_await bot->fill_inventory("목도", DEFAULT_TIMEOUT);
     bot->chat(std::format("Scenario 3-1: Full inventory"));
 
     if (co_await bot->equip(0, "목도", DEFAULT_TIMEOUT) == false)

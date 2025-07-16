@@ -91,7 +91,7 @@ async::task<bool> skill_test::test_attack_cast_spells(std::shared_ptr<fb::bot::g
     fb::logger::debug("Successfully learned {} out of {} attack_cast spells", learned_count, attack_cast_spells.size());
 
     fb::logger::debug("Learning {} attack_cast spells", attack_cast_spells.size());
-    auto spell_slot = 1;
+    auto spell_slot = 0;
 
     for (const auto& spell : attack_cast_spells)
     {

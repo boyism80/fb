@@ -80,7 +80,6 @@ async::task<bool> skill_test::test_group_healing_spells(std::shared_ptr<fb::bot:
         fb::logger::debug("Casting group healing spell - caster MP={}", before_caster_mp);
 
         // Cast group healing spell
-        spell_slot++;
         auto member_count  = bots.size() - 1;
         auto receive_count = 0;
         std::ignore        = co_await caster->request<fb::protocol::game::response::update_hp>(
@@ -112,6 +111,7 @@ async::task<bool> skill_test::test_group_healing_spells(std::shared_ptr<fb::bot:
         }
 
         fb::logger::debug("Group healing spell {} test completed successfully", spell_info.name);
+        spell_slot++;
     }
 
     // Cleanup group

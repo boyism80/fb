@@ -43,7 +43,7 @@ async::task<bool> skill_test::test_near_target_damage_spells(std::shared_ptr<fb:
                       near_target_spells.size());
 
     fb::logger::debug("Learning {} near target damage spells", near_target_spells.size());
-    auto spell_slot = 1;
+    auto spell_slot = 0;
 
     for (const auto& spell : near_target_spells)
     {

@@ -533,15 +533,10 @@ async::task<bool> trade_test::test_scenario_4()
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
 
-    constexpr auto CONTAINER_CAPACITY = 52;
-
     // 1. Fill bot1's inventory and give bot2 one item.
-    for (int i = 0; i < CONTAINER_CAPACITY; i++)
-    {
-        co_await bot1->create_item("목도", 1, DEFAULT_TIMEOUT);
-        bot1->chat(std::format("Scenario 4: Bot1 created item {}", i));
-    }
+    co_await bot1->fill_inventory("목도", DEFAULT_TIMEOUT);
     co_await bot2->create_item("현철중검", 1, DEFAULT_TIMEOUT);
+    bot1->chat("Scenario 4: Bot1 filled inventory.");
 
     // 2. Start trade.
     std::ignore = co_await bot1->request<fb::bot::integration::trade_bot>(

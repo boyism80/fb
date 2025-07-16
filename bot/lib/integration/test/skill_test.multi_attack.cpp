@@ -88,7 +88,7 @@ async::task<bool> skill_test::test_multi_target_attack_cast_spells(std::shared_p
                       multi_target_spells.size());
 
     fb::logger::debug("Learning {} multi-target attack_cast spells", multi_target_spells.size());
-    auto spell_slot = 1;
+    auto spell_slot = 0;
 
     for (const auto& spell : multi_target_spells)
     {

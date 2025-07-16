@@ -461,7 +461,11 @@ game_bot::map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chr
 {
     auto command = std::format("/맵이동 {} {} {}", map_name, x, y);
     auto map     = this->controller.container.model.map.name2map(map_name);
-    if (this->_map == map->id && this->_position == fb::model::point<uint16_t>{x, y})
+    if (map == nullptr)
+    {
+        co_return;
+    }
+    else if (this->_map == map->id && this->_position == fb::model::point<uint16_t>{x, y})
     {
         co_return;
     }
@@ -473,7 +477,6 @@ game_bot::map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chr
                 return resp.id == map->id;
             },
             timeout);
-        co_return;
     }
     else
     {
@@ -1289,6 +1292,26 @@ async::task<void> game_bot::clear_inventory(std::chrono::milliseconds timeout)
             return resp.index == last_slot;
         },
         timeout);
+    co_return;
+}
+
+async::task<void> game_bot::fill_inventory(const std::string& name, std::chrono::milliseconds timeout)
+{
+    constexpr auto CONTAINER_CAPACITY = 52;
+
+    // Clear inventory first
+    co_await this->clear_inventory(timeout);
+
+    // Fill inventory with the specified item
+    for (int i = 0; i < CONTAINER_CAPACITY; ++i)
+    {
+        co_await this->create_item(name, 1, timeout);
+
+        // Calculate and display progress percentage
+        auto progress = static_cast<int>((i + 1) * 100.0 / CONTAINER_CAPACITY);
+        this->chat(std::format("Fill inventory progress: {}%", progress));
+    }
+
     co_return;
 }
 

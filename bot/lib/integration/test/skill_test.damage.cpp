@@ -49,7 +49,7 @@ async::task<bool> skill_test::test_damage_spells(std::shared_ptr<fb::bot::game_b
     fb::logger::debug("Successfully learned {} out of {} damage spells", learned_count, damage_spells.size());
 
     fb::logger::debug("Learning {} damage spells", damage_spells.size());
-    auto spell_slot = 1;
+    auto spell_slot = 0;
     for (const auto& spell : damage_spells)
     {
         fb::logger::debug("Testing spell: {} (Damage: {}, MP: -{})",

@@ -90,7 +90,7 @@ async::task<bool> skill_test::test_area_damage_spells(std::shared_ptr<fb::bot::g
     fb::logger::debug("Successfully learned {} out of {} area damage spells", learned_count, area_spells.size());
 
     fb::logger::debug("Testing {} area damage spells", area_spells.size());
-    auto spell_slot = 1;
+    auto spell_slot = 0;
 
     co_await caster->move(DIRECTION::BOTTOM, 3, DEFAULT_INTERVAL);
     co_await bots[1]->move(DIRECTION::LEFT, 2, DEFAULT_INTERVAL);

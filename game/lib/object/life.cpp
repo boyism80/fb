@@ -111,7 +111,7 @@ void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_typ
         }
 
         // Drop items when mob dies
-        mob.drop_items();
+        std::ignore = mob.drop_items();
 
         // Handle spawned mob ownership
         auto owner = mob.owner.lock();

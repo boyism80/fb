@@ -248,7 +248,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
     fb::logger::debug("Successfully learned {} out of {} buff/debuff spells", learned_count, buff_debuff_spells.size());
 
     fb::logger::debug("Testing {} buff/debuff spells", buff_debuff_spells.size());
-    auto spell_slot = 1;
+    auto spell_slot = 0;
 
     for (const auto& spell : buff_debuff_spells)
     {

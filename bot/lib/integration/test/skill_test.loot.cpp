@@ -61,7 +61,7 @@ async::task<bool> skill_test::test_loot_spell(std::shared_ptr<fb::bot::game_bot>
 
     // Cast loot spell and wait for item loot response
     std::ignore = co_await caster->request<fb::protocol::game::response::item_update>(
-        fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 1, "", 0, {0, 0}),
+        fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 0, "", 0, {0, 0}),
         [item_name, item_count](auto& resp) -> bool {
             return resp.name.starts_with(item_name) && resp.count == item_count;
         },

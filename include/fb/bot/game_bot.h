@@ -1124,6 +1124,16 @@ public:
     async::task<void> clear_inventory(std::chrono::milliseconds timeout);
 
     /**
+     * @brief      Fills the inventory to capacity with a specific item
+     *
+     * @param[in]  name     The name of the item to fill the inventory with
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that completes when the inventory is filled
+     */
+    async::task<void> fill_inventory(const std::string& name, std::chrono::milliseconds timeout);
+
+    /**
      * @brief      Moves a bot back to its original position after movement spells
      *
      * @param[in]  original_position  The original position to return to

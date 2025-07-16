@@ -30,8 +30,7 @@ async::task<void> skill_test::on_initialize(game_bot_controller& controller)
         auto target_position  = current_position;
         co_await bot->move(DIRECTION::RIGHT, i, DEFAULT_INTERVAL);
 
-        bot->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
-
+        co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_INTERVAL);
         fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM",
                           bot->fd(),
                           target_position.x,
@@ -148,8 +147,6 @@ fb::generator<bot_integration_test::scenario_t> skill_test::on_generate_scenario
         auto bots = this->get_test_bots();
         co_return co_await this->test_area_damage_spells(bots[0]);
     };
-
-    co_return;
 }
 
 std::string skill_test::name() const

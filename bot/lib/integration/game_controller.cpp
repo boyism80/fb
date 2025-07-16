@@ -7,6 +7,7 @@
 #include <fb/bot/integration/communication_test.h>
 #include <fb/bot/integration/drop_loot_test.h>
 #include <fb/bot/integration/item_test.h>
+#include <fb/bot/integration/item_test.give.h>
 #include <fb/bot/integration/swap_test.h>
 #include <fb/bot/integration/throw_test.h>
 #include <fb/bot/game_bot.h>
@@ -76,6 +77,7 @@ void game_bot_controller::initialize()
     this->enqueue_test(std::make_unique<communication_test>(*this));
     this->enqueue_test(std::make_unique<drop_loot_test>(*this));
     this->enqueue_test(std::make_unique<item_test>(*this));
+    this->enqueue_test(std::make_unique<item_test_give>(*this));
     this->enqueue_test(std::make_unique<swap_test>(*this));
     this->enqueue_test(std::make_unique<throw_test>(*this));
 

@@ -414,24 +414,23 @@ void mob::kill(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
     std::ignore = this->destroy(destroy_type);
 }
 
-void mob::drop_items()
+async::task<void> mob::drop_items()
 {
     this->assert_thread();
 
-    auto& model = this->based<fb::model::mob>();
-    if (model.drop.empty())
-        return;
-
+    auto& model    = this->based<fb::model::mob>();
+    auto  oids     = std::vector<uint32_t>{};
     auto  map      = this->map();
     auto& position = this->position();
-    for (auto item : this->_items)
+    for (auto& item : this->_items)
     {
-        std::ignore = item->map(map, position);
+        co_await item->map(map, position, DESTROY_TYPE::DEFAULT, false);
+        oids.push_back(item->oid());
     }
     this->_items.clear();
 
     auto owner = this->owner.lock();
-    if (owner == nullptr)
+    if (owner == nullptr && !model.drop.empty())
     {
         auto& drop = this->context.model.drop[model.drop];
         for (auto& dsl : drop.dsl)
@@ -448,12 +447,16 @@ void mob::drop_items()
                 // Use smart pointer for item creation
                 auto item_shared = this->context.model.item[params.id].make(this->context);
                 auto item        = item_shared.get(); // For compatibility with existing map system
-                std::ignore      = item->map(map, position);
+                co_await item->map(map, position, DESTROY_TYPE::DEFAULT, false);
+                oids.push_back(item->oid());
             }
             break;
             }
         }
     }
+
+    if (!oids.empty())
+        this->map()->bulk_update(oids);
 }
 
 void mob::assert_thread() const
@@ -497,17 +500,17 @@ bool mob::move(DIRECTION direction)
     return fb::game::object::move(direction);
 }
 
-const std::vector<item*>& mob::items() const
+const std::vector<std::shared_ptr<fb::game::item>>& mob::items() const
 {
     return this->_items;
 }
 
-bool mob::push_item(item& i)
+bool mob::push_item(std::shared_ptr<fb::game::item> item)
 {
     if (this->_items.size() >= CONTAINER_CAPACITY)
         return false;
 
-    this->_items.push_back(&i);
+    this->_items.push_back(item);
     return true;
 }
 

@@ -7,14 +7,14 @@ async::task<void> give_item::serialize(fb::stream_writer<big_endian>& writer) co
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint8_t>(this->slot);
+    writer.write<uint8_t>(this->slot + 1);
     writer.write<bool>(this->all);
 }
 #else
 async::task<void> give_item::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->slot = reader.read<uint8_t>();
+    this->slot = reader.read<uint8_t>() - 1;
     this->all  = reader.read<bool>();
 }
 #endif

@@ -43,7 +43,6 @@ async::task<bool> skill_test::test_shout_spells(std::shared_ptr<fb::bot::game_bo
     auto spell_slot = 0;
     for (const auto& spell : shout_spells)
     {
-        spell_slot++;
         fb::logger::debug("Testing {} spell", spell.spell_name);
 
         // Set current hp and mp
@@ -60,7 +59,7 @@ async::task<bool> skill_test::test_shout_spells(std::shared_ptr<fb::bot::game_bo
         // Cast the spell and wait for message response
         caster->chat(std::format("Testing {}", spell.spell_name));
         std::ignore = co_await caster->request<fb::protocol::game::response::message>(
-            fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, spell_slot, spell.test_message, 0, {0, 0}),
+            fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, spell_slot++, spell.test_message, 0, {0, 0}),
             [&spell](auto& resp) -> bool {
                 return resp.type == spell.message_type;
             },

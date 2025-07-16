@@ -171,14 +171,8 @@ async::task<bool> drop_loot_test::test_scenario_2()
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
 
-    constexpr auto CONTAINER_CAPACITY = 52;
-
     // 1. Fill inventory with 52 목도 items
-    for (int i = 0; i < CONTAINER_CAPACITY; i++)
-    {
-        co_await bot1->create_item("목도", 1, DEFAULT_TIMEOUT);
-        bot1->chat(std::format("Scenario 2: Created {} 목도", i + 1));
-    }
+    co_await bot1->fill_inventory("목도", DEFAULT_TIMEOUT);
 
     // 2. Drop 1 item
     co_await bot1->drop_item(0, false, DEFAULT_TIMEOUT);
@@ -313,7 +307,7 @@ async::task<bool> drop_loot_test::test_scenario_5()
     bot2->chat("Scenario 5: Equipped weapon successfully");
 
     // 7. Bot1 casts hellfire on bot2
-    uint8_t hellfire_slot = 1; // First spell slot
+    uint8_t hellfire_slot = 0; // First spell slot
     std::ignore           = co_await bot1->request<fb::protocol::game::response::update_external<true>>(
         fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, hellfire_slot, "", bot2->oid(), bot2->position()),
         [bot2_oid = bot2->oid()](auto& resp) -> bool {

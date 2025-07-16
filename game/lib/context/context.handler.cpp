@@ -623,7 +623,7 @@ async::task<bool> context::handle_give_item(fb::socket<character>& socket, const
     if (forward == nullptr)
         co_return true;
 
-    auto item = me->items[request.slot - 1];
+    auto item = me->items[request.slot];
     if (item == nullptr)
         co_return true;
 
@@ -668,8 +668,8 @@ async::task<bool> context::handle_give_item(fb::socket<character>& socket, const
             if (mob->items().size() >= CONTAINER_CAPACITY)
                 throw std::runtime_error("더 이상 줄 수 없습니다.");
 
-            item = me->items.remove(item, count, ITEM_DELETE_TYPE::GIVE);
-            mob->push_item(*item);
+            item = me->items.remove(item, count, ITEM_DELETE_TYPE::GIVE, true);
+            mob->push_item(item);
         }
         break;
 
@@ -723,7 +723,7 @@ async::task<bool> context::handle_give_money(fb::socket<character>& socket, cons
                 throw std::runtime_error("더 이상 줄 수 없습니다.");
 
             auto item = this->make<fb::game::cash>(money);
-            mob->push_item(*item);
+            mob->push_item(item);
         }
         break;
 
@@ -1121,9 +1121,6 @@ async::task<bool> context::handle_throw_item(fb::socket<character>& socket, cons
 
 async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_reqs::spell_cast& request)
 {
-    if (request.slot == 0)
-        co_return false;
-
     auto ch = socket.data();
     if (ch->inited() == false)
         co_return true;
@@ -1141,7 +1138,7 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
     if (request.slot > CONTAINER_CAPACITY - 1)
         co_return false;
 
-    auto spell = ch->spells[request.slot - 1];
+    auto spell = ch->spells[request.slot];
     if (spell == nullptr)
         co_return false;
 

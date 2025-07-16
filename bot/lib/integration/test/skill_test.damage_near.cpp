@@ -75,7 +75,7 @@ async::task<bool> skill_test::test_near_damage_spells(std::shared_ptr<fb::bot::g
     fb::logger::debug("Successfully learned {} out of {} near damage spells", learned_count, near_damage_spells.size());
 
     fb::logger::debug("Learning {} near damage spells", near_damage_spells.size());
-    auto spell_slot       = 1;
+    auto spell_slot       = 0;
     auto current_position = caster->position();
 
     for (const auto& spell : near_damage_spells)
