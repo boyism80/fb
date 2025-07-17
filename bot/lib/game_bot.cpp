@@ -832,6 +832,38 @@ async::task<void> game_bot::create_item(const std::string& item_name, uint32_t c
         timeout);
 }
 
+async::task<game_bot::simple_npc> game_bot::create_npc(const std::string& npc_name, std::chrono::milliseconds timeout)
+{
+    auto command = std::format("/엔피씨생성 {}", npc_name);
+    auto model   = this->controller.container.model.npc.name2npc(npc_name);
+    if (!model)
+        throw std::runtime_error(std::format("Failed to find NPC model for {}", npc_name));
+
+    auto   look = model->look;
+    auto&& resp = co_await this->request<fb::protocol::game::response::update>(
+        fb::protocol::game::request::chat{false, command},
+        [bot_pos = this->position(), look](auto& resp) -> bool {
+            if (resp.objects_data.empty())
+                return false;
+
+            auto& npc = resp.objects_data.front();
+            if (npc.look != look)
+                return false;
+
+            if (npc.x != bot_pos.x)
+                return false;
+
+            if (npc.y != bot_pos.y)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    auto& npc = resp.objects_data.front();
+    co_return simple_npc(npc.oid, npc_name);
+}
+
 async::task<void> game_bot::change_money(uint32_t amount, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/금전 {}", amount);
@@ -1585,5 +1617,23 @@ std::string game_bot::simple_item::get_equipment_info(const game_bot_controller&
     catch (const std::exception& e)
     {
         return "";
+    }
+}
+
+uint32_t game_bot::simple_item::get_price(const game_bot_controller& controller) const
+{
+    try
+    {
+        auto item_model = controller.container.model.item.name2item(name);
+        if (!item_model)
+        {
+            return 0xFFFFFFFF;
+        }
+
+        return item_model->price;
+    }
+    catch (const std::exception& e)
+    {
+        return 0xFFFFFFFF;
     }
 }

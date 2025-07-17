@@ -70,6 +70,15 @@ public:
          * @return     Formatted string with equipment information, or empty string if not equipment.
          */
         std::string get_equipment_info(const game_bot_controller& controller) const;
+
+        /**
+         * @brief      Get the base price of this item from the model.
+         *
+         * @param[in]  controller  Reference to the game bot controller for model access.
+         *
+         * @return     The base price of the item, or 0xFFFFFFFF if not found in model.
+         */
+        uint32_t get_price(const game_bot_controller& controller) const;
     };
 
     /**
@@ -84,6 +93,20 @@ public:
         simple_spell(const std::string& n, uint8_t t) :
             name(n),
             type(t)
+        { }
+    };
+
+    /**
+     * @brief      Simple NPC structure for bot NPC tracking.
+     */
+    struct simple_npc
+    {
+        const uint32_t    oid;  ///< NPC object ID
+        const std::string name; ///< NPC name
+
+        simple_npc(uint32_t o, const std::string& n) :
+            oid(o),
+            name(n)
         { }
     };
 
@@ -890,6 +913,16 @@ public:
      * @return     An async task that completes when item creation is finished.
      */
     async::task<void> create_item(const std::string& item_name, uint32_t count, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Create an NPC using the '/엔피씨생성' command.
+     *
+     * @param[in]  npc_name  The name of the NPC to create.
+     * @param[in]  timeout   The timeout for the operation.
+     *
+     * @return     An async task that returns simple_npc with oid and name if successful.
+     */
+    async::task<simple_npc> create_npc(const std::string& npc_name, std::chrono::milliseconds timeout);
 
     /**
      * @brief      Change money using the '/금전바꾸기' command.

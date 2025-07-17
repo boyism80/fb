@@ -16,6 +16,7 @@ command_funcs = {
     function (me, args)
         local commands = {
             "/관리자 - 관리자 권한 부여",
+            "/권한변경 <유저이름> <직책> - 권한 변경",
             "/경험치 <경험치> - 경험치 설정",
             "/맵이동 <맵이름> [x] [y] - 맵 이동",
             "/사운드 <사운드ID> - 사운드 재생",
@@ -31,6 +32,7 @@ command_funcs = {
             "/마법지우기 [슬롯] - 마법 삭제",
             "/몬스터생성 <몬스터이름> [x] [y] - 몬스터 생성",
             "/몬스터범위생성 <몬스터이름> <거리> - 범위 내 몬스터 생성",
+            "/몬스터제거 - 모든 몬스터 제거",
             "/직업바꾸기 <직업이름> - 직업 변경",
             "/레벨바꾸기 <레벨> - 레벨 설정",
             "/스탯바꾸기 <스탯값> - 스탯 설정",
@@ -51,6 +53,7 @@ command_funcs = {
             "/서버저장 - 서버 저장",
             "/랜덤이동 - 랜덤 맵 이동",
             "/엔피씨생성 <NPC이름> [맵이름] [x] [y] - NPC 생성",
+            "/엔피씨제거 - NPC 제거",
             "/내구도 <퍼센트> - 장비 내구도 설정",
             "/sleep <시간(초)> - 대기",
             "/광고 <너비> <높이> <URL> [시간] - 광고 표시",
@@ -83,6 +86,41 @@ command_funcs = {
         me:mkspell('강제이동(하)')
         me:mkspell('강제이동(우)')
         me:mkspell('강제이동(상)')
+        return true
+    end,
+
+    ['권한변경'] = 
+    function (me, args)
+        local name, role = table.unpack(args)
+        if not name or not role then
+            me:message("사용법: /권한변경 <직책이름> <직책>")
+            return true
+        end
+
+        role = tonumber(role)
+        if not role or role < 0 then
+            me:message("직책은 0 이상의 숫자여야 합니다.")
+            return true
+        end
+
+        local you = name2ch(name)
+        if you == nil then
+            me:message(string.format("%s : 접속중이 아닙니다.", name))
+            return true
+        end
+
+        if you:role() >= me:role() then
+            me:message(string.format("권한이 없습니다.", name))
+            return true
+        end
+
+        if role >= me:role() then
+            me:message(string.format("권한이 없습니다.", name))
+            return true
+        end
+
+        you:role(role)
+        me:message(string.format("%s : 직책을 %d로 변경했습니다.", name, role))
         return true
     end,
 
@@ -364,6 +402,22 @@ command_funcs = {
             me:message(string.format("'%s' 몬스터 생성에 실패했습니다.", name))
         end
         
+        return true
+    end,
+
+    ['몬스터제거'] = 
+    function (me, args)
+        local map = me:map()
+        if map == nil then
+            me:message("맵에 있지 않습니다.")
+            return true
+        end
+
+        local objects = map:objects(OBJECT_TYPE_MOB)
+        for _, object in ipairs(objects) do
+            object:destroy()
+        end
+
         return true
     end,
 
@@ -718,6 +772,17 @@ command_funcs = {
             end
         end
         mknpc(name, map, x, y)
+        return true
+    end,
+
+    ['엔피씨제거'] =    
+    function (me, args)
+        local front = me:front(OBJECT_TYPE_NPC)
+        if front == nil then
+            return true
+        end
+
+        front:destroy()
         return true
     end,
 
