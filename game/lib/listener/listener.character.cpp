@@ -76,9 +76,7 @@ void listener_impl::on_update_map(character&                  ch,
                                   const map&                  map,
                                   const fb::model::point16_t& begin,
                                   const fb::model::size8_t&   size)
-{
-    ch.send(fb_resp::map_update(map, begin, size));
-}
+{ }
 
 void listener_impl::on_update_buff(character& ch, const buffs& buffs)
 {

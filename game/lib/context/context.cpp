@@ -13,7 +13,12 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     }),
     groups([](const std::shared_ptr<group>& group) -> uint32_t {
         return group->id();
-    })
+    }),
+    map_update_cache(
+        [](const map::cache_bytes& cache_bytes) -> uint64_t {
+            return cache_bytes.hash;
+        },
+        1024)
 {
     auto& ist = fb::lua::context_pool::ist();
     ist.setup(this->threads);

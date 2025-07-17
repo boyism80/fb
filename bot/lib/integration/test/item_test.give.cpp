@@ -272,13 +272,13 @@ async::task<bool> item_test_give::test_give_to_mob_and_kill()
     auto  bots = this->get_test_bots();
     auto& bot1 = bots[0];
     co_await bot1->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
-    co_await bot1->learn_spell("헬파이어", DEFAULT_TIMEOUT);
-    co_await bot1->learn_spell("노획", DEFAULT_TIMEOUT);
+    std::ignore = co_await bot1->learn_spell("헬파이어", DEFAULT_TIMEOUT);
+    std::ignore = co_await bot1->learn_spell("노획", DEFAULT_TIMEOUT);
 
     // Give bot1 items and money
     co_await bot1->create_item("목도", 1, DEFAULT_TIMEOUT);
     co_await bot1->change_money(1000, DEFAULT_TIMEOUT);
-    co_await bot1->set_max_hp_mp(1000, 1000, DEFAULT_TIMEOUT);
+    std::ignore = co_await bot1->set_max_hp_mp(1000, 1000, DEFAULT_TIMEOUT);
 
     // Spawn a mob below bot1
     auto mob_position  = bot1->position();

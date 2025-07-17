@@ -121,7 +121,7 @@ async::task<bool> item_test::test_equipment(uint32_t index)
         }
 
         if (equipped)
-            co_await bot->unequip(equipment_parts[item.type], DEFAULT_TIMEOUT);
+            std::ignore = co_await bot->unequip(equipment_parts[item.type], DEFAULT_TIMEOUT);
 
         co_await bot->clear_inventory(DEFAULT_TIMEOUT);
     }

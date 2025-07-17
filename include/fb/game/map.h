@@ -64,6 +64,7 @@ public:
 public:
     struct tile;
     struct builtin;
+    struct cache_bytes;
 
 public:
     using unique_tiles  = std::unique_ptr<tile[]>;
@@ -441,6 +442,13 @@ struct map::tile
     uint16_t id;
     uint16_t object;
     bool     blocked;
+};
+
+struct map::cache_bytes
+{
+    uint64_t             hash = 0;
+    uint16_t             crc  = 0;
+    std::vector<uint8_t> bytes;
 };
 
 } // namespace fb::game
