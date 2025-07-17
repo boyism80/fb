@@ -13,23 +13,7 @@ item_test_give::item_test_give(game_bot_controller& controller) :
 async::task<void> item_test_give::on_initialize(game_bot_controller& controller)
 {
     co_await super::on_initialize(controller);
-
-    auto bots = this->get_test_bots();
-    for (int i = static_cast<int>(bots.size()) - 1; i >= 1; --i)
-    {
-        auto& bot = bots[i];
-
-        auto current_position = bot->position();
-        auto target_position  = current_position;
-        co_await bot->move(DIRECTION::RIGHT, i, DEFAULT_INTERVAL);
-
-        bot->send(fb::protocol::game::request::direction{DIRECTION::BOTTOM});
-
-        fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM",
-                          bot->fd(),
-                          target_position.x,
-                          target_position.y);
-    }
+    co_await super::arrange_bots_in_line_formation();
 }
 
 async::task<void> item_test_give::on_scenario_started(uint32_t scenario_index)

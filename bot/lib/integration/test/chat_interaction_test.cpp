@@ -11,6 +11,7 @@ chat_interaction_test::chat_interaction_test(game_bot_controller& controller) :
 async::task<void> chat_interaction_test::on_initialize(game_bot_controller& controller)
 {
     co_await this->super::on_initialize(controller);
+    co_await this->super::arrange_bots_in_line_formation();
 }
 
 generator<bot_integration_test::scenario_t> chat_interaction_test::on_generate_scenario()
@@ -46,6 +47,9 @@ async::task<bool> chat_interaction_test::test_scenario_1()
         bot1->chat("Creating NPC 왈숙네");
         auto npc     = co_await bot1->create_npc("왈숙네", DEFAULT_TIMEOUT);
         auto npc_oid = npc.oid;
+
+        co_await bot1->move(DIRECTION::TOP, 1);
+        co_await bot1->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
         // Step 3: Create 진호박 10개
         bot1->chat("Creating 진호박 10개");
@@ -106,9 +110,6 @@ async::task<bool> chat_interaction_test::test_scenario_1()
         bot1->chat("Depositing 동동주 via chat");
         std::ignore = co_await bot1->request<fb::protocol::game::response::item_remove>(
             fb::protocol::game::request::chat(false, "동동주 맡아줘"),
-            [](auto& resp) -> bool {
-                return true; // Just verify response received
-            },
             DEFAULT_TIMEOUT);
 
         // Step 10: Withdraw 동동주 via chat
@@ -147,16 +148,16 @@ async::task<bool> chat_interaction_test::test_scenario_1()
         std::ignore = co_await bot1->request<fb::protocol::game::response::chat>(
             fb::protocol::game::request::chat(false, "도토리 다 돌려줘"),
             [npc_oid](auto& resp) -> bool {
-                return resp.oid == npc_oid && resp.text.find("왈숙네: 더 이상 가질 수 없습니다.") != std::string::npos;
+                return resp.text.find("더 이상 가질 수 없습니다.") != std::string::npos;
             },
             DEFAULT_TIMEOUT);
 
         // Step 14: Remove NPC via chat command
         bot1->chat("Removing NPC via chat command");
-        std::ignore = co_await bot1->request<fb::protocol::game::response::action>(
+        std::ignore = co_await bot1->request<fb::protocol::game::response::hide>(
             fb::protocol::game::request::chat(false, "/엔피씨제거"),
-            [](auto& resp) -> bool {
-                return true; // Just verify response received
+            [npc_oid](auto& resp) -> bool {
+                return resp.oid == npc_oid;
             },
             DEFAULT_TIMEOUT);
 

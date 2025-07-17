@@ -362,8 +362,12 @@ function npc_retrieve_item(me, npc, name, count)
         count = 1
     end
 
+    local exists_count = 0
     local exists = me:item(name)
-    if exists ~= nil and exists:count() + count > model:capacity() then
+    if exists ~= nil then
+        exists_count = exists:count()
+    end
+    if exists_count + count > model:capacity() then
         npc:chat('더 이상 가질 수 없습니다.')
         return true
     end
@@ -1001,8 +1005,12 @@ function NPC_RETURN_ITEM_DIALOG(me, npc)
             return me:dialog(npc, '그만큼 맡고 있지 않습니다.', false, true)
         end
 
+        local exists_count = 0
         local exists = me:item(model)
-        if exists ~= nil and exists:count() + count > model:capacity() then
+        if exists ~= nil then
+            exists_count = exists:count()
+        end
+        if exists_count + count > model:capacity() then
             return me:dialog(npc, '더 이상 가질 수 없습니다.', false, true)
         end
     end

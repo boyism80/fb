@@ -1554,6 +1554,16 @@ std::string game_bot::simple_item::get_equipment_info(const game_bot_controller&
                     << std::fixed << std::setprecision(1) << 100.0 << '%' << std::endl;
         }
 
+        // Add weapon damage info if it's a weapon
+        if (item_model->type == ITEM_TYPE::WEAPON)
+        {
+            auto& weapon_model = static_cast<const fb::model::weapon&>(*item_model);
+            sstream << "파괴력: 　　 S:　" << std::to_string(weapon_model.damage_small.min) << 'm'
+                    << std::to_string(weapon_model.damage_small.max) << std::endl;
+            sstream << "　　　  　 　L:　" << std::to_string(weapon_model.damage_large.min) << 'm'
+                    << std::to_string(weapon_model.damage_large.max) << std::endl;
+        }
+
         // Add basic stats
         sstream << "무장:   " << std::to_string(model.defensive_physical) << " Hit:  " << std::to_string(model.hit)
                 << " Dam:  " << std::to_string(model.damage);

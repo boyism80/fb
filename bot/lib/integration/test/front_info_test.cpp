@@ -26,6 +26,7 @@ async::task<void> front_info_test::on_scenario_finished(uint32_t scenario_index)
     auto  bots = this->get_test_bots();
     auto& bot1 = bots[0];
     co_await bot1->clear_all_drop_items(DEFAULT_TIMEOUT);
+    co_await this->sleep(DEFAULT_INTERVAL);
 }
 
 generator<bot_integration_test::scenario_t> front_info_test::on_generate_scenario()
@@ -58,25 +59,23 @@ async::task<bool> front_info_test::test_front_info()
 
     bot2->chat("Dropping items and money");
     co_await bot2->drop_item(0, true, DEFAULT_TIMEOUT);
-    co_await bot2->drop_item(0, true, DEFAULT_TIMEOUT);
-    co_await bot2->drop_item(0, true, DEFAULT_TIMEOUT);
+    co_await bot2->drop_item(1, true, DEFAULT_TIMEOUT);
+    co_await bot2->drop_item(2, true, DEFAULT_TIMEOUT);
     co_await bot2->drop_money(10000, DEFAULT_TIMEOUT);
 
     bot1->chat("Sending front_info request");
 
-    auto expected_messages = std::unordered_set<std::string>{bot2->name(), "목도", "목검", "도토리 200개", "10000전"};
-    auto matched_count     = 0;
-
+    auto expected_messages =
+        std::unordered_set<std::string>{bot2->name(), "목도", "목검", "도토리 100개", "금덩어리 10000전"};
     std::ignore = co_await bot1->request<fb::protocol::game::response::message>(
         fb::protocol::game::request::front_info(),
-        [&expected_messages, &matched_count](auto& resp) -> bool {
+        [&expected_messages](auto& resp) -> bool {
             if (resp.type != MESSAGE_TYPE::STATE)
                 return false;
 
             if (expected_messages.contains(resp.text))
-                matched_count++;
-
-            return matched_count == expected_messages.size();
+                expected_messages.erase(resp.text);
+            return expected_messages.empty();
         },
         DEFAULT_TIMEOUT);
 

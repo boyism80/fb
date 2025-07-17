@@ -321,6 +321,16 @@ protected:
      * @return     A task that completes when the sleep is finished.
      */
     async::task<void> sleep(std::chrono::milliseconds duration);
+
+    /**
+     * @brief      Arranges bots in line formation.
+     *
+     *             This method is used to arrange bots in line formation.
+     *             The bots are arranged in a line formation and the result is returned.
+     *
+     * @return     A task that completes when the bots are arranged.
+     */
+    async::task<void> arrange_bots_in_line_formation();
 };
 
 } // namespace fb::bot::integration

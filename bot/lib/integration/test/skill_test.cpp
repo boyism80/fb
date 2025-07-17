@@ -20,26 +20,7 @@ async::task<void> skill_test::on_initialize(game_bot_controller& controller)
     if (bots.empty())
         throw std::runtime_error("No bots available for skill test");
 
-    fb::logger::debug("Arranging {} bots in line formation", bots.size());
-
-    for (int i = static_cast<int>(bots.size()) - 1; i >= 1; --i)
-    {
-        auto& bot = bots[i];
-
-        auto current_position = bot->position();
-        auto target_position  = current_position;
-        co_await bot->move(DIRECTION::RIGHT, i, DEFAULT_INTERVAL);
-
-        co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_INTERVAL);
-        fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM",
-                          bot->fd(),
-                          target_position.x,
-                          target_position.y);
-    }
-
-    fb::logger::debug("Bot line formation completed");
-
-    co_return;
+    co_await super::arrange_bots_in_line_formation();
 }
 
 async::task<void> skill_test::on_scenario_started(uint32_t scenario_index)

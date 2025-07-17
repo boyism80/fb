@@ -1113,23 +1113,9 @@ int character::builtin::builtin_store_item(lua_State* L)
     auto count = lua->tointeger(3, 1);
 
     // Find the shared_ptr that contains this item
-    auto& stored_items = ch->items.stored();
-    auto  index        = static_cast<uint8_t>(0xFF);
-
-    for (size_t i = 0; i < stored_items.size(); ++i)
-    {
-        if (stored_items[i] == item)
-        {
-            index = static_cast<uint8_t>(i);
-            break;
-        }
-    }
-
     auto weak = ch->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
-        auto success = false;
-        if (index != 0xFF)
-            success = ch->items.store(index, count);
+        auto success = ch->items.store(item->name(), count);
 
         return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushboolean(success);

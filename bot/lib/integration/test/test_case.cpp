@@ -310,4 +310,23 @@ async::task<void> bot_integration_test::sleep(std::chrono::milliseconds duration
     co_await this->controller.container.threads.current()->sleep(duration);
 }
 
+async::task<void> bot_integration_test::arrange_bots_in_line_formation()
+{
+    auto bots = this->get_test_bots();
+    for (int i = static_cast<int>(bots.size()) - 1; i >= 1; --i)
+    {
+        auto& bot = bots[i];
+
+        auto current_position = bot->position();
+        auto target_position  = current_position;
+        co_await bot->move(DIRECTION::RIGHT, i, DEFAULT_INTERVAL);
+
+        co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_INTERVAL);
+        fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM",
+                          bot->fd(),
+                          target_position.x,
+                          target_position.y);
+    }
+}
+
 } // namespace fb::bot::integration

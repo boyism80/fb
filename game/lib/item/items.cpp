@@ -380,7 +380,7 @@ std::shared_ptr<fb::game::item> fb::game::items::retrieve(uint8_t index, uint16_
             return nullptr;
 
         auto item = stored->split(count);
-        if (stored->empty())
+        if (item == stored)
             this->_stored.erase(this->_stored.begin() + index);
 
         this->add(item);
