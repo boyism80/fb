@@ -1466,3 +1466,124 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
         co_await this->change_class(class_name, timeout);
     }
 }
+
+// simple_item methods implementation
+bool game_bot::simple_item::is_equipment(const game_bot_controller& controller) const
+{
+    // Equipment types used in tests (from item_test.equipment.cpp)
+    static const auto equipment_types = std::unordered_set<ITEM_TYPE>{ITEM_TYPE::WEAPON,
+                                                                      ITEM_TYPE::ARMOR,
+                                                                      ITEM_TYPE::HELMET,
+                                                                      ITEM_TYPE::RING,
+                                                                      ITEM_TYPE::SHIELD,
+                                                                      ITEM_TYPE::AUXILIARY};
+
+    try
+    {
+        auto item_model = controller.container.model.item.name2item(name);
+        if (!item_model)
+        {
+            return false;
+        }
+
+        return equipment_types.contains(item_model->type);
+    }
+    catch (const std::exception& e)
+    {
+        return false;
+    }
+}
+
+std::string game_bot::simple_item::get_equipment_info(const game_bot_controller& controller) const
+{
+    try
+    {
+        auto item_model = controller.container.model.item.name2item(name);
+        if (!item_model)
+        {
+            return "";
+        }
+
+        // Check if it's equipment
+        if (!is_equipment(controller))
+        {
+            return "";
+        }
+
+        std::stringstream sstream;
+        auto&             model = static_cast<fb::model::equipment&>(*item_model);
+
+        sstream << name << std::endl;
+
+        // Add durability info if available (for equipment with durability)
+        if (model.durability > 0)
+        {
+            sstream << "내구성: " << std::to_string(model.durability) << '/' << std::to_string(model.durability) << ' '
+                    << std::fixed << std::setprecision(1) << 100.0 << '%' << std::endl;
+        }
+
+        // Add basic stats
+        sstream << "무장:   " << std::to_string(model.defensive_physical) << " Hit:  " << std::to_string(model.hit)
+                << " Dam:  " << std::to_string(model.damage);
+
+        // Add stat bonuses
+        if (model.base_hp)
+            sstream << std::left << std::setw(14) << std::endl << "체력치 상승:" << std::to_string(model.base_hp);
+
+        if (model.base_mp)
+            sstream << std::left << std::setw(14) << std::endl << "마력치 상승:" << std::to_string(model.base_mp);
+
+        if (model.strength)
+            sstream << std::left << std::setw(14) << std::endl << "힘 상승:" << std::to_string(model.strength);
+
+        if (model.dexterity)
+            sstream << std::left << std::setw(14) << std::endl << "민첩성 상승:" << std::to_string(model.dexterity);
+
+        if (model.intelligence)
+            sstream << std::left << std::setw(14) << std::endl << "지력 상승:" << std::to_string(model.intelligence);
+
+        if (model.healing_cycle)
+            sstream << std::left << std::setw(14) << std::endl << "재생력 상승:" << std::to_string(model.healing_cycle);
+
+        // Add class and level requirements
+        auto cls   = CLASS::NONE;
+        auto level = uint8_t(0);
+        for (auto& dsl : model.condition)
+        {
+            switch (dsl.header)
+            {
+            case DSL::class_t:
+                cls = fb::model::dsl::class_t(dsl.params).value;
+                break;
+
+            case DSL::level:
+                level = fb::model::dsl::level(dsl.params).min.value_or(0);
+                break;
+            }
+        }
+
+        sstream << std::endl;
+        switch (cls)
+        {
+        case CLASS::NONE:
+            sstream << "직업제한무";
+            break;
+
+        default:
+            sstream << controller.container.model.promotion[cls][0].name << "용";
+            break;
+        }
+
+        sstream << " 레벨 " << std::to_string(level) << " 이상";
+
+        // Add description if available
+        if (model.desc.empty() == false)
+            sstream << std::endl << std::endl << model.desc;
+
+        return sstream.str();
+    }
+    catch (const std::exception& e)
+    {
+        return "";
+    }
+}

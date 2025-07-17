@@ -45,6 +45,18 @@ Format: `<type>: <short description>`
 - **Blank line**: Separate subject from description
 - **Description**: Detailed explanation if needed (wrap at 72 characters)
 
+**Issue Tagging Rule**:
+- Check assigned issues: Before committing, check current assigned issues using `gh issue list --search "assignee:@me"`
+- Add issue tags: If the commit relates to any assigned issues, add the issue number at the end of the commit message
+- Format: Add `#<issue_number>` at the end of the subject or description
+- Example:
+  ```
+  feat: some issue fix #1234
+  - message 1
+  - message 2
+  ```
+- **If the gh command does not work properly or there are no relevant issues, do not add any issue tag at the end of the commit message.**
+
 **Commit Command Format**:
 - **Maximum 2 `-m` options only**: Use exactly 2 `-m` options maximum
 - **First `-m`**: Subject line only

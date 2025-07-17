@@ -14,11 +14,23 @@ public:
     static constexpr uint8_t header = 0x66;
 
 public:
+#ifndef BOT
     uint16_t position;
     uint8_t  slot;
+#else
+    const uint16_t position = 0;
+    const uint8_t  slot     = 0;
+#endif
 
 public:
+#ifndef BOT
     item_info() = default;
+#else
+    item_info(uint16_t position, uint8_t slot) :
+        position(position),
+        slot(slot)
+    { }
+#endif
 
 public:
 #ifdef BOT

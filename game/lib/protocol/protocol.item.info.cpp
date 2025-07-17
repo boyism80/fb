@@ -8,7 +8,10 @@ async::task<void> item_info::serialize(fb::stream_writer<big_endian>& writer) co
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
     writer.write<uint16_t>(this->position);
-    writer.write<uint8_t>(this->slot);
+    writer.write<uint8_t>(0);
+    writer.write<uint8_t>(0);
+    writer.write<uint8_t>(0);
+    writer.write<uint8_t>(this->slot + 1);
 }
 #else
 async::task<void> item_info::deserialize(fb::stream_reader<big_endian>& reader)

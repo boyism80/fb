@@ -49,6 +49,27 @@ public:
             name(n),
             count(c)
         { }
+
+        /**
+         * @brief      Check if this item is equipment type.
+         *
+         * @param[in]  controller  Reference to the game bot controller for model access.
+         *
+         * @return     True if the item is equipment, false otherwise.
+         */
+        bool is_equipment(const game_bot_controller& controller) const;
+
+        /**
+         * @brief      Get equipment information as formatted string.
+         *
+         *             This function generates a formatted string containing equipment
+         *             information similar to the tip_message() function in equipment.cpp.
+         *
+         * @param[in]  controller  Reference to the game bot controller for model access.
+         *
+         * @return     Formatted string with equipment information, or empty string if not equipment.
+         */
+        std::string get_equipment_info(const game_bot_controller& controller) const;
     };
 
     /**
