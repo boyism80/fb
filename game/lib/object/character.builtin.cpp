@@ -1115,7 +1115,10 @@ int character::builtin::builtin_store_item(lua_State* L)
     // Find the shared_ptr that contains this item
     auto weak = ch->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*ctx, weak, [=](auto is_yield) {
-        auto success = ch->items.store(item->name(), count);
+        auto index   = ch->items.index(item);
+        auto success = false;
+        if (index != 0xFF)
+            success = ch->items.store(index, count);
 
         return lua->ensure_resume(*ctx, weak, [=]() {
             lua->pushboolean(success);

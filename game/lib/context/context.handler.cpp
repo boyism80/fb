@@ -212,7 +212,8 @@ async::task<bool> context::handle_emotion(fb::socket<character>& socket, const f
     if (ch->inited() == false)
         co_return true;
 
-    ch->action(ACTION(static_cast<int>(ACTION::EMOTION) + request.value), DURATION::EMOTION);
+    if (request.value <= 13 || request.value == 0xFE || request.value == 0xFF)
+        ch->action(ACTION(static_cast<int>(ACTION::EMOTION) + request.value), DURATION::EMOTION);
     co_return true;
 }
 

@@ -446,15 +446,15 @@ void context::init_items(const std::vector<internal::Item>& response, character&
         if (x.durability.has_value())
             item->durability(x.durability.value());
 
-        if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
-            static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
-
         if (x.stored != -1)
             ch.items.store(item); // Use smart pointer version
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
             ch.items.add(item, x.index); // Use smart pointer version
         else
             ch.items.wear((EQUIPMENT_PARTS)x.parts, std::static_pointer_cast<fb::game::equipment>(item));
+
+        if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
+            static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
     }
 }
 

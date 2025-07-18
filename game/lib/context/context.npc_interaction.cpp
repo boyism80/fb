@@ -18,7 +18,7 @@ async::task<bool> context::npc_interaction_sell(character&                      
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
         if (model.buy.has_value() == false)
@@ -72,7 +72,7 @@ async::task<bool> context::npc_interaction_buy(character&                       
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
         if (model.sell.size() == 0)
@@ -121,10 +121,10 @@ async::task<bool> context::npc_interaction_repair(character&                    
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.repair)
+        if (ENUM_IN(model.interaction, NPC_INTERACTION::REPAIR) == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
@@ -169,10 +169,10 @@ async::task<bool> context::npc_interaction_deposit_money(character&             
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.deposit_money == false)
+        if (ENUM_IN(model.interaction, NPC_INTERACTION::DEPOSIT_MONEY) == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
@@ -220,10 +220,10 @@ async::task<bool> context::npc_interaction_withdraw_money(character&            
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.deposit_money == false)
+        if (ENUM_IN(model.interaction, NPC_INTERACTION::DEPOSIT_MONEY) == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
@@ -272,10 +272,10 @@ async::task<bool> context::npc_interaction_store_item(character&                
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.store_item == false)
+        if (ENUM_IN(model.interaction, NPC_INTERACTION::STORE_ITEM) == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
@@ -325,10 +325,10 @@ async::task<bool> context::npc_interaction_retrieve_item(character&             
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.store_item == false)
+        if (ENUM_IN(model.interaction, NPC_INTERACTION::STORE_ITEM) == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
@@ -376,7 +376,7 @@ async::task<bool> context::npc_interaction_sell_list(character&                 
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
         if (model.sell.size() == 0)
@@ -422,7 +422,7 @@ async::task<bool> context::npc_interaction_buy_list(character&                  
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
         if (model.buy.has_value() == false)
@@ -469,7 +469,7 @@ async::task<bool> context::npc_interaction_sell_price(character&                
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
         if (model.sell.size() == 0)
@@ -517,7 +517,7 @@ async::task<bool> context::npc_interaction_buy_price(character&                 
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
         if (model.buy.has_value() == false)
@@ -564,10 +564,10 @@ async::task<bool> context::npc_interaction_show_deposited_money(character&      
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.deposit_money == false)
+        if (ENUM_IN(model.interaction, NPC_INTERACTION::DEPOSIT_MONEY) == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
@@ -611,10 +611,10 @@ async::task<bool> context::npc_interaction_rename_weapon(character&             
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.rename == false)
+        if (ENUM_IN(model.interaction, NPC_INTERACTION::RENAME) == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
@@ -659,10 +659,10 @@ async::task<bool> context::npc_interaction_store_item_list(character&           
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.store_item == false)
+        if (ENUM_IN(model.interaction, NPC_INTERACTION::STORE_ITEM) == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
@@ -706,10 +706,10 @@ async::task<bool> context::npc_interaction_store_item_count(character&          
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.store_item == false)
+        if (ENUM_IN(model.interaction, NPC_INTERACTION::STORE_ITEM) == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
@@ -754,10 +754,10 @@ async::task<bool> context::npc_interaction_revive(character&                    
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.revive == false)
+        if (ENUM_IN(model.interaction, NPC_INTERACTION::REVIVE) == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
@@ -804,10 +804,10 @@ async::task<bool> context::npc_interaction_appreciate(character&                
     if (lua == nullptr)
         co_return false;
 
-    for (auto npc : npcs)
+    for (auto& npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.revive == false)
+        if (ENUM_IN(model.interaction, NPC_INTERACTION::REVIVE) == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG

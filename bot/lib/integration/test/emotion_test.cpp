@@ -35,9 +35,8 @@ async::task<bool> emotion_test::test_emotion()
     auto& bot    = bots.front();
     auto  passed = true;
 
-    // TODO: Verify the allowed range for emotion values on the server side
-    // Currently testing values 0-10, but server may have different limits
-    for (uint8_t emotion_value = 0; emotion_value <= 10; emotion_value++)
+    auto emotions = std::vector<uint8_t>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0xFE, 0xFF};
+    for (auto emotion_value : emotions)
     {
         try
         {
@@ -52,7 +51,8 @@ async::task<bool> emotion_test::test_emotion()
                     if (resp.oid != oid)
                         return false;
 
-                    auto expected_action = static_cast<ACTION>(static_cast<uint8_t>(ACTION::EMOTION) + emotion_value);
+                    auto expected_action = static_cast<ACTION>(
+                        static_cast<uint8_t>(static_cast<uint8_t>(ACTION::EMOTION) + emotion_value));
                     return resp.value == expected_action;
                 },
                 DEFAULT_TIMEOUT);

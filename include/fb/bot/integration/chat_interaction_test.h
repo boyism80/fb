@@ -22,6 +22,8 @@ private:
 protected:
     generator<scenario_t> on_generate_scenario() override final;
     async::task<void>     on_initialize(game_bot_controller& controller) override final;
+    async::task<void>     on_parallel_scenario_started(uint32_t id) override final;
+    async::task<void>     on_parallel_scenario_finished(uint32_t id) override final;
 
 public:
     /**
@@ -47,14 +49,32 @@ private:
     /**
      * @brief      Tests chat interaction scenario 1.
      *
-     *             This function tests various chat-based interactions including
-     *             NPC creation/removal, item trading, money management, and
-     *             chat commands. It validates that all responses are correct
-     *             and game state changes appropriately.
+     * @param      index     The index of the bot to test.
      *
      * @return     An async task that completes with true if test passed, false otherwise.
      */
-    async::task<bool> test_scenario_1();
+    async::task<bool> test_scenario_1(int index);
+
+    /**
+     * @brief      Tests chat interaction scenario 2.
+     *
+     * @param      index     The index of the bot to test.
+     *
+     * @return     An async task that completes with true if test passed, false otherwise.
+     */
+    async::task<bool> test_scenario_2(int index);
+
+    /**
+     * @brief      Tests chat interaction scenario 3.
+     *
+     * @param      index     The index of the bot to test.
+     *
+     * @return     An async task that completes with true if test passed, false otherwise.
+     */
+    async::task<bool> test_scenario_3(int index);
+
+private:
+    async::task<bool> parallel_scenario_1();
 };
 
 } // namespace fb::bot::integration
