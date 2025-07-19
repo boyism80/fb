@@ -26,13 +26,16 @@ async::task<bool> worldmap_test::worldmap_scenario()
     if (bots.empty())
         throw std::runtime_error("No bots available for worldmap test");
 
+    fb::logger::debug("Worldmap test: Bot {} moving to 국내성진입로", bots.front()->name());
     auto bot = co_await bots.front()->transfer(fb::protocol::game::request::chat(false, "/맵이동 국내성진입로 8 1"),
                                                DEFAULT_TIMEOUT);
 
+    fb::logger::debug("Worldmap test: Bot {} requesting worldmap data", bot->name());
     co_await bot->request<fb::protocol::game::response::map_worlds>(
         fb::protocol::game::request::move(DIRECTION::TOP, bot->oid(), bot->position()),
         DEFAULT_TIMEOUT);
 
+    fb::logger::debug("Worldmap test: Bot {} navigating to worldmap", bot->name());
     bot = co_await bot->transfer(fb::protocol::game::request::map_world(0, 1, 0), DEFAULT_TIMEOUT);
 
     auto& after = this->controller.container.model.world[0][0];

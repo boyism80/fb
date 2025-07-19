@@ -330,8 +330,9 @@ async::task<bool> item_test_give::test_give_to_mob_and_kill()
         },
         DEFAULT_TIMEOUT);
 
+    co_await bot1->change_mp(1000, DEFAULT_TIMEOUT);
     std::ignore = co_await bot1->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, 1, "", mob_info.oid, mob_info.position),
+        fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 1, "", mob_info.oid, mob_info.position),
         [](auto& resp) -> bool {
             return resp.ch_money == 1000;
         },

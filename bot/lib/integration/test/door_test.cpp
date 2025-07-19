@@ -26,6 +26,7 @@ async::task<bool> door_test::door_scenario()
     if (bots.empty())
         throw std::runtime_error("No bots available for door test");
 
+    fb::logger::debug("Door test: Bot {} moving to 국내성", bots.front()->name());
     auto bot = co_await bots.front()->transfer(fb::protocol::game::request::chat(false, "/맵이동 국내성 109 13"),
                                                DEFAULT_TIMEOUT);
     co_await bot->direction(DIRECTION::TOP, DEFAULT_TIMEOUT);
@@ -49,6 +50,7 @@ async::task<bool> door_test::door_scenario()
         },
         DEFAULT_TIMEOUT);
 
+    fb::logger::debug("Door test: Bot {} creating 파란열쇠", bot->name());
     co_await bot->create_item("파란열쇠", 1, DEFAULT_TIMEOUT);
 
     std::ignore = co_await bot->request<fb::protocol::game::response::message>(
@@ -61,6 +63,7 @@ async::task<bool> door_test::door_scenario()
         },
         DEFAULT_TIMEOUT);
 
+    fb::logger::debug("Door test: Bot {} dropping key", bot->name());
     co_await bot->drop_item(0, false, DEFAULT_TIMEOUT);
 
     std::ignore = co_await bot->request<fb::protocol::game::response::message>(
@@ -80,6 +83,7 @@ async::task<bool> door_test::door_scenario()
         },
         DEFAULT_TIMEOUT);
 
+    fb::logger::debug("Door test: Bot {} moving to new door location", bot->name());
     co_await bot->map_move("국내성", 110, 13, DEFAULT_TIMEOUT);
 
     std::ignore = co_await bot->request<fb::protocol::game::response::message>(
