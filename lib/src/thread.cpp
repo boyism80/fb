@@ -89,7 +89,6 @@ void fb::thread::exit()
         return;
 
     this->_exit = true;
-    this->_timers.clear();
 }
 
 std::shared_ptr<fb::timer> fb::thread::settimer(const fb::timer::handle_callback_type& fn,

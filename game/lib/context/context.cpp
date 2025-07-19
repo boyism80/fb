@@ -355,6 +355,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.updated_date(fb::model::datetime(response.updated_date));
     ch.role(static_cast<ROLE>(response.role));
     ch.cls(static_cast<CLASS>(response.class_type));
+    ch.promotion(response.promotion);
     ch.color(response.color);
     ch.direction(DIRECTION(response.direction));
     ch.look(response.look);

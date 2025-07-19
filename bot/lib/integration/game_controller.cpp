@@ -11,6 +11,7 @@
 #include <fb/bot/integration/emotion_test.h>
 #include <fb/bot/integration/front_info_test.h>
 #include <fb/bot/integration/chat_interaction_test.h>
+#include <fb/bot/integration/user_list_test.h>
 #include <fb/bot/integration/swap_test.h>
 #include <fb/bot/integration/throw_test.h>
 #include <fb/bot/game_bot.h>
@@ -84,6 +85,7 @@ void game_bot_controller::initialize()
     this->enqueue_test(std::make_unique<emotion_test>(*this));
     this->enqueue_test(std::make_unique<front_info_test>(*this));
     this->enqueue_test(std::make_unique<chat_interaction_test>(*this));
+    this->enqueue_test(std::make_unique<user_list_test>(*this));
     this->enqueue_test(std::make_unique<swap_test>(*this));
     this->enqueue_test(std::make_unique<throw_test>(*this));
 

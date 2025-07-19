@@ -331,6 +331,22 @@ protected:
      * @return     A task that completes when the bots are arranged.
      */
     async::task<void> arrange_bots_in_line_formation();
+
+    /**
+     * @brief      Arranges bots in grid formation.
+     *
+     *             This method is used to arrange bots in a 2D grid formation.
+     *             The bots are arranged in a grid from (start_x, start_y) to (end_x, end_y).
+     *
+     * @param[in]  start_x  The starting x coordinate for the grid.
+     * @param[in]  start_y  The starting y coordinate for the grid.
+     * @param[in]  end_x    The ending x coordinate for the grid.
+     * @param[in]  end_y    The ending y coordinate for the grid.
+     *
+     * @return     A task that completes when the bots are arranged.
+     */
+    async::task<void>
+    arrange_bots_in_grid_formation(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y);
 };
 
 } // namespace fb::bot::integration

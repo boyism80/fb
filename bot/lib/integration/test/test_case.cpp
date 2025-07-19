@@ -329,4 +329,35 @@ async::task<void> bot_integration_test::arrange_bots_in_line_formation()
     }
 }
 
+async::task<void>
+bot_integration_test::arrange_bots_in_grid_formation(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y)
+{
+    auto bots = this->get_test_bots();
+
+    // Calculate grid dimensions
+    auto grid_width  = end_x - start_x + 1;
+    auto grid_height = end_y - start_y + 1;
+
+    // Position bots in a 2D grid from (start_x, start_y) to (end_x, end_y)
+    for (int i = 0; i < static_cast<int>(bots.size()); ++i)
+    {
+        auto& bot = bots[i];
+
+        // Calculate grid position
+        int grid_x = start_x + (i % grid_width);
+        int grid_y = start_y + (i / grid_width);
+
+        // Move bot to calculated position
+        if (bot == bots.back())
+            co_await bot->map_move("낙랑의방", grid_x, grid_y, DEFAULT_TIMEOUT);
+        else
+            std::ignore = bot->map_move("낙랑의방", grid_x, grid_y, DEFAULT_TIMEOUT);
+
+        fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM",
+                          bot->fd(),
+                          bot->position().x,
+                          bot->position().y);
+    }
+}
+
 } // namespace fb::bot::integration

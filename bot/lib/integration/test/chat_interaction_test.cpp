@@ -281,7 +281,11 @@ async::task<bool> chat_interaction_test::test_scenario_3(int index)
                 break;
         }
 
-        this->sleep(1500ms);
+        // Wait for revive
+        while (bot->state() != STATE::NORMAL)
+        {
+            co_await this->sleep(100ms);
+        }
 
         std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
             fb::protocol::game::request::chat(false, "감사합니다"),
