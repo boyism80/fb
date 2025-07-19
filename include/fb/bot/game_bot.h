@@ -1204,6 +1204,26 @@ public:
                                         std::chrono::milliseconds          timeout);
 
     async::task<void> apply_condition(const std::vector<fb::model::dsl>& conditions, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Sends a transfer request to the server and waits for a matching response.
+     *
+     *             Sends a transfer request to the server and waits for a matching response.
+     *             This enables request-response patterns in bot communication.
+     *
+     * @param[in]  protocol  The protocol message to send.
+     * @param[in]  timeout   The timeout duration for the request.
+     * @param[in]  encrypt   Whether to encrypt the outgoing message.
+     * @param[in]  wrap      Whether to wrap the outgoing message.
+     *
+     * @tparam     ResponseType  The expected response protocol type.
+     *
+     * @return     An async task that completes with the response.
+     */
+    async::task<std::shared_ptr<game_bot>> transfer(const fb::protocol::header& protocol,
+                                                    const fb::model::timespan&  timeout = 15s,
+                                                    bool                        encrypt = true,
+                                                    bool                        wrap    = true);
 };
 
 } // namespace fb::bot

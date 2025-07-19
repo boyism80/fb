@@ -27,19 +27,19 @@ bot_container::bot_container(boost::asio::io_context& context) :
     }
 }
 
-void bot_container::set_gateway_bot_controller(std::unique_ptr<gateway_bot_controller> bot_controller)
+void bot_container::set_gateway_bot_controller(std::shared_ptr<gateway_bot_controller> bot_controller)
 {
-    this->gateway = std::move(bot_controller);
+    this->gateway = bot_controller;
 }
 
-void bot_container::set_login_bot_controller(std::unique_ptr<login_bot_controller> bot_controller)
+void bot_container::set_login_bot_controller(std::shared_ptr<login_bot_controller> bot_controller)
 {
-    this->login = std::move(bot_controller);
+    this->login = bot_controller;
 }
 
-void bot_container::set_game_bot_controller(std::unique_ptr<game_bot_controller> bot_controller)
+void bot_container::set_game_bot_controller(std::shared_ptr<game_bot_controller> bot_controller)
 {
-    this->game = std::move(bot_controller);
+    this->game = bot_controller;
 }
 
 void bot_container::initialize()

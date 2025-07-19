@@ -136,16 +136,16 @@ int main(int argc, char** argv)
         if (mode == test_mode::INTEGRATION_TEST)
         {
             container->set_gateway_bot_controller(
-                std::make_unique<fb::bot::integration::gateway_bot_controller>(*container));
+                std::make_shared<fb::bot::integration::gateway_bot_controller>(*container));
             container->set_login_bot_controller(
-                std::make_unique<fb::bot::integration::login_bot_controller>(*container));
-            container->set_game_bot_controller(std::make_unique<fb::bot::integration::game_bot_controller>(*container));
+                std::make_shared<fb::bot::integration::login_bot_controller>(*container));
+            container->set_game_bot_controller(std::make_shared<fb::bot::integration::game_bot_controller>(*container));
         }
         else
         {
-            container->set_gateway_bot_controller(std::make_unique<fb::bot::load::gateway_bot_controller>(*container));
-            container->set_login_bot_controller(std::make_unique<fb::bot::load::login_bot_controller>(*container));
-            container->set_game_bot_controller(std::make_unique<fb::bot::load::game_bot_controller>(*container));
+            container->set_gateway_bot_controller(std::make_shared<fb::bot::load::gateway_bot_controller>(*container));
+            container->set_login_bot_controller(std::make_shared<fb::bot::load::login_bot_controller>(*container));
+            container->set_game_bot_controller(std::make_shared<fb::bot::load::game_bot_controller>(*container));
         }
 
         container->initialize();

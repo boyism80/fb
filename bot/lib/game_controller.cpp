@@ -273,4 +273,62 @@ async::task<void> game_bot_controller::handle_item_remove(game_bot&             
     co_return;
 }
 
+bool game_bot_controller::register_transfer_context(const fb::protocol::header&       protocol,
+                                                    std::shared_ptr<transfer_context> context)
+{
+    auto name = context->name;
+    if (this->_transfer_contexts.contains(name))
+        return false;
+
+    this->_transfer_contexts.insert({name, context});
+    return true;
+}
+
+void game_bot_controller::remove_transfer_context(std::string name)
+{
+    this->_transfer_contexts.erase(name);
+}
+
+bool game_bot_controller::invoke_transfer_context(std::string name, std::shared_ptr<game_bot> bot)
+{
+    if (this->_transfer_contexts.contains(name) == false)
+        return false;
+
+    auto context = this->_transfer_contexts[name];
+    context->complete_success(bot);
+    this->_transfer_contexts.erase(name);
+    return true;
+}
+
+async::task<std::shared_ptr<game_bot>>
+game_bot::transfer(const fb::protocol::header& protocol, const fb::model::timespan& timeout, bool encrypt, bool wrap)
+{
+    auto promise = std::make_shared<async::task_completion_source<std::shared_ptr<game_bot>>>();
+    auto context = std::make_shared<game_bot_controller::transfer_context>(
+        promise,
+        this->name(),
+        this->controller.weak_from_this_as<game_bot_controller>());
+    auto& controller = static_cast<game_bot_controller&>(this->controller);
+    controller.register_transfer_context(protocol, context);
+
+    // Set up timeout timer if specified
+    if (timeout > 0s)
+    {
+        auto thread = this->thread();
+        std::ignore = thread->dispatch([context, timeout](auto& thread) -> async::task<void> {
+            context->timer = thread.settimer(
+                [context](auto& datetime, auto thread_id) -> async::task<void> {
+                    context->complete_timeout();
+                    co_return;
+                },
+                timeout,
+                fb::timer::repeat_type::once);
+            co_return;
+        });
+    }
+
+    this->send(protocol, encrypt, wrap);
+    return promise->task();
+}
+
 } // namespace fb::bot

@@ -190,12 +190,14 @@ public:
     template <typename ResponseType>
     struct request_context
     {
-        std::shared_ptr<async::task_completion_source<ResponseType>> promise;
-        std::shared_ptr<fb::timer>                                   timer;
-        std::weak_ptr<BotType>                                       bot_weak;
-        uint8_t                                                      hook_cmd;
-        std::atomic<bool>                                            completed{false};
-        const void*                                                  context_ptr; ///< Self-reference for hook removal
+        using promise_type = async::task_completion_source<ResponseType>;
+
+        std::shared_ptr<promise_type> promise;
+        std::shared_ptr<fb::timer>    timer;
+        std::weak_ptr<BotType>        bot_weak;
+        uint8_t                       hook_cmd;
+        std::atomic<bool>             completed{false};
+        const void*                   context_ptr; ///< Self-reference for hook removal
 
         /**
          * @brief      Constructs a new request context.
@@ -204,7 +206,7 @@ public:
          * @param[in]  cmd  The protocol command for hook management.
          */
         request_context(std::shared_ptr<BotType> bot, uint8_t cmd) :
-            promise(std::make_shared<async::task_completion_source<ResponseType>>()),
+            promise(std::make_shared<promise_type>()),
             bot_weak(bot),
             hook_cmd(cmd),
             context_ptr(this)

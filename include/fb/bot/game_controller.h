@@ -19,6 +19,56 @@ class game_bot_controller : public bot_controller<game_bot>
 public:
     using bot_type = game_bot; ///< Type alias for the managed bot type
 
+public:
+    struct transfer_context
+    {
+        using promise_type = async::task_completion_source<std::shared_ptr<game_bot>>;
+
+        std::shared_ptr<promise_type>      promise;
+        std::shared_ptr<fb::timer>         timer;
+        std::string                        name;
+        std::atomic<bool>                  completed;
+        std::weak_ptr<game_bot_controller> controller_weak;
+
+        transfer_context(std::shared_ptr<promise_type>      promise,
+                         std::string                        name,
+                         std::weak_ptr<game_bot_controller> controller) :
+            promise(promise),
+            name(name),
+            controller_weak(controller)
+        { }
+
+        void complete_success(std::shared_ptr<game_bot> bot)
+        {
+            if (completed.exchange(true))
+                return; // Already completed
+
+            if (timer)
+                timer->cancel();
+            promise->set_value(bot);
+        }
+
+        void complete_timeout()
+        {
+            if (completed.exchange(true))
+                return; // Already completed
+
+            // Remove hook from bot (if bot still exists)
+            if (auto controller = controller_weak.lock())
+                controller->remove_transfer_context(name);
+
+            promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
+        }
+
+        async::task<std::shared_ptr<game_bot>> task()
+        {
+            return promise->task();
+        }
+    };
+
+private:
+    std::unordered_map<std::string, std::shared_ptr<transfer_context>> _transfer_contexts;
+
 protected:
     /**
      * @brief      Protected constructor to enforce abstract nature of this class.
@@ -336,8 +386,6 @@ private:
         // Update additional data
         bot.set_head_marker(response.head_marker);
         bot.set_name(response.name);
-        bot.inited(true);
-
         co_return;
     }
 
@@ -361,6 +409,11 @@ private:
      * @return     An async task that completes when item removal processing is finished.
      */
     async::task<void> handle_item_remove(game_bot& bot, const fb::protocol::game::response::item_remove& response);
+
+public:
+    bool register_transfer_context(const fb::protocol::header& protocol, std::shared_ptr<transfer_context> context);
+    void remove_transfer_context(std::string name);
+    bool invoke_transfer_context(std::string name, std::shared_ptr<game_bot> bot);
 };
 
 } // namespace fb::bot

@@ -8,7 +8,7 @@
 
 namespace fb::bot {
 
-class base_bot_controller
+class base_bot_controller : public std::enable_shared_from_this<base_bot_controller>
 {
 public:
     bot_container& container;
@@ -200,6 +200,12 @@ protected:
     }
 
 public:
+    template <typename T>
+    std::weak_ptr<T> weak_from_this_as()
+    {
+        return std::static_pointer_cast<T>(this->shared_from_this());
+    }
+
     /**
      * @brief      Ensures a handler is registered for the specified protocol type.
      *

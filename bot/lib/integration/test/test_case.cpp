@@ -291,12 +291,17 @@ bot_integration_test::on_hook_update_external(fb::bot::game_bot&                
                                               const fb::protocol::game::response::update_external<true>& response)
 {
     if (bot.inited() == false)
+    {
         bot.inited(true);
+
+        auto id = bot.id;
+        this->controller.invoke_transfer_context(bot.name(), bot.shared_from_this_as<game_bot>());
+    }
 
     if (this->is_ready() == false)
         co_return;
 
-    if (this->get_state() == test_state::running)
+    if (this->get_state() >= test_state::running)
         co_return;
 
     fb::logger::debug("{}: All bots ready, notifying controller", this->name());

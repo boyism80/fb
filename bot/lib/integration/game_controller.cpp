@@ -14,6 +14,7 @@
 #include <fb/bot/integration/user_list_test.h>
 #include <fb/bot/integration/swap_test.h>
 #include <fb/bot/integration/throw_test.h>
+#include <fb/bot/integration/worldmap_test.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
@@ -72,6 +73,8 @@ void game_bot_controller::initialize()
     // Set up integration test timer with different interval (slower for detailed testing)
     this->bind_timer(&game_bot_controller::handle_timer, 1000ms);
 
+    auto local = fb::config<std::string>("ip") == "127.0.0.1";
+
     // Create tests and add them to the queue
     this->enqueue_test(std::make_unique<movement_test>(*this));
     this->enqueue_test(std::make_unique<attack_test>(*this));
@@ -88,6 +91,10 @@ void game_bot_controller::initialize()
     this->enqueue_test(std::make_unique<user_list_test>(*this));
     this->enqueue_test(std::make_unique<swap_test>(*this));
     this->enqueue_test(std::make_unique<throw_test>(*this));
+    if (!local)
+    {
+        this->enqueue_test(std::make_unique<worldmap_test>(*this));
+    }
 
     // Log the test queue in a more manageable format
     fb::logger::info("Integration test controller initialized with {} tests in queue", this->_test_queue.size());
