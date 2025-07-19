@@ -15,6 +15,7 @@
 #include <fb/bot/integration/swap_test.h>
 #include <fb/bot/integration/throw_test.h>
 #include <fb/bot/integration/worldmap_test.h>
+#include <fb/bot/integration/door_test.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
@@ -94,6 +95,7 @@ void game_bot_controller::initialize()
     if (!local)
     {
         this->enqueue_test(std::make_unique<worldmap_test>(*this));
+        this->enqueue_test(std::make_unique<door_test>(*this));
     }
 
     // Log the test queue in a more manageable format

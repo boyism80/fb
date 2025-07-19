@@ -918,7 +918,7 @@ async::task<bool> game_bot::equip(uint8_t slot, const std::string& item_name, st
 
         auto   prefix = prefix_map.at(item_model->type);
         auto&& resp   = co_await this->request<fb::protocol::game::response::message>(
-            fb::protocol::game::request::item_active(slot + 1),
+            fb::protocol::game::request::item_active(slot),
             [prefix](auto& resp) -> bool {
                 return resp.type == MESSAGE_TYPE::STATE;
             },

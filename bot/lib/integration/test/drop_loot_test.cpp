@@ -297,7 +297,7 @@ async::task<bool> drop_loot_test::test_scenario_5()
     // 5. Bot2 equips 목도 and check for weapon equipment message
     auto mokdo_slot = this->get_item_slot(bot2, "목도");
     std::ignore     = co_await bot2->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::item_active(mokdo_slot + 1),
+        fb::protocol::game::request::item_active(mokdo_slot),
         [](auto& resp) -> bool {
             return resp.text.find("w:무기  :") == 0;
         },

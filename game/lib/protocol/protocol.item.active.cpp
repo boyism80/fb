@@ -7,7 +7,7 @@ async::task<void> item_active::serialize(fb::stream_writer<big_endian>& writer) 
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint8_t>(this->index);
+    writer.write<uint8_t>(this->index + 1);
 }
 #else
 async::task<void> item_active::deserialize(fb::stream_reader<big_endian>& reader)

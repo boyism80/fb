@@ -1,4 +1,6 @@
-#include <fb/model/model.h>
+#ifndef __MODEL_PREPROCESSOR_H__
+#define __MODEL_PREPROCESSOR_H__
+
 #include <fb/model/datetime.h>
 
 #define DECLARE_PROMOTION_CONTAINER_EXTENSION                                                               \
@@ -32,3 +34,5 @@ public:                                 \
                                           \
 public:                                   \
     fb::model::spell* name2spell(const std::string& name) const;
+
+#endif
