@@ -82,11 +82,12 @@ async::task<void> dialog::deserialize(fb::stream_reader<big_endian>& reader)
 async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
+    writer.write<uint8_t>(header);
     writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
 
     switch (this->interaction)
     {
-    case 0:                          // NORMAL
+    case INTERACTION::NORMAL:        // NORMAL
         writer.write<uint8_t>(0x00); // 7바이트 패딩
         writer.write<uint8_t>(0x00);
         writer.write<uint8_t>(0x00);
@@ -97,13 +98,13 @@ async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint8_t>(this->action);
         break;
 
-    case 1:                                 // INPUT
+    case INTERACTION::INPUT:                // INPUT
         writer.write<uint16_t>(0x0000);     // unknown1
         writer.write<uint32_t>(0x00000000); // unknown2
         writer.write<std::string, uint16_t>(this->message);
         break;
 
-    case 2:                          // INPUT_EX
+    case INTERACTION::INPUT_EX:      // INPUT_EX
         writer.write<uint8_t>(0x00); // 7바이트 패딩
         writer.write<uint8_t>(0x00);
         writer.write<uint8_t>(0x00);
@@ -119,12 +120,12 @@ async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
         }
         break;
 
-    case 3:                                 // MENU
+    case INTERACTION::MENU:                 // MENU
         writer.write<uint32_t>(0x00000000); // unknown
         writer.write<uint16_t>(this->index);
         break;
 
-    case 4:                                 // LIST
+    case INTERACTION::LIST:                 // LIST
         writer.write<uint32_t>(0x00000000); // unknown1
         writer.write<uint32_t>(static_cast<uint32_t>(this->button));
         if (this->button == DIALOG_RESULT::NEXT)
@@ -134,13 +135,13 @@ async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
         }
         break;
 
-    case 5:                                 // SLOT
+    case INTERACTION::SLOT:                 // SLOT
         writer.write<uint32_t>(0x00000000); // unknown
         writer.write<uint16_t>(this->pursuit);
         writer.write<std::string, uint8_t>(this->name);
         break;
 
-    case 6:                                 // ITEM
+    case INTERACTION::ITEM:                 // ITEM
         writer.write<uint32_t>(0x00000000); // unknown
         writer.write<uint16_t>(this->pursuit);
         writer.write<uint8_t>(this->index);

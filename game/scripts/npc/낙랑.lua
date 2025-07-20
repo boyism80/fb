@@ -74,7 +74,7 @@ function sample_clan(me, npc)
         end
 
         if selected == 0 then
-            local title = me:input(npc, '문파 칭호 입력')
+            local title = me:input(npc, '문파 칭호 입력', '문파 칭호는', '입니다.', 12, true)
             clan = me:clan()
             if clan == nil then
                 me:dialog(npc, '클랜 없음')

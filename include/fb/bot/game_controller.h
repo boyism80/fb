@@ -410,6 +410,20 @@ private:
      */
     async::task<void> handle_item_remove(game_bot& bot, const fb::protocol::game::response::item_remove& response);
 
+    /**
+     * @brief      Handles internal info notifications from the server.
+     *
+     *             This method handles the internal info response from the server.
+     *             It updates the bot's internal info data with the new values.
+     *
+     *
+     * @param[in]  bot       The game bot instance.
+     * @param[in]  response  The internal info response containing internal info data.
+     *
+     * @return     An async task that completes when internal info processing is finished.
+     */
+    async::task<void> handle_internal_info(game_bot& bot, const fb::protocol::game::response::internal_info& response);
+
 public:
     bool register_transfer_context(const fb::protocol::header& protocol, std::shared_ptr<transfer_context> context);
     void remove_transfer_context(std::string name);

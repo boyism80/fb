@@ -14,10 +14,20 @@ public:
     static constexpr uint8_t header = 0x43;
 
 public:
-    uint32_t fd;
+#ifndef BOT
+    uint32_t oid;
+#else
+    const uint32_t oid;
+#endif
 
 public:
+#ifndef BOT
     click() = default;
+#else
+    click(uint32_t oid) :
+        oid(oid)
+    { }
+#endif
 
 public:
 #ifdef BOT

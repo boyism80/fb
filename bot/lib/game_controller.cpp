@@ -31,6 +31,7 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::handle_update_external<false>);
     this->bind(&game_bot_controller::handle_item_update);
     this->bind(&game_bot_controller::handle_item_remove);
+    this->bind(&game_bot_controller::handle_internal_info);
 }
 
 bool game_bot_controller::decrypt_policy(int cmd) const
@@ -270,6 +271,18 @@ async::task<void> game_bot_controller::handle_item_remove(game_bot&             
 {
     // Remove the item from the bot's inventory
     bot.remove_item(static_cast<uint8_t>(response.index));
+    co_return;
+}
+
+async::task<void> game_bot_controller::handle_internal_info(game_bot&                                          bot,
+                                                            const fb::protocol::game::response::internal_info& response)
+{
+    bot.set_clan_name(response.clan_name);
+    bot.set_clan_title(response.clan_title);
+    bot.set_title(response.title);
+    bot.set_group_info(response.group_info);
+    bot.set_group_option(response.group_option);
+    bot.set_remained_exp(response.remained_exp);
     co_return;
 }
 

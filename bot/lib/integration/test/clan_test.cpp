@@ -1,6 +1,8 @@
 #include <fb/bot/integration/clan_test.h>
 #include <fb/bot/integration/game_controller.h>
 #include <fb/bot/integration/gateway_controller.h>
+#include <fb/bot/integration/dialog_bot.h>
+#include <fb/bot/integration/dialog_ext_bot.h>
 
 using namespace std::chrono_literals;
 
@@ -30,61 +32,76 @@ async::task<void> clan_test::on_scenario_started(uint32_t scenario_index)
 
 async::task<void> clan_test::on_scenario_finished(uint32_t scenario_index)
 {
-    auto bots   = this->get_test_bots();
-    auto thread = bots.front()->thread();
-
-    // Clean up any clan-related state
-    for (auto& bot : bots)
-    {
-        // TODO: Implement clan cleanup logic
-    }
-
-    co_await thread->sleep(DEFAULT_INTERVAL);
+    auto bots = this->get_test_bots();
     co_return;
-}
-
-async::task<void> clan_test::on_parallel_scenario_started(uint32_t id)
-{
-    auto  bots = this->get_test_bots();
-    auto& bot  = bots[id];
-
-    // TODO: Initialize bot for parallel scenario
-    co_return;
-}
-
-async::task<void> clan_test::on_parallel_scenario_finished(uint32_t id)
-{
-    auto  bots = this->get_test_bots();
-    auto& bot  = bots[id];
-
-    // TODO: Clean up bot after parallel scenario
-    co_return;
-}
-
-async::task<bool> clan_test::scenario_1()
-{
-    auto scenarios = std::vector<std::pair<uint32_t, scenario_t>>{
-        {0,
-         [this]() -> async::task<bool> {
-             co_return co_await this->test_clan_creation();
-         }},
-        {1,
-         [this]() -> async::task<bool> {
-             co_return co_await this->test_clan_member_management();
-         }},
-    };
-    co_return co_await this->parallel_scenarios(scenarios);
 }
 
 async::task<bool> clan_test::test_clan_creation()
 {
-    // TODO: Implement clan creation test
-    // - Create clan with multiple bots
-    // - Verify clan membership
-    // - Test clan coordination
+    auto  bots = this->get_test_bots();
+    auto& bot  = bots.front();
 
-    fb::logger::debug("Clan creation test - not implemented yet");
-    co_await this->sleep(1s);
+    auto npc = this->controller.container.model.npc.name2npc("낙랑");
+    if (npc == nullptr)
+    {
+        fb::logger::fatal("Clan test failed: NPC not found");
+        co_return false;
+    }
+
+    // Click on NPC to open menu dialog
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::click(1),
+        [&npc](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_type::menu && resp.look == npc->look;
+        },
+        DEFAULT_TIMEOUT);
+
+    // Select 1st menu and receive input dialog
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
+                                            0,
+                                            "",
+                                            1,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::PREV),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_type::input;
+        },
+        DEFAULT_TIMEOUT);
+
+    // Send input dialog and receive result dialog
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT,
+                                            0,
+                                            bot->name(),
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::PREV),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_ext_type::normal;
+        },
+        DEFAULT_TIMEOUT);
+
+    bot->send(fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL,
+                                                  1,
+                                                  "",
+                                                  0,
+                                                  0,
+                                                  "",
+                                                  DIALOG_RESULT::PREV));
+
+    auto&& resp =
+        co_await bot->request<fb::protocol::game::response::internal_info>(fb::protocol::game::request::self_info(),
+                                                                           DEFAULT_TIMEOUT);
+
+    if (resp.clan_name != bot->name())
+    {
+        fb::logger::fatal("Clan test failed: Clan name mismatch");
+        co_return false;
+    }
+
     co_return true;
 }
 
@@ -128,14 +145,17 @@ async::task<bool> clan_test::test_clan_disbanding()
 fb::generator<bot_integration_test::scenario_t> clan_test::on_generate_scenario()
 {
     co_yield [this]() -> async::task<bool> {
-        co_return co_await this->scenario_1();
+        co_return co_await this->test_clan_creation();
     };
-
-    // TODO: Add more scenarios as needed
-    // co_yield [this]() -> async::task<bool> {
-    //     // Additional clan test scenarios
-    //     co_return true;
-    // };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_clan_member_management();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_clan_communication();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_clan_disbanding();
+    };
 }
 
 std::string clan_test::name() const

@@ -423,6 +423,66 @@ void game_bot::set_name(const std::string& value)
     this->_name = value;
 }
 
+const std::string& game_bot::clan_name() const
+{
+    return this->_clan_name;
+}
+
+void game_bot::set_clan_name(const std::string& value)
+{
+    this->_clan_name = value;
+}
+
+const std::string& game_bot::clan_title() const
+{
+    return this->_clan_title;
+}
+
+void game_bot::set_clan_title(const std::string& value)
+{
+    this->_clan_title = value;
+}
+
+const std::string& game_bot::title() const
+{
+    return this->_title;
+}
+
+void game_bot::set_title(const std::string& value)
+{
+    this->_title = value;
+}
+
+const std::string& game_bot::group_info() const
+{
+    return this->_group_info;
+}
+
+void game_bot::set_group_info(const std::string& value)
+{
+    this->_group_info = value;
+}
+
+uint8_t game_bot::group_option() const
+{
+    return this->_group_option;
+}
+
+void game_bot::set_group_option(uint8_t value)
+{
+    this->_group_option = value;
+}
+
+uint32_t game_bot::remained_exp() const
+{
+    return this->_remained_exp;
+}
+
+void game_bot::set_remained_exp(uint32_t value)
+{
+    this->_remained_exp = value;
+}
+
 async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model::timespan& delay)
 {
     auto thread = this->thread();

@@ -395,14 +395,14 @@ async::task<bool> context::handle_click_object(fb::socket<character>& socket, co
     if (ch->inited() == false)
         co_return true;
 
-    if (request.fd == 0xFFFFFFFF) // Press F1
+    if (request.oid == 0xFFFFFFFF) // Press F1
         co_return true;
 
-    if (request.fd == 0xFFFFFFFE) // Preff F2
+    if (request.oid == 0xFFFFFFFE) // Preff F2
         co_return true;
 
     auto map = ch->map();
-    auto you = map->objects[request.fd];
+    auto you = map->objects[request.oid];
     if (you == nullptr)
         co_return true;
 

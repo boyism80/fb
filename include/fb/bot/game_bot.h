@@ -176,6 +176,12 @@ private:
     uint8_t     _shield_color = 0;             ///< Shield color
     uint8_t     _head_marker  = 0;             ///< Head marker (clan mark, etc)
     std::string _name;                         ///< Character name
+    std::string _clan_name;                    ///< Character's clan name
+    std::string _clan_title;                   ///< Character's clan title
+    std::string _title;                        ///< Character's title
+    std::string _group_info;                   ///< Character's group info
+    uint8_t     _group_option = 0;             ///< Character's group option
+    uint32_t    _remained_exp = 0;             ///< Character's remained exp
 
 public:
     /**
@@ -639,6 +645,90 @@ public:
      * @param[in]  value  The character name to set.
      */
     void set_name(const std::string& value);
+
+    /**
+     * @brief      Gets the character's clan name.
+     *
+     * @return     A constant reference to the clan name string.
+     */
+    const std::string& clan_name() const;
+
+    /**
+     * @brief      Sets the character's clan name.
+     *
+     * @param[in]  value  The clan name to set.
+     */
+    void set_clan_name(const std::string& value);
+
+    /**
+     * @brief      Gets the character's clan title.
+     *
+     * @return     A constant reference to the clan title string.
+     */
+    const std::string& clan_title() const;
+
+    /**
+     * @brief      Sets the character's clan title.
+     *
+     * @param[in]  value  The clan title to set.
+     */
+    void set_clan_title(const std::string& value);
+
+    /**
+     * @brief      Gets the character's title.
+     *
+     * @return     A constant reference to the title string.
+     */
+    const std::string& title() const;
+
+    /**
+     * @brief      Sets the character's title.
+     *
+     * @param[in]  value  The title to set.
+     */
+    void set_title(const std::string& value);
+
+    /**
+     * @brief      Gets the character's group info.
+     *
+     * @return     A constant reference to the group info string.
+     */
+    const std::string& group_info() const;
+
+    /**
+     * @brief      Sets the character's group info.
+     *
+     * @param[in]  value  The group info to set.
+     */
+    void set_group_info(const std::string& value);
+
+    /**
+     * @brief      Gets the character's group option.
+     *
+     * @return     The group option value.
+     */
+    uint8_t group_option() const;
+
+    /**
+     * @brief      Sets the character's group option.
+     *
+     * @param[in]  value  The group option to set.
+     */
+    void set_group_option(uint8_t value);
+
+    /**
+     * @brief      Gets the character's remained exp.
+     *
+     * @return     The remained exp value.
+     */
+    uint32_t remained_exp() const;
+
+    /**
+     * @brief      Sets the character's remained exp.
+     *
+     * @param[in]  value  The remained exp to set.
+     */
+    void set_remained_exp(uint32_t value);
 
     /**
      * @brief      Move the bot in the specified direction.

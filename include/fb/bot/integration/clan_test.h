@@ -22,8 +22,6 @@ protected:
     async::task<void>     on_initialize(game_bot_controller& controller) override final;
     async::task<void>     on_scenario_started(uint32_t scenario_index) override final;
     async::task<void>     on_scenario_finished(uint32_t scenario_index) override final;
-    async::task<void>     on_parallel_scenario_started(uint32_t id) override final;
-    async::task<void>     on_parallel_scenario_finished(uint32_t id) override final;
 
 public:
     /**
@@ -43,18 +41,6 @@ public:
     std::string name() const override final;
 
 private:
-    /**
-     * @brief      Executes the main clan test scenario.
-     *
-     *             This method orchestrates the complete clan testing sequence.
-     *             Currently contains empty scenarios for future implementation.
-     *
-     * @return     A task that completes with true if all clan tests passed, false otherwise.
-     *
-     * @note       This is the primary entry point for clan testing execution
-     */
-    async::task<bool> scenario_1();
-
     /**
      * @brief      Tests basic clan creation functionality.
      *
