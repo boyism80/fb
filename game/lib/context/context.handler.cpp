@@ -196,44 +196,10 @@ async::task<bool> context::handle_update_move(fb::socket<character>& socket, con
                 bytes.hash = hash;
                 bytes.crc  = 0;
 
-                auto     writer = fb::stream_writer<big_endian>(bytes.bytes);
-                uint32_t map_size =
-                    request.size.width * request.size.height * sizeof(uint16_t) * 3; // tile id, block, object
-
-                writer.write<uint8_t>(fb::protocol::game::response::map_update::header);
-                if (map->model.effect == MAP_EFFECT_TYPE::NONE)
-                {
-                    writer.write<uint8_t>(0x00);
-                }
-                else
-                {
-                    writer.write<uint8_t>(0x04);
-                    writer.write<uint8_t>(static_cast<uint8_t>(map->model.effect));
-                }
-
-                writer.write<uint16_t>(request.begin.x);
-                writer.write<uint16_t>(request.begin.y);
-                writer.write<uint8_t>(request.size.width);
-                writer.write<uint8_t>(request.size.height);
-
-                for (int row = request.begin.y; row < request.begin.y + request.size.height; row++)
-                {
-                    for (int col = request.begin.x; col < request.begin.x + request.size.width; col++)
-                    {
-                        auto tile = (*map)(col, row);
-                        if (tile == nullptr)
-                            continue;
-
-                        writer.write<uint16_t>(tile->id);
-                        writer.write<uint16_t>(tile->blocked);
-                        writer.write<uint16_t>(tile->object);
-
-                        bytes.crc = (bytes.crc << 8) ^ CRC16_TAB[bytes.crc >> 8] ^ tile->id;
-                        bytes.crc = (bytes.crc << 8) ^ CRC16_TAB[bytes.crc >> 8] ^ uint16_t(tile->blocked);
-                        bytes.crc = (bytes.crc << 8) ^ CRC16_TAB[bytes.crc >> 8] ^ tile->object;
-                    }
-                }
-
+                auto writer = fb::stream_writer<big_endian>(bytes.bytes);
+                auto resp   = fb::protocol::game::response::map_update(*map, request.begin, request.size);
+                std::ignore = resp.serialize(writer);
+                bytes.crc   = resp.crc;
                 return bytes;
             });
     }

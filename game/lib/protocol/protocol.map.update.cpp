@@ -28,7 +28,47 @@ async::task<void> map_update::serialize(fb::stream_writer<big_endian>& writer) c
 
 namespace fb::protocol::game::response {
 
-#ifdef BOT
+#ifndef BOT
+async::task<void> map_update::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    co_await header::serialize(writer);
+    writer.write<uint8_t>(header);
+
+    if (this->map.model.effect == MAP_EFFECT_TYPE::NONE)
+    {
+        writer.write<uint8_t>(0x00);
+    }
+    else
+    {
+        writer.write<uint8_t>(0x04);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->map.model.effect));
+    }
+
+    writer.write<uint16_t>(this->position.x);
+    writer.write<uint16_t>(this->position.y);
+    writer.write<uint8_t>(this->size.width);
+    writer.write<uint8_t>(this->size.height);
+
+    uint32_t map_size = this->size.width * this->size.height * sizeof(uint16_t) * 3; // tile id, block, object
+    for (int row = this->position.y; row < this->position.y + this->size.height; row++)
+    {
+        for (int col = this->position.x; col < this->position.x + this->size.width; col++)
+        {
+            auto tile = this->map(col, row);
+            if (tile == nullptr)
+                continue;
+
+            writer.write<uint16_t>(tile->id);
+            writer.write<uint16_t>(tile->blocked);
+            writer.write<uint16_t>(tile->object);
+
+            this->crc = (this->crc << 8) ^ CRC16_TAB[this->crc >> 8] ^ tile->id;
+            this->crc = (this->crc << 8) ^ CRC16_TAB[this->crc >> 8] ^ uint16_t(tile->blocked);
+            this->crc = (this->crc << 8) ^ CRC16_TAB[this->crc >> 8] ^ tile->object;
+        }
+    }
+}
+#else
 async::task<void> map_update::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
