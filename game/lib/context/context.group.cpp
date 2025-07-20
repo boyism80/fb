@@ -67,6 +67,18 @@ async::task<bool> context::create_group(character& me, const std::string& target
     }
 }
 
+async::task<void> context::leave_group(character& me)
+{
+    auto group_id = me.group_id();
+    if (group_id.has_value() == false)
+        co_return;
+
+    auto   weak     = me.weak_from_this_as<fb::game::character>();
+    auto&& response = co_await this->http.post("internal", "/group/leave", LeaveGroup{me.name()});
+    co_await this->threads.switching(weak);
+    co_await this->on_leave_group(response);
+}
+
 void context::assert_group(uint32_t error, const std::string& actor) const
 {
     // Convert error codes to localized error messages
@@ -147,7 +159,7 @@ async::task<void> context::on_enter_group(const internal_resp::EnterGroup& resp)
             case GroupAction::Kick:
                 if (ch->name() == resp.member)
                 {
-                    group->leave(ch);
+                    group->detach(ch);
                     ch->group_reset();
                     ch->message("그룹에서 추방당했습니다.");
                 }
@@ -176,7 +188,7 @@ async::task<void> context::on_leave_group(const internal_resp::LeaveGroup& resp)
                                          [this, &resp, gid](auto& group) -> async::task<void> {
                                              co_await this->characters.invoke(resp.member, [group](auto& ch) {
                                                  ch->group_reset();
-                                                 group->leave(ch);
+                                                 group->detach(ch);
                                              });
 
                                              auto members = std::vector<std::string>{resp.member};

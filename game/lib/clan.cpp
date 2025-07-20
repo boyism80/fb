@@ -85,7 +85,7 @@ void clan::attach_character(std::weak_ptr<character> ch)
     this->_characters.insert({shared->id(), ch});
 }
 
-void clan::detach_character(std::weak_ptr<character> ch)
+void clan::detach(std::weak_ptr<character> ch)
 {
     auto shared = ch.lock();
     if (shared == nullptr)

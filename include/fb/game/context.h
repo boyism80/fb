@@ -534,6 +534,18 @@ public:
     [[nodiscard]] async::task<bool> create_group(character& me, const std::string& target);
 
     /**
+     * @brief      Leaves the character from their current group.
+     *
+     *             This method sends a request to the server to leave the character from their current group.
+     *             It returns a task that completes when the leave operation is complete.
+     *
+     * @param      me    The character who will leave the group.
+     *
+     * @return     A task that completes when the leave operation is complete
+     */
+    [[nodiscard]] async::task<void> leave_group(character& me);
+
+    /**
      * @brief      Broadcasts a message to all members of a group.
      *
      * @param[in]  group    The group to broadcast the message to.

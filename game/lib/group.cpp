@@ -31,7 +31,7 @@ void group::enter(std::weak_ptr<character> ch)
     this->_active_members.insert(ptr);
 }
 
-void group::leave(std::weak_ptr<character> ch)
+void group::detach(std::weak_ptr<character> ch)
 {
     auto ptr = ch.lock();
     if (ptr == nullptr)

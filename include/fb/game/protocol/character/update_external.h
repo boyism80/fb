@@ -67,7 +67,7 @@ private:
         auto  is_diff_clan =
             (this->ch.clan_id().has_value() || you.clan_id().has_value()) && this->ch.clan_id() != you.clan_id();
         if (!is_diff_clan)
-            return HEAD_MARKER::NONE;
+            return HEAD_MARKER::BLUE;
 
         return HEAD_MARKER::NONE;
     }

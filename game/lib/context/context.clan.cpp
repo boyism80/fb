@@ -217,7 +217,7 @@ async::task<void> context::on_clan_leave_member(const internal_resp::LeaveClan& 
         if (ch != nullptr)
         {
             auto weak = ch->weak_from_this_as<character>();
-            clan->detach_character(weak);
+            clan->detach(weak);
             ch->clan_reset();
             ch->update_external(false);
             if (resp.kick)

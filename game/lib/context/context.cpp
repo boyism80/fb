@@ -287,7 +287,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         if (group_id.has_value())
         {
             this->groups.write(group_id.value(), [weak](auto& group) {
-                group->leave(weak);
+                group->detach(weak);
             });
             shared->group_reset();
         }
@@ -296,7 +296,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         if (clan_id.has_value())
         {
             this->clans.read(clan_id.value(), [weak](auto& clan) {
-                clan->detach_character(weak);
+                clan->detach(weak);
             });
             shared->clan_reset();
         }

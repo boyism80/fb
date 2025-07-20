@@ -114,7 +114,7 @@ public:
      *
      * @param      ch    The character to remove from the group
      */
-    void leave(std::weak_ptr<character> ch);
+    void detach(std::weak_ptr<character> ch);
 
     /**
      * @brief      Updates the group's master and member list from external data.

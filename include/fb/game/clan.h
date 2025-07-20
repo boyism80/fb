@@ -180,7 +180,7 @@ public:
      *
      * @param      ch    The character to detach from the clan
      */
-    void detach_character(std::weak_ptr<character> ch);
+    void detach(std::weak_ptr<character> ch);
 
     /**
      * @brief      Finds clan members near a specific position on a map.

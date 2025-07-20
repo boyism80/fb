@@ -354,12 +354,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
     default:
         auto enabled = ch->option_toggle(option);
         if (option == OPTION::GROUP && !enabled)
-        {
-            auto&& response = co_await this->http.post("internal", "/group/leave", LeaveGroup{ch->name()});
-            co_await this->threads.switching(weak);
-
-            co_await this->on_leave_group(response);
-        }
+            co_await this->leave_group(*ch);
 
         auto&& response = co_await this->http.post("internal",
                                                    "/user/option",
