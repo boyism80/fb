@@ -124,32 +124,6 @@ async::task<bool> skill_test::test_group_healing_spells(std::shared_ptr<fb::bot:
     co_return true;
 }
 
-async::task<void> skill_test::form_group()
-{
-    auto  bots   = this->get_test_bots();
-    auto& caster = bots.front();
-
-    // Caster invites all other bots to the group
-    for (size_t i = 1; i < bots.size(); ++i)
-    {
-        auto& target_bot = bots[i];
-        fb::logger::debug("Inviting bot {} to group", target_bot->name());
-
-        // Send group invitation
-        auto group_request = fb::protocol::game::request::group{};
-        group_request.name = target_bot->name();
-        auto&& resp        = co_await caster->request<fb::protocol::game::response::message>(
-            group_request,
-            [](auto& resp) -> bool {
-                return resp.type == MESSAGE_TYPE::STATE;
-            },
-            DEFAULT_TIMEOUT);
-        caster->chat(resp.text);
-    }
-
-    fb::logger::debug("Group formation completed with {} members", bots.size());
-}
-
 async::task<bool> skill_test::verify_group_healing_effects(const std::vector<int>& before_hp_values,
                                                            int                     expected_hp_gain)
 {
@@ -173,28 +147,6 @@ async::task<bool> skill_test::verify_group_healing_effects(const std::vector<int
         }
     }
     co_return true;
-}
-
-async::task<void> skill_test::cleanup_group()
-{
-    auto bots = this->get_test_bots();
-    fb::logger::debug("Cleaning up group formation");
-
-    // Cleanup group option for all bots
-    for (auto& bot : bots)
-    {
-        for (int i = 0; i < 2; i++)
-        {
-            std::ignore = co_await bot->request<fb::protocol::game::response::message>(
-                fb::protocol::game::request::update_option(OPTION::GROUP, false),
-                [](auto& resp) -> bool {
-                    return resp.type == MESSAGE_TYPE::STATE;
-                },
-                DEFAULT_TIMEOUT);
-        }
-    }
-
-    fb::logger::debug("Group cleanup completed");
 }
 
 } // namespace fb::bot::integration

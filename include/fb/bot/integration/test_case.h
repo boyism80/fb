@@ -347,6 +347,33 @@ protected:
      */
     async::task<void>
     arrange_bots_in_grid_formation(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y);
+
+    /**
+     * @brief      Forms a group with all test bots.
+     *
+     *             This method creates a group by having the first bot invite all other bots
+     *             to join the group. It sends group invitations to each bot and waits for
+     *             confirmation responses.
+     *
+     * @return     A task that completes when the group formation is finished.
+     *
+     * @note       The first bot in the test bots list becomes the group leader
+     * @note       All other bots are invited to join the group
+     */
+    async::task<void> form_group();
+
+    /**
+     * @brief      Cleans up group formation by disabling group options for all bots.
+     *
+     *             This method disables the group option for all test bots to ensure
+     *             clean state after group-related tests. It sends update option requests
+     *             to disable group functionality.
+     *
+     * @return     A task that completes when the group cleanup is finished.
+     *
+     * @note       This method should be called after group tests to reset bot states
+     */
+    async::task<void> cleanup_group();
 };
 
 } // namespace fb::bot::integration

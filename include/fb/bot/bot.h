@@ -280,6 +280,7 @@ public:
      *             hook to capture the response that matches the given condition.
      *             This enables request-response patterns in bot communication.
      *
+     * @param[in]  target     The target bot to send the request to.
      * @param[in]  protocol   The protocol message to send.
      * @param[in]  condition  Function to determine if a response matches this request.
      * @param[in]  timeout    The timeout duration for the request.
@@ -290,6 +291,14 @@ public:
      *
      * @return     An async task that completes with the matching response.
      */
+    template <typename ResponseType>
+    async::task<ResponseType> request(std::shared_ptr<BotType>                             target,
+                                      const fb::protocol::header&                          protocol,
+                                      const std::function<bool(const ResponseType& resp)>& condition,
+                                      const fb::model::timespan&                           timeout = 0s,
+                                      bool                                                 encrypt = true,
+                                      bool                                                 wrap    = true);
+
     template <typename ResponseType>
     async::task<ResponseType> request(const fb::protocol::header&                          protocol,
                                       const std::function<bool(const ResponseType& resp)>& condition,
@@ -312,6 +321,13 @@ public:
      *
      * @return     An async task that completes with the response.
      */
+    template <typename ResponseType>
+    async::task<ResponseType> request(std::shared_ptr<BotType>    target,
+                                      const fb::protocol::header& protocol,
+                                      const fb::model::timespan&  timeout = 0s,
+                                      bool                        encrypt = true,
+                                      bool                        wrap    = true);
+
     template <typename ResponseType>
     async::task<ResponseType> request(const fb::protocol::header& protocol,
                                       const fb::model::timespan&  timeout = 0s,

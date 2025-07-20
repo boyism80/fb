@@ -219,17 +219,6 @@ private:
     async::task<bool> test_group_healing_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
     /**
-     * @brief      Forms a group with all provided bots.
-     *
-     *             The first bot becomes the group leader and invites all other bots.
-     *
-     * @param[in]  bots     The list of bots to form into a group.
-     *
-     * @return     A task that completes when group formation is finished.
-     */
-    async::task<void> form_group();
-
-    /**
      * @brief      Verifies that group healing effects were applied correctly to all group members.
      *
      * @param[in]  bots              The list of bots to verify.
@@ -239,15 +228,6 @@ private:
      * @return     A task that completes when verification is finished.
      */
     async::task<bool> verify_group_healing_effects(const std::vector<int>& before_hp_values, int expected_hp_gain);
-
-    /**
-     * @brief      Cleans up group formation by removing all bots from the group.
-     *
-     * @param[in]  bots     The list of bots to remove from the group.
-     *
-     * @return     A task that completes when group cleanup is finished.
-     */
-    async::task<void> cleanup_group();
 
     /**
      * @brief      Tests the 출두 (teleport to target) spell.
