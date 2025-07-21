@@ -15,9 +15,9 @@ bot_integration_test::bot_integration_test(game_bot_controller& controller, uint
     bot_count(bot_count)
 {
     // Register common hooks for sequence and position responses
-    this->controller.hook_external(this, this, &bot_integration_test::on_hook_sequence);
-    this->controller.hook_external(this, this, &bot_integration_test::on_hook_position);
-    this->controller.hook_external(this, this, &bot_integration_test::on_hook_update_external);
+    this->controller.hook(this, this, &bot_integration_test::on_hook_sequence);
+    this->controller.hook(this, this, &bot_integration_test::on_hook_position);
+    this->controller.hook(this, this, &bot_integration_test::on_hook_update_external);
 }
 
 bot_integration_test::test_state bot_integration_test::get_state() const

@@ -1047,12 +1047,11 @@ public:
      * @brief      Equip an item from the inventory.
      *
      * @param[in]  slot           The inventory slot index of the item to equip.
-     * @param[in]  item_name      The name of the item to equip.
      * @param[in]  timeout        The timeout for the operation.
      *
      * @return     An async task that completes with true if operation succeeded, false otherwise.
      */
-    async::task<bool> equip(uint8_t slot, const std::string& item_name, std::chrono::milliseconds timeout);
+    async::task<bool> equip(uint8_t slot, std::chrono::milliseconds timeout);
 
     /**
      * @brief      Unequip an item from the equipped slots.

@@ -956,7 +956,7 @@ async::task<void> game_bot::drop_money(uint32_t amount, std::chrono::millisecond
         timeout);
 }
 
-async::task<bool> game_bot::equip(uint8_t slot, const std::string& item_name, std::chrono::milliseconds timeout)
+async::task<bool> game_bot::equip(uint8_t slot, std::chrono::milliseconds timeout)
 {
     static const auto prefix_map = std::unordered_map<fb::model::enum_value::ITEM_TYPE, std::string>{
         {ITEM_TYPE::WEAPON,    "w:무기  :" },
@@ -969,10 +969,17 @@ async::task<bool> game_bot::equip(uint8_t slot, const std::string& item_name, st
 
     try
     {
-        auto item_model = this->controller.container.model.item.name2item(item_name);
+        if (this->_items.contains(slot) == false)
+        {
+            fb::logger::fatal("Failed to find item in slot {}", slot);
+            co_return false;
+        }
+
+        auto& item       = this->_items.at(slot);
+        auto  item_model = this->controller.container.model.item.name2item(item.name);
         if (!item_model)
         {
-            fb::logger::fatal("Failed to find item model for {}", item_name);
+            fb::logger::fatal("Failed to find item model for {}", item.name);
             co_return false;
         }
 

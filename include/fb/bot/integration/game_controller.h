@@ -177,9 +177,9 @@ public:
      * @tparam     ResponseType  The protocol response type to hook.
      */
     template <typename Class, typename ResponseType>
-    void hook_external(bot_integration_test* test,
-                       Class*                instance,
-                       async::task<void> (Class::*fn)(game_bot&, const ResponseType&))
+    void hook(bot_integration_test* test,
+              Class*                instance,
+              async::task<void> (Class::*fn)(game_bot&, const ResponseType&))
     {
         auto hook_func = [instance, fn](game_bot& bot, const fb::protocol::header& header) -> async::task<void> {
             auto& protocol = static_cast<const ResponseType&>(header);

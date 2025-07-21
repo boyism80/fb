@@ -1,42 +1,104 @@
 #include <fb/bot/integration/attack_test.h>
 #include <fb/bot/integration/game_controller.h>
-#include <fb/bot/integration/gateway_controller.h>
-#include <fb/logger.h>
-#include <fb/game/protocol.h>
-#include <chrono>
 
 using namespace std::chrono_literals;
 
 namespace fb::bot::integration {
 
 attack_test::attack_test(game_bot_controller& controller) :
-    bot_integration_test(controller)
-{ }
+    bot_integration_test(controller, 2) // Spawn 2 bots
+{
+    this->controller.hook(this, this, &attack_test::on_hook_die);
+}
+
+async::task<void> attack_test::on_hook_die(game_bot& bot, const fb::protocol::game::response::die& response)
+{
+    if (this->_done)
+        co_return;
+
+    if (this->_target_oid.has_value() == false)
+        co_return;
+
+    if (response.oid != this->_target_oid.value())
+        co_return;
+
+    this->_done = true;
+    this->_target_oid.reset();
+    co_return;
+}
 
 async::task<bool> attack_test::attack_scenario()
 {
     auto bots = this->get_test_bots();
+    if (bots.size() < 2)
+        throw std::runtime_error("Need at least 2 bots for enhanced attack test");
 
-    if (bots.empty())
-        throw std::runtime_error("No bots available for attack test");
+    auto& attacker = bots.front();
+    auto& observer = bots.back();
 
-    auto bot = bots.front();
+    fb::logger::debug("Enhanced attack test: Setting up bot {} for combat", attacker->name());
 
-    fb::logger::debug("Attack test: Bot {} will perform attack sequences", bot->fd());
+    // Set bot HP to 100,000 using the dedicated method
+    co_await attacker->change_hp(100000, DEFAULT_TIMEOUT);
 
-    // Perform attack sequences - simple attack to air 5 times
-    constexpr int ATTACK_COUNT = 5;
-    for (auto i = 0; i < ATTACK_COUNT; i++)
+    // Set bot level to 77 using the dedicated method
+    co_await attacker->change_level(77, DEFAULT_TIMEOUT);
+
+    // Create and equip '월아검' weapon
+    co_await attacker->create_item("월아검", 1, DEFAULT_TIMEOUT);
+
+    // Equip the weapon using the bot's equip method
+    if (co_await attacker->equip(0, DEFAULT_TIMEOUT) == false)
     {
-        bot->send(fb::protocol::game::request::attack{});
-
-        fb::logger::debug("Attack sequence {}: bot {} performed attack", i + 1, bot->fd());
-
-        auto thread = bot->thread();
-        co_await thread->sleep(DEFAULT_INTERVAL);
+        fb::logger::fatal("Enhanced attack test: Failed to equip 월아검");
+        co_return false;
     }
 
+    // Spawn '초급유령' monster below the bot using the dedicated method
+    auto bot_position = attacker->position();
+    auto monster_info =
+        co_await attacker->spawn_monster("초급유령", bot_position.x, bot_position.y + 1, DEFAULT_TIMEOUT);
+    this->_target_oid = monster_info.oid;
+
+    while (this->_done == false)
+    {
+        std::ignore = co_await attacker->request<fb::protocol::game::response::action>(
+            fb::protocol::game::request::attack{},
+            [oid = attacker->oid()](auto& resp) {
+                if (resp.oid != oid)
+                    return false;
+
+                if (resp.value != ACTION::ATTACK)
+                    return false;
+
+                return true;
+            },
+            DEFAULT_TIMEOUT);
+
+        co_await this->sleep(DEFAULT_INTERVAL);
+    }
+
+    fb::logger::debug("Enhanced attack test: Bot {} setup complete, monster spawned at ({}, {})",
+                      attacker->name(),
+                      monster_info.position.x,
+                      monster_info.position.y);
+
     co_return true;
+}
+
+async::task<void> attack_test::on_scenario_started(uint32_t scenario_index)
+{
+    co_return;
+}
+
+async::task<void> attack_test::on_scenario_finished(uint32_t scenario_index)
+{
+    auto  bots = this->get_test_bots();
+    auto& bot  = bots.front();
+
+    co_await bot->clear_all_drop_items(DEFAULT_TIMEOUT);
+    this->_done = false;
+    co_return;
 }
 
 generator<bot_integration_test::scenario_t> attack_test::on_generate_scenario()
