@@ -62,6 +62,16 @@ private:
     async::task<bool> test_clan_title();
 
     /**
+     * @brief      Tests clan invite functionality.
+     *
+     *             Tests inviting members to clans and verifying
+     *             clan membership updates.
+     *
+     * @return     A task that completes when clan invite tests finish.
+     */
+    async::task<bool> test_clan_invite();
+
+    /**
      * @brief      Tests clan communication functionality.
      *
      *             Tests clan chat and coordination features

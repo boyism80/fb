@@ -189,6 +189,123 @@ async::task<bool> clan_test::test_clan_title()
     co_return true;
 }
 
+async::task<bool> clan_test::test_clan_invite()
+{
+    auto  bots   = this->get_test_bots();
+    auto& bot    = bots.front();
+    auto& target = bots.back();
+    auto  npc    = this->controller.container.model.npc.name2npc("낙랑");
+    if (npc == nullptr)
+    {
+        fb::logger::fatal("Clan test failed: NPC not found");
+        co_return false;
+    }
+
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::click(1),
+        [&npc](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_type::menu && resp.look == npc->look;
+        },
+        DEFAULT_TIMEOUT);
+
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
+                                            0,
+                                            "",
+                                            1,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::PREV),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_ext_type::list;
+        },
+        DEFAULT_TIMEOUT);
+
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
+                                            0,
+                                            "",
+                                            2,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_type::input;
+        },
+        DEFAULT_TIMEOUT);
+
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+        target,
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT,
+                                            0x02,
+                                            target->name(),
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_type::menu;
+        },
+        DEFAULT_TIMEOUT);
+
+    std::ignore = co_await target->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
+                                            0,
+                                            "",
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_ext_type::normal;
+        },
+        DEFAULT_TIMEOUT);
+
+    std::ignore = co_await target->request<fb::bot::integration::dialog_ext_bot>(
+        bot,
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL,
+                                            1,
+                                            "",
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::QUIT),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_ext_type::normal;
+        },
+        DEFAULT_TIMEOUT);
+
+    bot->send(fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL,
+                                                  1,
+                                                  "",
+                                                  0,
+                                                  0,
+                                                  "",
+                                                  DIALOG_RESULT::QUIT));
+
+    auto&& resp = co_await bot->request<fb::protocol::game::response::external_info>(
+        fb::protocol::game::request::click(target->oid()),
+        [oid = target->oid()](auto& resp) {
+            return resp.oid == oid;
+        },
+        DEFAULT_TIMEOUT);
+
+    if (resp.clan_name != bot->clan_name())
+    {
+        fb::logger::fatal("Clan test failed: Clan name mismatch");
+        co_return false;
+    }
+
+    auto clan_title = std::format("{}타이틀", resp.clan_name);
+    if (resp.clan_title != clan_title)
+    {
+        fb::logger::fatal("Clan test failed: Clan title mismatch");
+        co_return false;
+    }
+
+    co_return true;
+}
+
 async::task<bool> clan_test::test_clan_communication()
 {
     // TODO: Implement clan communication test
@@ -220,6 +337,9 @@ fb::generator<bot_integration_test::scenario_t> clan_test::on_generate_scenario(
     };
     co_yield [this]() -> async::task<bool> {
         co_return co_await this->test_clan_title();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_clan_invite();
     };
     co_yield [this]() -> async::task<bool> {
         co_return co_await this->test_clan_communication();
