@@ -42,17 +42,29 @@ public:
 
 private:
     /**
-     * @brief      Executes the main group test scenario.
+     * @brief      Tests group experience sharing mechanics.
      *
-     *             This method orchestrates the complete group testing sequence.
-     *             Currently contains empty scenarios for future implementation.
+     *             This scenario verifies that experience gained in a group is properly
+     *             shared and reduced compared to solo play. It spawns monsters and
+     *             compares experience gains between solo and group attacks.
      *
-     * @return     A task that completes with true if all group tests passed, false otherwise.
+     * @return     A task that completes with true if group exp sharing works correctly.
      *
-     * @note       This is the primary entry point for group testing execution
+     * @note       Tests the core group mechanics by comparing solo vs group experience gains
      */
     async::task<bool> scenario_1();
 
+    /**
+     * @brief      Tests group management functionality.
+     *
+     *             This scenario tests various group management operations including
+     *             inviting members, voluntary leaving, kicking members, and permission
+     *             validation for non-master members.
+     *
+     * @return     A task that completes with true if all group management operations work correctly.
+     *
+     * @note       Tests invite, leave, kick operations and permission validation
+     */
     async::task<bool> scenario_2();
 };
 
