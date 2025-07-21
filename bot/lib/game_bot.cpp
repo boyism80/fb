@@ -1566,6 +1566,43 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
     }
 }
 
+async::task<bool> game_bot::invite_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout)
+{
+    auto&& resp = co_await this->request<fb::protocol::game::response::message>(
+        fb::protocol::game::request::group{target->name()},
+        [](auto& resp) -> bool {
+            return resp.type == MESSAGE_TYPE::STATE;
+        },
+        timeout);
+
+    co_return resp.text == std::format("{}님 그룹 참여", target->name());
+}
+
+async::task<bool> game_bot::leave_group(std::chrono::milliseconds timeout)
+{
+    auto&& resp = co_await this->request<fb::protocol::game::response::message>(
+        fb::protocol::game::request::group{this->name()},
+        [](auto& resp) -> bool {
+            return resp.type == MESSAGE_TYPE::STATE;
+        },
+        timeout);
+
+    co_return resp.text == "그룹 탈퇴";
+}
+
+async::task<bool> game_bot::kick_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout)
+{
+    auto&& resp = co_await this->request<fb::protocol::game::response::message>(
+        target,
+        fb::protocol::game::request::group{target->name()},
+        [](auto& resp) -> bool {
+            return resp.type == MESSAGE_TYPE::STATE;
+        },
+        timeout);
+
+    co_return resp.text == "그룹에서 추방당했습니다.";
+}
+
 // simple_item methods implementation
 bool game_bot::simple_item::is_equipment(const game_bot_controller& controller) const
 {

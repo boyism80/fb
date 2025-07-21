@@ -52,6 +52,8 @@ private:
      * @note       This is the primary entry point for group testing execution
      */
     async::task<bool> scenario_1();
+
+    async::task<bool> scenario_2();
 };
 
 } // namespace fb::bot::integration

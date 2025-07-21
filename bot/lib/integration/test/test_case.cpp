@@ -377,10 +377,8 @@ async::task<void> bot_integration_test::form_group()
         fb::logger::debug("Inviting bot {} to group", target_bot->name());
 
         // Send group invitation
-        auto group_request = fb::protocol::game::request::group{};
-        group_request.name = target_bot->name();
-        auto&& resp        = co_await caster->request<fb::protocol::game::response::message>(
-            group_request,
+        auto&& resp = co_await caster->request<fb::protocol::game::response::message>(
+            fb::protocol::game::request::group{target_bot->name()},
             [](auto& resp) -> bool {
                 if (resp.type != MESSAGE_TYPE::STATE)
                     return false;
@@ -407,7 +405,13 @@ async::task<void> bot_integration_test::cleanup_group()
             std::ignore = co_await bot->request<fb::protocol::game::response::message>(
                 fb::protocol::game::request::update_option(OPTION::GROUP, false),
                 [](auto& resp) -> bool {
-                    return resp.type == MESSAGE_TYPE::STATE;
+                    if (resp.type != MESSAGE_TYPE::STATE)
+                        return false;
+
+                    if (resp.text.find("그룹허가") == std::string::npos)
+                        return false;
+
+                    return true;
                 },
                 DEFAULT_TIMEOUT);
         }

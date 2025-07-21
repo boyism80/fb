@@ -323,9 +323,6 @@ bool object::direction(DIRECTION value)
     if (value != DIRECTION::LEFT && value != DIRECTION::TOP && value != DIRECTION::RIGHT && value != DIRECTION::BOTTOM)
         return false;
 
-    if (this->_direction == value)
-        return true;
-
     this->_direction = value;
 
     // Execute direction change script

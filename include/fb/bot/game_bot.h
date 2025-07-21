@@ -1289,10 +1289,55 @@ public:
                                                 std::chrono::milliseconds         interval,
                                                 std::chrono::milliseconds         timeout);
 
+    /**
+     * @brief      Reverses conditions applied to the bot
+     *
+     * @param[in]  conditions  Vector of conditions to reverse
+     * @param[in]  timeout     The timeout for the operation
+     *
+     * @return     An async task that completes when conditions are reversed
+     */
     async::task<void> reverse_condition(const std::vector<fb::model::dsl>& conditions,
                                         std::chrono::milliseconds          timeout);
 
+    /**
+     * @brief      Applies conditions to the bot
+     *
+     * @param[in]  conditions  Vector of conditions to apply
+     * @param[in]  timeout     The timeout for the operation
+     *
+     * @return     An async task that completes when conditions are applied
+     */
     async::task<void> apply_condition(const std::vector<fb::model::dsl>& conditions, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Invites a target bot to join the group
+     *
+     * @param[in]  target   The bot to invite to the group
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that returns true if invite was successful
+     */
+    async::task<bool> invite_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Leaves the current group
+     *
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that returns true if leaving was successful
+     */
+    async::task<bool> leave_group(std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Kicks a target bot from the group
+     *
+     * @param[in]  target   The bot to kick from the group
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that returns true if kick was successful
+     */
+    async::task<bool> kick_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
 
     /**
      * @brief      Sends a transfer request to the server and waits for a matching response.
