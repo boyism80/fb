@@ -62,7 +62,7 @@ function sample_clan(me, npc)
         end
     else
         local clan_name = clan:name()
-        local selected = me:menu(npc, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 추방', '메시지'})
+        local selected = me:list(npc, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 추방', '메시지'})
         if selected == nil then
             return
         end

@@ -105,16 +105,87 @@ async::task<bool> clan_test::test_clan_creation()
     co_return true;
 }
 
-async::task<bool> clan_test::test_clan_member_management()
+async::task<bool> clan_test::test_clan_title()
 {
-    // TODO: Implement clan member management test
-    // - Add members to clan
-    // - Remove members from clan
-    // - Test clan leave functionality
-    // - Test clan kick functionality
+    auto  bots = this->get_test_bots();
+    auto& bot  = bots.front();
 
-    fb::logger::debug("Clan member management test - not implemented yet");
-    co_await this->sleep(1s);
+    auto npc = this->controller.container.model.npc.name2npc("낙랑");
+    if (npc == nullptr)
+    {
+        fb::logger::fatal("Clan test failed: NPC not found");
+        co_return false;
+    }
+
+    auto clan_title = std::format("{}타이틀", bot->name());
+
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::click(1),
+        [&npc](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_type::menu && resp.look == npc->look;
+        },
+        DEFAULT_TIMEOUT);
+
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
+                                            0,
+                                            "",
+                                            1,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::PREV),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_type::menu;
+        },
+        DEFAULT_TIMEOUT);
+
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
+                                            0,
+                                            "",
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::PREV),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_ext_type::input_ext;
+        },
+        DEFAULT_TIMEOUT);
+
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT_EX,
+                                            0,
+                                            clan_title,
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::PREV),
+        [](auto& resp) {
+            if (resp.type != fb::bot::integration::dialog_type::normal)
+                return false;
+
+            return resp.message == "문파 칭호 변경 성공";
+        },
+        DEFAULT_TIMEOUT);
+
+    bot->send(fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL,
+                                                  1,
+                                                  "",
+                                                  0,
+                                                  0,
+                                                  "",
+                                                  DIALOG_RESULT::PREV));
+
+    auto&& resp =
+        co_await bot->request<fb::protocol::game::response::internal_info>(fb::protocol::game::request::self_info(),
+                                                                           DEFAULT_TIMEOUT);
+
+    if (resp.clan_title != clan_title)
+    {
+        fb::logger::fatal("Clan test failed: Clan title mismatch");
+        co_return false;
+    }
+
     co_return true;
 }
 
@@ -148,7 +219,7 @@ fb::generator<bot_integration_test::scenario_t> clan_test::on_generate_scenario(
         co_return co_await this->test_clan_creation();
     };
     co_yield [this]() -> async::task<bool> {
-        co_return co_await this->test_clan_member_management();
+        co_return co_await this->test_clan_title();
     };
     co_yield [this]() -> async::task<bool> {
         co_return co_await this->test_clan_communication();

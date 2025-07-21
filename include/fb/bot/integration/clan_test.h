@@ -59,7 +59,7 @@ private:
      *
      * @return     A task that completes when clan member management tests finish.
      */
-    async::task<bool> test_clan_member_management();
+    async::task<bool> test_clan_title();
 
     /**
      * @brief      Tests clan communication functionality.
