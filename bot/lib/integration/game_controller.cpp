@@ -79,22 +79,22 @@ void game_bot_controller::initialize()
     auto local = fb::config<std::string>("ip") == "127.0.0.1";
 
     // Create tests and add them to the queue
-    // this->enqueue_test(std::make_unique<movement_test>(*this));
-    // this->enqueue_test(std::make_unique<attack_test>(*this));
-    // this->enqueue_test(std::make_unique<skill_test>(*this));
-    // this->enqueue_test(std::make_unique<bulletin_test>(*this));
-    // this->enqueue_test(std::make_unique<trade_test>(*this));
-    // this->enqueue_test(std::make_unique<communication_test>(*this));
-    // this->enqueue_test(std::make_unique<drop_loot_test>(*this));
-    // this->enqueue_test(std::make_unique<item_test>(*this));
-    // this->enqueue_test(std::make_unique<item_test_give>(*this));
-    // this->enqueue_test(std::make_unique<emotion_test>(*this));
-    // this->enqueue_test(std::make_unique<front_info_test>(*this));
-    // this->enqueue_test(std::make_unique<chat_interaction_test>(*this));
-    // this->enqueue_test(std::make_unique<user_list_test>(*this));
-    // this->enqueue_test(std::make_unique<swap_test>(*this));
-    // this->enqueue_test(std::make_unique<throw_test>(*this));
-    // this->enqueue_test(std::make_unique<group_test>(*this));
+    this->enqueue_test(std::make_unique<movement_test>(*this));
+    this->enqueue_test(std::make_unique<attack_test>(*this));
+    this->enqueue_test(std::make_unique<skill_test>(*this));
+    this->enqueue_test(std::make_unique<bulletin_test>(*this));
+    this->enqueue_test(std::make_unique<trade_test>(*this));
+    this->enqueue_test(std::make_unique<communication_test>(*this));
+    this->enqueue_test(std::make_unique<drop_loot_test>(*this));
+    this->enqueue_test(std::make_unique<item_test>(*this));
+    this->enqueue_test(std::make_unique<item_test_give>(*this));
+    this->enqueue_test(std::make_unique<emotion_test>(*this));
+    this->enqueue_test(std::make_unique<front_info_test>(*this));
+    this->enqueue_test(std::make_unique<chat_interaction_test>(*this));
+    this->enqueue_test(std::make_unique<user_list_test>(*this));
+    this->enqueue_test(std::make_unique<swap_test>(*this));
+    this->enqueue_test(std::make_unique<throw_test>(*this));
+    this->enqueue_test(std::make_unique<group_test>(*this));
     this->enqueue_test(std::make_unique<clan_test>(*this));
     if (!local)
     {

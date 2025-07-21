@@ -10,7 +10,6 @@ namespace fb::bot::integration {
 
 enum class dialog_type : uint8_t
 {
-    normal = 0x00, // NORMAL
     menu   = 0x01, // MENU
     input  = 0x03, // INPUT
     item   = 0x04, // ITEM

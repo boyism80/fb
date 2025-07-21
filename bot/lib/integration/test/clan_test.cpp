@@ -126,7 +126,7 @@ async::task<bool> clan_test::test_clan_title()
         },
         DEFAULT_TIMEOUT);
 
-    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
         fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
                                             0,
                                             "",
@@ -135,7 +135,7 @@ async::task<bool> clan_test::test_clan_title()
                                             "",
                                             DIALOG_RESULT::PREV),
         [](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_type::menu;
+            return resp.type == fb::bot::integration::dialog_ext_type::list;
         },
         DEFAULT_TIMEOUT);
 
@@ -146,22 +146,22 @@ async::task<bool> clan_test::test_clan_title()
                                             0,
                                             0,
                                             "",
-                                            DIALOG_RESULT::PREV),
+                                            DIALOG_RESULT::NEXT),
         [](auto& resp) {
             return resp.type == fb::bot::integration::dialog_ext_type::input_ext;
         },
         DEFAULT_TIMEOUT);
 
-    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
         fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT_EX,
-                                            0,
+                                            0x02,
                                             clan_title,
                                             0,
                                             0,
                                             "",
-                                            DIALOG_RESULT::PREV),
+                                            DIALOG_RESULT::NEXT),
         [](auto& resp) {
-            if (resp.type != fb::bot::integration::dialog_type::normal)
+            if (resp.type != fb::bot::integration::dialog_ext_type::normal)
                 return false;
 
             return resp.message == "문파 칭호 변경 성공";
@@ -174,7 +174,7 @@ async::task<bool> clan_test::test_clan_title()
                                                   0,
                                                   0,
                                                   "",
-                                                  DIALOG_RESULT::PREV));
+                                                  DIALOG_RESULT::QUIT));
 
     auto&& resp =
         co_await bot->request<fb::protocol::game::response::internal_info>(fb::protocol::game::request::self_info(),
