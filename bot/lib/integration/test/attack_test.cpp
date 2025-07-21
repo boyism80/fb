@@ -89,6 +89,13 @@ async::task<bool> attack_test::attack_scenario_1()
         co_await attacker->spawn_monster("초급유령", bot_position.x, bot_position.y + 1, DEFAULT_TIMEOUT);
     this->_target_oid = monster_info.oid;
 
+    std::ignore = co_await attacker->request<fb::protocol::game::response::message>(
+        fb::protocol::game::request::click(monster_info.oid),
+        [](auto& resp) {
+            return resp.text == "초급유령";
+        },
+        DEFAULT_TIMEOUT);
+
     std::ignore = co_await attacker->request<fb::protocol::game::response::action>(
         fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, 0, "", monster_info.oid, monster_info.position),
         [oid = attacker->oid()](auto& resp) {
