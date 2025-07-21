@@ -303,6 +303,83 @@ async::task<bool> chat_interaction_test::test_scenario_3(int index)
     co_return passed;
 }
 
+async::task<bool> chat_interaction_test::test_scenario_4(int index)
+{
+    auto  bots   = this->get_test_bots();
+    auto& bot    = bots[index];
+    auto  passed = true;
+
+    try
+    {
+        bot->chat("Moving down 1 step");
+        co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
+        co_await bot->move(DIRECTION::BOTTOM, 1, 0ms);
+
+        bot->chat("Creating NPC 뭉치");
+        auto npc     = co_await bot->create_npc("뭉치", DEFAULT_TIMEOUT);
+        auto npc_oid = npc.oid;
+
+        co_await bot->move(DIRECTION::TOP, 1);
+        co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
+
+        std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
+            fb::protocol::game::request::click(npc_oid),
+            [](auto& resp) -> bool {
+                return resp.type == dialog_ext_type::list;
+            },
+            DEFAULT_TIMEOUT);
+
+        std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
+            fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
+                                                0,
+                                                "",
+                                                0,
+                                                0,
+                                                "",
+                                                DIALOG_RESULT::NEXT),
+            [](auto& resp) -> bool {
+                return resp.type == dialog_ext_type::list;
+            },
+            DEFAULT_TIMEOUT);
+
+        std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+            fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
+                                                0,
+                                                "",
+                                                0,
+                                                0,
+                                                "",
+                                                DIALOG_RESULT::NEXT),
+            [](auto& resp) -> bool {
+                return resp.type == dialog_type::item;
+            },
+            DEFAULT_TIMEOUT);
+
+        auto   item_name = "unknown";
+        auto&& resp      = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
+            fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::ITEM,
+                                                0,
+                                                item_name,
+                                                0,
+                                                0,
+                                                "",
+                                                DIALOG_RESULT::NEXT),
+            [](auto& resp) -> bool {
+                return resp.type == dialog_ext_type::normal;
+            },
+            DEFAULT_TIMEOUT);
+
+        passed = resp.message == "This player is a hacker.";
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::fatal("Chat interaction scenario 3 failed: {}", e.what());
+        passed = false;
+    }
+
+    co_return passed;
+}
+
 async::task<bool> chat_interaction_test::parallel_scenario_1()
 {
     auto bots      = this->get_test_bots();
@@ -315,8 +392,12 @@ async::task<bool> chat_interaction_test::parallel_scenario_1()
          [this,    &bots]() -> async::task<bool> {
              co_return co_await this->test_scenario_2(1);
          }   },
-        {2, [this, &bots]() -> async::task<bool> {
+        {2,
+         [this,    &bots]() -> async::task<bool> {
              co_return co_await this->test_scenario_3(2);
+         }   },
+        {3, [this, &bots]() -> async::task<bool> {
+             co_return co_await this->test_scenario_4(3);
          }}
     };
     co_return co_await this->parallel_scenarios(scenarios);

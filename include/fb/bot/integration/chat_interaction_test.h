@@ -3,6 +3,8 @@
 
 #include <fb/bot/integration/test_case.h>
 #include <fb/game/protocol.h>
+#include <fb/bot/integration/dialog_bot.h>
+#include <fb/bot/integration/dialog_ext_bot.h>
 
 namespace fb::bot::integration {
 
@@ -72,6 +74,15 @@ private:
      * @return     An async task that completes with true if test passed, false otherwise.
      */
     async::task<bool> test_scenario_3(int index);
+
+    /**
+     * @brief      Tests chat interaction scenario 4.
+     *
+     * @param      index     The index of the bot to test.
+     *
+     * @return     An async task that completes with true if test passed, false otherwise.
+     */
+    async::task<bool> test_scenario_4(int index);
 
 private:
     async::task<bool> parallel_scenario_1();

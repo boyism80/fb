@@ -683,6 +683,10 @@ function NPC_SELL_DIALOG(me, npc)
 
     local count = 1
     local item = name2item(selected)
+    if item == nil then
+        return me:dialog(npc, 'This player is a hacker.')
+    end
+
     local is_bundle = item:attr(ITEM_ATTRIBUTE_BUNDLE)
     if is_bundle then
         count = me:input(npc, '몇개나 사시겠어요?')
