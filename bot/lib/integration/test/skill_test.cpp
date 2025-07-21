@@ -128,6 +128,11 @@ fb::generator<bot_integration_test::scenario_t> skill_test::on_generate_scenario
         auto bots = this->get_test_bots();
         co_return co_await this->test_area_damage_spells(bots[0]);
     };
+
+    co_yield [this]() -> async::task<bool> {
+        auto bots = this->get_test_bots();
+        co_return co_await this->test_skill_cooldown_delays(bots[0]);
+    };
 }
 
 std::string skill_test::name() const

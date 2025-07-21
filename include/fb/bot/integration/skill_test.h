@@ -264,6 +264,20 @@ private:
                                         int                                expected_mp_cost);
 
     /**
+     * @brief      Tests skill cooldown delays with comprehensive cooldown verification.
+     *
+     *             Performs cooldown tests including:
+     *             - Hellfire spell cooldown testing
+     *             - Cooldown reduction verification based on level and equipment
+     *             - Cooldown message parsing and validation
+     *
+     * @param[in]  caster   The bot casting the spells for cooldown testing.
+     *
+     * @return     A task that completes with true if all cooldown tests passed, false otherwise.
+     */
+    async::task<bool> test_skill_cooldown_delays(std::shared_ptr<fb::bot::game_bot> caster);
+
+    /**
      * @brief      Structure for healing spell test data
      */
     struct healing_spell_test
