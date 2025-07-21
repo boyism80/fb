@@ -125,84 +125,90 @@ namespace Internal.Controllers
         {
             try
             {
-                var master = await _dbContext.Character.Get(request.Master) ??
+                var actor = await _dbContext.Character.Get(request.Master) ??
                     throw new Exception($"user {request.Master} not found");
 
-                if (master.Name == request.Member)
+                if (actor.Name == request.Member)
                     throw new LogicException(ErrorCode.CannotGroupSelf);
 
-                if (await _sessionService.Get(master.Name) == null)
+                if (await _sessionService.Get(actor.Name) == null)
                     throw new Exception($"user {request.Master} is offline");
 
-                if (_model.Map.TryGetValue(master.Map, out var map) == false)
+                if (_model.Map.TryGetValue(actor.Map, out var map) == false)
                     throw new Exception("invalid map");
 
-                var memberSession = await _sessionService.Get(request.Member) ??
+                var targetSession = await _sessionService.Get(request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var member = await _dbContext.Character.Get(memberSession.Uid) ??
+                var target = await _dbContext.Character.Get(targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(master.Id)))
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(actor.Id)))
                 {
-                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(member.Id)))
+                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(target.Id)))
                     {
-                        var masterSync = await _dbContext.CharacterSync.Get(master.Id) ??
+                        var actorSync = await _dbContext.CharacterSync.Get(actor.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var memberSync = await _dbContext.CharacterSync.Get(member.Id) ??
+                        var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        await using (await _distributedLock.Lock(Group.DistributedLockKey(master.Id)))
+                        await using (await _distributedLock.Lock(Group.DistributedLockKey(actor.Id)))
                         {
-                            var group = masterSync.Group != null ? await _dbContext.Group.Get(master.Id) : null;
                             var isCreated = false;
-                            if (group == null)
+                            Group group;
+                            if (actorSync.Group == null)
                             {
+                                // 그룹이 없어서 새로 만드는 경우
+                                isCreated = true;
                                 group = new Group
                                 {
-                                    Master = master.Id,
+                                    Master = actor.Id,
                                 };
-                                masterSync.Group = group.Master;
-                                _dbContext.CharacterSync.Set(masterSync);
-                                isCreated = true;
+                                actorSync.Group = group.Master;
+                                _dbContext.CharacterSync.Set(actorSync);
                             }
-                            group.Deleted = false;
-
-                            if (group.Master != master.Id)
-                                throw new LogicException(ErrorCode.NotGroupMaster);
-
-                            Protocol.GroupAction action;
-                            if (group.Members.Contains(member.Id))
+                            else
                             {
-                                group.Members.Remove(member.Id);
-                                memberSync.Group = null;
+                                // 그룹이 이미 있는 경우
+                                if (actorSync.Group.Value != actor.Id)
+                                    throw new LogicException(ErrorCode.NotGroupMaster); // 그룹장이 아닌 경우
+
+                                group = await _dbContext.Group.Get(actor.Id);
+                            }
+
+                            group.Deleted = false;
+                            Protocol.GroupAction action;
+                            if (group.Members.Contains(target.Id))
+                            {
+                                group.Members.Remove(target.Id);
+                                targetSync.Group = null;
                                 action = Protocol.GroupAction.Kick;
                             }
                             else
                             {
-                                var masterSetting = await _dbContext.Option.Get(master.Id) ??
+                                var masterSetting = await _dbContext.Option.Get(actor.Id) ??
                                 throw new Exception($"user option {request.Master} not found");
 
                                 if (masterSetting.Group == false)
                                     throw new LogicException(ErrorCode.DisabledGroup);
 
-                                var memberSetting = await _dbContext.Option.Get(member.Id) ??
+                                var memberSetting = await _dbContext.Option.Get(target.Id) ??
                                     throw new Exception($"user option {request.Member} not found");
 
                                 if (memberSetting.Group == false)
                                     throw new LogicException(ErrorCode.DisabledGroupTarget);
 
-                                if (memberSync.Group != null)
+                                if (targetSync.Group != null)
                                     throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
 
-                                group.Members.Add(member.Id);
-                                memberSync.Group = group.Master;
+                                group.Members.Add(target.Id);
+                                targetSync.Group = group.Master;
                                 action = isCreated ? Protocol.GroupAction.Create : Protocol.GroupAction.Enter;
                             }
 
                             _dbContext.Group.Set(group);
-                            _dbContext.CharacterSync.Set(memberSync);
+                            _dbContext.CharacterSync.Set(targetSync);
 
                             var memberNames = new List<string>();
                             foreach (var uid in group.Members)
@@ -218,7 +224,7 @@ namespace Internal.Controllers
                                 Group = new Protocol.Group
                                 {
                                     Id = group.Master,
-                                    Master = master.Name,
+                                    Master = actor.Name,
                                     Members = memberNames
                                 },
                                 Member = request.Member,

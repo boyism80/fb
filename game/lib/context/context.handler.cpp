@@ -769,7 +769,7 @@ async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_
         co_return true;
 
     auto& gid = me->group_id();
-    if (gid.has_value())
+    if (gid.has_value() && me->name() == request.name)
     {
         co_await this->leave_group(*me);
     }
