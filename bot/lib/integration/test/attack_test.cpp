@@ -11,6 +11,13 @@ attack_test::attack_test(game_bot_controller& controller) :
     this->controller.hook(this, this, &attack_test::on_hook_die);
 }
 
+async::task<void> attack_test::on_initialize(game_bot_controller& controller)
+{
+    co_await super::on_initialize(controller);
+    co_await super::arrange_bots_in_line_formation();
+    co_return;
+}
+
 async::task<void> attack_test::on_hook_die(game_bot& bot, const fb::protocol::game::response::die& response)
 {
     if (this->_done)
@@ -27,7 +34,27 @@ async::task<void> attack_test::on_hook_die(game_bot& bot, const fb::protocol::ga
     co_return;
 }
 
-async::task<bool> attack_test::attack_scenario()
+async::task<void> attack_test::on_scenario_finished(uint32_t scenario_index)
+{
+    auto  bots = this->get_test_bots();
+    auto& bot  = bots.front();
+
+    co_await bot->clear_all_drop_items(DEFAULT_TIMEOUT);
+    this->_done = false;
+    co_return;
+}
+
+generator<bot_integration_test::scenario_t> attack_test::on_generate_scenario()
+{
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->attack_scenario_1();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->attack_scenario_2();
+    };
+}
+
+async::task<bool> attack_test::attack_scenario_1()
 {
     auto bots = this->get_test_bots();
     if (bots.size() < 2)
@@ -36,10 +63,12 @@ async::task<bool> attack_test::attack_scenario()
     auto& attacker = bots.front();
     auto& observer = bots.back();
 
+    co_await attacker->learn_spell("유인", DEFAULT_TIMEOUT);
+
     fb::logger::debug("Enhanced attack test: Setting up bot {} for combat", attacker->name());
 
     // Set bot HP to 100,000 using the dedicated method
-    co_await attacker->change_hp(100000, DEFAULT_TIMEOUT);
+    co_await attacker->set_max_hp_mp(100000, 100000, DEFAULT_TIMEOUT);
 
     // Set bot level to 77 using the dedicated method
     co_await attacker->change_level(77, DEFAULT_TIMEOUT);
@@ -59,6 +88,15 @@ async::task<bool> attack_test::attack_scenario()
     auto monster_info =
         co_await attacker->spawn_monster("초급유령", bot_position.x, bot_position.y + 1, DEFAULT_TIMEOUT);
     this->_target_oid = monster_info.oid;
+
+    std::ignore = co_await attacker->request<fb::protocol::game::response::action>(
+        fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, 0, "", monster_info.oid, monster_info.position),
+        [oid = attacker->oid()](auto& resp) {
+            if (resp.oid != oid)
+                return false;
+            return true;
+        },
+        DEFAULT_TIMEOUT);
 
     while (this->_done == false)
     {
@@ -86,26 +124,39 @@ async::task<bool> attack_test::attack_scenario()
     co_return true;
 }
 
+async::task<bool> attack_test::attack_scenario_2()
+{
+    auto bots     = this->get_test_bots();
+    auto attacker = bots[0];
+    auto target   = bots[1];
+
+    co_await target->set_max_hp_mp(100000, 100000, DEFAULT_TIMEOUT);
+    co_await attacker->direction(DIRECTION::RIGHT, DEFAULT_TIMEOUT);
+
+    while (target->state() != STATE::GHOST)
+    {
+        std::ignore = co_await attacker->request<fb::protocol::game::response::action>(
+            fb::protocol::game::request::attack{},
+            [oid = attacker->oid()](auto& resp) {
+                if (resp.oid != oid)
+                    return false;
+
+                if (resp.value != ACTION::ATTACK)
+                    return false;
+
+                return true;
+            },
+            DEFAULT_TIMEOUT);
+
+        co_await this->sleep(DEFAULT_INTERVAL);
+    }
+
+    co_return true;
+}
+
 async::task<void> attack_test::on_scenario_started(uint32_t scenario_index)
 {
     co_return;
-}
-
-async::task<void> attack_test::on_scenario_finished(uint32_t scenario_index)
-{
-    auto  bots = this->get_test_bots();
-    auto& bot  = bots.front();
-
-    co_await bot->clear_all_drop_items(DEFAULT_TIMEOUT);
-    this->_done = false;
-    co_return;
-}
-
-generator<bot_integration_test::scenario_t> attack_test::on_generate_scenario()
-{
-    co_yield [this]() -> async::task<bool> {
-        co_return co_await this->attack_scenario();
-    };
 }
 
 std::string attack_test::name() const
