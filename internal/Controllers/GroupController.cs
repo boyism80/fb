@@ -253,8 +253,8 @@ namespace Internal.Controllers
         }
 
         /// <summary>
-        /// Handles group leave requests for members and group dissolution for masters.
-        /// Manages member removal and group cleanup when the master leaves.
+        /// Handles voluntary group leave requests for members.
+        /// Allows members to leave the group on their own initiative.
         /// </summary>
         /// <param name="request">The leave group request containing the member's name.</param>
         /// <returns>A response with the updated group information and action taken.</returns>
@@ -377,6 +377,123 @@ namespace Internal.Controllers
                 return new Response.LeaveGroup
                 {
                     Member = request.Member,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
+
+
+        /// <summary>
+        /// Handles group member expulsion by the group master.
+        /// Allows the group master to forcefully remove a member from the group.
+        /// </summary>
+        /// <param name="request">The kick group request containing kicker and target information.</param>
+        /// <returns>A response with the updated group information and action taken.</returns>
+        [HttpPost("kick")]
+        public async Task<Response.KickGroup> Kick(Request.KickGroup request)
+        {
+            try
+            {
+                // Get kicker session and character
+                var kickerSession = await _sessionService.Get(request.Kicker) ??
+                    throw new LogicException(ErrorCode.Offline);
+
+                var kicker = await _dbContext.Character.Get(kickerSession.Uid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                // Get target character
+                var targetUid = await _dbContext.Character.GetCharacterId(request.Target) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+                var target = await _dbContext.Character.Get(targetUid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                // Prevent self-kicking
+                if (kicker.Name == target.Name)
+                    throw new LogicException(ErrorCode.CannotGroupSelf);
+
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(kicker.Id)))
+                {
+                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(target.Id)))
+                    {
+                        var kickerSync = await _dbContext.CharacterSync.Get(kicker.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        // Check if kicker is in a group
+                        if (kickerSync.Group == null)
+                            throw new LogicException(ErrorCode.GroupNotJoined);
+
+                        // Check if target is in the same group
+                        if (targetSync.Group != kickerSync.Group)
+                            throw new LogicException(ErrorCode.GroupNotJoined);
+
+                        await using (await _distributedLock.Lock(Group.DistributedLockKey(kickerSync.Group.Value)))
+                        {
+                            var group = await _dbContext.Group.Get(kickerSync.Group.Value) ??
+                                throw new LogicException(ErrorCode.GroupNotFound);
+
+                            // Check if kicker is the group master
+                            if (group.Master != kicker.Id)
+                                throw new LogicException(ErrorCode.NotGroupMaster);
+
+                            // Check if target is a member of the group
+                            if (!group.Members.Contains(target.Id))
+                                throw new LogicException(ErrorCode.GroupNotJoined);
+
+                            // Remove target from group
+                            group.Members.Remove(target.Id);
+                            _dbContext.Group.Set(group);
+
+                            targetSync.Group = null;
+                            _dbContext.CharacterSync.Set(targetSync);
+
+                            var members = new List<Character>();
+                            foreach (var uid in group.Members)
+                            {
+                                var member = await _dbContext.Character.Get(uid) ??
+                                    throw new LogicException(ErrorCode.NotFoundCharacter);
+                                members.Add(member);
+                            }
+
+                            var memberNames = members.ConvertAll(x => x.Name);
+
+                            var response = new Response.KickGroup
+                            {
+                                Group = new Protocol.Group
+                                {
+                                    Id = group.Master,
+                                    Master = kicker.Name,
+                                    Members = memberNames
+                                },
+                                Member = target.Name,
+                                Action = Protocol.GroupAction.Kick,
+                                Host = _model.Map[kicker.Map].Host,
+                                Error = 0
+                            };
+
+                            await _dbContext.SaveChangesAsync();
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
+                            return response;
+                        }
+                    }
+                }
+            }
+            catch (LogicException e)
+            {
+                return new Response.KickGroup
+                {
+                    Member = request.Target,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.KickGroup
+                {
+                    Member = request.Target,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }

@@ -164,6 +164,14 @@ table LeaveGroup {
   error: uint;
 }
 
+table KickGroup {
+  group: fb.protocol.internal.Group;
+  member: string;
+  action: fb.protocol.internal.GroupAction;
+  host: uint;
+  error: uint;
+}
+
 table BroadcastGroup {
   host: uint;
   group: uint;
@@ -200,7 +208,14 @@ table LeaveClan {
   clan: uint;
   uid: uint;
   uname: string;
-  kick: bool;
+  error: uint;
+}
+
+table KickClan {
+  host: uint;
+  clan: uint;
+  uid: uint;
+  uname: string;
   error: uint;
 }
 

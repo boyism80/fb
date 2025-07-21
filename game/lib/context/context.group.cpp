@@ -79,6 +79,13 @@ async::task<void> context::leave_group(character& me)
     co_await this->on_leave_group(response);
 }
 
+async::task<void> context::kick_group_member(const group& group, const std::string& kicker, const std::string& target)
+{
+    auto&& resp = co_await this->http.post("internal", "/group/kick", KickGroup{kicker, target});
+
+    co_await this->on_kick_group(resp);
+}
+
 void context::assert_group(uint32_t error, const std::string& actor) const
 {
     // Convert error codes to localized error messages
@@ -219,6 +226,32 @@ async::task<void> context::on_leave_group(const internal_resp::LeaveGroup& resp)
     }
     break;
     }
+}
+
+async::task<void> context::on_kick_group(const internal_resp::KickGroup& resp)
+{
+    this->assert_group(resp.error, resp.member);
+
+    auto gid = resp.group.id;
+    co_await this->upsert_group_then(gid,
+                                     resp.group.master,
+                                     resp.group.members,
+                                     [this, &resp, gid](auto& group) -> async::task<void> {
+                                         co_await this->characters.invoke(resp.member, [group](auto& ch) {
+                                             ch->group_reset();
+                                             group->detach(ch);
+                                         });
+
+                                         auto members = std::vector<std::string>{resp.group.members};
+                                         members.push_back(resp.group.master);
+                                         this->characters.foreach (members, [member = resp.member](auto& ch) {
+                                             if (ch->name() == member)
+                                                 ch->message("그룹에서 추방당했습니다.", MESSAGE_TYPE::STATE);
+                                             else
+                                                 ch->message(std::format("{}님 그룹에서 추방당했습니다.", member),
+                                                             MESSAGE_TYPE::STATE);
+                                         });
+                                     });
 }
 
 async::task<void> context::broadcast(const group& group, const std::string& message, MESSAGE_TYPE type)

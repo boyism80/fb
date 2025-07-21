@@ -50,6 +50,14 @@ async::task<void> context::handle_amqp_LeaveGroup(const internal_resp::LeaveGrou
 
     co_await this->on_leave_group(resp);
 };
+
+async::task<void> context::handle_amqp_KickGroup(const internal_resp::KickGroup& resp)
+{
+    if (resp.host == fb::config<uint32_t>("id"))
+        co_return;
+
+    co_await this->on_kick_group(resp);
+};
 async::task<void> context::handle_amqp_SetClanTitle(const internal_resp::SetClanTitle& resp)
 {
     if (resp.host == fb::config<uint32_t>("id"))
@@ -71,6 +79,14 @@ async::task<void> context::handle_amqp_LeaveClan(const internal_resp::LeaveClan&
         co_return;
 
     co_await this->on_clan_leave_member(resp);
+};
+
+async::task<void> context::handle_amqp_KickClan(const internal_resp::KickClan& resp)
+{
+    if (resp.host == fb::config<uint32_t>("id"))
+        co_return;
+
+    co_await this->on_clan_kick_member(resp);
 };
 
 async::task<void> context::handle_amqp_BroadcastClan(const internal_resp::BroadcastClan& resp)

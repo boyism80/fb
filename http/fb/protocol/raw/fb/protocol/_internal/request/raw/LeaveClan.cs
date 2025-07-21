@@ -29,26 +29,22 @@ public struct LeaveClan : IFlatbufferObject
   public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(8); }
-  public bool Kick { get { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol._internal.request.raw.LeaveClan> CreateLeaveClan(FlatBufferBuilder builder,
       uint host = 0,
       uint clan = 0,
-      StringOffset nameOffset = default(StringOffset),
-      bool kick = false) {
-    builder.StartTable(4);
+      StringOffset nameOffset = default(StringOffset)) {
+    builder.StartTable(3);
     LeaveClan.AddName(builder, nameOffset);
     LeaveClan.AddClan(builder, clan);
     LeaveClan.AddHost(builder, host);
-    LeaveClan.AddKick(builder, kick);
     return LeaveClan.EndLeaveClan(builder);
   }
 
-  public static void StartLeaveClan(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartLeaveClan(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
   public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(1, clan, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
-  public static void AddKick(FlatBufferBuilder builder, bool kick) { builder.AddBool(3, kick, false); }
   public static Offset<fb.protocol._internal.request.raw.LeaveClan> EndLeaveClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.LeaveClan>(o);
@@ -66,7 +62,6 @@ static public class LeaveClanVerify
       && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Clan*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 8 /*Name*/, false)
-      && verifier.VerifyField(tablePos, 10 /*Kick*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

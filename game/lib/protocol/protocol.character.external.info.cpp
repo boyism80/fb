@@ -56,7 +56,8 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
         writer.write<uint16_t>(this->ch.look());
         writer.write<uint8_t>(this->ch.color());
 
-        writer.write<uint8_t>(armor != nullptr ? armor->based<fb::model::armor>().dress : 0xFF);
+        writer.write<uint8_t>(armor != nullptr ? armor->based<fb::model::armor>().dress
+                                               : static_cast<uint8_t>(this->ch.sex()));
         writer.write<uint8_t>(this->ch.current_armor_color());
 
         writer.write<uint16_t>(weapon != nullptr ? weapon->based<fb::model::weapon>().dress : 0xFFFF);

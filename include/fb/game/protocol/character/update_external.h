@@ -63,13 +63,19 @@ private:
         if (this->to.is(OBJECT_TYPE::CHARACTER) == false)
             return HEAD_MARKER::NONE;
 
-        auto& you = static_cast<const fb::game::character&>(this->to);
-        auto  is_diff_clan =
-            (this->ch.clan_id().has_value() || you.clan_id().has_value()) && this->ch.clan_id() != you.clan_id();
-        if (!is_diff_clan)
-            return HEAD_MARKER::BLUE;
+        auto clan_id_1 = this->ch.clan_id();
+        if (clan_id_1.has_value() == false)
+            return HEAD_MARKER::NONE;
 
-        return HEAD_MARKER::NONE;
+        auto& you       = static_cast<const fb::game::character&>(this->to);
+        auto  clan_id_2 = you.clan_id();
+        if (clan_id_2.has_value() == false)
+            return HEAD_MARKER::NONE;
+
+        if (clan_id_1 != clan_id_2)
+            return HEAD_MARKER::NONE;
+
+        return HEAD_MARKER::BLUE;
     }
 #endif
 

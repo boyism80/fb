@@ -249,6 +249,15 @@ struct clan::builtin
     static int builtin_leave(lua_State* L);
 
     /**
+     * @brief      Lua binding for kicking a member from the clan.
+     *
+     * @param[in]  L  The Lua state
+     *
+     * @return     Number of return values pushed to Lua stack
+     */
+    static int builtin_kick(lua_State* L);
+
+    /**
      * @brief      Lua binding for sending messages to clan members.
      *
      * @param[in]  L  The Lua state

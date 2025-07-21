@@ -56,7 +56,7 @@ async::task<bool> skill_test::test_skill_cooldown_delays(std::shared_ptr<fb::bot
         co_return false;
     }
     fb::logger::debug("First cooldown time: {} seconds", first_cooldown);
-    caster->chat("First cooldown time: {} seconds", first_cooldown);
+    caster->chat(std::format("First cooldown time: {} seconds", first_cooldown));
 
     // 5. Change level to 99. Create and equip '용랑제구봉'
     co_await caster->change_level(99, DEFAULT_TIMEOUT);
@@ -101,7 +101,7 @@ async::task<bool> skill_test::test_skill_cooldown_delays(std::shared_ptr<fb::bot
         co_return false;
     }
     fb::logger::debug("Second cooldown time: {} seconds", second_cooldown);
-    caster->chat("Second cooldown time: {} seconds", second_cooldown);
+    caster->chat(std::format("Second cooldown time: {} seconds", second_cooldown));
 
     // Check if second cooldown is 4 seconds less than first cooldown
     if (second_cooldown != first_cooldown - 4)

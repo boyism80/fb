@@ -139,12 +139,21 @@ async::task<void> context::join_clan_member(const clan& clan, character& ch)
     co_await this->on_clan_join_member(resp);
 }
 
-async::task<void> context::leave_clan_member(const clan& clan, const std::string& name, bool kick)
+async::task<void> context::leave_clan_member(const clan& clan, const std::string& name)
 {
     auto&& resp =
-        co_await this->http.post("internal", "/clan/leave", LeaveClan{config<uint32_t>("host"), clan.id(), name, kick});
+        co_await this->http.post("internal", "/clan/leave", LeaveClan{config<uint32_t>("host"), clan.id(), name});
 
     co_await this->on_clan_leave_member(resp);
+}
+
+async::task<void> context::kick_clan_member(const clan& clan, const std::string& kicker, const std::string& target)
+{
+    auto&& resp = co_await this->http.post("internal",
+                                           "/clan/kick",
+                                           KickClan{config<uint32_t>("host"), clan.id(), kicker, target});
+
+    co_await this->on_clan_kick_member(resp);
 }
 
 async::task<void> context::broadcast(const clan& clan, const std::string& message, MESSAGE_TYPE type)
@@ -220,10 +229,7 @@ async::task<void> context::on_clan_leave_member(const internal_resp::LeaveClan& 
             clan->detach(weak);
             ch->clan_reset();
             ch->update_external(false);
-            if (resp.kick)
-                ch->message("문파에서 추방당했습니다.", MESSAGE_TYPE::NOTIFY);
-            else
-                ch->message("문파에서 탈퇴했습니다.", MESSAGE_TYPE::NOTIFY);
+            ch->message("문파에서 탈퇴했습니다.", MESSAGE_TYPE::NOTIFY);
         }
 
         clan->leave(resp.uname);
@@ -237,8 +243,44 @@ async::task<void> context::on_clan_leave_member(const internal_resp::LeaveClan& 
             members.push_back(shared_ptr);
         }
 
-        auto message = resp.kick ? std::format("{}님이 문파에서 추방당했습니다.", resp.uname)
-                                 : std::format("{}님이 문파에서 탈퇴하였습니다.", resp.uname);
+        auto message = std::format("{}님이 문파에서 탈퇴하였습니다.", resp.uname);
+        co_await this->characters.foreach (
+            [this, message](auto& member) {
+                member->message(message, MESSAGE_TYPE::NOTIFY);
+            },
+            members);
+
+        clan->leave(resp.uname);
+        co_return;
+    });
+}
+
+async::task<void> context::on_clan_kick_member(const internal_resp::KickClan& resp)
+{
+    this->assert_clan(resp.error);
+    co_await this->upsert_clan_then(resp.clan, [this, resp](auto& clan) -> async::task<void> {
+        auto ch = this->characters.find(resp.uname);
+        if (ch != nullptr)
+        {
+            auto weak = ch->weak_from_this_as<character>();
+            clan->detach(weak);
+            ch->clan_reset();
+            ch->update_external(false);
+            ch->message("문파에서 추방당했습니다.", MESSAGE_TYPE::NOTIFY);
+        }
+
+        clan->leave(resp.uname);
+        auto members = std::vector<std::shared_ptr<fb::game::character>>();
+        for (auto& [_, weak_ptr] : clan->characters())
+        {
+            auto shared_ptr = weak_ptr.lock();
+            if (shared_ptr == nullptr)
+                continue;
+
+            members.push_back(shared_ptr);
+        }
+
+        auto message = std::format("{}님이 문파에서 추방당했습니다.", resp.uname);
         co_await this->characters.foreach (
             [this, message](auto& member) {
                 member->message(message, MESSAGE_TYPE::NOTIFY);

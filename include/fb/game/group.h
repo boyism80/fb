@@ -206,6 +206,15 @@ struct group::builtin
      * @return     Number of return values pushed to Lua stack
      */
     static int builtin_message(lua_State* L);
+
+    /**
+     * @brief      Lua binding for kicking a member from the group.
+     *
+     * @param[in]  L  The Lua state
+     *
+     * @return     Number of return values pushed to Lua stack
+     */
+    static int builtin_kick(lua_State* L);
 };
 
 } // namespace fb::game

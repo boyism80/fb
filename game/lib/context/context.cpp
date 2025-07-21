@@ -214,9 +214,11 @@ async::task<void> context::handle_start()
     this->handler.amqp.bind("fb.global", &context::handle_amqp_Broadcast);
     this->handler.amqp.bind("fb.group", &context::handle_amqp_EnterGroup);
     this->handler.amqp.bind("fb.group", &context::handle_amqp_LeaveGroup);
+    this->handler.amqp.bind("fb.group", &context::handle_amqp_KickGroup);
     this->handler.amqp.bind("fb.clan", &context::handle_amqp_SetClanTitle);
     this->handler.amqp.bind("fb.clan", &context::handle_amqp_JoinClan);
     this->handler.amqp.bind("fb.clan", &context::handle_amqp_LeaveClan);
+    this->handler.amqp.bind("fb.clan", &context::handle_amqp_KickClan);
     this->handler.amqp.bind("fb.clan", &context::handle_amqp_BroadcastClan);
     this->handler.amqp.bind("fb.mail", &context::handle_amqp_WriteMail);
 }

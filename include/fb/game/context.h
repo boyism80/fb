@@ -59,6 +59,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::DestroyClan, fb::protocol::in
 REGISTER_RESPONSE(fb::protocol::internal::request::SetClanTitle, fb::protocol::internal::response::SetClanTitle)
 REGISTER_RESPONSE(fb::protocol::internal::request::JoinClan, fb::protocol::internal::response::JoinClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::LeaveClan, fb::protocol::internal::response::LeaveClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::KickClan, fb::protocol::internal::response::KickClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastClan, fb::protocol::internal::response::BroadcastClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout)
 REGISTER_RESPONSE(fb::protocol::internal::request::Save, fb::protocol::internal::response::Save)
@@ -67,6 +68,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::EnterGroup, fb::protocol::int
 REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastGroup, fb::protocol::internal::response::BroadcastGroup)
 REGISTER_RESPONSE(fb::protocol::internal::request::Login, fb::protocol::internal::response::Login)
 REGISTER_RESPONSE(fb::protocol::internal::request::LeaveGroup, fb::protocol::internal::response::LeaveGroup)
+REGISTER_RESPONSE(fb::protocol::internal::request::KickGroup, fb::protocol::internal::response::KickGroup)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetOption, fb::protocol::internal::response::SetOption)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteMail, fb::protocol::internal::response::WriteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteMail, fb::protocol::internal::response::DeleteMail)
@@ -341,6 +343,13 @@ private:
     async::task<void> on_leave_group(const internal_resp::LeaveGroup& resp);
 
     /**
+     * @brief      Called when a character is kicked from a group.
+     *
+     * @param[in]  resp  The group kick response containing the kicked character.
+     */
+    async::task<void> on_kick_group(const internal_resp::KickGroup& resp);
+
+    /**
      * @brief      Called when a server-wide broadcast message is received.
      *
      * @param[in]  resp  The broadcast response containing the message and metadata.
@@ -381,6 +390,8 @@ private:
      * @param[in]  resp  The clan leave response containing departure details.
      */
     async::task<void> on_clan_leave_member(const internal_resp::LeaveClan& resp);
+
+    async::task<void> on_clan_kick_member(const internal_resp::KickClan& resp);
 
     /**
      * @brief      Called when a mail message is written/sent.
@@ -547,6 +558,19 @@ public:
     [[nodiscard]] async::task<void> leave_group(character& me);
 
     /**
+     * @brief      Kicks a character from a group by the group master.
+     *
+     * @param[in]  group   The group to kick the character from.
+     * @param[in]  kicker  The name of the character performing the kick.
+     * @param[in]  target  The name of the character to kick.
+     *
+     * @return     An async task that completes when the character is kicked from the group.
+     */
+    [[nodiscard]] async::task<void> kick_group_member(const group&       group,
+                                                      const std::string& kicker,
+                                                      const std::string& target);
+
+    /**
      * @brief      Broadcasts a message to all members of a group.
      *
      * @param[in]  group    The group to broadcast the message to.
@@ -597,15 +621,17 @@ public:
     [[nodiscard]] async::task<void> join_clan_member(const clan& clan, character& ch);
 
     /**
-     * @brief      Removes a character from a clan.
+     * @brief      Kicks a character from a clan by an authorized member.
      *
-     * @param[in]  clan  The clan to remove the character from.
-     * @param[in]  name  The name of the character to remove.
-     * @param[in]  kick  Whether this is a forced kick (true) or voluntary leave (false).
+     * @param[in]  clan    The clan to kick the character from.
+     * @param[in]  kicker  The name of the character performing the kick.
+     * @param[in]  target  The name of the character to kick.
      *
-     * @return     An async task that completes when the character leaves the clan.
+     * @return     An async task that completes when the character is kicked from the clan.
      */
-    [[nodiscard]] async::task<void> leave_clan_member(const clan& clan, const std::string& name, bool kick);
+    [[nodiscard]] async::task<void> kick_clan_member(const clan&        clan,
+                                                     const std::string& kicker,
+                                                     const std::string& target);
 
     /**
      * @brief      Broadcasts a message to all members of a clan.
@@ -1322,6 +1348,15 @@ public:
     [[nodiscard]] async::task<void> handle_amqp_LeaveGroup(const internal_resp::LeaveGroup& response);
 
     /**
+     * @brief      Handles group kick notification from AMQP.
+     *
+     * @param[in]  response  The group kick response containing the kicked character.
+     *
+     * @return     An async task that completes when group kick handling is finished.
+     */
+    [[nodiscard]] async::task<void> handle_amqp_KickGroup(const internal_resp::KickGroup& response);
+
+    /**
      * @brief      Handles clan title change notification from AMQP.
      *
      * @param[in]  response  The clan title change response containing the new title.
@@ -1347,6 +1382,15 @@ public:
      * @return     An async task that completes when clan leave handling is finished.
      */
     [[nodiscard]] async::task<void> handle_amqp_LeaveClan(const internal_resp::LeaveClan& response);
+
+    /**
+     * @brief      Handles clan member kick notification from AMQP.
+     *
+     * @param[in]  response  The clan kick response containing the kicked character.
+     *
+     * @return     An async task that completes when clan kick handling is finished.
+     */
+    [[nodiscard]] async::task<void> handle_amqp_KickClan(const internal_resp::KickClan& response);
 
     /**
      * @brief      Handles clan broadcast message from AMQP.
@@ -1600,6 +1644,16 @@ public:
     async::task<bool> npc_interaction(character&                                         ch,
                                       const std::string&                                 message,
                                       const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
+
+    /**
+     * @brief      Removes a character from a clan.
+     *
+     * @param[in]  clan  The clan to remove the character from.
+     * @param[in]  name  The name of the character to remove.
+     *
+     * @return     An async task that completes when the character leaves the clan.
+     */
+    [[nodiscard]] async::task<void> leave_clan_member(const clan& clan, const std::string& name);
 };
 
 struct context::builtin

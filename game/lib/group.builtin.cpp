@@ -9,6 +9,7 @@ IMPLEMENT_LUA_EXTENSION(group, "fb.game.group")
 {"members",             group::builtin::builtin_members},
 {"nears",               group::builtin::builtin_nears},
 {"message",             group::builtin::builtin_message},
+{"kick",                group::builtin::builtin_kick},
 END_LUA_EXTENSION; // clang-format on
 
 int group::builtin::builtin_master(lua_State* L)
@@ -116,6 +117,46 @@ int group::builtin::builtin_message(lua_State* L)
             lua->pushstring(e.what());
         }
         lua->resume(1);
+    });
+
+    return lua->yield(1);
+}
+
+int group::builtin::builtin_kick(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto context = lua->env<fb::game::context>("context");
+    auto argc    = lua->argc();
+    auto group   = lua->touserdata<fb::game::group>(1);
+    if (group == nullptr)
+        return 0;
+
+    auto kicker = lua->tostring(2);
+    auto target = lua->tostring(3);
+
+    static auto fn = [](fb::game::context* context,
+                        fb::lua::context*  lua,
+                        fb::game::group*   group,
+                        const std::string& kicker,
+                        const std::string& target) -> async::task<void> {
+        try
+        {
+            co_await context->kick_group_member(*group, kicker, target);
+            lua->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            lua->pushstring(e.what());
+        }
+
+        lua->resume(1);
+    };
+
+    std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, lua, group, kicker, target);
     });
 
     return lua->yield(1);

@@ -768,7 +768,15 @@ async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_
     if (me->inited() == false)
         co_return true;
 
-    std::ignore = co_await this->create_group(*me, request.name);
+    auto& gid = me->group_id();
+    if (gid.has_value())
+    {
+        co_await this->leave_group(*me);
+    }
+    else
+    {
+        std::ignore = co_await this->create_group(*me, request.name);
+    }
     co_return true;
 }
 

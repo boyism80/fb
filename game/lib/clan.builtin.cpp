@@ -11,6 +11,7 @@ IMPLEMENT_LUA_EXTENSION(clan, "fb.game.clan")
 {"title",               clan::builtin::builtin_title},
 {"join",                clan::builtin::builtin_join},
 {"leave",               clan::builtin::builtin_leave},
+{"kick",                clan::builtin::builtin_kick},
 {"message",             clan::builtin::builtin_message},
 END_LUA_EXTENSION; // clang-format on
 
@@ -203,16 +204,14 @@ int clan::builtin::builtin_leave(lua_State* L)
         return 0;
 
     auto name = lua->tostring(2);
-    auto kick = lua->toboolean(3, false);
 
     static auto fn = [](fb::game::context* context,
                         fb::lua::context*  lua,
                         fb::game::clan*    clan,
-                        const std::string& name,
-                        bool               kick) -> async::task<void> {
+                        const std::string& name) -> async::task<void> {
         try
         {
-            co_await context->leave_clan_member(*clan, name, kick);
+            co_await context->leave_clan_member(*clan, name);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -224,7 +223,47 @@ int clan::builtin::builtin_leave(lua_State* L)
     };
 
     std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(context, lua, clan, name, kick);
+        co_await fn(context, lua, clan, name);
+    });
+
+    return lua->yield(1);
+}
+
+int clan::builtin::builtin_kick(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto context = lua->env<fb::game::context>("context");
+    auto argc    = lua->argc();
+    auto clan    = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    auto kicker = lua->tostring(2);
+    auto target = lua->tostring(3);
+
+    static auto fn = [](fb::game::context* context,
+                        fb::lua::context*  lua,
+                        fb::game::clan*    clan,
+                        const std::string& kicker,
+                        const std::string& target) -> async::task<void> {
+        try
+        {
+            co_await context->kick_clan_member(*clan, kicker, target);
+            lua->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            lua->pushstring(e.what());
+        }
+
+        lua->resume(1);
+    };
+
+    std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, lua, clan, kicker, target);
     });
 
     return lua->yield(1);

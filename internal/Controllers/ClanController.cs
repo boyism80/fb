@@ -430,8 +430,8 @@ namespace Internal.Controllers
         }
 
         /// <summary>
-        /// Handles clan leave requests and member removal.
-        /// Allows members to leave the clan or be kicked by authorized members.
+        /// Handles voluntary clan leave requests for members.
+        /// Allows members to leave the clan on their own initiative.
         /// </summary>
         /// <param name="request">The leave request containing member name and clan ID.</param>
         /// <returns>A response confirming the member removal or error details.</returns>
@@ -481,7 +481,6 @@ namespace Internal.Controllers
                             Clan = clan.Id,
                             Uid = ch.Id,
                             Uname = ch.Name,
-                            Kick = request.Kick,
                             Error = (uint)ErrorCode.None
                         };
 
@@ -506,6 +505,125 @@ namespace Internal.Controllers
             }
             finally
             { }
+        }
+
+
+
+        /// <summary>
+        /// Handles clan member expulsion by authorized members.
+        /// Allows clan members with sufficient privileges to forcefully remove another member.
+        /// </summary>
+        /// <param name="request">The kick clan request containing host, clan, kicker and target information.</param>
+        /// <returns>A response with the updated clan information and action taken.</returns>
+        [HttpPost("kick")]
+        public async Task<Response.KickClan> Kick(Request.KickClan request)
+        {
+            try
+            {
+                // Get kicker character
+                var kickerUid = await _dbContext.Character.GetCharacterId(request.Kicker) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+                var kicker = await _dbContext.Character.Get(kickerUid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                // Get target character
+                var targetUid = await _dbContext.Character.GetCharacterId(request.Target) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+                var target = await _dbContext.Character.Get(targetUid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                // Prevent self-kicking
+                if (kicker.Name == target.Name)
+                    throw new LogicException(ErrorCode.CannotGroupSelf);
+
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(kicker.Id)))
+                {
+                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(target.Id)))
+                    {
+                        var kickerSync = await _dbContext.CharacterSync.Get(kicker.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        // Check if kicker is in a clan
+                        if (kickerSync.Clan == null)
+                            throw new LogicException(ErrorCode.ClanNotJoined);
+
+                        // Check if target is in the same clan
+                        if (targetSync.Clan != kickerSync.Clan)
+                            throw new LogicException(ErrorCode.ClanNotJoined);
+
+                        await using (await _distributedLock.Lock(Clan.DistributedLockKey(kickerSync.Clan.Value)))
+                        {
+                            var clan = await _dbContext.Clan.Get(kickerSync.Clan.Value) ??
+                                throw new LogicException(ErrorCode.NotFoundClan);
+
+                            // Get kicker's clan member info
+                            var kickerMember = await _dbContext.ClanMember.Get(clan.Id, kicker.Id) ??
+                                throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                            // Get target's clan member info
+                            var targetMember = await _dbContext.ClanMember.Get(clan.Id, target.Id) ??
+                                throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                            // Check if kicker has minimum kickable position (Mate or higher)
+                            if (kickerMember.Position < (uint)ClanPosition.Mate)
+                                throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                            // Check if target has higher or equal position (can't kick superiors)
+                            if (targetMember.Position >= kickerMember.Position)
+                                throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                            // Check if target is not the master (can't kick master)
+                            if (targetMember.Position == (uint)ClanPosition.Master)
+                                throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
+
+                            // Remove target from clan
+                            targetMember.Deleted = true;
+                            _dbContext.ClanMember.Set(targetMember);
+
+                            targetSync.Clan = null;
+                            _dbContext.CharacterSync.Set(targetSync);
+
+                            var response = new Response.KickClan
+                            {
+                                Host = request.Host,
+                                Clan = request.Clan,
+                                Uid = target.Id,
+                                Uname = target.Name,
+                                Error = 0
+                            };
+
+                            await _dbContext.SaveChangesAsync();
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                            return response;
+                        }
+                    }
+                }
+            }
+            catch (LogicException e)
+            {
+                return new Response.KickClan
+                {
+                    Host = request.Host,
+                    Clan = request.Clan,
+                    Uid = 0,
+                    Uname = request.Target,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.KickClan
+                {
+                    Host = request.Host,
+                    Clan = request.Clan,
+                    Uid = 0,
+                    Uname = request.Target,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
         }
 
         /// <summary>

@@ -9,16 +9,16 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct LeaveClan : IFlatbufferObject
+public struct KickClan : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
   public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static LeaveClan GetRootAsLeaveClan(ByteBuffer _bb) { return GetRootAsLeaveClan(_bb, new LeaveClan()); }
-  public static LeaveClan GetRootAsLeaveClan(ByteBuffer _bb, LeaveClan obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public static bool VerifyLeaveClan(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, LeaveClanVerify.Verify); }
+  public static KickClan GetRootAsKickClan(ByteBuffer _bb) { return GetRootAsKickClan(_bb, new KickClan()); }
+  public static KickClan GetRootAsKickClan(ByteBuffer _bb, KickClan obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public static bool VerifyKickClan(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, KickClanVerify.Verify); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public LeaveClan __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public KickClan __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Clan { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
@@ -32,37 +32,37 @@ public struct LeaveClan : IFlatbufferObject
   public byte[] GetUnameArray() { return __p.__vector_as_array<byte>(10); }
   public uint Error { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
-  public static Offset<fb.protocol._internal.response.raw.LeaveClan> CreateLeaveClan(FlatBufferBuilder builder,
+  public static Offset<fb.protocol._internal.response.raw.KickClan> CreateKickClan(FlatBufferBuilder builder,
       uint host = 0,
       uint clan = 0,
       uint uid = 0,
       StringOffset unameOffset = default(StringOffset),
       uint error = 0) {
     builder.StartTable(5);
-    LeaveClan.AddError(builder, error);
-    LeaveClan.AddUname(builder, unameOffset);
-    LeaveClan.AddUid(builder, uid);
-    LeaveClan.AddClan(builder, clan);
-    LeaveClan.AddHost(builder, host);
-    return LeaveClan.EndLeaveClan(builder);
+    KickClan.AddError(builder, error);
+    KickClan.AddUname(builder, unameOffset);
+    KickClan.AddUid(builder, uid);
+    KickClan.AddClan(builder, clan);
+    KickClan.AddHost(builder, host);
+    return KickClan.EndKickClan(builder);
   }
 
-  public static void StartLeaveClan(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartKickClan(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
   public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(1, clan, 0); }
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(2, uid, 0); }
   public static void AddUname(FlatBufferBuilder builder, StringOffset unameOffset) { builder.AddOffset(3, unameOffset.Value, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(4, error, 0); }
-  public static Offset<fb.protocol._internal.response.raw.LeaveClan> EndLeaveClan(FlatBufferBuilder builder) {
+  public static Offset<fb.protocol._internal.response.raw.KickClan> EndKickClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
-    return new Offset<fb.protocol._internal.response.raw.LeaveClan>(o);
+    return new Offset<fb.protocol._internal.response.raw.KickClan>(o);
   }
-  public static void FinishLeaveClanBuffer(FlatBufferBuilder builder, Offset<fb.protocol._internal.response.raw.LeaveClan> offset) { builder.Finish(offset.Value); }
-  public static void FinishSizePrefixedLeaveClanBuffer(FlatBufferBuilder builder, Offset<fb.protocol._internal.response.raw.LeaveClan> offset) { builder.FinishSizePrefixed(offset.Value); }
+  public static void FinishKickClanBuffer(FlatBufferBuilder builder, Offset<fb.protocol._internal.response.raw.KickClan> offset) { builder.Finish(offset.Value); }
+  public static void FinishSizePrefixedKickClanBuffer(FlatBufferBuilder builder, Offset<fb.protocol._internal.response.raw.KickClan> offset) { builder.FinishSizePrefixed(offset.Value); }
 }
 
 
-static public class LeaveClanVerify
+static public class KickClanVerify
 {
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
