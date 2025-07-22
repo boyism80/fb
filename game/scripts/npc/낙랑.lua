@@ -169,8 +169,9 @@ function sample_clan(me, npc)
             end
 
             local name = me:input(npc, '상대 이름 입력')
-            local position = me:input(npc, '직책 입력')
-            local error = clan:change_position(name, position)
+            local role = me:input(npc, '직책 입력')
+            role = tonumber(role)
+            local error = clan:change_role(name, role)
             if error ~= nil then
                 me:dialog(npc, error)
             else

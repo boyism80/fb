@@ -84,14 +84,15 @@ private:
     async::task<bool> invite_to_clan(std::shared_ptr<game_bot> inviter, std::shared_ptr<game_bot> invitee);
 
     /**
-     * @brief      Tests clan communication functionality.
+     * @brief      Tests clan role-based permission functionality.
      *
-     *             Tests clan chat and coordination features
-     *             between clan members.
+     *             Tests role-based invite permissions, role changes,
+     *             and verifies that proper privileges are required
+     *             for clan management actions.
      *
-     * @return     A task that completes when clan communication tests finish.
+     * @return     A task that completes when clan role permission tests finish.
      */
-    async::task<bool> test_clan_position();
+    async::task<bool> test_clan_role();
 
     /**
      * @brief      Tests clan disbanding functionality.
