@@ -160,5 +160,5 @@ table Clan {
 table ClanMember {
     uid: uint;
     name: string;
-    position: uint;
+    role: uint;
 }

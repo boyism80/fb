@@ -114,7 +114,7 @@ DROP TABLE IF EXISTS `clan_member`;
 CREATE TABLE `clan_member` (
   `clan` int unsigned NOT NULL,
   `user` int NOT NULL,
-  `position` int NOT NULL,
+  `role` int NOT NULL,
   `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

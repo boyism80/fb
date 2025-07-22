@@ -77,12 +77,12 @@ void clan::leave(const std::string& member)
     this->_members.erase(member);
 }
 
-void clan::change_position(const std::string& member_name, CLAN_POSITION new_position)
+void clan::change_role(const std::string& member_name, CLAN_ROLE new_role)
 {
     auto it = this->_members.find(member_name);
     if (it != this->_members.end())
     {
-        it->second.position = new_position;
+        it->second.role = new_role;
     }
 }
 

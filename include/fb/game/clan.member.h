@@ -9,15 +9,15 @@ using namespace fb::model::enum_value;
 namespace fb::game {
 
 /**
- * @brief      Represents a member of a clan with position and Lua scripting support.
+ * @brief      Represents a member of a clan with role and Lua scripting support.
  *
  *             This class encapsulates information about a clan member, including their
- *             name and position within the clan hierarchy. It extends the Lua integration
+ *             name and role within the clan hierarchy. It extends the Lua integration
  *             system to allow clan member data to be accessed and manipulated from
  *             Lua scripts, enabling flexible clan management and scripting capabilities.
  *
  *             Key features:
- *             - Member name and clan position tracking
+ *             - Member name and clan role tracking
  *             - Lua scripting integration for dynamic clan management
  *             - Built-in Lua functions for accessing member properties
  *             - Integration with the clan hierarchy system
@@ -31,20 +31,20 @@ public:
     struct builtin;
 
 public:
-    std::string   name;     ///< The member's character name
-    CLAN_POSITION position; ///< The member's position within the clan hierarchy
+    std::string name; ///< The member's character name
+    CLAN_ROLE   role; ///< The member's role within the clan hierarchy
 
 public:
     /**
-     * @brief      Constructs a new clan member with the specified name and position.
+     * @brief      Constructs a new clan member with the specified name and role.
      *
      *             Creates a clan member object with the given character name and
-     *             clan position, ready for integration into the clan system.
+     *             clan role, ready for integration into the clan system.
      *
      * @param[in]  name      The character name of the clan member.
-     * @param[in]  position  The member's position within the clan hierarchy.
+     * @param[in]  role  The member's role within the clan hierarchy.
      */
-    clan_member(const std::string& name, CLAN_POSITION position);
+    clan_member(const std::string& name, CLAN_ROLE role);
 
     /**
      * @brief      Destroys the clan member and cleans up resources.
@@ -75,16 +75,16 @@ struct clan_member::builtin
     static int builtin_name(lua_State* L);
 
     /**
-     * @brief      Lua function to get the clan member's position.
+     * @brief      Lua function to get the clan member's role.
      *
-     *             Returns the clan position of the member to Lua scripts,
-     *             enabling position-based logic and hierarchy management.
+     *             Returns the clan role of the member to Lua scripts,
+     *             enabling role-based logic and hierarchy management.
      *
      * @param      L   The Lua state for script execution.
      *
-     * @return     Number of return values pushed to the Lua stack (1 for position).
+     * @return     Number of return values pushed to the Lua stack (1 for role).
      */
-    static int builtin_position(lua_State* L);
+    static int builtin_role(lua_State* L);
 };
 
 } // namespace fb::game

@@ -72,6 +72,18 @@ private:
     async::task<bool> test_clan_invite();
 
     /**
+     * @brief      Invites a bot to a clan using NPC interaction.
+     *
+     *             Performs the complete clan invite process through NPC dialog,
+     *             including target selection, invite acceptance, and verification.
+     *
+     * @param[in]  inviter  The bot that will invite the other bot to their clan
+     * @param[in]  invitee  The bot that will be invited to the clan
+     * @return     A task that completes with true if invite was successful, false otherwise
+     */
+    async::task<bool> invite_to_clan(std::shared_ptr<game_bot> inviter, std::shared_ptr<game_bot> invitee);
+
+    /**
      * @brief      Tests clan communication functionality.
      *
      *             Tests clan chat and coordination features
@@ -79,7 +91,7 @@ private:
      *
      * @return     A task that completes when clan communication tests finish.
      */
-    async::task<bool> test_clan_communication();
+    async::task<bool> test_clan_position();
 
     /**
      * @brief      Tests clan disbanding functionality.

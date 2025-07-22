@@ -70,7 +70,7 @@ namespace Internal.Controllers
                 {
                     Uid = x.User,
                     Name = nameDict.GetValueOrDefault(x.User),
-                    Position = x.Position
+                    Role = x.Role
                 };
             }).ToList();
         }
@@ -174,7 +174,7 @@ namespace Internal.Controllers
                         {
                             Clan = clan.Id,
                             User = request.Master,
-                            Position = (uint)ClanPosition.Master
+                            Role = (uint)ClanRole.Master
                         });
 
                         sync.Clan = clan.Id;
@@ -251,7 +251,7 @@ namespace Internal.Controllers
                         if (master.User != ch.Id)
                             throw new LogicException(ErrorCode.ClanNoPrivilege);
 
-                        if (master.Position != (uint)ClanPosition.Master)
+                        if (master.Role != (uint)ClanRole.Master)
                             throw new LogicException(ErrorCode.ClanNoPrivilege);
 
                         master.Deleted = true;
@@ -357,56 +357,87 @@ namespace Internal.Controllers
         /// <summary>
         /// Handles clan join requests for new members.
         /// Adds a character to an existing clan with appropriate member position.
+        /// Validates that the inviter has sufficient privileges to invite members.
         /// </summary>
-        /// <param name="request">The join request containing user ID and target clan ID.</param>
+        /// <param name="request">The join request containing inviter and invitee user IDs.</param>
         /// <returns>A response with the new member information or error details.</returns>
         [HttpPost("join")]
         public async Task<Response.JoinClan> Join(Request.JoinClan request)
         {
             try
             {
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(request.Uid)))
+                // Get inviter character (the one doing the inviting)
+                var inviter = await _dbContext.Character.Get(request.InviterUid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                // Get invitee character (the one being invited)
+                var invitee = await _dbContext.Character.Get(request.InviteeUid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                // Prevent self-invitation
+                if (inviter.Id == invitee.Id)
+                    throw new LogicException(ErrorCode.CannotInviteSelf);
+
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(inviter.Id)))
                 {
-                    var target = await _dbContext.Character.Get(request.Uid) ??
-                        throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                    var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
-                        throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                    if (targetSync.Clan != null)
-                        throw new LogicException(ErrorCode.ClanAlreadyJoined);
-
-                    await using (await _distributedLock.Lock(Clan.DistributedLockKey(request.Clan)))
+                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(invitee.Id)))
                     {
-                        var clan = await _dbContext.Clan.Get(request.Clan) ??
-                            throw new LogicException(ErrorCode.NotFoundClan);
+                        var inviterSync = await _dbContext.CharacterSync.Get(inviter.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var cm = _dbContext.ClanMember.Set(new ClanMember
+                        var inviteeSync = await _dbContext.CharacterSync.Get(invitee.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        // Check if inviter is in a clan
+                        if (inviterSync.Clan == null)
+                            throw new LogicException(ErrorCode.ClanNotJoined);
+
+                        // Check if invitee is already in a clan
+                        if (inviteeSync.Clan != null)
+                            throw new LogicException(ErrorCode.ClanAlreadyJoined);
+
+                        await using (await _distributedLock.Lock(Clan.DistributedLockKey(inviterSync.Clan.Value)))
                         {
-                            Clan = clan.Id,
-                            Position = (uint)ClanPosition.Mate,
-                            User = target.Id,
-                            Deleted = false
-                        });
+                            var clan = await _dbContext.Clan.Get(inviterSync.Clan.Value) ??
+                                throw new LogicException(ErrorCode.NotFoundClan);
 
-                        targetSync.Clan = clan.Id;
-                        _dbContext.CharacterSync.Set(targetSync);
+                            // Get inviter's clan member info
+                            var inviterMember = await _dbContext.ClanMember.Get(clan.Id, inviter.Id) ??
+                                throw new LogicException(ErrorCode.NotFoundClanMember);
 
-                        await _dbContext.SaveChangesAsync();
-                        var response = new Response.JoinClan
-                        {
-                            Clan = clan.Id,
-                            Member = new Protocol.ClanMember
+                            // Check if inviter has sufficient privileges
+                            if (inviterMember.Role < (uint)Fb.Model.ConstValue.Clan.MinimumInvitePrivilege)
+                                throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                            // Add invitee to clan
+                            var cm = _dbContext.ClanMember.Set(new ClanMember
                             {
-                                Name = target.Name,
-                                Uid = cm.User,
-                                Position = cm.Position
-                            },
-                            Error = (uint)ErrorCode.None
-                        };
+                                Clan = clan.Id,
+                                Role = (uint)ClanRole.Mate,
+                                User = invitee.Id,
+                                Deleted = false
+                            });
 
-                        _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
-                        return response;
+                            inviteeSync.Clan = clan.Id;
+                            _dbContext.CharacterSync.Set(inviteeSync);
+
+                            await _dbContext.SaveChangesAsync();
+                            var response = new Response.JoinClan
+                            {
+                                Host = request.Host,
+                                Clan = clan.Id,
+                                Member = new Protocol.ClanMember
+                                {
+                                    Name = invitee.Name,
+                                    Uid = cm.User,
+                                    Role = cm.Role
+                                },
+                                Error = (uint)ErrorCode.None
+                            };
+
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                            return response;
+                        }
                     }
                 }
             }
@@ -414,18 +445,21 @@ namespace Internal.Controllers
             {
                 return new Response.JoinClan
                 {
+                    Host = request.Host,
+                    Clan = 0,
+                    Member = null,
                     Error = (uint)e.Error
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return new Response.JoinClan
                 {
+                    Host = request.Host,
+                    Clan = 0,
+                    Member = null,
                     Error = (uint)ErrorCode.Unhandled
                 };
-            }
-            finally
-            {
             }
         }
 
@@ -465,7 +499,7 @@ namespace Internal.Controllers
                         var member = await _dbContext.ClanMember.Get(clan.Id, ch.Id) ??
                             throw new LogicException(ErrorCode.NotFoundClanMember);
 
-                        if (member.Position == (uint)ClanPosition.Master)
+                        if (member.Role == (uint)ClanRole.Master)
                             throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
 
                         member.Deleted = true;
@@ -567,16 +601,16 @@ namespace Internal.Controllers
                             var targetMember = await _dbContext.ClanMember.Get(clan.Id, target.Id) ??
                                 throw new LogicException(ErrorCode.NotFoundClanMember);
 
-                            // Check if kicker has minimum kickable position (Mate or higher)
-                            if (kickerMember.Position < (uint)ClanPosition.Mate)
+                            // Check if kicker has minimum kickable role
+                            if (kickerMember.Role < (uint)Fb.Model.ConstValue.Clan.MinimumKickPrivilege)
                                 throw new LogicException(ErrorCode.ClanNoPrivilege);
 
-                            // Check if target has higher or equal position (can't kick superiors)
-                            if (targetMember.Position >= kickerMember.Position)
+                            // Check if target has higher or equal role (can't kick superiors)
+                            if (targetMember.Role >= kickerMember.Role)
                                 throw new LogicException(ErrorCode.ClanNoPrivilege);
 
                             // Check if target is not the master (can't kick master)
-                            if (targetMember.Position == (uint)ClanPosition.Master)
+                            if (targetMember.Role == (uint)ClanRole.Master)
                                 throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
 
                             // Remove target from clan
@@ -677,8 +711,8 @@ namespace Internal.Controllers
         /// </summary>
         /// <param name="request">The position change request containing changer ID, target name, clan ID, and new position.</param>
         /// <returns>A response confirming the position change or error details.</returns>
-        [HttpPost("change-position")]
-        public async Task<Response.ChangeClanPosition> ChangePosition(Request.ChangeClanPosition request)
+        [HttpPost("change-role")]
+        public async Task<Response.ChangeClanRole> ChangeRole(Request.ChangeClanRole request)
         {
             try
             {
@@ -692,9 +726,9 @@ namespace Internal.Controllers
                 var target = await _dbContext.Character.Get(targetUid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                // Prevent self-position change
+                // Prevent self-role change
                 if (changer.Id == target.Id)
-                    throw new LogicException(ErrorCode.CannotChangeClanPositionSelf);
+                    throw new LogicException(ErrorCode.CannotChangeClanRoleSelf);
 
                 await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(changer.Id)))
                 {
@@ -727,36 +761,36 @@ namespace Internal.Controllers
                             var targetMember = await _dbContext.ClanMember.Get(clan.Id, target.Id) ??
                                 throw new LogicException(ErrorCode.NotFoundClanMember);
 
-                            // Check if changer has sufficient privileges (Deputy or higher)
-                            if (changerMember.Position < (uint)ClanPosition.Deputy)
+                            // Check if changer has sufficient privileges
+                            if (changerMember.Role < (uint)Fb.Model.ConstValue.Clan.MinimumChangeRolePrivilege)
                                 throw new LogicException(ErrorCode.ClanNoPrivilege);
 
-                            // Check if target has higher or equal position (can't change superiors)
-                            if (targetMember.Position >= changerMember.Position)
+                            // Check if target has higher or equal role (can't change superiors)
+                            if (targetMember.Role >= changerMember.Role)
                                 throw new LogicException(ErrorCode.ClanNoPrivilege);
 
-                            // Check if trying to change master position (only master can change master)
-                            if (targetMember.Position == (uint)ClanPosition.Master && 
-                                changerMember.Position != (uint)ClanPosition.Master)
+                            // Check if trying to change master role (only master can change master)
+                            if (targetMember.Role == (uint)ClanRole.Master && 
+                                changerMember.Role != (uint)ClanRole.Master)
                                 throw new LogicException(ErrorCode.ClanNoPrivilege);
 
-                            // Validate new position
-                            if (request.NewPosition < (uint)ClanPosition.Mate || 
-                                request.NewPosition > (uint)ClanPosition.Master)
-                                throw new LogicException(ErrorCode.InvalidClanPosition);
+                            // Validate new role
+                            if (request.NewRole < (uint)ClanRole.Mate || 
+                                request.NewRole > (uint)ClanRole.Master)
+                                throw new LogicException(ErrorCode.InvalidClanRole);
 
-                            // Check if new position is higher than changer's position (can't promote to higher rank)
-                            if (request.NewPosition >= changerMember.Position)
+                            // Check if new role is higher than changer's role (can't promote to higher rank)
+                            if (request.NewRole >= changerMember.Role)
                                 throw new LogicException(ErrorCode.ClanNoPrivilege);
 
-                            // Store old position for response
-                            var oldPosition = targetMember.Position;
+                            // Store old role for response
+                            var oldRole = targetMember.Role;
 
-                            // Update target's position
-                            targetMember.Position = request.NewPosition;
+                            // Update target's role
+                            targetMember.Role = request.NewRole;
                             _dbContext.ClanMember.Set(targetMember);
 
-                            var response = new Response.ChangeClanPosition
+                            var response = new Response.ChangeClanRole
                             {
                                 Host = request.Host,
                                 Clan = clan.Id,
@@ -764,8 +798,8 @@ namespace Internal.Controllers
                                 ChangerName = changer.Name,
                                 TargetUid = target.Id,
                                 TargetName = target.Name,
-                                OldPosition = oldPosition,
-                                NewPosition = request.NewPosition,
+                                OldRole = oldRole,
+                                NewRole = request.NewRole,
                                 Error = (uint)ErrorCode.None
                             };
 
@@ -778,7 +812,7 @@ namespace Internal.Controllers
             }
             catch (LogicException e)
             {
-                return new Response.ChangeClanPosition
+                return new Response.ChangeClanRole
                 {
                     Host = request.Host,
                     Clan = request.Clan,
@@ -786,14 +820,14 @@ namespace Internal.Controllers
                     ChangerName = "",
                     TargetUid = 0,
                     TargetName = request.TargetName,
-                    OldPosition = 0,
-                    NewPosition = request.NewPosition,
+                    OldRole = 0,
+                    NewRole = request.NewRole,
                     Error = (uint)e.Error
                 };
             }
             catch (Exception)
             {
-                return new Response.ChangeClanPosition
+                return new Response.ChangeClanRole
                 {
                     Host = request.Host,
                     Clan = request.Clan,
@@ -801,8 +835,8 @@ namespace Internal.Controllers
                     ChangerName = "",
                     TargetUid = 0,
                     TargetName = request.TargetName,
-                    OldPosition = 0,
-                    NewPosition = request.NewPosition,
+                    OldRole = 0,
+                    NewRole = request.NewRole,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }

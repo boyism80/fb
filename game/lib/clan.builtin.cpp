@@ -12,7 +12,7 @@ IMPLEMENT_LUA_EXTENSION(clan, "fb.game.clan")
 {"join",                clan::builtin::builtin_join},
 {"leave",               clan::builtin::builtin_leave},
 {"kick",                clan::builtin::builtin_kick},
-{"change_position",     clan::builtin::builtin_change_position},
+{"change_role",         clan::builtin::builtin_change_role},
 {"message",             clan::builtin::builtin_message},
 END_LUA_EXTENSION; // clang-format on
 
@@ -156,21 +156,41 @@ int clan::builtin::builtin_join(lua_State* L)
     if (clan == nullptr)
         return 0;
 
-    auto ch = lua->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
+    auto inviter = lua->touserdata<fb::game::character>(2);
+    if (inviter == nullptr)
         return 0;
+
+    auto invitee = lua->touserdata<fb::game::character>(3);
+    if (invitee == nullptr)
+        return 0;
+
+    if (clan->member(inviter->name()) == nullptr)
+    {
+        lua->pushstring("inviter is not a member of the clan");
+        return 1;
+    }
+
+    if (invitee->clan_id().has_value())
+    {
+        lua->pushstring("invitee is already a member of a clan");
+        return 1;
+    }
 
     static auto fn = [](fb::game::context*                 context,
                         fb::lua::context*                  lua,
-                        fb::game::clan*                    clan,
-                        std::weak_ptr<fb::game::character> weak) -> async::task<void> {
+                        std::weak_ptr<fb::game::character> inviter_weak,
+                        std::weak_ptr<fb::game::character> invitee_weak) -> async::task<void> {
         try
         {
-            auto shared_ptr = weak.lock();
-            if (shared_ptr == nullptr)
-                throw std::runtime_error("character is not alive");
+            auto inviter_shared = inviter_weak.lock();
+            if (inviter_shared == nullptr)
+                throw std::runtime_error("inviter character is not alive");
 
-            co_await context->join_clan_member(*clan, *shared_ptr);
+            auto invitee_shared = invitee_weak.lock();
+            if (invitee_shared == nullptr)
+                throw std::runtime_error("invitee character is not alive");
+
+            co_await context->join_clan_member(*inviter_shared, *invitee_shared);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -186,7 +206,7 @@ int clan::builtin::builtin_join(lua_State* L)
         throw std::runtime_error("thread is not alive");
 
     std::ignore = thread->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(context, lua, clan, ch);
+        co_await fn(context, lua, inviter, invitee);
     });
 
     return lua->yield(0);
@@ -270,7 +290,7 @@ int clan::builtin::builtin_kick(lua_State* L)
     return lua->yield(1);
 }
 
-int clan::builtin::builtin_change_position(lua_State* L)
+int clan::builtin::builtin_change_role(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -282,19 +302,19 @@ int clan::builtin::builtin_change_position(lua_State* L)
     if (clan == nullptr)
         return 0;
 
-    auto changer  = lua->tostring(2);
-    auto target   = lua->tostring(3);
-    auto position = lua->toenum(4, CLAN_POSITION::MATE);
+    auto changer = lua->tostring(2);
+    auto target  = lua->tostring(3);
+    auto role    = lua->toenum(4, CLAN_ROLE::MATE);
 
     static auto fn = [](fb::game::context* context,
                         fb::lua::context*  lua,
                         fb::game::clan*    clan,
                         const std::string& changer,
                         const std::string& target,
-                        CLAN_POSITION      position) -> async::task<void> {
+                        CLAN_ROLE          role) -> async::task<void> {
         try
         {
-            co_await context->change_clan_member_position(*clan, changer, target, position);
+            co_await context->change_clan_member_role(*clan, changer, target, role);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -306,7 +326,7 @@ int clan::builtin::builtin_change_position(lua_State* L)
     };
 
     std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(context, lua, clan, changer, target, position);
+        co_await fn(context, lua, clan, changer, target, role);
     });
 
     return lua->yield(1);

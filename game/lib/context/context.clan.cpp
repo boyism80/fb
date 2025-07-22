@@ -45,7 +45,7 @@ void context::update_clan(clan&                                                 
     auto members = std::vector<clan_member>{};
     for (auto& member : resp2)
     {
-        auto cm = clan_member{member.name, static_cast<CLAN_POSITION>(member.position)};
+        auto cm = clan_member{member.name, static_cast<CLAN_ROLE>(member.role)};
         members.push_back(std::move(cm));
     }
 
@@ -131,10 +131,11 @@ async::task<void> context::set_clan_title(const clan& clan, std::string title)
     co_await this->on_clan_title_changed(resp);
 }
 
-async::task<void> context::join_clan_member(const clan& clan, character& ch)
+async::task<void> context::join_clan_member(character& inviter, character& invitee)
 {
-    auto&& resp =
-        co_await this->http.post("internal", "/clan/join", JoinClan{config<uint32_t>("host"), clan.id(), ch.id()});
+    auto&& resp = co_await this->http.post("internal",
+                                           "/clan/join",
+                                           JoinClan{config<uint32_t>("host"), inviter.id(), invitee.id()});
 
     co_await this->on_clan_join_member(resp);
 }
@@ -156,17 +157,17 @@ async::task<void> context::kick_clan_member(const clan& clan, const std::string&
     co_await this->on_clan_kick_member(resp);
 }
 
-async::task<void> context::change_clan_member_position(const clan&        clan,
-                                                       const std::string& changer,
-                                                       const std::string& target,
-                                                       CLAN_POSITION      new_position)
+async::task<void> context::change_clan_member_role(const clan&        clan,
+                                                   const std::string& changer,
+                                                   const std::string& target,
+                                                   CLAN_ROLE          new_role)
 {
     auto&& resp = co_await this->http.post(
         "internal",
-        "/clan/change-position",
-        ChangeClanPosition{config<uint32_t>("host"), 0, target, clan.id(), static_cast<uint32_t>(new_position)});
+        "/clan/change-role",
+        ChangeClanRole{config<uint32_t>("host"), 0, target, clan.id(), static_cast<uint32_t>(new_role)});
 
-    co_await this->on_clan_change_position(resp);
+    co_await this->on_clan_change_role(resp);
 }
 
 async::task<void> context::broadcast(const clan& clan, const std::string& message, MESSAGE_TYPE type)
@@ -218,7 +219,7 @@ async::task<void> context::on_clan_join_member(const internal_resp::JoinClan& re
             },
             members);
 
-        auto cm = clan_member{resp.member.name, static_cast<CLAN_POSITION>(resp.member.position)};
+        auto cm = clan_member{resp.member.name, static_cast<CLAN_ROLE>(resp.member.role)};
         clan->join(cm);
 
         if (weak.expired() == false)
@@ -305,18 +306,18 @@ async::task<void> context::on_clan_kick_member(const internal_resp::KickClan& re
     });
 }
 
-async::task<void> context::on_clan_change_position(const internal_resp::ChangeClanPosition& resp)
+async::task<void> context::on_clan_change_role(const internal_resp::ChangeClanRole& resp)
 {
     this->assert_clan(resp.error);
     co_await this->upsert_clan_then(resp.clan, [this, resp](auto& clan) -> async::task<void> {
         auto member = clan->member(resp.target_name);
         if (member != nullptr)
-            member->position = static_cast<CLAN_POSITION>(resp.new_position);
+            member->role = static_cast<CLAN_ROLE>(resp.new_role);
 
         auto target = this->characters.find(resp.target_uid);
         if (target != nullptr)
         {
-            target->message(std::format("문파 직책이 변경되었습니다. ({} -> {})", resp.old_position, resp.new_position),
+            target->message(std::format("문파 직책이 변경되었습니다. ({} -> {})", resp.old_role, resp.new_role),
                             MESSAGE_TYPE::NOTIFY);
         }
 
@@ -331,8 +332,8 @@ async::task<void> context::on_clan_change_position(const internal_resp::ChangeCl
 
             shared->message(std::format("{}님의 문파 직책이 {}에서 {}로 변경되었습니다.",
                                         resp.target_name,
-                                        resp.old_position,
-                                        resp.new_position),
+                                        resp.old_role,
+                                        resp.new_role),
                             MESSAGE_TYPE::NOTIFY);
         }
         co_return;

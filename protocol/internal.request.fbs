@@ -160,8 +160,8 @@ table DestroyClan {
 
 table JoinClan {
   host: uint;
-  clan: uint;
-  uid: uint;
+  inviter_uid: uint;
+  invitee_uid: uint;
 }
 
 table LeaveClan {
@@ -190,12 +190,12 @@ table BroadcastClan {
   type: ubyte;
 }
 
-table ChangeClanPosition {
+table ChangeClanRole {
   host: uint;
   changer_uid: uint;
   target_name: string;
   clan: uint;
-  new_position: uint;
+  new_role: uint;
 }
 
 table Broadcast {

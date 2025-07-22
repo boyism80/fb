@@ -172,12 +172,12 @@ public:
     void leave(const std::string& member);
 
     /**
-     * @brief      Changes the position of a clan member.
+     * @brief      Changes the role of a clan member.
      *
-     * @param[in]  member_name  The name of the member whose position to change
-     * @param[in]  new_position The new position to assign to the member
+     * @param[in]  member_name  The name of the member whose role to change
+     * @param[in]  new_role The new role to assign to the member
      */
-    void change_position(const std::string& member_name, CLAN_POSITION new_position);
+    void change_role(const std::string& member_name, CLAN_ROLE new_role);
 
     /**
      * @brief      Gets all currently online clan member characters.
@@ -275,13 +275,13 @@ struct clan::builtin
     static int builtin_kick(lua_State* L);
 
     /**
-     * @brief      Lua binding for changing the position of a member in the clan.
+     * @brief      Lua binding for changing the role of a member in the clan.
      *
      * @param[in]  L  The Lua state
      *
      * @return     Number of return values pushed to Lua stack
      */
-    static int builtin_change_position(lua_State* L);
+    static int builtin_change_role(lua_State* L);
 
     /**
      * @brief      Lua binding for sending messages to clan members.

@@ -26,7 +26,7 @@ struct ClanMember FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_UID = 4,
     VT_NAME = 6,
-    VT_POSITION = 8
+    VT_ROLE = 8
   };
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
@@ -34,15 +34,15 @@ struct ClanMember FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
-  uint32_t position() const {
-    return GetField<uint32_t>(VT_POSITION, 0);
+  uint32_t role() const {
+    return GetField<uint32_t>(VT_ROLE, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
-           VerifyField<uint32_t>(verifier, VT_POSITION, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ROLE, 4) &&
            verifier.EndTable();
   }
 };
@@ -57,8 +57,8 @@ struct ClanMemberBuilder {
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(ClanMember::VT_NAME, name);
   }
-  void add_position(uint32_t position) {
-    fbb_.AddElement<uint32_t>(ClanMember::VT_POSITION, position, 0);
+  void add_role(uint32_t role) {
+    fbb_.AddElement<uint32_t>(ClanMember::VT_ROLE, role, 0);
   }
   explicit ClanMemberBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -75,9 +75,9 @@ inline ::flatbuffers::Offset<ClanMember> CreateClanMember(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t uid = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
-    uint32_t position = 0) {
+    uint32_t role = 0) {
   ClanMemberBuilder builder_(_fbb);
-  builder_.add_position(position);
+  builder_.add_role(role);
   builder_.add_name(name);
   builder_.add_uid(uid);
   return builder_.Finish();
@@ -87,13 +87,13 @@ inline ::flatbuffers::Offset<ClanMember> CreateClanMemberDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t uid = 0,
     const char *name = nullptr,
-    uint32_t position = 0) {
+    uint32_t role = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return fb::protocol::internal::raw::CreateClanMember(
       _fbb,
       uid,
       name__,
-      position);
+      role);
 }
 
 inline const fb::protocol::internal::raw::ClanMember *GetClanMember(const void *buf) {

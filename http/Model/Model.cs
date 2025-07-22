@@ -154,7 +154,7 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum ClanPosition
+    public enum ClanRole
     {
         [EnumMember(Value = "MATE")]
         Mate = 0x00, 
@@ -414,12 +414,14 @@ namespace Fb.Model.EnumValue
         MailNotExists = 34, 
         [EnumMember(Value = "NOT_FOUND_MAIL")]
         NotFoundMail = 35, 
-        [EnumMember(Value = "INVALID_CLAN_POSITION")]
-        InvalidClanPosition = 36, 
+        [EnumMember(Value = "INVALID_CLAN_ROLE")]
+        InvalidClanRole = 36, 
         [EnumMember(Value = "CANNOT_KICK_SELF")]
         CannotKickSelf = 37, 
-        [EnumMember(Value = "CANNOT_CHANGE_CLAN_POSITION_SELF")]
-        CannotChangeClanPositionSelf = 38
+        [EnumMember(Value = "CANNOT_CHANGE_CLAN_ROLE_SELF")]
+        CannotChangeClanRoleSelf = 38, 
+        [EnumMember(Value = "CANNOT_INVITE_SELF")]
+        CannotInviteSelf = 39
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -867,7 +869,9 @@ namespace Fb.Model.ConstValue
 {
     public static class Clan
     {
-        public static readonly Fb.Model.EnumValue.ClanPosition MinKickablePosition = ClanPosition.Mate;
+        public static readonly Fb.Model.EnumValue.ClanRole MinimumInvitePrivilege = ClanRole.Mate;
+        public static readonly Fb.Model.EnumValue.ClanRole MinimumKickPrivilege = ClanRole.Mate;
+        public static readonly Fb.Model.EnumValue.ClanRole MinimumChangeRolePrivilege = ClanRole.Mate;
     }
 
     public static class DeathPenalty

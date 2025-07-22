@@ -41,16 +41,16 @@ namespace Http.Model
     }
 
     /// <summary>
-    /// Represents a complete clan member model with position and key information.
+    /// Represents a complete clan member model with role and key information.
     /// Contains clan member hierarchy data and provides key extraction functionality.
     /// </summary>
     public class ClanMember : ClanMemberKey, IModel
     {
         /// <summary>
-        /// Gets or sets the position or rank of this member within the clan.
+        /// Gets or sets the role of this member within the clan.
         /// </summary>
-        /// <value>The numeric position value representing the member's rank or role in the clan.</value>
-        public uint Position { get; set; }
+        /// <value>The numeric role value representing the member's rank or role in the clan.</value>
+        public uint Role { get; set; }
 
         /// <summary>
         /// Gets the clan member key information for this member.

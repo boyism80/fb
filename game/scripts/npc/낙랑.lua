@@ -124,7 +124,7 @@ function sample_clan(me, npc)
                     return
                 end
 
-                local error = clan:join(found)
+                local error = clan:join(me, found)
                 if error ~= nil then
                     found:dialog(npc, error)
                 else

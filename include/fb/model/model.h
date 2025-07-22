@@ -579,46 +579,46 @@ inline const char* enum_tostring<CHAT_TYPE>(CHAT_TYPE k)
     return i->second;
 }
 
-enum class CLAN_POSITION
+enum class CLAN_ROLE
 {
     MATE = 0x00, 
     OFFICER = 0x01, 
     DEPUTY = 0x02, 
     MASTER = 0x03
-}; // end of enum 'CLAN_POSITION'
+}; // end of enum 'CLAN_ROLE'
 
 template <>
-inline CLAN_POSITION enum_parse<CLAN_POSITION>(const std::string k)
+inline CLAN_ROLE enum_parse<CLAN_ROLE>(const std::string k)
 {
-    static const std::unordered_map<std::string, CLAN_POSITION> enums
+    static const std::unordered_map<std::string, CLAN_ROLE> enums
     {
-        { "MATE", CLAN_POSITION::MATE }, 
-        { "OFFICER", CLAN_POSITION::OFFICER }, 
-        { "DEPUTY", CLAN_POSITION::DEPUTY }, 
-        { "MASTER", CLAN_POSITION::MASTER }
+        { "MATE", CLAN_ROLE::MATE }, 
+        { "OFFICER", CLAN_ROLE::OFFICER }, 
+        { "DEPUTY", CLAN_ROLE::DEPUTY }, 
+        { "MASTER", CLAN_ROLE::MASTER }
     };
 
     auto i = enums.find(k);
     if (i == enums.end())
-        throw std::runtime_error(std::format("{} is not a valid type in {}", k, "CLAN_POSITION"));
+        throw std::runtime_error(std::format("{} is not a valid type in {}", k, "CLAN_ROLE"));
 
     return i->second;
 }
 
 template <>
-inline const char* enum_tostring<CLAN_POSITION>(CLAN_POSITION k)
+inline const char* enum_tostring<CLAN_ROLE>(CLAN_ROLE k)
 {
-    static const std::unordered_map<CLAN_POSITION, const char*> enums
+    static const std::unordered_map<CLAN_ROLE, const char*> enums
     {
-        { CLAN_POSITION::MATE, "MATE" }, 
-        { CLAN_POSITION::OFFICER, "OFFICER" }, 
-        { CLAN_POSITION::DEPUTY, "DEPUTY" }, 
-        { CLAN_POSITION::MASTER, "MASTER" }
+        { CLAN_ROLE::MATE, "MATE" }, 
+        { CLAN_ROLE::OFFICER, "OFFICER" }, 
+        { CLAN_ROLE::DEPUTY, "DEPUTY" }, 
+        { CLAN_ROLE::MASTER, "MASTER" }
     };
 
     auto i = enums.find(k);
     if (i == enums.end())
-        throw std::runtime_error(std::format("{} is not a valid value in {}", static_cast<uint32_t>(k), "CLAN_POSITION"));
+        throw std::runtime_error(std::format("{} is not a valid value in {}", static_cast<uint32_t>(k), "CLAN_ROLE"));
 
     return i->second;
 }
@@ -1190,9 +1190,10 @@ enum class ERROR_CODE
     CLAN_TITLE_TOO_SHORT = 33, 
     MAIL_NOT_EXISTS = 34, 
     NOT_FOUND_MAIL = 35, 
-    INVALID_CLAN_POSITION = 36, 
+    INVALID_CLAN_ROLE = 36, 
     CANNOT_KICK_SELF = 37, 
-    CANNOT_CHANGE_CLAN_POSITION_SELF = 38
+    CANNOT_CHANGE_CLAN_ROLE_SELF = 38, 
+    CANNOT_INVITE_SELF = 39
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -1236,9 +1237,10 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(const std::string k)
         { "CLAN_TITLE_TOO_SHORT", ERROR_CODE::CLAN_TITLE_TOO_SHORT }, 
         { "MAIL_NOT_EXISTS", ERROR_CODE::MAIL_NOT_EXISTS }, 
         { "NOT_FOUND_MAIL", ERROR_CODE::NOT_FOUND_MAIL }, 
-        { "INVALID_CLAN_POSITION", ERROR_CODE::INVALID_CLAN_POSITION }, 
+        { "INVALID_CLAN_ROLE", ERROR_CODE::INVALID_CLAN_ROLE }, 
         { "CANNOT_KICK_SELF", ERROR_CODE::CANNOT_KICK_SELF }, 
-        { "CANNOT_CHANGE_CLAN_POSITION_SELF", ERROR_CODE::CANNOT_CHANGE_CLAN_POSITION_SELF }
+        { "CANNOT_CHANGE_CLAN_ROLE_SELF", ERROR_CODE::CANNOT_CHANGE_CLAN_ROLE_SELF }, 
+        { "CANNOT_INVITE_SELF", ERROR_CODE::CANNOT_INVITE_SELF }
     };
 
     auto i = enums.find(k);
@@ -1289,9 +1291,10 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::CLAN_TITLE_TOO_SHORT, "CLAN_TITLE_TOO_SHORT" }, 
         { ERROR_CODE::MAIL_NOT_EXISTS, "MAIL_NOT_EXISTS" }, 
         { ERROR_CODE::NOT_FOUND_MAIL, "NOT_FOUND_MAIL" }, 
-        { ERROR_CODE::INVALID_CLAN_POSITION, "INVALID_CLAN_POSITION" }, 
+        { ERROR_CODE::INVALID_CLAN_ROLE, "INVALID_CLAN_ROLE" }, 
         { ERROR_CODE::CANNOT_KICK_SELF, "CANNOT_KICK_SELF" }, 
-        { ERROR_CODE::CANNOT_CHANGE_CLAN_POSITION_SELF, "CANNOT_CHANGE_CLAN_POSITION_SELF" }
+        { ERROR_CODE::CANNOT_CHANGE_CLAN_ROLE_SELF, "CANNOT_CHANGE_CLAN_ROLE_SELF" }, 
+        { ERROR_CODE::CANNOT_INVITE_SELF, "CANNOT_INVITE_SELF" }
     };
 
     auto i = enums.find(k);
@@ -2585,7 +2588,9 @@ namespace const_value {
 class clan
 {
 public:
-    inline static const fb::model::enum_value::CLAN_POSITION& MIN_KICKABLE_POSITION = fb::model::enum_value::CLAN_POSITION::MATE;
+    inline static const fb::model::enum_value::CLAN_ROLE& MINIMUM_INVITE_PRIVILEGE = fb::model::enum_value::CLAN_ROLE::MATE;
+    inline static const fb::model::enum_value::CLAN_ROLE& MINIMUM_KICK_PRIVILEGE = fb::model::enum_value::CLAN_ROLE::MATE;
+    inline static const fb::model::enum_value::CLAN_ROLE& MINIMUM_CHANGE_ROLE_PRIVILEGE = fb::model::enum_value::CLAN_ROLE::MATE;
 
 private:
     clan() = default;
@@ -2913,14 +2918,14 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "CHAT_TYPE_BLUE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CHAT_TYPE::LIGHT_BLUE);
     lua_setglobal(lua, "CHAT_TYPE_LIGHT_BLUE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLAN_POSITION::MATE);
-    lua_setglobal(lua, "CLAN_POSITION_MATE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLAN_POSITION::OFFICER);
-    lua_setglobal(lua, "CLAN_POSITION_OFFICER");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLAN_POSITION::DEPUTY);
-    lua_setglobal(lua, "CLAN_POSITION_DEPUTY");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLAN_POSITION::MASTER);
-    lua_setglobal(lua, "CLAN_POSITION_MASTER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLAN_ROLE::MATE);
+    lua_setglobal(lua, "CLAN_ROLE_MATE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLAN_ROLE::OFFICER);
+    lua_setglobal(lua, "CLAN_ROLE_OFFICER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLAN_ROLE::DEPUTY);
+    lua_setglobal(lua, "CLAN_ROLE_DEPUTY");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLAN_ROLE::MASTER);
+    lua_setglobal(lua, "CLAN_ROLE_MASTER");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::NONE);
     lua_setglobal(lua, "CLASS_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::WARRIOR);
@@ -3111,12 +3116,14 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ERROR_CODE_MAIL_NOT_EXISTS");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_MAIL);
     lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_MAIL");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::INVALID_CLAN_POSITION);
-    lua_setglobal(lua, "ERROR_CODE_INVALID_CLAN_POSITION");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::INVALID_CLAN_ROLE);
+    lua_setglobal(lua, "ERROR_CODE_INVALID_CLAN_ROLE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CANNOT_KICK_SELF);
     lua_setglobal(lua, "ERROR_CODE_CANNOT_KICK_SELF");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CANNOT_CHANGE_CLAN_POSITION_SELF);
-    lua_setglobal(lua, "ERROR_CODE_CANNOT_CHANGE_CLAN_POSITION_SELF");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CANNOT_CHANGE_CLAN_ROLE_SELF);
+    lua_setglobal(lua, "ERROR_CODE_CANNOT_CHANGE_CLAN_ROLE_SELF");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CANNOT_INVITE_SELF);
+    lua_setglobal(lua, "ERROR_CODE_CANNOT_INVITE_SELF");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::HEAD_MARKER::NONE);
     lua_setglobal(lua, "HEAD_MARKER_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::HEAD_MARKER::RED);

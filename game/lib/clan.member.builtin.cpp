@@ -5,7 +5,7 @@ using namespace fb::game;
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(clan_member, "fb.game.clan.member")
 {"name",                clan_member::builtin::builtin_name},
-{"position",            clan_member::builtin::builtin_position},
+{"role",            clan_member::builtin::builtin_role},
 END_LUA_EXTENSION; // clang-format on
 
 int clan_member::builtin::builtin_name(lua_State* L)
@@ -22,7 +22,7 @@ int clan_member::builtin::builtin_name(lua_State* L)
     return 1;
 }
 
-int clan_member::builtin::builtin_position(lua_State* L)
+int clan_member::builtin::builtin_role(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -32,6 +32,6 @@ int clan_member::builtin::builtin_position(lua_State* L)
     if (member == nullptr)
         return 0;
 
-    lua->pushinteger(static_cast<uint32_t>(member->position));
+    lua->pushinteger(static_cast<uint32_t>(member->role));
     return 1;
 }

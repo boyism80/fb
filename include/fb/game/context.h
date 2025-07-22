@@ -74,8 +74,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::WriteMail, fb::protocol::inte
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteMail, fb::protocol::internal::response::DeleteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper)
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
-REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanPosition,
-                  fb::protocol::internal::response::ChangeClanPosition)
+REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanRole, fb::protocol::internal::response::ChangeClanRole)
 
 namespace fb::game {
 
@@ -414,7 +413,7 @@ private:
      *
      * @param[in]  resp  The clan position change response containing the updated member information.
      */
-    async::task<void> on_clan_change_position(const internal_resp::ChangeClanPosition& resp);
+    async::task<void> on_clan_change_role(const internal_resp::ChangeClanRole& resp);
 
 public:
     /**
@@ -620,14 +619,14 @@ public:
     [[nodiscard]] async::task<void> set_clan_title(const clan& clan, std::string title);
 
     /**
-     * @brief      Adds a character as a member to a clan.
+     * @brief      Adds a character as a member to a clan through invitation.
      *
-     * @param[in]  clan  The clan to join the character to.
-     * @param      ch    The character to add as a clan member.
+     * @param      inviter  The character performing the invitation (must have Mate or higher position).
+     * @param      invitee  The character to be invited to the clan.
      *
      * @return     An async task that completes when the character joins the clan.
      */
-    [[nodiscard]] async::task<void> join_clan_member(const clan& clan, character& ch);
+    [[nodiscard]] async::task<void> join_clan_member(character& inviter, character& invitee);
 
     /**
      * @brief      Kicks a character from a clan by an authorized member.
@@ -652,10 +651,10 @@ public:
      *
      * @return     An async task that completes when the position change is processed.
      */
-    [[nodiscard]] async::task<void> change_clan_member_position(const clan&        clan,
-                                                                const std::string& changer,
-                                                                const std::string& target,
-                                                                CLAN_POSITION      new_position);
+    [[nodiscard]] async::task<void> change_clan_member_role(const clan&        clan,
+                                                            const std::string& changer,
+                                                            const std::string& target,
+                                                            CLAN_ROLE          new_position);
 
     /**
      * @brief      Broadcasts a message to all members of a clan.
@@ -1423,7 +1422,7 @@ public:
      *
      * @return     An async task that completes when clan position change handling is finished.
      */
-    [[nodiscard]] async::task<void> handle_amqp_ChangeClanPosition(const internal_resp::ChangeClanPosition& response);
+    [[nodiscard]] async::task<void> handle_amqp_ChangeClanRole(const internal_resp::ChangeClanRole& response);
 
     /**
      * @brief      Handles clan broadcast message from AMQP.
@@ -1687,6 +1686,16 @@ public:
      * @return     An async task that completes when the character leaves the clan.
      */
     [[nodiscard]] async::task<void> leave_clan_member(const clan& clan, const std::string& name);
+
+    /**
+     * @brief      Adds a character as a member to a clan.
+     *
+     * @param[in]  clan  The clan to join the character to.
+     * @param      ch    The character to add as a clan member.
+     *
+     * @return     An async task that completes when the character joins the clan.
+     */
+    [[nodiscard]] async::task<void> join_clan_member(const clan& clan, character& inviter, character& invitee);
 };
 
 struct context::builtin

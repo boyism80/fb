@@ -71,7 +71,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.kickclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.setclantitle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.broadcastclan_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.changeclanposition_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.changeclanrole_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.broadcast_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.shutdown_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.kickout_generated.h>
@@ -109,7 +109,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.kickclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.setclantitle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.broadcastclan_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.changeclanposition_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.changeclanrole_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.broadcast_generated.h>
 
 namespace fb::protocol::internal
@@ -163,7 +163,7 @@ namespace fb::protocol::internal::request
     class KickClan;
     class SetClanTitle;
     class BroadcastClan;
-    class ChangeClanPosition;
+    class ChangeClanRole;
     class Broadcast;
 } // end of namespace fb::protocol::internal::request
 namespace fb::protocol::internal::response
@@ -204,7 +204,7 @@ namespace fb::protocol::internal::response
     class KickClan;
     class SetClanTitle;
     class BroadcastClan;
-    class ChangeClanPosition;
+    class ChangeClanRole;
     class Broadcast;
 } // end of namespace fb::protocol::internal::response
 
@@ -341,7 +341,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::request::LeaveClan> 
 template <> struct FlatBufferOffset<fb::protocol::internal::request::KickClan> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::KickClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::SetClanTitle> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetClanTitle> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::BroadcastClan> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::BroadcastClan> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::ChangeClanPosition> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::ChangeClanPosition> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::ChangeClanRole> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::ChangeClanRole> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Broadcast> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Broadcast> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Shutdown> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::KickOut> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> type; };
@@ -379,7 +379,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::LeaveClan>
 template <> struct FlatBufferOffset<fb::protocol::internal::response::KickClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::KickClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::SetClanTitle> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::SetClanTitle> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::BroadcastClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastClan> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::ChangeClanPosition> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::ChangeClanPosition> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::ChangeClanRole> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::ChangeClanRole> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Broadcast> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Broadcast> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Service> { typedef fb::protocol::internal::raw::Service type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::GroupAction> { typedef fb::protocol::internal::raw::GroupAction type; };
@@ -479,7 +479,7 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::SetClanTitle> build<fb
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::BroadcastClan> build<fb::protocol::internal::request::BroadcastClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::BroadcastClan& value);
 template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::ChangeClanPosition> build<fb::protocol::internal::request::ChangeClanPosition>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ChangeClanPosition& value);
+flatbuffers::Offset<fb::protocol::internal::request::raw::ChangeClanRole> build<fb::protocol::internal::request::ChangeClanRole>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ChangeClanRole& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Broadcast> build<fb::protocol::internal::request::Broadcast>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Broadcast& value);
 template <>
@@ -555,7 +555,7 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::SetClanTitle> build<f
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastClan> build<fb::protocol::internal::response::BroadcastClan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::BroadcastClan& value);
 template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::ChangeClanPosition> build<fb::protocol::internal::response::ChangeClanPosition>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ChangeClanPosition& value);
+flatbuffers::Offset<fb::protocol::internal::response::raw::ChangeClanRole> build<fb::protocol::internal::response::ChangeClanRole>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ChangeClanRole& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Broadcast> build<fb::protocol::internal::response::Broadcast>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Broadcast& value);
 
@@ -1208,21 +1208,21 @@ public:
 public:
     uint32_t uid = 0;
     std::string name;
-    uint32_t position = 0;
+    uint32_t role = 0;
 
 public:
     ClanMember() = default;
 
     ClanMember(const ClanMember& x)
-        : uid(x.uid), name(x.name), position(x.position)
+        : uid(x.uid), name(x.name), role(x.role)
     { }
 
-    ClanMember(uint32_t uid, const std::string& name, uint32_t position)
-        : uid(uid), name(name), position(position)
+    ClanMember(uint32_t uid, const std::string& name, uint32_t role)
+        : uid(uid), name(name), role(role)
     { }
 
     ClanMember(const fb::protocol::internal::raw::ClanMember& raw)
-        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), position(raw.position())
+        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), role(raw.role())
     { }
 
 public:
@@ -1278,7 +1278,7 @@ enum class FlatBufferProtocolType
     KickClan,
     SetClanTitle,
     BroadcastClan,
-    ChangeClanPosition,
+    ChangeClanRole,
     Broadcast,
 };
 
@@ -2300,22 +2300,22 @@ public:
 
 public:
     uint32_t host = 0;
-    uint32_t clan = 0;
-    uint32_t uid = 0;
+    uint32_t inviter_uid = 0;
+    uint32_t invitee_uid = 0;
 
 public:
     JoinClan() = default;
 
     JoinClan(const JoinClan& x)
-        : host(x.host), clan(x.clan), uid(x.uid)
+        : host(x.host), inviter_uid(x.inviter_uid), invitee_uid(x.invitee_uid)
     { }
 
-    JoinClan(uint32_t host, uint32_t clan, uint32_t uid)
-        : host(host), clan(clan), uid(uid)
+    JoinClan(uint32_t host, uint32_t inviter_uid, uint32_t invitee_uid)
+        : host(host), inviter_uid(inviter_uid), invitee_uid(invitee_uid)
     { }
 
     JoinClan(const fb::protocol::internal::request::raw::JoinClan& raw)
-        : host(raw.host()), clan(raw.clan()), uid(raw.uid())
+        : host(raw.host()), inviter_uid(raw.inviter_uid()), invitee_uid(raw.invitee_uid())
     { }
 
 public:
@@ -2500,47 +2500,47 @@ public:
         return BroadcastClan(*raw);
     }
 };
-class ChangeClanPosition
+class ChangeClanRole
 {
 public:
-    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::ChangeClanPosition;
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::ChangeClanRole;
 
 public:
     uint32_t host = 0;
     uint32_t changer_uid = 0;
     std::string target_name;
     uint32_t clan = 0;
-    uint32_t new_position = 0;
+    uint32_t new_role = 0;
 
 public:
-    ChangeClanPosition() = default;
+    ChangeClanRole() = default;
 
-    ChangeClanPosition(const ChangeClanPosition& x)
-        : host(x.host), changer_uid(x.changer_uid), target_name(x.target_name), clan(x.clan), new_position(x.new_position)
+    ChangeClanRole(const ChangeClanRole& x)
+        : host(x.host), changer_uid(x.changer_uid), target_name(x.target_name), clan(x.clan), new_role(x.new_role)
     { }
 
-    ChangeClanPosition(uint32_t host, uint32_t changer_uid, const std::string& target_name, uint32_t clan, uint32_t new_position)
-        : host(host), changer_uid(changer_uid), target_name(target_name), clan(clan), new_position(new_position)
+    ChangeClanRole(uint32_t host, uint32_t changer_uid, const std::string& target_name, uint32_t clan, uint32_t new_role)
+        : host(host), changer_uid(changer_uid), target_name(target_name), clan(clan), new_role(new_role)
     { }
 
-    ChangeClanPosition(const fb::protocol::internal::request::raw::ChangeClanPosition& raw)
-        : host(raw.host()), changer_uid(raw.changer_uid()), target_name(flatbuffers::option::decode(raw.target_name()->c_str())), clan(raw.clan()), new_position(raw.new_position())
+    ChangeClanRole(const fb::protocol::internal::request::raw::ChangeClanRole& raw)
+        : host(raw.host()), changer_uid(raw.changer_uid()), target_name(flatbuffers::option::decode(raw.target_name()->c_str())), clan(raw.clan()), new_role(raw.new_role())
     { }
 
 public:
     std::vector<uint8_t> Serialize() const
     {
         auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::request::ChangeClanPosition>(builder, *this));
+        builder.Finish(build<fb::protocol::internal::request::ChangeClanRole>(builder, *this));
         auto buffer = std::vector<uint8_t>(builder.GetSize());
         std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
         return buffer;
     }
 
-    static ChangeClanPosition Deserialize(const uint8_t* bytes)
+    static ChangeClanRole Deserialize(const uint8_t* bytes)
     {
-        auto raw = fb::protocol::internal::request::raw::GetChangeClanPosition(bytes);
-        return ChangeClanPosition(*raw);
+        auto raw = fb::protocol::internal::request::raw::GetChangeClanRole(bytes);
+        return ChangeClanRole(*raw);
     }
 };
 class Broadcast
@@ -2627,7 +2627,7 @@ enum class FlatBufferProtocolType
     KickClan,
     SetClanTitle,
     BroadcastClan,
-    ChangeClanPosition,
+    ChangeClanRole,
     Broadcast,
 };
 
@@ -4096,10 +4096,10 @@ public:
         return BroadcastClan(*raw);
     }
 };
-class ChangeClanPosition
+class ChangeClanRole
 {
 public:
-    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::ChangeClanPosition;
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::ChangeClanRole;
 
 public:
     uint32_t host = 0;
@@ -4108,39 +4108,39 @@ public:
     std::string changer_name;
     uint32_t target_uid = 0;
     std::string target_name;
-    uint32_t old_position = 0;
-    uint32_t new_position = 0;
+    uint32_t old_role = 0;
+    uint32_t new_role = 0;
     uint32_t error = 0;
 
 public:
-    ChangeClanPosition() = default;
+    ChangeClanRole() = default;
 
-    ChangeClanPosition(const ChangeClanPosition& x)
-        : host(x.host), clan(x.clan), changer_uid(x.changer_uid), changer_name(x.changer_name), target_uid(x.target_uid), target_name(x.target_name), old_position(x.old_position), new_position(x.new_position), error(x.error)
+    ChangeClanRole(const ChangeClanRole& x)
+        : host(x.host), clan(x.clan), changer_uid(x.changer_uid), changer_name(x.changer_name), target_uid(x.target_uid), target_name(x.target_name), old_role(x.old_role), new_role(x.new_role), error(x.error)
     { }
 
-    ChangeClanPosition(uint32_t host, uint32_t clan, uint32_t changer_uid, const std::string& changer_name, uint32_t target_uid, const std::string& target_name, uint32_t old_position, uint32_t new_position, uint32_t error)
-        : host(host), clan(clan), changer_uid(changer_uid), changer_name(changer_name), target_uid(target_uid), target_name(target_name), old_position(old_position), new_position(new_position), error(error)
+    ChangeClanRole(uint32_t host, uint32_t clan, uint32_t changer_uid, const std::string& changer_name, uint32_t target_uid, const std::string& target_name, uint32_t old_role, uint32_t new_role, uint32_t error)
+        : host(host), clan(clan), changer_uid(changer_uid), changer_name(changer_name), target_uid(target_uid), target_name(target_name), old_role(old_role), new_role(new_role), error(error)
     { }
 
-    ChangeClanPosition(const fb::protocol::internal::response::raw::ChangeClanPosition& raw)
-        : host(raw.host()), clan(raw.clan()), changer_uid(raw.changer_uid()), changer_name(flatbuffers::option::decode(raw.changer_name()->c_str())), target_uid(raw.target_uid()), target_name(flatbuffers::option::decode(raw.target_name()->c_str())), old_position(raw.old_position()), new_position(raw.new_position()), error(raw.error())
+    ChangeClanRole(const fb::protocol::internal::response::raw::ChangeClanRole& raw)
+        : host(raw.host()), clan(raw.clan()), changer_uid(raw.changer_uid()), changer_name(flatbuffers::option::decode(raw.changer_name()->c_str())), target_uid(raw.target_uid()), target_name(flatbuffers::option::decode(raw.target_name()->c_str())), old_role(raw.old_role()), new_role(raw.new_role()), error(raw.error())
     { }
 
 public:
     std::vector<uint8_t> Serialize() const
     {
         auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::response::ChangeClanPosition>(builder, *this));
+        builder.Finish(build<fb::protocol::internal::response::ChangeClanRole>(builder, *this));
         auto buffer = std::vector<uint8_t>(builder.GetSize());
         std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
         return buffer;
     }
 
-    static ChangeClanPosition Deserialize(const uint8_t* bytes)
+    static ChangeClanRole Deserialize(const uint8_t* bytes)
     {
-        auto raw = fb::protocol::internal::response::raw::GetChangeClanPosition(bytes);
-        return ChangeClanPosition(*raw);
+        auto raw = fb::protocol::internal::response::raw::GetChangeClanRole(bytes);
+        return ChangeClanRole(*raw);
     }
 };
 class Broadcast
@@ -4422,7 +4422,7 @@ flatbuffers::Offset<fb::protocol::internal::raw::ClanMember> build<fb::protocol:
     return fb::protocol::internal::raw::CreateClanMember(builder,
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<std::string>(builder, value.name),
-            flatbuffers::build<uint32_t>(builder, value.position));
+            flatbuffers::build<uint32_t>(builder, value.role));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Shutdown> build<fb::protocol::internal::request::Shutdown>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Shutdown& value)
@@ -4621,8 +4621,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::JoinClan> build<fb::pr
 {
     return fb::protocol::internal::request::raw::CreateJoinClan(builder,
             flatbuffers::build<uint32_t>(builder, value.host),
-            flatbuffers::build<uint32_t>(builder, value.clan),
-            flatbuffers::build<uint32_t>(builder, value.uid));
+            flatbuffers::build<uint32_t>(builder, value.inviter_uid),
+            flatbuffers::build<uint32_t>(builder, value.invitee_uid));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::LeaveClan> build<fb::protocol::internal::request::LeaveClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::LeaveClan& value)
@@ -4659,14 +4659,14 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::BroadcastClan> build<f
             flatbuffers::build<uint8_t>(builder, value.type));
 }
 template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::ChangeClanPosition> build<fb::protocol::internal::request::ChangeClanPosition>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ChangeClanPosition& value)
+flatbuffers::Offset<fb::protocol::internal::request::raw::ChangeClanRole> build<fb::protocol::internal::request::ChangeClanRole>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ChangeClanRole& value)
 {
-    return fb::protocol::internal::request::raw::CreateChangeClanPosition(builder,
+    return fb::protocol::internal::request::raw::CreateChangeClanRole(builder,
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.changer_uid),
             flatbuffers::build<std::string>(builder, value.target_name),
             flatbuffers::build<uint32_t>(builder, value.clan),
-            flatbuffers::build<uint32_t>(builder, value.new_position));
+            flatbuffers::build<uint32_t>(builder, value.new_role));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Broadcast> build<fb::protocol::internal::request::Broadcast>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Broadcast& value)
@@ -4960,17 +4960,17 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastClan> build<
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::ChangeClanPosition> build<fb::protocol::internal::response::ChangeClanPosition>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ChangeClanPosition& value)
+flatbuffers::Offset<fb::protocol::internal::response::raw::ChangeClanRole> build<fb::protocol::internal::response::ChangeClanRole>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ChangeClanRole& value)
 {
-    return fb::protocol::internal::response::raw::CreateChangeClanPosition(builder,
+    return fb::protocol::internal::response::raw::CreateChangeClanRole(builder,
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.clan),
             flatbuffers::build<uint32_t>(builder, value.changer_uid),
             flatbuffers::build<std::string>(builder, value.changer_name),
             flatbuffers::build<uint32_t>(builder, value.target_uid),
             flatbuffers::build<std::string>(builder, value.target_name),
-            flatbuffers::build<uint32_t>(builder, value.old_position),
-            flatbuffers::build<uint32_t>(builder, value.new_position),
+            flatbuffers::build<uint32_t>(builder, value.old_role),
+            flatbuffers::build<uint32_t>(builder, value.new_role),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>

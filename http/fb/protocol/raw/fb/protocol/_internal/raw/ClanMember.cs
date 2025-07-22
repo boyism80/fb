@@ -28,14 +28,14 @@ public struct ClanMember : IFlatbufferObject
   public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
-  public uint Position { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Role { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.raw.ClanMember> CreateClanMember(FlatBufferBuilder builder,
       uint uid = 0,
       StringOffset nameOffset = default(StringOffset),
-      uint position = 0) {
+      uint role = 0) {
     builder.StartTable(3);
-    ClanMember.AddPosition(builder, position);
+    ClanMember.AddRole(builder, role);
     ClanMember.AddName(builder, nameOffset);
     ClanMember.AddUid(builder, uid);
     return ClanMember.EndClanMember(builder);
@@ -44,7 +44,7 @@ public struct ClanMember : IFlatbufferObject
   public static void StartClanMember(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(0, uid, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
-  public static void AddPosition(FlatBufferBuilder builder, uint position) { builder.AddUint(2, position, 0); }
+  public static void AddRole(FlatBufferBuilder builder, uint role) { builder.AddUint(2, role, 0); }
   public static Offset<fb.protocol._internal.raw.ClanMember> EndClanMember(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.ClanMember>(o);
@@ -61,7 +61,7 @@ static public class ClanMemberVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Uid*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 6 /*Name*/, false)
-      && verifier.VerifyField(tablePos, 8 /*Position*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Role*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

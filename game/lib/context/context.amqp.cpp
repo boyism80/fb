@@ -89,12 +89,12 @@ async::task<void> context::handle_amqp_KickClan(const internal_resp::KickClan& r
     co_await this->on_clan_kick_member(resp);
 };
 
-async::task<void> context::handle_amqp_ChangeClanPosition(const internal_resp::ChangeClanPosition& resp)
+async::task<void> context::handle_amqp_ChangeClanRole(const internal_resp::ChangeClanRole& resp)
 {
     if (resp.host == fb::config<uint32_t>("id"))
         co_return;
 
-    co_await this->on_clan_change_position(resp);
+    co_await this->on_clan_change_role(resp);
 };
 
 async::task<void> context::handle_amqp_BroadcastClan(const internal_resp::BroadcastClan& resp)

@@ -9,7 +9,7 @@ using namespace std::chrono_literals;
 namespace fb::bot::integration {
 
 clan_test::clan_test(game_bot_controller& controller) :
-    bot_integration_test(controller, 2)
+    bot_integration_test(controller, 3)
 { }
 
 async::task<void> clan_test::on_initialize(game_bot_controller& controller)
@@ -42,7 +42,7 @@ async::task<bool> clan_test::test_clan_creation()
     this->get_test_bots()[0]->chat("=== CLAN CREATION TEST STARTED ===");
 
     auto  bots = this->get_test_bots();
-    auto& bot  = bots.front();
+    auto& bot  = bots[0];
 
     fb::logger::debug("Looking for NPC 낙랑 for clan creation");
     auto npc = this->controller.container.model.npc.name2npc("낙랑");
@@ -123,7 +123,7 @@ async::task<bool> clan_test::test_clan_title()
     this->get_test_bots()[0]->chat("=== CLAN TITLE TEST STARTED ===");
 
     auto  bots = this->get_test_bots();
-    auto& bot  = bots.front();
+    auto& bot  = bots[0];
 
     fb::logger::debug("Looking for NPC 낙랑 for clan title change");
     auto npc = this->controller.container.model.npc.name2npc("낙랑");
@@ -215,16 +215,9 @@ async::task<bool> clan_test::test_clan_title()
     co_return true;
 }
 
-async::task<bool> clan_test::test_clan_invite()
+async::task<bool> clan_test::invite_to_clan(std::shared_ptr<game_bot> inviter, std::shared_ptr<game_bot> invitee)
 {
-    fb::logger::debug("Bot {} starting clan invite test", this->get_test_bots()[0]->oid());
-    this->get_test_bots()[0]->chat("=== CLAN INVITE TEST STARTED ===");
-
-    auto  bots   = this->get_test_bots();
-    auto& bot    = bots.front();
-    auto& target = bots.back();
-
-    fb::logger::debug("Clan master: {}, Target: {}", bot->name(), target->name());
+    fb::logger::debug("Inviter: {}, Invitee: {}", inviter->name(), invitee->name());
 
     fb::logger::debug("Looking for NPC 낙랑 for clan invite");
     auto npc = this->controller.container.model.npc.name2npc("낙랑");
@@ -236,15 +229,29 @@ async::task<bool> clan_test::test_clan_invite()
     fb::logger::debug("Found NPC 낙랑, proceeding with clan invite");
 
     fb::logger::debug("Clicking on NPC to open menu dialog");
-    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+    auto&& resp1 = co_await inviter->request<fb::bot::integration::dialog_bot>(
         fb::protocol::game::request::click(1),
         [&npc](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_type::menu && resp.look == npc->look;
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_type::menu)
+                return false;
+
+            return true;
         },
         DEFAULT_TIMEOUT);
 
+    if (resp1.message != "안녕하세요. 무엇을 도와드릴까요?")
+    {
+        fb::logger::fatal("Clan test failed: NPC response mismatch - expected: {}, got: {}",
+                          "안녕하세요. 무엇을 도와드릴까요?",
+                          resp1.message);
+        co_return false;
+    }
+
     fb::logger::debug("Selecting clan invite menu option");
-    std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
+    auto&& resp2 = co_await inviter->request<fb::bot::integration::dialog_ext_bot>(
         fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
                                             0,
                                             "",
@@ -252,13 +259,27 @@ async::task<bool> clan_test::test_clan_invite()
                                             0,
                                             "",
                                             DIALOG_RESULT::PREV),
-        [](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_ext_type::list;
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::list)
+                return false;
+
+            return true;
         },
         DEFAULT_TIMEOUT);
 
+    if (resp2.message != std::format("클랜 이름 : {}", inviter->clan_name()))
+    {
+        fb::logger::fatal("Clan test failed: NPC response mismatch - expected: {}, got: {}",
+                          std::format("클랜 이름 : {}", inviter->clan_name()),
+                          resp2.message);
+        co_return false;
+    }
+
     fb::logger::debug("Navigating to invite target selection");
-    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+    auto&& resp3 = co_await inviter->request<fb::bot::integration::dialog_bot>(
         fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
                                             0,
                                             "",
@@ -266,28 +287,56 @@ async::task<bool> clan_test::test_clan_invite()
                                             0,
                                             "",
                                             DIALOG_RESULT::NEXT),
-        [](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_type::input;
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_type::input)
+                return false;
+
+            return true;
         },
         DEFAULT_TIMEOUT);
 
-    fb::logger::debug("Sending invite to target: {}", target->name());
-    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
-        target,
+    if (resp3.message != "상대 이름 입력")
+    {
+        fb::logger::fatal("Clan test failed: NPC response mismatch - expected: {}, got: {}",
+                          "상대 이름 입력",
+                          resp3.message);
+        co_return false;
+    }
+
+    fb::logger::debug("Sending invite to target: {}", invitee->name());
+    auto&& resp4 = co_await inviter->request<fb::bot::integration::dialog_bot>(
+        invitee,
         fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT,
                                             0x02,
-                                            target->name(),
+                                            invitee->name(),
                                             0,
                                             0,
                                             "",
                                             DIALOG_RESULT::NEXT),
-        [](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_type::menu;
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_type::menu)
+                return false;
+
+            return true;
         },
         DEFAULT_TIMEOUT);
 
-    fb::logger::debug("Target {} accepting clan invite", target->name());
-    std::ignore = co_await target->request<fb::bot::integration::dialog_ext_bot>(
+    if (resp4.message != std::format("{} 문파에 가입?", inviter->name()))
+    {
+        fb::logger::fatal("Clan test failed: NPC response mismatch - expected: {}, got: {}",
+                          std::format("{} 문파에 가입?", inviter->name()),
+                          resp4.message);
+        co_return false;
+    }
+
+    fb::logger::debug("Target {} accepting clan invite", invitee->name());
+    auto&& resp5 = co_await invitee->request<fb::bot::integration::dialog_ext_bot>(
         fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
                                             0,
                                             "",
@@ -295,14 +344,28 @@ async::task<bool> clan_test::test_clan_invite()
                                             0,
                                             "",
                                             DIALOG_RESULT::NEXT),
-        [](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_ext_type::normal;
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::normal)
+                return false;
+
+            return true;
         },
         DEFAULT_TIMEOUT);
 
-    fb::logger::debug("Target {} confirming clan join", target->name());
-    std::ignore = co_await target->request<fb::bot::integration::dialog_ext_bot>(
-        bot,
+    if (resp5.message != std::format("{} 문파에 가입됨", inviter->clan_name()))
+    {
+        fb::logger::fatal("Clan test failed: NPC response mismatch - expected: {}, got: {}",
+                          std::format("{} 문파에 가입됨", inviter->clan_name()),
+                          resp5.message);
+        co_return false;
+    }
+
+    fb::logger::debug("Target {} confirming clan join", invitee->name());
+    auto&& resp6 = co_await invitee->request<fb::bot::integration::dialog_ext_bot>(
+        inviter,
         fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL,
                                             1,
                                             "",
@@ -310,32 +373,46 @@ async::task<bool> clan_test::test_clan_invite()
                                             0,
                                             "",
                                             DIALOG_RESULT::QUIT),
-        [](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_ext_type::normal;
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::normal)
+                return false;
+
+            return true;
         },
         DEFAULT_TIMEOUT);
 
-    fb::logger::debug("Clan master {} confirming invite completion", bot->name());
-    bot->send(fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL,
-                                                  1,
-                                                  "",
-                                                  0,
-                                                  0,
-                                                  "",
-                                                  DIALOG_RESULT::QUIT));
+    if (resp6.message != std::format("{}가 승락함", invitee->name()))
+    {
+        fb::logger::fatal("Clan test failed: NPC response mismatch - expected: {}, got: {}",
+                          std::format("{}가 승락함", invitee->name()),
+                          resp6.message);
+        co_return false;
+    }
+
+    fb::logger::debug("Clan master {} confirming invite completion", inviter->name());
+    inviter->send(fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL,
+                                                      1,
+                                                      "",
+                                                      0,
+                                                      0,
+                                                      "",
+                                                      DIALOG_RESULT::QUIT));
 
     fb::logger::debug("Verifying clan invite result by checking target's clan info");
-    auto&& resp = co_await bot->request<fb::protocol::game::response::external_info>(
-        fb::protocol::game::request::click(target->oid()),
-        [oid = target->oid()](auto& resp) {
+    auto&& resp = co_await inviter->request<fb::protocol::game::response::external_info>(
+        fb::protocol::game::request::click(invitee->oid()),
+        [oid = invitee->oid()](auto& resp) {
             return resp.oid == oid;
         },
         DEFAULT_TIMEOUT);
 
-    if (resp.clan_name != bot->clan_name())
+    if (resp.clan_name != inviter->clan_name())
     {
         fb::logger::fatal("Clan test failed: Clan name mismatch - expected: {}, got: {}",
-                          bot->clan_name(),
+                          inviter->clan_name(),
                           resp.clan_name);
         co_return false;
     }
@@ -347,12 +424,34 @@ async::task<bool> clan_test::test_clan_invite()
         co_return false;
     }
 
-    fb::logger::debug("Clan invite successful - {} joined clan {}", target->name(), resp.clan_name);
+    fb::logger::debug("Clan invite successful - {} joined clan {}", invitee->name(), resp.clan_name);
+    co_return true;
+}
+
+async::task<bool> clan_test::test_clan_invite()
+{
+    fb::logger::debug("Bot {} starting clan invite test", this->get_test_bots()[0]->oid());
+    this->get_test_bots()[0]->chat("=== CLAN INVITE TEST STARTED ===");
+
+    auto  bots   = this->get_test_bots();
+    auto& bot    = bots[0];
+    auto& target = bots[1];
+
+    fb::logger::debug("Clan master: {}, Target: {}", bot->name(), target->name());
+
+    auto success = co_await this->invite_to_clan(bot, target);
+    if (!success)
+    {
+        fb::logger::fatal("Clan invite test failed");
+        co_return false;
+    }
+
+    fb::logger::debug("Clan invite successful - {} joined clan {}", target->name(), bot->clan_name());
     bot->chat("=== CLAN INVITE TEST COMPLETED SUCCESSFULLY ===");
     co_return true;
 }
 
-async::task<bool> clan_test::test_clan_communication()
+async::task<bool> clan_test::test_clan_position()
 {
     fb::logger::debug("Bot {} starting clan communication test", this->get_test_bots()[0]->oid());
     this->get_test_bots()[0]->chat("=== CLAN COMMUNICATION TEST STARTED ===");
@@ -406,7 +505,7 @@ fb::generator<bot_integration_test::scenario_t> clan_test::on_generate_scenario(
         co_return co_await this->test_clan_invite();
     };
     co_yield [this]() -> async::task<bool> {
-        co_return co_await this->test_clan_communication();
+        co_return co_await this->test_clan_position();
     };
     co_yield [this]() -> async::task<bool> {
         co_return co_await this->test_clan_disbanding();
