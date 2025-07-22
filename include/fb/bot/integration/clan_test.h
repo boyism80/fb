@@ -103,6 +103,16 @@ private:
      * @return     A task that completes when clan disbanding tests finish.
      */
     async::task<bool> test_clan_disbanding();
+
+    /**
+     * @brief      Tests clan title change functionality.
+     *
+     *             Tests title change permissions based on clan roles.
+     *             Only Master role should be able to change clan title.
+     *
+     * @return     A task that completes when clan title change tests finish.
+     */
+    async::task<bool> test_clan_title_change();
 };
 
 } // namespace fb::bot::integration

@@ -75,8 +75,15 @@ public:
      *
      * @param[in]  context  The game context that manages this clan
      * @param[in]  id       The unique identifier for this clan
+     * @param[in]  name     The name of the clan
+     * @param[in]  title    The optional clan title/motto
+     * @param[in]  members  The initial list of clan members
      */
-    clan(context& context, uint32_t id, const std::string& name, const std::optional<std::string>& title);
+    clan(context&                                            context,
+         uint32_t                                            id,
+         const std::string&                                  name,
+         const std::optional<std::string>&                   title,
+         const std::unordered_map<std::string, clan_member>& members);
 
     /**
      * @brief      Copy constructor (deleted).

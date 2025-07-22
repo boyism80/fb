@@ -30,7 +30,17 @@ async::task<void> context::upsert_clan_then(uint32_t                            
             switch (static_cast<ERROR_CODE>(resp.error))
             {
             case ERROR_CODE::NONE:
-                co_return std::make_shared<fb::game::clan>(*this, id, resp.clan.name, resp.clan.title);
+            {
+                auto members = std::unordered_map<std::string, clan_member>{};
+                for (auto& member : resp.members)
+                {
+                    members.insert({
+                        member.name,
+                        clan_member{member.name, static_cast<CLAN_ROLE>(member.role)}
+                    });
+                }
+                co_return std::make_shared<fb::game::clan>(*this, id, resp.clan.name, resp.clan.title, members);
+            }
 
             default:
                 throw std::runtime_error(std::format("cannot get clan (error : {})", resp.error));
@@ -64,21 +74,15 @@ async::task<void> context::create_clan(character& me, std::string name)
     this->assert_clan(resp.error);
 
     auto id = resp.clan.id;
-    this->clans.write(
-        id,
-        [=, &resp, this](auto& clan) {
-            this->update_clan(*clan.get(), resp.clan, resp.members);
+    this->upsert_clan_then(id, [=, &resp, this](auto& clan) -> async::task<void> {
+        auto me = weak.lock();
+        if (me == nullptr)
+            co_return;
 
-            if (weak.expired() == false)
-            {
-                auto me = weak.lock();
-                me->clan_id(id);
-                clan->attach_character(weak);
-            }
-        },
-        [=, this]() -> std::shared_ptr<fb::game::clan> {
-            return std::make_shared<fb::game::clan>(*this, id, name, std::nullopt);
-        });
+        me->clan_id(id);
+        clan->attach_character(weak);
+        co_return;
+    });
 }
 
 async::task<void> context::destroy_clan(character& me)
@@ -122,11 +126,10 @@ async::task<void> context::destroy_clan(character& me)
         this->clans.erase(clan_id.value());
 }
 
-async::task<void> context::set_clan_title(const clan& clan, std::string title)
+async::task<void> context::set_clan_title(uint32_t changer_uid, std::string title)
 {
-    auto   name = std::string{clan.name()};
     auto&& resp =
-        co_await this->http.post("internal", "/clan/title", SetClanTitle{config<uint32_t>("host"), clan.id(), title});
+        co_await this->http.post("internal", "/clan/title", SetClanTitle{config<uint32_t>("host"), changer_uid, title});
 
     co_await this->on_clan_title_changed(resp);
 }
@@ -157,15 +160,13 @@ async::task<void> context::kick_clan_member(const clan& clan, const std::string&
     co_await this->on_clan_kick_member(resp);
 }
 
-async::task<void> context::change_clan_member_role(const clan&        clan,
-                                                   const std::string& changer,
-                                                   const std::string& target,
-                                                   CLAN_ROLE          new_role)
+async::task<void>
+context::change_clan_member_role(const clan& clan, uint32_t changer_uid, const std::string& target, CLAN_ROLE role)
 {
     auto&& resp = co_await this->http.post(
         "internal",
         "/clan/change-role",
-        ChangeClanRole{config<uint32_t>("host"), 0, target, clan.id(), static_cast<uint32_t>(new_role)});
+        ChangeClanRole{config<uint32_t>("host"), changer_uid, target, clan.id(), static_cast<uint32_t>(role)});
 
     co_await this->on_clan_change_role(resp);
 }

@@ -8,6 +8,8 @@
 #include <string>
 #include <map>
 #include <optional>
+#include <fb/bot/integration/dialog_bot.h>
+#include <fb/bot/integration/dialog_ext_bot.h>
 
 namespace fb::bot {
 
@@ -1311,6 +1313,18 @@ public:
     async::task<void> apply_condition(const std::vector<fb::model::dsl>& conditions, std::chrono::milliseconds timeout);
 
     /**
+     * @brief      Updates the internal information of the bot
+     *
+     *             Updates the internal information of the bot.
+     *             This includes the clan name, clan title, title, group info, group option, and remained exp.
+     *
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that completes when the internal information is updated.
+     */
+    async::task<void> update_internal_info(std::chrono::milliseconds timeout);
+
+    /**
      * @brief      Invites a target bot to join the group
      *
      * @param[in]  target   The bot to invite to the group
@@ -1338,6 +1352,67 @@ public:
      * @return     An async task that returns true if kick was successful
      */
     async::task<bool> kick_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Changes the role of a clan member using NPC dialog
+     *
+     * @param[in]  target    The bot whose role will be changed
+     * @param[in]  role      The new role to assign
+     * @param[in]  timeout   The timeout for the operation
+     *
+     * @return     An async task that returns true if role change was successful
+     */
+    async::task<bool> change_clan_role(std::shared_ptr<game_bot> target,
+                                       CLAN_ROLE                 role,
+                                       std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Invites a target bot to join the clan using NPC dialog
+     *
+     * @param[in]  invitee   The bot to invite to the clan
+     * @param[in]  timeout   The timeout for the operation
+     *
+     * @return     An async task that returns true if invite was successful
+     */
+    async::task<bool> invite_to_clan(std::shared_ptr<game_bot> invitee, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Kicks a target bot from the clan using NPC dialog
+     *
+     * @param[in]  target    The bot to kick from the clan
+     * @param[in]  timeout   The timeout for the operation
+     *
+     * @return     An async task that returns true if kick was successful
+     */
+    async::task<bool> kick_from_clan(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Leaves the current clan using NPC dialog
+     *
+     * @param[in]  timeout   The timeout for the operation
+     *
+     * @return     An async task that returns true if leaving was successful
+     */
+    async::task<bool> leave_clan(std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Destroys the current clan using NPC dialog
+     *
+     * @param[in]  timeout   The timeout for the operation
+     *
+     * @return     An async task that returns true if clan destruction was successful
+     */
+    async::task<bool> destroy_clan(std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Changes the clan title using NPC dialog
+     *
+     * @param[in]  title     The new title to set
+     * @param[in]  timeout   The timeout for the operation
+     *
+     * @return     An async task that returns true if title change was successful
+     */
+    async::task<bool> change_clan_title(const std::string& title, std::chrono::milliseconds timeout);
 
     /**
      * @brief      Sends a transfer request to the server and waits for a matching response.

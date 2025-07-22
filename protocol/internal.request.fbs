@@ -179,7 +179,7 @@ table KickClan {
 
 table SetClanTitle {
   host: uint;
-  clan: uint;
+  changer: uint;
   title: string?;
 }
 

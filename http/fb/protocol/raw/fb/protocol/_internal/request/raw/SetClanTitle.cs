@@ -21,7 +21,7 @@ public struct SetClanTitle : IFlatbufferObject
   public SetClanTitle __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Clan { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Changer { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public string Title { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(8, 1); }
@@ -32,18 +32,18 @@ public struct SetClanTitle : IFlatbufferObject
 
   public static Offset<fb.protocol._internal.request.raw.SetClanTitle> CreateSetClanTitle(FlatBufferBuilder builder,
       uint host = 0,
-      uint clan = 0,
+      uint changer = 0,
       StringOffset titleOffset = default(StringOffset)) {
     builder.StartTable(3);
     SetClanTitle.AddTitle(builder, titleOffset);
-    SetClanTitle.AddClan(builder, clan);
+    SetClanTitle.AddChanger(builder, changer);
     SetClanTitle.AddHost(builder, host);
     return SetClanTitle.EndSetClanTitle(builder);
   }
 
   public static void StartSetClanTitle(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
-  public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(1, clan, 0); }
+  public static void AddChanger(FlatBufferBuilder builder, uint changer) { builder.AddUint(1, changer, 0); }
   public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(2, titleOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.SetClanTitle> EndSetClanTitle(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -60,7 +60,7 @@ static public class SetClanTitleVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Clan*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Changer*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 8 /*Title*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }

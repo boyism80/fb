@@ -1566,6 +1566,16 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
     }
 }
 
+async::task<void> game_bot::update_internal_info(std::chrono::milliseconds timeout)
+{
+    auto&& resp = co_await this->request<fb::protocol::game::response::internal_info>(
+        fb::protocol::game::request::self_info{},
+        [](auto& resp) -> bool {
+            return true;
+        },
+        timeout);
+}
+
 async::task<bool> game_bot::invite_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout)
 {
     auto&& resp = co_await this->request<fb::protocol::game::response::message>(
@@ -1601,6 +1611,680 @@ async::task<bool> game_bot::kick_group(std::shared_ptr<game_bot> target, std::ch
         timeout);
 
     co_return resp.text == "그룹에서 추방당했습니다.";
+}
+
+async::task<bool> game_bot::change_clan_role(std::shared_ptr<game_bot> target,
+                                             CLAN_ROLE                 role,
+                                             std::chrono::milliseconds timeout)
+{
+    // Find NPC 낙랑 for clan management
+    auto npc = this->controller.container.model.npc.name2npc("낙랑");
+    if (npc == nullptr)
+    {
+        co_return false;
+    }
+
+    // Open NPC dialog
+    auto&& resp = co_await this->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::click(1),
+        [&npc](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_type::menu && resp.look == npc->look;
+        },
+        timeout);
+
+    if (resp.message != "안녕하세요. 무엇을 도와드릴까요?")
+    {
+        co_return false;
+    }
+
+    // Select clan management menu
+    auto&& resp2 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
+                                            0,
+                                            "",
+                                            1,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::PREV),
+        [&npc](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_ext_type::list;
+        },
+        timeout);
+
+    if (resp2.message != std::format("클랜 이름 : {}", this->clan_name()))
+    {
+        co_return false;
+    }
+
+    // Navigate to role change option (menu item 5)
+    auto&& resp3 = co_await this->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
+                                            0,
+                                            "",
+                                            5,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [&npc](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_type::input;
+        },
+        timeout);
+
+    if (resp3.message != "상대 이름 입력")
+    {
+        co_return false;
+    }
+
+    // Enter target name
+    auto&& resp4 = co_await this->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT,
+                                            0,
+                                            target->name(),
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [&npc](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_type::input;
+        },
+        timeout);
+
+    if (resp4.message != "직책 입력")
+    {
+        co_return false;
+    }
+
+    // Enter role value
+    auto&& resp5 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT,
+                                            0,
+                                            std::to_string(static_cast<uint8_t>(role)),
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [&npc](auto& resp) {
+            return resp.type == fb::bot::integration::dialog_ext_type::normal;
+        },
+        timeout);
+
+    if (resp5.message != "직책 변경 성공")
+    {
+        co_return false;
+    }
+
+    co_return true;
+}
+
+async::task<bool> game_bot::invite_to_clan(std::shared_ptr<game_bot> invitee, std::chrono::milliseconds timeout)
+{
+    // Find NPC 낙랑 for clan management
+    auto npc = this->controller.container.model.npc.name2npc("낙랑");
+    if (npc == nullptr)
+    {
+        co_return false;
+    }
+
+    // Open NPC dialog
+    auto&& resp1 = co_await this->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::click(1),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_type::menu)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp1.message != "안녕하세요. 무엇을 도와드릴까요?")
+    {
+        co_return false;
+    }
+
+    // Select clan management menu
+    auto&& resp2 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
+                                            0,
+                                            "",
+                                            1,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::PREV),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::list)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    co_await this->update_internal_info(timeout);
+
+    if (resp2.message != std::format("클랜 이름 : {}", this->clan_name()))
+    {
+        co_return false;
+    }
+
+    // Navigate to invite target selection dialog
+    auto&& resp3 = co_await this->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
+                                            0,
+                                            "",
+                                            2,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_type::input)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp3.message != "상대 이름 입력")
+    {
+        co_return false;
+    }
+
+    // Send invite to target
+    auto&& resp4 = co_await this->request<fb::bot::integration::dialog_bot>(
+        invitee,
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT,
+                                            0x02,
+                                            invitee->name(),
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_type::menu)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp4.message != std::format("{} 문파에 가입?", this->clan_name()))
+    {
+        co_return false;
+    }
+
+    // Target accepts clan invite
+    auto&& resp5 = co_await invitee->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
+                                            0,
+                                            "",
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::normal)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp5.message != std::format("{} 문파에 가입됨", this->clan_name()))
+    {
+        co_return false;
+    }
+
+    // Target confirms clan join completion
+    auto&& resp6 = co_await invitee->request<fb::bot::integration::dialog_ext_bot>(
+        this->shared_from_this_as<game_bot>(),
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL,
+                                            1,
+                                            "",
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::QUIT),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::normal)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp6.message != std::format("{}가 승락함", invitee->name()))
+    {
+        co_return false;
+    }
+
+    // Clan master confirms invite completion
+    this->send(fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL,
+                                                   1,
+                                                   "",
+                                                   0,
+                                                   0,
+                                                   "",
+                                                   DIALOG_RESULT::QUIT));
+
+    // Verify clan invite result by checking target's clan info
+    auto&& resp = co_await this->request<fb::protocol::game::response::external_info>(
+        fb::protocol::game::request::click(invitee->oid()),
+        [oid = invitee->oid()](auto& resp) {
+            return resp.oid == oid;
+        },
+        timeout);
+
+    if (resp.clan_name != this->clan_name())
+    {
+        co_return false;
+    }
+
+    auto clan_title = std::format("{}타이틀", resp.clan_name);
+    if (resp.clan_title != clan_title)
+    {
+        co_return false;
+    }
+
+    co_return true;
+}
+
+async::task<bool> game_bot::kick_from_clan(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout)
+{
+    // Find NPC 낙랑 for clan management
+    auto npc = this->controller.container.model.npc.name2npc("낙랑");
+    if (npc == nullptr)
+    {
+        co_return false;
+    }
+
+    // Open NPC dialog
+    auto&& resp1 = co_await this->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::click(1),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_type::menu)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp1.message != "안녕하세요. 무엇을 도와드릴까요?")
+    {
+        co_return false;
+    }
+
+    // Select clan management menu
+    auto&& resp2 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
+                                            0,
+                                            "",
+                                            1,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::PREV),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::list)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    co_await this->update_internal_info(timeout);
+
+    if (resp2.message != std::format("클랜 이름 : {}", this->clan_name()))
+    {
+        co_return false;
+    }
+
+    // Navigate to kick target selection dialog (menu item 4)
+    auto&& resp3 = co_await this->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
+                                            0,
+                                            "",
+                                            4,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_type::input)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp3.message != "상대 이름 입력")
+    {
+        co_return false;
+    }
+
+    // Enter target name
+    auto&& resp4 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT,
+                                            0,
+                                            target->name(),
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::normal)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp4.message != "추방했음")
+    {
+        co_return false;
+    }
+
+    co_return true;
+}
+
+async::task<bool> game_bot::leave_clan(std::chrono::milliseconds timeout)
+{
+    // Find NPC 낙랑 for clan management
+    auto npc = this->controller.container.model.npc.name2npc("낙랑");
+    if (npc == nullptr)
+    {
+        co_return false;
+    }
+
+    // Open NPC dialog
+    auto&& resp1 = co_await this->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::click(1),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_type::menu)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp1.message != "안녕하세요. 무엇을 도와드릴까요?")
+    {
+        co_return false;
+    }
+
+    // Select clan management menu
+    auto&& resp2 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
+                                            0,
+                                            "",
+                                            1,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::PREV),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::list)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    co_await this->update_internal_info(timeout);
+
+    if (resp2.message != std::format("클랜 이름 : {}", this->clan_name()))
+    {
+        co_return false;
+    }
+
+    // Navigate to leave clan option (menu item 3)
+    auto&& resp3 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
+                                            0,
+                                            "",
+                                            3,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::normal)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp3.message != "클랜 탈퇴 성공")
+    {
+        co_return false;
+    }
+
+    co_return true;
+}
+
+async::task<bool> game_bot::destroy_clan(std::chrono::milliseconds timeout)
+{
+    // Find NPC 낙랑 for clan management
+    auto npc = this->controller.container.model.npc.name2npc("낙랑");
+    if (npc == nullptr)
+    {
+        co_return false;
+    }
+
+    // Open NPC dialog
+    auto&& resp1 = co_await this->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::click(1),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_type::menu)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp1.message != "안녕하세요. 무엇을 도와드릴까요?")
+    {
+        co_return false;
+    }
+
+    // Select clan management menu
+    auto&& resp2 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
+                                            0,
+                                            "",
+                                            1,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::PREV),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::list)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    co_await this->update_internal_info(timeout);
+
+    if (resp2.message != std::format("클랜 이름 : {}", this->clan_name()))
+    {
+        co_return false;
+    }
+
+    // Navigate to destroy clan option (menu item 1)
+    auto&& resp3 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
+                                            0,
+                                            "",
+                                            1,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::normal)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp3.message != "클랜 제거 성공")
+    {
+        co_return false;
+    }
+
+    co_return true;
+}
+
+async::task<bool> game_bot::change_clan_title(const std::string& title, std::chrono::milliseconds timeout)
+{
+    // Find NPC 낙랑 for clan management
+    auto npc = this->controller.container.model.npc.name2npc("낙랑");
+    if (npc == nullptr)
+    {
+        co_return false;
+    }
+
+    // Open NPC dialog
+    auto&& resp1 = co_await this->request<fb::bot::integration::dialog_bot>(
+        fb::protocol::game::request::click(1),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_type::menu)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp1.message != "안녕하세요. 무엇을 도와드릴까요?")
+    {
+        co_return false;
+    }
+
+    // Select clan management menu
+    auto&& resp2 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
+                                            0,
+                                            "",
+                                            1,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::PREV),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::list)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    co_await this->update_internal_info(timeout);
+
+    if (resp2.message != std::format("클랜 이름 : {}", this->clan_name()))
+    {
+        co_return false;
+    }
+
+    // Navigate to title change option (menu item 0)
+    auto&& resp3 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
+                                            0,
+                                            "",
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::input_ext)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp3.message != "문파 칭호 입력")
+    {
+        co_return false;
+    }
+
+    // Enter new title
+    auto&& resp4 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT,
+                                            0,
+                                            title,
+                                            0,
+                                            0,
+                                            "",
+                                            DIALOG_RESULT::NEXT),
+        [&npc](auto& resp) {
+            if (resp.look != npc->look)
+                return false;
+
+            if (resp.type != fb::bot::integration::dialog_ext_type::normal)
+                return false;
+
+            return true;
+        },
+        timeout);
+
+    if (resp4.message != "문파 칭호 변경 성공")
+    {
+        co_return false;
+    }
+
+    co_await this->update_internal_info(timeout);
+    co_return this->clan_title() == title;
 }
 
 // simple_item methods implementation

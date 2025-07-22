@@ -112,15 +112,16 @@ int clan::builtin::builtin_title(lua_State* L)
 
         return 1;
     }
-    else if (argc == 2)
+    else if (argc == 3)
     {
         static auto fn = [](fb::game::context* context,
                             fb::lua::context*  lua,
                             fb::game::clan*    clan,
-                            std::string        name) -> async::task<void> {
+                            uint32_t           changer_uid,
+                            std::string        title) -> async::task<void> {
             try
             {
-                co_await context->set_clan_title(*clan, name);
+                co_await context->set_clan_title(changer_uid, title);
                 lua->pushnil();
             }
             catch (std::exception& e)
@@ -131,9 +132,13 @@ int clan::builtin::builtin_title(lua_State* L)
             lua->resume(1);
         };
 
-        auto name   = lua->tostring(2);
+        auto changer = lua->touserdata<fb::game::character>(2);
+        if (changer == nullptr)
+            return 0;
+
+        auto title  = lua->tostring(3);
         std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
-            co_await fn(context, lua, clan, name);
+            co_await fn(context, lua, clan, changer->id(), title);
         });
 
         return lua->yield(1);
@@ -300,21 +305,30 @@ int clan::builtin::builtin_change_role(lua_State* L)
     auto argc    = lua->argc();
     auto clan    = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
-        return 0;
+    {
+        lua->pushstring("clan is not found");
+        return 1;
+    }
 
-    auto changer = lua->tostring(2);
-    auto target  = lua->tostring(3);
-    auto role    = lua->toenum(4, CLAN_ROLE::MATE);
+    auto changer = lua->touserdata<fb::game::character>(2);
+    if (changer == nullptr)
+    {
+        lua->pushstring("changer is not found");
+        return 1;
+    }
+
+    auto target = lua->tostring(3);
+    auto role   = lua->toenum(4, CLAN_ROLE::MATE);
 
     static auto fn = [](fb::game::context* context,
                         fb::lua::context*  lua,
                         fb::game::clan*    clan,
-                        const std::string& changer,
+                        uint32_t           changer_uid,
                         const std::string& target,
                         CLAN_ROLE          role) -> async::task<void> {
         try
         {
-            co_await context->change_clan_member_role(*clan, changer, target, role);
+            co_await context->change_clan_member_role(*clan, changer_uid, target, role);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -326,7 +340,7 @@ int clan::builtin::builtin_change_role(lua_State* L)
     };
 
     std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(context, lua, clan, changer, target, role);
+        co_await fn(context, lua, clan, changer->id(), target, role);
     });
 
     return lua->yield(1);
@@ -345,7 +359,7 @@ int clan::builtin::builtin_message(lua_State* L)
         return 0;
 
     auto message = lua->tostring(2);
-    auto type    = lua->toenum(3, MESSAGE_TYPE::STATE);
+    auto type    = lua->toenum(3, MESSAGE_TYPE::NOTIFY);
 
     static auto fn = [](fb::game::context* context,
                         fb::lua::context*  lua,

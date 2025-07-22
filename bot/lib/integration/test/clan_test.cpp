@@ -9,7 +9,7 @@ using namespace std::chrono_literals;
 namespace fb::bot::integration {
 
 clan_test::clan_test(game_bot_controller& controller) :
-    bot_integration_test(controller, 3)
+    bot_integration_test(controller, 4)
 { }
 
 async::task<void> clan_test::on_initialize(game_bot_controller& controller)
@@ -32,7 +32,7 @@ async::task<void> clan_test::on_scenario_started(uint32_t scenario_index)
 
 async::task<void> clan_test::on_scenario_finished(uint32_t scenario_index)
 {
-    auto bots = this->get_test_bots();
+    fb::logger::debug("Clan test scenario {} finished", scenario_index);
     co_return;
 }
 
@@ -215,224 +215,6 @@ async::task<bool> clan_test::test_clan_title()
     co_return true;
 }
 
-async::task<bool> clan_test::invite_to_clan(std::shared_ptr<game_bot> inviter, std::shared_ptr<game_bot> invitee)
-{
-    fb::logger::debug("Starting clan invite process - Inviter: {}, Invitee: {}", inviter->name(), invitee->name());
-
-    fb::logger::debug("Looking for NPC 낙랑 for clan invite");
-    auto npc = this->controller.container.model.npc.name2npc("낙랑");
-    if (npc == nullptr)
-    {
-        fb::logger::fatal("Clan invite failed: NPC 낙랑 not found");
-        co_return false;
-    }
-    fb::logger::debug("Found NPC 낙랑, proceeding with clan invite process");
-
-    fb::logger::debug("Opening NPC dialog for clan invite");
-    auto&& resp1 = co_await inviter->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::click(1),
-        [&npc](auto& resp) {
-            if (resp.look != npc->look)
-                return false;
-
-            if (resp.type != fb::bot::integration::dialog_type::menu)
-                return false;
-
-            return true;
-        },
-        DEFAULT_TIMEOUT);
-
-    if (resp1.message != "안녕하세요. 무엇을 도와드릴까요?")
-    {
-        fb::logger::fatal("Clan invite failed: NPC response mismatch - expected: {}, got: {}",
-                          "안녕하세요. 무엇을 도와드릴까요?",
-                          resp1.message);
-        co_return false;
-    }
-
-    fb::logger::debug("Selecting clan invite menu option");
-    auto&& resp2 = co_await inviter->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
-                                            0,
-                                            "",
-                                            1,
-                                            0,
-                                            "",
-                                            DIALOG_RESULT::PREV),
-        [&npc](auto& resp) {
-            if (resp.look != npc->look)
-                return false;
-
-            if (resp.type != fb::bot::integration::dialog_ext_type::list)
-                return false;
-
-            return true;
-        },
-        DEFAULT_TIMEOUT);
-
-    if (resp2.message != std::format("클랜 이름 : {}", inviter->clan_name()))
-    {
-        fb::logger::fatal("Clan invite failed: Clan info mismatch - expected: {}, got: {}",
-                          std::format("클랜 이름 : {}", inviter->clan_name()),
-                          resp2.message);
-        co_return false;
-    }
-
-    fb::logger::debug("Navigating to invite target selection dialog");
-    auto&& resp3 = co_await inviter->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
-                                            0,
-                                            "",
-                                            2,
-                                            0,
-                                            "",
-                                            DIALOG_RESULT::NEXT),
-        [&npc](auto& resp) {
-            if (resp.look != npc->look)
-                return false;
-
-            if (resp.type != fb::bot::integration::dialog_type::input)
-                return false;
-
-            return true;
-        },
-        DEFAULT_TIMEOUT);
-
-    if (resp3.message != "상대 이름 입력")
-    {
-        fb::logger::fatal("Clan invite failed: Target input dialog error - expected: {}, got: {}",
-                          "상대 이름 입력",
-                          resp3.message);
-        co_return false;
-    }
-
-    fb::logger::debug("Sending invite to target: {}", invitee->name());
-    auto&& resp4 = co_await inviter->request<fb::bot::integration::dialog_bot>(
-        invitee,
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT,
-                                            0x02,
-                                            invitee->name(),
-                                            0,
-                                            0,
-                                            "",
-                                            DIALOG_RESULT::NEXT),
-        [&npc](auto& resp) {
-            if (resp.look != npc->look)
-                return false;
-
-            if (resp.type != fb::bot::integration::dialog_type::menu)
-                return false;
-
-            return true;
-        },
-        DEFAULT_TIMEOUT);
-
-    if (resp4.message != std::format("{} 문파에 가입?", inviter->name()))
-    {
-        fb::logger::fatal("Clan invite failed: Invite confirmation dialog error - expected: {}, got: {}",
-                          std::format("{} 문파에 가입?", inviter->name()),
-                          resp4.message);
-        co_return false;
-    }
-
-    fb::logger::debug("Target {} accepting clan invite", invitee->name());
-    auto&& resp5 = co_await invitee->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
-                                            0,
-                                            "",
-                                            0,
-                                            0,
-                                            "",
-                                            DIALOG_RESULT::NEXT),
-        [&npc](auto& resp) {
-            if (resp.look != npc->look)
-                return false;
-
-            if (resp.type != fb::bot::integration::dialog_ext_type::normal)
-                return false;
-
-            return true;
-        },
-        DEFAULT_TIMEOUT);
-
-    if (resp5.message != std::format("{} 문파에 가입됨", inviter->clan_name()))
-    {
-        fb::logger::fatal("Clan invite failed: Join confirmation error - expected: {}, got: {}",
-                          std::format("{} 문파에 가입됨", inviter->clan_name()),
-                          resp5.message);
-        co_return false;
-    }
-
-    fb::logger::debug("Target {} confirming clan join completion", invitee->name());
-    auto&& resp6 = co_await invitee->request<fb::bot::integration::dialog_ext_bot>(
-        inviter,
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL,
-                                            1,
-                                            "",
-                                            0,
-                                            0,
-                                            "",
-                                            DIALOG_RESULT::QUIT),
-        [&npc](auto& resp) {
-            if (resp.look != npc->look)
-                return false;
-
-            if (resp.type != fb::bot::integration::dialog_ext_type::normal)
-                return false;
-
-            return true;
-        },
-        DEFAULT_TIMEOUT);
-
-    if (resp6.message != std::format("{}가 승락함", invitee->name()))
-    {
-        fb::logger::fatal("Clan invite failed: Final confirmation error - expected: {}, got: {}",
-                          std::format("{}가 승락함", invitee->name()),
-                          resp6.message);
-        co_return false;
-    }
-
-    fb::logger::debug("Clan master {} confirming invite completion", inviter->name());
-    inviter->send(fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL,
-                                                      1,
-                                                      "",
-                                                      0,
-                                                      0,
-                                                      "",
-                                                      DIALOG_RESULT::QUIT));
-
-    fb::logger::debug("Verifying clan invite result by checking target's clan info");
-    auto&& resp = co_await inviter->request<fb::protocol::game::response::external_info>(
-        fb::protocol::game::request::click(invitee->oid()),
-        [oid = invitee->oid()](auto& resp) {
-            return resp.oid == oid;
-        },
-        DEFAULT_TIMEOUT);
-
-    if (resp.clan_name != inviter->clan_name())
-    {
-        fb::logger::fatal("Clan invite verification failed: Clan name mismatch - expected: {}, got: {}",
-                          inviter->clan_name(),
-                          resp.clan_name);
-        co_return false;
-    }
-
-    auto clan_title = std::format("{}타이틀", resp.clan_name);
-    if (resp.clan_title != clan_title)
-    {
-        fb::logger::fatal("Clan invite verification failed: Clan title mismatch - expected: {}, got: {}",
-                          clan_title,
-                          resp.clan_title);
-        co_return false;
-    }
-
-    fb::logger::debug("Clan invite successful - {} joined clan {} with title {}",
-                      invitee->name(),
-                      resp.clan_name,
-                      resp.clan_title);
-    co_return true;
-}
-
 async::task<bool> clan_test::test_clan_invite()
 {
     fb::logger::debug("Bot {} starting clan invite test", this->get_test_bots()[0]->oid());
@@ -445,7 +227,7 @@ async::task<bool> clan_test::test_clan_invite()
     fb::logger::debug("Clan invite test setup - Clan master: {}, Target: {}", bot->name(), target->name());
     fb::logger::debug("Testing invitation process from {} to {}", bot->name(), target->name());
 
-    auto success = co_await this->invite_to_clan(bot, target);
+    auto success = co_await bot->invite_to_clan(target, DEFAULT_TIMEOUT);
     if (!success)
     {
         fb::logger::fatal("Clan invite test failed: Invitation process unsuccessful");
@@ -469,7 +251,7 @@ async::task<bool> clan_test::test_clan_role()
     fb::logger::debug("Testing role-based invite permissions - {} trying to invite {}",
                       bots[1]->name(),
                       bots[2]->name());
-    if (co_await this->invite_to_clan(bots[1], bots[2]))
+    if (co_await bots[1]->invite_to_clan(bots[2], DEFAULT_TIMEOUT))
     {
         fb::logger::fatal("Clan role test failed: {} should not be able to invite {} without proper role",
                           bots[1]->name(),
@@ -489,111 +271,12 @@ async::task<bool> clan_test::test_clan_role()
     }
     fb::logger::debug("Found NPC 낙랑, proceeding with role change test");
 
-    fb::logger::debug("Opening NPC dialog for role management");
-    auto&& resp = co_await bots[0]->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::click(1),
-        [&npc](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_type::menu && resp.look == npc->look;
-        },
-        DEFAULT_TIMEOUT);
-
-    if (resp.message != "안녕하세요. 무엇을 도와드릴까요?")
+    fb::logger::debug("Changing {} role to OFFICER (role ID: 1)", bots[1]->name());
+    if (!co_await bots[0]->change_clan_role(bots[1],
+                                            fb::model::const_value::clan::MINIMUM_INVITE_PRIVILEGE,
+                                            DEFAULT_TIMEOUT))
     {
-        fb::logger::fatal("Clan test failed: NPC response mismatch - expected: {}, got: {}",
-                          "안녕하세요. 무엇을 도와드릴까요?",
-                          resp.message);
-        bots[0]->chat("=== CLAN ROLE TEST FAILED: NPC dialog error ===");
-        co_return false;
-    }
-
-    fb::logger::debug("Selecting clan management menu");
-    auto&& resp2 = co_await bots[0]->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU,
-                                            0,
-                                            "",
-                                            1,
-                                            0,
-                                            "",
-                                            DIALOG_RESULT::PREV),
-        [&npc](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_ext_type::list;
-        },
-        DEFAULT_TIMEOUT);
-
-    if (resp2.message != std::format("클랜 이름 : {}", bots[0]->clan_name()))
-    {
-        fb::logger::fatal("Clan test failed: NPC response mismatch - expected: {}, got: {}",
-                          std::format("클랜 이름 : {}", bots[0]->clan_name()),
-                          resp2.message);
-        bots[0]->chat("=== CLAN ROLE TEST FAILED: Clan info error ===");
-        co_return false;
-    }
-
-    fb::logger::debug("Navigating to role change option (menu item 5)");
-    auto&& resp3 = co_await bots[0]->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
-                                            0,
-                                            "",
-                                            5,
-                                            0,
-                                            "",
-                                            DIALOG_RESULT::NEXT),
-        [&npc](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_type::input;
-        },
-        DEFAULT_TIMEOUT);
-
-    if (resp3.message != "상대 이름 입력")
-    {
-        fb::logger::fatal("Clan test failed: NPC response mismatch - expected: {}, got: {}",
-                          "상대 이름 입력",
-                          resp3.message);
-        bots[0]->chat("=== CLAN ROLE TEST FAILED: Role change dialog error ===");
-        co_return false;
-    }
-
-    fb::logger::debug("Entering target name for role change: {}", bots[1]->name());
-    auto&& resp4 = co_await bots[0]->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT,
-                                            0,
-                                            bots[1]->name(),
-                                            0,
-                                            0,
-                                            "",
-                                            DIALOG_RESULT::NEXT),
-        [&npc](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_type::input;
-        },
-        DEFAULT_TIMEOUT);
-
-    if (resp4.message != "직책 입력")
-    {
-        fb::logger::fatal("Clan test failed: NPC response mismatch - expected: {}, got: {}",
-                          "직책 입력",
-                          resp4.message);
-        bots[0]->chat("=== CLAN ROLE TEST FAILED: Role input dialog error ===");
-        co_return false;
-    }
-
-    fb::logger::debug("Changing {} role to OFFICER (role ID: 2)", bots[1]->name());
-    auto&& resp5 = co_await bots[0]->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT,
-                                            0,
-                                            "2",
-                                            0,
-                                            0,
-                                            "",
-                                            DIALOG_RESULT::NEXT),
-        [&npc](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_ext_type::normal;
-        },
-        DEFAULT_TIMEOUT);
-
-    if (resp5.message != "직책 변경 성공")
-    {
-        fb::logger::fatal("Clan role test failed: Role change unsuccessful - expected: {}, got: {}",
-                          "직책 변경 성공",
-                          resp5.message);
+        fb::logger::fatal("Clan role test failed: Role change unsuccessful");
         bots[0]->chat("=== CLAN ROLE TEST FAILED: Role change unsuccessful ===");
         co_return false;
     }
@@ -602,7 +285,7 @@ async::task<bool> clan_test::test_clan_role()
     fb::logger::debug("Testing invite permission after role change - {} should now be able to invite {}",
                       bots[1]->name(),
                       bots[2]->name());
-    if (!co_await this->invite_to_clan(bots[1], bots[2]))
+    if (!co_await bots[1]->invite_to_clan(bots[2], DEFAULT_TIMEOUT))
     {
         fb::logger::fatal("Clan role test failed: {} should be able to invite {} after role promotion",
                           bots[1]->name(),
@@ -610,6 +293,25 @@ async::task<bool> clan_test::test_clan_role()
         bots[0]->chat("=== CLAN ROLE TEST FAILED: Invite permission not granted after role change ===");
         co_return false;
     }
+
+    if (co_await bots[1]->change_clan_role(bots[2], CLAN_ROLE::MASTER, DEFAULT_TIMEOUT))
+    {
+        fb::logger::fatal("Clan role test failed: {} should not be able to promote {} to OFFICER",
+                          bots[1]->name(),
+                          bots[2]->name());
+        bots[0]->chat("=== CLAN ROLE TEST FAILED: Invalid role promotion ===");
+        co_return false;
+    }
+
+    if (co_await bots[1]->change_clan_role(bots[3], CLAN_ROLE::MATE, DEFAULT_TIMEOUT))
+    {
+        fb::logger::fatal("Clan role test failed: {} should not be able to promote {} to OFFICER",
+                          bots[1]->name(),
+                          bots[3]->name());
+        bots[0]->chat("=== CLAN ROLE TEST FAILED: Invalid role promotion ===");
+        co_return false;
+    }
+
     fb::logger::debug("Role-based invite permission test passed: {} successfully invited {} after role promotion",
                       bots[1]->name(),
                       bots[2]->name());
@@ -624,19 +326,122 @@ async::task<bool> clan_test::test_clan_disbanding()
     fb::logger::debug("Bot {} starting clan disbanding test", this->get_test_bots()[0]->oid());
     this->get_test_bots()[0]->chat("=== CLAN DISBANDING TEST STARTED ===");
 
-    // TODO: Implement clan disbanding test
-    // - Test clan disbanding scenarios
-    // - Verify cleanup when clans are dissolved
-    // - Test member state after disbanding
+    auto bots = this->get_test_bots();
 
-    fb::logger::debug("Clan disbanding test - not implemented yet");
-    fb::logger::debug("TODO: Test clan disbanding scenarios");
-    fb::logger::debug("TODO: Verify cleanup when clans are dissolved");
-    fb::logger::debug("TODO: Test member state after disbanding");
+    // Verify initial clan setup: bot0=master, bot1=deputy, bot2=mate
+    fb::logger::debug("Verifying initial clan setup - Master: {}, Deputy: {}, Mate: {}",
+                      bots[0]->name(),
+                      bots[1]->name(),
+                      bots[2]->name());
 
-    co_await this->sleep(1s);
+    // Step 1: Bot2 (mate) tries to kick bot1 (deputy) - should fail
+    fb::logger::debug("Step 1: {} (mate) attempting to kick {} (deputy) - should fail",
+                      bots[2]->name(),
+                      bots[1]->name());
 
-    this->get_test_bots()[0]->chat("=== CLAN DISBANDING TEST SKIPPED (NOT IMPLEMENTED) ===");
+    if (co_await bots[2]->kick_from_clan(bots[1], DEFAULT_TIMEOUT))
+    {
+        fb::logger::fatal("Clan disbanding test failed: {} (mate) should not be able to kick {} (deputy)",
+                          bots[2]->name(),
+                          bots[1]->name());
+        bots[0]->chat("=== CLAN DISBANDING TEST FAILED: Mate should not be able to kick deputy ===");
+        co_return false;
+    }
+    fb::logger::debug("Step 1 passed: {} (mate) correctly failed to kick {} (deputy)",
+                      bots[2]->name(),
+                      bots[1]->name());
+
+    // Step 2: Bot2 (mate) leaves clan - should succeed
+    fb::logger::debug("Step 2: {} (mate) leaving clan - should succeed", bots[2]->name());
+
+    if (!co_await bots[2]->leave_clan(DEFAULT_TIMEOUT))
+    {
+        fb::logger::fatal("Clan disbanding test failed: {} (mate) should be able to leave clan", bots[2]->name());
+        bots[0]->chat("=== CLAN DISBANDING TEST FAILED: Mate should be able to leave clan ===");
+        co_return false;
+    }
+    fb::logger::debug("Step 2 passed: {} (mate) successfully left clan", bots[2]->name());
+
+    // Step 3: Bot0 (master) kicks bot1 (deputy) - should succeed
+    fb::logger::debug("Step 3: {} (master) kicking {} (deputy) - should succeed", bots[0]->name(), bots[1]->name());
+
+    if (!co_await bots[0]->kick_from_clan(bots[1], DEFAULT_TIMEOUT))
+    {
+        fb::logger::fatal("Clan disbanding test failed: {} (master) should be able to kick {} (deputy)",
+                          bots[0]->name(),
+                          bots[1]->name());
+        bots[0]->chat("=== CLAN DISBANDING TEST FAILED: Master should be able to kick deputy ===");
+        co_return false;
+    }
+    fb::logger::debug("Step 3 passed: {} (master) successfully kicked {} (deputy)", bots[0]->name(), bots[1]->name());
+
+    // Step 4: Bot0 (master) is now the only member, should destroy clan
+    fb::logger::debug("Step 4: {} (master) is now the only member, destroying clan", bots[0]->name());
+
+    if (!co_await bots[0]->destroy_clan(DEFAULT_TIMEOUT))
+    {
+        fb::logger::fatal("Clan disbanding test failed: {} (master) should be able to destroy clan", bots[0]->name());
+        bots[0]->chat("=== CLAN DISBANDING TEST FAILED: Master should be able to destroy clan ===");
+        co_return false;
+    }
+    fb::logger::debug("Step 4 passed: {} (master) successfully destroyed clan", bots[0]->name());
+
+    fb::logger::debug("Clan disbanding test completed successfully");
+    bots[0]->chat("=== CLAN DISBANDING TEST COMPLETED SUCCESSFULLY ===");
+    co_return true;
+}
+
+async::task<bool> clan_test::test_clan_title_change()
+{
+    fb::logger::debug("Bot {} starting clan title change test", this->get_test_bots()[0]->oid());
+    this->get_test_bots()[0]->chat("=== CLAN TITLE CHANGE TEST STARTED ===");
+
+    auto bots = this->get_test_bots();
+
+    // Verify initial clan setup: bot0=master, bot1=deputy, bot2=mate
+    fb::logger::debug("Verifying initial clan setup - Master: {}, Deputy: {}, Mate: {}",
+                      bots[0]->name(),
+                      bots[1]->name(),
+                      bots[2]->name());
+
+    // Step 1: Bot2 (mate) tries to change clan title - should fail
+    fb::logger::debug("Step 1: {} (mate) attempting to change clan title - should fail", bots[2]->name());
+
+    if (co_await bots[2]->change_clan_title("MateTitle", DEFAULT_TIMEOUT))
+    {
+        fb::logger::fatal("Clan title change test failed: {} (mate) should not be able to change clan title",
+                          bots[2]->name());
+        bots[0]->chat("=== CLAN TITLE CHANGE TEST FAILED: Mate should not be able to change title ===");
+        co_return false;
+    }
+    fb::logger::debug("Step 1 passed: {} (mate) correctly failed to change clan title", bots[2]->name());
+
+    // Step 2: Bot1 (deputy) tries to change clan title - should fail
+    fb::logger::debug("Step 2: {} (deputy) attempting to change clan title - should fail", bots[1]->name());
+
+    if (co_await bots[1]->change_clan_title("DeputyTitle", DEFAULT_TIMEOUT))
+    {
+        fb::logger::fatal("Clan title change test failed: {} (deputy) should not be able to change clan title",
+                          bots[1]->name());
+        bots[0]->chat("=== CLAN TITLE CHANGE TEST FAILED: Deputy should not be able to change title ===");
+        co_return false;
+    }
+    fb::logger::debug("Step 2 passed: {} (deputy) correctly failed to change clan title", bots[1]->name());
+
+    // Step 3: Bot0 (master) changes clan title - should succeed
+    fb::logger::debug("Step 3: {} (master) changing clan title - should succeed", bots[0]->name());
+
+    if (!co_await bots[0]->change_clan_title("MasterTitle", DEFAULT_TIMEOUT))
+    {
+        fb::logger::fatal("Clan title change test failed: {} (master) should be able to change clan title",
+                          bots[0]->name());
+        bots[0]->chat("=== CLAN TITLE CHANGE TEST FAILED: Master should be able to change title ===");
+        co_return false;
+    }
+    fb::logger::debug("Step 3 passed: {} (master) successfully changed clan title", bots[0]->name());
+
+    fb::logger::debug("Clan title change test completed successfully");
+    bots[0]->chat("=== CLAN TITLE CHANGE TEST COMPLETED SUCCESSFULLY ===");
     co_return true;
 }
 
@@ -653,6 +458,9 @@ fb::generator<bot_integration_test::scenario_t> clan_test::on_generate_scenario(
     };
     co_yield [this]() -> async::task<bool> {
         co_return co_await this->test_clan_role();
+    };
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_clan_title_change();
     };
     co_yield [this]() -> async::task<bool> {
         co_return co_await this->test_clan_disbanding();

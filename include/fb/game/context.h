@@ -611,12 +611,12 @@ public:
     /**
      * @brief      Sets the title/motto of a clan.
      *
-     * @param[in]  clan   The clan to update the title for.
-     * @param[in]  title  The new title/motto to set.
+     * @param[in]  changer_uid  The character updating the title.
+     * @param[in]  title        The new title/motto to set.
      *
      * @return     An async task that completes when the title is updated.
      */
-    [[nodiscard]] async::task<void> set_clan_title(const clan& clan, std::string title);
+    [[nodiscard]] async::task<void> set_clan_title(uint32_t changer_uid, std::string title);
 
     /**
      * @brief      Adds a character as a member to a clan through invitation.
@@ -645,16 +645,14 @@ public:
      * @brief      Changes the position of a clan member by an authorized member.
      *
      * @param[in]  clan         The clan to change the member position in.
-     * @param[in]  changer      The name of the character performing the position change.
+     * @param[in]  changer_uid  The character performing the position change.
      * @param[in]  target       The name of the character whose position will be changed.
-     * @param[in]  new_position The new position to assign to the target member.
+     * @param[in]  role         The new position to assign to the target member.
      *
      * @return     An async task that completes when the position change is processed.
      */
-    [[nodiscard]] async::task<void> change_clan_member_role(const clan&        clan,
-                                                            const std::string& changer,
-                                                            const std::string& target,
-                                                            CLAN_ROLE          new_position);
+    [[nodiscard]] async::task<void>
+    change_clan_member_role(const clan& clan, uint32_t changer_uid, const std::string& target, CLAN_ROLE role);
 
     /**
      * @brief      Broadcasts a message to all members of a clan.

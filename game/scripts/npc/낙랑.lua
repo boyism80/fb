@@ -81,7 +81,7 @@ function sample_clan(me, npc)
                 return
             end
 
-            local error = clan:title(title)
+            local error = clan:title(me, title)
             if error ~= nil then
                 me:dialog(npc, error)
             else
@@ -170,8 +170,7 @@ function sample_clan(me, npc)
 
             local name = me:input(npc, '상대 이름 입력')
             local role = me:input(npc, '직책 입력')
-            role = tonumber(role)
-            local error = clan:change_role(name, role)
+            local error = clan:change_role(me, name, tonumber(role))
             if error ~= nil then
                 me:dialog(npc, error)
             else

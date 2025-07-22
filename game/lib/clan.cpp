@@ -4,11 +4,16 @@
 using namespace fb::game;
 using namespace fb::model;
 
-clan::clan(context& context, uint32_t id, const std::string& name, const std::optional<std::string>& title) :
+clan::clan(context&                                            context,
+           uint32_t                                            id,
+           const std::string&                                  name,
+           const std::optional<std::string>&                   title,
+           const std::unordered_map<std::string, clan_member>& members) :
     _context(context),
     _id(id),
     _name(name),
-    _title(title)
+    _title(title),
+    _members(members)
 { }
 
 clan::clan(clan&& r) :

@@ -302,38 +302,60 @@ namespace Internal.Controllers
         /// <summary>
         /// Handles clan title setting requests.
         /// Allows updating the clan's title with validation for length and uniqueness.
+        /// The changer must have Master role or higher privileges to modify the clan title.
         /// </summary>
-        /// <param name="request">The title setting request containing clan ID and new title.</param>
+        /// <param name="request">The title setting request containing changer UID and new title.</param>
         /// <returns>A response confirming the title change or error details.</returns>
         [HttpPost("title")]
         public async Task<Response.SetClanTitle> SetTitle(Request.SetClanTitle request)
         {
             try
             {
-                await using (await _distributedLock.Lock(Clan.DistributedLockKey(request.Clan)))
+                // Get changer character
+                var changer = await _dbContext.Character.Get(request.Changer) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(changer.Id)))
                 {
-                    var clan = await _dbContext.Clan.Get(request.Clan) ??
-                        throw new LogicException(ErrorCode.NotFoundClan);
+                    var sync = await _dbContext.CharacterSync.Get(changer.Id) ??
+                        throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                    if (clan.Title == request.Title)
-                        throw new LogicException(ErrorCode.ClanTitleNotChanged);
+                    if (sync.Clan == null)
+                        throw new LogicException(ErrorCode.ClanNotJoined);
 
-                    if (request.Title != null && request.Title.Length < 2)
-                        throw new LogicException(ErrorCode.ClanTitleTooShort);
-
-                    clan.Title = request.Title;
-                    _dbContext.Clan.Set(clan);
-
-                    await _dbContext.SaveChangesAsync();
-
-                    var response = new Response.SetClanTitle
+                    await using (await _distributedLock.Lock(Clan.DistributedLockKey(sync.Clan.Value)))
                     {
-                        Clan = clan.Id,
-                        Title = request.Title,
-                        Error = (uint)ErrorCode.None
-                    };
-                    _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
-                    return response;
+                        var clan = await _dbContext.Clan.Get(sync.Clan.Value) ??
+                            throw new LogicException(ErrorCode.NotFoundClan);
+
+                        // Get changer's clan member info
+                        var changerMember = await _dbContext.ClanMember.Get(clan.Id, changer.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                        // Check if changer has sufficient privileges (Master role or higher)
+                        if (changerMember.Role < (uint)Fb.Model.ConstValue.Clan.MinimumChangeTitlePrivilege)
+                            throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                        if (clan.Title == request.Title)
+                            throw new LogicException(ErrorCode.ClanTitleNotChanged);
+
+                        if (request.Title != null && request.Title.Length < 2)
+                            throw new LogicException(ErrorCode.ClanTitleTooShort);
+
+                        clan.Title = request.Title;
+                        _dbContext.Clan.Set(clan);
+
+                        await _dbContext.SaveChangesAsync();
+
+                        var response = new Response.SetClanTitle
+                        {
+                            Clan = clan.Id,
+                            Title = request.Title,
+                            Error = (uint)ErrorCode.None
+                        };
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                        return response;
+                    }
                 }
             }
             catch (LogicException e)
@@ -447,7 +469,7 @@ namespace Internal.Controllers
                 {
                     Host = request.Host,
                     Clan = 0,
-                    Member = null,
+                    Member = new Protocol.ClanMember(),
                     Error = (uint)e.Error
                 };
             }
@@ -457,7 +479,7 @@ namespace Internal.Controllers
                 {
                     Host = request.Host,
                     Clan = 0,
-                    Member = null,
+                    Member = new Protocol.ClanMember(),
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
@@ -770,12 +792,12 @@ namespace Internal.Controllers
                                 throw new LogicException(ErrorCode.ClanNoPrivilege);
 
                             // Check if trying to change master role (only master can change master)
-                            if (targetMember.Role == (uint)ClanRole.Master && 
+                            if (targetMember.Role == (uint)ClanRole.Master &&
                                 changerMember.Role != (uint)ClanRole.Master)
                                 throw new LogicException(ErrorCode.ClanNoPrivilege);
 
                             // Validate new role
-                            if (request.NewRole < (uint)ClanRole.Mate || 
+                            if (request.NewRole < (uint)ClanRole.Mate ||
                                 request.NewRole > (uint)ClanRole.Master)
                                 throw new LogicException(ErrorCode.InvalidClanRole);
 
