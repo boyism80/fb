@@ -234,6 +234,18 @@ table BroadcastClan {
   error: uint;
 }
 
+table ChangeClanPosition {
+  host: uint;
+  clan: uint;
+  changer_uid: uint;
+  changer_name: string;
+  target_uid: uint;
+  target_name: string;
+  old_position: uint;
+  new_position: uint;
+  error: uint;
+}
+
 table Broadcast {
   host: uint;
   message: string;

@@ -58,6 +58,15 @@ const std::unordered_map<std::string, clan_member>& clan::members() const
     return this->_members;
 }
 
+clan_member* clan::member(const std::string& name)
+{
+    auto it = this->_members.find(name);
+    if (it != this->_members.end())
+        return &it->second;
+
+    return nullptr;
+}
+
 void clan::join(const clan_member& member)
 {
     this->_members.insert({member.name, member});
@@ -66,6 +75,15 @@ void clan::join(const clan_member& member)
 void clan::leave(const std::string& member)
 {
     this->_members.erase(member);
+}
+
+void clan::change_position(const std::string& member_name, CLAN_POSITION new_position)
+{
+    auto it = this->_members.find(member_name);
+    if (it != this->_members.end())
+    {
+        it->second.position = new_position;
+    }
 }
 
 const std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>>& clan::characters() const

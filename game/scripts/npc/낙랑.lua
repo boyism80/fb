@@ -62,7 +62,7 @@ function sample_clan(me, npc)
         end
     else
         local clan_name = clan:name()
-        local selected = me:list(npc, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 탈퇴', '문파 추방', '메시지'})
+        local selected = me:list(npc, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 탈퇴', '문파 추방', '문파 직책 변경', '문파 메시지'})
         if selected == nil then
             return
         end
@@ -162,6 +162,21 @@ function sample_clan(me, npc)
                 me:dialog(npc, '추방했음')
             end
         elseif selected == 5 then
+            clan = me:clan()
+            if clan == nil then
+                me:dialog(npc, '클랜 없음')
+                return
+            end
+
+            local name = me:input(npc, '상대 이름 입력')
+            local position = me:input(npc, '직책 입력')
+            local error = clan:change_position(name, position)
+            if error ~= nil then
+                me:dialog(npc, error)
+            else
+                me:dialog(npc, '직책 변경 성공')
+            end
+        elseif selected == 6 then
             local message = me:input(npc, '내용')
             clan = me:clan()
             if clan == nil then

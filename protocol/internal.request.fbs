@@ -190,6 +190,14 @@ table BroadcastClan {
   type: ubyte;
 }
 
+table ChangeClanPosition {
+  host: uint;
+  changer_uid: uint;
+  target_name: string;
+  clan: uint;
+  new_position: uint;
+}
+
 table Broadcast {
   host: uint;
   message: string;

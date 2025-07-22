@@ -74,6 +74,8 @@ REGISTER_RESPONSE(fb::protocol::internal::request::WriteMail, fb::protocol::inte
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteMail, fb::protocol::internal::response::DeleteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper)
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
+REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanPosition,
+                  fb::protocol::internal::response::ChangeClanPosition)
 
 namespace fb::game {
 
@@ -407,6 +409,13 @@ private:
      */
     void on_whisper(const internal_resp::Whisper& resp);
 
+    /**
+     * @brief      Called when a clan member position is changed.
+     *
+     * @param[in]  resp  The clan position change response containing the updated member information.
+     */
+    async::task<void> on_clan_change_position(const internal_resp::ChangeClanPosition& resp);
+
 public:
     /**
      * @brief      Creates a new game object managed by shared_ptr with the context as first parameter.
@@ -632,6 +641,21 @@ public:
     [[nodiscard]] async::task<void> kick_clan_member(const clan&        clan,
                                                      const std::string& kicker,
                                                      const std::string& target);
+
+    /**
+     * @brief      Changes the position of a clan member by an authorized member.
+     *
+     * @param[in]  clan         The clan to change the member position in.
+     * @param[in]  changer      The name of the character performing the position change.
+     * @param[in]  target       The name of the character whose position will be changed.
+     * @param[in]  new_position The new position to assign to the target member.
+     *
+     * @return     An async task that completes when the position change is processed.
+     */
+    [[nodiscard]] async::task<void> change_clan_member_position(const clan&        clan,
+                                                                const std::string& changer,
+                                                                const std::string& target,
+                                                                CLAN_POSITION      new_position);
 
     /**
      * @brief      Broadcasts a message to all members of a clan.
@@ -1391,6 +1415,15 @@ public:
      * @return     An async task that completes when clan kick handling is finished.
      */
     [[nodiscard]] async::task<void> handle_amqp_KickClan(const internal_resp::KickClan& response);
+
+    /**
+     * @brief      Handles clan position change notification from AMQP.
+     *
+     * @param[in]  response  The clan position change response containing the updated member information.
+     *
+     * @return     An async task that completes when clan position change handling is finished.
+     */
+    [[nodiscard]] async::task<void> handle_amqp_ChangeClanPosition(const internal_resp::ChangeClanPosition& response);
 
     /**
      * @brief      Handles clan broadcast message from AMQP.

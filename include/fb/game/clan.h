@@ -149,6 +149,15 @@ public:
     const std::unordered_map<std::string, clan_member>& members() const;
 
     /**
+     * @brief      Gets a clan member by name.
+     *
+     * @param[in]  name  The name of the member to get
+     *
+     * @return     Pointer to the clan member if found, nullptr otherwise
+     */
+    clan_member* member(const std::string& name);
+
+    /**
      * @brief      Adds a new member to the clan.
      *
      * @param[in]  member  The clan member data to add
@@ -161,6 +170,14 @@ public:
      * @param[in]  member  The name of the member to remove
      */
     void leave(const std::string& member);
+
+    /**
+     * @brief      Changes the position of a clan member.
+     *
+     * @param[in]  member_name  The name of the member whose position to change
+     * @param[in]  new_position The new position to assign to the member
+     */
+    void change_position(const std::string& member_name, CLAN_POSITION new_position);
 
     /**
      * @brief      Gets all currently online clan member characters.
@@ -256,6 +273,15 @@ struct clan::builtin
      * @return     Number of return values pushed to Lua stack
      */
     static int builtin_kick(lua_State* L);
+
+    /**
+     * @brief      Lua binding for changing the position of a member in the clan.
+     *
+     * @param[in]  L  The Lua state
+     *
+     * @return     Number of return values pushed to Lua stack
+     */
+    static int builtin_change_position(lua_State* L);
 
     /**
      * @brief      Lua binding for sending messages to clan members.

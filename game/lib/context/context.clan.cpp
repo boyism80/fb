@@ -156,6 +156,19 @@ async::task<void> context::kick_clan_member(const clan& clan, const std::string&
     co_await this->on_clan_kick_member(resp);
 }
 
+async::task<void> context::change_clan_member_position(const clan&        clan,
+                                                       const std::string& changer,
+                                                       const std::string& target,
+                                                       CLAN_POSITION      new_position)
+{
+    auto&& resp = co_await this->http.post(
+        "internal",
+        "/clan/change-position",
+        ChangeClanPosition{config<uint32_t>("host"), 0, target, clan.id(), static_cast<uint32_t>(new_position)});
+
+    co_await this->on_clan_change_position(resp);
+}
+
 async::task<void> context::broadcast(const clan& clan, const std::string& message, MESSAGE_TYPE type)
 {
     auto&& resp = co_await this->http.post(
@@ -288,6 +301,40 @@ async::task<void> context::on_clan_kick_member(const internal_resp::KickClan& re
             members);
 
         clan->leave(resp.uname);
+        co_return;
+    });
+}
+
+async::task<void> context::on_clan_change_position(const internal_resp::ChangeClanPosition& resp)
+{
+    this->assert_clan(resp.error);
+    co_await this->upsert_clan_then(resp.clan, [this, resp](auto& clan) -> async::task<void> {
+        auto member = clan->member(resp.target_name);
+        if (member != nullptr)
+            member->position = static_cast<CLAN_POSITION>(resp.new_position);
+
+        auto target = this->characters.find(resp.target_uid);
+        if (target != nullptr)
+        {
+            target->message(std::format("문파 직책이 변경되었습니다. ({} -> {})", resp.old_position, resp.new_position),
+                            MESSAGE_TYPE::NOTIFY);
+        }
+
+        for (auto& [uid, weak] : clan->characters())
+        {
+            if (uid == resp.target_uid)
+                continue;
+
+            auto shared = weak.lock();
+            if (shared == nullptr)
+                continue;
+
+            shared->message(std::format("{}님의 문파 직책이 {}에서 {}로 변경되었습니다.",
+                                        resp.target_name,
+                                        resp.old_position,
+                                        resp.new_position),
+                            MESSAGE_TYPE::NOTIFY);
+        }
         co_return;
     });
 }

@@ -534,7 +534,7 @@ namespace Internal.Controllers
 
                 // Prevent self-kicking
                 if (kicker.Name == target.Name)
-                    throw new LogicException(ErrorCode.CannotGroupSelf);
+                    throw new LogicException(ErrorCode.CannotKickSelf);
 
                 await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(kicker.Id)))
                 {
@@ -669,6 +669,143 @@ namespace Internal.Controllers
             }
             finally
             { }
+        }
+
+        /// <summary>
+        /// Handles clan member position change requests.
+        /// Allows authorized clan members to change the position of other members within the clan hierarchy.
+        /// </summary>
+        /// <param name="request">The position change request containing changer ID, target name, clan ID, and new position.</param>
+        /// <returns>A response confirming the position change or error details.</returns>
+        [HttpPost("change-position")]
+        public async Task<Response.ChangeClanPosition> ChangePosition(Request.ChangeClanPosition request)
+        {
+            try
+            {
+                // Get changer character (the one making the change)
+                var changer = await _dbContext.Character.Get(request.ChangerUid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                // Get target character (the one being changed)
+                var targetUid = await _dbContext.Character.GetCharacterId(request.TargetName) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+                var target = await _dbContext.Character.Get(targetUid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                // Prevent self-position change
+                if (changer.Id == target.Id)
+                    throw new LogicException(ErrorCode.CannotChangeClanPositionSelf);
+
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(changer.Id)))
+                {
+                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(target.Id)))
+                    {
+                        var changerSync = await _dbContext.CharacterSync.Get(changer.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        // Check if changer is in a clan
+                        if (changerSync.Clan == null)
+                            throw new LogicException(ErrorCode.ClanNotJoined);
+
+                        // Check if target is in the same clan
+                        if (targetSync.Clan != changerSync.Clan)
+                            throw new LogicException(ErrorCode.ClanNotJoined);
+
+                        await using (await _distributedLock.Lock(Clan.DistributedLockKey(changerSync.Clan.Value)))
+                        {
+                            var clan = await _dbContext.Clan.Get(changerSync.Clan.Value) ??
+                                throw new LogicException(ErrorCode.NotFoundClan);
+
+                            // Get changer's clan member info
+                            var changerMember = await _dbContext.ClanMember.Get(clan.Id, changer.Id) ??
+                                throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                            // Get target's clan member info
+                            var targetMember = await _dbContext.ClanMember.Get(clan.Id, target.Id) ??
+                                throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                            // Check if changer has sufficient privileges (Deputy or higher)
+                            if (changerMember.Position < (uint)ClanPosition.Deputy)
+                                throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                            // Check if target has higher or equal position (can't change superiors)
+                            if (targetMember.Position >= changerMember.Position)
+                                throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                            // Check if trying to change master position (only master can change master)
+                            if (targetMember.Position == (uint)ClanPosition.Master && 
+                                changerMember.Position != (uint)ClanPosition.Master)
+                                throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                            // Validate new position
+                            if (request.NewPosition < (uint)ClanPosition.Mate || 
+                                request.NewPosition > (uint)ClanPosition.Master)
+                                throw new LogicException(ErrorCode.InvalidClanPosition);
+
+                            // Check if new position is higher than changer's position (can't promote to higher rank)
+                            if (request.NewPosition >= changerMember.Position)
+                                throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                            // Store old position for response
+                            var oldPosition = targetMember.Position;
+
+                            // Update target's position
+                            targetMember.Position = request.NewPosition;
+                            _dbContext.ClanMember.Set(targetMember);
+
+                            var response = new Response.ChangeClanPosition
+                            {
+                                Host = request.Host,
+                                Clan = clan.Id,
+                                ChangerUid = changer.Id,
+                                ChangerName = changer.Name,
+                                TargetUid = target.Id,
+                                TargetName = target.Name,
+                                OldPosition = oldPosition,
+                                NewPosition = request.NewPosition,
+                                Error = (uint)ErrorCode.None
+                            };
+
+                            await _dbContext.SaveChangesAsync();
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                            return response;
+                        }
+                    }
+                }
+            }
+            catch (LogicException e)
+            {
+                return new Response.ChangeClanPosition
+                {
+                    Host = request.Host,
+                    Clan = request.Clan,
+                    ChangerUid = request.ChangerUid,
+                    ChangerName = "",
+                    TargetUid = 0,
+                    TargetName = request.TargetName,
+                    OldPosition = 0,
+                    NewPosition = request.NewPosition,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.ChangeClanPosition
+                {
+                    Host = request.Host,
+                    Clan = request.Clan,
+                    ChangerUid = request.ChangerUid,
+                    ChangerName = "",
+                    TargetUid = 0,
+                    TargetName = request.TargetName,
+                    OldPosition = 0,
+                    NewPosition = request.NewPosition,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
         }
     }
 }

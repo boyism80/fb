@@ -12,6 +12,7 @@ IMPLEMENT_LUA_EXTENSION(clan, "fb.game.clan")
 {"join",                clan::builtin::builtin_join},
 {"leave",               clan::builtin::builtin_leave},
 {"kick",                clan::builtin::builtin_kick},
+{"change_position",     clan::builtin::builtin_change_position},
 {"message",             clan::builtin::builtin_message},
 END_LUA_EXTENSION; // clang-format on
 
@@ -264,6 +265,48 @@ int clan::builtin::builtin_kick(lua_State* L)
 
     std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
         co_await fn(context, lua, clan, kicker, target);
+    });
+
+    return lua->yield(1);
+}
+
+int clan::builtin::builtin_change_position(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto context = lua->env<fb::game::context>("context");
+    auto argc    = lua->argc();
+    auto clan    = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    auto changer  = lua->tostring(2);
+    auto target   = lua->tostring(3);
+    auto position = lua->toenum(4, CLAN_POSITION::MATE);
+
+    static auto fn = [](fb::game::context* context,
+                        fb::lua::context*  lua,
+                        fb::game::clan*    clan,
+                        const std::string& changer,
+                        const std::string& target,
+                        CLAN_POSITION      position) -> async::task<void> {
+        try
+        {
+            co_await context->change_clan_member_position(*clan, changer, target, position);
+            lua->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            lua->pushstring(e.what());
+        }
+
+        lua->resume(1);
+    };
+
+    std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, lua, clan, changer, target, position);
     });
 
     return lua->yield(1);
