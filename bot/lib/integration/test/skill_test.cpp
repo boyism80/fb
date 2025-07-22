@@ -7,7 +7,7 @@ using namespace std::chrono_literals;
 namespace fb::bot::integration {
 
 skill_test::skill_test(game_bot_controller& controller) :
-    bot_integration_test(controller, 6)
+    bot_integration_test(controller, 7)
 { }
 
 async::task<void> skill_test::on_initialize(game_bot_controller& controller)
@@ -85,6 +85,10 @@ async::task<bool> skill_test::scenario_1()
          [this, &bots]() -> async::task<bool> {
              co_return co_await this->test_loot_spell(bots[1]);
          }},
+        {1,
+         [this, &bots]() -> async::task<bool> {
+             co_return co_await this->test_target_spells(bots[1], bots[6]);
+         }},
         {2,
          [this, &bots]() -> async::task<bool> {
              co_return co_await this->test_damage_spells(bots[2]);
@@ -132,6 +136,11 @@ fb::generator<bot_integration_test::scenario_t> skill_test::on_generate_scenario
     co_yield [this]() -> async::task<bool> {
         auto bots = this->get_test_bots();
         co_return co_await this->test_skill_cooldown_delays(bots[0]);
+    };
+
+    co_yield [this]() -> async::task<bool> {
+        auto bots = this->get_test_bots();
+        co_return co_await this->test_special_spells(bots[0]);
     };
 }
 

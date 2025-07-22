@@ -153,6 +153,34 @@ private:
                                               std::shared_ptr<fb::bot::game_bot> target);
 
     /**
+     * @brief      Tests target spells with pre and post condition verification.
+     *
+     *             Performs target spell tests including spells that require specific
+     *             conditions before casting and verify effects after casting.
+     *             These spells use 'you' parameter and are typically one-time effects.
+     *
+     * @param[in]  caster   The bot casting the target spells.
+     * @param[in]  target   The target bot for target spell tests.
+     *
+     * @return     A task that completes when all target spell tests finish.
+     */
+    async::task<bool> test_target_spells(std::shared_ptr<fb::bot::game_bot> caster,
+                                         std::shared_ptr<fb::bot::game_bot> target);
+
+    /**
+     * @brief      Tests special spells with complex requirements and effects.
+     *
+     *             Performs special spell tests including teleportation, weapon damage,
+     *             buffs, summoning, and ghost-specific spells. These spells often
+     *             require specific conditions, message inputs, or state changes.
+     *
+     * @param[in]  caster   The bot casting the special spells.
+     *
+     * @return     A task that completes when all special spell tests finish.
+     */
+    async::task<bool> test_special_spells(std::shared_ptr<fb::bot::game_bot> caster);
+
+    /**
      * @brief      Tests multi-target attack-cast spells with complex effect calculation.
      *
      *             Performs multi-target attack-cast spell tests including spells that
