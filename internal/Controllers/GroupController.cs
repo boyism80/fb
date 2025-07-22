@@ -248,7 +248,7 @@ namespace Internal.Controllers
                     Error = (uint)e.Error
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return new Response.EnterGroup
                 {
@@ -378,7 +378,7 @@ namespace Internal.Controllers
                     Error = (uint)e.Error
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return new Response.LeaveGroup
                 {

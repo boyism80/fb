@@ -86,7 +86,7 @@ namespace Internal.Controllers
                     Success = true,
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return new Response.GetArticle
                 {
@@ -147,7 +147,7 @@ namespace Internal.Controllers
                     Result = (int)e.Error
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return new Response.DeleteArticle
                 {

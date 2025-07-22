@@ -343,7 +343,7 @@ namespace Internal.Controllers
                     Error = (uint)e.Error
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return new Response.SetClanTitle
                 {

@@ -182,8 +182,9 @@ async::task<bool> context::handle_update_move(fb::socket<character>& socket, con
 
     if (co_await this->handle_move(socket, request))
     {
-        auto hash = map->model.id << 48 | request.begin.x << 32 | request.begin.y << 16 | request.size.width << 8 |
-                    request.size.height;
+        auto hash = static_cast<uint64_t>(map->model.id) << 48 | static_cast<uint64_t>(request.begin.x) << 32 |
+                    static_cast<uint64_t>(request.begin.y) << 16 | static_cast<uint64_t>(request.size.width) << 8 |
+                    static_cast<uint64_t>(request.size.height);
 
         this->map_update_cache.write(
             hash,

@@ -37,12 +37,13 @@ namespace Internal.Controllers
         /// </summary>
         /// <returns>A task representing the asynchronous shutdown operation.</returns>
         [HttpPost("shutdown")]
-        public async Task Shutdown()
+        public Task Shutdown()
         {
             _rabbitMqService.Publish(new Response.Shutdown
             {
 
             }, "amq.direct", $"fb.system");
+            return Task.CompletedTask;
         }
     }
 }

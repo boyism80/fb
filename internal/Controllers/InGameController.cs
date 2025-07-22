@@ -253,7 +253,7 @@ namespace Internal.Controllers
         /// <param name="request">The broadcast request containing message content and type.</param>
         /// <returns>A broadcast response confirming the message was sent.</returns>
         [HttpPost("broadcast")]
-        public async Task<Response.Broadcast> Broadcast(Request.Broadcast request)
+        public Task<Response.Broadcast> Broadcast(Request.Broadcast request)
         {
             var response = new Response.Broadcast
             {
@@ -264,7 +264,7 @@ namespace Internal.Controllers
             };
 
             _rabbitMqService.Publish(response, "amq.direct", $"fb.global");
-            return response;
+            return Task.FromResult(response);
         }
     }
 }

@@ -84,7 +84,7 @@ namespace Http.Formatter
         /// </summary>
         /// <param name="protocol">The FlatBuffer protocol object to generate a log message for.</param>
         /// <returns>A log message string, or null if no logging is required.</returns>
-        protected virtual string OnLog(IFlatBufferEx protocol)
+        protected virtual string? OnLog(IFlatBufferEx protocol)
         {
             return null;
         }
@@ -163,7 +163,7 @@ namespace Http.Formatter
         /// </summary>
         /// <param name="protocol">The FlatBuffer protocol object to generate a log message for.</param>
         /// <returns>A log message string, or null if no logging is required.</returns>
-        protected virtual string OnLog(IFlatBufferEx protocol)
+        protected virtual string? OnLog(IFlatBufferEx protocol)
         {
             return null;
         }
