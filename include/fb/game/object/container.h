@@ -23,7 +23,7 @@ class object;
 class map;
 class mob;
 class character;
-class context;
+class server;
 
 /**
  * @brief      Container for managing game objects within a map.

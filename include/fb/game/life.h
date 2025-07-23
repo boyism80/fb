@@ -76,15 +76,15 @@ protected:
     /**
      * @brief      Constructs a new life entity with specified parameters.
      *
-     *             Initializes a life entity with the provided context, model configuration,
+     *             Initializes a life entity with the provided server, model configuration,
      *             and initial parameters. Sets up HP/MP values, combat statistics, and
      *             spell system based on the model data.
      *
-     * @param      context  The game context managing this life entity.
+     * @param      server   The game server managing this life entity.
      * @param[in]  model    The life model containing base statistics and configuration.
      * @param[in]  params   Initial parameters for entity creation.
      */
-    life(fb::game::context& context, const fb::model::life& model, const initial_params& params);
+    life(fb::game::server& server, const fb::model::life& model, const initial_params& params);
 
     /**
      * @brief      Destroys the life entity and cleans up resources.

@@ -71,7 +71,7 @@ namespace fb {
  * @tparam     T     The type of data associated with each socket connection
  */
 template <typename T>
-class acceptor : public fb::acceptable
+class acceptor : public fb::async_executor, public boost::asio::ip::tcp::acceptor
 {
 public:
     using socket_container      = std::unordered_map<uint32_t, std::shared_ptr<fb::socket<T>>>;
@@ -116,7 +116,7 @@ protected:
      * @brief      Constructs a new acceptor instance with network and threading configuration.
      *
      *             Initializes the acceptor with the specified I/O context, service name, and port.
-     *             The constructor sets up the base acceptable class with the configured number of
+     *             The constructor sets up the base async_executor class with the configured number of
      *             logic threads from the configuration system and initializes the internal mutex
      *             with a reference to this acceptor instance.
      *
@@ -125,10 +125,16 @@ protected:
      * @param[in]  port     The TCP port number to bind and listen on for incoming connections.
      */
     acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
-        fb::acceptable(context, name, config<uint32_t>("thread:logic"), port),
+        fb::async_executor(context, name, config<uint32_t>("thread:logic")),
+        boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
         handler(*this),
         http(*this)
-    { }
+    {
+        static auto flag = std::once_flag{};
+        std::call_once(flag, [port] {
+            console::puts("Listen port : {}", port);
+        });
+    }
 
 public:
     /**

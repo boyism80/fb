@@ -58,7 +58,7 @@ class ai; // Forward declaration for AI
 class rezen
 {
 private:
-    fb::game::context&                 _context;
+    fb::game::server&                  _server;
     uint16_t                           _count = 0;
     std::optional<fb::model::datetime> _respawn_time;
 
@@ -70,12 +70,12 @@ public:
      * @brief      Constructs a new rezen (respawn manager) instance.
      *
      *             Initializes a respawn manager for a specific mob spawn point using
-     *             the provided context and spawn model configuration.
+     *             the provided server and spawn model configuration.
      *
-     * @param      context  The game context managing this respawn point.
+     * @param      server   The game server managing this respawn point.
      * @param[in]  model    The mob spawn model containing spawn configuration.
      */
-    rezen(fb::game::context& context, const fb::model::mob_spawn& model);
+    rezen(fb::game::server& server, const fb::model::mob_spawn& model);
 
     /**
      * @brief      Destroys the rezen instance.
@@ -191,15 +191,15 @@ public:
     /**
      * @brief      Constructs a new mob with the specified parameters.
      *
-     *             Creates a mob instance using the provided context, model data,
+     *             Creates a mob instance using the provided server, model data,
      *             and initialization parameters. Sets up AI behavior, stats,
      *             and respawn management based on the configuration.
      *
-     * @param      context  The game context managing this mob.
+     * @param      server  The game server managing this mob.
      * @param[in]  model    The mob model containing base stats and behavior.
      * @param[in]  params   The initialization parameters for this mob instance.
      */
-    mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params);
+    mob(fb::game::server& server, const fb::model::mob& model, const initial_params& params);
 
     /**
      * @brief      Copy constructor for mob duplication.
@@ -521,7 +521,7 @@ public:
      *
      *          Validates the target before returning:
      *          - Must not be null
-     *          - Must be alive in context
+     *          - Must be alive in server
      *          - Must be alive in game
      *          - Must be within sight
      *          - Must not be hidden from this mob

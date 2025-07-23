@@ -93,13 +93,13 @@ public:
 
 private:
     /**
-     * @brief      Executes a single parallel scenario within the context.
+     * @brief      Executes a single parallel scenario within the server.
      *
      *             This method processes scenarios from the specified queue index
-     *             within the parallel scenarios context. It handles scenario execution,
+     *             within the parallel scenarios server. It handles scenario execution,
      *             progress tracking, and result aggregation in a thread-safe manner.
      *
-     * @param[in]  context  Shared pointer to the parallel scenarios context.
+     * @param[in]  context  Shared pointer to the parallel scenarios server.
      * @param[in]  index    The queue index to process scenarios from.
      *
      * @return     A task that completes when the scenario execution is finished.

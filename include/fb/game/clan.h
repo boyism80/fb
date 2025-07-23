@@ -58,28 +58,32 @@ public:
     struct builtin;
 
 private:
-    context&                                                         _context;
-    uint32_t                                                         _id;
-    std::string                                                      _name;
-    std::optional<std::string>                                       _title;
-    std::unordered_map<std::string, clan_member>                     _members;
-    std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>> _characters;
+    using member_map    = std::unordered_map<std::string, clan_member>;
+    using character_map = std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>>;
+
+private:
+    server&                    _server;
+    uint32_t                   _id;
+    std::string                _name;
+    std::optional<std::string> _title;
+    member_map                 _members;
+    character_map              _characters;
 
 public:
     /**
      * @brief      Constructs a new clan with the specified context and identifier.
      *
-     *             Creates a new clan object managed by the given game context.
+     *             Creates a new clan object managed by the given game server.
      *             The clan starts with no members and must be populated through
      *             the update() method or by adding members individually.
      *
-     * @param[in]  context  The game context that manages this clan
+     * @param[in]  server   The game server that manages this clan
      * @param[in]  id       The unique identifier for this clan
      * @param[in]  name     The name of the clan
      * @param[in]  title    The optional clan title/motto
      * @param[in]  members  The initial list of clan members
      */
-    clan(context&                                            context,
+    clan(server&                                             server,
          uint32_t                                            id,
          const std::string&                                  name,
          const std::optional<std::string>&                   title,
@@ -89,7 +93,7 @@ public:
      * @brief      Copy constructor (deleted).
      *
      *             Clans cannot be copied to prevent resource management issues
-     *             and maintain unique clan identity within the game context.
+     *             and maintain unique clan identity within the game server.
      */
     clan(const clan&) = delete;
 

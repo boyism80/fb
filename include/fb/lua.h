@@ -88,7 +88,7 @@ namespace fb {
 class thread;
 class thread_container;
 class thread_switchable;
-class context;
+class async_executor;
 
 } // namespace fb
 
@@ -1191,14 +1191,14 @@ public:
     /**
      * @brief      Ensures a yield operation is performed safely.
      *
-     * @param      ctx   The context.
+     * @param      executor  The executor.
      * @param      obj   The thread-switchable object.
      * @param[in]  fn    The function to execute.
      * @param[in]  no_yield  Whether to skip the yield operation.
      *
      * @return     The result of the yield operation.
      */
-    int ensure_yield(fb::context&                         ctx,
+    int ensure_yield(fb::async_executor&                  executor,
                      std::weak_ptr<fb::thread_switchable> weak,
                      std::function<int(bool)>             fn,
                      bool                                 no_yield = false);
@@ -1206,14 +1206,14 @@ public:
     /**
      * @brief      Ensures a resume operation is performed safely.
      *
-     * @param      ctx           The context.
+     * @param      executor      The executor.
      * @param      obj           The thread-switchable object.
      * @param[in]  fn            The function to execute.
      * @param[in]  force_resume  Whether to force the resume operation.
      *
      * @return     The result of the resume operation.
      */
-    int ensure_resume(fb::context&                         ctx,
+    int ensure_resume(fb::async_executor&                  executor,
                       std::weak_ptr<fb::thread_switchable> weak,
                       std::function<int()>                 fn,
                       bool                                 force_resume = false);

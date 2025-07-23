@@ -1,0 +1,14 @@
+#include <fb/game/item.h>
+
+using namespace fb::game;
+
+armor::armor(fb::game::server& server, const fb::model::armor& model) :
+    equipment(server, model)
+{ }
+
+armor::armor(const armor& right) :
+    equipment(right)
+{ }
+
+armor::~armor()
+{ }

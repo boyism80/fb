@@ -1,0 +1,85 @@
+#include <fb/game/server.h>
+
+using namespace fb::game;
+
+void server::assert_mail(uint32_t error) const
+{
+    switch (static_cast<ERROR_CODE>(error))
+    {
+    case ERROR_CODE::NONE:
+        return;
+
+    case ERROR_CODE::NOT_FOUND_CHARACTER:
+        throw std::runtime_error(_TEXT(MESSAGE_INVALID_USER_NAME));
+
+    case ERROR_CODE::NOT_FOUND_MAIL:
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_FOUND_MAIL));
+
+    default:
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), error));
+    }
+}
+
+void server::on_write_mail(const internal_resp::WriteMail& resp)
+{
+    assert_mail(resp.error);
+
+    auto ch = this->characters.find(resp.mail.user);
+    if (ch == nullptr)
+        return;
+
+    auto weak = ch->weak_from_this_as<character>();
+    this->threads.enqueue(weak, [ch, unread = resp.unread](auto& thread) -> async::task<void> {
+        ch->unread_mail(unread);
+        co_return;
+    });
+}
+
+async::task<internal_resp::WriteMail>
+server::send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents)
+{
+    auto   weak   = ch.weak_from_this();
+    auto   thread = ch.thread();
+    auto&& resp   = co_await this->http.post("internal",
+                                           "/mail/write",
+                                           WriteMail{ch.id(), to, title, contents, config<uint32_t>("id")});
+    co_await this->threads.switching(weak);
+
+    this->assert_mail(resp.error);
+    this->on_write_mail(resp);
+    co_return std::move(resp);
+}
+
+async::task<internal_resp::GetMailList> server::mail_list(const character& ch, uint16_t offset, uint16_t count)
+{
+    auto   weak = ch.weak_from_this();
+    auto&& resp = co_await this->http.get<internal_resp::GetMailList>(
+        "internal",
+        std::format("/mail/{}?offset={}&count={}", ch.id(), offset, count));
+    co_await this->threads.switching(weak);
+
+    this->assert_mail(resp.error);
+    co_return std::move(resp);
+}
+
+async::task<internal_resp::GetMail> server::read_mail(character& ch, uint16_t id)
+{
+    auto   weak = ch.weak_from_this();
+    auto   url  = std::format("/mail/{}/{}", ch.id(), id);
+    auto&& resp = co_await this->http.get<internal_resp::GetMail>("internal", url);
+    co_await this->threads.switching(weak);
+
+    this->assert_mail(resp.error);
+    ch.unread_mail(resp.unread);
+    co_return std::move(resp);
+}
+
+async::task<internal_resp::DeleteMail> server::delete_mail(character& ch, uint16_t id)
+{
+    auto   weak = ch.weak_from_this();
+    auto&& resp = co_await this->http.post("internal", "/mail/delete", DeleteMail{ch.id(), id});
+    co_await this->threads.switching(weak);
+    this->assert_mail(resp.error);
+    ch.unread_mail(resp.unread);
+    co_return std::move(resp);
+}

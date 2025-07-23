@@ -29,7 +29,7 @@
  *          game objects and systems require coordinated access to shared resources.
  */
 
-#include <fb/abstract.h>
+#include <fb/async_executor.h>
 #include <fb/concurrent.h>
 
 namespace fb {
@@ -74,21 +74,21 @@ private:
     using sync_peek_func = std::function<T(void)>;
 
 private:
-    fb::context& _owner;
-    mutex_pool   _pool;
-    std::mutex   _mutex;
+    fb::async_executor& _executor;
+    mutex_pool          _pool;
+    std::mutex          _mutex;
 
 public:
     /**
-     * @brief      Constructs a new mutex system for the specified context.
+     * @brief      Constructs a new mutex system for the specified server.
      *
      *             Creates a mutex management system that will handle named locks
      *             and deadlock detection for the given context owner.
      *
      * @param[in]  owner  The context that owns and manages this mutex system
      */
-    mutex(fb::context& owner) :
-        _owner(owner)
+    mutex(fb::async_executor& executor) :
+        _executor(executor)
     { }
 
     /**
@@ -369,7 +369,7 @@ public:
                                       const async_wait_func<T>& fn,
                                       fb::dead_lock_detector&   trans)
     {
-        auto thread  = this->_owner.threads.current();
+        auto thread  = this->_executor.threads.current();
         auto promise = std::make_shared<async::task_completion_source<T>>();
 
         this->lock(key, promise, fn, thread, trans);
@@ -446,7 +446,7 @@ public:
     T try_sync(const std::string& key, const async_peek_func<T>& fn)
     {
         return async::task_completion_source<T>([this, key, &fn](auto& promise) mutable {
-            auto thread = this->_owner.threads.current();
+            auto thread = this->_executor.threads.current();
             this->try_lock(key, promise, fn, thread);
         });
     }

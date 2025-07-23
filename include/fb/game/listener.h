@@ -33,7 +33,7 @@
 
 namespace fb::game {
 
-class context;
+class server;
 
 /**
  * @brief      Base listener interface combining character and mob event handling.
@@ -65,10 +65,10 @@ struct listener_t : public virtual character::listener_t, public virtual mob::li
 struct listener_impl : public listener_t
 {
 public:
-    fb::game::context& context;
+    fb::game::server& server;
 
 public:
-    listener_impl(fb::game::context& ctx);
+    listener_impl(fb::game::server& ctx);
     listener_impl(const listener_impl&) = delete;
     listener_impl(listener_impl&&)      = delete;
     ~listener_impl()                    = default;

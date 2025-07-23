@@ -34,7 +34,7 @@
 
 namespace fb::game {
 
-class context;
+class server;
 
 /**
  * @brief      Forward declaration of the object class.
@@ -71,9 +71,9 @@ private:
     fb::model::datetime _next;
 
 public:
-    const fb::game::context& context;
-    const fb::game::life&    owner;
-    const fb::model::spell&  model;
+    const fb::game::server& server;
+    const fb::game::life&   owner;
+    const fb::model::spell& model;
 
 public:
     /**
@@ -83,15 +83,15 @@ public:
      *             Optionally sets an initial delay before the spell can be cast, which is
      *             useful for implementing cooldowns or casting restrictions.
      *
-     * @param[in]  context  The game context managing this spell.
+     * @param[in]  server   The game server managing this spell.
      * @param[in]  owner    The life entity that owns this spell.
      * @param[in]  model    The spell model defining properties and effects.
      * @param[in]  delay    Initial delay in seconds before the spell can be cast.
      */
-    spell(const fb::game::context& context,
-          const fb::game::life&    owner,
-          const fb::model::spell&  model,
-          uint16_t                 delay = 0);
+    spell(const fb::game::server& server,
+          const fb::game::life&   owner,
+          const fb::model::spell& model,
+          uint16_t                delay = 0);
     /**
      * @brief      Destroys the spell instance.
      */
@@ -321,23 +321,23 @@ private:
     std::chrono::milliseconds _time;
 
 public:
-    const fb::game::context& context;
-    const fb::model::spell&  model;
-    const fb::game::object*  caster;
+    const fb::game::server& server;
+    const fb::model::spell& model;
+    const fb::game::object* caster;
 
 public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  context  The game context managing this buff
+     * @param[in]  server   The game server managing this buff
      * @param[in]  model    The spell model defining the buff's effects
      * @param[in]  caster   The object casting the buff (optional)
      * @param[in]  seconds  The duration of the buff in seconds
      */
-    buff(const fb::game::context& context,
-         const fb::model::spell&  model,
-         const fb::game::object*  caster,
-         uint32_t                 seconds);
+    buff(const fb::game::server& server,
+         const fb::model::spell& model,
+         const fb::game::object* caster,
+         uint32_t                seconds);
     /**
      * @brief      Destroys the object.
      */

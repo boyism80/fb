@@ -148,10 +148,10 @@ public:
      *             inventory and equipment systems, and prepares the character for game world
      *             interaction.
      *
-     * @param      context  The game context that manages this character.
+     * @param      server   The game server that manages this character.
      * @param      socket   Reference to the network socket for client communication.
      */
-    character(fb::game::context& context, fb::socket<character>& socket);
+    character(fb::game::server& server, fb::socket<character>& socket);
 
     /**
      * @brief      Destroys the character and cleans up all associated resources.
@@ -2090,10 +2090,10 @@ private:
     std::unordered_map<std::string, std::shared_ptr<fb::game::character>> _from_name;
 
 public:
-    fb::game::context& _context;
+    fb::game::server& _server;
 
 public:
-    container(fb::game::context& context);
+    container(fb::game::server& server);
     ~container() = default;
 
 public:

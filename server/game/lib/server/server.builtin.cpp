@@ -1,0 +1,652 @@
+#include <fb/game/server.h>
+
+using namespace fb::game;
+
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::game::server, "")
+END_LUA_EXTENSION; // clang-format on
+
+int server::builtin::builtin_log(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto message = lua->tostring(1);
+    fb::logger::info(message);
+    return 0;
+}
+
+int server::builtin::builtin_seed(lua_State* L)
+{
+    static std::random_device random;
+    static std::mt19937       gen(random());
+    static auto               distribution = std::uniform_int_distribution<uint32_t>(0, 0xFFFFFFFF);
+
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto seed = distribution(gen);
+    lua->pushinteger(seed);
+    return 1;
+}
+
+int server::builtin::builtin_sleep(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ms = (uint32_t)lua->tointeger(1);
+    lua->pending(true);
+
+    auto server = lua->env<fb::game::server>("server");
+    async::awaitable_then(server->sleep(std::chrono::milliseconds(ms)), [lua](auto result) {
+        lua->pending(false);
+        lua->resume(0);
+    });
+    return lua->yield(0);
+}
+
+int server::builtin::builtin_baram_time(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    lua->pushstring(baram_time());
+    return 1;
+}
+
+int server::builtin::builtin_name2mob(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto name   = lua->tostring(1);
+    auto mob    = server->model.mob.name2mob(name);
+
+    if (mob == nullptr)
+    {
+        lua->pushnil();
+    }
+    else
+    {
+        lua->pushobject(mob);
+    }
+    return 1;
+}
+
+int server::builtin::builtin_name2spell(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto name   = lua->tostring(1);
+    auto spell  = server->model.spell.name2spell(name);
+
+    if (spell == nullptr)
+    {
+        lua->pushnil();
+    }
+    else
+    {
+        lua->pushobject(spell);
+    }
+    return 1;
+}
+
+int server::builtin::builtin_name2npc(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto name   = lua->tostring(1);
+    auto npc    = server->model.npc.name2npc(name);
+
+    if (npc == nullptr)
+    {
+        lua->pushnil();
+    }
+    else
+    {
+        lua->pushobject(npc);
+    }
+    return 1;
+}
+
+int server::builtin::builtin_name2map(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto name   = lua->tostring(1);
+    auto map    = server->model.map.name2map(name);
+
+    if (map == nullptr)
+    {
+        lua->pushnil();
+    }
+    else
+    {
+        lua->pushobject(map);
+    }
+    return 1;
+}
+
+int server::builtin::builtin_name2ch(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto name   = lua->tostring(1);
+
+    auto ch = server->characters.find(name);
+    if (ch == nullptr)
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto weak = ch->weak_from_this_as<character>();
+    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        return lua->ensure_resume(*server, weak, [=]() {
+            lua->pushobject(ch);
+            return 1;
+        });
+    });
+}
+
+int server::builtin::builtin_name2item(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto name   = lua->tostring(1);
+    auto item   = server->model.item.name2item(name);
+
+    if (item == nullptr)
+    {
+        lua->pushnil();
+    }
+    else
+    {
+        lua->pushobject(item);
+    }
+    return 1;
+}
+
+int server::builtin::builtin_pursuit_sell(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+
+    lua->new_table();
+    if (lua->is_nil(1))
+        return 1;
+
+    auto pursuit = lua->tointeger(1);
+    if (server->model.sell.contains(pursuit))
+    {
+        auto& sell = server->model.sell[pursuit];
+        auto  i    = 0;
+        for (auto& v : sell)
+        {
+            auto& item  = server->model.item[v.item];
+            auto  price = v.price.value_or(item.price);
+
+            lua->pushinteger(++i);
+            lua->new_table();
+            {
+                lua->pushinteger(1);
+                lua->pushobject(item);
+                lua_settable(L, -3);
+
+                lua->pushinteger(2);
+                lua->pushinteger(price);
+                lua_settable(L, -3);
+            }
+            lua_settable(L, -3);
+        }
+    }
+
+    return 1;
+}
+
+int server::builtin::builtin_pursuit_sell_price(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server  = lua->env<fb::game::server>("server");
+    auto pursuit = lua->tointeger(1);
+    auto name    = lua->tostring(2);
+
+    if (server->model.sell.contains(pursuit) == false)
+        return 0;
+
+    for (auto& x : server->model.sell[pursuit])
+    {
+        auto& model = server->model.item[x.item];
+        if (model.name != name)
+            continue;
+
+        lua->pushinteger(x.price.value_or(model.price));
+        return 1;
+    }
+
+    return 0;
+}
+
+int server::builtin::builtin_pursuit_sell_name(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server  = lua->env<fb::game::server>("server");
+    auto pursuit = lua->tointeger(1);
+
+    if (server->model.sell_attribute.contains(pursuit) == false)
+        return 0;
+
+    lua->pushstring(server->model.sell_attribute[pursuit].group);
+    return 1;
+}
+
+int server::builtin::builtin_pursuit_buy(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server  = lua->env<fb::game::server>("server");
+    auto pursuit = lua->tointeger(1);
+    lua->new_table();
+    if (server->model.buy.contains(pursuit))
+    {
+        auto& buy = server->model.buy[pursuit];
+        auto  i   = 0;
+        for (auto& [k, v] : buy)
+        {
+            auto& item  = server->model.item[k];
+            auto  price = v.price.value_or(item.price / 2);
+
+            lua->pushinteger(++i);
+            lua->new_table();
+            {
+                lua->pushinteger(1);
+                lua->pushobject(item);
+                lua_settable(L, -3);
+
+                lua->pushinteger(2);
+                lua->pushinteger(price);
+                lua_settable(L, -3);
+            }
+            lua_settable(L, -3);
+        }
+    }
+
+    return 1;
+}
+
+int server::builtin::builtin_timer(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server   = lua->env<fb::game::server>("server");
+    auto value    = (uint32_t)lua->tointeger(1);
+    auto decrease = lua->toboolean(2);
+
+    auto type = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
+    server->characters.foreach ([value, type](auto& ch) {
+        ch->timer(value, type);
+    });
+    return 0;
+}
+
+int server::builtin::builtin_weather(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto value  = (uint32_t)lua->tointeger(1);
+
+    server->characters.foreach ([weather = WEATHER_TYPE(value)](auto& ch) {
+        ch->weather(weather);
+    });
+    return 0;
+}
+
+int server::builtin::builtin_bright(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto value  = (uint32_t)lua->tointeger(1);
+
+    server->characters.foreach ([value](auto& ch) {
+        ch->bright(value);
+    });
+    return 0;
+}
+
+int server::builtin::builtin_name_with(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    auto name = lua->tostring(1);
+
+    if (argc < 3)
+    {
+        lua->pushstring(name_with(name));
+    }
+    else
+    {
+        auto first  = lua->tostring(2);
+        auto second = lua->tostring(3);
+        lua->pushstring(name_with(name, {first, second}));
+    }
+    return 1;
+}
+
+int server::builtin::builtin_assert_korean(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    auto text = lua->tostring(1);
+    lua->pushboolean(assert_korean(text));
+    return 1;
+}
+
+int server::builtin::builtin_cp949(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    auto text = lua->tostring(1);
+    lua->pushstring(CP949(text));
+    return 1;
+}
+
+int server::builtin::builtin_debug(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+#if defined DEBUG | defined _DEBUG
+    lua->pushboolean(true);
+#else
+    lua->pushboolean(false);
+#endif
+    return 1;
+}
+
+int server::builtin::builtin_name2class(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto name   = lua->tostring(1);
+
+    auto cls       = CLASS::NONE;
+    auto promotion = uint8_t{0};
+    if (server->model.promotion.name2class(name, cls, promotion) == false)
+        return 0;
+
+    lua->pushinteger(cls);
+    lua->pushinteger(promotion);
+    return 2;
+}
+
+int server::builtin::builtin_class2name(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server    = lua->env<fb::game::server>("server");
+    auto cls       = (uint8_t)lua->tointeger(1);
+    auto promotion = (uint8_t)lua->tointeger(2);
+    auto name      = std::string{};
+    if (server->model.promotion.class2name(static_cast<CLASS>(cls), promotion, name) == false)
+        lua->pushnil();
+    else
+        lua->pushstring(name);
+
+    return 1;
+}
+
+int server::builtin::builtin_save(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    for (int i = 0; i < server->threads.size(); i++)
+    {
+        std::ignore = server->threads[i]->dispatch([server](auto& thread) -> async::task<void> {
+            auto params = thread.template data<thread_params>();
+            for (auto& [id, character] : params->characters)
+            {
+                std::ignore = server->save(*character);
+            }
+            co_return;
+        });
+    }
+    return 0;
+}
+
+int server::builtin::builtin_mknpc(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto name   = lua->tostring(1);
+    auto model  = server->model.npc.name2npc(name);
+    if (model == nullptr)
+        return 0;
+
+    std::shared_ptr<fb::game::map> map = nullptr;
+    if (lua->is_string(2))
+    {
+        auto name      = lua->tostring(2);
+        auto map_model = server->model.map.name2map(name);
+        if (map_model == nullptr)
+            return 0;
+
+        if (server->maps.contains(map_model->id) == false)
+            return 0;
+
+        map = server->maps[map_model->id];
+    }
+    else if (lua->is_userdata<fb::game::map>(2))
+    {
+        map = lua->touserdata<fb::game::map>(2);
+        if (map == nullptr)
+            return 0;
+    }
+    else if (lua->is_userdata<fb::model::map>(2))
+    {
+        auto map_model = lua->touserdata<fb::model::map>(2);
+        if (map_model == nullptr)
+            return 0;
+
+        if (server->maps.contains(map_model->id) == false)
+            return 0;
+
+        map = server->maps[map_model->id];
+    }
+    else
+    {
+        return 0;
+    }
+
+    uint16_t x = 0, y = 0;
+    auto     direction = DIRECTION::BOTTOM;
+    if (argc < 3)
+    {
+        x = y = 0;
+    }
+    else if (lua->is_table(3))
+    {
+        if (argc >= 4)
+            direction = static_cast<DIRECTION>(lua->tointeger(4));
+
+        lua->rawgeti(3, 1);
+        x = (uint16_t)lua->tointeger(-1);
+        lua->remove(-1);
+
+        lua->rawgeti(3, 2);
+        y = (uint16_t)lua->tointeger(-1);
+        lua->remove(-1);
+    }
+    else
+    {
+        if (argc >= 5)
+            direction = static_cast<DIRECTION>(lua->tointeger(5));
+
+        x = (uint16_t)lua->tointeger(3);
+        y = (uint16_t)lua->tointeger(4);
+    }
+
+    if (map->thread()->id() == std::this_thread::get_id())
+    {
+        auto weak = map->weak_from_this();
+        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            // Use smart pointer for NPC creation
+            auto npc = server->make<fb::game::npc>(*model);
+            npc->direction(direction);
+            npc->map(map, fb::model::point16_t{x, y});
+
+            auto weak = npc->weak_from_this();
+            return lua->ensure_resume(*server, weak, [=]() {
+                lua->pushobject(npc);
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto weak = map->weak_from_this();
+        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            // Use smart pointer for NPC creation
+            auto npc = server->make<fb::game::npc>(*model);
+            npc->direction(direction);
+            npc->map(map, fb::model::point16_t{x, y});
+
+            auto weak = npc->weak_from_this();
+            return lua->ensure_resume(*server, weak, [=]() {
+                lua->pushobject(npc);
+                return 1;
+            });
+        });
+    }
+}
+
+int server::builtin::builtin_maps(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    lua->new_table();
+    auto i = 1;
+    for (auto& [id, map] : server->maps)
+    {
+        lua->pushobject(map);
+        lua_rawseti(L, -2, i++);
+    }
+    return 1;
+}
+
+int server::builtin::builtin_shutdown(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    std::ignore = server->http.post("internal", "/system/shutdown", Shutdown{});
+    return 0;
+}
+
+int server::builtin::builtin_broadcast(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server     = lua->env<fb::game::server>("server");
+    auto argc       = lua->argc();
+    auto text       = lua->tostring(1);
+    auto type       = lua->toenum(2, MESSAGE_TYPE::STATE);
+    auto broad_type = lua->toenum(3, BROADCAST_TYPE::GLOBAL);
+
+    if (broad_type == BROADCAST_TYPE::WORLD)
+    {
+        std::ignore = server->broadcast(text, type, broad_type);
+        return 0;
+    }
+    else
+    {
+        async::awaitable_then(server->broadcast(text, type, broad_type), [lua](auto result) {
+            lua->resume(0);
+        });
+        return lua->yield(0);
+    }
+}
+
+int server::builtin::builtin_assert_alive(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto obj    = lua->touserdata<fb::game::object>(1);
+
+    lua->pushboolean(obj != nullptr);
+    return 1;
+}

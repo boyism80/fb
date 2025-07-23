@@ -66,7 +66,7 @@ private:
 
 protected:
     hook_container       _hooks;          ///< Temporary hooks for request-response patterns
-    fb::context&         _context;        ///< Reference to the context for socket operations
+    fb::async_executor&  _executor;       ///< Reference to the async_executor for socket operations
     base_bot_controller& _bot_controller; ///< Reference to the bot_controller managing this bot
 
 public:
@@ -76,13 +76,13 @@ protected:
     /**
      * @brief      Constructs a new bot instance.
      *
-     * @param      context     The context for socket operations.
+     * @param      executor      The executor for socket operations.
      * @param      bot_controller  The bot_controller managing this bot.
      * @param[in]  on_receive  Callback function for received messages.
      * @param[in]  on_closed   Callback function for connection closure.
      * @param[in]  id          The unique identifier for this bot.
      */
-    base_bot(fb::context&                                                      context,
+    base_bot(fb::async_executor&                                               executor,
              base_bot_controller&                                              bot_controller,
              std::function<async::task<void>(fb::socket<void*>&, fb::stream&)> on_receive,
              std::function<async::task<void>(fb::socket<void*>&)>              on_closed,
@@ -200,7 +200,7 @@ public:
         const void*                   context_ptr; ///< Self-reference for hook removal
 
         /**
-         * @brief      Constructs a new request context.
+         * @brief      Constructs a new request server.
          *
          * @param[in]  bot  The bot instance (converted to weak_ptr for safe access).
          * @param[in]  cmd  The protocol command for hook management.

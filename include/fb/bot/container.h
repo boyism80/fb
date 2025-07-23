@@ -34,7 +34,7 @@ public:
  *             The container supports different types of bots (gateway, login, game)
  *             and manages their execution across multiple worker threads.
  */
-class bot_container : public fb::context
+class bot_container : public fb::async_executor
 {
     template <typename BotType>
     friend class bot_controller;

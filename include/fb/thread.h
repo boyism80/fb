@@ -343,10 +343,10 @@ public:
     [[nodiscard]] async::task<void> dispatch(const handle_func_type<void>& fn);
 
     /**
-     * @brief      Switches to this thread context.
+     * @brief      Switches to this thread server.
      *
      *             This function creates a task that switches execution to this thread's
-     *             context. It's used to ensure that subsequent operations execute on
+     *             server. It's used to ensure that subsequent operations execute on
      *             the correct thread, particularly important for thread_switchable
      *             objects that must be accessed from their designated thread.
      *
