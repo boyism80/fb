@@ -1,5 +1,4 @@
 #include <fb/bot/integration/skill_test.h>
-#include <fb/bot/integration/game_controller.h>
 
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
@@ -31,7 +30,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              co_return true;
          }, [](const auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with empty message
-             auto&& resp = co_await caster->request<fb::protocol::game::response::message>(
+             auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
                  fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 0, "", 0, {0, 0}),
                  DEFAULT_TIMEOUT);
 
@@ -57,7 +56,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              co_return true;
          }, [](const auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with direction message
-             auto&& resp = co_await caster->request<fb::protocol::game::response::message>(
+             auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
                  fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 1, "동", 0, {0, 0}),
                  DEFAULT_TIMEOUT);
 
@@ -83,7 +82,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              co_return true;
          }, [](const auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with empty message
-             auto&& resp = co_await caster->request<fb::protocol::game::response::message>(
+             auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
                  fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 2, "", 0, {0, 0}),
                  DEFAULT_TIMEOUT);
 
@@ -109,7 +108,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              co_return true;
          }, [](const auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with weapon type message
-             auto&& resp = co_await caster->request<fb::protocol::game::response::message>(
+             auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
                  fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 3, "검신", 0, {0, 0}),
                  DEFAULT_TIMEOUT);
 
@@ -135,7 +134,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              co_return true;
          }, [](const auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with weapon type message
-             auto&& resp = co_await caster->request<fb::protocol::game::response::message>(
+             auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
                  fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 4, "검신", 0, {0, 0}),
                  DEFAULT_TIMEOUT);
 
@@ -161,7 +160,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              co_return true;
          }, [](const auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with weapon type message
-             auto&& resp = co_await caster->request<fb::protocol::game::response::message>(
+             auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
                  fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 5, "검신", 0, {0, 0}),
                  DEFAULT_TIMEOUT);
 
@@ -187,7 +186,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              co_return true;
          }, [](const auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with monster type message
-             auto&& resp = co_await caster->request<fb::protocol::game::response::message>(
+             auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
                  fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 6, "곰", 0, {0, 0}),
                  DEFAULT_TIMEOUT);
 
@@ -213,7 +212,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              co_return true;
          }, [](const auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with direction message
-             auto&& resp = co_await caster->request<fb::protocol::game::response::message>(
+             auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
                  fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 7, "좌", 0, {0, 0}),
                  DEFAULT_TIMEOUT);
 

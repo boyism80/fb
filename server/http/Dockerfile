@@ -6,8 +6,8 @@ ARG BUILD_TYPE=Release
 ENV SERVICE=$SERVICE
 
 WORKDIR /app
-COPY http ./server/http
-COPY ${SERVICE} ./server/${SERVICE}
+COPY server/http ./http
+COPY server/${SERVICE} ./${SERVICE}
 RUN dotnet publish -c ${BUILD_TYPE} -o /app/dist/${SERVICE} ./${SERVICE}
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:8.0

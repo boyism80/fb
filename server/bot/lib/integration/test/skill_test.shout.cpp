@@ -1,5 +1,4 @@
 #include <fb/bot/integration/skill_test.h>
-#include <fb/bot/game_bot.h>
 
 using namespace fb::bot::integration;
 using namespace std::chrono_literals;

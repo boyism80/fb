@@ -5,10 +5,10 @@ ARG BUILD_TYPE=Release
 
 WORKDIR /app
 COPY include ./include
-COPY gateway/lib/protocol ./server/gateway/lib/protocol
-COPY login/lib/protocol ./server/login/lib/protocol
-COPY game/lib/protocol ./server/game/lib/protocol
-COPY bot ./bot
+COPY server/gateway/lib/protocol ./server/gateway/lib/protocol
+COPY server/login/lib/protocol ./server/login/lib/protocol
+COPY server/game/lib/protocol ./server/game/lib/protocol
+COPY server/bot ./bot
 
 WORKDIR /app/bot/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..

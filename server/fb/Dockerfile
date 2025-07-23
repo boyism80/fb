@@ -90,7 +90,7 @@ RUN make install
 # fb.lib
 WORKDIR /app
 COPY include ./include
-COPY fb ./server/fb
+COPY server/fb ./fb
 WORKDIR /app/fb/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} .. 
 RUN cmake --build . --parallel

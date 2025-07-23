@@ -1,9 +1,4 @@
 #include <fb/bot/integration/skill_test.h>
-#include <fb/bot/game_bot.h>
-#include <fb/logger.h>
-#include <chrono>
-#include <vector>
-#include <string>
 
 using namespace fb::bot::integration;
 using namespace std::chrono_literals;

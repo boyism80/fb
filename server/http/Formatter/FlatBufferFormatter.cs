@@ -41,19 +41,19 @@ namespace Http.Formatter
         /// <exception cref="InvalidOperationException">Thrown when the content type is not supported.</exception>
         public async override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
-            var sp = server.HttpContext.RequestServices;
+            var sp = context.HttpContext.RequestServices;
             var logger = sp.GetRequiredService<ILogger<FlatBufferInputFormatter>>();
 
             using (var ms = new MemoryStream(bufferLength))
             {
-                await server.HttpContext.Request.Body.CopyToAsync(ms);
+                await context.HttpContext.Request.Body.CopyToAsync(ms);
                 ms.Position = 0;
 
-                switch (server.HttpContext.Request.ContentType)
+                switch (context.HttpContext.Request.ContentType)
                 {
                     case "application/json":
                         {
-                            var protocol = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(ms.ToArray()), server.ModelType) as IFlatBufferEx;
+                            var protocol = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(ms.ToArray()), context.ModelType) as IFlatBufferEx;
                             var log = OnLog(protocol);
                             if (log != null)
                                 logger.LogInformation(log);
@@ -128,31 +128,31 @@ namespace Http.Formatter
         /// <exception cref="InvalidOperationException">Thrown when the context object is null or not a FlatBuffer protocol.</exception>
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
-            if (server.Object == null || server.ObjectType == null)
+            if (context.Object == null || context.ObjectType == null)
                 throw new InvalidOperationException();
 
-            var protocol = server.Object as IFlatBufferEx ??
+            var protocol = context.Object as IFlatBufferEx ??
                 throw new InvalidOperationException();
 
-            var sp = server.HttpContext.RequestServices;
+            var sp = context.HttpContext.RequestServices;
             var logger = sp.GetRequiredService<ILogger<FlatBufferOutputFormatter>>();
             var log = OnLog(protocol);
             if (log != null)
                 logger.LogInformation(log);
 
-            switch (server.HttpContext.Request.ContentType)
+            switch (context.HttpContext.Request.ContentType)
             {
                 case "application/json":
-                    server.HttpContext.Response.ContentType = "application/json";
-                    await server.HttpContext.Response.WriteAsJsonAsync(protocol, server.ObjectType);
+                    context.HttpContext.Response.ContentType = "application/json";
+                    await context.HttpContext.Response.WriteAsJsonAsync(protocol, context.ObjectType);
                     break;
 
                 case "application/octet-stream":
                     {
 
                         var bytes = protocol.ToBytes();
-                        server.HttpContext.Response.ContentLength = bytes.Length;
-                        await server.HttpContext.Response.BodyWriter.WriteAsync(bytes);
+                        context.HttpContext.Response.ContentLength = bytes.Length;
+                        await context.HttpContext.Response.BodyWriter.WriteAsync(bytes);
                     }
                     break;
             }

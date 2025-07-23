@@ -5,7 +5,7 @@ ARG BUILD_TYPE=Release
 
 WORKDIR /app
 COPY include ./include
-COPY login ./server/login
+COPY server/login ./login
 
 WORKDIR /app/login/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..

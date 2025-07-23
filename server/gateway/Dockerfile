@@ -5,7 +5,7 @@ ARG BUILD_TYPE=Release
 
 WORKDIR /app
 COPY include ./include
-COPY gateway ./server/gateway
+COPY server/gateway ./gateway
 
 WORKDIR /app/gateway/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
