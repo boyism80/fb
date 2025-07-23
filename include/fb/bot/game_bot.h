@@ -739,7 +739,7 @@ public:
      * @param[in]  step       The number of steps to move.
      * @param[in]  delay      The delay between steps.
      */
-    async::task<void> move(DIRECTION direction, int step = 1, const fb::model::timespan& delay = 0ms);
+    async::task<void> move(DIRECTION direction, int step = 1, const fb::model::timespan& delay = 500ms);
 
     /**
      * @brief      Move the bot to a specific map and coordinates.

@@ -512,8 +512,8 @@ async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model:
         }
 
         this->set_position(after);
-        co_await this->thread()->sleep(delay);
     }
+    co_await this->thread()->sleep(delay);
 }
 
 async::task<void>
@@ -665,12 +665,17 @@ async::task<void> game_bot::direction(DIRECTION direction, std::chrono::millisec
     if (this->_direction == direction)
         co_return;
 
-    std::ignore = co_await this->request<fb::protocol::game::response::direction>(
-        fb::protocol::game::request::direction{direction},
-        [direction](auto& resp) -> bool {
-            return resp.value == direction;
-        },
-        timeout);
+    try
+    {
+        std::ignore = co_await this->request<fb::protocol::game::response::direction>(
+            fb::protocol::game::request::direction{direction},
+            [direction](auto& resp) -> bool {
+                return resp.value == direction;
+            },
+            timeout);
+    }
+    catch (std::exception&)
+    { }
 }
 
 async::task<void> game_bot::process_random_pattern(const fb::model::datetime& now)

@@ -53,14 +53,14 @@ async::task<bool> chat_interaction_test::test_scenario_1(int index)
         // Step 1: Bot moves down 1 step
         bot->chat("Moving down 1 step");
         co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
-        co_await bot->move(DIRECTION::BOTTOM, 1, 0ms);
+        co_await bot->move(DIRECTION::BOTTOM);
 
         // Step 2: Create NPC using chat command
         bot->chat("Creating NPC 왈숙네");
         auto npc     = co_await bot->create_npc("왈숙네", DEFAULT_TIMEOUT);
         auto npc_oid = npc.oid;
 
-        co_await bot->move(DIRECTION::TOP, 1);
+        co_await bot->move(DIRECTION::TOP);
         co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
         // Step 3: Create 진호박 10개
@@ -185,13 +185,13 @@ async::task<bool> chat_interaction_test::test_scenario_2(int index)
     {
         bot->chat("Moving down 1 step");
         co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
-        co_await bot->move(DIRECTION::BOTTOM, 1, 0ms);
+        co_await bot->move(DIRECTION::BOTTOM);
 
         bot->chat("Creating NPC 떡쇠");
         auto npc     = co_await bot->create_npc("떡쇠", DEFAULT_TIMEOUT);
         auto npc_oid = npc.oid;
 
-        co_await bot->move(DIRECTION::TOP, 1);
+        co_await bot->move(DIRECTION::TOP);
         co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
         co_await bot->create_item("양첨목봉", 1, DEFAULT_TIMEOUT);
@@ -249,13 +249,13 @@ async::task<bool> chat_interaction_test::test_scenario_3(int index)
     {
         bot->chat("Moving down 1 step");
         co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
-        co_await bot->move(DIRECTION::BOTTOM, 1, 0ms);
+        co_await bot->move(DIRECTION::BOTTOM);
 
         bot->chat("Creating NPC 좌성황");
         auto npc     = co_await bot->create_npc("좌성황", DEFAULT_TIMEOUT);
         auto npc_oid = npc.oid;
 
-        co_await bot->move(DIRECTION::TOP, 1);
+        co_await bot->move(DIRECTION::TOP);
         co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
         auto spell_index = co_await bot->learn_spell("헬파이어", DEFAULT_TIMEOUT);
@@ -314,13 +314,13 @@ async::task<bool> chat_interaction_test::test_scenario_4(int index)
     {
         bot->chat("Moving down 1 step");
         co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
-        co_await bot->move(DIRECTION::BOTTOM, 1, 0ms);
+        co_await bot->move(DIRECTION::BOTTOM);
 
         bot->chat("Creating NPC 뭉치");
         auto npc     = co_await bot->create_npc("뭉치", DEFAULT_TIMEOUT);
         auto npc_oid = npc.oid;
 
-        co_await bot->move(DIRECTION::TOP, 1);
+        co_await bot->move(DIRECTION::TOP);
         co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
         std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(

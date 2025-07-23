@@ -121,6 +121,7 @@ void object::oid(uint32_t value)
     this->assert_thread();
 
     this->_oid = value;
+    this->update_id();
 }
 
 void object::chat(const std::string& message, CHAT_TYPE chat_type, bool decorate)
@@ -571,7 +572,6 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
 
         // insert character into map cache
         this->_map->objects.push(*this);
-        this->update_id();
         this->update_map(*map);
         this->update_position();
         if (notify)

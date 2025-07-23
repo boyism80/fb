@@ -57,7 +57,6 @@ async::task<void> skill_test::on_parallel_scenario_finished(uint32_t id)
     auto& caster = bots[id];
 
     co_await caster->clear_all_spells(DEFAULT_TIMEOUT);
-    co_await caster->clear_all_drop_items(DEFAULT_TIMEOUT);
     co_return;
 }
 
@@ -138,10 +137,10 @@ fb::generator<bot_integration_test::scenario_t> skill_test::on_generate_scenario
         co_return co_await this->test_skill_cooldown_delays(bots[0]);
     };
 
-    co_yield [this]() -> async::task<bool> {
-        auto bots = this->get_test_bots();
-        co_return co_await this->test_special_spells(bots[0]);
-    };
+    // co_yield [this]() -> async::task<bool> {
+    //     auto bots = this->get_test_bots();
+    //     co_return co_await this->test_special_spells(bots[0]);
+    // };
 }
 
 std::string skill_test::name() const

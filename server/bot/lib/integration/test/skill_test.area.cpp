@@ -92,16 +92,16 @@ async::task<bool> skill_test::test_area_damage_spells(std::shared_ptr<fb::bot::g
     fb::logger::debug("Testing {} area damage spells", area_spells.size());
     auto spell_slot = 0;
 
-    co_await caster->move(DIRECTION::BOTTOM, 3, DEFAULT_INTERVAL);
-    co_await bots[1]->move(DIRECTION::LEFT, 2, DEFAULT_INTERVAL);
-    co_await bots[1]->move(DIRECTION::BOTTOM, 3, DEFAULT_INTERVAL);
-    co_await bots[2]->move(DIRECTION::LEFT, 2, DEFAULT_INTERVAL);
-    co_await bots[2]->move(DIRECTION::BOTTOM, 2, DEFAULT_INTERVAL);
-    co_await bots[3]->move(DIRECTION::LEFT, 2, DEFAULT_INTERVAL);
-    co_await bots[3]->move(DIRECTION::BOTTOM, 4, DEFAULT_INTERVAL);
-    co_await bots[3]->move(DIRECTION::LEFT, 1, DEFAULT_INTERVAL);
-    co_await bots[4]->move(DIRECTION::LEFT, 3, DEFAULT_INTERVAL);
-    co_await bots[4]->move(DIRECTION::BOTTOM, 3, DEFAULT_INTERVAL);
+    co_await caster->move(DIRECTION::BOTTOM, 3, 0ms);
+    co_await bots[1]->move(DIRECTION::LEFT, 2, 0ms);
+    co_await bots[1]->move(DIRECTION::BOTTOM, 3, 0ms);
+    co_await bots[2]->move(DIRECTION::LEFT, 2, 0ms);
+    co_await bots[2]->move(DIRECTION::BOTTOM, 2, 0ms);
+    co_await bots[3]->move(DIRECTION::LEFT, 2, 0ms);
+    co_await bots[3]->move(DIRECTION::BOTTOM, 4, 0ms);
+    co_await bots[3]->move(DIRECTION::LEFT, 1, 0ms);
+    co_await bots[4]->move(DIRECTION::LEFT, 3, 0ms);
+    co_await bots[4]->move(DIRECTION::BOTTOM, 3, 0ms);
     co_await this->sleep(500ms);
     co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
     co_await bots[1]->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
@@ -147,16 +147,16 @@ async::task<bool> skill_test::test_area_damage_spells(std::shared_ptr<fb::bot::g
         spell_slot++;
     }
 
-    co_await bots[4]->move(DIRECTION::TOP, 3, DEFAULT_INTERVAL);
-    co_await bots[4]->move(DIRECTION::RIGHT, 3, DEFAULT_INTERVAL);
-    co_await bots[3]->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
-    co_await bots[3]->move(DIRECTION::TOP, 4, DEFAULT_INTERVAL);
-    co_await bots[3]->move(DIRECTION::RIGHT, 2, DEFAULT_INTERVAL);
-    co_await bots[2]->move(DIRECTION::TOP, 2, DEFAULT_INTERVAL);
-    co_await bots[2]->move(DIRECTION::RIGHT, 2, DEFAULT_INTERVAL);
-    co_await bots[1]->move(DIRECTION::TOP, 3, DEFAULT_INTERVAL);
-    co_await bots[1]->move(DIRECTION::RIGHT, 2, DEFAULT_INTERVAL);
-    co_await caster->move(DIRECTION::TOP, 3, DEFAULT_INTERVAL);
+    co_await bots[4]->move(DIRECTION::TOP, 3, 0ms);
+    co_await bots[4]->move(DIRECTION::RIGHT, 3, 0ms);
+    co_await bots[3]->move(DIRECTION::RIGHT, 1, 0ms);
+    co_await bots[3]->move(DIRECTION::TOP, 4, 0ms);
+    co_await bots[3]->move(DIRECTION::RIGHT, 2, 0ms);
+    co_await bots[2]->move(DIRECTION::TOP, 2, 0ms);
+    co_await bots[2]->move(DIRECTION::RIGHT, 2, 0ms);
+    co_await bots[1]->move(DIRECTION::TOP, 3, 0ms);
+    co_await bots[1]->move(DIRECTION::RIGHT, 2, 0ms);
+    co_await caster->move(DIRECTION::TOP, 3, 0ms);
     co_await this->sleep(500ms);
     co_await bots[4]->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
     co_await bots[3]->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);

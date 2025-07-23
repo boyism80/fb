@@ -117,7 +117,7 @@ async::task<bool> skill_test::test_near_damage_spells(std::shared_ptr<fb::bot::g
     }
 
     co_await this->sleep(DEFAULT_INTERVAL);
-    co_await caster->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
+    co_await caster->move(DIRECTION::RIGHT);
     co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     caster->chat("=== NEAR DAMAGE SPELL TEST COMPLETED ===");

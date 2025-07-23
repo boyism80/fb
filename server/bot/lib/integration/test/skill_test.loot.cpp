@@ -24,7 +24,7 @@ async::task<bool> skill_test::test_loot_spell(std::shared_ptr<fb::bot::game_bot>
 
     // Step 2: Move one step forward
     fb::logger::debug("Moving one step forward");
-    co_await caster->move(DIRECTION::BOTTOM, 1, DEFAULT_INTERVAL);
+    co_await caster->move(DIRECTION::BOTTOM);
 
     // Step 3: Drop items and money
     fb::logger::debug("Dropping items and money");
@@ -43,8 +43,7 @@ async::task<bool> skill_test::test_loot_spell(std::shared_ptr<fb::bot::game_bot>
 
     // Step 4: Move back to original position and face BOTTOM direction
     fb::logger::debug("Moving back to original position");
-    co_await caster->move(DIRECTION::TOP, 1, DEFAULT_INTERVAL);
-    co_await this->sleep(500ms);
+    co_await caster->move(DIRECTION::TOP);
     co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     // Step 5: Learn and cast loot spell

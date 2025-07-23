@@ -44,7 +44,7 @@ async::task<void> trade_test::on_initialize(game_bot_controller& controller)
     auto  bots = this->get_test_bots();
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
-    co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
+    co_await bot2->move(DIRECTION::RIGHT);
     co_await this->sleep(DEFAULT_INTERVAL);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 

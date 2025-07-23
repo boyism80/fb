@@ -24,8 +24,7 @@ async::task<void> drop_loot_test::on_initialize(game_bot_controller& controller)
 
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
-    co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
-    co_await this->sleep(DEFAULT_INTERVAL);
+    co_await bot2->move(DIRECTION::RIGHT);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
     co_return;
 }
@@ -324,10 +323,10 @@ async::task<bool> drop_loot_test::test_scenario_5()
     co_await this->sleep(500ms);
 
     // 8. Bot2 moves right 1 tile
-    co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
+    co_await bot2->move(DIRECTION::RIGHT);
 
     // 9. Bot1 moves right 1 tile (to bot2's original position)
-    co_await bot1->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
+    co_await bot1->move(DIRECTION::RIGHT);
 
     // 10. Bot1 loots and should get "죽은 자의 온기가 남아있습니다." message and some items
     std::ignore = co_await bot1->request<fb::protocol::game::response::message>(

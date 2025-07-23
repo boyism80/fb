@@ -47,6 +47,9 @@ void spell_cast::parse(SPELL_TYPE type)
     {
     case SPELL_TYPE::INPUT:
     {
+        if (this->buffer.empty())
+            throw std::runtime_error("spell_cast::parse: buffer is empty");
+
 #ifdef _WIN32
         this->message = (const char*)this->buffer.data();
 #else

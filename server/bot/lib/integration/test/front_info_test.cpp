@@ -13,7 +13,7 @@ async::task<void> front_info_test::on_initialize(game_bot_controller& controller
     auto bots = this->get_test_bots();
 
     auto& bot2 = bots[1];
-    co_await bot2->move(DIRECTION::BOTTOM, 1, DEFAULT_INTERVAL);
+    co_await bot2->move(DIRECTION::BOTTOM);
 }
 
 async::task<void> front_info_test::on_scenario_started(uint32_t scenario_index)

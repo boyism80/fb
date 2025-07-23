@@ -67,8 +67,7 @@ async::task<bool> throw_test::test_throw_single_item()
     auto& bot1 = bots[0];
     auto& bot2 = bots[1];
 
-    co_await bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
-    co_await this->sleep(500ms);
+    co_await bot2->move(DIRECTION::RIGHT);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     fb::logger::debug("Starting single item throw test for bot {}", bot1->name());
@@ -121,8 +120,8 @@ async::task<bool> throw_test::test_throw_all_items()
     fb::logger::debug("Starting all items throw test for bot {}", bot1->name());
 
     // Move bot2 to position: down 4, left 1 (so bot1 and bot2 are in a straight line)
-    co_await bot2->move(DIRECTION::BOTTOM, 4, DEFAULT_INTERVAL);
-    co_await bot2->move(DIRECTION::LEFT, 1, DEFAULT_INTERVAL);
+    co_await bot2->move(DIRECTION::BOTTOM, 4, 0ms);
+    co_await bot2->move(DIRECTION::LEFT, 1, 0ms);
     co_await this->sleep(500ms);
     co_await bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 

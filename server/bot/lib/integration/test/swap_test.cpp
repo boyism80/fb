@@ -20,8 +20,7 @@ async::task<void> swap_test::on_initialize(game_bot_controller& controller)
         throw std::runtime_error("No bots available for swap test");
 
     auto bot2 = bots[1];
-    bot2->move(DIRECTION::RIGHT, 1, DEFAULT_INTERVAL);
-    co_await this->sleep(500ms);
+    bot2->move(DIRECTION::RIGHT);
     bot2->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     fb::logger::debug("Swap test initialization completed");

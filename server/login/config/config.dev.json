@@ -1,7 +1,7 @@
 {
     "id": 0,
     "name": "login-0",
-    "ip": "121.133.249.67",
+    "ip": "127.0.0.1",
     "port": 3002,
     "transfer delay": 0,
     "allow other language": false,

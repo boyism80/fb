@@ -374,17 +374,19 @@ async::task<bool> server::handle_option_changed(fb::socket<character>& socket, c
         break;
 
     default:
-        auto enabled = ch->option_toggle(option);
-        if (option == OPTION::GROUP && !enabled)
-            co_await this->leave_group(*ch);
-
-        auto&& response = co_await this->http.post("internal",
-                                                   "/user/option",
-                                                   SetOption{ch->id(), static_cast<uint8_t>(option), enabled});
+        auto   next = !ch->option(option);
+        auto&& resp = co_await this->http.post("internal",
+                                               "/user/option",
+                                               SetOption{ch->id(), static_cast<uint8_t>(option), next});
         co_await this->threads.switching(weak);
 
-        if (response.success == false)
+        if (resp.success == false)
             ch->message("설정을 변경하지 못했습니다.");
+
+        if (option == OPTION::GROUP && !next)
+            co_await this->leave_group(*ch);
+
+        ch->option(option, next);
         break;
     }
     co_return true;

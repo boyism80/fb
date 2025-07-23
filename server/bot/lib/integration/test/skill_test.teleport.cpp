@@ -75,12 +75,11 @@ async::task<bool> skill_test::test_teleport_spells(std::shared_ptr<fb::bot::game
     auto end_position = caster->position();
     auto move_x_axis  = end_position.x - begin_position.x;
     auto direction_x  = move_x_axis > 0 ? DIRECTION::LEFT : DIRECTION::RIGHT;
-    co_await caster->move(direction_x, std::abs(move_x_axis), DEFAULT_INTERVAL);
+    co_await caster->move(direction_x, std::abs(move_x_axis));
 
     auto move_y_axis = end_position.y - begin_position.y;
     auto direction_y = move_y_axis > 0 ? DIRECTION::TOP : DIRECTION::BOTTOM;
-    co_await caster->move(direction_y, std::abs(move_y_axis), DEFAULT_INTERVAL);
-    co_await this->sleep(DEFAULT_INTERVAL);
+    co_await caster->move(direction_y, std::abs(move_y_axis));
     co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
     co_return true;

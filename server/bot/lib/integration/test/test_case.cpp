@@ -324,9 +324,9 @@ async::task<void> bot_integration_test::arrange_bots_in_line_formation()
 
         auto current_position = bot->position();
         auto target_position  = current_position;
-        co_await bot->move(DIRECTION::RIGHT, i, DEFAULT_INTERVAL);
+        co_await bot->move(DIRECTION::RIGHT, i);
 
-        std::ignore = bot->direction(DIRECTION::BOTTOM, DEFAULT_INTERVAL);
+        co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_INTERVAL);
         fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM",
                           bot->name(),
                           target_position.x,

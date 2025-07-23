@@ -261,9 +261,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
         fb::logger::debug("Testing buff/debuff spell: {}", spell.name);
 
         // Determine the actual target for the spell
-        auto& actual_target   = spell.is_self_cast ? caster : target;
-        auto  target_oid      = actual_target->oid();
-        auto  target_position = actual_target->position();
+        auto& actual_target = spell.is_self_cast ? caster : target;
 
         // Cast the spell
         caster->chat(std::format("Testing {}", spell.name));
@@ -271,6 +269,15 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
         auto expected_caster_mp = uint32_t{0};
         while (true)
         {
+            if (caster->map() != actual_target->map())
+            {
+                co_await this->sleep(DEFAULT_INTERVAL);
+                continue;
+            }
+
+            auto target_oid      = actual_target->oid();
+            auto target_position = actual_target->position();
+
             // Set caster's current HP/MP for testing
             std::ignore = co_await caster->set_current_hp_mp(10000, 10000, DEFAULT_TIMEOUT);
 
