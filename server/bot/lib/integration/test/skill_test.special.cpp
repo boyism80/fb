@@ -1,4 +1,5 @@
 #include <fb/bot/integration/skill_test.h>
+#include <fb/bot/integration/game_controller.h>
 
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
@@ -14,220 +15,316 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
     struct special_spell_test
     {
         std::string name; // Spell name
-        std::function<async::task<bool>(const std::shared_ptr<fb::bot::game_bot>&)>
+        std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&)>
             pre_condition_check; // Called before spell cast to setup conditions
-        std::function<async::task<bool>(const std::shared_ptr<fb::bot::game_bot>&)>
+        std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&)>
             spell_cast_function; // Custom spell casting logic
-        std::function<async::task<bool>(const std::shared_ptr<fb::bot::game_bot>&)>
+        std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&)>
             post_condition_check; // Called after spell cast to verify effects
     };
 
+    auto local          = fb::config<std::string>("ip") == "127.0.0.1";
+    auto weapon_name    = "목도";
     auto special_spells = std::vector<special_spell_test>{
         {"귀환",
-         [](const auto& caster) -> async::task<bool> {
+         [local](auto& caster) -> async::task<bool> {
              // Pre-condition: Setup nation for teleportation test
              fb::logger::debug("Pre-condition: Setting up nation for 귀환 test");
              co_return true;
-         }, [](const auto& caster) -> async::task<bool> {
+         }, [local](auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with empty message
-             auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 0, "", 0, {0, 0}),
-                 DEFAULT_TIMEOUT);
 
-             // Check if spell was cast successfully
-             if (resp.text == std::format("{} 외웠습니다.", name_with("귀환")))
+             if (local)
              {
-                 fb::logger::debug("귀환 spell cast successful");
+                 auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
+                     fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 0, "", 0, {0, 0}),
+                     [](auto& resp) {
+                         return resp.type == MESSAGE_TYPE::STATE;
+                     },
+                     DEFAULT_TIMEOUT);
+                 co_return resp.text == "비바람이 휘몰아치고 있습니다.";
+             }
+             else
+             {
+                 caster = co_await caster->transfer(
+                     fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 0, "", 0, {0, 0}));
                  co_return true;
              }
-
-             fb::logger::warn("귀환 spell cast failed: {}", resp.text);
-             co_return false;
-         }, [](const auto& caster) -> async::task<bool> {
+         }, [this, local](auto& caster) -> async::task<bool> {
              // Post-condition: Verify teleportation to hometown
              fb::logger::debug("Post-condition: Verifying 귀환 teleportation");
+
+             auto& map_model = this->controller.container.model.map[caster->map()];
+             if (map_model.name != "낙랑의방")
+                 caster = co_await caster->transfer(fb::protocol::game::request::chat(false, "/맵이동 낙랑의방 6 6"));
              co_return true;
          }},
 
         {"비영사천문",
-         [](const auto& caster) -> async::task<bool> {
+         [local](auto& caster) -> async::task<bool> {
              // Pre-condition: Setup direction input for teleportation
              fb::logger::debug("Pre-condition: Setting up direction input for 비영사천문 test");
              co_return true;
-         }, [](const auto& caster) -> async::task<bool> {
+         }, [local](auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with direction message
+
+             auto before = caster->position();
+             if (!local)
+                 caster = co_await caster->transfer(fb::protocol::game::request::chat(false, "/맵이동 국내성"));
+
              auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 1, "동", 0, {0, 0}),
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, 1, "동", 0, {0, 0}),
+                 [](auto& resp) {
+                     return resp.type == MESSAGE_TYPE::STATE;
+                 },
                  DEFAULT_TIMEOUT);
 
-             // Check if spell was cast successfully
-             if (resp.text == std::format("{} 외웠습니다.", name_with("비영사천문")))
+             if (resp.text != std::format("{} 외웠습니다.", name_with("비영사천문")))
+                 co_return false;
+
+             if (local)
              {
-                 fb::logger::debug("비영사천문 spell cast successful");
+                 co_return caster->position() == before;
+             }
+             else
+             {
+                 if (caster->position() == before)
+                 {
+                     fb::logger::fatal("Failed to teleport, position is not changed");
+                     co_return false;
+                 }
+
+                 caster = co_await caster->transfer(fb::protocol::game::request::chat(false, "/맵이동 낙랑의방 6 6"));
                  co_return true;
              }
-
-             fb::logger::warn("비영사천문 spell cast failed: {}", resp.text);
-             co_return false;
-         }, [](const auto& caster) -> async::task<bool> {
+         }, [local](auto& caster) -> async::task<bool> {
              // Post-condition: Verify cardinal direction teleportation
              fb::logger::debug("Post-condition: Verifying 비영사천문 teleportation");
              co_return true;
          }},
 
         {"공력증강",
-         [](const auto& caster) -> async::task<bool> {
+         [](auto& caster) -> async::task<bool> {
              // Pre-condition: Setup MP/HP for enhancement test
+             co_await caster->set_max_hp_mp(10000, 10000, DEFAULT_TIMEOUT);
              fb::logger::debug("Pre-condition: Setting up MP/HP for 공력증강 test");
              co_return true;
-         }, [](const auto& caster) -> async::task<bool> {
+         }, [](auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with empty message
-             auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 2, "", 0, {0, 0}),
-                 DEFAULT_TIMEOUT);
-
-             // Check if spell was cast successfully
-             if (resp.text == std::format("{} 외웠습니다.", name_with("공력증강")))
+             while (true)
              {
-                 fb::logger::debug("공력증강 spell cast successful");
-                 co_return true;
+                 co_await caster->set_current_hp_mp(10000, 30, DEFAULT_TIMEOUT);
+                 auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
+                     fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 2, "", 0, {0, 0}),
+                     [](auto& resp) {
+                         return resp.type == MESSAGE_TYPE::STATE;
+                     },
+                     DEFAULT_TIMEOUT);
+
+                 if (resp.text == std::format("{} 외웠습니다.", name_with("공력증강")))
+                     break;
              }
 
-             fb::logger::warn("공력증강 spell cast failed: {}", resp.text);
-             co_return false;
-         }, [](const auto& caster) -> async::task<bool> {
+             if (caster->mp() != 10000)
+             {
+                 fb::logger::fatal("마력이 다 회복되어야 하는데 안됐음");
+                 co_return false;
+             }
+
+             if (caster->hp() >= 10000)
+             {
+                 fb::logger::fatal("체력이 깎여야 하는데 안깎임");
+                 co_return false;
+             }
+
+             co_return true;
+         }, [](auto& caster) -> async::task<bool> {
              // Post-condition: Verify MP enhancement and HP cost
              fb::logger::debug("Post-condition: Verifying 공력증강 MP/HP changes");
              co_return true;
          }},
 
         {"대력검신",
-         [](const auto& caster) -> async::task<bool> {
+         [weapon_name](auto& caster) -> async::task<bool> {
              // Pre-condition: Setup target and weapon for damage test
              fb::logger::debug("Pre-condition: Setting up target and weapon for 대력검신 test");
+
+             co_await caster->create_item(weapon_name, 1, DEFAULT_TIMEOUT);
+             co_await caster->equip(0, DEFAULT_TIMEOUT);
              co_return true;
-         }, [](const auto& caster) -> async::task<bool> {
+         }, [weapon_name](auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with weapon type message
              auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 3, "검신", 0, {0, 0}),
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, 3, weapon_name, 0, {0, 0}),
+                 [weapon_name](auto& resp) {
+                     if (resp.type != MESSAGE_TYPE::STATE)
+                         return false;
+
+                     return resp.text == std::format("{} 푸른 빛으로 빛납니다.", name_with(weapon_name, {"이", "가"}));
+                 },
                  DEFAULT_TIMEOUT);
 
-             // Check if spell was cast successfully
-             if (resp.text == std::format("{} 외웠습니다.", name_with("대력검신")))
-             {
-                 fb::logger::debug("대력검신 spell cast successful");
-                 co_return true;
-             }
-
-             fb::logger::warn("대력검신 spell cast failed: {}", resp.text);
-             co_return false;
-         }, [](const auto& caster) -> async::task<bool> {
+             co_return true;
+         }, [](auto& caster) -> async::task<bool> {
              // Post-condition: Verify weapon damage effect
              fb::logger::debug("Post-condition: Verifying 대력검신 damage effect");
              co_return true;
          }},
 
         {"검신검귀",
-         [](const auto& caster) -> async::task<bool> {
+         [](auto& caster) -> async::task<bool> {
              // Pre-condition: Setup target and weapon for damage test
              fb::logger::debug("Pre-condition: Setting up target and weapon for 검신검귀 test");
              co_return true;
-         }, [](const auto& caster) -> async::task<bool> {
+         }, [weapon_name](auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with weapon type message
              auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 4, "검신", 0, {0, 0}),
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, 4, weapon_name, 0, {0, 0}),
+                 [weapon_name](auto& resp) {
+                     if (resp.type != MESSAGE_TYPE::STATE)
+                         return false;
+
+                     return resp.text == std::format("{} 푸른 빛으로 빛납니다.", name_with(weapon_name, {"이", "가"}));
+                 },
                  DEFAULT_TIMEOUT);
 
-             // Check if spell was cast successfully
-             if (resp.text == std::format("{} 외웠습니다.", name_with("검신검귀")))
-             {
-                 fb::logger::debug("검신검귀 spell cast successful");
-                 co_return true;
-             }
-
-             fb::logger::warn("검신검귀 spell cast failed: {}", resp.text);
-             co_return false;
-         }, [](const auto& caster) -> async::task<bool> {
+             co_return true;
+         }, [](auto& caster) -> async::task<bool> {
              // Post-condition: Verify weapon damage effect
              fb::logger::debug("Post-condition: Verifying 검신검귀 damage effect");
              co_return true;
          }},
 
         {"신검합일",
-         [](const auto& caster) -> async::task<bool> {
+         [](auto& caster) -> async::task<bool> {
              // Pre-condition: Setup target and weapon for damage test
              fb::logger::debug("Pre-condition: Setting up target and weapon for 신검합일 test");
              co_return true;
-         }, [](const auto& caster) -> async::task<bool> {
+         }, [weapon_name](auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with weapon type message
              auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 5, "검신", 0, {0, 0}),
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, 5, weapon_name, 0, {0, 0}),
+                 [weapon_name](auto& resp) {
+                     if (resp.type != MESSAGE_TYPE::STATE)
+                         return false;
+
+                     return resp.text == std::format("{} 푸른 빛으로 빛납니다.", name_with(weapon_name, {"이", "가"}));
+                 },
                  DEFAULT_TIMEOUT);
 
-             // Check if spell was cast successfully
-             if (resp.text == std::format("{} 외웠습니다.", name_with("신검합일")))
-             {
-                 fb::logger::debug("신검합일 spell cast successful");
-                 co_return true;
-             }
-
-             fb::logger::warn("신검합일 spell cast failed: {}", resp.text);
-             co_return false;
-         }, [](const auto& caster) -> async::task<bool> {
+             co_return true;
+         }, [](auto& caster) -> async::task<bool> {
              // Post-condition: Verify weapon damage effect
              fb::logger::debug("Post-condition: Verifying 신검합일 damage effect");
+
+             co_await caster->unequip(EQUIPMENT_PARTS::WEAPON, DEFAULT_TIMEOUT);
+             co_await caster->clear_inventory(DEFAULT_TIMEOUT);
              co_return true;
          }},
 
         {"소혼강신",
-         [](const auto& caster) -> async::task<bool> {
+         [](auto& caster) -> async::task<bool> {
              // Pre-condition: Setup level and monster type for summoning test
              fb::logger::debug("Pre-condition: Setting up level and monster type for 소혼강신 test");
+             co_await caster->change_level(68, DEFAULT_TIMEOUT);
              co_return true;
-         }, [](const auto& caster) -> async::task<bool> {
+         }, [this](auto& caster) -> async::task<bool> {
              // Spell cast: Use spell_cast with monster type message
-             auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 6, "곰", 0, {0, 0}),
-                 DEFAULT_TIMEOUT);
-
-             // Check if spell was cast successfully
-             if (resp.text == std::format("{} 외웠습니다.", name_with("소혼강신")))
+             auto mob       = "평웅";
+             auto mob_model = this->controller.container.model.mob.name2mob(mob);
+             if (mob_model == nullptr)
              {
-                 fb::logger::debug("소혼강신 spell cast successful");
-                 co_return true;
+                 fb::logger::fatal("Could not find monster model for {}", mob);
+                 co_return false;
              }
 
-             fb::logger::warn("소혼강신 spell cast failed: {}", resp.text);
-             co_return false;
-         }, [](const auto& caster) -> async::task<bool> {
+             auto&& resp = co_await caster->template request<fb::protocol::game::response::update>(
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, 6, mob, 0, {0, 0}),
+                 [&mob_model](auto& resp) {
+                     if (resp.objects_data.size() != 1)
+                         return false;
+
+                     auto mob = resp.objects_data[0];
+                     if (mob.look != mob_model->look)
+                         return false;
+
+                     return true;
+                 },
+                 DEFAULT_TIMEOUT);
+
+             co_return true;
+         }, [](auto& caster) -> async::task<bool> {
              // Post-condition: Verify monster summoning
              fb::logger::debug("Post-condition: Verifying 소혼강신 monster summoning");
+             caster->chat("/몬스터제거");
              co_return true;
          }},
 
         {"성황령",
-         [](const auto& caster) -> async::task<bool> {
+         [local](auto& caster) -> async::task<bool> {
              // Pre-condition: Setup ghost state and revive points
              fb::logger::debug("Pre-condition: Setting up ghost state and revive points for 성황령 test");
-             co_return true;
-         }, [](const auto& caster) -> async::task<bool> {
-             // Spell cast: Use spell_cast with direction message
-             auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 7, "좌", 0, {0, 0}),
+             auto slot = co_await caster->learn_spell("헬파이어", DEFAULT_TIMEOUT);
+             if (slot == 0xFF)
+             {
+                 fb::logger::fatal("Could not learn 헬파이어");
+                 co_return false;
+             }
+
+             co_await caster->set_current_hp_mp(50, 100000, DEFAULT_TIMEOUT);
+             std::ignore = co_await caster->request<fb::protocol::game::response::update_external<true>>(
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET,
+                                                         slot,
+                                                         "",
+                                                         caster->oid(),
+                                                         caster->position()),
+                 [oid = caster->oid()](auto& resp) {
+                     if (resp.oid != oid)
+                         return false;
+
+                     if (resp.state != STATE::GHOST)
+                         return false;
+
+                     return true;
+                 },
                  DEFAULT_TIMEOUT);
 
-             // Check if spell was cast successfully
-             if (resp.text == std::format("{} 외웠습니다.", name_with("성황령")))
+             if (!local)
+                 caster = co_await caster->transfer(fb::protocol::game::request::chat(false, "/맵이동 국내성진입로"));
+
+             co_return true;
+         }, [this](auto& caster) -> async::task<bool> {
+             // Spell cast: Use spell_cast with direction message
+
+             auto& map_model  = this->controller.container.model.map[caster->map()];
+             auto& root_model = this->controller.container.model.map[map_model.root];
+             if (root_model.revive.size() == 0)
              {
-                 fb::logger::debug("성황령 spell cast successful");
+                 fb::logger::fatal("Revive is not enabled, skipping test");
                  co_return true;
              }
 
-             fb::logger::warn("성황령 spell cast failed: {}", resp.text);
-             co_return false;
-         }, [](const auto& caster) -> async::task<bool> {
+             auto&& resp = co_await caster->template request<fb::protocol::game::response::map_config>(
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, 7, "좌", 0, {0, 0}),
+                 DEFAULT_TIMEOUT);
+
+             auto& next_map_model = this->controller.container.model.map[caster->map()];
+             if (next_map_model.id != root_model.revive.at(CARDINAL_DIRECTION::WEST))
+             {
+                 fb::logger::fatal("This map must have revive enabled");
+                 co_return false;
+             }
+
+             co_return true;
+         }, [this, local](auto& caster) -> async::task<bool> {
              // Post-condition: Verify ghost teleportation
              fb::logger::debug("Post-condition: Verifying 성황령 ghost teleportation");
+
+             auto& map_model = this->controller.container.model.map[caster->map()];
+             if (map_model.name != "낙랑의방")
+                 caster = co_await caster->transfer(fb::protocol::game::request::chat(false, "/맵이동 낙랑의방 6 6"));
+
+             co_await caster->set_max_hp_mp(100000, 100000, DEFAULT_TIMEOUT);
              co_return true;
          }}
     };

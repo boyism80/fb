@@ -293,8 +293,30 @@ bot_integration_test::on_hook_update_external(fb::bot::game_bot&                
     if (bot.inited() == false)
     {
         bot.inited(true);
-
         auto id = bot.id;
+
+        auto reconnected_index = std::optional<uint32_t>{};
+        auto it                = std::find_if(this->_test_bots.begin(), this->_test_bots.end(), [&bot](auto& b) {
+            return b.get() == &bot;
+        });
+        for (int i = 0; i < this->_test_bots.size(); i++)
+        {
+            auto& b = this->_test_bots[i];
+            if (&bot == b.get())
+                continue;
+
+            if (b->name() == bot.name())
+            {
+                reconnected_index = i;
+                break;
+            }
+        }
+
+        if (reconnected_index.has_value())
+        {
+            this->_test_bots[reconnected_index.value()] = std::move(*it);
+            this->_test_bots.erase(it);
+        }
         this->controller.invoke_transfer_context(bot.name(), bot.shared_from_this_as<game_bot>());
     }
 

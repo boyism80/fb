@@ -116,7 +116,7 @@ public:
      *
      * @return     An async task that completes when disconnection handling is finished.
      */
-    virtual async::task<void> on_bot_disconnected(game_bot& bot) override = 0;
+    virtual async::task<void> on_bot_disconnected(game_bot& bot) override;
 
     /**
      * @brief      Determines decryption policy for protocol messages.

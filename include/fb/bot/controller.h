@@ -646,7 +646,16 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
                                                                    },
                                                                .context_ptr = context.get()});
 
-    this->send(protocol, encrypt, wrap);
+    async::awaitable_then(this->send(protocol, encrypt, wrap), [](auto result) {
+        try
+        {
+            result();
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+        }
+    });
     return context->task();
 }
 

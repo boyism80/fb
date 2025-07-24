@@ -298,7 +298,7 @@ public:
         {
             boost::asio::async_write(*this, buffer, [promise](const boost::system::error_code& ec, size_t transferred) {
                 if (ec)
-                    promise->set_exception(std::make_exception_ptr(std::runtime_error("boost async write failed")));
+                    promise->set_exception(std::make_exception_ptr(std::runtime_error(ec.message())));
                 else
                     promise->set_value(transferred);
             });

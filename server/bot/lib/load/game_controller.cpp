@@ -43,6 +43,7 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
 
 async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
 {
+    co_await super::on_bot_disconnected(bot);
     // Bot is automatically removed from bot_controller's thread-safe collection
     co_return;
 }

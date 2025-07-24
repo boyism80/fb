@@ -46,6 +46,12 @@ bool game_bot_controller::decrypt_policy(int cmd) const
     }
 }
 
+async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
+{
+    bot.inited(false);
+    co_return;
+}
+
 async::task<void> game_bot_controller::handle_time(game_bot& bot, const fb::protocol::game::response::time& response)
 {
     co_return;
@@ -308,8 +314,8 @@ bool game_bot_controller::invoke_transfer_context(std::string name, std::shared_
         return false;
 
     auto context = this->_transfer_contexts[name];
-    context->complete_success(bot);
     this->_transfer_contexts.erase(name);
+    context->complete_success(bot);
     return true;
 }
 
