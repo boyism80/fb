@@ -409,10 +409,10 @@ jobs:
         working-directory: build
 
       - name: Build internal
-        run: dotnet publish internal/internal.csproj -c Release -o build/internal
+        run: dotnet publish server/internal/internal.csproj -c Release -o build/internal
 
       - name: Build write-back
-        run: dotnet publish write-back/write-back.csproj -c Release -o build/write-back
+        run: dotnet publish server/write-back/write-back.csproj -c Release -o build/write-back
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
