@@ -403,9 +403,9 @@ jobs:
       - name: Build c++
         run: |
           cmake --build . --config Debug
-          mv -Force gateway\Debug\server\gateway.exe gateway.exe
-          mv -Force login\Debug\server\login.exe login.exe
-          mv -Force game\Debug\server\game.exe game.exe
+          mv -Force server\gateway\Debug\gateway.exe gateway.exe
+          mv -Force server\login\Debug\login.exe login.exe
+          mv -Force server\game\Debug\game.exe game.exe
         working-directory: build
 
       - name: Build internal
