@@ -9,6 +9,9 @@ namespace fb::bot::load {
 
 class game_bot_controller : public fb::bot::game_bot_controller
 {
+private:
+    using super = fb::bot::game_bot_controller;
+
 public:
     using bot_type = game_bot; ///< Type alias for the managed bot type
 

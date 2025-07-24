@@ -39,7 +39,7 @@ namespace fb::game {
  *
  *             Key features:
  *             - Group membership management with master/member roles
- *             - Thread-safe operations with context switching
+ *             - Thread-safe operations with automatic thread switching
  *             - Member synchronization across server instances
  *             - Proximity-based member queries for area effects
  *             - Lua scripting integration for group-based logic
@@ -54,7 +54,7 @@ public:
     struct builtin;
 
 private:
-    context&                                       _context;
+    server&                                        _server;
     uint32_t                                       _id;
     std::string                                    _master;
     std::vector<std::string>                       _members;
@@ -62,24 +62,24 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new player group with the specified context, identifier, and initial members.
+     * @brief      Constructs a new player group with the specified server, identifier, and initial members.
      *
-     *             Creates a new group object managed by the given game context with
+     *             Creates a new group object managed by the given game server with
      *             predefined master and member list. The group is immediately initialized
      *             with the provided member information.
      *
-     * @param[in]  context  The game context that manages this group
+     * @param[in]  server   The game server that manages this group
      * @param[in]  id       The unique identifier for this group
      * @param[in]  master   The name of the group master/leader
      * @param[in]  members  The initial list of member names
      */
-    group(context& context, uint32_t id, const std::string& master, const std::vector<std::string>& members);
+    group(server& server, uint32_t id, const std::string& master, const std::vector<std::string>& members);
 
     /**
      * @brief      Copy constructor (deleted).
      *
      *             Groups cannot be copied to prevent resource management issues
-     *             and maintain unique group identity within the game context.
+     *             and maintain unique group identity within the game server.
      */
     group(const group&) = delete;
 
@@ -114,7 +114,7 @@ public:
      *
      * @param      ch    The character to remove from the group
      */
-    void leave(std::weak_ptr<character> ch);
+    void detach(std::weak_ptr<character> ch);
 
     /**
      * @brief      Updates the group's master and member list from external data.
@@ -206,6 +206,15 @@ struct group::builtin
      * @return     Number of return values pushed to Lua stack
      */
     static int builtin_message(lua_State* L);
+
+    /**
+     * @brief      Lua binding for kicking a member from the group.
+     *
+     * @param[in]  L  The Lua state
+     *
+     * @return     Number of return values pushed to Lua stack
+     */
+    static int builtin_kick(lua_State* L);
 };
 
 } // namespace fb::game

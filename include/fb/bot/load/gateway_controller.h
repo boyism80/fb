@@ -17,6 +17,9 @@ namespace fb::bot::load {
 class gateway_bot_controller : public fb::bot::gateway_bot_controller
 {
 private:
+    using super = fb::bot::gateway_bot_controller;
+
+private:
     uint32_t _remained_count; ///< Number of bots remaining to be spawned
 
 public:

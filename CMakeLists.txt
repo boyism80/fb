@@ -11,11 +11,11 @@ project(fb
         LANGUAGES CXX
 )
 
-add_subdirectory(lib)
-add_subdirectory(gateway)
-add_subdirectory(login)
-add_subdirectory(game)
-add_subdirectory(bot)
+add_subdirectory(server/fb)
+add_subdirectory(server/gateway)
+add_subdirectory(server/login)
+add_subdirectory(server/game)
+add_subdirectory(server/bot)
 
 add_dependencies(gateway fb)
 add_dependencies(login fb)

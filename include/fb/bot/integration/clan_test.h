@@ -1,0 +1,120 @@
+#ifndef __BOT_INTEGRATION_CLAN_TEST_H__
+#define __BOT_INTEGRATION_CLAN_TEST_H__
+
+#include <fb/bot/integration/test_case.h>
+#include <stdexcept>
+#include <fb/game/protocol.h>
+
+namespace fb::bot::integration {
+
+/**
+ * @brief      Clan integration test implementation.
+ *
+ *             Tests bot clan functionality and coordination between multiple bots.
+ */
+class clan_test : public bot_integration_test
+{
+private:
+    using super = bot_integration_test;
+
+protected:
+    generator<scenario_t> on_generate_scenario() override final;
+    async::task<void>     on_initialize(game_bot_controller& controller) override final;
+    async::task<void>     on_scenario_started(uint32_t scenario_index) override final;
+    async::task<void>     on_scenario_finished(uint32_t scenario_index) override final;
+
+public:
+    /**
+     * @brief      Constructs a new clan test with controller reference.
+     *
+     *             Initializes the clan test with 2 bots for clan functionality testing.
+     *
+     * @param[in]  controller  Reference to the parent game bot controller.
+     */
+    clan_test(game_bot_controller& controller);
+
+    /**
+     * @brief      Gets the test name.
+     *
+     * @return     "Clan Test" as the identifier.
+     */
+    std::string name() const override final;
+
+private:
+    /**
+     * @brief      Tests basic clan creation functionality.
+     *
+     *             Tests clan creation with multiple bots and verifies
+     *             clan membership and coordination.
+     *
+     * @return     A task that completes when clan creation tests finish.
+     */
+    async::task<bool> test_clan_creation();
+
+    /**
+     * @brief      Tests clan member management functionality.
+     *
+     *             Tests adding and removing members from clans,
+     *             including clan leave and kick scenarios.
+     *
+     * @return     A task that completes when clan member management tests finish.
+     */
+    async::task<bool> test_clan_title();
+
+    /**
+     * @brief      Tests clan invite functionality.
+     *
+     *             Tests inviting members to clans and verifying
+     *             clan membership updates.
+     *
+     * @return     A task that completes when clan invite tests finish.
+     */
+    async::task<bool> test_clan_invite();
+
+    /**
+     * @brief      Invites a bot to a clan using NPC interaction.
+     *
+     *             Performs the complete clan invite process through NPC dialog,
+     *             including target selection, invite acceptance, and verification.
+     *
+     * @param[in]  inviter  The bot that will invite the other bot to their clan
+     * @param[in]  invitee  The bot that will be invited to the clan
+     * @return     A task that completes with true if invite was successful, false otherwise
+     */
+    async::task<bool> invite_to_clan(std::shared_ptr<game_bot> inviter, std::shared_ptr<game_bot> invitee);
+
+    /**
+     * @brief      Tests clan role-based permission functionality.
+     *
+     *             Tests role-based invite permissions, role changes,
+     *             and verifies that proper privileges are required
+     *             for clan management actions.
+     *
+     * @return     A task that completes when clan role permission tests finish.
+     */
+    async::task<bool> test_clan_role();
+
+    /**
+     * @brief      Tests clan disbanding functionality.
+     *
+     *             Tests clan disbanding scenarios and cleanup
+     *             when clans are dissolved.
+     *
+     * @return     A task that completes when clan disbanding tests finish.
+     */
+    async::task<bool> test_clan_disbanding();
+
+    /**
+     * @brief      Tests clan title change functionality.
+     *
+     *             Tests title change permissions based on clan roles.
+     *             Only Master role should be able to change clan title.
+     *
+     * @return     A task that completes when clan title change tests finish.
+     */
+    async::task<bool> test_clan_title_change();
+};
+
+} // namespace fb::bot::integration
+
+#endif // __BOT_INTEGRATION_CLAN_TEST_H__

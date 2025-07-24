@@ -22,7 +22,11 @@ public:
     user_list() = default;
 
 public:
+#ifdef BOT
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;
+#else
     [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
+#endif
 };
 
 } // namespace fb::protocol::game::request
@@ -39,12 +43,13 @@ public:
     struct user_data
     {
         uint8_t     nation;
+        uint8_t     cls;
         uint8_t     promotion;
-        uint8_t     flags;
+        uint8_t     level;
+        uint8_t     color;
         std::string name;
     };
 
-    uint16_t               user_count;
     std::vector<user_data> users;
 #else
     const character&                                  me;

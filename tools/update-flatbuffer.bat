@@ -10,10 +10,10 @@ POPD
 if %ERRORLEVEL% NEQ 0 GOTO END
 
 PUSHD ..
-del /S /Q http\FlatBuffer
-del /S /Q http\fb\protocol\raw
-xcopy tools\flatbuffer-ex\output\c#\* http\FlatBuffer\* /S /E
-robocopy tools\flatbuffer-ex\output\raw\c# http\fb\protocol\raw /S /E
+del /S /Q server\http\FlatBuffer
+del /S /Q server\http\fb\protocol\raw
+xcopy tools\flatbuffer-ex\output\c#\* server\http\FlatBuffer\* /S /E
+robocopy tools\flatbuffer-ex\output\raw\c# server\http\fb\protocol\raw /S /E
 
 del /S /Q include\fb\protocol\flatbuffer
 xcopy tools\flatbuffer-ex\output\c++\* include\fb\protocol\flatbuffer\* /S /E

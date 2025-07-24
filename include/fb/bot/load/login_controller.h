@@ -16,6 +16,9 @@ namespace fb::bot::load {
  */
 class login_bot_controller : public fb::bot::login_bot_controller
 {
+private:
+    using super = fb::bot::login_bot_controller;
+
 public:
     using bot_type = login_bot; ///< Type alias for the managed bot type
 

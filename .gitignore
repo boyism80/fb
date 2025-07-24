@@ -17,11 +17,9 @@ bin
 dependency/include
 dependency/lib
 sftp-config.json
-game/json
-internal/json
+server/*/json
 db/json
 .vscode
-login/json
 build
 tools/library
 tools/map-split/*.txt
@@ -29,12 +27,12 @@ tools/map-split/*.txt
 tools/runner/settings.json
 *.sln*
 
-game/maps
-game/table*
-*.vcxproj
-*.user
-*.filters
+server/game/maps
+server/game/table*
+server/**/*.vcxproj
+server/**/*.user
+server/**/*.filters
 
 .fake
 x64
-bot/json
+CMakeFiles

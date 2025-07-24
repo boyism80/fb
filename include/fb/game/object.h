@@ -16,7 +16,7 @@
  *          - Line-of-sight calculations and visibility management
  *          - Inter-object communication and chat system
  *          - Buff/debuff system integration for temporary effects
- *          - Thread-safe operations with automatic context switching
+ *          - Thread-safe operations with automatic thread switching
  *          - Lua scripting integration for flexible game logic
  *          - Event-driven architecture with comprehensive listener pattern
  *          - Network communication capabilities for client updates
@@ -42,9 +42,9 @@ using namespace fb::model::enum_value;
 namespace fb::game {
 
 /**
- * @brief      Forward declaration of the game context class.
+ * @brief      Forward declaration of the game server class.
  */
-class context;
+class server;
 /**
  * @brief      Forward declaration of the map class.
  */
@@ -87,7 +87,7 @@ class sectors;
  *             - Line-of-sight calculations and visibility management
  *             - Inter-object communication and chat system
  *             - Buff/debuff system integration
- *             - Thread-safe operations with context switching
+ *             - Thread-safe operations with automatic thread switching
  *             - Lua scripting integration for game logic
  *             - Event-driven architecture with listener pattern
  *             - Network communication capabilities
@@ -117,23 +117,23 @@ protected:
     fb::thread*                    _thread    = nullptr;
 
 public:
-    listener_t&        listener;
-    fb::game::context& context;
-    fb::game::buffs    buffs;
+    listener_t&       listener;
+    fb::game::server& server;
+    fb::game::buffs   buffs;
 
 protected:
     /**
-     * @brief      Constructs a new game object with the specified context and model.
+     * @brief      Constructs a new game object with the specified server and model.
      *
-     *             Creates a new game object using the provided context for management,
+     *             Creates a new game object using the provided server for management,
      *             model data for appearance and behavior, and initial parameters for
      *             positioning and state setup.
      *
-     * @param[in]  context  The game context that will manage this object's lifecycle
+     * @param[in]  server   The game server that will manage this object's lifecycle
      * @param[in]  model    The object model containing visual and behavioral data
      * @param[in]  c        Initial parameters including position, direction, and other setup values
      */
-    object(fb::game::context& context, const fb::model::object& model, const initial_params& c);
+    object(fb::game::server& server, const fb::model::object& model, const initial_params& c);
 
     /**
      * @brief      Copy constructor for creating an object from another object.

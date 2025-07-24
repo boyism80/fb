@@ -26,23 +26,23 @@ struct JoinClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef JoinClanBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_HOST = 4,
-    VT_CLAN = 6,
-    VT_UID = 8
+    VT_INVITER_UID = 6,
+    VT_INVITEE_UID = 8
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
-  uint32_t clan() const {
-    return GetField<uint32_t>(VT_CLAN, 0);
+  uint32_t inviter_uid() const {
+    return GetField<uint32_t>(VT_INVITER_UID, 0);
   }
-  uint32_t uid() const {
-    return GetField<uint32_t>(VT_UID, 0);
+  uint32_t invitee_uid() const {
+    return GetField<uint32_t>(VT_INVITEE_UID, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
-           VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
-           VerifyField<uint32_t>(verifier, VT_UID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_INVITER_UID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_INVITEE_UID, 4) &&
            verifier.EndTable();
   }
 };
@@ -54,11 +54,11 @@ struct JoinClanBuilder {
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(JoinClan::VT_HOST, host, 0);
   }
-  void add_clan(uint32_t clan) {
-    fbb_.AddElement<uint32_t>(JoinClan::VT_CLAN, clan, 0);
+  void add_inviter_uid(uint32_t inviter_uid) {
+    fbb_.AddElement<uint32_t>(JoinClan::VT_INVITER_UID, inviter_uid, 0);
   }
-  void add_uid(uint32_t uid) {
-    fbb_.AddElement<uint32_t>(JoinClan::VT_UID, uid, 0);
+  void add_invitee_uid(uint32_t invitee_uid) {
+    fbb_.AddElement<uint32_t>(JoinClan::VT_INVITEE_UID, invitee_uid, 0);
   }
   explicit JoinClanBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -74,11 +74,11 @@ struct JoinClanBuilder {
 inline ::flatbuffers::Offset<JoinClan> CreateJoinClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t host = 0,
-    uint32_t clan = 0,
-    uint32_t uid = 0) {
+    uint32_t inviter_uid = 0,
+    uint32_t invitee_uid = 0) {
   JoinClanBuilder builder_(_fbb);
-  builder_.add_uid(uid);
-  builder_.add_clan(clan);
+  builder_.add_invitee_uid(invitee_uid);
+  builder_.add_inviter_uid(inviter_uid);
   builder_.add_host(host);
   return builder_.Finish();
 }

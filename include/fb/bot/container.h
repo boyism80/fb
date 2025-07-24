@@ -34,7 +34,7 @@ public:
  *             The container supports different types of bots (gateway, login, game)
  *             and manages their execution across multiple worker threads.
  */
-class bot_container : public fb::context
+class bot_container : public fb::async_executor
 {
     template <typename BotType>
     friend class bot_controller;
@@ -49,9 +49,9 @@ private:
 
 public:
     fb::model::model                        model;
-    std::unique_ptr<gateway_bot_controller> gateway;
-    std::unique_ptr<login_bot_controller>   login;
-    std::unique_ptr<game_bot_controller>    game;
+    std::shared_ptr<gateway_bot_controller> gateway;
+    std::shared_ptr<login_bot_controller>   login;
+    std::shared_ptr<game_bot_controller>    game;
 
 public:
     /**
@@ -66,21 +66,21 @@ public:
      *
      * @param      bot_controller  The gateway bot bot_controller instance to use.
      */
-    void set_gateway_bot_controller(std::unique_ptr<gateway_bot_controller> bot_controller);
+    void set_gateway_bot_controller(std::shared_ptr<gateway_bot_controller> bot_controller);
 
     /**
      * @brief      Sets the login bot bot_controller for this container.
      *
      * @param      bot_controller  The login bot bot_controller instance to use.
      */
-    void set_login_bot_controller(std::unique_ptr<login_bot_controller> bot_controller);
+    void set_login_bot_controller(std::shared_ptr<login_bot_controller> bot_controller);
 
     /**
      * @brief      Sets the game bot bot_controller for this container.
      *
      * @param      bot_controller  The game bot bot_controller instance to use.
      */
-    void set_game_bot_controller(std::unique_ptr<game_bot_controller> bot_controller);
+    void set_game_bot_controller(std::shared_ptr<game_bot_controller> bot_controller);
 
     /**
      * @brief      Initializes the bot container after construction.

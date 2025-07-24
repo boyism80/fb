@@ -14,11 +14,23 @@ public:
     static constexpr uint8_t header = 0x29;
 
 public:
+#ifndef BOT
     uint8_t slot = 0;
     bool    all  = false;
+#else
+    const uint8_t slot = 0;
+    const bool    all  = false;
+#endif
 
 public:
+#ifndef BOT
     give_item() = default;
+#else
+    give_item(uint8_t slot, bool all) :
+        slot(slot),
+        all(all)
+    { }
+#endif
 
 public:
 #ifdef BOT
@@ -34,10 +46,20 @@ public:
     static constexpr uint8_t header = 0x2A;
 
 public:
+#ifndef BOT
     uint32_t money;
+#else
+    const uint32_t money;
+#endif
 
 public:
+#ifndef BOT
     give_money() = default;
+#else
+    give_money(uint32_t money) :
+        money(money)
+    { }
+#endif
 
 public:
 #ifdef BOT

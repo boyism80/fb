@@ -93,13 +93,13 @@ public:
 
 private:
     /**
-     * @brief      Executes a single parallel scenario within the context.
+     * @brief      Executes a single parallel scenario within the server.
      *
      *             This method processes scenarios from the specified queue index
-     *             within the parallel scenarios context. It handles scenario execution,
+     *             within the parallel scenarios server. It handles scenario execution,
      *             progress tracking, and result aggregation in a thread-safe manner.
      *
-     * @param[in]  context  Shared pointer to the parallel scenarios context.
+     * @param[in]  context  Shared pointer to the parallel scenarios server.
      * @param[in]  index    The queue index to process scenarios from.
      *
      * @return     A task that completes when the scenario execution is finished.
@@ -321,6 +321,59 @@ protected:
      * @return     A task that completes when the sleep is finished.
      */
     async::task<void> sleep(std::chrono::milliseconds duration);
+
+    /**
+     * @brief      Arranges bots in line formation.
+     *
+     *             This method is used to arrange bots in line formation.
+     *             The bots are arranged in a line formation and the result is returned.
+     *
+     * @return     A task that completes when the bots are arranged.
+     */
+    async::task<void> arrange_bots_in_line_formation();
+
+    /**
+     * @brief      Arranges bots in grid formation.
+     *
+     *             This method is used to arrange bots in a 2D grid formation.
+     *             The bots are arranged in a grid from (start_x, start_y) to (end_x, end_y).
+     *
+     * @param[in]  start_x  The starting x coordinate for the grid.
+     * @param[in]  start_y  The starting y coordinate for the grid.
+     * @param[in]  end_x    The ending x coordinate for the grid.
+     * @param[in]  end_y    The ending y coordinate for the grid.
+     *
+     * @return     A task that completes when the bots are arranged.
+     */
+    async::task<void>
+    arrange_bots_in_grid_formation(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y);
+
+    /**
+     * @brief      Forms a group with all test bots.
+     *
+     *             This method creates a group by having the first bot invite all other bots
+     *             to join the group. It sends group invitations to each bot and waits for
+     *             confirmation responses.
+     *
+     * @return     A task that completes when the group formation is finished.
+     *
+     * @note       The first bot in the test bots list becomes the group leader
+     * @note       All other bots are invited to join the group
+     */
+    async::task<void> form_group();
+
+    /**
+     * @brief      Cleans up group formation by disabling group options for all bots.
+     *
+     *             This method disables the group option for all test bots to ensure
+     *             clean state after group-related tests. It sends update option requests
+     *             to disable group functionality.
+     *
+     * @return     A task that completes when the group cleanup is finished.
+     *
+     * @note       This method should be called after group tests to reset bot states
+     */
+    async::task<void> cleanup_group();
 };
 
 } // namespace fb::bot::integration

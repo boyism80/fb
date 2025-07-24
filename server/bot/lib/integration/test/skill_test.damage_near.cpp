@@ -1,0 +1,126 @@
+#include <fb/bot/integration/skill_test.h>
+#include <fb/bot/integration/game_controller.h>
+
+using namespace std::chrono_literals;
+using namespace fb::bot::integration;
+
+async::task<bool> skill_test::test_near_damage_spells(std::shared_ptr<fb::bot::game_bot> caster)
+{
+    fb::logger::debug("Bot {} starting near damage spell test", caster->oid());
+    caster->chat("=== NEAR DAMAGE SPELL TEST STARTED ===");
+
+    // Step 1: Move caster down by 1 tile
+    co_await caster->move(DIRECTION::LEFT);
+    co_await this->sleep(DEFAULT_INTERVAL);
+    co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
+
+    // Step 2: Spawn 4 monsters around the caster
+    auto spawn_points     = std::vector<fb::model::point<uint16_t>>();
+    auto target_position  = caster->position();
+    auto left_pos         = target_position;
+    left_pos.x           -= 1;
+    spawn_points.push_back(left_pos);
+
+    auto top_pos  = target_position;
+    top_pos.y    -= 1;
+    spawn_points.push_back(top_pos);
+
+    auto right_pos  = target_position;
+    right_pos.x    += 1;
+    spawn_points.push_back(right_pos);
+
+    auto bottom_pos  = target_position;
+    bottom_pos.y    += 1;
+    spawn_points.push_back(bottom_pos);
+
+    // Setup all bots with max HP/MP
+    std::ignore = co_await caster->setup_bot_stats(100000, 100000, std::nullopt, std::nullopt, DEFAULT_TIMEOUT);
+
+    auto near_damage_spells = std::vector<near_damage_spell_test>{
+        // spell_damage_near spells (caster area) - sorted by MP cost and element
+        {"뢰진주'첨",       SPELL_TYPE::NORMAL, 300,  180},
+        {"화염주'첨",       SPELL_TYPE::NORMAL, 300,  180},
+        {"백열주'첨",       SPELL_TYPE::NORMAL, 300,  180},
+        {"자무주'첨",       SPELL_TYPE::NORMAL, 300,  180},
+
+        {"뢰격주'첨",       SPELL_TYPE::NORMAL, 510,  250},
+        {"화영열주'첨",     SPELL_TYPE::NORMAL, 510,  250},
+        {"백령주'첨",       SPELL_TYPE::NORMAL, 510,  250},
+        {"자영무주'첨",     SPELL_TYPE::NORMAL, 510,  250},
+
+        {"뢰격참주'첨",     SPELL_TYPE::NORMAL, 720,  330},
+        {"화열참주'첨",     SPELL_TYPE::NORMAL, 720,  330},
+        {"백열참주'첨",     SPELL_TYPE::NORMAL, 720,  330},
+        {"자천무주'첨",     SPELL_TYPE::NORMAL, 720,  330},
+
+        {"진뢰격참주'첨",   SPELL_TYPE::NORMAL, 1930, 400},
+        {"진화열참주'첨",   SPELL_TYPE::NORMAL, 1930, 400},
+        {"진백열참주'첨",   SPELL_TYPE::NORMAL, 1930, 400},
+        {"진자천무주'첨",   SPELL_TYPE::NORMAL, 1930, 400},
+
+        {"극진뢰격참주'첨", SPELL_TYPE::NORMAL, 3560, 470},
+        {"극진화열참주'첨", SPELL_TYPE::NORMAL, 3560, 470},
+        {"극진백열참주'첨", SPELL_TYPE::NORMAL, 3560, 470},
+        {"극진자천무주'첨", SPELL_TYPE::NORMAL, 3560, 470}
+    };
+    auto spell_count = near_damage_spells.size();
+
+    std::vector<std::string> spell_names;
+    for (const auto& spell : near_damage_spells)
+    {
+        spell_names.push_back(spell.name);
+    }
+
+    auto learned_count = co_await caster->learn_spells(spell_names, DEFAULT_TIMEOUT);
+    fb::logger::debug("Successfully learned {} out of {} near damage spells", learned_count, near_damage_spells.size());
+
+    fb::logger::debug("Learning {} near damage spells", near_damage_spells.size());
+    auto spell_slot       = 0;
+    auto current_position = caster->position();
+
+    for (const auto& spell : near_damage_spells)
+    {
+        fb::logger::debug("Testing spell: {} (Damage: {}, MP: -{})",
+                          spell.name,
+                          spell.expected_damage,
+                          spell.expected_mp_cost);
+
+        fb::logger::debug("Spawning 4 monsters around caster at ({}, {})", target_position.x, target_position.y);
+
+        // Spawn monsters in 4 directions using relative positions
+        std::vector<std::pair<int, int>> relative_positions = {
+            {-1, 0 }, // left
+            {0,  -1}, // top
+            {1,  0 }, // right
+            {0,  1 }  // bottom
+        };
+
+        co_await caster->spawn_monsters_bulk("다람쥐", 1, DEFAULT_TIMEOUT);
+
+        // Set caster's current HP/MP for testing
+        std::ignore = co_await caster->set_current_hp_mp(50, 100000, DEFAULT_TIMEOUT);
+
+        auto before_caster_hp = caster->hp();
+        auto before_caster_mp = caster->mp();
+        auto expected_hp      = before_caster_hp;
+        auto expected_mp      = before_caster_mp - spell.expected_mp_cost;
+
+        caster->chat(std::format("Testing {}", spell.name));
+        std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
+            fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", 0, {0, 0}),
+            [=](auto& resp) -> bool {
+                return resp.ch_hp == expected_hp && resp.ch_mp == expected_mp;
+            },
+            DEFAULT_TIMEOUT);
+
+        spell_slot++;
+    }
+
+    co_await this->sleep(DEFAULT_INTERVAL);
+    co_await caster->move(DIRECTION::RIGHT);
+    co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
+
+    caster->chat("=== NEAR DAMAGE SPELL TEST COMPLETED ===");
+    fb::logger::debug("Near damage spell test completed.");
+    co_return true;
+}

@@ -31,6 +31,9 @@ namespace fb::bot::integration {
 class game_bot_controller : public fb::bot::game_bot_controller
 {
 private:
+    using super = fb::bot::game_bot_controller;
+
+private:
     std::vector<std::unique_ptr<bot_integration_test>> _test_instances; ///< Test instances for lifetime management
     std::queue<bot_integration_test*>                  _test_queue;     ///< Queue of tests to execute
     bot_integration_test* _current_test{nullptr};                       ///< Currently active test (non-owning pointer)
@@ -177,9 +180,9 @@ public:
      * @tparam     ResponseType  The protocol response type to hook.
      */
     template <typename Class, typename ResponseType>
-    void hook_external(bot_integration_test* test,
-                       Class*                instance,
-                       async::task<void> (Class::*fn)(game_bot&, const ResponseType&))
+    void hook(bot_integration_test* test,
+              Class*                instance,
+              async::task<void> (Class::*fn)(game_bot&, const ResponseType&))
     {
         auto hook_func = [instance, fn](game_bot& bot, const fb::protocol::header& header) -> async::task<void> {
             auto& protocol = static_cast<const ResponseType&>(header);

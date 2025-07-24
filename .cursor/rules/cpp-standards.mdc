@@ -22,7 +22,7 @@ When implementing Lua builtin functions that access `thread_switchable` objects 
 ```cpp
 int example_builtin(lua_State* L) {
     auto lua = fb::lua::get(L);
-    auto ctx = lua->env<fb::game::context>("context");
+    auto server = lua->env<fb::game::server>("server");
     auto obj = lua->touserdata<fb::game::character>(1);  // Get object reference
     
     // ALLOWED: Parameter parsing, basic validation
@@ -65,7 +65,7 @@ return lua->ensure_resume(*ctx, *obj, [=]() {
 ```cpp
 int character::builtin::builtin_hp(lua_State* L) {
     auto lua = fb::lua::get(L);
-    auto ctx = lua->env<fb::game::context>("context");
+    auto server = lua->env<fb::game::server>("server");
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;

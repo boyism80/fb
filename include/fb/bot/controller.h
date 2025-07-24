@@ -8,7 +8,7 @@
 
 namespace fb::bot {
 
-class base_bot_controller
+class base_bot_controller : public std::enable_shared_from_this<base_bot_controller>
 {
 public:
     bot_container& container;
@@ -200,6 +200,12 @@ protected:
     }
 
 public:
+    template <typename T>
+    std::weak_ptr<T> weak_from_this_as()
+    {
+        return std::static_pointer_cast<T>(this->shared_from_this());
+    }
+
     /**
      * @brief      Ensures a handler is registered for the specified protocol type.
      *
@@ -590,24 +596,25 @@ bot<BotType>::bot(bot_controller<BotType>& bot_controller, uint32_t id) :
 
 template <typename BotType>
 template <typename ResponseType>
-async::task<ResponseType> bot<BotType>::request(const fb::protocol::header&                          protocol,
+async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>                             target,
+                                                const fb::protocol::header&                          protocol,
                                                 const std::function<bool(const ResponseType& resp)>& condition,
                                                 const fb::model::timespan&                           timeout,
                                                 bool                                                 encrypt,
                                                 bool                                                 wrap)
 {
     // Ensure deserializer is registered for hook processing
-    this->controller.template ensure_handler_registered<ResponseType>();
+    target->controller.template ensure_handler_registered<ResponseType>();
 
     // Create request context for RAII management
-    auto self_ptr = std::static_pointer_cast<BotType>(this->shared_from_this());
+    auto self_ptr = std::static_pointer_cast<BotType>(target->shared_from_this());
     auto context =
         std::make_shared<typename BotType::template request_context<ResponseType>>(self_ptr, ResponseType::header);
 
     // Set up timeout timer if specified
     if (timeout > 0s)
     {
-        auto thread = this->thread();
+        auto thread = target->thread();
         std::ignore = thread->dispatch([context, timeout](auto& thread) -> async::task<void> {
             context->timer = thread.settimer(
                 [context](auto& datetime, auto thread_id) -> async::task<void> {
@@ -621,26 +628,66 @@ async::task<ResponseType> bot<BotType>::request(const fb::protocol::header&     
     }
 
     // Ensure hook container exists
-    if (this->_hooks.contains(ResponseType::header) == false)
-        this->_hooks.insert({ResponseType::header, {}});
+    if (target->_hooks.contains(ResponseType::header) == false)
+        target->_hooks.insert({ResponseType::header, {}});
 
     // Register hook with context pointer for cleanup
-    this->_hooks[ResponseType::header].push_back(hook_params{.condition =
-                                                                 [context, condition](const auto& header) {
-                                                                     auto& protocol =
-                                                                         static_cast<const ResponseType&>(header);
-                                                                     return condition(protocol);
-                                                                 },
-                                                             .matched =
-                                                                 [context](const auto& header) {
-                                                                     auto& protocol =
-                                                                         static_cast<const ResponseType&>(header);
-                                                                     context->complete_success(protocol);
-                                                                 },
-                                                             .context_ptr = context.get()});
+    target->_hooks[ResponseType::header].push_back(hook_params{.condition =
+                                                                   [context, condition](const auto& header) {
+                                                                       auto& protocol =
+                                                                           static_cast<const ResponseType&>(header);
+                                                                       return condition(protocol);
+                                                                   },
+                                                               .matched =
+                                                                   [context](const auto& header) {
+                                                                       auto& protocol =
+                                                                           static_cast<const ResponseType&>(header);
+                                                                       context->complete_success(protocol);
+                                                                   },
+                                                               .context_ptr = context.get()});
 
-    this->send(protocol, encrypt, wrap);
+    async::awaitable_then(this->send(protocol, encrypt, wrap), [](auto result) {
+        try
+        {
+            result();
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+        }
+    });
     return context->task();
+}
+
+template <typename BotType>
+template <typename ResponseType>
+async::task<ResponseType> bot<BotType>::request(const fb::protocol::header&                          protocol,
+                                                const std::function<bool(const ResponseType& resp)>& condition,
+                                                const fb::model::timespan&                           timeout,
+                                                bool                                                 encrypt,
+                                                bool                                                 wrap)
+{
+    co_return co_await this
+        ->request<ResponseType>(this->shared_from_this_as<BotType>(), protocol, condition, timeout, encrypt, wrap);
+}
+
+template <typename BotType>
+template <typename ResponseType>
+async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>    target,
+                                                const fb::protocol::header& protocol,
+                                                const fb::model::timespan&  timeout,
+                                                bool                        encrypt,
+                                                bool                        wrap)
+{
+    co_return co_await this->request<ResponseType>(
+        target,
+        protocol,
+        [](auto& resp) -> bool {
+            return true;
+        },
+        timeout,
+        encrypt,
+        wrap);
 }
 
 template <typename BotType>

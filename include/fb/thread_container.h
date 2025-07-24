@@ -37,7 +37,7 @@
 
 namespace fb {
 
-class context;
+class server;
 
 /**
  * @brief      Container for managing multiple worker threads with task distribution.
@@ -62,7 +62,7 @@ public:
     using unique_id_list          = std::unique_ptr<std::thread::id[]>;
 
 private:
-    context&                _context;
+    fb::async_executor&     _executor;
     unique_thread_container _thread_container;
     unique_id_list          _keys;
 
@@ -73,10 +73,10 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The context to use.
+     * @param      executor  The executor to use.
      * @param      count    The number of threads to create.
      */
-    thread_container(fb::context& context, uint32_t count);
+    thread_container(fb::async_executor& executor, uint32_t count);
 
     /**
      * @brief      Destroys the thread container.

@@ -144,6 +144,11 @@ table LeaveGroup {
   member: string;
 }
 
+table KickGroup {
+  kicker: string;
+  target: string;
+}
+
 table CreateClan {
   master: uint;
   name: string;
@@ -155,20 +160,26 @@ table DestroyClan {
 
 table JoinClan {
   host: uint;
-  clan: uint;
-  uid: uint;
+  inviter_uid: uint;
+  invitee_uid: uint;
 }
 
 table LeaveClan {
   host: uint;
   clan: uint;
   name: string;
-  kick: bool;
+}
+
+table KickClan {
+  host: uint;
+  clan: uint;
+  kicker: string;
+  target: string;
 }
 
 table SetClanTitle {
   host: uint;
-  clan: uint;
+  changer: uint;
   title: string?;
 }
 
@@ -177,6 +188,14 @@ table BroadcastClan {
   clan: uint;
   message: string;
   type: ubyte;
+}
+
+table ChangeClanRole {
+  host: uint;
+  changer_uid: uint;
+  target_name: string;
+  clan: uint;
+  new_role: uint;
 }
 
 table Broadcast {

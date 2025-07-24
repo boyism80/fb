@@ -7,7 +7,7 @@
 namespace fb::game {
 
 /**
- * @brief      Container for managing game maps within a server context.
+ * @brief      Container for managing game maps within a server server.
  *
  *             This class provides a thread-safe container for managing all game maps
  *             within a server instance. It handles map loading, caching, and provides
@@ -27,8 +27,8 @@ private:
     std::mutex _mutex; ///< Mutex for thread-safe operations
 
 public:
-    fb::game::context& context; ///< Reference to the game context
-    const uint32_t     host;    ///< Host identifier for this map container
+    fb::game::server& server; ///< Reference to the game context
+    const uint32_t    host;   ///< Host identifier for this map container
 
 public:
     /**
@@ -37,10 +37,10 @@ public:
      *             Initializes a map container associated with the given game context
      *             and host identifier, ready to manage maps for that server instance.
      *
-     * @param[in]  context  The game context that will manage these maps.
+     * @param[in]  server   The game server that will manage these maps.
      * @param[in]  host     The host identifier for this map container.
      */
-    map_container(fb::game::context& context, uint32_t host);
+    map_container(fb::game::server& server, uint32_t host);
 
     /**
      * @brief      Destroys the map container and cleans up resources.

@@ -14,10 +14,20 @@ public:
     static constexpr uint8_t header = 0x2E;
 
 public:
+#ifndef BOT
     std::string name;
+#else
+    const std::string name;
+#endif
 
 public:
+#ifndef BOT
     group() = default;
+#else
+    group(const std::string& name) :
+        name(name)
+    { }
+#endif
 
 public:
 #ifdef BOT

@@ -16,6 +16,9 @@ namespace fb::bot::integration {
  */
 class gateway_bot_controller : public fb::bot::gateway_bot_controller
 {
+private:
+    using super = fb::bot::gateway_bot_controller;
+
 public:
     using bot_type = gateway_bot; ///< Type alias for the managed bot type
 

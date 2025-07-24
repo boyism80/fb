@@ -66,7 +66,7 @@ private:
 
 protected:
     hook_container       _hooks;          ///< Temporary hooks for request-response patterns
-    fb::context&         _context;        ///< Reference to the context for socket operations
+    fb::async_executor&  _executor;       ///< Reference to the async_executor for socket operations
     base_bot_controller& _bot_controller; ///< Reference to the bot_controller managing this bot
 
 public:
@@ -76,13 +76,13 @@ protected:
     /**
      * @brief      Constructs a new bot instance.
      *
-     * @param      context     The context for socket operations.
+     * @param      executor      The executor for socket operations.
      * @param      bot_controller  The bot_controller managing this bot.
      * @param[in]  on_receive  Callback function for received messages.
      * @param[in]  on_closed   Callback function for connection closure.
      * @param[in]  id          The unique identifier for this bot.
      */
-    base_bot(fb::context&                                                      context,
+    base_bot(fb::async_executor&                                               executor,
              base_bot_controller&                                              bot_controller,
              std::function<async::task<void>(fb::socket<void*>&, fb::stream&)> on_receive,
              std::function<async::task<void>(fb::socket<void*>&)>              on_closed,
@@ -190,21 +190,23 @@ public:
     template <typename ResponseType>
     struct request_context
     {
-        std::shared_ptr<async::task_completion_source<ResponseType>> promise;
-        std::shared_ptr<fb::timer>                                   timer;
-        std::weak_ptr<BotType>                                       bot_weak;
-        uint8_t                                                      hook_cmd;
-        std::atomic<bool>                                            completed{false};
-        const void*                                                  context_ptr; ///< Self-reference for hook removal
+        using promise_type = async::task_completion_source<ResponseType>;
+
+        std::shared_ptr<promise_type> promise;
+        std::shared_ptr<fb::timer>    timer;
+        std::weak_ptr<BotType>        bot_weak;
+        uint8_t                       hook_cmd;
+        std::atomic<bool>             completed{false};
+        const void*                   context_ptr; ///< Self-reference for hook removal
 
         /**
-         * @brief      Constructs a new request context.
+         * @brief      Constructs a new request server.
          *
          * @param[in]  bot  The bot instance (converted to weak_ptr for safe access).
          * @param[in]  cmd  The protocol command for hook management.
          */
         request_context(std::shared_ptr<BotType> bot, uint8_t cmd) :
-            promise(std::make_shared<async::task_completion_source<ResponseType>>()),
+            promise(std::make_shared<promise_type>()),
             bot_weak(bot),
             hook_cmd(cmd),
             context_ptr(this)
@@ -278,6 +280,7 @@ public:
      *             hook to capture the response that matches the given condition.
      *             This enables request-response patterns in bot communication.
      *
+     * @param[in]  target     The target bot to send the request to.
      * @param[in]  protocol   The protocol message to send.
      * @param[in]  condition  Function to determine if a response matches this request.
      * @param[in]  timeout    The timeout duration for the request.
@@ -288,6 +291,14 @@ public:
      *
      * @return     An async task that completes with the matching response.
      */
+    template <typename ResponseType>
+    async::task<ResponseType> request(std::shared_ptr<BotType>                             target,
+                                      const fb::protocol::header&                          protocol,
+                                      const std::function<bool(const ResponseType& resp)>& condition,
+                                      const fb::model::timespan&                           timeout = 0s,
+                                      bool                                                 encrypt = true,
+                                      bool                                                 wrap    = true);
+
     template <typename ResponseType>
     async::task<ResponseType> request(const fb::protocol::header&                          protocol,
                                       const std::function<bool(const ResponseType& resp)>& condition,
@@ -310,6 +321,13 @@ public:
      *
      * @return     An async task that completes with the response.
      */
+    template <typename ResponseType>
+    async::task<ResponseType> request(std::shared_ptr<BotType>    target,
+                                      const fb::protocol::header& protocol,
+                                      const fb::model::timespan&  timeout = 0s,
+                                      bool                        encrypt = true,
+                                      bool                        wrap    = true);
+
     template <typename ResponseType>
     async::task<ResponseType> request(const fb::protocol::header& protocol,
                                       const fb::model::timespan&  timeout = 0s,

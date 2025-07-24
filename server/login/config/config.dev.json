@@ -1,0 +1,62 @@
+{
+    "id": 0,
+    "name": "login-0",
+    "ip": "127.0.0.1",
+    "port": 3002,
+    "transfer delay": 0,
+    "allow other language": false,
+    "forbidden": [],
+    "agreement": "안녕하세요",
+    "admin_mode": true,
+    "thread": {
+        "logic": 12,
+        "io": 12,
+        "background": 8
+    },
+    "amqp": {
+        "ip": "127.0.0.1",
+        "port": 5672,
+        "uid": "guest",
+        "pwd": "guest"
+    },
+    "redis": {
+        "ip": "127.0.0.1",
+        "port": 6379,
+        "pool": 2
+    },
+    "internal": {
+        "ip": "127.0.0.1",
+        "port": 3000
+    },
+    "log": [
+        "debug",
+        "info",
+        "warn",
+        "fatal"
+    ],
+    "init": {
+        "map": 1,
+        "position": [
+            {
+                "x": 6,
+                "y": 6
+            }
+        ],
+        "hp": {
+            "base": 50,
+            "range": 10
+        },
+        "mp": {
+            "base": 50,
+            "range": 10
+        }
+    },
+    "name_size": {
+        "min": 2,
+        "max": 256
+    },
+    "pw_size": {
+        "min": 4,
+        "max": 14
+    }
+}

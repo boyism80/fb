@@ -17,7 +17,7 @@
  *          - Comprehensive object container management for all map entities
  *          - Door and warp point management for map transitions
  *          - Movement validation and pathfinding support
- *          - Thread-safe operations with automatic context switching
+ *          - Thread-safe operations with automatic thread switching
  *          - Lua scripting integration for dynamic map behavior and events
  *          - Real-time object tracking and proximity-based queries
  *          - Map loading and initialization from binary data files
@@ -46,7 +46,7 @@ namespace fb::game {
  *             - Sector-based optimization for efficient object queries
  *             - Object container management for all map entities
  *             - Door and warp point management
- *             - Thread-safe operations with context switching
+ *             - Thread-safe operations with automatic thread switching
  *             - Lua scripting integration for dynamic map behavior
  *             - Movement validation and pathfinding support
  */
@@ -64,6 +64,7 @@ public:
 public:
     struct tile;
     struct builtin;
+    struct cache_bytes;
 
 public:
     using unique_tiles  = std::unique_ptr<tile[]>;
@@ -75,23 +76,23 @@ private:
     shared_sector       _sectors;
 
 public:
-    const fb::game::context& context;
-    const fb::model::map&    model;
-    object_container         objects = object_container(*this);
-    door_container           doors;
-    const bool               active;
+    const fb::game::server& server;
+    const fb::model::map&   model;
+    object_container        objects = object_container(*this);
+    door_container          doors;
+    const bool              active;
 
 public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  context  The game context that manages this map
+     * @param[in]  server   The game server that manages this map
      * @param[in]  model    The map model data containing configuration and metadata
      * @param[in]  active   Whether the map should be active and process game logic
      * @param[in]  data     The raw map tile data to load
      * @param[in]  size     The size of the map data in bytes
      */
-    map(fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size);
+    map(fb::game::server& server, const fb::model::map& model, bool active, const void* data, size_t size);
 
     /**
      * @brief      Constructs a new instance.
@@ -286,7 +287,7 @@ public:
     void bulk_update(const std::vector<uint32_t>& oids);
 
     /**
-     * @brief      Gets the thread that manages this map's execution context.
+     * @brief      Gets the thread that manages this map's execution server.
      *
      * @return     Pointer to the thread managing this map
      */
@@ -441,6 +442,13 @@ struct map::tile
     uint16_t id;
     uint16_t object;
     bool     blocked;
+};
+
+struct map::cache_bytes
+{
+    uint64_t             hash = 0;
+    uint16_t             crc  = 0;
+    std::vector<uint8_t> bytes;
 };
 
 } // namespace fb::game

@@ -42,7 +42,7 @@
 #include <async/task.h>
 #include <async/task_completion_source.h>
 #include <async/awaitable_get.h>
-#include <fb/abstract.h>
+#include <fb/async_executor.h>
 #include <fb/thread.h>
 
 namespace fb {
@@ -172,11 +172,11 @@ public:
     };
 
 private:
-    context&          _context;
-    fb::encryption    _encryption;
-    handle_read_event _handle_received;
-    handler_event     _handle_closed;
-    fb::stream        _stream;
+    fb::async_executor& _executor;
+    fb::encryption      _encryption;
+    handle_read_event   _handle_received;
+    handler_event       _handle_closed;
+    fb::stream          _stream;
 
 protected:
     std::array<char, MAX_BUFFER_SIZE> _buffer;
@@ -198,13 +198,13 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  context  The context.
-     * @param[in]  handle_received  The read event handler.
-     * @param[in]  handle_closed  The closed event handler.
+     * @param[in]  executor        The async_executor.
+     * @param[in]  handle_received The read event handler.
+     * @param[in]  handle_closed   The closed event handler.
      */
-    socket(context& context, const handle_read_event& handle_received, const handler_event& handle_closed) :
-        boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(context)),
-        _context(context),
+    socket(fb::async_executor& executor, const handle_read_event& handle_received, const handler_event& handle_closed) :
+        boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(executor)),
+        _executor(executor),
         _handle_received(handle_received),
         _handle_closed(handle_closed)
     { }
@@ -213,17 +213,17 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  context  The context.
-     * @param[in]  encryption  The encryption.
-     * @param[in]  handle_received  The read event handler.
-     * @param[in]  handle_closed  The closed event handler.
+     * @param[in]  executor        The async_executor.
+     * @param[in]  encryption      The encryption.
+     * @param[in]  handle_received The read event handler.
+     * @param[in]  handle_closed   The closed event handler.
      */
-    socket(context&                 context,
+    socket(fb::async_executor&      executor,
            const fb::encryption&    encryption,
            const handle_read_event& handle_received,
            const handler_event&     handle_closed) :
-        boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(context)),
-        _context(context),
+        boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(executor)),
+        _executor(executor),
         _handle_received(handle_received),
         _handle_closed(handle_closed),
         _encryption(encryption)
@@ -265,9 +265,9 @@ public:
     /**
      * @brief      Sends a stream.
      *
-     * @param[in]  stream  The stream to send.
+     * @param[in]  stream   The stream to send.
      * @param[in]  encrypt  Whether to encrypt the stream.
-     * @param[in]  wrap  Whether to wrap the stream.
+     * @param[in]  wrap     Whether to wrap the stream.
      *
      * @return     A task that will complete when the stream is sent.
      */
@@ -298,7 +298,7 @@ public:
         {
             boost::asio::async_write(*this, buffer, [promise](const boost::system::error_code& ec, size_t transferred) {
                 if (ec)
-                    promise->set_exception(std::make_exception_ptr(std::runtime_error("boost async write failed")));
+                    promise->set_exception(std::make_exception_ptr(std::runtime_error(ec.message())));
                 else
                     promise->set_value(transferred);
             });
@@ -354,8 +354,8 @@ public:
      * @brief      Sends a protocol header.
      *
      * @param[in]  response  The response to send.
-     * @param[in]  encrypt  Whether to encrypt the response.
-     * @param[in]  wrap  Whether to wrap the response.
+     * @param[in]  encrypt   Whether to encrypt the response.
+     * @param[in]  wrap      Whether to wrap the response.
      *
      * @return     A task that will complete when the header is sent.
      */
@@ -509,11 +509,11 @@ public:
             if (this->_data != nullptr)
                 return this->_data->thread();
             else
-                return this->_context.threads.modular(this->fd());
+                return this->_executor.threads.modular(this->fd());
         }
         else
         {
-            return this->_context.threads.modular(this->fd());
+            return this->_executor.threads.modular(this->fd());
         }
     }
 };

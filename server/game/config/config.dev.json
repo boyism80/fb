@@ -1,0 +1,38 @@
+{
+    "id": 0,
+    "name": "game-0",
+    "delay": 1,
+    "ip": "127.0.0.1",
+    "port": 3004,
+    "thread": {
+        "logic": 12,
+        "io": 12,
+        "background": 8
+    },
+    "save": 600,
+    "internal": {
+        "ip": "127.0.0.1",
+        "port": 3000
+    },
+    "redis": {
+        "ip": "127.0.0.1",
+        "port": 6379,
+        "pool": 2
+    },
+    "login": {
+        "ip": "127.0.0.1",
+        "port": 3002
+    },
+    "amqp": {
+        "ip": "127.0.0.1",
+        "port": 5672,
+        "uid": "guest",
+        "pwd": "guest"
+    },
+    "log": [
+        "debug",
+        "info",
+        "warn",
+        "fatal"
+    ]
+}

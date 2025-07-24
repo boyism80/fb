@@ -8,7 +8,7 @@ using namespace fb;
 
 namespace fb::model {
 
-class context;
+class server;
 
 /**
  * @brief      Parallel data loader for game model containers.

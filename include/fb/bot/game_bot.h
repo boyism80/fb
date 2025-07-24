@@ -8,6 +8,8 @@
 #include <string>
 #include <map>
 #include <optional>
+#include <fb/bot/integration/dialog_bot.h>
+#include <fb/bot/integration/dialog_ext_bot.h>
 
 namespace fb::bot {
 
@@ -49,6 +51,36 @@ public:
             name(n),
             count(c)
         { }
+
+        /**
+         * @brief      Check if this item is equipment type.
+         *
+         * @param[in]  controller  Reference to the game bot controller for model access.
+         *
+         * @return     True if the item is equipment, false otherwise.
+         */
+        bool is_equipment(const game_bot_controller& controller) const;
+
+        /**
+         * @brief      Get equipment information as formatted string.
+         *
+         *             This function generates a formatted string containing equipment
+         *             information similar to the tip_message() function in equipment.cpp.
+         *
+         * @param[in]  controller  Reference to the game bot controller for model access.
+         *
+         * @return     Formatted string with equipment information, or empty string if not equipment.
+         */
+        std::string get_equipment_info(const game_bot_controller& controller) const;
+
+        /**
+         * @brief      Get the base price of this item from the model.
+         *
+         * @param[in]  controller  Reference to the game bot controller for model access.
+         *
+         * @return     The base price of the item, or 0xFFFFFFFF if not found in model.
+         */
+        uint32_t get_price(const game_bot_controller& controller) const;
     };
 
     /**
@@ -63,6 +95,20 @@ public:
         simple_spell(const std::string& n, uint8_t t) :
             name(n),
             type(t)
+        { }
+    };
+
+    /**
+     * @brief      Simple NPC structure for bot NPC tracking.
+     */
+    struct simple_npc
+    {
+        const uint32_t    oid;  ///< NPC object ID
+        const std::string name; ///< NPC name
+
+        simple_npc(uint32_t o, const std::string& n) :
+            oid(o),
+            name(n)
         { }
     };
 
@@ -132,6 +178,12 @@ private:
     uint8_t     _shield_color = 0;             ///< Shield color
     uint8_t     _head_marker  = 0;             ///< Head marker (clan mark, etc)
     std::string _name;                         ///< Character name
+    std::string _clan_name;                    ///< Character's clan name
+    std::string _clan_title;                   ///< Character's clan title
+    std::string _title;                        ///< Character's title
+    std::string _group_info;                   ///< Character's group info
+    uint8_t     _group_option = 0;             ///< Character's group option
+    uint32_t    _remained_exp = 0;             ///< Character's remained exp
 
 public:
     /**
@@ -597,13 +649,97 @@ public:
     void set_name(const std::string& value);
 
     /**
+     * @brief      Gets the character's clan name.
+     *
+     * @return     A constant reference to the clan name string.
+     */
+    const std::string& clan_name() const;
+
+    /**
+     * @brief      Sets the character's clan name.
+     *
+     * @param[in]  value  The clan name to set.
+     */
+    void set_clan_name(const std::string& value);
+
+    /**
+     * @brief      Gets the character's clan title.
+     *
+     * @return     A constant reference to the clan title string.
+     */
+    const std::string& clan_title() const;
+
+    /**
+     * @brief      Sets the character's clan title.
+     *
+     * @param[in]  value  The clan title to set.
+     */
+    void set_clan_title(const std::string& value);
+
+    /**
+     * @brief      Gets the character's title.
+     *
+     * @return     A constant reference to the title string.
+     */
+    const std::string& title() const;
+
+    /**
+     * @brief      Sets the character's title.
+     *
+     * @param[in]  value  The title to set.
+     */
+    void set_title(const std::string& value);
+
+    /**
+     * @brief      Gets the character's group info.
+     *
+     * @return     A constant reference to the group info string.
+     */
+    const std::string& group_info() const;
+
+    /**
+     * @brief      Sets the character's group info.
+     *
+     * @param[in]  value  The group info to set.
+     */
+    void set_group_info(const std::string& value);
+
+    /**
+     * @brief      Gets the character's group option.
+     *
+     * @return     The group option value.
+     */
+    uint8_t group_option() const;
+
+    /**
+     * @brief      Sets the character's group option.
+     *
+     * @param[in]  value  The group option to set.
+     */
+    void set_group_option(uint8_t value);
+
+    /**
+     * @brief      Gets the character's remained exp.
+     *
+     * @return     The remained exp value.
+     */
+    uint32_t remained_exp() const;
+
+    /**
+     * @brief      Sets the character's remained exp.
+     *
+     * @param[in]  value  The remained exp to set.
+     */
+    void set_remained_exp(uint32_t value);
+
+    /**
      * @brief      Move the bot in the specified direction.
      *
      * @param[in]  direction  The direction to move.
      * @param[in]  step       The number of steps to move.
      * @param[in]  delay      The delay between steps.
      */
-    async::task<void> move(DIRECTION direction, int step = 1, const fb::model::timespan& delay = 0ms);
+    async::task<void> move(DIRECTION direction, int step = 1, const fb::model::timespan& delay = 500ms);
 
     /**
      * @brief      Move the bot to a specific map and coordinates.
@@ -871,6 +1007,16 @@ public:
     async::task<void> create_item(const std::string& item_name, uint32_t count, std::chrono::milliseconds timeout);
 
     /**
+     * @brief      Create an NPC using the '/엔피씨생성' command.
+     *
+     * @param[in]  npc_name  The name of the NPC to create.
+     * @param[in]  timeout   The timeout for the operation.
+     *
+     * @return     An async task that returns simple_npc with oid and name if successful.
+     */
+    async::task<simple_npc> create_npc(const std::string& npc_name, std::chrono::milliseconds timeout);
+
+    /**
      * @brief      Change money using the '/금전바꾸기' command.
      *
      * @param[in]  amount   The amount of money to set.
@@ -903,12 +1049,11 @@ public:
      * @brief      Equip an item from the inventory.
      *
      * @param[in]  slot           The inventory slot index of the item to equip.
-     * @param[in]  item_name      The name of the item to equip.
      * @param[in]  timeout        The timeout for the operation.
      *
      * @return     An async task that completes with true if operation succeeded, false otherwise.
      */
-    async::task<bool> equip(uint8_t slot, const std::string& item_name, std::chrono::milliseconds timeout);
+    async::task<bool> equip(uint8_t slot, std::chrono::milliseconds timeout);
 
     /**
      * @brief      Unequip an item from the equipped slots.
@@ -1124,6 +1269,16 @@ public:
     async::task<void> clear_inventory(std::chrono::milliseconds timeout);
 
     /**
+     * @brief      Fills the inventory to capacity with a specific item
+     *
+     * @param[in]  name     The name of the item to fill the inventory with
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that completes when the inventory is filled
+     */
+    async::task<void> fill_inventory(const std::string& name, std::chrono::milliseconds timeout);
+
+    /**
      * @brief      Moves a bot back to its original position after movement spells
      *
      * @param[in]  original_position  The original position to return to
@@ -1136,10 +1291,148 @@ public:
                                                 std::chrono::milliseconds         interval,
                                                 std::chrono::milliseconds         timeout);
 
+    /**
+     * @brief      Reverses conditions applied to the bot
+     *
+     * @param[in]  conditions  Vector of conditions to reverse
+     * @param[in]  timeout     The timeout for the operation
+     *
+     * @return     An async task that completes when conditions are reversed
+     */
     async::task<void> reverse_condition(const std::vector<fb::model::dsl>& conditions,
                                         std::chrono::milliseconds          timeout);
 
+    /**
+     * @brief      Applies conditions to the bot
+     *
+     * @param[in]  conditions  Vector of conditions to apply
+     * @param[in]  timeout     The timeout for the operation
+     *
+     * @return     An async task that completes when conditions are applied
+     */
     async::task<void> apply_condition(const std::vector<fb::model::dsl>& conditions, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Updates the internal information of the bot
+     *
+     *             Updates the internal information of the bot.
+     *             This includes the clan name, clan title, title, group info, group option, and remained exp.
+     *
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that completes when the internal information is updated.
+     */
+    async::task<void> update_internal_info(std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Invites a target bot to join the group
+     *
+     * @param[in]  target   The bot to invite to the group
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that returns true if invite was successful
+     */
+    async::task<bool> invite_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Leaves the current group
+     *
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that returns true if leaving was successful
+     */
+    async::task<bool> leave_group(std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Kicks a target bot from the group
+     *
+     * @param[in]  target   The bot to kick from the group
+     * @param[in]  timeout  The timeout for the operation
+     *
+     * @return     An async task that returns true if kick was successful
+     */
+    async::task<bool> kick_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Changes the role of a clan member using NPC dialog
+     *
+     * @param[in]  target    The bot whose role will be changed
+     * @param[in]  role      The new role to assign
+     * @param[in]  timeout   The timeout for the operation
+     *
+     * @return     An async task that returns true if role change was successful
+     */
+    async::task<bool> change_clan_role(std::shared_ptr<game_bot> target,
+                                       CLAN_ROLE                 role,
+                                       std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Invites a target bot to join the clan using NPC dialog
+     *
+     * @param[in]  invitee   The bot to invite to the clan
+     * @param[in]  timeout   The timeout for the operation
+     *
+     * @return     An async task that returns true if invite was successful
+     */
+    async::task<bool> invite_to_clan(std::shared_ptr<game_bot> invitee, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Kicks a target bot from the clan using NPC dialog
+     *
+     * @param[in]  target    The bot to kick from the clan
+     * @param[in]  timeout   The timeout for the operation
+     *
+     * @return     An async task that returns true if kick was successful
+     */
+    async::task<bool> kick_from_clan(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Leaves the current clan using NPC dialog
+     *
+     * @param[in]  timeout   The timeout for the operation
+     *
+     * @return     An async task that returns true if leaving was successful
+     */
+    async::task<bool> leave_clan(std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Destroys the current clan using NPC dialog
+     *
+     * @param[in]  timeout   The timeout for the operation
+     *
+     * @return     An async task that returns true if clan destruction was successful
+     */
+    async::task<bool> destroy_clan(std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Changes the clan title using NPC dialog
+     *
+     * @param[in]  title     The new title to set
+     * @param[in]  timeout   The timeout for the operation
+     *
+     * @return     An async task that returns true if title change was successful
+     */
+    async::task<bool> change_clan_title(const std::string& title, std::chrono::milliseconds timeout);
+
+    /**
+     * @brief      Sends a transfer request to the server and waits for a matching response.
+     *
+     *             Sends a transfer request to the server and waits for a matching response.
+     *             This enables request-response patterns in bot communication.
+     *
+     * @param[in]  protocol  The protocol message to send.
+     * @param[in]  timeout   The timeout duration for the request.
+     * @param[in]  encrypt   Whether to encrypt the outgoing message.
+     * @param[in]  wrap      Whether to wrap the outgoing message.
+     *
+     * @tparam     ResponseType  The expected response protocol type.
+     *
+     * @return     An async task that completes with the response.
+     */
+    async::task<std::shared_ptr<game_bot>> transfer(const fb::protocol::header& protocol,
+                                                    const fb::model::timespan&  timeout = 15s,
+                                                    bool                        encrypt = true,
+                                                    bool                        wrap    = true);
 };
 
 } // namespace fb::bot

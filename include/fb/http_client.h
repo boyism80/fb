@@ -59,7 +59,7 @@ namespace fb {
 class http_client
 {
 private:
-    fb::context& _context;
+    fb::async_executor& _executor;
 
 public:
     /**
@@ -71,8 +71,8 @@ public:
      *             - Default timeout settings
      *             - Service configuration
      */
-    http_client(fb::context& context) :
-        _context(context)
+    http_client(fb::async_executor& executor) :
+        _executor(executor)
     { }
 
     http_client(const http_client&)             = delete;
@@ -110,7 +110,7 @@ private:
             auto const host_name = (colon_pos == std::string::npos ? raw_host : raw_host.substr(0, colon_pos));
             auto const port = (colon_pos == std::string::npos ? std::string("80") : raw_host.substr(colon_pos + 1));
 
-            auto& io_context = static_cast<boost::asio::io_context&>(this->_context);
+            auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
             auto  resolver   = boost::asio::ip::tcp::resolver{io_context};
             auto  stream     = boost::beast::tcp_stream{io_context};
 
@@ -196,7 +196,7 @@ private:
             auto const host_name = (colon_pos == std::string::npos ? raw_host : raw_host.substr(0, colon_pos));
             auto const port = (colon_pos == std::string::npos ? std::string("80") : raw_host.substr(colon_pos + 1));
 
-            auto& io_context = static_cast<boost::asio::io_context&>(this->_context);
+            auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
             auto  resolver   = boost::asio::ip::tcp::resolver{io_context};
             auto  stream     = boost::beast::tcp_stream{io_context};
 
@@ -273,7 +273,7 @@ public:
     {
         auto& config = fb::config<>(service);
         auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
-        auto  thread = this->_context.threads.current();
+        auto  thread = this->_executor.threads.current();
         auto  result = co_await this->boost_get_async<T>(host, path);
         if (thread != nullptr)
             co_await thread->switching();
@@ -301,7 +301,7 @@ private:
             {"Content-Type", "application/octet-stream"},
         };
 
-        auto& io_context = static_cast<boost::asio::io_context&>(this->_context);
+        auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
         boost::asio::co_spawn(io_context,
                               this->boost_get_async(host, path, headers, 5s),
                               [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
@@ -358,7 +358,7 @@ public:
     {
         auto& config = fb::config<>(service);
         auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
-        auto  thread = this->_context.threads.current();
+        auto  thread = this->_executor.threads.current();
         auto  result = co_await this->boost_post_async<Request>(host, path, request);
         if (thread != nullptr)
             co_await thread->switching();
@@ -398,7 +398,7 @@ private:
             {"Content-Type", "application/octet-stream"}
         };
 
-        auto& io_context = static_cast<boost::asio::io_context&>(this->_context);
+        auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
         boost::asio::co_spawn(io_context,
                               this->boost_post_async(host, path, headers, std::chrono::seconds{5}, stream_req),
                               [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {

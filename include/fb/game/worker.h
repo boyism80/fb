@@ -7,9 +7,9 @@
 namespace fb { namespace game {
 
 /**
- * @brief      Forward declaration of the game context class.
+ * @brief      Forward declaration of the game server class.
  */
-class context;
+class server;
 
 /**
  * @brief      Parallel worker for loading and processing game maps.
@@ -17,7 +17,7 @@ class context;
  *             This class extends the parallel worker framework to handle map loading operations
  *             in a multi-threaded environment. It processes map data from the model system and
  *             initializes them for use in the game world. The worker handles map file loading,
- *             validation, and integration with the game context.
+ *             validation, and integration with the game server.
  */
 class map_loader : public fb::parallel_worker<std::reference_wrapper<fb::model::map>>
 {
@@ -25,18 +25,18 @@ public:
     using input_type = std::reference_wrapper<fb::model::map>;
 
 private:
-    fb::game::context& _context;
+    fb::game::server& _server;
 
 public:
     /**
      * @brief      Constructs a new map loader worker.
      *
-     *             Initializes the map loader with a reference to the game context
+     *             Initializes the map loader with a reference to the game server
      *             that will manage the loaded maps.
      *
-     * @param      context  The game context that will own the loaded maps.
+     * @param      server   The game server that will own the loaded maps.
      */
-    map_loader(fb::game::context& context);
+    map_loader(fb::game::server& server);
     /**
      * @brief      Destroys the map loader worker.
      */
@@ -103,18 +103,18 @@ public:
     using input_type = std::reference_wrapper<fb::model::npc_spawn>;
 
 private:
-    fb::game::context& _context;
+    fb::game::server& _server;
 
 public:
     /**
      * @brief      Constructs a new NPC spawner worker.
      *
-     *             Initializes the NPC spawner with a reference to the game context
+     *             Initializes the NPC spawner with a reference to the game server
      *             that will manage the spawned NPCs.
      *
-     * @param      context  The game context that will own the spawned NPCs.
+     * @param      server   The game server that will own the spawned NPCs.
      */
-    npc_spawner(fb::game::context& context);
+    npc_spawner(fb::game::server& server);
     /**
      * @brief      Destroys the NPC spawner worker.
      */
@@ -174,23 +174,23 @@ protected:
  *
  *             This class handles the loading and execution of Lua scripts in a multi-threaded
  *             environment. It processes script loading tasks and executes them within the
- *             appropriate Lua contexts, enabling dynamic game logic and content loading.
+ *             appropriate Lua servers, enabling dynamic game logic and content loading.
  */
 class script_loader : public fb::parallel_worker<std::function<async::task<void>()>>
 {
 private:
-    fb::game::context& _context;
+    fb::game::server& _server;
 
 public:
     /**
      * @brief      Constructs a new script loader worker.
      *
-     *             Initializes the script loader with a reference to the game context
+     *             Initializes the script loader with a reference to the game server
      *             that provides the Lua execution environment.
      *
-     * @param      context  The game context that provides the Lua environment.
+     * @param      server   The game server that provides the Lua environment.
      */
-    script_loader(fb::game::context& context);
+    script_loader(fb::game::server& server);
     /**
      * @brief      Destroys the script loader worker.
      */
@@ -210,7 +210,7 @@ protected:
      * @brief      Executes a single script loading task.
      *
      *             Executes the provided async task function which typically loads and
-     *             runs a Lua script within the game context. This method is called
+     *             runs a Lua script within the game server. This method is called
      *             for each script loading task in parallel.
      *
      * @param[in]  value  The script loading task function to execute.

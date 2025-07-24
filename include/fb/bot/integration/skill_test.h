@@ -2,7 +2,7 @@
 #define __BOT_INTEGRATION_SKILL_TEST_H__
 
 #include <fb/bot/integration/test_case.h>
-#include <stdexcept>
+#include <fb/bot/game_bot.h>
 #include <fb/game/protocol.h>
 
 namespace fb::bot::integration {
@@ -153,6 +153,34 @@ private:
                                               std::shared_ptr<fb::bot::game_bot> target);
 
     /**
+     * @brief      Tests target spells with pre and post condition verification.
+     *
+     *             Performs target spell tests including spells that require specific
+     *             conditions before casting and verify effects after casting.
+     *             These spells use 'you' parameter and are typically one-time effects.
+     *
+     * @param[in]  caster   The bot casting the target spells.
+     * @param[in]  target   The target bot for target spell tests.
+     *
+     * @return     A task that completes when all target spell tests finish.
+     */
+    async::task<bool> test_target_spells(std::shared_ptr<fb::bot::game_bot> caster,
+                                         std::shared_ptr<fb::bot::game_bot> target);
+
+    /**
+     * @brief      Tests special spells with complex requirements and effects.
+     *
+     *             Performs special spell tests including teleportation, weapon damage,
+     *             buffs, summoning, and ghost-specific spells. These spells often
+     *             require specific conditions, message inputs, or state changes.
+     *
+     * @param[in]  caster   The bot casting the special spells.
+     *
+     * @return     A task that completes when all special spell tests finish.
+     */
+    async::task<bool> test_special_spells(std::shared_ptr<fb::bot::game_bot> caster);
+
+    /**
      * @brief      Tests multi-target attack-cast spells with complex effect calculation.
      *
      *             Performs multi-target attack-cast spell tests including spells that
@@ -219,17 +247,6 @@ private:
     async::task<bool> test_group_healing_spells(std::shared_ptr<fb::bot::game_bot> caster);
 
     /**
-     * @brief      Forms a group with all provided bots.
-     *
-     *             The first bot becomes the group leader and invites all other bots.
-     *
-     * @param[in]  bots     The list of bots to form into a group.
-     *
-     * @return     A task that completes when group formation is finished.
-     */
-    async::task<void> form_group();
-
-    /**
      * @brief      Verifies that group healing effects were applied correctly to all group members.
      *
      * @param[in]  bots              The list of bots to verify.
@@ -239,15 +256,6 @@ private:
      * @return     A task that completes when verification is finished.
      */
     async::task<bool> verify_group_healing_effects(const std::vector<int>& before_hp_values, int expected_hp_gain);
-
-    /**
-     * @brief      Cleans up group formation by removing all bots from the group.
-     *
-     * @param[in]  bots     The list of bots to remove from the group.
-     *
-     * @return     A task that completes when group cleanup is finished.
-     */
-    async::task<void> cleanup_group();
 
     /**
      * @brief      Tests the 출두 (teleport to target) spell.
@@ -282,6 +290,20 @@ private:
                                         std::shared_ptr<fb::bot::game_bot> target,
                                         uint8_t                            spell_slot,
                                         int                                expected_mp_cost);
+
+    /**
+     * @brief      Tests skill cooldown delays with comprehensive cooldown verification.
+     *
+     *             Performs cooldown tests including:
+     *             - Hellfire spell cooldown testing
+     *             - Cooldown reduction verification based on level and equipment
+     *             - Cooldown message parsing and validation
+     *
+     * @param[in]  caster   The bot casting the spells for cooldown testing.
+     *
+     * @return     A task that completes with true if all cooldown tests passed, false otherwise.
+     */
+    async::task<bool> test_skill_cooldown_delays(std::shared_ptr<fb::bot::game_bot> caster);
 
     /**
      * @brief      Structure for healing spell test data

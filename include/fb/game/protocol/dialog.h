@@ -18,7 +18,18 @@ public:
 
 public:
 #ifdef BOT
-    const uint8_t       interaction;
+    enum class INTERACTION : uint8_t
+    {
+        NORMAL,   ///< Standard dialog with text and navigation buttons
+        INPUT,    ///< Dialog requesting text input from the player
+        INPUT_EX, ///< Extended input dialog with additional formatting
+        MENU,     ///< Dialog presenting a menu of selectable options
+        LIST,     ///< Dialog showing a list of items or choices
+        SLOT,     ///< Dialog for item slot selection or management
+        ITEM,     ///< Dialog for item-related interactions
+    };
+
+    const INTERACTION   interaction;
     const uint8_t       action;
     const std::string   message;
     const uint16_t      index;
@@ -36,7 +47,25 @@ public:
 #endif
 
 public:
+#ifndef BOT
     dialog() = default;
+#else
+    dialog(dialog::INTERACTION interaction,
+           uint8_t             action,
+           std::string         message,
+           uint16_t            index,
+           uint16_t            pursuit,
+           std::string         name,
+           DIALOG_RESULT       button) :
+        interaction(interaction),
+        action(action),
+        message(message),
+        index(index),
+        pursuit(pursuit),
+        name(name),
+        button(button)
+    { }
+#endif
 
 public:
 #ifdef BOT

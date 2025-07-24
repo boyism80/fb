@@ -36,6 +36,7 @@
 #include <cstdint>
 #include <memory>
 #include <coroutine>
+#include <list>
 #include <fb/locker.h>
 
 // Microsoft cpp-async library
@@ -43,20 +44,20 @@
 #include <async/task_completion_source.h>
 
 namespace fb {
-template <typename T>
-class sub_container
+template <typename T, typename HashType = uint32_t>
+class unordered_lru_map : private std::unordered_map<HashType, T>
 {
 public:
-    using map_type = std::unordered_map<uint32_t, T>;
+    using super = std::unordered_map<HashType, T>;
 
-private:
-    fb::locker<map_type> _data;
-
-public:
     /**
-     * @brief   Default constructor
+     * @brief   Constructor with capacity
+     *
+     * @param[in] capacity Maximum number of elements (default: 0xFFFFFFFF)
      */
-    sub_container() = default;
+    explicit unordered_lru_map(size_t capacity = 0xFFFFFFFF) :
+        _capacity(capacity)
+    { }
 
     /**
      * @brief   Inserts element with given hash
@@ -65,7 +66,189 @@ public:
      * @param[in] value Element to insert
      * @return    true if element was inserted, false if already exists
      */
-    bool insert(uint32_t hash, const T& value)
+    bool insert(HashType hash, const T& value)
+    {
+        if (this->contains(hash))
+            return false;
+
+        // Check capacity and remove LRU if necessary
+        if (this->size() >= this->_capacity)
+        {
+            if (!this->_lru_list.empty())
+            {
+                HashType lru_hash = this->_lru_list.back();
+                this->_lru_list.pop_back();
+                this->erase(lru_hash);
+            }
+        }
+
+        this->super::insert({hash, value});
+
+        // Update LRU list
+        // Remove from current position if exists
+        auto it = std::find(this->_lru_list.begin(), this->_lru_list.end(), hash);
+        if (it != this->_lru_list.end())
+        {
+            this->_lru_list.erase(it);
+        }
+        // Add to front (most recently used)
+        this->_lru_list.push_front(hash);
+
+        return true;
+    }
+
+    /**
+     * @brief   Inserts element with given hash (does not check for duplicates)
+     *
+     * @param[in] hash Hash value for the element
+     * @param[in] value Element to insert (rvalue)
+     * @return    true if element was inserted, false if already exists
+     */
+    bool emplace(HashType hash, T&& value)
+    {
+        if (this->contains(hash))
+            return false;
+        this->super::emplace(hash, std::move(value));
+        this->_lru_list.push_front(hash);
+        return true;
+    }
+
+    /**
+     * @brief   Access element and update LRU (non-const)
+     *
+     * @param[in] hash Hash of the target element
+     * @return    Reference to the element
+     */
+    T& operator[] (HashType hash)
+    {
+        // Update LRU list
+        auto it = std::find(this->_lru_list.begin(), this->_lru_list.end(), hash);
+        if (it != this->_lru_list.end())
+            this->_lru_list.erase(it);
+        this->_lru_list.push_front(hash);
+        return this->super::operator[] (hash);
+    }
+
+    /**
+     * @brief   Access element and update LRU (const)
+     *
+     * @param[in] hash Hash of the target element
+     * @return    Const reference to the element
+     */
+    const T& operator[] (HashType hash) const
+    {
+        // Update LRU list
+        auto it = std::find(this->_lru_list.begin(), this->_lru_list.end(), hash);
+        if (it != this->_lru_list.end())
+            this->_lru_list.erase(it);
+        this->_lru_list.push_front(hash);
+        return this->super::at(hash);
+    }
+
+    /**
+     * @brief   Get element at hash (non-const)
+     *
+     * @param[in] hash Hash of the target element
+     * @return    Reference to the element
+     */
+    T& at(HashType hash)
+    {
+        // Update LRU list
+        auto it = std::find(this->_lru_list.begin(), this->_lru_list.end(), hash);
+        if (it != this->_lru_list.end())
+            this->_lru_list.erase(it);
+        this->_lru_list.push_front(hash);
+        return this->super::at(hash);
+    }
+
+    /**
+     * @brief   Get element at hash (const)
+     *
+     * @param[in] hash Hash of the target element
+     * @return    Const reference to the element
+     */
+    const T& at(HashType hash) const
+    {
+        // Update LRU list
+        auto it = std::find(this->_lru_list.begin(), this->_lru_list.end(), hash);
+        if (it != this->_lru_list.end())
+            this->_lru_list.erase(it);
+        this->_lru_list.push_front(hash);
+        return this->super::at(hash);
+    }
+
+    /**
+     * @brief   Removes element by its hash
+     *
+     * @param[in] hash Hash of the target element
+     * @return    true if element was removed, false if not found
+     */
+    bool erase(HashType hash)
+    {
+        if (!this->contains(hash))
+            return false;
+
+        this->super::erase(hash);
+
+        // Remove from LRU list
+        this->_lru_list.remove(hash);
+
+        return true;
+    }
+
+    /**
+     * @brief   Get size of the map
+     *
+     * @return    Number of elements
+     */
+    size_t size() const
+    {
+        return this->std::unordered_map<HashType, T>::size();
+    }
+
+    /**
+     * @brief   Check if element exists
+     *
+     * @param[in] hash Hash of the target element
+     * @return    true if element exists, false otherwise
+     */
+    bool contains(HashType hash) const
+    {
+        return this->std::unordered_map<HashType, T>::contains(hash);
+    }
+
+private:
+    mutable std::list<HashType> _lru_list; ///< LRU list to track access order
+    size_t                      _capacity; ///< Maximum number of elements
+};
+
+template <typename T, typename HashType = uint32_t>
+class sub_container
+{
+public:
+    using map_type = unordered_lru_map<T, HashType>;
+
+private:
+    fb::locker<map_type> _data;
+
+public:
+    /**
+     * @brief   Constructor with capacity
+     *
+     * @param[in] capacity Maximum number of elements (default: 0xFFFFFFFF)
+     */
+    explicit sub_container(size_t capacity = 0xFFFFFFFF) :
+        _data(map_type(capacity))
+    { }
+
+    /**
+     * @brief   Inserts element with given hash
+     *
+     * @param[in] hash Hash value for the element
+     * @param[in] value Element to insert
+     * @return    true if element was inserted, false if already exists
+     */
+    bool insert(HashType hash, const T& value)
     {
         return this->_data.write([&](map_type& data) {
             if (data.contains(hash))
@@ -82,7 +265,7 @@ public:
      * @param[in] hash Hash of the target element
      * @return    true if element was removed, false if not found
      */
-    bool erase(uint32_t hash)
+    bool erase(HashType hash)
     {
         return this->_data.write([&](map_type& data) {
             if (!data.contains(hash))
@@ -101,7 +284,7 @@ public:
      * @return     Result of the function execution
      */
     template <typename Func>
-    auto read(uint32_t hash, Func&& func) const
+    auto read(HashType hash, Func&& func) const
     {
         return this->_data.read([&](const map_type& data) {
             if (!data.contains(hash))
@@ -119,7 +302,7 @@ public:
      * @return     Result of the function execution
      */
     template <typename Func>
-    auto write(uint32_t hash, Func&& func)
+    auto write(HashType hash, Func&& func)
     {
         return this->_data.write([&](map_type& data) {
             if (!data.contains(hash))
@@ -140,7 +323,7 @@ public:
      * @return     Result of the function execution
      */
     template <typename Func, typename Factory>
-    auto write(uint32_t hash, Func&& func, Factory&& factory)
+    auto write(HashType hash, Func&& func, Factory&& factory)
     {
         return this->_data.write([&](map_type& data) {
             if (!data.contains(hash))
@@ -149,7 +332,7 @@ public:
                 if constexpr (std::is_invocable_r_v<T, Factory>)
                 {
                     // Regular function returning T
-                    data.emplace(hash, factory());
+                    data.insert(hash, factory());
                 }
                 else
                 {
@@ -170,7 +353,7 @@ public:
      * @return     Task that completes when operation finishes (void) or contains result
      */
     template <typename Func>
-    auto async_read(uint32_t hash, Func&& func) const -> decltype(func(std::declval<const T&>()))
+    auto async_read(HashType hash, Func&& func) const -> decltype(func(std::declval<const T&>()))
     {
         using task_type = decltype(func(std::declval<const T&>()));
 
@@ -206,7 +389,7 @@ public:
      * @return     Task that completes when operation finishes (void) or contains result
      */
     template <typename Func>
-    auto async_write(uint32_t hash, Func&& func)
+    auto async_write(HashType hash, Func&& func)
     {
         using task_type = decltype(func(std::declval<T&>()));
 
@@ -243,7 +426,7 @@ public:
      * @return     Task that completes when operation finishes (void) or contains result
      */
     template <typename Func, typename Factory>
-    auto async_write(uint32_t hash, Func&& func, Factory&& factory)
+    auto async_write(HashType hash, Func&& func, Factory&& factory)
     {
         using task_type = decltype(func(std::declval<T&>()));
 
@@ -260,12 +443,12 @@ public:
                         if constexpr (std::is_invocable_r_v<T, Factory>)
                         {
                             // Regular function returning T
-                            data.emplace(hash, (*factory_holder)());
+                            data.insert(hash, (*factory_holder)());
                         }
                         else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
                         {
                             // Coroutine function returning async::task<T>
-                            data.emplace(hash, co_await (*factory_holder)());
+                            data.insert(hash, co_await (*factory_holder)());
                         }
                         else
                         {
@@ -287,12 +470,12 @@ public:
                     if constexpr (std::is_invocable_r_v<T, Factory>)
                     {
                         // Regular function returning T
-                        data.emplace(hash, (*factory_holder)());
+                        data.insert(hash, (*factory_holder)());
                     }
                     else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
                     {
                         // Coroutine function returning async::task<T>
-                        data.emplace(hash, co_await (*factory_holder)());
+                        data.insert(hash, co_await (*factory_holder)());
                     }
                     else
                     {
@@ -316,29 +499,38 @@ public:
  *
  * @tparam T           Type stored in container
  * @tparam NumBuckets  Number of shards/buckets for distribution
+ * @tparam HashType    Type of hash key (default: uint32_t)
  */
-template <typename T, size_t NumBuckets>
+template <typename T, size_t NumBuckets, typename HashType = uint32_t>
 class sharded_container
 {
     static_assert(NumBuckets > 0, "NumBuckets must be positive");
 
 public:
-    using hash_function_type = std::function<uint32_t(const T&)>;
+    using hash_function_type = std::function<HashType(const T&)>;
+    using sub_container_type = sub_container<T, HashType>;
+    using bucket_type        = std::unique_ptr<sub_container_type>;
+    using buckets_type       = std::array<bucket_type, NumBuckets>;
 
 private:
-    std::array<sub_container<T>, NumBuckets> _buckets;
-    hash_function_type                       _hash_func;
+    buckets_type       _buckets;
+    hash_function_type _hash_func;
 
 public:
     /**
-     * @brief   Constructor with hash function
+     * @brief   Constructor with hash function and capacity
      *
      * @param[in] hash_func Function to calculate hash for elements
+     * @param[in] capacity  Capacity per bucket (default: 0xFFFFFFFF)
      */
-    explicit sharded_container(hash_function_type hash_func) :
+    explicit sharded_container(hash_function_type hash_func, size_t capacity = 0xFFFFFFFF) :
         _hash_func(std::move(hash_func))
     {
-        // Buckets are default-constructed, no need to initialize
+        // Initialize buckets with capacity
+        for (auto& bucket : _buckets)
+        {
+            bucket = std::make_unique<sub_container_type>(capacity);
+        }
     }
     sharded_container(const sharded_container&) = delete;
     sharded_container(sharded_container&&)      = delete;
@@ -351,17 +543,17 @@ public:
     bool insert(const T& value)
     {
         auto hash = this->_hash_func(value);
-        return this->bucket(hash).insert(hash, value);
+        return this->bucket(hash)->insert(hash, value);
     }
 
     /**
      * @brief   Removes element using hash function
      *
-     * @param[in] value Element to remove
+     * @param[in] hash Hash of the element to remove
      */
-    bool erase(uint16_t hash)
+    bool erase(HashType hash)
     {
-        return this->bucket(hash).erase(hash);
+        return this->bucket(hash)->erase(hash);
     }
 
     /**
@@ -373,9 +565,9 @@ public:
      * @return     Result of the function execution
      */
     template <typename Func>
-    auto read(uint32_t hash, Func&& func) const
+    auto read(HashType hash, Func&& func) const
     {
-        return this->bucket(hash).read(hash, std::forward<Func>(func));
+        return this->bucket(hash)->read(hash, std::forward<Func>(func));
     }
 
     /**
@@ -387,9 +579,9 @@ public:
      * @return     Result of the function execution
      */
     template <typename Func>
-    auto write(uint32_t hash, Func&& func)
+    auto write(HashType hash, Func&& func)
     {
-        return this->bucket(hash).write(hash, std::forward<Func>(func));
+        return this->bucket(hash)->write(hash, std::forward<Func>(func));
     }
 
     /**
@@ -403,9 +595,9 @@ public:
      * @return     Result of the function execution
      */
     template <typename Func, typename Factory>
-    auto write(uint32_t hash, Func&& func, Factory&& factory)
+    auto write(HashType hash, Func&& func, Factory&& factory)
     {
-        return this->bucket(hash).write(hash, std::forward<Func>(func), std::forward<Factory>(factory));
+        return this->bucket(hash)->write(hash, std::forward<Func>(func), std::forward<Factory>(factory));
     }
 
     /**
@@ -417,9 +609,9 @@ public:
      * @return     Task that completes when operation finishes (void) or contains result
      */
     template <typename Func>
-    auto async_read(uint32_t hash, Func&& func) const -> decltype(func(std::declval<const T&>()))
+    auto async_read(HashType hash, Func&& func) const -> decltype(func(std::declval<const T&>()))
     {
-        return this->bucket(hash).async_read(hash, std::forward<Func>(func));
+        return this->bucket(hash)->async_read(hash, std::forward<Func>(func));
     }
 
     /**
@@ -431,9 +623,9 @@ public:
      * @return     Task that completes when operation finishes (void) or contains result
      */
     template <typename Func>
-    auto async_write(uint32_t hash, Func&& func)
+    auto async_write(HashType hash, Func&& func)
     {
-        return this->bucket(hash).async_write(hash, std::forward<Func>(func));
+        return this->bucket(hash)->async_write(hash, std::forward<Func>(func));
     }
 
     /**
@@ -447,9 +639,9 @@ public:
      * @return     Task that completes when operation finishes (void) or contains result
      */
     template <typename Func, typename Factory>
-    auto async_write(uint32_t hash, Func&& func, Factory&& factory)
+    auto async_write(HashType hash, Func&& func, Factory&& factory)
     {
-        return this->bucket(hash).async_write(hash, std::forward<Func>(func), std::forward<Factory>(factory));
+        return this->bucket(hash)->async_write(hash, std::forward<Func>(func), std::forward<Factory>(factory));
     }
 
 private:
@@ -459,31 +651,31 @@ private:
      * @param[in] hash Hash value
      * @return    Bucket index
      */
-    static constexpr size_t bucket_index(uint32_t hash) noexcept
+    static constexpr size_t bucket_index(HashType hash) noexcept
     {
         return hash % NumBuckets;
     }
 
     /**
-     * @brief   Gets mutable reference to bucket by hash
+     * @brief   Gets mutable pointer to bucket by hash
      *
      * @param[in] hash Hash value
-     * @return    Reference to the target bucket
+     * @return    Pointer to the target bucket
      */
-    sub_container<T>& bucket(uint32_t hash)
+    sub_container_type* bucket(HashType hash)
     {
-        return this->_buckets[bucket_index(hash)];
+        return this->_buckets[bucket_index(hash)].get();
     }
 
     /**
-     * @brief   Gets const reference to bucket by hash
+     * @brief   Gets const pointer to bucket by hash
      *
      * @param[in] hash Hash value
-     * @return    Const reference to the target bucket
+     * @return    Const pointer to the target bucket
      */
-    const sub_container<T>& bucket(uint32_t hash) const
+    const sub_container_type* bucket(HashType hash) const
     {
-        return this->_buckets[bucket_index(hash)];
+        return this->_buckets[bucket_index(hash)].get();
     }
 };
 } // namespace fb

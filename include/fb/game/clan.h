@@ -58,31 +58,42 @@ public:
     struct builtin;
 
 private:
-    context&                                                         _context;
-    uint32_t                                                         _id;
-    std::string                                                      _name;
-    std::optional<std::string>                                       _title;
-    std::unordered_map<std::string, clan_member>                     _members;
-    std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>> _characters;
+    using member_map    = std::unordered_map<std::string, clan_member>;
+    using character_map = std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>>;
+
+private:
+    server&                    _server;
+    uint32_t                   _id;
+    std::string                _name;
+    std::optional<std::string> _title;
+    member_map                 _members;
+    character_map              _characters;
 
 public:
     /**
      * @brief      Constructs a new clan with the specified context and identifier.
      *
-     *             Creates a new clan object managed by the given game context.
+     *             Creates a new clan object managed by the given game server.
      *             The clan starts with no members and must be populated through
      *             the update() method or by adding members individually.
      *
-     * @param[in]  context  The game context that manages this clan
+     * @param[in]  server   The game server that manages this clan
      * @param[in]  id       The unique identifier for this clan
+     * @param[in]  name     The name of the clan
+     * @param[in]  title    The optional clan title/motto
+     * @param[in]  members  The initial list of clan members
      */
-    clan(context& context, uint32_t id, const std::string& name, const std::optional<std::string>& title);
+    clan(server&                                             server,
+         uint32_t                                            id,
+         const std::string&                                  name,
+         const std::optional<std::string>&                   title,
+         const std::unordered_map<std::string, clan_member>& members);
 
     /**
      * @brief      Copy constructor (deleted).
      *
      *             Clans cannot be copied to prevent resource management issues
-     *             and maintain unique clan identity within the game context.
+     *             and maintain unique clan identity within the game server.
      */
     clan(const clan&) = delete;
 
@@ -149,6 +160,15 @@ public:
     const std::unordered_map<std::string, clan_member>& members() const;
 
     /**
+     * @brief      Gets a clan member by name.
+     *
+     * @param[in]  name  The name of the member to get
+     *
+     * @return     Pointer to the clan member if found, nullptr otherwise
+     */
+    clan_member* member(const std::string& name);
+
+    /**
      * @brief      Adds a new member to the clan.
      *
      * @param[in]  member  The clan member data to add
@@ -161,6 +181,14 @@ public:
      * @param[in]  member  The name of the member to remove
      */
     void leave(const std::string& member);
+
+    /**
+     * @brief      Changes the role of a clan member.
+     *
+     * @param[in]  member_name  The name of the member whose role to change
+     * @param[in]  new_role The new role to assign to the member
+     */
+    void change_role(const std::string& member_name, CLAN_ROLE new_role);
 
     /**
      * @brief      Gets all currently online clan member characters.
@@ -180,7 +208,7 @@ public:
      *
      * @param      ch    The character to detach from the clan
      */
-    void detach_character(std::weak_ptr<character> ch);
+    void detach(std::weak_ptr<character> ch);
 
     /**
      * @brief      Finds clan members near a specific position on a map.
@@ -247,6 +275,24 @@ struct clan::builtin
      * @return     Number of return values pushed to Lua stack
      */
     static int builtin_leave(lua_State* L);
+
+    /**
+     * @brief      Lua binding for kicking a member from the clan.
+     *
+     * @param[in]  L  The Lua state
+     *
+     * @return     Number of return values pushed to Lua stack
+     */
+    static int builtin_kick(lua_State* L);
+
+    /**
+     * @brief      Lua binding for changing the role of a member in the clan.
+     *
+     * @param[in]  L  The Lua state
+     *
+     * @return     Number of return values pushed to Lua stack
+     */
+    static int builtin_change_role(lua_State* L);
 
     /**
      * @brief      Lua binding for sending messages to clan members.

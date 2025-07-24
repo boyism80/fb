@@ -86,7 +86,7 @@ public:
     const fb::game::map&       map;
     const fb::model::point16_t position;
     const fb::model::size8_t   size;
-    const uint16_t             crc;
+    mutable uint16_t           crc = 0;
 #else
     uint8_t                effect;
     uint16_t               position_x;
@@ -98,10 +98,11 @@ public:
 
 public:
 #ifndef BOT
-    map_update(const fb::game::map&        map,
-               const fb::model::point16_t& position,
-               const fb::model::size8_t&   size,
-               uint16_t                    crc = 0);
+    map_update(const fb::game::map& map, const fb::model::point16_t& position, const fb::model::size8_t& size) :
+        map(map),
+        position(position),
+        size(size)
+    { }
 #else
     map_update() = default;
 #endif

@@ -74,10 +74,10 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The game context managing this NPC
+     * @param      server   The game server managing this NPC
      * @param[in]  model    The NPC model data containing name, dialogue, and other settings
      */
-    npc(fb::game::context& context, const fb::model::npc& model);
+    npc(fb::game::server& server, const fb::model::npc& model);
     /**
      * @brief      Constructs a new instance.
      *

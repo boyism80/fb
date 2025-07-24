@@ -29,8 +29,7 @@ struct LeaveClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CLAN = 6,
     VT_UID = 8,
     VT_UNAME = 10,
-    VT_KICK = 12,
-    VT_ERROR = 14
+    VT_ERROR = 12
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -44,9 +43,6 @@ struct LeaveClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *uname() const {
     return GetPointer<const ::flatbuffers::String *>(VT_UNAME);
   }
-  bool kick() const {
-    return GetField<uint8_t>(VT_KICK, 0) != 0;
-  }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
@@ -57,7 +53,6 @@ struct LeaveClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
            VerifyOffset(verifier, VT_UNAME) &&
            verifier.VerifyString(uname()) &&
-           VerifyField<uint8_t>(verifier, VT_KICK, 1) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -79,9 +74,6 @@ struct LeaveClanBuilder {
   void add_uname(::flatbuffers::Offset<::flatbuffers::String> uname) {
     fbb_.AddOffset(LeaveClan::VT_UNAME, uname);
   }
-  void add_kick(bool kick) {
-    fbb_.AddElement<uint8_t>(LeaveClan::VT_KICK, static_cast<uint8_t>(kick), 0);
-  }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(LeaveClan::VT_ERROR, error, 0);
   }
@@ -102,7 +94,6 @@ inline ::flatbuffers::Offset<LeaveClan> CreateLeaveClan(
     uint32_t clan = 0,
     uint32_t uid = 0,
     ::flatbuffers::Offset<::flatbuffers::String> uname = 0,
-    bool kick = false,
     uint32_t error = 0) {
   LeaveClanBuilder builder_(_fbb);
   builder_.add_error(error);
@@ -110,7 +101,6 @@ inline ::flatbuffers::Offset<LeaveClan> CreateLeaveClan(
   builder_.add_uid(uid);
   builder_.add_clan(clan);
   builder_.add_host(host);
-  builder_.add_kick(kick);
   return builder_.Finish();
 }
 
@@ -120,7 +110,6 @@ inline ::flatbuffers::Offset<LeaveClan> CreateLeaveClanDirect(
     uint32_t clan = 0,
     uint32_t uid = 0,
     const char *uname = nullptr,
-    bool kick = false,
     uint32_t error = 0) {
   auto uname__ = uname ? _fbb.CreateString(uname) : 0;
   return fb::protocol::internal::response::raw::CreateLeaveClan(
@@ -129,7 +118,6 @@ inline ::flatbuffers::Offset<LeaveClan> CreateLeaveClanDirect(
       clan,
       uid,
       uname__,
-      kick,
       error);
 }
 

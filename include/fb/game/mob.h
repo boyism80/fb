@@ -58,7 +58,7 @@ class ai; // Forward declaration for AI
 class rezen
 {
 private:
-    fb::game::context&                 _context;
+    fb::game::server&                  _server;
     uint16_t                           _count = 0;
     std::optional<fb::model::datetime> _respawn_time;
 
@@ -70,12 +70,12 @@ public:
      * @brief      Constructs a new rezen (respawn manager) instance.
      *
      *             Initializes a respawn manager for a specific mob spawn point using
-     *             the provided context and spawn model configuration.
+     *             the provided server and spawn model configuration.
      *
-     * @param      context  The game context managing this respawn point.
+     * @param      server   The game server managing this respawn point.
      * @param[in]  model    The mob spawn model containing spawn configuration.
      */
-    rezen(fb::game::context& context, const fb::model::mob_spawn& model);
+    rezen(fb::game::server& server, const fb::model::mob_spawn& model);
 
     /**
      * @brief      Destroys the rezen instance.
@@ -163,23 +163,23 @@ public:
     };
 
 private:
-    fb::model::datetime _action_time;
-    std::weak_ptr<life> _target;
-    std::weak_ptr<life> _oblivion;
-    rezen*              _rezen         = nullptr;
-    lua::context*       _attack_thread = nullptr;
-    uint32_t            _buff_hp       = 0;
-    uint32_t            _buff_mp       = 0;
-    uint8_t             _buff_str      = 0;
-    uint8_t             _buff_dex      = 0;
-    uint8_t             _buff_int      = 0;
-    int8_t              _buff_phydef   = 0;
-    int8_t              _buff_magdef   = 0;
-    uint8_t             _buff_dam      = 0;
-    uint8_t             _buff_hit      = 0;
-    std::vector<item*>  _items;
-    bool                _hidden = false;
-    std::unique_ptr<ai> _ai_strategy;
+    fb::model::datetime                          _action_time;
+    std::weak_ptr<life>                          _target;
+    std::weak_ptr<life>                          _oblivion;
+    rezen*                                       _rezen         = nullptr;
+    lua::context*                                _attack_thread = nullptr;
+    uint32_t                                     _buff_hp       = 0;
+    uint32_t                                     _buff_mp       = 0;
+    uint8_t                                      _buff_str      = 0;
+    uint8_t                                      _buff_dex      = 0;
+    uint8_t                                      _buff_int      = 0;
+    int8_t                                       _buff_phydef   = 0;
+    int8_t                                       _buff_magdef   = 0;
+    uint8_t                                      _buff_dam      = 0;
+    uint8_t                                      _buff_hit      = 0;
+    std::vector<std::shared_ptr<fb::game::item>> _items;
+    bool                                         _hidden = false;
+    std::unique_ptr<ai>                          _ai_strategy;
 
 public:
     const std::weak_ptr<character> owner;
@@ -191,15 +191,15 @@ public:
     /**
      * @brief      Constructs a new mob with the specified parameters.
      *
-     *             Creates a mob instance using the provided context, model data,
+     *             Creates a mob instance using the provided server, model data,
      *             and initialization parameters. Sets up AI behavior, stats,
      *             and respawn management based on the configuration.
      *
-     * @param      context  The game context managing this mob.
+     * @param      server  The game server managing this mob.
      * @param[in]  model    The mob model containing base stats and behavior.
      * @param[in]  params   The initialization parameters for this mob instance.
      */
-    mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params);
+    mob(fb::game::server& server, const fb::model::mob& model, const initial_params& params);
 
     /**
      * @brief      Copy constructor for mob duplication.
@@ -521,7 +521,7 @@ public:
      *
      *          Validates the target before returning:
      *          - Must not be null
-     *          - Must be alive in context
+     *          - Must be alive in server
      *          - Must be alive in game
      *          - Must be within sight
      *          - Must not be hidden from this mob
@@ -608,8 +608,10 @@ public:
      *
      *             Handles the item dropping logic when the mob is killed,
      *             including loot table processing and item placement.
+     *
+     * @return     An async task that completes when the items are dropped
      */
-    void drop_items();
+    async::task<void> drop_items();
 
     /**
      * @brief      Asserts that the current thread is the correct thread for this mob.
@@ -630,16 +632,16 @@ public:
      *
      * @return     Reference to the vector of items carried by this mob
      */
-    const std::vector<item*>& items() const;
+    const std::vector<std::shared_ptr<fb::game::item>>& items() const;
 
     /**
      * @brief      Adds an item to the mob's inventory.
      *
-     * @param      i     The item to add to the mob's inventory
+     * @param      item     The item to add to the mob's inventory
      *
      * @return     True if the item was successfully added, false otherwise
      */
-    bool push_item(item& i);
+    bool push_item(std::shared_ptr<fb::game::item> item);
 
     /**
      * @brief      Checks if this mob is hidden from the target.

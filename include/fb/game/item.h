@@ -118,11 +118,11 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context         The game context managing this item
+     * @param      server         The game server managing this item
      * @param[in]  model           The item model data containing properties and stats
      * @param[in]  params          The initial parameters for the item
      */
-    item(fb::game::context&     context,
+    item(fb::game::server&      server,
          const fb::model::item& model,
          const initial_params&  params = initial_params{.count = 1});
     /**
@@ -404,10 +404,10 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The game context managing this cash item
+     * @param      server   The game server managing this cash item
      * @param[in]  chunk    The initial cash value
      */
-    cash(fb::game::context& context, uint32_t chunk);
+    cash(fb::game::server& server, uint32_t chunk);
     /**
      * @brief      Destroys the object.
      */
@@ -417,12 +417,12 @@ private:
     /**
      * @brief      Finds the cash model that matches the specified value.
      *
-     * @param      context  The game context
+     * @param      server   The game server
      * @param[in]  value    The cash value to match
      *
      * @return     Reference to the matching cash model
      */
-    static const fb::model::cash& match_model(fb::game::context& context, uint32_t value);
+    static const fb::model::cash& match_model(fb::game::server& server, uint32_t value);
 
 public:
     /**
@@ -469,11 +469,11 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The game context managing this consumable item
+     * @param      server   The game server managing this consumable item
      * @param[in]  model    The consumable item model data containing usage properties
      * @param[in]  count    The initial quantity of consumable items in the stack
      */
-    consume(fb::game::context& context, const fb::model::consume& model, uint16_t count = 1);
+    consume(fb::game::server& server, const fb::model::consume& model, uint16_t count = 1);
     /**
      * @brief      Constructs a new instance.
      *
@@ -510,10 +510,10 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The game context managing this pack item
+     * @param      server   The game server managing this pack item
      * @param[in]  model    The pack model data containing capacity and properties
      */
-    pack(fb::game::context& context, const fb::model::pack& model);
+    pack(fb::game::server& server, const fb::model::pack& model);
     /**
      * @brief      Constructs a new instance.
      *
@@ -584,10 +584,10 @@ protected:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The game context managing this equipment item
+     * @param      server   The game server managing this equipment item
      * @param[in]  model    The equipment model data containing stats and properties
      */
-    equipment(fb::game::context& context, const fb::model::equipment& model);
+    equipment(fb::game::server& server, const fb::model::equipment& model);
     /**
      * @brief      Constructs a new instance.
      *
@@ -738,10 +738,10 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The game context managing this weapon
+     * @param      server   The game server managing this weapon
      * @param[in]  model    The weapon model data containing damage and properties
      */
-    weapon(fb::game::context& context, const fb::model::weapon& model);
+    weapon(fb::game::server& server, const fb::model::weapon& model);
     /**
      * @brief      Constructs a new instance.
      *
@@ -817,10 +817,10 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The game context managing this armor
+     * @param      server   The game server managing this armor
      * @param[in]  model    The armor model data containing defense and properties
      */
-    armor(fb::game::context& context, const fb::model::armor& model);
+    armor(fb::game::server& server, const fb::model::armor& model);
     /**
      * @brief      Constructs a new instance.
      *
@@ -846,10 +846,10 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The game context managing this helmet
+     * @param      server   The game server managing this helmet
      * @param[in]  model    The helmet model data containing defense and properties
      */
-    helmet(fb::game::context& context, const fb::model::helmet& model);
+    helmet(fb::game::server& server, const fb::model::helmet& model);
     /**
      * @brief      Constructs a new instance.
      *
@@ -875,10 +875,10 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The game context managing this shield
+     * @param      server   The game server managing this shield
      * @param[in]  model    The shield model data containing defense and properties
      */
-    shield(fb::game::context& context, const fb::model::shield& model);
+    shield(fb::game::server& server, const fb::model::shield& model);
     /**
      * @brief      Constructs a new instance.
      *
@@ -904,10 +904,10 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The game context managing this ring
+     * @param      server   The game server managing this ring
      * @param[in]  model    The ring model data containing enchantments and properties
      */
-    ring(fb::game::context& context, const fb::model::ring& model);
+    ring(fb::game::server& server, const fb::model::ring& model);
     /**
      * @brief      Constructs a new instance.
      *
@@ -933,10 +933,10 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The game context managing this auxiliary item
+     * @param      server   The game server managing this auxiliary item
      * @param[in]  model    The auxiliary model data containing effects and properties
      */
-    auxiliary(fb::game::context& context, const fb::model::auxiliary& model);
+    auxiliary(fb::game::server& server, const fb::model::auxiliary& model);
     /**
      * @brief      Constructs a new instance.
      *

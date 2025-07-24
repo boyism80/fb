@@ -1,0 +1,31 @@
+{
+    "id": 0,
+    "ip": "127.0.0.1",
+    "name": "gateway",
+    "port": 3001,
+    "thread": {
+        "logic": 12,
+        "io": 12,
+        "background": 8
+    },
+    "log": [
+        "debug",
+        "info",
+        "warn",
+        "fatal"
+    ],
+    "entrypoints": [
+        {
+            "name": "로그인서버",
+            "desc": "설명을 입력하세요",
+            "ip": "127.0.0.1",
+            "port": 3002
+        }
+    ],
+    "amqp": {
+        "ip": "127.0.0.1",
+        "port": 5672,
+        "uid": "guest",
+        "pwd": "guest"
+    }
+}
