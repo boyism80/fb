@@ -52,7 +52,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=build
           cache-to: type=gha,scope=build,mode=max
-          file: lib/Dockerfile
+          file: server/fb/Dockerfile
 
   internal:
     runs-on: [self-hosted, linux, build]
@@ -98,7 +98,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=internal
           cache-to: type=gha,scope=internal,mode=max
-          file: http/Dockerfile
+          file: server/http/Dockerfile
           build-args: |
             SERVICE=internal
 
@@ -146,7 +146,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=write-back
           cache-to: type=gha,scope=write-back,mode=max
-          file: http/Dockerfile
+          file: server/http/Dockerfile
           build-args: |
             SERVICE=write-back
 
@@ -194,7 +194,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=gateway
           cache-to: type=gha,scope=gateway,mode=max
-          file: gateway/Dockerfile
+          file: server/gateway/Dockerfile
 
   login:
     runs-on: [self-hosted, linux, build]
@@ -240,7 +240,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=login
           cache-to: type=gha,scope=login,mode=max
-          file: login/Dockerfile
+          file: server/login/Dockerfile
 
   game:
     runs-on: [self-hosted, linux, build, epyc]
@@ -286,7 +286,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=game
           cache-to: type=gha,scope=game,mode=max
-          file: game/Dockerfile
+          file: server/game/Dockerfile
 
   bot:
     runs-on: [self-hosted, linux, build, epyc]
@@ -332,7 +332,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=bot
           cache-to: type=gha,scope=bot,mode=max
-          file: bot/Dockerfile
+          file: server/bot/Dockerfile
 
   deploy:
     runs-on: [self-hosted, linux, build]
