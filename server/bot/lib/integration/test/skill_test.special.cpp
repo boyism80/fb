@@ -272,7 +272,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              }
 
              co_await caster->set_current_hp_mp(50, 100000, DEFAULT_TIMEOUT);
-             std::ignore = co_await caster->request<fb::protocol::game::response::update_external<true>>(
+             std::ignore = co_await caster->template request<fb::protocol::game::response::update_external<true>>(
                  fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET,
                                                          slot,
                                                          "",
