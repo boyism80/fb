@@ -10,8 +10,9 @@ front_info_test::front_info_test(game_bot_controller& controller) :
 
 async::task<void> front_info_test::on_initialize(game_bot_controller& controller)
 {
-    auto bots = this->get_test_bots();
+    co_await super::on_initialize(controller);
 
+    auto  bots = this->get_test_bots();
     auto& bot2 = bots[1];
     co_await bot2->move(DIRECTION::BOTTOM);
 }
