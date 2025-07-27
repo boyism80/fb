@@ -17,7 +17,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
         std::string name; // Spell name
         std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&)>
             pre_condition_check; // Called before spell cast to setup conditions
-        std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&)>
+        std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&, uint8_t slot)>
             spell_cast_function; // Custom spell casting logic
         std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&)>
             post_condition_check; // Called after spell cast to verify effects
@@ -26,18 +26,50 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
     auto local          = fb::config<std::string>("ip") == "127.0.0.1";
     auto weapon_name    = "목도";
     auto special_spells = std::vector<special_spell_test>{
+        {"비영승보",
+         [](auto& caster) -> async::task<bool> {
+             fb::logger::debug("Pre-condition: Setting up nation for 비영승보 test");
+
+             co_await caster->change_str(99, DEFAULT_TIMEOUT);
+             co_await caster->change_level(30, DEFAULT_TIMEOUT);
+             co_await caster->create_item("양첨목봉", 1, DEFAULT_TIMEOUT);
+             co_await caster->equip(0, DEFAULT_TIMEOUT);
+             co_return true;
+         }, [](auto& caster, uint8_t slot) -> async::task<bool> {
+             fb::logger::debug("Spell cast: Using spell_cast with empty message");
+
+             auto before = caster->position();
+             co_await caster->spawn_monster("다람쥐", before.x, before.y + 1, DEFAULT_TIMEOUT);
+             auto&& resp = co_await caster->template request<fb::protocol::game::response::position>(
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, slot, "", 0, {0, 0}),
+                 [before](auto& resp) {
+                     return resp.abs != before;
+                 },
+                 DEFAULT_TIMEOUT);
+             co_return true;
+         }, [](auto& caster) -> async::task<bool> {
+             fb::logger::debug("Post-condition: Verifying 비영승보 test");
+
+             caster->chat("/몬스터제거");
+             co_await caster->clear_all_drop_items(DEFAULT_TIMEOUT);
+             co_await caster->unequip(EQUIPMENT_PARTS::WEAPON, DEFAULT_TIMEOUT);
+             co_await caster->clear_inventory(DEFAULT_TIMEOUT);
+             co_await caster->move(DIRECTION::TOP, 2);
+             co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
+             co_return true;
+         }},
         {"귀환",
          [local](auto& caster) -> async::task<bool> {
              // Pre-condition: Setup nation for teleportation test
              fb::logger::debug("Pre-condition: Setting up nation for 귀환 test");
              co_return true;
-         }, [local](auto& caster) -> async::task<bool> {
+         }, [local](auto& caster, uint8_t slot) -> async::task<bool> {
              // Spell cast: Use spell_cast with empty message
 
              if (local)
              {
                  auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                     fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 0, "", 0, {0, 0}),
+                     fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, slot, "", 0, {0, 0}),
                      [](auto& resp) {
                          return resp.type == MESSAGE_TYPE::STATE;
                      },
@@ -47,7 +79,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              else
              {
                  caster = co_await caster->transfer(
-                     fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 0, "", 0, {0, 0}));
+                     fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, slot, "", 0, {0, 0}));
                  co_return true;
              }
          }, [this, local](auto& caster) -> async::task<bool> {
@@ -65,7 +97,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              // Pre-condition: Setup direction input for teleportation
              fb::logger::debug("Pre-condition: Setting up direction input for 비영사천문 test");
              co_return true;
-         }, [local](auto& caster) -> async::task<bool> {
+         }, [local](auto& caster, uint8_t slot) -> async::task<bool> {
              // Spell cast: Use spell_cast with direction message
 
              auto before = caster->position();
@@ -73,7 +105,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
                  caster = co_await caster->transfer(fb::protocol::game::request::chat(false, "/맵이동 국내성"));
 
              auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, 1, "동", 0, {0, 0}),
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, slot, "동", 0, {0, 0}),
                  [](auto& resp) {
                      return resp.type == MESSAGE_TYPE::STATE;
                  },
@@ -109,13 +141,13 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              co_await caster->set_max_hp_mp(10000, 10000, DEFAULT_TIMEOUT);
              fb::logger::debug("Pre-condition: Setting up MP/HP for 공력증강 test");
              co_return true;
-         }, [](auto& caster) -> async::task<bool> {
+         }, [](auto& caster, uint8_t slot) -> async::task<bool> {
              // Spell cast: Use spell_cast with empty message
              while (true)
              {
                  co_await caster->set_current_hp_mp(10000, 30, DEFAULT_TIMEOUT);
                  auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                     fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, 2, "", 0, {0, 0}),
+                     fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, slot, "", 0, {0, 0}),
                      [](auto& resp) {
                          return resp.type == MESSAGE_TYPE::STATE;
                      },
@@ -152,10 +184,10 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              co_await caster->create_item(weapon_name, 1, DEFAULT_TIMEOUT);
              co_await caster->equip(0, DEFAULT_TIMEOUT);
              co_return true;
-         }, [weapon_name](auto& caster) -> async::task<bool> {
+         }, [weapon_name](auto& caster, uint8_t slot) -> async::task<bool> {
              // Spell cast: Use spell_cast with weapon type message
              auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, 3, weapon_name, 0, {0, 0}),
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, slot, weapon_name, 0, {0, 0}),
                  [weapon_name](auto& resp) {
                      if (resp.type != MESSAGE_TYPE::STATE)
                          return false;
@@ -176,10 +208,10 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              // Pre-condition: Setup target and weapon for damage test
              fb::logger::debug("Pre-condition: Setting up target and weapon for 검신검귀 test");
              co_return true;
-         }, [weapon_name](auto& caster) -> async::task<bool> {
+         }, [weapon_name](auto& caster, uint8_t slot) -> async::task<bool> {
              // Spell cast: Use spell_cast with weapon type message
              auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, 4, weapon_name, 0, {0, 0}),
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, slot, weapon_name, 0, {0, 0}),
                  [weapon_name](auto& resp) {
                      if (resp.type != MESSAGE_TYPE::STATE)
                          return false;
@@ -200,10 +232,10 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              // Pre-condition: Setup target and weapon for damage test
              fb::logger::debug("Pre-condition: Setting up target and weapon for 신검합일 test");
              co_return true;
-         }, [weapon_name](auto& caster) -> async::task<bool> {
+         }, [weapon_name](auto& caster, uint8_t slot) -> async::task<bool> {
              // Spell cast: Use spell_cast with weapon type message
              auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, 5, weapon_name, 0, {0, 0}),
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, slot, weapon_name, 0, {0, 0}),
                  [weapon_name](auto& resp) {
                      if (resp.type != MESSAGE_TYPE::STATE)
                          return false;
@@ -228,7 +260,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              fb::logger::debug("Pre-condition: Setting up level and monster type for 소혼강신 test");
              co_await caster->change_level(68, DEFAULT_TIMEOUT);
              co_return true;
-         }, [this](auto& caster) -> async::task<bool> {
+         }, [this](auto& caster, uint8_t slot) -> async::task<bool> {
              // Spell cast: Use spell_cast with monster type message
              auto mob       = "평웅";
              auto mob_model = this->controller.container.model.mob.name2mob(mob);
@@ -239,7 +271,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              }
 
              auto&& resp = co_await caster->template request<fb::protocol::game::response::update>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, 6, mob, 0, {0, 0}),
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, slot, mob, 0, {0, 0}),
                  [&mob_model](auto& resp) {
                      if (resp.objects_data.size() != 1)
                          return false;
@@ -293,19 +325,19 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
                  caster = co_await caster->transfer(fb::protocol::game::request::chat(false, "/맵이동 국내성진입로"));
 
              co_return true;
-         }, [this](auto& caster) -> async::task<bool> {
+         }, [this](auto& caster, uint8_t slot) -> async::task<bool> {
              // Spell cast: Use spell_cast with direction message
 
              auto& map_model  = this->controller.container.model.map[caster->map()];
              auto& root_model = this->controller.container.model.map[map_model.root];
              if (root_model.revive.size() == 0)
              {
-                 fb::logger::fatal("Revive is not enabled, skipping test");
+                 fb::logger::warn("Revive is not enabled, skipping test");
                  co_return true;
              }
 
              auto&& resp = co_await caster->template request<fb::protocol::game::response::map_config>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, 7, "좌", 0, {0, 0}),
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, slot, "좌", 0, {0, 0}),
                  DEFAULT_TIMEOUT);
 
              auto& next_map_model = this->controller.container.model.map[caster->map()];
@@ -342,6 +374,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
     fb::logger::debug("Special spell learning completed. Individual test implementations pending.");
 
     // Run individual spell tests
+    auto slot = 0;
     for (const auto& spell : special_spells)
     {
         fb::logger::debug("Running test for: {}", spell.name);
@@ -351,11 +384,12 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
         if (!pre_condition_result)
         {
             fb::logger::warn("Pre-condition check failed for '{}', skipping test", spell.name);
+            slot++;
             continue;
         }
 
         // Run spell cast function
-        auto spell_cast_result = co_await spell.spell_cast_function(caster);
+        auto spell_cast_result = co_await spell.spell_cast_function(caster, slot++);
         if (!spell_cast_result)
         {
             fb::logger::warn("Spell cast failed for '{}', skipping post-condition", spell.name);
