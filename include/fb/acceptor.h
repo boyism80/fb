@@ -413,6 +413,7 @@ private:
                     throw std::runtime_error("cannot accept socket. acceptor is cleaning now.");
 
                 shared_socket_ptr->data(this->handle_accepted(*shared_socket_ptr));
+                shared_socket_ptr->set_option(boost::asio::ip::tcp::no_delay(false));
 
                 {
                     auto fd = shared_socket_ptr->fd();
