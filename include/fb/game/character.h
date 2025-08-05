@@ -40,6 +40,7 @@
 #include <fb/game/achievement.h>
 #include <fb/game/bulletin.h>
 #include <fb/game/stat.h>
+#include <fb/game/quest.h>
 
 namespace fb::game {
 
@@ -121,8 +122,9 @@ private:
     bool                                        _detect        = false;
     std::vector<std::shared_ptr<fb::game::mob>> _spawned_mobs  = {};
     fb::model::datetime                         _last_spell_cast;
-    bool                                        _super_hide        = false;
-    uint8_t                                     _spell_cast_count  = 0;
+    bool                                        _super_hide       = false;
+    uint8_t                                     _spell_cast_count = 0;
+    std::unordered_map<uint32_t, quest>         _quests;
     bool                                        _options[0x0B + 1] = {
         1,
     };
@@ -1103,6 +1105,33 @@ public:
     async::task<void> death_penalty();
 
     /**
+     * @brief      Gets a quest by ID.
+     *
+     * @param[in]  id  The quest ID
+     *
+     * @return     Pointer to the quest, or nullptr if not found
+     */
+    fb::game::quest* quest(uint32_t id);
+
+    /**
+     * @brief      Starts a quest for the character.
+     *
+     * @param[in]  id  The quest ID to start
+     *
+     * @return     True if the quest was started successfully, false otherwise
+     */
+    bool start_quest(uint32_t id);
+
+    /**
+     * @brief      Removes a quest from the character.
+     *
+     * @param[in]  id  The quest ID to remove
+     *
+     * @return     True if the quest was removed successfully, false otherwise
+     */
+    bool remove_quest(uint32_t id);
+
+    /**
      * @brief      Returns a protocol representation of the object.
      *
      * @return     Protocol representation of the object.
@@ -2073,6 +2102,42 @@ public:
      * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_rezen_force(lua_State* L);
+
+    /**
+     * @brief      Lua builtin function to get a quest by ID.
+     *
+     * @param      L     The Lua state containing function arguments.
+     *
+     * @return     Number of return values pushed to the Lua stack.
+     */
+    static int builtin_quest(lua_State* L);
+
+    /**
+     * @brief      Lua builtin function to start a quest for the character.
+     *
+     * @param      L     The Lua state containing function arguments.
+     *
+     * @return     Number of return values pushed to the Lua stack.
+     */
+    static int builtin_start_quest(lua_State* L);
+
+    /**
+     * @brief      Lua builtin function to remove a quest from the character.
+     *
+     * @param      L     The Lua state containing function arguments.
+     *
+     * @return     Number of return values pushed to the Lua stack.
+     */
+    static int builtin_remove_quest(lua_State* L);
+
+    /**
+     * @brief      Lua builtin function to check if a quest can be started for the character.
+     *
+     * @param      L     The Lua state containing function arguments.
+     *
+     * @return     Number of return values pushed to the Lua stack.
+     */
+    static int builtin_can_start_quest(lua_State* L);
 };
 
 /**

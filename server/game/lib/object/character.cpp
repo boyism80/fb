@@ -1965,3 +1965,33 @@ async::task<void> character::death_penalty()
         }
     }
 }
+
+fb::game::quest* character::quest(uint32_t id)
+{
+    if (this->_quests.contains(id) == false)
+        return nullptr;
+
+    return &this->_quests[id];
+}
+
+bool character::start_quest(uint32_t id)
+{
+    if (this->server.model.quest.contains(id))
+        return false;
+
+    auto& attr = this->server.model.quest_attribute[id];
+    if (this->condition(attr.condition) == false)
+        return false;
+
+    this->_quests.insert({id, fb::game::quest(id, *this)});
+    return true;
+}
+
+bool character::remove_quest(uint32_t id)
+{
+    if (this->_quests.contains(id) == false)
+        return false;
+
+    this->_quests.erase(id);
+    return true;
+}

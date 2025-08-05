@@ -71,6 +71,10 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"menu",                character::builtin::builtin_menu},
 {"slot",                character::builtin::builtin_slot},
 {"rezen_force",         character::builtin::builtin_rezen_force},
+{"quest",               character::builtin::builtin_quest},
+{"start_quest",         character::builtin::builtin_start_quest},
+{"remove_quest",        character::builtin::builtin_remove_quest},
+{"can_start_quest",     character::builtin::builtin_can_start_quest},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin::builtin_look(lua_State* L)
@@ -3157,4 +3161,129 @@ int fb::game::character::builtin::builtin_rezen_force(lua_State* L)
         server->rezen_force(*map);
 
     return 0;
+}
+
+int fb::game::character::builtin::builtin_quest(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (lua->argc() < 2)
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto id    = lua->tointeger(2);
+    auto quest = ch->quest(id);
+    if (quest == nullptr)
+        lua->pushnil();
+    else
+        lua->pushobject(quest);
+
+    return 1;
+}
+
+int fb::game::character::builtin::builtin_start_quest(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto id = lua->tointeger(2);
+    if (server->model.quest.contains(id) == false)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    if (ch->start_quest(id) == false)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto quest = ch->quest(id);
+    if (quest == nullptr)
+        lua->pushnil();
+    else
+        lua->pushobject(quest);
+
+    return 1;
+}
+
+int fb::game::character::builtin::builtin_remove_quest(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (lua->argc() < 2)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    if (lua->is_number(2))
+    {
+        auto id = lua->tointeger(2);
+        lua->pushboolean(ch->remove_quest(id));
+        return 1;
+    }
+    else if (lua->is_userdata<fb::game::quest>(2))
+    {
+        auto quest = lua->touserdata<fb::game::quest>(2);
+        lua->pushboolean(ch->remove_quest(quest->id));
+        return 1;
+    }
+    else
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+}
+
+int fb::game::character::builtin::builtin_can_start_quest(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (lua->argc() < 2)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto id = lua->tointeger(2);
+    if (server->model.quest.contains(id) == false)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto& attr = server->model.quest_attribute[id];
+    lua->pushboolean(ch->condition(attr.condition));
+    return 1;
 }
