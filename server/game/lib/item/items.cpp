@@ -1063,6 +1063,66 @@ bool fb::game::items::swap(uint8_t src, uint8_t dst)
     return true;
 }
 
+bool fb::game::items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint32_t money) const
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return false;
+
+    auto money_cap = 0xFFFFFFFF - owner->money();
+    if (money_cap < money)
+        return false;
+
+    auto free_size = this->free_size();
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto item = this->at(i);
+        if (item == nullptr)
+            continue;
+
+        auto& model = item->based<fb::model::item>();
+        if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
+            continue;
+
+        if (items.contains(model.id) == false)
+            continue;
+
+        if (model.capacity < item->count() + items.at(model.id))
+            return false;
+
+        free_size++;
+    }
+
+    return free_size >= items.size();
+}
+
+bool fb::game::items::is_rewardable(const std::vector<fb::model::dsl>& items) const
+{
+    auto buffer = std::unordered_map<uint32_t, uint16_t>{};
+    auto money  = 0;
+    for (auto& item : items)
+    {
+        switch (item.header)
+        {
+        case fb::model::enum_value::DSL::item:
+        {
+            auto params        = fb::model::dsl::item(item.params);
+            buffer[params.id] += params.count;
+            break;
+        }
+        case fb::model::enum_value::DSL::money:
+        {
+            auto params  = fb::model::dsl::money(item.params);
+            money       += params.value;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    return this->is_rewardable(buffer, money);
+}
+
 std::map<EQUIPMENT_PARTS, std::shared_ptr<fb::game::equipment>> fb::game::items::equipments() const
 {
     return std::map<EQUIPMENT_PARTS, std::shared_ptr<fb::game::equipment>>{

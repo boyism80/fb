@@ -931,19 +931,20 @@ inline const char* enum_tostring<DIRECTION>(DIRECTION k)
 enum class DSL
 {
     item = 0, 
-    level = 1, 
-    sex = 2, 
-    strength = 3, 
-    intelligence = 4, 
-    dexterity = 5, 
-    promotion = 6, 
-    class_t = 7, 
-    role = 8, 
-    world = 9, 
-    map = 10, 
-    area = 11, 
-    point = 12, 
-    script = 13
+    money = 1, 
+    level = 2, 
+    sex = 3, 
+    strength = 4, 
+    intelligence = 5, 
+    dexterity = 6, 
+    promotion = 7, 
+    class_t = 8, 
+    role = 9, 
+    world = 10, 
+    map = 11, 
+    area = 12, 
+    point = 13, 
+    script = 14
 }; // end of enum 'DSL'
 
 template <>
@@ -952,6 +953,7 @@ inline DSL enum_parse<DSL>(const std::string k)
     static const std::unordered_map<std::string, DSL> enums
     {
         { "item", DSL::item }, 
+        { "money", DSL::money }, 
         { "level", DSL::level }, 
         { "sex", DSL::sex }, 
         { "strength", DSL::strength }, 
@@ -980,6 +982,7 @@ inline const char* enum_tostring<DSL>(DSL k)
     static const std::unordered_map<DSL, const char*> enums
     {
         { DSL::item, "item" }, 
+        { DSL::money, "money" }, 
         { DSL::level, "level" }, 
         { DSL::sex, "sex" }, 
         { DSL::strength, "strength" }, 
@@ -2983,6 +2986,8 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "DIRECTION_LEFT");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::item);
     lua_setglobal(lua, "DSL_item");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::money);
+    lua_setglobal(lua, "DSL_money");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::level);
     lua_setglobal(lua, "DSL_level");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::sex);
@@ -3512,6 +3517,7 @@ public:
     class item;
     class level;
     class map;
+    class money;
     class point;
     class promotion;
     class role;
@@ -3744,6 +3750,30 @@ public:
 };
 
 
+class fb::model::dsl::money
+{
+public:
+    const uint32_t value;
+
+public:
+    money(uint32_t value) : 
+        value(value)
+    { }
+    money(const Json::Value& json) : 
+        value(fb::model::build<uint32_t>(json[0]))
+    { }
+    money(const std::vector<std::any>& parameters) : 
+        value(any_cast<uint32_t>(parameters[0]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::money, {value});
+    }
+};
+
+
 class fb::model::dsl::point
 {
 public:
@@ -3935,6 +3965,7 @@ inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& jso
         { fb::model::enum_value::DSL::item, [](const Json::Value& json) { return fb::model::dsl::item(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::level, [](const Json::Value& json) { return fb::model::dsl::level(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::map, [](const Json::Value& json) { return fb::model::dsl::map(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::money, [](const Json::Value& json) { return fb::model::dsl::money(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::point, [](const Json::Value& json) { return fb::model::dsl::point(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::promotion, [](const Json::Value& json) { return fb::model::dsl::promotion(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::role, [](const Json::Value& json) { return fb::model::dsl::role(json).to_dsl().params; }},

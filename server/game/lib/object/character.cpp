@@ -1966,12 +1966,12 @@ async::task<void> character::death_penalty()
     }
 }
 
-fb::game::quest* character::quest(uint32_t id)
+std::shared_ptr<fb::game::quest> character::quest(uint32_t id) const
 {
     if (this->_quests.contains(id) == false)
         return nullptr;
 
-    return &this->_quests[id];
+    return this->_quests.at(id);
 }
 
 bool character::start_quest(uint32_t id)
@@ -1983,7 +1983,7 @@ bool character::start_quest(uint32_t id)
     if (this->condition(attr.condition) == false)
         return false;
 
-    this->_quests.insert({id, fb::game::quest(id, *this)});
+    this->_quests.insert({id, std::make_shared<fb::game::quest>(id, *this)});
     return true;
 }
 
@@ -1993,5 +1993,38 @@ bool character::remove_quest(uint32_t id)
         return false;
 
     this->_quests.erase(id);
+    return true;
+}
+
+bool character::reward(const std::vector<fb::model::dsl>& reward)
+{
+    if (this->items.is_rewardable(reward) == false)
+        return false;
+
+    auto money = 0;
+    for (auto& item : reward)
+    {
+        switch (item.header)
+        {
+        case fb::model::enum_value::DSL::item:
+        {
+            auto  params = fb::model::dsl::item(item.params);
+            auto& model  = this->server.model.item[params.id];
+            auto  item   = model.make(this->server, params.count);
+            this->items.add(item);
+            break;
+        }
+        case fb::model::enum_value::DSL::money:
+        {
+            auto params  = fb::model::dsl::money(item.params);
+            money       += params.value;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
+    this->money_add(money);
     return true;
 }

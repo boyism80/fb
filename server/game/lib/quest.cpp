@@ -55,8 +55,8 @@ bool quest::complete()
     if (!attr.reward.empty() && server.model.reward.contains(attr.reward))
     {
         auto& reward = server.model.reward[attr.reward];
-        // TODO: reward to owner
-        // if failed, return false
+        if (this->owner.reward(reward.dsl) == false)
+            return false;
     }
 
     this->_completed = true;

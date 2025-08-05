@@ -260,32 +260,34 @@ namespace Fb.Model.EnumValue
     {
         [EnumMember(Value = "item")]
         Item = 0, 
+        [EnumMember(Value = "money")]
+        Money = 1, 
         [EnumMember(Value = "level")]
-        Level = 1, 
+        Level = 2, 
         [EnumMember(Value = "sex")]
-        Sex = 2, 
+        Sex = 3, 
         [EnumMember(Value = "strength")]
-        Strength = 3, 
+        Strength = 4, 
         [EnumMember(Value = "intelligence")]
-        Intelligence = 4, 
+        Intelligence = 5, 
         [EnumMember(Value = "dexterity")]
-        Dexterity = 5, 
+        Dexterity = 6, 
         [EnumMember(Value = "promotion")]
-        Promotion = 6, 
+        Promotion = 7, 
         [EnumMember(Value = "class_t")]
-        ClassT = 7, 
+        ClassT = 8, 
         [EnumMember(Value = "role")]
-        Role = 8, 
+        Role = 9, 
         [EnumMember(Value = "world")]
-        World = 9, 
+        World = 10, 
         [EnumMember(Value = "map")]
-        Map = 10, 
+        Map = 11, 
         [EnumMember(Value = "area")]
-        Area = 11, 
+        Area = 12, 
         [EnumMember(Value = "point")]
-        Point = 12, 
+        Point = 13, 
         [EnumMember(Value = "script")]
-        Script = 13
+        Script = 14
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -1762,6 +1764,28 @@ namespace Fb.Model
                 {
                     Header = Fb.Model.EnumValue.Dsl.Map,
                     Params = new object[] {Id, X, Y, Right, Bottom}
+                };
+            }
+        }
+        public class Money
+        {
+            [JsonProperty("value")]
+            public uint Value { get; set; }
+
+            public static Money Parse(object[] parameters)
+            {
+                return new Money
+                {
+                    Value = (uint)parameters[0]
+                };
+            }
+
+            public Dsl ToDSL()
+            {
+                return new Dsl
+                {
+                    Header = Fb.Model.EnumValue.Dsl.Money,
+                    Params = new object[] {Value}
                 };
             }
         }

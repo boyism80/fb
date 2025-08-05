@@ -76,10 +76,14 @@ public:
     using object::map;
 
 public:
-    /**
-     * @brief      Forward declaration of the character container class.
-     */
     class container;
+
+private:
+    // Type aliases for better readability
+    using socket_ptr_t      = std::weak_ptr<fb::socket<character>>;
+    using quest_map_t       = std::unordered_map<uint32_t, std::shared_ptr<fb::game::quest>>;
+    using mob_vector_t      = std::vector<std::shared_ptr<fb::game::mob>>;
+    using achievement_map_t = std::map<uint32_t, std::unique_ptr<achievement>>;
 
 public:
     LUA_PROTOTYPE
@@ -89,52 +93,52 @@ public:
     struct builtin;
 
 private:
-    uint32_t                                    _id;
-    std::weak_ptr<fb::socket<character>>        _socket;
-    std::string                                 _name;
-    ROLE                                        _role;
-    std::string                                 _pw;
-    std::optional<uint32_t>                     _birthday;
-    fb::model::datetime                         _updated_date;
-    uint16_t                                    _look        = 0;
-    uint8_t                                     _color       = 0;
-    std::optional<uint8_t>                      _armor_color = 0;
-    stat_value<uint32_t>                        _max_hp, _max_mp;
-    stat_value<uint8_t>                         _str, _dex, _int;
-    stat_value<int32_t>                         _phydef, _magdef;
-    stat_value<int32_t>                         _dam, _hit;
-    uint32_t                                    _experience   = 0;
-    uint8_t                                     _regenerative = 0; // 재생력
-    NATION                                      _nation       = NATION::GOGURYEO;
-    CREATURE                                    _creature     = CREATURE::DRAGON;
-    SEX                                         _sex          = SEX::MAN;
-    STATE                                       _state        = STATE::NORMAL;
-    uint8_t                                     _level        = 1;
-    CLASS                                       _class        = CLASS::NONE;
-    uint8_t                                     _promotion    = 0;
-    uint32_t                                    _money        = 0;
-    std::optional<uint16_t>                     _disguise     = 0;
-    std::string                                 _title;
-    std::optional<uint32_t>                     _group_id      = std::nullopt;
-    std::optional<uint32_t>                     _clan_id       = std::nullopt;
-    uint16_t                                    _unread_mail   = 0;
-    uint16_t                                    _weapon_damage = 0;
-    bool                                        _detect        = false;
-    std::vector<std::shared_ptr<fb::game::mob>> _spawned_mobs  = {};
-    fb::model::datetime                         _last_spell_cast;
-    bool                                        _super_hide       = false;
-    uint8_t                                     _spell_cast_count = 0;
-    std::unordered_map<uint32_t, quest>         _quests;
-    bool                                        _options[0x0B + 1] = {
+    uint32_t                _id;
+    socket_ptr_t            _socket;
+    std::string             _name;
+    ROLE                    _role;
+    std::string             _pw;
+    std::optional<uint32_t> _birthday;
+    fb::model::datetime     _updated_date;
+    uint16_t                _look        = 0;
+    uint8_t                 _color       = 0;
+    std::optional<uint8_t>  _armor_color = 0;
+    stat_value<uint32_t>    _max_hp, _max_mp;
+    stat_value<uint8_t>     _str, _dex, _int;
+    stat_value<int32_t>     _phydef, _magdef;
+    stat_value<int32_t>     _dam, _hit;
+    uint32_t                _experience   = 0;
+    uint8_t                 _regenerative = 0; // 재생력
+    NATION                  _nation       = NATION::GOGURYEO;
+    CREATURE                _creature     = CREATURE::DRAGON;
+    SEX                     _sex          = SEX::MAN;
+    STATE                   _state        = STATE::NORMAL;
+    uint8_t                 _level        = 1;
+    CLASS                   _class        = CLASS::NONE;
+    uint8_t                 _promotion    = 0;
+    uint32_t                _money        = 0;
+    std::optional<uint16_t> _disguise     = 0;
+    std::string             _title;
+    std::optional<uint32_t> _group_id      = std::nullopt;
+    std::optional<uint32_t> _clan_id       = std::nullopt;
+    uint16_t                _unread_mail   = 0;
+    uint16_t                _weapon_damage = 0;
+    bool                    _detect        = false;
+    mob_vector_t            _spawned_mobs  = {};
+    fb::model::datetime     _last_spell_cast;
+    bool                    _super_hide       = false;
+    uint8_t                 _spell_cast_count = 0;
+    quest_map_t             _quests;
+    bool                    _options[0x0B + 1] = {
         1,
     };
 
 public:
-    fb::game::trade                                  trade;
-    fb::game::items                                  items;
-    fb::lua::context*                                dialog = nullptr;
-    std::map<uint32_t, std::unique_ptr<achievement>> achievements; // order required
-    listener_t&                                      listener;
+    fb::game::trade   trade;
+    fb::game::items   items;
+    fb::lua::context* dialog = nullptr;
+    achievement_map_t achievements; // order required
+    listener_t&       listener;
 
 private:
     using object::based;
@@ -1111,7 +1115,7 @@ public:
      *
      * @return     Pointer to the quest, or nullptr if not found
      */
-    fb::game::quest* quest(uint32_t id);
+    std::shared_ptr<fb::game::quest> quest(uint32_t id) const;
 
     /**
      * @brief      Starts a quest for the character.
@@ -1130,6 +1134,15 @@ public:
      * @return     True if the quest was removed successfully, false otherwise
      */
     bool remove_quest(uint32_t id);
+
+    /**
+     * @brief      Rewards the character with the specified items and money.
+     *
+     * @param[in]  reward  The reward items and money to apply
+     *
+     * @return     True if the reward was applied successfully, false otherwise
+     */
+    bool reward(const std::vector<fb::model::dsl>& reward);
 
     /**
      * @brief      Returns a protocol representation of the object.

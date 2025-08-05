@@ -29,6 +29,7 @@ private:
     async::task<bool> test_scenario_2();
     async::task<bool> test_scenario_3();
     async::task<bool> test_scenario_4();
+    async::task<bool> test_scenario_5();
 
 private:
     // Helper functions

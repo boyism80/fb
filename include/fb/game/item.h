@@ -1378,6 +1378,25 @@ public:
                                            uint16_t                        count  = 1,
                                            ITEM_DELETE_TYPE                attr   = ITEM_DELETE_TYPE::NONE,
                                            bool                            detach = true);
+
+    /**
+     * @brief      Checks if the item is rewardable.
+     *
+     * @param[in]  items  The items to check
+     * @param[in]  money  The money to check
+     *
+     * @return     True if the item is rewardable, false otherwise
+     */
+    bool is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint32_t money = 0) const;
+
+    /**
+     * @brief      Checks if the item is rewardable.
+     *
+     * @param[in]  items  The items to check
+     *
+     * @return     True if the item is rewardable, false otherwise
+     */
+    bool is_rewardable(const std::vector<fb::model::dsl>& items) const;
 };
 
 } // namespace fb::game

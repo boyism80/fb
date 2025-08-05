@@ -34,6 +34,10 @@ generator<bot_integration_test::scenario_t> trade_test::on_generate_scenario()
         co_return co_await this->test_scenario_4();
     };
 
+    co_yield [this]() -> async::task<bool> {
+        co_return co_await this->test_scenario_5();
+    };
+
     co_return;
 }
 
@@ -600,6 +604,183 @@ async::task<bool> trade_test::test_scenario_4()
     if (this->has_item(bot1, "현철중검") || !this->has_item(bot2, "현철중검"))
     {
         fb::logger::fatal("Scenario 4 failed: items were swapped.");
+        co_return false;
+    }
+
+    co_return true;
+}
+
+async::task<bool> trade_test::test_scenario_5()
+{
+    auto  bots = this->get_test_bots();
+    auto& bot1 = bots[0];
+    auto& bot2 = bots[1];
+
+    // 1. Fill bot1's inventory with 목도
+    co_await bot1->fill_inventory("목도", DEFAULT_TIMEOUT);
+    bot1->chat("Scenario 5: Bot1 filled inventory with 목도.");
+
+    // 2. Remove one item and create 100 도토리
+    co_await bot1->drop_item(0, false, DEFAULT_TIMEOUT);
+    co_await bot1->create_item("도토리", 100, DEFAULT_TIMEOUT);
+    bot1->chat("Scenario 5: Bot1 removed one item and created 100 도토리.");
+
+    // 3. Bot2 creates 200 도토리
+    co_await bot2->create_item("도토리", 200, DEFAULT_TIMEOUT);
+    bot2->chat("Scenario 5: Bot2 created 200 도토리.");
+
+    // 4. Start trade (Bot2 initiates trade with Bot1)
+    std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
+        fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::REQUEST, bot1->oid(), {}),
+        [oid = bot1->oid()](auto& resp) -> bool {
+            if (resp.type != fb::bot::integration::trade_bot::trade_type::dialog)
+                return false;
+
+            if (resp.dialog_oid != oid)
+                return false;
+
+            return true;
+        },
+        DEFAULT_TIMEOUT);
+    bot2->chat("Scenario 5: Bot2 -> Bot1 trade initiated.");
+
+    // 5. Bot2 puts up 200 도토리 (should fail due to capacity limit)
+    std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
+        fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::UP_ITEM,
+                                           bot1->oid(),
+                                           {.index = uint8_t(0 + 1)}),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::trade_bot::trade_type::bundle;
+        },
+        DEFAULT_TIMEOUT);
+    bot2->chat("Scenario 5: Bot2 puts up 도토리.");
+    std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
+        fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::ITEM_COUNT,
+                                           bot1->oid(),
+                                           {.count = 200}),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::trade_bot::trade_type::upload;
+        },
+        DEFAULT_TIMEOUT);
+    bot2->chat("Scenario 5: Bot2 sets item count to 200.");
+
+    // 6. Both bots lock the trade, expecting failure
+    std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
+        fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::LOCK, bot1->oid(), {}),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::trade_bot::trade_type::lock;
+        },
+        DEFAULT_TIMEOUT);
+    bot2->chat("Scenario 5: Bot2 locked the trade.");
+
+    std::ignore = co_await bot1->request<fb::bot::integration::trade_bot>(
+        fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::LOCK, bot2->oid(), {}),
+        [](auto& resp) {
+            if (resp.type != fb::bot::integration::trade_bot::trade_type::close)
+            {
+                fb::logger::fatal("Scenario 5: wrong response type, expected close but got {}", int(resp.type));
+                return false;
+            }
+
+            if (resp.close_message.find(_TEXT(MESSAGE_TRADE_FAILED)) == std::string::npos)
+            {
+                fb::logger::fatal("Scenario 5: did not receive trade failed message. Got: {}", resp.close_message);
+                return false;
+            }
+
+            return true;
+        },
+        DEFAULT_TIMEOUT);
+    bot1->chat("Scenario 5: Bot1 tried to lock, trade failed as expected (200 도토리 exceeds capacity).");
+
+    auto thread = bot1->thread();
+    co_await thread->sleep(DEFAULT_INTERVAL);
+
+    // 7. Verify item counts have not changed
+    if (this->get_item_count(bot1, "도토리") != 100 || this->get_item_count(bot2, "도토리") != 200)
+    {
+        fb::logger::fatal("Scenario 5 failed: item counts were changed.");
+        co_return false;
+    }
+
+    // 8. Start new trade (Bot2 initiates trade with Bot1 again)
+    std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
+        fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::REQUEST, bot1->oid(), {}),
+        [oid = bot1->oid()](auto& resp) -> bool {
+            if (resp.type != fb::bot::integration::trade_bot::trade_type::dialog)
+                return false;
+
+            if (resp.dialog_oid != oid)
+                return false;
+
+            return true;
+        },
+        DEFAULT_TIMEOUT);
+    bot2->chat("Scenario 5: Bot2 -> Bot1 trade re-initiated.");
+
+    // 9. Bot2 puts up 101 도토리 (should succeed, within capacity)
+    std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
+        fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::UP_ITEM,
+                                           bot1->oid(),
+                                           {.index = uint8_t(0 + 1)}),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::trade_bot::trade_type::bundle;
+        },
+        DEFAULT_TIMEOUT);
+    bot2->chat("Scenario 5: Bot2 puts up 도토리 again.");
+    std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
+        fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::ITEM_COUNT,
+                                           bot1->oid(),
+                                           {.count = 101}),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::trade_bot::trade_type::upload;
+        },
+        DEFAULT_TIMEOUT);
+    bot2->chat("Scenario 5: Bot2 sets item count to 101.");
+
+    // 10. Both bots lock the trade, expecting success
+    std::ignore = co_await bot2->request<fb::bot::integration::trade_bot>(
+        fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::LOCK, bot1->oid(), {}),
+        [](auto& resp) {
+            return resp.type == fb::bot::integration::trade_bot::trade_type::lock;
+        },
+        DEFAULT_TIMEOUT);
+    bot2->chat("Scenario 5: Bot2 locked the trade.");
+
+    std::ignore = co_await bot1->request<fb::bot::integration::trade_bot>(
+        fb::protocol::game::request::trade(fb::protocol::game::request::trade::state::LOCK, bot2->oid(), {}),
+        [](auto& resp) {
+            if (resp.type != fb::bot::integration::trade_bot::trade_type::close)
+            {
+                fb::logger::fatal("Scenario 5: wrong response type, expected close but got {}", int(resp.type));
+                return false;
+            }
+
+            if (resp.close_message.find(_TEXT(MESSAGE_TRADE_SUCCESS)) == std::string::npos)
+            {
+                fb::logger::fatal("Scenario 5: did not receive trade success message. Got: {}", resp.close_message);
+                return false;
+            }
+
+            return true;
+        },
+        DEFAULT_TIMEOUT);
+    bot1->chat("Scenario 5: Bot1 locked the trade, completing it successfully.");
+
+    co_await thread->sleep(DEFAULT_INTERVAL);
+
+    // 11. Verify that items have been swapped correctly
+    if (this->get_item_count(bot1, "도토리") != 201) // 100 + 101
+    {
+        fb::logger::fatal("Scenario 5 failed: Bot1 item count incorrect. Expected 201, got {}",
+                          this->get_item_count(bot1, "도토리"));
+        co_return false;
+    }
+
+    if (this->get_item_count(bot2, "도토리") != 99) // 200 - 101
+    {
+        fb::logger::fatal("Scenario 5 failed: Bot2 item count incorrect. Expected 99, got {}",
+                          this->get_item_count(bot2, "도토리"));
         co_return false;
     }
 
