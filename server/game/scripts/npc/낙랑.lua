@@ -251,8 +251,61 @@ function sample_cc(me, npc)
     end
 end
 
+function sample_quest(me, npc)
+    local quest = me:quest(1)
+    if quest == nil then
+        me:dialog(npc, '퀘스트를 시작합니다. 다람쥐를 1마리 처치하세요.')
+        me:start_quest(1)
+        return
+    end
+
+    if quest:completed() then
+        me:dialog(npc, '이미 퀘스트를 완료하셨습니다.')
+        return
+    end
+
+    if quest:step() == 0 then
+        if quest:completed_progress() then
+            me:dialog(npc, '잘 하셨습니다. 다음은 토끼를 2마리 잡으세요')
+            quest:inc_step()
+        else
+            local progress = quest:progress()
+            local max_progress = quest:model():progress()
+            me:dialog(npc, string.format('다람쥐 처치 %d/%d', progress, max_progress))
+        end
+        return
+    end
+
+    if quest:step() == 1 then
+        if quest:completed_progress() then
+            me:dialog(npc, '잘 하셨습니다. 다음은 삽사리를 3마리 잡으세요')
+            quest:inc_step()
+        else
+            local progress = quest:progress()
+            local max_progress = quest:model():progress()
+            me:dialog(npc, string.format('토끼 처치 %d/%d', progress, max_progress))
+        end
+        return
+    end
+
+    if quest:step() == 2 then
+        if quest:completed_progress() then
+            if not quest:complete() then
+                me:dialog(npc, '퀘스트 완료 실패. 인벤토리나 금전을 확인하세요.')
+            else
+                me:dialog(npc, '퀘스트를 완료했습니다. 보상을 드렸습니다.')
+            end
+        else
+            local progress = quest:progress()
+            local max_progress = quest:model():progress()
+            me:dialog(npc, string.format('삽사리 처치 %d/%d', progress, max_progress))
+        end
+        return
+    end
+end
+
 function NPC_0(me, npc)
-    local selected = me:menu(npc, '안녕하세요. 무엇을 도와드릴까요?', {'group','clan','whisper','send_mail','map','cc'})
+    local selected = me:menu(npc, '안녕하세요. 무엇을 도와드릴까요?', {'group','clan','whisper','send_mail','map','cc','quest'})
     if selected == nil then
         return
     end
@@ -274,5 +327,8 @@ function NPC_0(me, npc)
     end
     if selected == 5 then
         return sample_cc(me, npc)
+    end
+    if selected == 6 then
+        return sample_quest(me, npc)
     end
 end

@@ -44,6 +44,8 @@ public:
     static int builtin_inc_step(lua_State* L);
     static int builtin_complete(lua_State* L);
     static int builtin_completed(lua_State* L);
+    static int builtin_completed_progress(lua_State* L);
+    static int builtin_completed_step(lua_State* L);
 
 public:
 };

@@ -41,7 +41,20 @@ bool quest::inc_step(uint32_t value)
     auto& server   = this->owner.server;
     auto  max_step = server.model.quest[this->id].size();
 
-    this->_step = std::min(this->_step + value, max_step);
+    for (int i = this->_step; i <= std::min(this->_step + value, max_step); i++)
+    {
+        auto& model = server.model.quest[this->id][i];
+        if (model.step_reward.empty() == false)
+        {
+            auto& reward = server.model.reward[model.step_reward];
+            if (this->owner.reward(reward.dsl) == false)
+                return false;
+        }
+
+        this->_step++;
+        this->_progress = 0;
+    }
+
     return this->_step == max_step;
 }
 
