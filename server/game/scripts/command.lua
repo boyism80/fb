@@ -68,6 +68,7 @@ command_funcs = {
             "/아이템삭제 - 맵의 모든 아이템 삭제",
             "/아이템초기화 - 인벤토리 아이템 초기화",
             "/리스폰 [전역여부] - 몬스터 강제 리스폰",
+            "/퀘스트완료 <ID> - 퀘스트 완료",
             "/서버종료 [지연시간] - 서버 종료"
         }
         
@@ -1023,6 +1024,31 @@ command_funcs = {
             end
         end
         me:rezen_force(global == 1)
+        return true
+    end,
+
+    ['퀘스트완료'] =
+    function (me, args)
+        local id = table.unpack(args)
+        if not id then
+            me:message("사용법: /퀘스트완료 <ID>")
+            return true
+        end
+        id = tonumber(id)
+        if not id or id < 0 then
+            me:message("퀘스트 ID는 0 이상의 숫자여야 합니다.")
+            return true
+        end
+        
+        local quest = me:quest(id)
+        if not quest then
+            me:message("존재하지 않는 퀘스트입니다.")
+            return true
+        end
+        if not quest:complete() then
+            me:message("퀘스트 완료에 실패했습니다.")
+            return true
+        end
         return true
     end,
 
