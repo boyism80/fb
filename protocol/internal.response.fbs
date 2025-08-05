@@ -120,6 +120,7 @@ table Init {
   spells: [fb.protocol.internal.Spell];
   option: fb.protocol.internal.Option;
   achievements: [fb.protocol.internal.Achievement];
+  quests: [fb.protocol.internal.Quest];
   mail: uint;
 }
 

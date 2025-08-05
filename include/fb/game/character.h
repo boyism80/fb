@@ -81,7 +81,6 @@ public:
 private:
     // Type aliases for better readability
     using socket_ptr_t      = std::weak_ptr<fb::socket<character>>;
-    using quest_map_t       = std::unordered_map<uint32_t, std::shared_ptr<fb::game::quest>>;
     using mob_vector_t      = std::vector<std::shared_ptr<fb::game::mob>>;
     using achievement_map_t = std::map<uint32_t, std::unique_ptr<achievement>>;
 
@@ -126,9 +125,8 @@ private:
     bool                    _detect        = false;
     mob_vector_t            _spawned_mobs  = {};
     fb::model::datetime     _last_spell_cast;
-    bool                    _super_hide       = false;
-    uint8_t                 _spell_cast_count = 0;
-    quest_map_t             _quests;
+    bool                    _super_hide        = false;
+    uint8_t                 _spell_cast_count  = 0;
     bool                    _options[0x0B + 1] = {
         1,
     };
@@ -136,6 +134,7 @@ private:
 public:
     fb::game::trade   trade;
     fb::game::items   items;
+    fb::game::quests  quests;
     fb::lua::context* dialog = nullptr;
     achievement_map_t achievements; // order required
     listener_t&       listener;

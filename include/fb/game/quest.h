@@ -20,12 +20,12 @@ private:
     bool     _completed = false;
 
 public:
-    uint32_t   id;
-    character& owner;
+    uint32_t                           id;
+    std::weak_ptr<fb::game::character> owner;
 
 public:
-    quest(uint32_t id, character& owner);
-    quest(uint32_t id, character& owner, uint32_t step, uint32_t progress, bool completed);
+    quest(uint32_t id, std::weak_ptr<fb::game::character> owner);
+    quest(uint32_t id, std::weak_ptr<fb::game::character> owner, uint32_t step, uint32_t progress, bool completed);
     ~quest() = default;
 
 public:
@@ -48,6 +48,38 @@ public:
     static int builtin_completed_step(lua_State* L);
 
 public:
+};
+
+class quests : private std::unordered_map<uint32_t, std::shared_ptr<quest>>
+{
+public:
+    using super = std::unordered_map<uint32_t, std::shared_ptr<quest>>;
+
+    using super::operator[];
+    using super::at;
+    using super::begin;
+    using super::cbegin;
+    using super::cend;
+    using super::contains;
+    using super::empty;
+    using super::end;
+    using super::erase;
+    using super::size;
+
+private:
+    std::weak_ptr<fb::game::character> _owner;
+
+public:
+    quests()                          = default;
+    quests(const quests&)             = delete;
+    quests(quests&&)                  = default;
+    quests& operator= (const quests&) = delete;
+    ~quests()                         = default;
+
+public:
+    void owner(std::weak_ptr<fb::game::character> owner);
+    void add(uint32_t id, uint32_t step, uint32_t progress, bool completed);
+    void remove(uint32_t id);
 };
 
 } // namespace fb::game

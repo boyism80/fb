@@ -21,6 +21,7 @@ void character::on_init()
     life::on_init();
     this->items.owner(this->shared_from_this_as<character>());
     this->trade.owner(this->shared_from_this_as<character>());
+    this->quests.owner(this->shared_from_this_as<character>());
 }
 
 /**
@@ -1968,31 +1969,31 @@ async::task<void> character::death_penalty()
 
 std::shared_ptr<fb::game::quest> character::quest(uint32_t id) const
 {
-    if (this->_quests.contains(id) == false)
+    if (this->quests.contains(id) == false)
         return nullptr;
 
-    return this->_quests.at(id);
+    return this->quests.at(id);
 }
 
 bool character::start_quest(uint32_t id)
 {
-    if (this->server.model.quest.contains(id))
+    if (this->server.model.quest.contains(id) == false)
         return false;
 
     auto& attr = this->server.model.quest_attribute[id];
     if (this->condition(attr.condition) == false)
         return false;
 
-    this->_quests.insert({id, std::make_shared<fb::game::quest>(id, *this)});
+    this->quests.add(id, 0, 0, false);
     return true;
 }
 
 bool character::remove_quest(uint32_t id)
 {
-    if (this->_quests.contains(id) == false)
+    if (this->quests.contains(id) == false)
         return false;
 
-    this->_quests.erase(id);
+    this->quests.erase(id);
     return true;
 }
 

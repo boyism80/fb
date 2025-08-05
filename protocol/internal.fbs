@@ -162,3 +162,11 @@ table ClanMember {
     name: string;
     role: uint;
 }
+
+table Quest {
+    uid: uint;
+    qid: uint;
+    step: uint;
+    progress: uint;
+    completed: bool;
+}

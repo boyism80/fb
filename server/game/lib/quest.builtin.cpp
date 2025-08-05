@@ -26,7 +26,13 @@ int fb::game::quest::builtin_model(lua_State* L)
     if (quest == nullptr)
         return 0;
 
-    lua->pushinteger(quest->id);
+    auto owner = quest->owner.lock();
+    if (owner == nullptr)
+        return 0;
+
+    auto& server = owner->server;
+    auto& model  = server.model.quest[quest->id][quest->_step];
+    lua->pushobject(model);
     return 1;
 }
 
@@ -68,8 +74,8 @@ int fb::game::quest::builtin_inc_progress(lua_State* L)
     if (quest == nullptr)
         return 0;
 
-    auto value = lua->tointeger(2);
-    if (value < 0)
+    auto value = lua->tointeger(2, 1);
+    if (value <= 0)
         return 0;
 
     lua->pushboolean(quest->inc_progress(value));
@@ -86,8 +92,8 @@ int fb::game::quest::builtin_inc_step(lua_State* L)
     if (quest == nullptr)
         return 0;
 
-    auto value = lua->tointeger(2);
-    if (value < 0)
+    auto value = lua->tointeger(2, 1);
+    if (value <= 0)
         return 0;
 
     lua->pushboolean(quest->inc_step(value));
@@ -132,7 +138,11 @@ int fb::game::quest::builtin_completed_progress(lua_State* L)
     if (quest == nullptr)
         return 0;
 
-    auto& attr  = quest->owner.server.model.quest[quest->id];
+    auto owner = quest->owner.lock();
+    if (owner == nullptr)
+        return 0;
+
+    auto& attr  = owner->server.model.quest[quest->id];
     auto& model = attr[quest->_step];
     lua->pushboolean(model.progress == quest->_progress);
     return 1;
@@ -148,7 +158,11 @@ int fb::game::quest::builtin_completed_step(lua_State* L)
     if (quest == nullptr)
         return 0;
 
-    auto& server = quest->owner.server;
+    auto owner = quest->owner.lock();
+    if (owner == nullptr)
+        return 0;
+
+    auto& server = owner->server;
     lua->pushboolean(server.model.quest[quest->id].size() == quest->_step);
     return 1;
 }

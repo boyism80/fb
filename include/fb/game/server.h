@@ -277,6 +277,18 @@ private:
     void init_spells(const std::vector<fb::protocol::internal::Spell>& response, fb::game::character& ch);
 
     /**
+     * @brief      Initializes character quests from database response.
+     *
+     *             This method initializes the character's quest progress based on the
+     *             provided quest data from the database. It updates the character's
+     *             quest state with the new progress information.
+     *
+     * @param[in]  response  The quest data response from database
+     * @param      ch        The character to set quests for
+     */
+    void init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch);
+
+    /**
      * @brief      Initializes character achievements from database response.
      *
      * @param[in]  response  The achievement data response from database
