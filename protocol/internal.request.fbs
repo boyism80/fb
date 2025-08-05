@@ -92,6 +92,7 @@ table Save {
   items: [fb.protocol.internal.Item];
   spells: [fb.protocol.internal.Spell];
   achievements: [fb.protocol.internal.Achievement];
+  quests: [fb.protocol.internal.Quest];
 }
 
 

@@ -73,3 +73,10 @@ IMPLEMENT_LUA_EXTENSION(fb::model::achievement, "fb.model.achievement")
 {"color",               fb::model::achievement::builtin_color},
 {"text",                fb::model::achievement::builtin_text},
 END_LUA_EXTENSION; // clang-format on
+
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::model::quest, "fb.model.quest")
+{"step",                fb::model::quest::builtin_step},
+{"progress",            fb::model::quest::builtin_progress},
+{"reward",              fb::model::quest::builtin_reward},
+END_LUA_EXTENSION; // clang-format on

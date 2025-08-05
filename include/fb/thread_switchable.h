@@ -50,14 +50,13 @@ class thread;
  *             Now supports smart pointer-based lifetime management through enable_shared_from_this
  *             while maintaining backward compatibility with the existing raw pointer system.
  */
-class thread_switchable : public lua::luable, public std::enable_shared_from_this<thread_switchable>
+class thread_switchable : public lua::luable
 {
 public:
     LUA_PROTOTYPE
 
 private:
-    using super_luable = lua::luable;
-    using super_shared = std::enable_shared_from_this<thread_switchable>;
+    using super = lua::luable;
 
 protected:
     /**
@@ -126,7 +125,7 @@ public:
      */
     std::weak_ptr<thread_switchable> weak_from_this()
     {
-        return std::weak_ptr<thread_switchable>(this->shared_from_this());
+        return std::weak_ptr<thread_switchable>(this->shared_from_this_as<thread_switchable>());
     }
 
     /**
@@ -140,7 +139,7 @@ public:
      */
     std::weak_ptr<const thread_switchable> weak_from_this() const
     {
-        return std::weak_ptr<const thread_switchable>(this->shared_from_this());
+        return std::weak_ptr<const thread_switchable>(this->shared_from_this_as<thread_switchable>());
     }
 
     /**

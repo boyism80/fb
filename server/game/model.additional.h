@@ -575,4 +575,16 @@ public:                                     \
     static int builtin_color(lua_State* L); \
     static int builtin_text(lua_State* L);
 
+#define DECLARE_QUEST_INHERIT : public fb::lua::luable
+
+#define DECLARE_QUEST_EXTENSION                \
+                                               \
+public:                                        \
+    LUA_PROTOTYPE                              \
+                                               \
+public:                                        \
+    static int builtin_step(lua_State* L);     \
+    static int builtin_progress(lua_State* L); \
+    static int builtin_reward(lua_State* L);
+
 #endif

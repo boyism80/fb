@@ -351,26 +351,15 @@ void fb::game::trade::assert_exchange(const fb::game::trade& trade) const
     if (0xFFFFFFFF - trade.money() < owner->money())
         throw std::runtime_error(_TEXT(MESSAGE_MONEY_FULL));
 
-    if (owner->items.free_size() < trade.items().size())
-        throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
-
-    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    auto buffer = std::unordered_map<uint32_t, uint16_t>{};
+    for (const auto& item : trade.items())
     {
-        auto item = owner->items[i];
-        if (item == nullptr)
-            continue;
-
-        auto& model = item->based<fb::model::item>();
-        if (ENUM_IN(model.attr(), ITEM_ATTRIBUTE::BUNDLE) == false)
-            continue;
-
-        auto found = trade.find(model);
-        if (found == nullptr)
-            continue;
-
-        if (model.capacity < item->count() + found->trade_count() - item->trade_count())
-            throw std::runtime_error(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
+        auto& model       = item->based<fb::model::item>();
+        buffer[model.id] += item->count();
     }
+
+    if (!owner->items.is_rewardable(buffer))
+        throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
 }
 
 void fb::game::trade::exchange(trade& trade1, trade& trade2)

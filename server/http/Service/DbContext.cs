@@ -64,6 +64,11 @@ namespace Http.Service
         public MailRepository Mail => Bind<MailRepository>();
 
         /// <summary>
+        /// Gets the quest repository instance.
+        /// </summary>
+        public QuestRepository Quest => Bind<QuestRepository>();
+
+        /// <summary>
         /// Gets the number of shared database instances configured.
         /// </summary>
         /// <value>The count of database shards excluding the default (-1) connection.</value>

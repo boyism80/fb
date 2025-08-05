@@ -17,6 +17,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 #include "fb.protocol.internal.character_generated.h"
 #include "fb.protocol.internal.item_generated.h"
 #include "fb.protocol.internal.option_generated.h"
+#include "fb.protocol.internal.quest_generated.h"
 #include "fb.protocol.internal.spell_generated.h"
 #include "nullable_uint_generated.h"
 
@@ -39,7 +40,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_SPELLS = 12,
     VT_OPTION = 14,
     VT_ACHIEVEMENTS = 16,
-    VT_MAIL = 18
+    VT_QUESTS = 18,
+    VT_MAIL = 20
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -61,6 +63,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *>(VT_ACHIEVEMENTS);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *>(VT_QUESTS);
   }
   uint32_t mail() const {
     return GetField<uint32_t>(VT_MAIL, 0);
@@ -84,6 +89,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_ACHIEVEMENTS) &&
            verifier.VerifyVector(achievements()) &&
            verifier.VerifyVectorOfTables(achievements()) &&
+           VerifyOffset(verifier, VT_QUESTS) &&
+           verifier.VerifyVector(quests()) &&
+           verifier.VerifyVectorOfTables(quests()) &&
            VerifyField<uint32_t>(verifier, VT_MAIL, 4) &&
            verifier.EndTable();
   }
@@ -114,6 +122,9 @@ struct InitBuilder {
   void add_achievements(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements) {
     fbb_.AddOffset(Init::VT_ACHIEVEMENTS, achievements);
   }
+  void add_quests(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests) {
+    fbb_.AddOffset(Init::VT_QUESTS, quests);
+  }
   void add_mail(uint32_t mail) {
     fbb_.AddElement<uint32_t>(Init::VT_MAIL, mail, 0);
   }
@@ -137,9 +148,11 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
     uint32_t mail = 0) {
   InitBuilder builder_(_fbb);
   builder_.add_mail(mail);
+  builder_.add_quests(quests);
   builder_.add_achievements(achievements);
   builder_.add_option(option);
   builder_.add_spells(spells);
@@ -159,10 +172,12 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
     uint32_t mail = 0) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto achievements__ = achievements ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>(*achievements) : 0;
+  auto quests__ = quests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>(*quests) : 0;
   return fb::protocol::internal::response::raw::CreateInit(
       _fbb,
       character,
@@ -172,6 +187,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       spells__,
       option,
       achievements__,
+      quests__,
       mail);
 }
 

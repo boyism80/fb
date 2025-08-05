@@ -211,7 +211,11 @@ void listener_impl::on_show_user_list(character& ch)
         auto users = std::vector<std::shared_ptr<fb::game::character>>{};
         for (auto& [_, socket] : sockets)
         {
-            users.push_back(socket->data());
+            auto ptr = socket->data_ptr();
+            if (ptr == nullptr)
+                continue;
+
+            users.push_back(ptr);
         };
 
         ch.send(fb_resp::user_list(ch, std::move(users)));
