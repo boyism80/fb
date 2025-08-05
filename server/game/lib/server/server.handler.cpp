@@ -39,6 +39,7 @@ async::task<bool> server::handle_login(fb::socket<character>& socket, const fb_r
     this->init_items(response.items, *ch);
     this->init_spells(response.spells, *ch);
     this->init_achievements(response.achievements, *ch);
+    this->init_quests(response.quests, *ch);
     this->init_option(response.option, *ch);
     ch->init();
     ch->update_time(this->_time.hours());

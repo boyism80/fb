@@ -350,6 +350,7 @@ namespace Internal.Controllers
             var items = await _dbContext.Item.Get(uid);
             var spells = await _dbContext.Spell.Get(uid);
             var achievements = await _dbContext.Achievement.Get(uid);
+            var quests = await _dbContext.Quest.Get(uid);
             var option = await _dbContext.Option.Get(uid) ??
                 _dbContext.Option.Set(new Option
                 {
@@ -371,6 +372,7 @@ namespace Internal.Controllers
                     Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
                     Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
                     Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
+                    Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
                     Option = _mapper.Map<Protocol.Option>(option),
                     Clan = sync.Clan,
                     Group = sync.Group,
@@ -425,6 +427,9 @@ namespace Internal.Controllers
 
                 var achievements = Override(_mapper.Map<Protocol.Achievement[], Achievement[]>(request.Achievements.ToArray()), await _dbContext.Achievement.Get(request.Character.Id));
                 _dbContext.Achievement.Set(achievements.ToArray());
+
+                var quests = Override(_mapper.Map<Protocol.Quest[], Quest[]>(request.Quests.ToArray()), await _dbContext.Quest.Get(request.Character.Id));
+                _dbContext.Quest.Set(quests.ToArray());
 
                 await _dbContext.SaveChangesAsync();
                 return new Response.Save

@@ -74,6 +74,11 @@ public class Program
 
             cfg.CreateMap<Http.Model.Buff, Buff>()
             .ReverseMap();
+
+            cfg.CreateMap<Http.Model.Quest, Quest>()
+            .ForMember(x => x.Uid, x => x.MapFrom(u => u.User))
+            .ForMember(x => x.Qid, x => x.MapFrom(u => u.Id))
+            .ReverseMap();
         });
 
         var builder = WebApplication.CreateBuilder(args);

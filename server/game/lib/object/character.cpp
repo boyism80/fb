@@ -21,6 +21,7 @@ void character::on_init()
     life::on_init();
     this->items.owner(this->shared_from_this_as<character>());
     this->trade.owner(this->shared_from_this_as<character>());
+    this->quests.owner(this->shared_from_this_as<character>());
 }
 
 /**
@@ -1964,4 +1965,67 @@ async::task<void> character::death_penalty()
             this->message(std::format("경험치를 {} 잃었습니다.", penalty));
         }
     }
+}
+
+std::shared_ptr<fb::game::quest> character::quest(uint32_t id) const
+{
+    if (this->quests.contains(id) == false)
+        return nullptr;
+
+    return this->quests.at(id);
+}
+
+bool character::start_quest(uint32_t id)
+{
+    if (this->server.model.quest.contains(id) == false)
+        return false;
+
+    auto& attr = this->server.model.quest_attribute[id];
+    if (this->condition(attr.condition) == false)
+        return false;
+
+    this->quests.add(id, 0, 0, false);
+    return true;
+}
+
+bool character::remove_quest(uint32_t id)
+{
+    if (this->quests.contains(id) == false)
+        return false;
+
+    this->quests.erase(id);
+    return true;
+}
+
+bool character::reward(const std::vector<fb::model::dsl>& reward)
+{
+    if (this->items.is_rewardable(reward) == false)
+        return false;
+
+    auto money = 0;
+    for (auto& item : reward)
+    {
+        switch (item.header)
+        {
+        case fb::model::enum_value::DSL::item:
+        {
+            auto  params = fb::model::dsl::item(item.params);
+            auto& model  = this->server.model.item[params.id];
+            auto  item   = model.make(this->server, params.count);
+            this->items.add(item);
+            break;
+        }
+        case fb::model::enum_value::DSL::money:
+        {
+            auto params  = fb::model::dsl::money(item.params);
+            money       += params.value;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
+    this->money_add(money);
+    return true;
 }

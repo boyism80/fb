@@ -24,12 +24,14 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     ist.setup(this->threads);
 
     lua::env<fb::game::server>("server", this);
+    lua::build<quest, lua::luable>();
     lua::build<door, lua::luable>();
     lua::build<clan, lua::luable>();
     lua::build<clan_member, lua::luable>();
     lua::build<achievement, lua::luable>();
     lua::build<spell, lua::luable>();
     lua::build<buff, lua::luable>();
+    lua::build<fb::model::quest, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
     lua::build<fb::model::achievement, lua::luable>();
@@ -484,6 +486,14 @@ void server::init_spells(const std::vector<internal::Spell>& response, character
     }
 }
 
+void server::init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch)
+{
+    for (auto& x : response)
+    {
+        ch.quests.add(x.qid, x.step, x.progress, x.completed);
+    }
+}
+
 void server::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response,
                                fb::game::character&                                    ch)
 {
@@ -629,8 +639,14 @@ async::task<void> server::save(character& ch)
             internal::Achievement{ch.id(), model, achievement->text, achievement->icon, achievement->color});
     }
 
+    auto quests = std::vector<internal::Quest>();
+    for (auto& [qid, quest] : ch.quests)
+    {
+        quests.push_back(internal::Quest{ch.id(), qid, quest->step(), quest->progress(), quest->completed()});
+    }
+
     std::ignore =
-        co_await this->http.post("internal", "/user/save", Save{ch.to_protocol(), items, spells, achievements});
+        co_await this->http.post("internal", "/user/save", Save{ch.to_protocol(), items, spells, achievements, quests});
 
     co_await this->threads.switching(weak);
     ch.send(fb_resp::save());

@@ -292,7 +292,7 @@ async::task<void> dump(const std::string& path);
  *             stack. All game objects that need to be scriptable should inherit
  *             from this class and implement the required Lua method bindings.
  */
-class luable
+class luable : public std::enable_shared_from_this<luable>
 {
 public:
     LUA_PROTOTYPE
