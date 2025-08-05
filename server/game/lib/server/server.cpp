@@ -256,6 +256,7 @@ async::task<bool> server::handle_disconnected(fb::socket<character>& socket)
     auto ch = socket.data();
     if (ch == nullptr)
         co_return false;
+
     auto weak = ch->weak_from_this_as<character>();
 
     if (ch->trade.trading())
@@ -289,29 +290,29 @@ async::task<bool> server::handle_disconnected(fb::socket<character>& socket)
     if (!switched)
         co_await thread->switching();
 
-    auto shared = weak.lock();
-    if (shared != nullptr)
+    auto ptr = weak.lock();
+    if (ptr != nullptr)
     {
-        auto& group_id = shared->group_id();
+        auto& group_id = ptr->group_id();
         if (group_id.has_value())
         {
             this->groups.write(group_id.value(), [weak](auto& group) {
                 group->detach(weak);
             });
-            shared->group_reset();
+            ptr->group_reset();
         }
 
-        auto& clan_id = shared->clan_id();
+        auto& clan_id = ptr->clan_id();
         if (clan_id.has_value())
         {
             this->clans.read(clan_id.value(), [weak](auto& clan) {
                 clan->detach(weak);
             });
-            shared->clan_reset();
+            ptr->clan_reset();
         }
 
-        this->characters.remove(shared);
-        co_await shared->destroy();
+        this->characters.remove(ptr);
+        co_await ch->destroy();
         socket.data(nullptr);
     }
     else

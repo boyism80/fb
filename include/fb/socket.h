@@ -446,9 +446,17 @@ public:
      *
      * @return     The data.
      */
-    std::shared_ptr<T> data() const
+    std::shared_ptr<T> data_ptr() const
     {
         return this->_data;
+    }
+
+    T* data() const
+    {
+        if (this->_data == nullptr)
+            return nullptr;
+
+        return this->_data.get();
     }
 
 public:

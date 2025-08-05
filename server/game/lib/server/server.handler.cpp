@@ -27,6 +27,9 @@ async::task<bool> server::handle_login(fb::socket<character>& socket, const fb_r
     auto&& response =
         co_await this->http.get<internal_resp::Init>("internal", std::format("/user/init/{}", request.id));
     auto map = request.transfer.has_value() ? request.transfer->map : response.character.map;
+    if (weak.expired())
+        co_return false;
+
     ch->thread(this->maps[map]->thread());
     co_await this->threads.switching(weak);
 
@@ -63,7 +66,7 @@ async::task<bool> server::handle_login(fb::socket<character>& socket, const fb_r
 
     ch->update(STATE_LEVEL::LEVEL_MAX);
     ch->update_option();
-    this->characters.insert(ch);
+    this->characters.insert(ch->shared_from_this_as<character>());
     co_return true;
 }
 
