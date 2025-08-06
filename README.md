@@ -2,6 +2,15 @@
 
 fb is a 2D MMORPG game server written in C++20.
 
+## Features
+
+- **High-performance**: Designed for scalability and real-time gameplay
+- **Microservices Architecture**: Separate components for gateway, login, game, internal services, and write-back operations
+- **Cross-platform**: Supports both Windows and Linux environments for development and production deployment
+- **Comprehensive Testing**: Bot testing framework for load testing and integration testing
+- **Lua Scripting**: Flexible game logic implementation through Lua scripts
+- **Cloud Deployment**: Kubernetes deployment support with Pulumi infrastructure management
+
 ## Architecture
 
 ![Architecture](resources/image/architecture.png)
