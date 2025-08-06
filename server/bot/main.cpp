@@ -1,57 +1,14 @@
-#include <thread>
 #include <iostream>
-#include <fb/bot/container.h>
-#include <fb/bot/gateway_controller.h>
-#include <fb/bot/load/gateway_controller.h>
-#include <fb/bot/integration/gateway_controller.h>
-#include <fb/bot/login_controller.h>
-#include <fb/bot/load/login_controller.h>
-#include <fb/bot/integration/login_controller.h>
-#include <fb/bot/game_controller.h>
-#include <fb/bot/load/game_controller.h>
-#include <fb/bot/integration/game_controller.h>
-#include <fb/config.h>
-#include <fb/console.h>
 #include <boost/program_options.hpp>
+#include <fb/console.h>
+#include <fb/config.h>
+#include <fb/model/model.h>
+#include <fb/bot/test_mode.h>
+#include <fb/bot/bot_controller_factory.h>
+#include <fb/bot/bot_test_runner.h>
 
 using namespace std;
-using namespace boost::asio;
-using namespace std::chrono_literals;
 namespace po = boost::program_options;
-
-enum class test_mode
-{
-    LOAD_TEST,       // 부하 테스트 (기존 동작)
-    INTEGRATION_TEST // 통합 테스트 (새로운 기능)
-};
-
-/**
- * @brief      Displays statistics about spawned bots across all containers.
- *
- *             Aggregates bot counts from all container instances and displays
- *             the total statistics for each bot type.
- *
- * @param[in]  containers  Vector of bot container instances to aggregate from.
- */
-void display_spawned_bots(const std::vector<std::shared_ptr<fb::bot::bot_container>>& containers)
-{
-    size_t total_gateway_count = 0;
-    size_t total_login_count   = 0;
-    size_t total_game_count    = 0;
-
-    // Aggregate counts from all containers
-    for (const auto& container : containers)
-    {
-        total_gateway_count += container->gateway->bot_count();
-        total_login_count   += container->login->bot_count();
-        total_game_count    += container->game->bot_count();
-    }
-
-    fb::console::puts("gateway\t\t{}", total_gateway_count);
-    fb::console::puts("login\t\t{}", total_login_count);
-    fb::console::puts("game\t\t{}", total_game_count);
-    fb::console::up(3);
-}
 
 int main(int argc, char** argv)
 {
@@ -93,98 +50,21 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    // Get config file path
-    auto config_path = vm["config"].as<string>();
-
-    // Initialize config system with direct path
-    if (!fb::init_config(config_path))
-    {
-        fb::console::puts("Failed to initialize config system with file: {}", config_path);
-        return -1;
-    }
-
-    // Determine test mode
-    auto mode     = test_mode::LOAD_TEST;
-    auto mode_str = vm["mode"].as<string>();
+    auto& config_path = vm["config"].as<string>();
+    auto& mode_str    = vm["mode"].as<string>();
     if (mode_str == "integration")
-        mode = test_mode::INTEGRATION_TEST;
+    {
+        run_bot_test<fb::bot::test_mode::INTEGRATION_TEST>(config_path);
+    }
     else if (mode_str == "load")
-        mode = test_mode::LOAD_TEST;
+    {
+        run_bot_test<fb::bot::test_mode::LOAD_TEST>(config_path);
+    }
     else
     {
         fb::console::puts("Invalid test mode: {}", mode_str);
         fb::console::puts("Valid modes: 'load', 'integration'");
         return -1;
-    }
-
-    using guard_type = executor_work_guard<io_context::executor_type>;
-
-    auto io_size        = fb::config<uint32_t>("io_size");
-    auto ios            = std::vector<std::unique_ptr<io_context>>{};
-    auto guards         = std::vector<std::unique_ptr<guard_type>>();
-    auto bot_containers = std::vector<std::shared_ptr<fb::bot::bot_container>>();
-
-    for (auto i = 0; i < io_size; i++)
-    {
-        auto io = std::make_unique<io_context>();
-        guards.push_back(std::make_unique<guard_type>(io->get_executor()));
-
-        // Create bot container
-        auto container = std::make_shared<fb::bot::bot_container>(*io.get());
-
-        // Create appropriate bot_controllers based on test mode
-        if (mode == test_mode::INTEGRATION_TEST)
-        {
-            container->set_gateway_bot_controller(
-                std::make_shared<fb::bot::integration::gateway_bot_controller>(*container));
-            container->set_login_bot_controller(
-                std::make_shared<fb::bot::integration::login_bot_controller>(*container));
-            container->set_game_bot_controller(std::make_shared<fb::bot::integration::game_bot_controller>(*container));
-        }
-        else
-        {
-            container->set_gateway_bot_controller(std::make_shared<fb::bot::load::gateway_bot_controller>(*container));
-            container->set_login_bot_controller(std::make_shared<fb::bot::load::login_bot_controller>(*container));
-            container->set_game_bot_controller(std::make_shared<fb::bot::load::game_bot_controller>(*container));
-        }
-
-        container->initialize();
-        bot_containers.push_back(container);
-        ios.push_back(std::move(io));
-    }
-
-    fb::console::set_mode(fb::console::mode::plain);
-
-    auto                         exit = false;
-    std::unique_ptr<std::thread> display_thread;
-
-    // Only start display thread for load testing mode
-    if (mode == test_mode::LOAD_TEST)
-    {
-        display_thread = std::make_unique<std::thread>([&exit, &bot_containers]() {
-            while (!exit)
-            {
-                display_spawned_bots(bot_containers);
-                std::this_thread::sleep_for(100ms);
-            }
-        });
-    }
-
-    auto threads = boost::asio::thread_pool{io_size};
-    for (auto& io : ios)
-    {
-        post(threads, [&io] {
-            io->run();
-        });
-    }
-    threads.join();
-
-    exit = true;
-
-    // Join display thread only if it was created (load test mode)
-    if (display_thread)
-    {
-        display_thread->join();
     }
 
     return 0;

@@ -8,9 +8,9 @@
 
 using namespace fb::bot;
 
-bot_container::bot_container(boost::asio::io_context& context) :
+bot_container::bot_container(boost::asio::io_context& context, uint32_t thread_count) :
     _context(context),
-    fb::async_executor(context, "BOT", fb::config<uint32_t>("thread:logic"))
+    fb::async_executor(context, "BOT", thread_count)
 {
     this->threads.deletor = [](void* data) {
         auto params = static_cast<bot_thread_params*>(data);
