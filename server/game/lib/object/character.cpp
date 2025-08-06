@@ -1984,7 +1984,7 @@ bool character::start_quest(uint32_t id)
     if (this->condition(attr.condition) == false)
         return false;
 
-    this->quests.add(id, 0, 0, false);
+    this->quests.add(id, 0, 0, false, "");
     return true;
 }
 

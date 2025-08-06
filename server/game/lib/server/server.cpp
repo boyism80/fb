@@ -491,7 +491,7 @@ void server::init_quests(const std::vector<fb::protocol::internal::Quest>& respo
 {
     for (auto& x : response)
     {
-        ch.quests.add(x.qid, x.step, x.progress, x.completed);
+        ch.quests.add(x.qid, x.step, x.progress, x.completed, x.param);
     }
 }
 
@@ -643,7 +643,8 @@ async::task<void> server::save(character& ch)
     auto quests = std::vector<internal::Quest>();
     for (auto& [qid, quest] : ch.quests)
     {
-        quests.push_back(internal::Quest{ch.id(), qid, quest->step(), quest->progress(), quest->completed()});
+        quests.push_back(
+            internal::Quest{ch.id(), qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
     std::ignore =

@@ -96,6 +96,7 @@ namespace Http.Reepository
                     `step`,
                     `progress`,
                     `completed`,
+                    `param`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -105,6 +106,7 @@ namespace Http.Reepository
                     {value.Step.Escape()},
                     {value.Progress.Escape()},
                     {value.Completed.Escape()},
+                    {value.Param.Escape()},
                     {value.Deleted.Escape()},
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
@@ -112,6 +114,7 @@ namespace Http.Reepository
                     `step`=VALUES(`step`), 
                     `progress`=VALUES(`progress`), 
                     `completed`=VALUES(`completed`),
+                    `param`=VALUES(`param`),
                     `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
@@ -134,6 +137,7 @@ namespace Http.Reepository
                          {item.Step.Escape()},
                          {item.Progress.Escape()},
                          {item.Completed.Escape()},
+                         {item.Param.Escape()},
                          {item.Deleted.Escape()},
                          {item.CreatedDate.Escape()},
                          {item.UpdatedDate.Escape()})
@@ -147,6 +151,7 @@ namespace Http.Reepository
                         `step`,
                         `progress`,
                         `completed`,
+                        `param`,
                         `deleted`,
                         `created_date`,
                         `updated_date`)
@@ -155,6 +160,7 @@ namespace Http.Reepository
                         `step`=VALUES(`step`),
                         `progress`=VALUES(`progress`),
                         `completed`=VALUES(`completed`),
+                        `param`=VALUES(`param`),
                         `deleted`=VALUES(`deleted`),
                         `updated_date`=VALUES(`updated_date`);
                     """;

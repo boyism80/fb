@@ -24,15 +24,24 @@ public struct Quest : IFlatbufferObject
   public uint Qid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Step { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Progress { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public bool Completed { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public string Param { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetParamBytes() { return __p.__vector_as_span<byte>(12, 1); }
+#else
+  public ArraySegment<byte>? GetParamBytes() { return __p.__vector_as_arraysegment(12); }
+#endif
+  public byte[] GetParamArray() { return __p.__vector_as_array<byte>(12); }
+  public bool Completed { get { int o = __p.__offset(14); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol._internal.raw.Quest> CreateQuest(FlatBufferBuilder builder,
       uint uid = 0,
       uint qid = 0,
       uint step = 0,
       uint progress = 0,
+      StringOffset paramOffset = default(StringOffset),
       bool completed = false) {
-    builder.StartTable(5);
+    builder.StartTable(6);
+    Quest.AddParam(builder, paramOffset);
     Quest.AddProgress(builder, progress);
     Quest.AddStep(builder, step);
     Quest.AddQid(builder, qid);
@@ -41,12 +50,13 @@ public struct Quest : IFlatbufferObject
     return Quest.EndQuest(builder);
   }
 
-  public static void StartQuest(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartQuest(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(0, uid, 0); }
   public static void AddQid(FlatBufferBuilder builder, uint qid) { builder.AddUint(1, qid, 0); }
   public static void AddStep(FlatBufferBuilder builder, uint step) { builder.AddUint(2, step, 0); }
   public static void AddProgress(FlatBufferBuilder builder, uint progress) { builder.AddUint(3, progress, 0); }
-  public static void AddCompleted(FlatBufferBuilder builder, bool completed) { builder.AddBool(4, completed, false); }
+  public static void AddParam(FlatBufferBuilder builder, StringOffset paramOffset) { builder.AddOffset(4, paramOffset.Value, 0); }
+  public static void AddCompleted(FlatBufferBuilder builder, bool completed) { builder.AddBool(5, completed, false); }
   public static Offset<fb.protocol._internal.raw.Quest> EndQuest(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Quest>(o);
@@ -65,7 +75,8 @@ static public class QuestVerify
       && verifier.VerifyField(tablePos, 6 /*Qid*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Step*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 10 /*Progress*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 12 /*Completed*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyString(tablePos, 12 /*Param*/, false)
+      && verifier.VerifyField(tablePos, 14 /*Completed*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
