@@ -58,8 +58,9 @@ public:
      * @brief      Constructs a new bot container.
      *
      * @param      context  The boost::asio I/O context for network operations.
+     * @param      thread_count  The number of threads to use for the bot container.
      */
-    bot_container(boost::asio::io_context& context);
+    bot_container(boost::asio::io_context& context, uint32_t thread_count);
 
     /**
      * @brief      Sets the gateway bot bot_controller for this container.

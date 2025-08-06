@@ -1984,7 +1984,7 @@ bool character::start_quest(uint32_t id)
     if (this->condition(attr.condition) == false)
         return false;
 
-    this->quests.add(id, 0, 0, false);
+    this->quests.add(id, 0, 0, false, "");
     return true;
 }
 
@@ -2003,6 +2003,7 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
         return false;
 
     auto money = 0;
+    auto exp   = 0;
     for (auto& item : reward)
     {
         switch (item.header)
@@ -2021,11 +2022,22 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
             money       += params.value;
             break;
         }
+        case fb::model::enum_value::DSL::exp:
+        {
+            auto params  = fb::model::dsl::exp(item.params);
+            exp         += params.value;
+            break;
+        }
         default:
             break;
         }
     }
 
-    this->money_add(money);
+    if (exp > 0)
+        this->add_exp(exp, false, true);
+
+    if (money > 0)
+        this->money_add(money);
+
     return true;
 }

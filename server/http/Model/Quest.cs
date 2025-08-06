@@ -15,6 +15,7 @@ namespace Http.Model
     {
         public required uint Step { get; set; }
         public required uint Progress { get; set; }
+        public required string Param { get; set; }
         public required bool Completed { get; set; }
     }
 }

@@ -45,7 +45,7 @@ async::task<bool> group_test::scenario_1()
     auto caster = bots.front();
 
     fb::logger::debug("Learning spell 뢰진주 and setting up MP");
-    co_await caster->learn_spell("뢰진주", DEFAULT_TIMEOUT);
+    auto spell_slot = co_await caster->learn_spell("뢰진주", DEFAULT_TIMEOUT);
     co_await caster->change_mp(1000, DEFAULT_TIMEOUT);
 
     fb::logger::debug("Spawning monster 다람쥐 for solo test");
@@ -55,7 +55,7 @@ async::task<bool> group_test::scenario_1()
     auto before_exp = caster->exp();
     fb::logger::debug("Solo attack - Before exp: {}", before_exp);
     auto&& resp1 = co_await caster->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, 0, "", mob_info1.oid, mob_info1.position),
+        fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, spell_slot, "", mob_info1.oid, mob_info1.position),
         [before_exp](auto& resp) -> bool {
             if (ENUM_IN(resp.level, STATE_LEVEL::EXP_MONEY) == false)
                 return false;
@@ -80,7 +80,7 @@ async::task<bool> group_test::scenario_1()
 
     fb::logger::debug("Group attack - Before exp: {}", before_exp);
     auto&& resp2 = co_await caster->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, 0, "", mob_info2.oid, mob_info2.position),
+        fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, spell_slot, "", mob_info2.oid, mob_info2.position),
         [before_exp](auto& resp) -> bool {
             if (ENUM_IN(resp.level, STATE_LEVEL::EXP_MONEY) == false)
                 return false;

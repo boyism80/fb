@@ -355,7 +355,7 @@ void fb::game::trade::assert_exchange(const fb::game::trade& trade) const
     for (const auto& item : trade.items())
     {
         auto& model       = item->based<fb::model::item>();
-        buffer[model.id] += item->count();
+        buffer[model.id] += item->trade_count();
     }
 
     if (!owner->items.is_rewardable(buffer))

@@ -1052,6 +1052,24 @@ command_funcs = {
         return true
     end,
 
+    ['퀘스트제거'] = 
+    function (me, args)
+        local id = table.unpack(args)
+        if not id then
+            me:message("사용법: /퀘스트제거 <ID>")
+            return true
+        end
+
+        id = tonumber(id)
+        if not id or id < 0 then
+            me:message("퀘스트 ID는 0 이상의 숫자여야 합니다.")
+            return true
+        end
+
+        me:remove_quest(id)
+        return true
+    end,
+
     ['서버종료'] = 
     function (me, args)
         local delay = table.unpack(args)

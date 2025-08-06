@@ -28,7 +28,8 @@ struct Quest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_QID = 6,
     VT_STEP = 8,
     VT_PROGRESS = 10,
-    VT_COMPLETED = 12
+    VT_PARAM = 12,
+    VT_COMPLETED = 14
   };
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
@@ -42,6 +43,9 @@ struct Quest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t progress() const {
     return GetField<uint32_t>(VT_PROGRESS, 0);
   }
+  const ::flatbuffers::String *param() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_PARAM);
+  }
   bool completed() const {
     return GetField<uint8_t>(VT_COMPLETED, 0) != 0;
   }
@@ -51,6 +55,8 @@ struct Quest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_QID, 4) &&
            VerifyField<uint32_t>(verifier, VT_STEP, 4) &&
            VerifyField<uint32_t>(verifier, VT_PROGRESS, 4) &&
+           VerifyOffset(verifier, VT_PARAM) &&
+           verifier.VerifyString(param()) &&
            VerifyField<uint8_t>(verifier, VT_COMPLETED, 1) &&
            verifier.EndTable();
   }
@@ -72,6 +78,9 @@ struct QuestBuilder {
   void add_progress(uint32_t progress) {
     fbb_.AddElement<uint32_t>(Quest::VT_PROGRESS, progress, 0);
   }
+  void add_param(::flatbuffers::Offset<::flatbuffers::String> param) {
+    fbb_.AddOffset(Quest::VT_PARAM, param);
+  }
   void add_completed(bool completed) {
     fbb_.AddElement<uint8_t>(Quest::VT_COMPLETED, static_cast<uint8_t>(completed), 0);
   }
@@ -92,14 +101,35 @@ inline ::flatbuffers::Offset<Quest> CreateQuest(
     uint32_t qid = 0,
     uint32_t step = 0,
     uint32_t progress = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> param = 0,
     bool completed = false) {
   QuestBuilder builder_(_fbb);
+  builder_.add_param(param);
   builder_.add_progress(progress);
   builder_.add_step(step);
   builder_.add_qid(qid);
   builder_.add_uid(uid);
   builder_.add_completed(completed);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Quest> CreateQuestDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t uid = 0,
+    uint32_t qid = 0,
+    uint32_t step = 0,
+    uint32_t progress = 0,
+    const char *param = nullptr,
+    bool completed = false) {
+  auto param__ = param ? _fbb.CreateString(param) : 0;
+  return fb::protocol::internal::raw::CreateQuest(
+      _fbb,
+      uid,
+      qid,
+      step,
+      progress,
+      param__,
+      completed);
 }
 
 inline const fb::protocol::internal::raw::Quest *GetQuest(const void *buf) {

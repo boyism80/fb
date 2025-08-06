@@ -25,6 +25,13 @@
             "desc": "money"
         }
     ],
+    "exp": [
+        {
+            "name": "value",
+            "type": "uint32_t",
+            "desc": "exp"
+        }
+    ],
     "level": [
         {
             "name": "min",

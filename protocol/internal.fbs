@@ -168,5 +168,6 @@ table Quest {
     qid: uint;
     step: uint;
     progress: uint;
+    param: string;
     completed: bool;
 }

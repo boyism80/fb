@@ -254,8 +254,13 @@ end
 function sample_quest(me, npc)
     local quest = me:quest(1)
     if quest == nil then
-        me:dialog(npc, '퀘스트를 시작합니다. 다람쥐를 1마리 처치하세요.')
-        me:start_quest(1)
+        if not me:start_quest(1) then
+            me:dialog(npc, '퀘스트 시작 실패')
+        else
+            local quest = me:quest(1)
+            quest:param('다람쥐')
+            me:dialog(npc, '퀘스트를 시작합니다. 다람쥐를 1마리 처치하세요.')
+        end
         return
     end
 
@@ -266,8 +271,12 @@ function sample_quest(me, npc)
 
     if quest:step() == 0 then
         if quest:completed_progress() then
-            me:dialog(npc, '잘 하셨습니다. 다음은 토끼를 2마리 잡으세요')
-            quest:inc_step()
+            if not quest:inc_step() then
+                me:dialog(npc, '퀘스트 단계 증가 실패')
+            else
+                quest:param('토끼')
+                me:dialog(npc, '잘 하셨습니다. 다음은 토끼를 2마리 잡으세요')
+            end
         else
             local progress = quest:progress()
             local max_progress = quest:model():progress()
@@ -278,8 +287,12 @@ function sample_quest(me, npc)
 
     if quest:step() == 1 then
         if quest:completed_progress() then
-            me:dialog(npc, '잘 하셨습니다. 다음은 삽사리를 3마리 잡으세요')
-            quest:inc_step()
+            if not quest:inc_step() then
+                me:dialog(npc, '퀘스트 단계 증가 실패')
+            else
+                quest:param('삽사리')
+                me:dialog(npc, '잘 하셨습니다. 다음은 삽사리를 3마리 잡으세요')
+            end
         else
             local progress = quest:progress()
             local max_progress = quest:model():progress()

@@ -9,12 +9,18 @@ quest::quest(uint32_t id, std::weak_ptr<fb::game::character> owner) :
     owner(owner)
 { }
 
-quest::quest(uint32_t id, std::weak_ptr<fb::game::character> owner, uint32_t step, uint32_t progress, bool completed) :
+quest::quest(uint32_t                           id,
+             std::weak_ptr<fb::game::character> owner,
+             uint32_t                           step,
+             uint32_t                           progress,
+             bool                               completed,
+             std::string                        param) :
     id(id),
     owner(owner),
     _step(step),
     _progress(progress),
-    _completed(completed)
+    _completed(completed),
+    _param(param)
 { }
 
 uint32_t quest::step() const
@@ -27,6 +33,16 @@ uint32_t quest::progress() const
     return this->_progress;
 }
 
+std::string quest::param() const
+{
+    return this->_param;
+}
+
+void quest::param(const std::string& param)
+{
+    this->_param = param;
+}
+
 bool quest::inc_progress(uint32_t value)
 {
     auto owner = this->owner.lock();
@@ -37,7 +53,7 @@ bool quest::inc_progress(uint32_t value)
     auto& model  = server.model.quest[this->id][this->_step];
 
     this->_progress = std::min(this->_progress + value, model.progress);
-    return model.progress == this->_progress;
+    return true;
 }
 
 bool quest::inc_step(uint32_t value)
@@ -65,7 +81,8 @@ bool quest::inc_step(uint32_t value)
 
     this->_step     += value;
     this->_progress  = 0;
-    return this->_step == max_step;
+    this->_param     = "";
+    return true;
 }
 
 bool quest::complete()
@@ -100,13 +117,13 @@ void quests::owner(std::weak_ptr<fb::game::character> owner)
     this->_owner = owner;
 }
 
-void quests::add(uint32_t id, uint32_t step, uint32_t progress, bool completed)
+void quests::add(uint32_t id, uint32_t step, uint32_t progress, bool completed, std::string param)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
         return;
 
-    this->insert({id, std::make_shared<quest>(id, this->_owner, step, progress, completed)});
+    this->insert({id, std::make_shared<quest>(id, this->_owner, step, progress, completed, param)});
 }
 
 void quests::remove(uint32_t id)

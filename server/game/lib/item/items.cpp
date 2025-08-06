@@ -1073,6 +1073,16 @@ bool fb::game::items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>
     if (money_cap < money)
         return false;
 
+    auto required_size = 0;
+    for (auto& [id, count] : items)
+    {
+        auto& model = owner->server.model.item[id];
+        if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
+            required_size += count;
+        else
+            required_size++;
+    }
+
     auto free_size = this->free_size();
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -1093,7 +1103,7 @@ bool fb::game::items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>
         free_size++;
     }
 
-    return free_size >= items.size();
+    return free_size >= required_size;
 }
 
 bool fb::game::items::is_rewardable(const std::vector<fb::model::dsl>& items) const
