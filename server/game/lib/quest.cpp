@@ -53,7 +53,7 @@ bool quest::inc_progress(uint32_t value)
     auto& model  = server.model.quest[this->id][this->_step];
 
     this->_progress = std::min(this->_progress + value, model.progress);
-    return model.progress == this->_progress;
+    return true;
 }
 
 bool quest::inc_step(uint32_t value)
@@ -82,7 +82,7 @@ bool quest::inc_step(uint32_t value)
     this->_step     += value;
     this->_progress  = 0;
     this->_param     = "";
-    return this->_step == max_step;
+    return true;
 }
 
 bool quest::complete()
