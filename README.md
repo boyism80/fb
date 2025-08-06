@@ -2,39 +2,6 @@
 
 fb is a 2D MMORPG game server written in C++20.
 
-## Installation
-
-Follow the instructions for your target OS.
-
-### Windows
-
-1. **Prerequisites**  
-   - Windows 10 or higher
-   - Visual Studio 2022 must be installed.
-   - .NET Core 8.0 or higher
-   - MySQL 8.0 or higher
-   - Redis 3.2.1 or
-   - RabbitMQ 4.0.7 or higher
-   - CMake 3.28 or higher
-
-2. Run the `setup.bat` script in the project root. This will generate the build output in the build folder.
-
-3. If you need to change server settings later, edit `config/config.dev.json` or the `appsettings` files in the `internal` and `write-back` folders.
-
-### Linux
-
-1. **Prerequisites**  
-   - Ubuntu 24.04.1 LTS or higher
-   - Docker 26.1.3 or higher
-   - Kubernetes 1.30.9 (kubectl) or higher
-   - Pulumi 3.145.0 or higher
-
-2. Run the setup script:
-   ```sh
-   ./shell.sh
-   ```
-3. If you need, edit `infra/pulumi/develop.json` to configure your cluster before deploying.
-
 ## Architecture
 
 ![Architecture](resources/image/architecture.png)
