@@ -33,13 +33,13 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              co_await caster->change_str(99, DEFAULT_TIMEOUT);
              co_await caster->change_level(30, DEFAULT_TIMEOUT);
              co_await caster->create_item("양첨목봉", 1, DEFAULT_TIMEOUT);
-             co_await caster->equip(0, DEFAULT_TIMEOUT);
+             std::ignore = co_await caster->equip(0, DEFAULT_TIMEOUT);
              co_return true;
          }, [](auto& caster, uint8_t slot) -> async::task<bool> {
              fb::logger::debug("Spell cast: Using spell_cast with empty message");
 
              auto before = caster->position();
-             co_await caster->spawn_monster("다람쥐", before.x, before.y + 1, DEFAULT_TIMEOUT);
+             std::ignore = co_await caster->spawn_monster("다람쥐", before.x, before.y + 1, DEFAULT_TIMEOUT);
              auto&& resp = co_await caster->template request<fb::protocol::game::response::position>(
                  fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, slot, "", 0, {0, 0}),
                  [before](auto& resp) {
@@ -52,7 +52,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
 
              caster->chat("/몬스터제거");
              co_await caster->clear_all_drop_items(DEFAULT_TIMEOUT);
-             co_await caster->unequip(EQUIPMENT_PARTS::WEAPON, DEFAULT_TIMEOUT);
+             std::ignore = co_await caster->unequip(EQUIPMENT_PARTS::WEAPON, DEFAULT_TIMEOUT);
              co_await caster->clear_inventory(DEFAULT_TIMEOUT);
              co_await caster->move(DIRECTION::TOP, 2);
              co_await caster->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
@@ -138,14 +138,14 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
         {"공력증강",
          [](auto& caster) -> async::task<bool> {
              // Pre-condition: Setup MP/HP for enhancement test
-             co_await caster->set_max_hp_mp(10000, 10000, DEFAULT_TIMEOUT);
+             std::ignore = co_await caster->set_max_hp_mp(10000, 10000, DEFAULT_TIMEOUT);
              fb::logger::debug("Pre-condition: Setting up MP/HP for 공력증강 test");
              co_return true;
          }, [](auto& caster, uint8_t slot) -> async::task<bool> {
              // Spell cast: Use spell_cast with empty message
              while (true)
              {
-                 co_await caster->set_current_hp_mp(10000, 30, DEFAULT_TIMEOUT);
+                 std::ignore = co_await caster->set_current_hp_mp(10000, 30, DEFAULT_TIMEOUT);
                  auto&& resp = co_await caster->template request<fb::protocol::game::response::message>(
                      fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, slot, "", 0, {0, 0}),
                      [](auto& resp) {
@@ -182,7 +182,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              fb::logger::debug("Pre-condition: Setting up target and weapon for 대력검신 test");
 
              co_await caster->create_item(weapon_name, 1, DEFAULT_TIMEOUT);
-             co_await caster->equip(0, DEFAULT_TIMEOUT);
+             std::ignore = co_await caster->equip(0, DEFAULT_TIMEOUT);
              co_return true;
          }, [weapon_name](auto& caster, uint8_t slot) -> async::task<bool> {
              // Spell cast: Use spell_cast with weapon type message
@@ -249,7 +249,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              // Post-condition: Verify weapon damage effect
              fb::logger::debug("Post-condition: Verifying 신검합일 damage effect");
 
-             co_await caster->unequip(EQUIPMENT_PARTS::WEAPON, DEFAULT_TIMEOUT);
+             std::ignore = co_await caster->unequip(EQUIPMENT_PARTS::WEAPON, DEFAULT_TIMEOUT);
              co_await caster->clear_inventory(DEFAULT_TIMEOUT);
              co_return true;
          }},
@@ -303,7 +303,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
                  co_return false;
              }
 
-             co_await caster->set_current_hp_mp(50, 100000, DEFAULT_TIMEOUT);
+             std::ignore = co_await caster->set_current_hp_mp(50, 100000, DEFAULT_TIMEOUT);
              std::ignore = co_await caster->template request<fb::protocol::game::response::update_external<true>>(
                  fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET,
                                                          slot,
@@ -356,7 +356,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              if (map_model.name != "낙랑의방")
                  caster = co_await caster->transfer(fb::protocol::game::request::chat(false, "/맵이동 낙랑의방 6 6"));
 
-             co_await caster->set_max_hp_mp(100000, 100000, DEFAULT_TIMEOUT);
+             std::ignore = co_await caster->set_max_hp_mp(100000, 100000, DEFAULT_TIMEOUT);
              co_return true;
          }}
     };

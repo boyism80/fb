@@ -31,7 +31,7 @@ async::task<bool> worldmap_test::worldmap_scenario()
                                                DEFAULT_TIMEOUT);
 
     fb::logger::debug("Worldmap test: Bot {} requesting worldmap data", bot->name());
-    co_await bot->request<fb::protocol::game::response::map_worlds>(
+    std::ignore = co_await bot->request<fb::protocol::game::response::map_worlds>(
         fb::protocol::game::request::move(DIRECTION::TOP, bot->oid(), bot->position()),
         DEFAULT_TIMEOUT);
 
