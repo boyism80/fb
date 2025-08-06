@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - release/**
+    paths-ignore:
+      - '**.md'
+      - 'wiki/**'
 
 env:
   REGISTRY: ghcr.io
