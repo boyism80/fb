@@ -358,6 +358,24 @@ void fb::game::trade::assert_exchange(const fb::game::trade& trade) const
         buffer[model.id] += item->trade_count();
     }
 
+    for (auto& item : owner->items)
+    {
+        if (item == nullptr)
+            continue;
+
+        if (item->trade_count() == 0)
+            continue;
+
+        auto& model = item->based<fb::model::item>();
+        if (buffer.contains(model.id) == false)
+            continue;
+
+        if (buffer[model.id] > item->count())
+            buffer[model.id] -= item->count();
+        else
+            buffer.erase(model.id);
+    }
+
     if (!owner->items.is_rewardable(buffer))
         throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
 }
