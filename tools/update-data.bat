@@ -13,7 +13,7 @@ IF "%1" == "true" (
 
 if ERRORLEVEL 1 GOTO END
 PUSHD bin
-CALL ExcelTableConverter.exe --dir=..\..\..\resources\table --lang="c++|c#|node|go" --dsl=..\..\..\resources\table\dsl.json
+CALL ExcelTableConverter.exe --dir=..\..\..\resources\table --lang="c++|c#|node|go" --dsl=..\..\..\resources\table\dsl.json --ns fb.model --additional-headers=model.additional.h
 POPD
 POPD
 
