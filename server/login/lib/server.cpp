@@ -13,11 +13,11 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         this->_forbiddens.push_back(x.asString());
 
     // Register event handler
-    this->handler.protocol.bind<fb::login::handler::login>();
-    this->handler.protocol.bind<fb::login::handler::agreement>();
-    this->handler.protocol.bind<fb::login::handler::create_account>();
-    this->handler.protocol.bind<fb::login::handler::complete>();
-    this->handler.protocol.bind<fb::login::handler::change_password>();
+    this->handler.protocol.bind<fb::login::handler::protocol::login>();
+    this->handler.protocol.bind<fb::login::handler::protocol::agreement>();
+    this->handler.protocol.bind<fb::login::handler::protocol::create_account>();
+    this->handler.protocol.bind<fb::login::handler::protocol::complete>();
+    this->handler.protocol.bind<fb::login::handler::protocol::change_password>();
 }
 
 server::~server()

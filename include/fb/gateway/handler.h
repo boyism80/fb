@@ -7,7 +7,7 @@
  * @author  FB Development Team
  */
 
-#include <fb/gateway/handler/check_version.h>
-#include <fb/gateway/handler/entry_list.h>
+#include <fb/gateway/handler/protocol/check_version.h>
+#include <fb/gateway/handler/protocol/entry_list.h>
 
 #endif // !__FB_GATEWAY_HANDLER_H__

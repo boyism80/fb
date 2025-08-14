@@ -1,0 +1,58 @@
+#ifndef FB_GAME_HANDLER_H
+#define FB_GAME_HANDLER_H
+
+// Protocol handlers
+#include <fb/game/handler/protocol/attack.h>
+#include <fb/game/handler/protocol/bulletin.h>
+#include <fb/game/handler/protocol/chat.h>
+#include <fb/game/handler/protocol/click.h>
+#include <fb/game/handler/protocol/dialog.h>
+#include <fb/game/handler/protocol/direction.h>
+#include <fb/game/handler/protocol/door.h>
+#include <fb/game/handler/protocol/emotion.h>
+#include <fb/game/handler/protocol/exit.h>
+#include <fb/game/handler/protocol/front_info.h>
+#include <fb/game/handler/protocol/give_item.h>
+#include <fb/game/handler/protocol/give_money.h>
+#include <fb/game/handler/protocol/group.h>
+#include <fb/game/handler/protocol/item_active.h>
+#include <fb/game/handler/protocol/item_combine.h>
+#include <fb/game/handler/protocol/item_drop.h>
+#include <fb/game/handler/protocol/item_drop_money.h>
+#include <fb/game/handler/protocol/item_inactive.h>
+#include <fb/game/handler/protocol/item_info.h>
+#include <fb/game/handler/protocol/item_throws.h>
+#include <fb/game/handler/protocol/login.h>
+#include <fb/game/handler/protocol/loot.h>
+#include <fb/game/handler/protocol/map_update.h>
+#include <fb/game/handler/protocol/map_world.h>
+#include <fb/game/handler/protocol/miss.h>
+#include <fb/game/handler/protocol/move.h>
+#include <fb/game/handler/protocol/post.h>
+#include <fb/game/handler/protocol/self_info.h>
+#include <fb/game/handler/protocol/spell_cast.h>
+#include <fb/game/handler/protocol/swap.h>
+#include <fb/game/handler/protocol/trade.h>
+#include <fb/game/handler/protocol/update_move.h>
+#include <fb/game/handler/protocol/update_option.h>
+#include <fb/game/handler/protocol/update_screen.h>
+#include <fb/game/handler/protocol/user_list.h>
+#include <fb/game/handler/protocol/whisper.h>
+
+// AMQP handlers
+#include <fb/game/handler/amqp/broadcast.h>
+#include <fb/game/handler/amqp/broadcast_clan.h>
+#include <fb/game/handler/amqp/change_clan_role.h>
+#include <fb/game/handler/amqp/enter_group.h>
+#include <fb/game/handler/amqp/join_clan.h>
+#include <fb/game/handler/amqp/kick_clan.h>
+#include <fb/game/handler/amqp/kick_group.h>
+#include <fb/game/handler/amqp/kick_out.h>
+#include <fb/game/handler/amqp/leave_clan.h>
+#include <fb/game/handler/amqp/leave_group.h>
+#include <fb/game/handler/amqp/set_clan_title.h>
+#include <fb/game/handler/amqp/shutdown.h>
+#include <fb/game/handler/amqp/whisper.h>
+#include <fb/game/handler/amqp/write_mail.h>
+
+#endif // FB_GAME_HANDLER_H

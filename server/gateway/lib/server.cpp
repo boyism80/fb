@@ -8,8 +8,8 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     fb::acceptor<session>(io_context, "GATEWAY", port)
 {
     // Register event handler
-    this->handler.protocol.bind<fb::gateway::handler::check_version>();
-    this->handler.protocol.bind<fb::gateway::handler::entry_list>();
+    this->handler.protocol.bind<fb::gateway::handler::protocol::check_version>();
+    this->handler.protocol.bind<fb::gateway::handler::protocol::entry_list>();
 }
 
 server::~server()

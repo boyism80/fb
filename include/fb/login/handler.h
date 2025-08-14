@@ -7,10 +7,10 @@
  * @author  FB Development Team
  */
 
-#include <fb/login/handler/agreement.h>
-#include <fb/login/handler/create_account.h>
-#include <fb/login/handler/complete.h>
-#include <fb/login/handler/change_password.h>
-#include <fb/login/handler/login.h>
+#include <fb/login/handler/protocol/agreement.h>
+#include <fb/login/handler/protocol/create_account.h>
+#include <fb/login/handler/protocol/complete.h>
+#include <fb/login/handler/protocol/change_password.h>
+#include <fb/login/handler/protocol/login.h>
 
 #endif // !__FB_LOGIN_HANDLER_H__

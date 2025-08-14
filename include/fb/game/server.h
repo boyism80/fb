@@ -266,7 +266,7 @@ public:
      */
     void assert_mail(uint32_t error) const;
 
-private:
+public:
     /**
      * @brief      Called when a character enters a group.
      *
@@ -288,6 +288,7 @@ private:
      */
     async::task<void> on_kick_group(const internal_resp::KickGroup& resp);
 
+public:
     /**
      * @brief      Called when a server-wide broadcast message is received.
      *

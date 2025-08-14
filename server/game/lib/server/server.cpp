@@ -144,43 +144,43 @@ async::task<void> server::handle_start()
         async::awaitable_get(async_task);
     }
 
-    this->handler.protocol.bind<fb::game::handler::login>();              // 게임서버 접속 핸들러
-    this->handler.protocol.bind<fb::game::handler::direction>();          // 방향전환 핸들러
-    this->handler.protocol.bind<fb::game::handler::exit>();               // 접속 종료
-    this->handler.protocol.bind<fb::game::handler::update_move>();        // 이동과 맵 데이터 업데이트 핸들러
-    this->handler.protocol.bind<fb::game::handler::move>(1s, 6);          // 이동 핸들러
-    this->handler.protocol.bind<fb::game::handler::attack>(500ms, 2);     // 공격 핸들러
-    this->handler.protocol.bind<fb::game::handler::loot>();               // 아이템 줍기 핸들러
-    this->handler.protocol.bind<fb::game::handler::emotion>();            // 감정표현 핸들러
-    this->handler.protocol.bind<fb::game::handler::map_update>();         // 맵 데이터 업데이트 핸들러
-    this->handler.protocol.bind<fb::game::handler::update_screen>();      // 새로고침 핸들러
-    this->handler.protocol.bind<fb::game::handler::item_active>();        // 아이템 사용 핸들러
-    this->handler.protocol.bind<fb::game::handler::item_inactive>();      // 아이템 장착 해제 핸들러
-    this->handler.protocol.bind<fb::game::handler::item_drop>();          // 아이템 버리기 핸들러
-    this->handler.protocol.bind<fb::game::handler::item_drop_money>();    // 금전 버리기 핸들러
-    this->handler.protocol.bind<fb::game::handler::front_info>();         // 앞방향 정보 핸들러
-    this->handler.protocol.bind<fb::game::handler::self_info>();          // 나 자신의 정보 핸들러
-    this->handler.protocol.bind<fb::game::handler::update_option>();      // 옵션 설정 핸들러
-    this->handler.protocol.bind<fb::game::handler::click>();              // 오브젝트 클릭 핸들러
-    this->handler.protocol.bind<fb::game::handler::item_info>();          // 인벤토리 우클릭 핸들러
-    this->handler.protocol.bind<fb::game::handler::item_combine>();       // 아이템 조합 핸들러
-    this->handler.protocol.bind<fb::game::handler::trade>();              // 교환 핸들러
-    this->handler.protocol.bind<fb::game::handler::group>();              // 그룹 핸들러
-    this->handler.protocol.bind<fb::game::handler::user_list>();          // 유저 리스트 핸들러
-    this->handler.protocol.bind<fb::game::handler::chat>();               // 유저 채팅 핸들러
-    this->handler.protocol.bind<fb::game::handler::bulletin>();           // 게시판 섹션 리스트 핸들러
-    this->handler.protocol.bind<fb::game::handler::swap>();               // 스펠 순서 변경
-    this->handler.protocol.bind<fb::game::handler::dialog>();             // 다이얼로그
-    this->handler.protocol.bind<fb::game::handler::dialog>(0x39);         // 다이얼로그
-    this->handler.protocol.bind<fb::game::handler::item_throws>();        // 아이템 던지기 핸들러
-    this->handler.protocol.bind<fb::game::handler::spell_cast>(500ms, 3); // 스펠 핸들러
-    this->handler.protocol.bind<fb::game::handler::door>();               // 도어 핸들러
-    this->handler.protocol.bind<fb::game::handler::whisper>();            // 귓속말 핸들러
-    this->handler.protocol.bind<fb::game::handler::map_world>();          // 월드맵 핸들러
-    this->handler.protocol.bind<fb::game::handler::miss>();
-    this->handler.protocol.bind<fb::game::handler::give_item>();
-    this->handler.protocol.bind<fb::game::handler::give_money>();
-    this->handler.protocol.bind<fb::game::handler::post>();
+    this->handler.protocol.bind<fb::game::handler::protocol::login>();              // 게임서버 접속 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::direction>();          // 방향전환 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::exit>();               // 접속 종료
+    this->handler.protocol.bind<fb::game::handler::protocol::update_move>();        // 이동과 맵 데이터 업데이트 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::move>(1s, 6);          // 이동 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::attack>(500ms, 2);     // 공격 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::loot>();               // 아이템 줍기 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::emotion>();            // 감정표현 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::map_update>();         // 맵 데이터 업데이트 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::update_screen>();      // 새로고침 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::item_active>();        // 아이템 사용 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::item_inactive>();      // 아이템 장착 해제 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::item_drop>();          // 아이템 버리기 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::item_drop_money>();    // 금전 버리기 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::front_info>();         // 앞방향 정보 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::self_info>();          // 나 자신의 정보 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::update_option>();      // 옵션 설정 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::click>();              // 오브젝트 클릭 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::item_info>();          // 인벤토리 우클릭 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::item_combine>();       // 아이템 조합 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::trade>();              // 교환 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::group>();              // 그룹 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::user_list>();          // 유저 리스트 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::chat>();               // 유저 채팅 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::bulletin>();           // 게시판 섹션 리스트 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::swap>();               // 스펠 순서 변경
+    this->handler.protocol.bind<fb::game::handler::protocol::dialog>();             // 다이얼로그
+    this->handler.protocol.bind<fb::game::handler::protocol::dialog>(0x39);         // 다이얼로그
+    this->handler.protocol.bind<fb::game::handler::protocol::item_throws>();        // 아이템 던지기 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::spell_cast>(500ms, 3); // 스펠 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::door>();               // 도어 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::whisper>();            // 귓속말 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::map_world>();          // 월드맵 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::miss>();
+    this->handler.protocol.bind<fb::game::handler::protocol::give_item>();
+    this->handler.protocol.bind<fb::game::handler::protocol::give_money>();
+    this->handler.protocol.bind<fb::game::handler::protocol::post>();
 
     this->bind_timer(&server::handle_heart_beat, 1s);
     this->bind_timer(&server::handle_announce,
