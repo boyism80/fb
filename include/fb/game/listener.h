@@ -313,15 +313,17 @@ public:
     /**
      * @brief      Called when a region of a character's map view needs updating.
      *
-     * @param      ch     The character whose map view is being updated
-     * @param[in]  map    The map containing the updated region
-     * @param[in]  begin  The starting position of the region to update
-     * @param[in]  size   The size of the region to update
+     * @param      ch        The character whose map view is being updated
+     * @param[in]  map       The map containing the updated region
+     * @param[in]  position  The position of the region to update
+     * @param[in]  size      The size of the region to update
+     * @param[in]  crc       The CRC value of the map update
      */
     void on_update_map(character&                  ch,
                        const fb::game::map&        map,
-                       const fb::model::point16_t& begin,
-                       const fb::model::size8_t&   size) override final;
+                       const fb::model::point16_t& position,
+                       const fb::model::size8_t&   size,
+                       uint16_t                    crc) override final;
 
     /**
      * @brief      Called when a character's buff effects need synchronization.

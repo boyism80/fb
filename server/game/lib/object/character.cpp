@@ -871,9 +871,12 @@ void character::update_map()
         this->update_map(*this->_map);
 }
 
-void character::update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size)
+void character::update_map(const fb::game::map&        map,
+                           const fb::model::point16_t& position,
+                           const fb::model::size8_t&   size,
+                           uint16_t                    crc)
 {
-    this->listener.on_update_map(*this, map, begin, size);
+    this->listener.on_update_map(*this, map, position, size, crc);
 }
 
 void character::update_bgm(uint16_t bgm, uint8_t volume)
