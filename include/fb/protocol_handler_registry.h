@@ -91,65 +91,53 @@ public:
 
 public:
     /**
-     * @brief      Binds a member function as a protocol handler with explicit header.
+     * @brief      Binds a handler to all commands with a default duration and limit.
      *
-     * @tparam     Class     The class type containing the handler method.
-     * @tparam     Request   The request type that the handler processes.
-     *                       Must satisfy the ProtocolHeader concept.
-     * @param[in]  fn        Pointer to the member function to bind.
-     * @param[in]  header    The protocol command header byte.
-     * @param[in]  duration  The time window for rate limiting (default: 1s).
-     * @param[in]  limit     Maximum number of calls allowed within the duration window (default: 10).
+     * @tparam     HandlerType  The type of the handler to bind.
+     * @param[in]  duration     The duration for rate limiting.
+     * @param[in]  limit        The maximum number of executions per duration.
      */
-    template <typename Class, typename Request>
-    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
-              uint8_t                                    header,
-              const std::chrono::steady_clock::duration& duration = 1s,
-              uint32_t                                   limit    = 10)
+    template <typename HandlerType>
+    void bind(const std::chrono::steady_clock::duration& duration = 1s, uint32_t limit = 10)
     {
-        static_assert(ProtocolHeader<Request>, "Request type must inherit from fb::protocol::header");
-        static_assert(std::is_same_v<decltype(Request::header), const uint8_t>,
-                      "Request type must have 'static constexpr uint8_t header' member");
+        using protocol_type = typename HandlerType::protocol_type;
 
-        // Add deserializer
-        this->_deserializers.insert({header, [](auto& reader) -> async::task<fb::protocol::header*> {
-                                         auto protocol = new Request();
+        this->bind<HandlerType>(protocol_type::header, duration, limit);
+    }
+
+    /**
+     * @brief      Binds a handler to a specific command with a default duration and limit.
+     *
+     * @tparam     HandlerType  The type of the handler to bind.
+     * @param[in]  cmd          The command byte to bind the handler to.
+     * @param[in]  duration     The duration for rate limiting.
+     * @param[in]  limit        The maximum number of executions per duration.
+     */
+    template <typename HandlerType>
+    void bind(uint8_t cmd, const std::chrono::steady_clock::duration& duration = 1s, uint32_t limit = 10)
+    {
+        using session_type  = typename HandlerType::session_type;
+        using protocol_type = typename HandlerType::protocol_type;
+
+        auto& server = static_cast<typename HandlerType::server_type&>(this->_owner);
+
+        this->_deserializers.insert({cmd, [](auto& reader) -> async::task<fb::protocol::header*> {
+                                         auto protocol = new typename HandlerType::protocol_type();
                                          co_await protocol->deserialize(reader);
                                          co_return protocol;
                                      }});
 
-        // Add handler with rate limiting
         this->_handlers.insert(
-            {header,
+            {cmd,
              rate_limited_command(
-                 [this, fn](fb::socket<T>& socket, fb::protocol::header& header) -> async::task<bool> {
-                     auto* protocol = static_cast<Request*>(&header);
-                     return (static_cast<Class&>(this->_owner).*fn)(socket, *protocol);
+                 [this, &server](fb::socket<T>& socket, fb::protocol::header& header) -> async::task<bool> {
+                     auto* protocol = static_cast<typename HandlerType::protocol_type*>(&header);
+                     auto& session  = static_cast<typename HandlerType::session_type&>(socket);
+                     auto  handler  = HandlerType(server);
+                     return handler.handle(session, *protocol);
                  },
                  duration,
                  limit)});
-    }
-
-    /**
-     * @brief      Binds a member function as a protocol handler using Request's header.
-     *
-     * @tparam     Class     The class type containing the handler method.
-     * @tparam     Request   The request type that the handler processes.
-     *                       Must satisfy the ProtocolHeader concept.
-     * @param[in]  fn        Pointer to the member function to bind.
-     * @param[in]  duration  The time window for rate limiting (default: 1s).
-     * @param[in]  limit     Maximum number of calls allowed within the duration window (default: 10).
-     */
-    template <typename Class, typename Request>
-    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
-              const std::chrono::steady_clock::duration& duration = 1s,
-              uint32_t                                   limit    = 10)
-    {
-        static_assert(ProtocolHeader<Request>, "Request type must inherit from fb::protocol::header");
-        static_assert(std::is_same_v<decltype(Request::header), const uint8_t>,
-                      "Request type must have 'static constexpr uint8_t header' member");
-
-        this->bind(fn, Request::header, duration, limit);
     }
 
     /**

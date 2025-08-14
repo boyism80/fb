@@ -70,6 +70,27 @@ public:
      */
     ~server();
 
+    /**
+     * @brief      Gets the list of available login server endpoints.
+     *
+     * @return     A reference to the vector of endpoints.
+     */
+    const std::vector<endpoint>& entrypoints() const;
+
+    /**
+     * @brief      Gets the serialized endpoint bytes for client transmission.
+     *
+     * @return     A reference to the endpoint bytes stream.
+     */
+    const fb::stream& endpoint_bytes() const;
+
+    /**
+     * @brief      Gets the CRC checksum of the endpoint data.
+     *
+     * @return     The CRC checksum value.
+     */
+    uint32_t endpoint_crc() const;
+
 private:
     /**
      * @brief      Loads available login server endpoints from configuration.
@@ -186,26 +207,6 @@ protected:
     }
 
 public:
-    /**
-     * @brief      Handles client version check request.
-     *
-     * @param      session    The client session requesting version check.
-     * @param[in]  request    The version check request containing client version info.
-     *
-     * @return     An async task returning true if version check succeeded.
-     */
-    [[nodiscard]] async::task<bool> handle_check_version(fb::socket<fb::gateway::session>&              session,
-                                                         const fb::protocol::gateway::request::version& request);
-    /**
-     * @brief      Handles client request for login server endpoint list.
-     *
-     * @param      session    The client session requesting the endpoint list.
-     * @param[in]  request    The endpoint list request.
-     *
-     * @return     An async task returning true if endpoint list was sent successfully.
-     */
-    [[nodiscard]] async::task<bool> handle_entry_list(fb::socket<fb::gateway::session>&               session,
-                                                      const fb::protocol::gateway::request::endpoint& request);
 };
 
 } // namespace fb::gateway

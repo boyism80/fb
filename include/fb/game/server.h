@@ -120,7 +120,6 @@ public:
 
 public:
     using object_set           = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
-    using transfer_param       = fb_reqs::login::transfer_param;
     using protocol_generator   = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
     using npc_interaction_func = std::function<
         async::task<bool>(character&, const std::string&, const std::vector<std::shared_ptr<fb::game::npc>>&)>;
@@ -172,20 +171,7 @@ public:
      */
     ~server();
 
-private:
-    /**
-     * @brief      Generates a human-readable elapsed time message from a datetime string.
-     *
-     *             Calculates the time difference between the provided datetime and the current
-     *             time, then formats it into a user-friendly message (e.g., "2 hours ago",
-     *             "3 days ago"). Used for displaying timestamps in game UI elements.
-     *
-     * @param[in]  dt    The datetime string to calculate elapsed time from.
-     *
-     * @return     A formatted string describing the elapsed time.
-     */
-    std::string elapsed_message(const std::string& dt);
-
+public:
     /**
      * @brief      Creates or updates a group and executes a callback with thread-safe access.
      *
@@ -235,67 +221,6 @@ private:
     async::task<void> upsert_clan_then(uint32_t                                                           id,
                                        std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn);
 
-    /**
-     * @brief      Initializes a character with data from the database.
-     *
-     * @param[in]  response  The character data response from database
-     * @param      ch        The character object to initialize
-     * @param[in]  group     The group ID the character belongs to (optional)
-     * @param[in]  clan      The clan ID the character belongs to (optional)
-     * @param[in]  transfer  Transfer parameters for map changes (optional)
-     *
-     * @return     True if initialization was successful, false otherwise
-     */
-    [[nodiscard]] async::task<bool> init_ch(const fb::protocol::internal::Character& response,
-                                            fb::game::character&                     ch,
-                                            std::optional<uint32_t>                  group,
-                                            std::optional<uint32_t>                  clan,
-                                            const std::optional<transfer_param>&     transfer);
-
-    /**
-     * @brief      Initializes character options from database response.
-     *
-     * @param[in]  response  The option data response from database
-     * @param      ch        The character to set options for
-     */
-    void init_option(const fb::protocol::internal::Option& response, fb::game::character& ch);
-
-    /**
-     * @brief      Initializes character items from database response.
-     *
-     * @param[in]  response  The item data response from database
-     * @param      ch        The character to set items for
-     */
-    void init_items(const std::vector<fb::protocol::internal::Item>& response, fb::game::character& ch);
-
-    /**
-     * @brief      Initializes character spells from database response.
-     *
-     * @param[in]  response  The spell data response from database
-     * @param      ch        The character to set spells for
-     */
-    void init_spells(const std::vector<fb::protocol::internal::Spell>& response, fb::game::character& ch);
-
-    /**
-     * @brief      Initializes character quests from database response.
-     *
-     *             This method initializes the character's quest progress based on the
-     *             provided quest data from the database. It updates the character's
-     *             quest state with the new progress information.
-     *
-     * @param[in]  response  The quest data response from database
-     * @param      ch        The character to set quests for
-     */
-    void init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch);
-
-    /**
-     * @brief      Initializes character achievements from database response.
-     *
-     * @param[in]  response  The achievement data response from database
-     * @param      ch        The character to set achievements for
-     */
-    void init_achievements(const std::vector<fb::protocol::internal::Achievement>& response, fb::game::character& ch);
-
 private:
     /**
      * @brief      Binds an NPC interaction handler function.
@@ -311,7 +236,7 @@ private:
         this->_npc_interaction_funcs.push_back(c_fn);
     }
 
-private:
+public:
     /**
      * @brief      Validates whisper response and throws exception if invalid.
      *
@@ -341,6 +266,7 @@ private:
      */
     void assert_mail(uint32_t error) const;
 
+private:
     /**
      * @brief      Called when a character enters a group.
      *
@@ -404,6 +330,11 @@ private:
      */
     async::task<void> on_clan_leave_member(const internal_resp::LeaveClan& resp);
 
+    /**
+     * @brief      Called when a member is kicked from a clan.
+     *
+     * @param[in]  resp  The clan kick response containing the kicked character.
+     */
     async::task<void> on_clan_kick_member(const internal_resp::KickClan& resp);
 
     /**
@@ -541,6 +472,13 @@ public:
      * @return     Pointer to the thread that handles this map.
      */
     fb::thread* thread(const fb::game::map& map);
+
+    /**
+     * @brief      Gets the current time.
+     *
+     * @return     The current time.
+     */
+    const fb::model::datetime& time() const;
 
     /**
      * @brief      Broadcasts a message to all players based on the broadcast type.
@@ -861,388 +799,6 @@ protected:
     {
         return Service::Game;
     }
-
-public:
-    /**
-     * @brief      Handles character interaction with a mob (monster).
-     *
-     * @param      ch    The character performing the interaction.
-     * @param      mob   The mob being interacted with.
-     */
-    void handle_click_mob(fb::game::character& ch, fb::game::mob& mob);
-
-    /**
-     * @brief      Handles character interaction with an NPC.
-     *
-     * @param      ch    The character performing the interaction.
-     * @param      npc   The NPC being interacted with.
-     */
-    void handle_click_npc(fb::game::character& ch, fb::game::npc& npc);
-
-public:
-    /**
-     * @brief      Handles player login request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The login request packet containing credentials.
-     *
-     * @return     True if login was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_login(fb::socket<fb::game::character>&, const fb_reqs::login&);
-
-    /**
-     * @brief      Handles player direction change packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The direction change packet.
-     *
-     * @return     True if direction change was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_direction(fb::socket<fb::game::character>&, const fb_reqs::direction&);
-
-    /**
-     * @brief      Handles player logout/exit request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The exit request packet.
-     *
-     * @return     True if logout was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_logout(fb::socket<fb::game::character>&, const fb_reqs::exit&);
-
-    /**
-     * @brief      Handles player movement request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The movement request packet containing destination.
-     *
-     * @return     True if movement was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_move(fb::socket<fb::game::character>&, const fb_reqs::move&);
-
-    /**
-     * @brief      Handles player movement update packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The movement update packet.
-     *
-     * @return     True if movement update was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_update_move(fb::socket<fb::game::character>&, const fb_reqs::update_move&);
-
-    /**
-     * @brief      Handles player attack action packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The attack request packet containing target information.
-     *
-     * @return     True if attack was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_attack(fb::socket<fb::game::character>&, const fb_reqs::attack&);
-
-    /**
-     * @brief      Handles player item loot request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The loot request packet containing item information.
-     *
-     * @return     True if loot was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_loot(fb::socket<fb::game::character>&, const fb_reqs::loot&);
-
-    /**
-     * @brief      Handles player emotion/gesture packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The emotion packet containing gesture type.
-     *
-     * @return     True if emotion was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_emotion(fb::socket<fb::game::character>&, const fb_reqs::emotion&);
-
-    /**
-     * @brief      Handles map update request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The map update request packet.
-     *
-     * @return     True if map update was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_update_map(fb::socket<fb::game::character>&, const fb_reqs::map_update&);
-
-    /**
-     * @brief      Handles screen update request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The screen update request packet.
-     *
-     * @return     True if screen update was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_update_screen(fb::socket<fb::game::character>&,
-                                                         const fb_reqs::update_screen&);
-
-    /**
-     * @brief      Handles item activation request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The item activation packet containing item information.
-     *
-     * @return     True if item activation was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_active_item(fb::socket<fb::game::character>&, const fb_reqs::item_active&);
-
-    /**
-     * @brief      Handles item deactivation request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The item deactivation packet containing item information.
-     *
-     * @return     True if item deactivation was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_inactive_item(fb::socket<fb::game::character>&,
-                                                         const fb_reqs::item_inactive&);
-
-    /**
-     * @brief      Handles item drop request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The item drop packet containing item and location information.
-     *
-     * @return     True if item drop was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_drop_item(fb::socket<fb::game::character>&, const fb_reqs::item_drop&);
-
-    /**
-     * @brief      Handles money drop request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The money drop packet containing amount and location.
-     *
-     * @return     True if money drop was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_drop_money(fb::socket<fb::game::character>&,
-                                                      const fb_reqs::item_drop_money&);
-
-    /**
-     * @brief      Handles front object information request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The front info request packet.
-     *
-     * @return     True if front info was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_front_info(fb::socket<fb::game::character>&, const fb_reqs::front_info&);
-
-    /**
-     * @brief      Handles self character information request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The self info request packet.
-     *
-     * @return     True if self info was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_self_info(fb::socket<fb::game::character>&, const fb_reqs::self_info&);
-
-    /**
-     * @brief      Handles player option/settings change packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The option update packet containing new settings.
-     *
-     * @return     True if option change was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_option_changed(fb::socket<fb::game::character>&,
-                                                          const fb_reqs::update_option&);
-
-    /**
-     * @brief      Handles object click request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The click packet containing target object information.
-     *
-     * @return     True if click was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_click_object(fb::socket<fb::game::character>&, const fb_reqs::click&);
-
-    /**
-     * @brief      Handles item information request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The item info request packet containing item identifier.
-     *
-     * @return     True if item info was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_item_info(fb::socket<fb::game::character>&, const fb_reqs::item_info&);
-
-    /**
-     * @brief      Handles item mixing/crafting request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The item mix packet containing recipe and materials.
-     *
-     * @return     True if item mixing was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_item_combine(fb::socket<fb::game::character>&, const fb_reqs::item_combine&);
-
-    /**
-     * @brief      Handles player trade request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The trade packet containing trade information.
-     *
-     * @return     True if trade was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_trade(fb::socket<fb::game::character>&, const fb_reqs::trade&);
-
-    /**
-     * @brief      Handles group/party management packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The group packet containing group operation details.
-     *
-     * @return     True if group operation was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_group(fb::socket<fb::game::character>&, const fb_reqs::group&);
-
-    /**
-     * @brief      Handles user list request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The user list request packet.
-     *
-     * @return     True if user list was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_user_list(fb::socket<fb::game::character>&, const fb_reqs::user_list&);
-
-    /**
-     * @brief      Handles chat message packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The chat packet containing message and type.
-     *
-     * @return     True if chat was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_chat(fb::socket<fb::game::character>&, const fb_reqs::chat&);
-
-    /**
-     * @brief      Handles bulletin system request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The bulletin packet containing bulletin operation details.
-     *
-     * @return     True if bulletin operation was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_bulletin(fb::socket<fb::game::character>&, const fb_reqs::bulletin&);
-
-    /**
-     * @brief      Handles item/equipment swap request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The swap packet containing item positions to exchange.
-     *
-     * @return     True if swap was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_swap(fb::socket<fb::game::character>&, const fb_reqs::swap&);
-
-    /**
-     * @brief      Handles NPC dialog interaction packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The dialog packet containing NPC interaction details.
-     *
-     * @return     True if dialog was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_dialog(fb::socket<fb::game::character>&, const fb_reqs::dialog&);
-
-    /**
-     * @brief      Handles item throwing request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The item throw packet containing target and item information.
-     *
-     * @return     True if item throw was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_throw_item(fb::socket<fb::game::character>&, const fb_reqs::item_throws&);
-
-    /**
-     * @brief      Handles spell casting request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The spell cast packet containing spell and target information.
-     *
-     * @return     True if spell cast was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_spell(fb::socket<fb::game::character>&, const fb_reqs::spell_cast&);
-
-    /**
-     * @brief      Handles door interaction request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The door packet containing door operation details.
-     *
-     * @return     True if door interaction was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_door(fb::socket<fb::game::character>&, const fb_reqs::door&);
-
-    /**
-     * @brief      Handles whisper message packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The whisper packet containing recipient and message.
-     *
-     * @return     True if whisper was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_whisper(fb::socket<fb::game::character>&, const fb_reqs::whisper&);
-
-    /**
-     * @brief      Handles world map request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The world map request packet.
-     *
-     * @return     True if world map was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_world(fb::socket<fb::game::character>&, const fb_reqs::map_world&);
-
-    /**
-     * @brief      Handles object miss/failure notification packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The miss packet containing failure information.
-     *
-     * @return     True if miss was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_object_miss(fb::socket<fb::game::character>&, const fb_reqs::miss&);
-
-    /**
-     * @brief      Handles item giving request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The give item packet containing recipient and item details.
-     *
-     * @return     True if item giving was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_give_item(fb::socket<fb::game::character>&, const fb_reqs::give_item&);
-
-    /**
-     * @brief      Handles money giving request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The give money packet containing recipient and amount.
-     *
-     * @return     True if money giving was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_give_money(fb::socket<fb::game::character>&, const fb_reqs::give_money&);
-
-    /**
-     * @brief      Handles mail/post system request packet.
-     *
-     * @param      socket  The client socket connection.
-     * @param[in]  packet  The post packet containing mail operation details.
-     *
-     * @return     True if post operation was processed successfully, false otherwise.
-     */
-    [[nodiscard]] async::task<bool> handle_post(fb::socket<fb::game::character>&, const fb_reqs::post&);
 
 public:
     /**

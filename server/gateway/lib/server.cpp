@@ -1,4 +1,5 @@
 #include <fb/gateway/server.h>
+#include <fb/gateway/handler.h>
 
 using namespace fb::gateway;
 using namespace fb::protocol::gateway;
@@ -7,12 +8,27 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     fb::acceptor<session>(io_context, "GATEWAY", port)
 {
     // Register event handler
-    this->handler.protocol.bind(&server::handle_check_version);
-    this->handler.protocol.bind(&server::handle_entry_list);
+    this->handler.protocol.bind<fb::gateway::handler::check_version>();
+    this->handler.protocol.bind<fb::gateway::handler::entry_list>();
 }
 
 server::~server()
 { }
+
+const std::vector<endpoint>& server::entrypoints() const
+{
+    return this->_entrypoints;
+}
+
+const fb::stream& server::endpoint_bytes() const
+{
+    return this->_endpoint_bytes;
+}
+
+uint32_t server::endpoint_crc() const
+{
+    return this->_endpoint_crc;
+}
 
 async::task<void> server::load_entries()
 {
@@ -92,48 +108,6 @@ async::task<void> fb::gateway::server::handle_amqp_shutdown(const internal_resp:
 {
     this->exit();
     co_return;
-}
-
-async::task<bool> server::handle_check_version(fb::socket<session>&                           socket,
-                                               const fb::protocol::gateway::request::version& request)
-{
-    try
-    {
-        util::assert_client(request);
-
-        auto encryption = encryption::generate();
-        socket.encryption(encryption);
-
-        this->send(socket, response::encryption(encryption, this->_endpoint_crc), false);
-        co_return true;
-    }
-    catch (std::exception&)
-    {
-        co_return false;
-    }
-}
-
-async::task<bool> server::handle_entry_list(fb::socket<session>&                            socket,
-                                            const fb::protocol::gateway::request::endpoint& request)
-{
-    switch (request.action)
-    {
-    case 0x00:
-    {
-        const auto& entry = this->_entrypoints[request.index];
-        std::ignore       = this->transfer(socket, entry.ip, entry.port, fb::protocol::internal::Service::Gateway);
-        co_return true;
-    }
-
-    case 0x01:
-    {
-        this->send(socket, this->_endpoint_bytes);
-        co_return true;
-    }
-
-    default:
-        co_return false;
-    }
 }
 
 void server::handle_init_amqp(fb::amqp::socket& amqp)

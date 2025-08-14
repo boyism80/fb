@@ -193,6 +193,15 @@ private:
     std::vector<boost::asio::deadline_timer> _timers;
     fb::redis                                _redis;
 
+    /**
+     * @brief      Determines whether the specified string is forbidden.
+     *
+     * @param[in]  str   The string to check against the forbidden list.
+     *
+     * @return     True if the specified string is forbidden, False otherwise.
+     */
+    bool is_forbidden_impl(const std::string& str) const;
+
 public:
     fb::model::model model;
 
@@ -210,7 +219,13 @@ public:
      */
     ~server();
 
-private:
+    /**
+     * @brief      Gets the agreement response for clients.
+     *
+     * @return     The agreement response containing terms of service.
+     */
+    const fb::protocol::login::response::agreement& agreement() const;
+
     /**
      * @brief      Determines whether the specified string is forbidden.
      *
@@ -317,71 +332,6 @@ protected:
     };
 
 public:
-    /**
-     * @brief      Handles client agreement requests.
-     *
-     *             Processes encryption setup and sends the user agreement text.
-     *
-     * @param      socket   The client socket.
-     * @param[in]  request  The agreement request containing encryption parameters.
-     *
-     * @return     An async task that returns true if the request was handled successfully.
-     */
-    [[nodiscard]] async::task<bool> handle_agreement(fb::socket<fb::login::session>&                socket,
-                                                     const fb::protocol::login::request::agreement& request);
-
-    /**
-     * @brief      Handles account creation requests.
-     *
-     *             Validates account information, reserves the username, and creates
-     *             a new character with initial stats and position.
-     *
-     * @param      socket   The client socket.
-     * @param[in]  request  The account creation request.
-     *
-     * @return     An async task that returns true if the request was handled successfully.
-     */
-    [[nodiscard]] async::task<bool> handle_create_account(fb::socket<fb::login::session>&             socket,
-                                                          const fb::protocol::login::request::create& request);
-
-    /**
-     * @brief      Handles login completion requests.
-     *
-     *             Finalizes the login process and prepares for character selection.
-     *
-     * @param      socket   The client socket.
-     * @param[in]  request  The completion request.
-     *
-     * @return     An async task that returns true if the request was handled successfully.
-     */
-    [[nodiscard]] async::task<bool> handle_complete(fb::socket<fb::login::session>&               socket,
-                                                    const fb::protocol::login::request::complete& request);
-
-    /**
-     * @brief      Handles user login requests.
-     *
-     *             Authenticates user credentials and establishes a login session.
-     *
-     * @param      socket   The client socket.
-     * @param[in]  request  The login request containing credentials.
-     *
-     * @return     An async task that returns true if the request was handled successfully.
-     */
-    [[nodiscard]] async::task<bool> handle_login(fb::socket<fb::login::session>&            socket,
-                                                 const fb::protocol::login::request::login& request);
-
-    /**
-     * @brief      Handles password change requests.
-     *
-     *             Validates current credentials and updates the password.
-     *
-     * @param      socket   The client socket.
-     * @param[in]  request  The password change request.
-     *
-     * @return     An async task that returns true if the request was handled successfully.
-     */
-    [[nodiscard]] async::task<bool> handle_change_password(fb::socket<fb::login::session>&                socket,
-                                                           const fb::protocol::login::request::update_pw& request);
 };
 
 }} // namespace fb::login

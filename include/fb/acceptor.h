@@ -77,6 +77,7 @@ public:
     using socket_container      = std::unordered_map<uint32_t, std::shared_ptr<fb::socket<T>>>;
     using socket_container_lock = fb::locker<socket_container>;
     using boost_timers          = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
+    using session_type          = fb::socket<T>;
 
     /**
      * @brief      Handler container for protocol and AMQP handlers.
@@ -873,7 +874,7 @@ public:
         return this->_running;
     }
 
-protected:
+public:
     /**
      * @brief      Puts the current thread to sleep for the specified duration.
      *
