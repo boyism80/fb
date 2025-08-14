@@ -133,8 +133,8 @@ public:
                  [this, &server](fb::socket<T>& socket, fb::protocol::header& header) -> async::task<bool> {
                      auto* protocol = static_cast<typename HandlerType::protocol_type*>(&header);
                      auto& session  = static_cast<typename HandlerType::session_type&>(socket);
-                     auto  handler  = HandlerType(server);
-                     return handler.handle(session, *protocol);
+                     auto  handler  = std::make_shared<HandlerType>(server);
+                     co_return co_await handler->handle(session, *protocol);
                  },
                  duration,
                  limit)});

@@ -40,7 +40,7 @@ async::task<void> server::handle_start()
     co_await fb::acceptor<session>::handle_start();
 
     this->bind_timer(&server::handle_heart_beat, 1s);
-    this->handler.amqp.bind("fb.system", &server::handle_amqp_shutdown);
+    this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.system");
 }
 
 async::task<void> server::handle_heart_beat()

@@ -211,19 +211,19 @@ async::task<void> server::handle_start()
     this->bind_npc_interaction(&server::npc_interaction_revive);
     this->bind_npc_interaction(&server::npc_interaction_appreciate);
 
-    this->handler.amqp.bind(std::format("fb.game.{}", config<uint32_t>("id")), &server::handle_amqp_KickOut);
-    this->handler.amqp.bind(std::format("fb.game.{}", config<uint32_t>("id")), &server::handle_amqp_Whisper);
-    this->handler.amqp.bind("fb.system", &server::handle_amqp_shutdown);
-    this->handler.amqp.bind("fb.global", &server::handle_amqp_Broadcast);
-    this->handler.amqp.bind("fb.group", &server::handle_amqp_EnterGroup);
-    this->handler.amqp.bind("fb.group", &server::handle_amqp_LeaveGroup);
-    this->handler.amqp.bind("fb.group", &server::handle_amqp_KickGroup);
-    this->handler.amqp.bind("fb.clan", &server::handle_amqp_SetClanTitle);
-    this->handler.amqp.bind("fb.clan", &server::handle_amqp_JoinClan);
-    this->handler.amqp.bind("fb.clan", &server::handle_amqp_LeaveClan);
-    this->handler.amqp.bind("fb.clan", &server::handle_amqp_KickClan);
-    this->handler.amqp.bind("fb.clan", &server::handle_amqp_BroadcastClan);
-    this->handler.amqp.bind("fb.mail", &server::handle_amqp_WriteMail);
+    this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(std::format("fb.game.{}", config<uint32_t>("id")));
+    this->handler.amqp.bind<fb::game::handler::amqp::whisper>(std::format("fb.game.{}", config<uint32_t>("id")));
+    this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.system");
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast>("fb.global");
+    this->handler.amqp.bind<fb::game::handler::amqp::enter_group>("fb.group");
+    this->handler.amqp.bind<fb::game::handler::amqp::leave_group>("fb.group");
+    this->handler.amqp.bind<fb::game::handler::amqp::kick_group>("fb.group");
+    this->handler.amqp.bind<fb::game::handler::amqp::set_clan_title>("fb.clan");
+    this->handler.amqp.bind<fb::game::handler::amqp::join_clan>("fb.clan");
+    this->handler.amqp.bind<fb::game::handler::amqp::leave_clan>("fb.clan");
+    this->handler.amqp.bind<fb::game::handler::amqp::kick_clan>("fb.clan");
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>("fb.clan");
+    this->handler.amqp.bind<fb::game::handler::amqp::write_mail>("fb.mail");
 }
 
 bool server::decrypt_policy(uint8_t cmd) const

@@ -124,25 +124,6 @@ public:
     }
 
     /**
-     * @brief      Binds a handler function for a specific exchange and routing key.
-     *
-     * @tparam     Class     The class type containing the handler method
-     * @param[in]  fn        Pointer to the member function to bind
-     * @param[in]  exchange  The AMQP exchange name
-     * @param[in]  key       The routing key to bind to
-     */
-    template <typename Class>
-    void bind(async::task<void> (Class::*fn)(const uint8_t*), const std::string& exchange, uint32_t key)
-    {
-        if (!this->_handlers.contains(exchange))
-            this->_handlers.insert({exchange, std::unordered_map<uint32_t, handler_func>()});
-
-        this->_handlers[exchange].insert({key, [this, fn](const uint8_t* data) -> async::task<void> {
-                                              return (static_cast<Class&>(this->_owner).*fn)(data);
-                                          }});
-    }
-
-    /**
      * @brief      Binds an AMQP handler function to a route and response type.
      *
      * @param[in]  route  The AMQP route to bind to.
@@ -151,17 +132,22 @@ public:
      * @tparam     Class         The class containing the handler function.
      * @tparam     ResponseType  The type of the response to handle.
      */
-    template <typename Class, typename ResponseType>
-    void bind(const std::string& route, async::task<void> (Class::*fn)(const ResponseType&))
+    template <typename HandlerType>
+    void bind(const std::string& route)
     {
+        using message_type = typename HandlerType::message_type;
+
         if (!this->_handlers.contains(route))
             this->_handlers.insert({route, std::unordered_map<uint32_t, handler_func>()});
 
-        auto c_func = std::bind(fn, static_cast<Class*>(&this->_owner), std::placeholders::_1);
-        auto cmd    = static_cast<uint32_t>(ResponseType::FlatBufferProtocolType);
-        this->_handlers[route].insert({cmd, [c_func](const uint8_t* ptr) -> async::task<void> {
-                                           auto protocol = ResponseType::Deserialize(ptr);
-                                           co_await c_func(protocol);
+        auto cmd = static_cast<uint32_t>(message_type::FlatBufferProtocolType);
+        this->_handlers[route].insert({cmd, [this](const uint8_t* ptr) -> async::task<void> {
+                                           auto protocol = std::make_shared<message_type>();
+                                           protocol->Deserialize(ptr);
+
+                                           auto& server = static_cast<typename HandlerType::server_type&>(this->_owner);
+                                           auto  handler = std::make_shared<HandlerType>(server);
+                                           co_await handler->handle(*protocol);
                                        }});
     }
 

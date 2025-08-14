@@ -13,4 +13,6 @@
 #include <fb/login/handler/protocol/change_password.h>
 #include <fb/login/handler/protocol/login.h>
 
+#include <fb/login/handler/amqp/shutdown.h>
+
 #endif // !__FB_LOGIN_HANDLER_H__

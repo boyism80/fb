@@ -38,4 +38,18 @@
 #include <fb/game/handler/protocol/give_money.h>
 #include <fb/game/handler/protocol/post.h>
 
+#include <fb/game/handler/amqp/kick_out.h>
+#include <fb/game/handler/amqp/whisper.h>
+#include <fb/game/handler/amqp/shutdown.h>
+#include <fb/game/handler/amqp/broadcast.h>
+#include <fb/game/handler/amqp/enter_group.h>
+#include <fb/game/handler/amqp/leave_group.h>
+#include <fb/game/handler/amqp/kick_group.h>
+#include <fb/game/handler/amqp/set_clan_title.h>
+#include <fb/game/handler/amqp/join_clan.h>
+#include <fb/game/handler/amqp/leave_clan.h>
+#include <fb/game/handler/amqp/kick_clan.h>
+#include <fb/game/handler/amqp/broadcast_clan.h>
+#include <fb/game/handler/amqp/write_mail.h>
+
 #endif // FB_GAME_HANDLER_H

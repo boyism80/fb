@@ -78,7 +78,7 @@ async::task<void> server::handle_start()
 {
     static constexpr const char* message = "CONNECTED SERVER\n";
 
-    this->handler.amqp.bind("fb.system", &server::handle_amqp_shutdown);
+    this->handler.amqp.bind<fb::gateway::handler::amqp::shutdown>("fb.system");
 
     auto writer = fb::stream_writer<big_endian>(this->_connection_cache);
     writer.write<uint8_t>(0x7E);
