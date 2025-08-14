@@ -7,30 +7,6 @@ click::click(fb::game::server& server) :
     fb::handler<fb::game::server, fb::protocol::game::request::click>(server)
 { }
 
-void click::handle_click_mob(character& ch, mob& mob)
-{
-    ch.send(fb_resp::message(mob.name(), MESSAGE_TYPE::STATE));
-}
-
-void click::handle_click_npc(character& ch, npc& npc)
-{
-    auto& model = npc.based<fb::model::npc>();
-    if (model.script.empty())
-        return;
-
-    auto lua = fb::lua::new_context();
-    if (lua == nullptr)
-        return;
-#if defined DEBUG | defined _DEBUG
-    lua->load("scripts/npc.lua");
-    lua->load(model.script);
-#endif
-    lua->func(model.click);
-    lua->pushobject(ch);
-    lua->pushobject(npc);
-    std::ignore = lua->call(2);
-}
-
 async::task<bool> click::handle(fb::socket<character>& session, fb::protocol::game::request::click& request)
 {
     auto ch = session.data();
@@ -51,16 +27,37 @@ async::task<bool> click::handle(fb::socket<character>& session, fb::protocol::ga
     switch (you->what())
     {
     case OBJECT_TYPE::CHARACTER:
+    {
         ch->browse_ch(static_cast<character&>(*you));
-        break;
+    }
+    break;
 
     case OBJECT_TYPE::MOB:
-        this->handle_click_mob(*ch, static_cast<mob&>(*you));
-        break;
+    {
+        ch->send(fb_resp::message(static_cast<mob&>(*you).name(), MESSAGE_TYPE::STATE));
+    }
+    break;
 
     case OBJECT_TYPE::NPC:
-        this->handle_click_npc(*ch, static_cast<npc&>(*you));
-        break;
+    {
+        auto& model = static_cast<npc&>(*you).based<fb::model::npc>();
+        if (model.script.empty())
+            co_return true;
+
+        auto lua = fb::lua::new_context();
+        if (lua == nullptr)
+            co_return true;
+
+#if defined DEBUG | defined _DEBUG
+        lua->load("scripts/npc.lua");
+        lua->load(model.script);
+#endif
+        lua->func(model.click);
+        lua->pushobject(ch);
+        lua->pushobject(static_cast<npc&>(*you));
+        std::ignore = lua->call(2);
+    }
+    break;
     }
 
     co_return true;

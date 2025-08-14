@@ -8,23 +8,6 @@ namespace fb::game::handler {
 
 class click : public fb::handler<fb::game::server, fb::protocol::game::request::click>
 {
-private:
-    /**
-     * @brief      Handles character interaction with a mob (monster).
-     *
-     * @param      ch    The character performing the interaction.
-     * @param      mob   The mob being interacted with.
-     */
-    void handle_click_mob(fb::game::character& ch, fb::game::mob& mob);
-
-    /**
-     * @brief      Handles character interaction with an NPC.
-     *
-     * @param      ch    The character performing the interaction.
-     * @param      npc   The NPC being interacted with.
-     */
-    void handle_click_npc(fb::game::character& ch, fb::game::npc& npc);
-
 public:
     click(fb::game::server& server);
     click(const click&)             = delete;
