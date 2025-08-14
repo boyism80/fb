@@ -1,0 +1,64 @@
+#include <fb/game/handler/protocol/click.h>
+#include <fb/game/server.h>
+
+using namespace fb::game::handler::protocol;
+
+click::click(fb::game::server& server) :
+    fb::handler<fb::game::server, fb::protocol::game::request::click>(server)
+{ }
+
+async::task<bool> click::handle(fb::socket<character>& session, fb::protocol::game::request::click& request)
+{
+    auto ch = session.data();
+    if (ch->inited() == false)
+        co_return true;
+
+    if (request.oid == 0xFFFFFFFF) // Press F1
+        co_return true;
+
+    if (request.oid == 0xFFFFFFFE) // Preff F2
+        co_return true;
+
+    auto map = ch->map();
+    auto you = map->objects[request.oid];
+    if (you == nullptr)
+        co_return true;
+
+    switch (you->what())
+    {
+    case OBJECT_TYPE::CHARACTER:
+    {
+        ch->browse_ch(static_cast<character&>(*you));
+    }
+    break;
+
+    case OBJECT_TYPE::MOB:
+    {
+        ch->send(fb_resp::message(static_cast<mob&>(*you).name(), MESSAGE_TYPE::STATE));
+    }
+    break;
+
+    case OBJECT_TYPE::NPC:
+    {
+        auto& model = static_cast<npc&>(*you).based<fb::model::npc>();
+        if (model.script.empty())
+            co_return true;
+
+        auto lua = fb::lua::new_context();
+        if (lua == nullptr)
+            co_return true;
+
+#if defined DEBUG | defined _DEBUG
+        lua->load("scripts/npc.lua");
+        lua->load(model.script);
+#endif
+        lua->func(model.click);
+        lua->pushobject(ch);
+        lua->pushobject(static_cast<npc&>(*you));
+        std::ignore = lua->call(2);
+    }
+    break;
+    }
+
+    co_return true;
+}

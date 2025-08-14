@@ -74,9 +74,32 @@ void listener_impl::on_update_option(character& ch)
 
 void listener_impl::on_update_map(character&                  ch,
                                   const map&                  map,
-                                  const fb::model::point16_t& begin,
-                                  const fb::model::size8_t&   size)
-{ }
+                                  const fb::model::point16_t& position,
+                                  const fb::model::size8_t&   size,
+                                  uint16_t                    crc)
+{
+    auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 |
+                static_cast<uint64_t>(position.y) << 16 | static_cast<uint64_t>(size.width) << 8 |
+                static_cast<uint64_t>(size.height);
+
+    this->server.map_update_cache.write(
+        hash,
+        [&ch, crc](auto& cache_bytes) {
+            if (cache_bytes.crc != crc)
+                ch.send(fb::stream(cache_bytes.bytes.data(), cache_bytes.bytes.size()));
+        },
+        [&server = this->server, &map, &position, &size, hash]() {
+            auto bytes = map::cache_bytes();
+            bytes.hash = hash;
+            bytes.crc  = 0;
+
+            auto writer = fb::stream_writer<big_endian>(bytes.bytes);
+            auto resp   = fb::protocol::game::response::map_update(map, position, size);
+            std::ignore = resp.serialize(writer);
+            bytes.crc   = resp.crc;
+            return bytes;
+        });
+}
 
 void listener_impl::on_update_buff(character& ch, const buffs& buffs)
 {

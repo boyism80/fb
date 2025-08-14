@@ -713,11 +713,15 @@ public:
     /**
      * @brief      Updates a specific region of the character's map view.
      *
-     * @param[in]  map    The map to update from
-     * @param[in]  begin  The starting position of the region to update
-     * @param[in]  size   The size of the region to update
+     * @param[in]  map       The map to update from
+     * @param[in]  position  The position of the region to update
+     * @param[in]  size      The size of the region to update
+     * @param[in]  crc       The CRC value of the map update
      */
-    void update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size);
+    void update_map(const fb::game::map&        map,
+                    const fb::model::point16_t& position,
+                    const fb::model::size8_t&   size,
+                    uint16_t                    crc = 0);
 
     /**
      * @brief      Updates the character's background music.
@@ -2388,15 +2392,17 @@ public:
     /**
      * @brief      Called when a specific region of the character's map view needs to be updated.
      *
-     * @param      ch     The character whose map view is being updated
-     * @param[in]  map    The map containing the updated region
-     * @param[in]  begin  The starting position of the region to update
-     * @param[in]  size   The size of the region to update
+     * @param      ch        The character whose map view is being updated
+     * @param[in]  map       The map containing the updated region
+     * @param[in]  position  The position of the region to update
+     * @param[in]  size      The size of the region to update
+     * @param[in]  crc       The CRC value of the map update
      */
     virtual void on_update_map(character&                  ch,
                                const fb::game::map&        map,
-                               const fb::model::point16_t& begin,
-                               const fb::model::size8_t&   size) = 0;
+                               const fb::model::point16_t& position,
+                               const fb::model::size8_t&   size,
+                               uint16_t                    crc) = 0;
 
     /**
      * @brief      Called when the character's background music changes.

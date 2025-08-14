@@ -846,10 +846,14 @@ async::task<bool> server::npc_interaction(character&                            
     if (npcs.size() == 0)
         co_return false;
 
-    for (auto& fn : this->_npc_interaction_funcs)
+    // Try new handler system first
+    for (auto& handler : this->_npc_interaction_handlers)
     {
-        if (co_await fn(ch, message, npcs))
+        if (handler->matches(message))
+        {
+            co_await handler->handle(ch, message, npcs);
             co_return true;
+        }
     }
 
     co_return false;
