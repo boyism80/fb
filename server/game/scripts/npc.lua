@@ -176,6 +176,7 @@ function npc_deposit_money(me, npc, money)
     me:money(my_money - money)
     me:deposited_money(deposited + money)
     npc:chat(string.format('금전 %d전을 맡았습니다.', money))
+    return true
 end
 
 function npc_withdraw_money(me, npc, money)
@@ -208,6 +209,7 @@ function npc_withdraw_money(me, npc, money)
     me:deposited_money(deposited - money)
     me:money(me:money() + money)
     npc:chat(string.format('금전 %d전을 돌려드렸습니다.', money))
+    return true
 end
 
 function npc_repair(me, npc, name)
@@ -287,6 +289,7 @@ function npc_repair(me, npc, name)
         npc:chat(string.format('고치는데 %s전이 들었습니다.', price))
         me:money(money - price)
     end
+    return true
 end
 
 function npc_store_item(me, npc, name, count)

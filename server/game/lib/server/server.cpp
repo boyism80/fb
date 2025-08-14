@@ -193,23 +193,23 @@ async::task<void> server::handle_start()
     this->bind_thread_timer(&server::handle_save_timer,
                             std::chrono::seconds(fb::config<uint32_t>("save"))); // DB 저장 타이머
 
-    this->bind_npc_interaction(&server::npc_interaction_sell);
-    this->bind_npc_interaction(&server::npc_interaction_buy);
-    this->bind_npc_interaction(&server::npc_interaction_repair);
-    this->bind_npc_interaction(&server::npc_interaction_deposit_money);
-    this->bind_npc_interaction(&server::npc_interaction_withdraw_money);
-    this->bind_npc_interaction(&server::npc_interaction_store_item);
-    this->bind_npc_interaction(&server::npc_interaction_retrieve_item);
-    this->bind_npc_interaction(&server::npc_interaction_sell_list);
-    this->bind_npc_interaction(&server::npc_interaction_buy_list);
-    this->bind_npc_interaction(&server::npc_interaction_sell_price);
-    this->bind_npc_interaction(&server::npc_interaction_buy_price);
-    this->bind_npc_interaction(&server::npc_interaction_show_deposited_money);
-    this->bind_npc_interaction(&server::npc_interaction_rename_weapon);
-    this->bind_npc_interaction(&server::npc_interaction_store_item_list);
-    this->bind_npc_interaction(&server::npc_interaction_store_item_count);
-    this->bind_npc_interaction(&server::npc_interaction_revive);
-    this->bind_npc_interaction(&server::npc_interaction_appreciate);
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::sell>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::buy>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::repair>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::deposit_money>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::withdraw_money>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::store_item>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::retrieve_item>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::sell_list>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::buy_list>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::sell_price>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::buy_price>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::show_deposited_money>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::rename_weapon>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::store_item_list>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::store_item_count>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::revive>();
+    this->bind_npc_interaction<fb::game::handler::npc_interaction::appreciate>();
 
     this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(std::format("fb.game.{}", config<uint32_t>("id")));
     this->handler.amqp.bind<fb::game::handler::amqp::whisper>(std::format("fb.game.{}", config<uint32_t>("id")));

@@ -43,6 +43,7 @@
 #include <fb/redis.h>
 #include <fb/shard_container.h>
 #include <fb/game/clan.h>
+#include <fb/game/npc_interaction_handler.h>
 
 using namespace fb::protocol::internal;
 using namespace fb::protocol::internal::request;
@@ -119,17 +120,15 @@ public:
     struct builtin;
 
 public:
-    using object_set           = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
-    using protocol_generator   = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
-    using npc_interaction_func = std::function<
-        async::task<bool>(character&, const std::string&, const std::vector<std::shared_ptr<fb::game::npc>>&)>;
-    using clan_ptr  = std::shared_ptr<fb::game::clan>;
-    using group_ptr = std::shared_ptr<fb::game::group>;
+    using object_set         = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
+    using protocol_generator = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
+    using clan_ptr           = std::shared_ptr<fb::game::clan>;
+    using group_ptr          = std::shared_ptr<fb::game::group>;
 
 private:
-    fb::model::datetime               _time;
-    std::vector<npc_interaction_func> _npc_interaction_funcs;
-    fb::redis                         _redis;
+    fb::model::datetime                                             _time;
+    std::vector<std::unique_ptr<fb::game::npc_interaction_handler>> _npc_interaction_handlers;
+    fb::redis                                                       _redis;
 
 public:
     fb::game::listener_impl listener;
@@ -223,17 +222,15 @@ public:
 
 private:
     /**
-     * @brief      Binds an NPC interaction handler function.
+     * @brief      Registers an NPC interaction handler.
      *
-     * @param      func  The NPC interaction handler function to bind
-     *
-     * @tparam     Func  The function type (auto-deduced)
+     * @tparam     HandlerType  The handler class type
      */
-    template <typename Func>
-    void bind_npc_interaction(Func&& func)
+    template <typename HandlerType>
+    void bind_npc_interaction()
     {
-        auto c_fn = std::bind(func, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-        this->_npc_interaction_funcs.push_back(c_fn);
+        auto handler = std::make_unique<HandlerType>(*this);
+        this->_npc_interaction_handlers.push_back(std::move(handler));
     }
 
 public:

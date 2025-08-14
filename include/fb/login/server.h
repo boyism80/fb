@@ -309,17 +309,6 @@ protected:
      */
     [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::login::session>& socket) final;
 
-    /**
-     * @brief      Handles AMQP shutdown messages from other services.
-     *
-     * @param[in]  response  The shutdown response message.
-     *
-     * @return     An async task that completes when shutdown handling is finished.
-     */
-    [[nodiscard]] async::task<void> handle_amqp_shutdown(const internal_resp::Shutdown& response);
-
-    // for heart-beat
-
 protected:
     /**
      * @brief      Gets the service type identifier for this server.

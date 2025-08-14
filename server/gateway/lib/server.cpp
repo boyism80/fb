@@ -104,12 +104,6 @@ async::task<bool> server::handle_disconnected(fb::socket<session>& socket)
     co_return false;
 }
 
-async::task<void> fb::gateway::server::handle_amqp_shutdown(const internal_resp::Shutdown& response)
-{
-    this->exit();
-    co_return;
-}
-
 void server::handle_init_amqp(fb::amqp::socket& amqp)
 {
     this->handler.amqp.declare_queue("amq.direct", "fb.system");
