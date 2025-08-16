@@ -1,83 +1,84 @@
-#include <fb/game/character.h>
+#include <fb/game/builtin/object.h>
+#include <fb/game/builtin/character.h>
 #include <fb/game/server.h>
 
 using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
-{"__eq",                object::builtin::builtin_eq},
-{"look",                character::builtin::builtin_look},
-{"color",               character::builtin::builtin_color},
-{"sex",                 character::builtin::builtin_sex},
-{"money",               character::builtin::builtin_money},
-{"exp",                 character::builtin::builtin_exp},
-{"item",                character::builtin::builtin_item},
-{"items",               character::builtin::builtin_items},
-{"equipments",          character::builtin::builtin_equipments},
-{"dropitem",            character::builtin::builtin_item_drop},
-{"mkitem",              character::builtin::builtin_mkitem},
-{"rmitem",              character::builtin::builtin_rmitem},
-{"state",               character::builtin::builtin_state},
-{"disguise",            character::builtin::builtin_disguise},
-{"class",               character::builtin::builtin_class},
-{"promotion",           character::builtin::builtin_promotion},
-{"level",               character::builtin::builtin_level},
-{"assert",              character::builtin::builtin_assert},
-{"deposited_money",     character::builtin::builtin_deposited_money},
-{"stored_item",         character::builtin::builtin_stored_item},
-{"store_item",          character::builtin::builtin_store_item},
-{"retrieve_item",       character::builtin::builtin_retrieve_item},
-{"group",               character::builtin::builtin_group},
-{"create_group",        character::builtin::builtin_create_group},
-{"clan",                character::builtin::builtin_clan},
-{"create_clan",         character::builtin::builtin_create_clan},
-{"destroy_clan",        character::builtin::builtin_destroy_clan},
-{"achievements",        character::builtin::builtin_achievements},
-{"achievement",         character::builtin::builtin_achievement},
-{"push_achievement",    character::builtin::builtin_push_achievement},
-{"erase_achievement",   character::builtin::builtin_erase_achievement},
-{"whisper",             character::builtin::builtin_whisper},
-{"send_mail",           character::builtin::builtin_send_mail},
-{"nation",              character::builtin::builtin_nation},
-{"weapon",              character::builtin::builtin_weapon},
-{"title",               character::builtin::builtin_title},
-{"gain",                character::builtin::builtin_gain},
-{"weapon_damage",       character::builtin::builtin_weapon_damage},
-{"detect",              character::builtin::builtin_detect},
-{"spawn_mob",           character::builtin::builtin_spawn_mob},
-{"spawned_mobs",        character::builtin::builtin_spawned_mobs},
-{"base_hp",             character::builtin::builtin_base_hp},
-{"base_mp",             character::builtin::builtin_base_mp},
-{"base_str",            character::builtin::builtin_base_str},
-{"base_dex",            character::builtin::builtin_base_dex},
-{"base_int",            character::builtin::builtin_base_int},
-{"base_dam",            character::builtin::builtin_base_dam},
-{"base_hit",            character::builtin::builtin_base_hit},
-{"armor_color",         character::builtin::builtin_armor_color},
-{"mkspell",             character::builtin::builtin_mkspell},
-{"rmspell",             character::builtin::builtin_rmspell},
-{"world",               character::builtin::builtin_world},
-{"script",              character::builtin::builtin_script},
-{"ad",                  character::builtin::builtin_ad},
-{"web",                 character::builtin::builtin_web},
-{"birthday",            character::builtin::builtin_birthday},
-{"active",              character::builtin::builtin_active},
-{"super_hide",          character::builtin::builtin_super_hide},
-{"creature",            character::builtin::builtin_creature},
-{"teleport",            character::builtin::builtin_teleport},
-{"dialog",              character::builtin::builtin_dialog},
-{"list",                character::builtin::builtin_list},
-{"input",               character::builtin::builtin_input},
-{"menu",                character::builtin::builtin_menu},
-{"slot",                character::builtin::builtin_slot},
-{"rezen_force",         character::builtin::builtin_rezen_force},
-{"quest",               character::builtin::builtin_quest},
-{"start_quest",         character::builtin::builtin_start_quest},
-{"remove_quest",        character::builtin::builtin_remove_quest},
-{"can_start_quest",     character::builtin::builtin_can_start_quest},
+{"__eq",                builtin::object::builtin_eq},
+{"look",                builtin::character::builtin_look},
+{"color",               builtin::character::builtin_color},
+{"sex",                 builtin::character::builtin_sex},
+{"money",               builtin::character::builtin_money},
+{"exp",                 builtin::character::builtin_exp},
+{"item",                builtin::character::builtin_item},
+{"items",               builtin::character::builtin_items},
+{"equipments",          builtin::character::builtin_equipments},
+{"dropitem",            builtin::character::builtin_item_drop},
+{"mkitem",              builtin::character::builtin_mkitem},
+{"rmitem",              builtin::character::builtin_rmitem},
+{"state",               builtin::character::builtin_state},
+{"disguise",            builtin::character::builtin_disguise},
+{"class",               builtin::character::builtin_class},
+{"promotion",           builtin::character::builtin_promotion},
+{"level",               builtin::character::builtin_level},
+{"assert",              builtin::character::builtin_assert},
+{"deposited_money",     builtin::character::builtin_deposited_money},
+{"stored_item",         builtin::character::builtin_stored_item},
+{"store_item",          builtin::character::builtin_store_item},
+{"retrieve_item",       builtin::character::builtin_retrieve_item},
+{"group",               builtin::character::builtin_group},
+{"create_group",        builtin::character::builtin_create_group},
+{"clan",                builtin::character::builtin_clan},
+{"create_clan",         builtin::character::builtin_create_clan},
+{"destroy_clan",        builtin::character::builtin_destroy_clan},
+{"achievements",        builtin::character::builtin_achievements},
+{"achievement",         builtin::character::builtin_achievement},
+{"push_achievement",    builtin::character::builtin_push_achievement},
+{"erase_achievement",   builtin::character::builtin_erase_achievement},
+{"whisper",             builtin::character::builtin_whisper},
+{"send_mail",           builtin::character::builtin_send_mail},
+{"nation",              builtin::character::builtin_nation},
+{"weapon",              builtin::character::builtin_weapon},
+{"title",               builtin::character::builtin_title},
+{"gain",                builtin::character::builtin_gain},
+{"weapon_damage",       builtin::character::builtin_weapon_damage},
+{"detect",              builtin::character::builtin_detect},
+{"spawn_mob",           builtin::character::builtin_spawn_mob},
+{"spawned_mobs",        builtin::character::builtin_spawned_mobs},
+{"base_hp",             builtin::character::builtin_base_hp},
+{"base_mp",             builtin::character::builtin_base_mp},
+{"base_str",            builtin::character::builtin_base_str},
+{"base_dex",            builtin::character::builtin_base_dex},
+{"base_int",            builtin::character::builtin_base_int},
+{"base_dam",            builtin::character::builtin_base_dam},
+{"base_hit",            builtin::character::builtin_base_hit},
+{"armor_color",         builtin::character::builtin_armor_color},
+{"mkspell",             builtin::character::builtin_mkspell},
+{"rmspell",             builtin::character::builtin_rmspell},
+{"world",               builtin::character::builtin_world},
+{"script",              builtin::character::builtin_script},
+{"ad",                  builtin::character::builtin_ad},
+{"web",                 builtin::character::builtin_web},
+{"birthday",            builtin::character::builtin_birthday},
+{"active",              builtin::character::builtin_active},
+{"super_hide",          builtin::character::builtin_super_hide},
+{"creature",            builtin::character::builtin_creature},
+{"teleport",            builtin::character::builtin_teleport},
+{"dialog",              builtin::character::builtin_dialog},
+{"list",                builtin::character::builtin_list},
+{"input",               builtin::character::builtin_input},
+{"menu",                builtin::character::builtin_menu},
+{"slot",                builtin::character::builtin_slot},
+{"rezen_force",         builtin::character::builtin_rezen_force},
+{"quest",               builtin::character::builtin_quest},
+{"start_quest",         builtin::character::builtin_start_quest},
+{"remove_quest",        builtin::character::builtin_remove_quest},
+{"can_start_quest",     builtin::character::builtin_can_start_quest},
 END_LUA_EXTENSION; // clang-format on
 
-int character::builtin::builtin_look(lua_State* L)
+int builtin::character::builtin_look(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -85,7 +86,7 @@ int character::builtin::builtin_look(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -113,7 +114,7 @@ int character::builtin::builtin_look(lua_State* L)
     }
 }
 
-int character::builtin::builtin_color(lua_State* L)
+int builtin::character::builtin_color(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -121,7 +122,7 @@ int character::builtin::builtin_color(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -149,7 +150,7 @@ int character::builtin::builtin_color(lua_State* L)
     }
 }
 
-int character::builtin::builtin_sex(lua_State* L)
+int builtin::character::builtin_sex(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -157,7 +158,7 @@ int character::builtin::builtin_sex(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -185,7 +186,7 @@ int character::builtin::builtin_sex(lua_State* L)
     }
 }
 
-int character::builtin::builtin_money(lua_State* L)
+int builtin::character::builtin_money(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -193,7 +194,7 @@ int character::builtin::builtin_money(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -221,7 +222,7 @@ int character::builtin::builtin_money(lua_State* L)
     }
 }
 
-int character::builtin::builtin_exp(lua_State* L)
+int builtin::character::builtin_exp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -229,7 +230,7 @@ int character::builtin::builtin_exp(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -257,14 +258,14 @@ int character::builtin::builtin_exp(lua_State* L)
     }
 }
 
-int character::builtin::builtin_item(lua_State* L)
+int builtin::character::builtin_item(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -376,14 +377,14 @@ int character::builtin::builtin_item(lua_State* L)
     return lua->yield(1);
 }
 
-int character::builtin::builtin_items(lua_State* L)
+int builtin::character::builtin_items(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -411,14 +412,14 @@ int character::builtin::builtin_items(lua_State* L)
     });
 }
 
-int character::builtin::builtin_equipments(lua_State* L)
+int builtin::character::builtin_equipments(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -446,14 +447,14 @@ int character::builtin::builtin_equipments(lua_State* L)
     });
 }
 
-int character::builtin::builtin_item_drop(lua_State* L)
+int builtin::character::builtin_item_drop(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -474,7 +475,7 @@ int character::builtin::builtin_item_drop(lua_State* L)
     });
 }
 
-int character::builtin::builtin_mkitem(lua_State* L)
+int builtin::character::builtin_mkitem(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -482,7 +483,7 @@ int character::builtin::builtin_mkitem(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -491,7 +492,7 @@ int character::builtin::builtin_mkitem(lua_State* L)
     auto store = lua->toboolean(4, true);
 
     if (store == false)
-        return object::builtin::builtin_mkitem(L);
+        return builtin::object::builtin_mkitem(L);
 
     auto weak = ch->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
@@ -517,14 +518,14 @@ int character::builtin::builtin_mkitem(lua_State* L)
     });
 }
 
-int character::builtin::builtin_rmitem(lua_State* L)
+int builtin::character::builtin_rmitem(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -633,7 +634,7 @@ int character::builtin::builtin_rmitem(lua_State* L)
     }
 }
 
-int character::builtin::builtin_state(lua_State* L)
+int builtin::character::builtin_state(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -641,7 +642,7 @@ int character::builtin::builtin_state(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -669,7 +670,7 @@ int character::builtin::builtin_state(lua_State* L)
     }
 }
 
-int character::builtin::builtin_disguise(lua_State* L)
+int builtin::character::builtin_disguise(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -677,7 +678,7 @@ int character::builtin::builtin_disguise(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -720,7 +721,7 @@ int character::builtin::builtin_disguise(lua_State* L)
     }
 }
 
-int character::builtin::builtin_class(lua_State* L)
+int builtin::character::builtin_class(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -728,7 +729,7 @@ int character::builtin::builtin_class(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -756,7 +757,7 @@ int character::builtin::builtin_class(lua_State* L)
     }
 }
 
-int character::builtin::builtin_promotion(lua_State* L)
+int builtin::character::builtin_promotion(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -764,7 +765,7 @@ int character::builtin::builtin_promotion(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -792,7 +793,7 @@ int character::builtin::builtin_promotion(lua_State* L)
     }
 }
 
-int character::builtin::builtin_level(lua_State* L)
+int builtin::character::builtin_level(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -800,7 +801,7 @@ int character::builtin::builtin_level(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -828,7 +829,7 @@ int character::builtin::builtin_level(lua_State* L)
     }
 }
 
-int character::builtin::builtin_assert(lua_State* L)
+int builtin::character::builtin_assert(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -836,7 +837,7 @@ int character::builtin::builtin_assert(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     auto size   = lua->rawlen(2);
 
     if (argc == 1)
@@ -894,7 +895,7 @@ int character::builtin::builtin_assert(lua_State* L)
     }
 }
 
-int character::builtin::builtin_role(lua_State* L)
+int builtin::character::builtin_role(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -902,7 +903,7 @@ int character::builtin::builtin_role(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -930,7 +931,7 @@ int character::builtin::builtin_role(lua_State* L)
     }
 }
 
-int character::builtin::builtin_deposited_money(lua_State* L)
+int builtin::character::builtin_deposited_money(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -938,7 +939,7 @@ int character::builtin::builtin_deposited_money(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -966,7 +967,7 @@ int character::builtin::builtin_deposited_money(lua_State* L)
     }
 }
 
-int character::builtin::builtin_stored_item(lua_State* L)
+int builtin::character::builtin_stored_item(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -974,7 +975,7 @@ int character::builtin::builtin_stored_item(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1101,7 +1102,7 @@ int character::builtin::builtin_stored_item(lua_State* L)
     }
 }
 
-int character::builtin::builtin_store_item(lua_State* L)
+int builtin::character::builtin_store_item(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1109,7 +1110,7 @@ int character::builtin::builtin_store_item(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1131,7 +1132,7 @@ int character::builtin::builtin_store_item(lua_State* L)
     });
 }
 
-int character::builtin::builtin_retrieve_item(lua_State* L)
+int builtin::character::builtin_retrieve_item(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1139,7 +1140,7 @@ int character::builtin::builtin_retrieve_item(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1170,7 +1171,7 @@ int character::builtin::builtin_retrieve_item(lua_State* L)
     });
 }
 
-int character::builtin::builtin_group(lua_State* L)
+int builtin::character::builtin_group(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1178,14 +1179,15 @@ int character::builtin::builtin_group(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
     if (argc < 2)
     {
-        static auto fn =
-            [](fb::game::server* server, std::weak_ptr<character> ch, fb::lua::context* lua) -> async::task<void> {
+        static auto fn = [](fb::game::server*                  server,
+                            std::weak_ptr<fb::game::character> ch,
+                            fb::lua::context*                  lua) -> async::task<void> {
             auto shared = ch.lock();
             if (shared == nullptr)
             {
@@ -1253,7 +1255,7 @@ int character::builtin::builtin_group(lua_State* L)
     }
 }
 
-int character::builtin::builtin_create_group(lua_State* L)
+int builtin::character::builtin_create_group(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1261,16 +1263,16 @@ int character::builtin::builtin_create_group(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
     auto name = lua->tostring(2);
 
-    static auto fn = [](fb::game::server*        server,
-                        std::weak_ptr<character> ch,
-                        fb::lua::context*        lua,
-                        std::string              target) -> async::task<void> {
+    static auto fn = [](fb::game::server*                  server,
+                        std::weak_ptr<fb::game::character> ch,
+                        fb::lua::context*                  lua,
+                        std::string                        target) -> async::task<void> {
         auto shared = ch.lock();
         if (shared == nullptr)
         {
@@ -1305,7 +1307,7 @@ int character::builtin::builtin_create_group(lua_State* L)
     return lua->yield(1);
 }
 
-int character::builtin::builtin_clan(lua_State* L)
+int builtin::character::builtin_clan(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1313,14 +1315,15 @@ int character::builtin::builtin_clan(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
     if (argc < 2)
     {
-        static auto fn =
-            [](fb::game::server* server, std::weak_ptr<character> ch, fb::lua::context* lua) -> async::task<void> {
+        static auto fn = [](fb::game::server*                  server,
+                            std::weak_ptr<fb::game::character> ch,
+                            fb::lua::context*                  lua) -> async::task<void> {
             auto shared = ch.lock();
             if (shared == nullptr)
             {
@@ -1358,8 +1361,9 @@ int character::builtin::builtin_clan(lua_State* L)
     }
     else if (lua->is_function(2))
     {
-        static auto fn =
-            [](fb::game::server* server, std::weak_ptr<character> ch, fb::lua::context* lua) -> async::task<void> {
+        static auto fn = [](fb::game::server*                  server,
+                            std::weak_ptr<fb::game::character> ch,
+                            fb::lua::context*                  lua) -> async::task<void> {
             auto shared = ch.lock();
             if (shared == nullptr)
             {
@@ -1401,7 +1405,7 @@ int character::builtin::builtin_clan(lua_State* L)
     }
 }
 
-int character::builtin::builtin_create_clan(lua_State* L)
+int builtin::character::builtin_create_clan(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1409,16 +1413,16 @@ int character::builtin::builtin_create_clan(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
     auto name = lua->tostring(2);
 
-    static auto fn = [](fb::game::server*        server,
-                        std::weak_ptr<character> ch,
-                        fb::lua::context*        lua,
-                        const std::string&       name) -> async::task<void> {
+    static auto fn = [](fb::game::server*                  server,
+                        std::weak_ptr<fb::game::character> ch,
+                        fb::lua::context*                  lua,
+                        const std::string&                 name) -> async::task<void> {
         auto shared = ch.lock();
         if (shared == nullptr)
         {
@@ -1455,7 +1459,7 @@ int character::builtin::builtin_create_clan(lua_State* L)
     return lua->yield(1);
 }
 
-int character::builtin::builtin_destroy_clan(lua_State* L)
+int builtin::character::builtin_destroy_clan(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1463,13 +1467,14 @@ int character::builtin::builtin_destroy_clan(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
     // Static function to isolate async operation and ensure parameter lifetime safety
-    static auto static_func =
-        [](fb::game::server* server, std::weak_ptr<character> ch, fb::lua::context* lua) -> async::task<void> {
+    static auto static_func = [](fb::game::server*                  server,
+                                 std::weak_ptr<fb::game::character> ch,
+                                 fb::lua::context*                  lua) -> async::task<void> {
         auto shared = ch.lock();
         if (shared == nullptr)
         {
@@ -1506,14 +1511,14 @@ int character::builtin::builtin_destroy_clan(lua_State* L)
     return lua->yield(1);
 }
 
-int character::builtin::builtin_achievements(lua_State* L)
+int builtin::character::builtin_achievements(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1542,14 +1547,14 @@ int character::builtin::builtin_achievements(lua_State* L)
     return 1;
 }
 
-int character::builtin::builtin_achievement(lua_State* L)
+int builtin::character::builtin_achievement(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1571,7 +1576,7 @@ int character::builtin::builtin_achievement(lua_State* L)
     });
 }
 
-int character::builtin::builtin_push_achievement(lua_State* L)
+int builtin::character::builtin_push_achievement(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1579,7 +1584,7 @@ int character::builtin::builtin_push_achievement(lua_State* L)
 
     auto argc   = lua->argc();
     auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1631,14 +1636,14 @@ int character::builtin::builtin_push_achievement(lua_State* L)
     });
 }
 
-int character::builtin::builtin_erase_achievement(lua_State* L)
+int builtin::character::builtin_erase_achievement(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1659,25 +1664,25 @@ int character::builtin::builtin_erase_achievement(lua_State* L)
     });
 }
 
-int character::builtin::builtin_whisper(lua_State* L)
+int builtin::character::builtin_whisper(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
     auto to      = lua->tostring(2);
     auto message = lua->tostring(3);
 
-    static auto fn = [](fb::game::server*        server,
-                        fb::lua::context*        lua,
-                        std::weak_ptr<character> ch,
-                        const std::string&       to,
-                        const std::string&       message) -> async::task<void> {
+    static auto fn = [](fb::game::server*                  server,
+                        fb::lua::context*                  lua,
+                        std::weak_ptr<fb::game::character> ch,
+                        const std::string&                 to,
+                        const std::string&                 message) -> async::task<void> {
         auto shared = ch.lock();
         if (shared == nullptr)
         {
@@ -1708,7 +1713,7 @@ int character::builtin::builtin_whisper(lua_State* L)
     return lua->yield(1);
 }
 
-int character::builtin::builtin_nation(lua_State* L)
+int builtin::character::builtin_nation(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1716,7 +1721,7 @@ int character::builtin::builtin_nation(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1744,7 +1749,7 @@ int character::builtin::builtin_nation(lua_State* L)
     }
 }
 
-int character::builtin::builtin_weapon(lua_State* L)
+int builtin::character::builtin_weapon(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1752,7 +1757,7 @@ int character::builtin::builtin_weapon(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1783,7 +1788,7 @@ int character::builtin::builtin_weapon(lua_State* L)
     }
 }
 
-int character::builtin::builtin_title(lua_State* L)
+int builtin::character::builtin_title(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1791,7 +1796,7 @@ int character::builtin::builtin_title(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1819,7 +1824,7 @@ int character::builtin::builtin_title(lua_State* L)
     }
 }
 
-int character::builtin::builtin_gain(lua_State* L)
+int builtin::character::builtin_gain(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1827,7 +1832,7 @@ int character::builtin::builtin_gain(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1847,7 +1852,7 @@ int character::builtin::builtin_gain(lua_State* L)
     });
 }
 
-int character::builtin::builtin_weapon_damage(lua_State* L)
+int builtin::character::builtin_weapon_damage(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1855,7 +1860,7 @@ int character::builtin::builtin_weapon_damage(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1883,7 +1888,7 @@ int character::builtin::builtin_weapon_damage(lua_State* L)
     }
 }
 
-int character::builtin::builtin_detect(lua_State* L)
+int builtin::character::builtin_detect(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1891,7 +1896,7 @@ int character::builtin::builtin_detect(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -1919,7 +1924,7 @@ int character::builtin::builtin_detect(lua_State* L)
     }
 }
 
-int character::builtin::builtin_spawn_mob(lua_State* L)
+int builtin::character::builtin_spawn_mob(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1927,7 +1932,7 @@ int character::builtin::builtin_spawn_mob(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -2004,14 +2009,14 @@ int character::builtin::builtin_spawn_mob(lua_State* L)
     });
 }
 
-int character::builtin::builtin_spawned_mobs(lua_State* L)
+int builtin::character::builtin_spawned_mobs(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -2033,7 +2038,7 @@ int character::builtin::builtin_spawned_mobs(lua_State* L)
     });
 }
 
-int character::builtin::builtin_base_hp(lua_State* L)
+int builtin::character::builtin_base_hp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2069,7 +2074,7 @@ int character::builtin::builtin_base_hp(lua_State* L)
     }
 }
 
-int character::builtin::builtin_base_mp(lua_State* L)
+int builtin::character::builtin_base_mp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2105,7 +2110,7 @@ int character::builtin::builtin_base_mp(lua_State* L)
     }
 }
 
-int character::builtin::builtin_base_str(lua_State* L)
+int builtin::character::builtin_base_str(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2141,7 +2146,7 @@ int character::builtin::builtin_base_str(lua_State* L)
     }
 }
 
-int character::builtin::builtin_base_dex(lua_State* L)
+int builtin::character::builtin_base_dex(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2177,7 +2182,7 @@ int character::builtin::builtin_base_dex(lua_State* L)
     }
 }
 
-int character::builtin::builtin_base_int(lua_State* L)
+int builtin::character::builtin_base_int(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2213,7 +2218,7 @@ int character::builtin::builtin_base_int(lua_State* L)
     }
 }
 
-int character::builtin::builtin_base_dam(lua_State* L)
+int builtin::character::builtin_base_dam(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2249,7 +2254,7 @@ int character::builtin::builtin_base_dam(lua_State* L)
     }
 }
 
-int character::builtin::builtin_base_hit(lua_State* L)
+int builtin::character::builtin_base_hit(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2285,7 +2290,7 @@ int character::builtin::builtin_base_hit(lua_State* L)
     }
 }
 
-int character::builtin::builtin_armor_color(lua_State* L)
+int builtin::character::builtin_armor_color(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2302,8 +2307,9 @@ int character::builtin::builtin_armor_color(lua_State* L)
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
             auto result = std::optional<uint16_t>{};
-            if (ch->_armor_color.has_value())
-                result = ch->_armor_color.value();
+            auto color  = ch->armor_color();
+            if (color.has_value())
+                result = color.value();
 
             return lua->ensure_resume(*server, weak, [=]() {
                 if (result.has_value())
@@ -2330,7 +2336,7 @@ int character::builtin::builtin_armor_color(lua_State* L)
     }
 }
 
-int character::builtin::builtin_mkspell(lua_State* L)
+int builtin::character::builtin_mkspell(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2360,7 +2366,7 @@ int character::builtin::builtin_mkspell(lua_State* L)
     });
 }
 
-int character::builtin::builtin_rmspell(lua_State* L)
+int builtin::character::builtin_rmspell(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2435,7 +2441,7 @@ int character::builtin::builtin_rmspell(lua_State* L)
     }
 }
 
-int character::builtin::builtin_world(lua_State* L)
+int builtin::character::builtin_world(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2470,7 +2476,7 @@ int character::builtin::builtin_world(lua_State* L)
     return 1;
 }
 
-int character::builtin::builtin_script(lua_State* L)
+int builtin::character::builtin_script(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2529,7 +2535,7 @@ int character::builtin::builtin_script(lua_State* L)
     }
 }
 
-int character::builtin::builtin_ad(lua_State* L)
+int builtin::character::builtin_ad(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2549,7 +2555,7 @@ int character::builtin::builtin_ad(lua_State* L)
     return 0;
 }
 
-int character::builtin::builtin_web(lua_State* L)
+int builtin::character::builtin_web(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2568,7 +2574,7 @@ int character::builtin::builtin_web(lua_State* L)
     return 0;
 }
 
-int character::builtin::builtin_delay(lua_State* L)
+int builtin::character::builtin_delay(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2608,7 +2614,7 @@ int character::builtin::builtin_delay(lua_State* L)
     return 0;
 }
 
-int character::builtin::builtin_birthday(lua_State* L)
+int builtin::character::builtin_birthday(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2650,7 +2656,7 @@ int character::builtin::builtin_birthday(lua_State* L)
     }
 }
 
-int character::builtin::builtin_active(lua_State* L)
+int builtin::character::builtin_active(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2674,7 +2680,7 @@ int character::builtin::builtin_active(lua_State* L)
     return 0;
 }
 
-int character::builtin::builtin_super_hide(lua_State* L)
+int builtin::character::builtin_super_hide(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2682,7 +2688,7 @@ int character::builtin::builtin_super_hide(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto ch     = lua->touserdata<character>(1);
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -2710,7 +2716,7 @@ int character::builtin::builtin_super_hide(lua_State* L)
     }
 }
 
-int character::builtin::builtin_send_mail(lua_State* L)
+int builtin::character::builtin_send_mail(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2740,7 +2746,7 @@ int character::builtin::builtin_send_mail(lua_State* L)
     });
 }
 
-int character::builtin::builtin_creature(lua_State* L)
+int builtin::character::builtin_creature(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2762,7 +2768,7 @@ int character::builtin::builtin_creature(lua_State* L)
     });
 }
 
-int fb::game::character::builtin::builtin_teleport(lua_State* L)
+int fb::game::builtin::character::builtin_teleport(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2815,7 +2821,7 @@ int fb::game::character::builtin::builtin_teleport(lua_State* L)
     }
 }
 
-int fb::game::character::builtin::builtin_dialog(lua_State* L)
+int fb::game::builtin::character::builtin_dialog(lua_State* L)
 {
     // Ex) ch:dialog(obj, "hello", true, true);
 
@@ -2866,7 +2872,7 @@ int fb::game::character::builtin::builtin_dialog(lua_State* L)
     return lua->yield(1);
 }
 
-int fb::game::character::builtin::builtin_list(lua_State* L)
+int fb::game::builtin::character::builtin_list(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2967,7 +2973,7 @@ int fb::game::character::builtin::builtin_list(lua_State* L)
     return lua->yield(1);
 }
 
-int fb::game::character::builtin::builtin_input(lua_State* L)
+int fb::game::builtin::character::builtin_input(lua_State* L)
 {
     // Ex) obj::input(ch, "message")
     auto lua = fb::lua::get(L);
@@ -3032,7 +3038,7 @@ int fb::game::character::builtin::builtin_input(lua_State* L)
     return lua->yield(1);
 }
 
-int fb::game::character::builtin::builtin_menu(lua_State* L)
+int fb::game::builtin::character::builtin_menu(lua_State* L)
 {
     // Ex) obj::menu(ch, "hello", {"hello 1", "hello 2", "hello 3"})
     auto lua = fb::lua::get(L);
@@ -3086,7 +3092,7 @@ int fb::game::character::builtin::builtin_menu(lua_State* L)
     return lua->yield(1);
 }
 
-int fb::game::character::builtin::builtin_slot(lua_State* L)
+int fb::game::builtin::character::builtin_slot(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3139,7 +3145,7 @@ int fb::game::character::builtin::builtin_slot(lua_State* L)
     return lua->yield(1);
 }
 
-int fb::game::character::builtin::builtin_rezen_force(lua_State* L)
+int fb::game::builtin::character::builtin_rezen_force(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3163,7 +3169,7 @@ int fb::game::character::builtin::builtin_rezen_force(lua_State* L)
     return 0;
 }
 
-int fb::game::character::builtin::builtin_quest(lua_State* L)
+int fb::game::builtin::character::builtin_quest(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3190,7 +3196,7 @@ int fb::game::character::builtin::builtin_quest(lua_State* L)
     return 1;
 }
 
-int fb::game::character::builtin::builtin_start_quest(lua_State* L)
+int fb::game::builtin::character::builtin_start_quest(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3223,7 +3229,7 @@ int fb::game::character::builtin::builtin_start_quest(lua_State* L)
     return 1;
 }
 
-int fb::game::character::builtin::builtin_remove_quest(lua_State* L)
+int fb::game::builtin::character::builtin_remove_quest(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3259,7 +3265,7 @@ int fb::game::character::builtin::builtin_remove_quest(lua_State* L)
     }
 }
 
-int fb::game::character::builtin::builtin_can_start_quest(lua_State* L)
+int fb::game::builtin::character::builtin_can_start_quest(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

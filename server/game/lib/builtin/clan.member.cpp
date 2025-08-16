@@ -1,14 +1,15 @@
 #include <fb/game/clan.member.h>
+#include <fb/game/builtin/clan.member.h>
 
 using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(clan_member, "fb.game.clan.member")
-{"name",                clan_member::builtin::builtin_name},
-{"role",            clan_member::builtin::builtin_role},
+{"name",                builtin::clan_member::builtin_name},
+{"role",                builtin::clan_member::builtin_role},
 END_LUA_EXTENSION; // clang-format on
 
-int clan_member::builtin::builtin_name(lua_State* L)
+int builtin::clan_member::builtin_name(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -22,7 +23,7 @@ int clan_member::builtin::builtin_name(lua_State* L)
     return 1;
 }
 
-int clan_member::builtin::builtin_role(lua_State* L)
+int builtin::clan_member::builtin_role(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

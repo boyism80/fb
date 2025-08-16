@@ -78,7 +78,6 @@ public:
     friend class items;
 
 public:
-    struct builtin;
     struct listener_t;
     struct conditions;
 
@@ -301,42 +300,6 @@ public:
      * @return     Protocol representation of the object.
      */
     virtual fb::protocol::internal::Item to_protocol(EQUIPMENT_PARTS parts = EQUIPMENT_PARTS::UNKNOWN) const;
-};
-
-struct item::builtin
-{
-    /**
-     * @brief      Lua builtin function to get item model information.
-     *
-     * @param      L   The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_model(lua_State* L);
-    /**
-     * @brief      Lua builtin function to get/set item count.
-     *
-     * @param      L   The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_count(lua_State* L);
-    /**
-     * @brief      Lua builtin function to get/set item durability.
-     *
-     * @param      L   The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_durability(lua_State* L);
-    /**
-     * @brief      Lua builtin function to rename an item.
-     *
-     * @param      L   The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_rename(lua_State* L);
 };
 
 /**

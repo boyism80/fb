@@ -28,6 +28,16 @@ uint32_t quest::step() const
     return this->_step;
 }
 
+void quest::step(uint32_t step)
+{
+    this->_step = step;
+}
+
+void quest::progress(uint32_t progress)
+{
+    this->_progress = progress;
+}
+
 uint32_t quest::progress() const
 {
     return this->_progress;

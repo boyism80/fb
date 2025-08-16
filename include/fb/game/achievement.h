@@ -53,9 +53,6 @@ public:
     LUA_PROTOTYPE
 
 public:
-    struct builtin;
-
-public:
     const fb::model::achievement&    model; ///< Reference to the achievement model configuration
     const std::optional<std::string> text;  ///< Optional custom text description for the achievement
     const std::optional<uint8_t>     icon;  ///< Optional custom icon for the achievement
@@ -83,40 +80,6 @@ public:
      * @brief      Destroys the achievement instance.
      */
     ~achievement() = default;
-};
-
-/**
- * @brief      Lua binding functions for the achievement class.
- *
- *             This structure contains static functions that provide Lua script access
- *             to achievement properties and methods, enabling dynamic achievement
- *             management and querying from game scripts.
- */
-struct achievement::builtin
-{
-    /**
-     * @brief      Lua binding function to access the achievement model.
-     *
-     *             Provides Lua scripts with access to the underlying achievement model
-     *             data, including configuration parameters, requirements, and rewards.
-     *
-     * @param      L     The Lua state for script execution.
-     *
-     * @return     The number of return values pushed to the Lua stack.
-     */
-    static int builtin_model(lua_State* L);
-
-    /**
-     * @brief      Lua binding function to access the achievement text.
-     *
-     *             Provides Lua scripts with access to the achievement's text description,
-     *             which may be custom text or the default description from the model.
-     *
-     * @param      L     The Lua state for script execution.
-     *
-     * @return     The number of return values pushed to the Lua stack.
-     */
-    static int builtin_text(lua_State* L);
 };
 
 } // namespace fb::game

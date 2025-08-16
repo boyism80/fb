@@ -1,4 +1,4 @@
-#include <fb/game/object.h>
+#include <fb/game/builtin/object.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 
@@ -6,41 +6,41 @@ using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
-{"model",               object::builtin::builtin_model},
-{"__eq",                object::builtin::builtin_eq},
-{"__tostring",          object::builtin::builtin_tostring},
-{"destroy",             object::builtin::builtin_destroy},
-{"id",                  object::builtin::builtin_id},
-{"name",                object::builtin::builtin_name},
-{"sound",               object::builtin::builtin_sound},
-{"position",            object::builtin::builtin_position},
-{"front_position",      object::builtin::builtin_front_position},
-{"direction",           object::builtin::builtin_direction},
-{"chat",                object::builtin::builtin_chat},
-{"buff",                object::builtin::builtin_buff},
-{"isbuff",              object::builtin::builtin_isbuff},
-{"unbuff",              object::builtin::builtin_unbuff},
-{"buffs",               object::builtin::builtin_buffs},
-{"effect",              object::builtin::builtin_effect},
-{"map",                 object::builtin::builtin_map},
-{"mkitem",              object::builtin::builtin_mkitem},
-{"sight_in",            object::builtin::builtin_sight_in},
-{"nears",               object::builtin::builtin_nears},
-{"front",               object::builtin::builtin_front},
-{"is",                  object::builtin::builtin_is},
-{"thread",              object::builtin::builtin_thread},
-{"near",                object::builtin::builtin_near},
-{"hidden",              object::builtin::builtin_hidden},
+{"model",               builtin::object::builtin_model},
+{"__eq",                builtin::object::builtin_eq},
+{"__tostring",          builtin::object::builtin_tostring},
+{"destroy",             builtin::object::builtin_destroy},
+{"id",                  builtin::object::builtin_id},
+{"name",                builtin::object::builtin_name},
+{"sound",               builtin::object::builtin_sound},
+{"position",            builtin::object::builtin_position},
+{"front_position",      builtin::object::builtin_front_position},
+{"direction",           builtin::object::builtin_direction},
+{"chat",                builtin::object::builtin_chat},
+{"buff",                builtin::object::builtin_buff},
+{"isbuff",              builtin::object::builtin_isbuff},
+{"unbuff",              builtin::object::builtin_unbuff},
+{"buffs",               builtin::object::builtin_buffs},
+{"effect",              builtin::object::builtin_effect},
+{"map",                 builtin::object::builtin_map},
+{"mkitem",              builtin::object::builtin_mkitem},
+{"sight_in",            builtin::object::builtin_sight_in},
+{"nears",               builtin::object::builtin_nears},
+{"front",               builtin::object::builtin_front},
+{"is",                  builtin::object::builtin_is},
+{"thread",              builtin::object::builtin_thread},
+{"near",                builtin::object::builtin_near},
+{"hidden",              builtin::object::builtin_hidden},
 END_LUA_EXTENSION; // clang-format on
 
-int object::builtin::builtin_model(lua_State* L)
+int builtin::object::builtin_model(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -51,14 +51,14 @@ int object::builtin::builtin_model(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_id(lua_State* L)
+int builtin::object::builtin_id(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -68,7 +68,7 @@ int object::builtin::builtin_id(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_eq(lua_State* L)
+int builtin::object::builtin_eq(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -76,12 +76,12 @@ int object::builtin::builtin_eq(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto me     = lua->touserdata<object>(1);
+    auto me     = lua->touserdata<fb::game::object>(1);
     if (me == nullptr)
         return 0;
     me->assert_thread();
 
-    auto you = lua->touserdata<object>(2);
+    auto you = lua->touserdata<fb::game::object>(2);
     if (you == nullptr)
         return 0;
     you->assert_thread();
@@ -90,14 +90,14 @@ int object::builtin::builtin_eq(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_tostring(lua_State* L)
+int builtin::object::builtin_tostring(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto me     = lua->touserdata<object>(1);
+    auto me     = lua->touserdata<fb::game::object>(1);
     if (me == nullptr)
         return 0;
     me->assert_thread();
@@ -106,18 +106,18 @@ int object::builtin::builtin_tostring(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_destroy(lua_State* L)
+int builtin::object::builtin_destroy(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this_as<object>();
+    auto weak = obj->weak_from_this_as<fb::game::object>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         // TODO: Need to verify that the destructor is called when the object is destroyed and ensure_resume's callback
         // is properly invoked
@@ -128,14 +128,14 @@ int object::builtin::builtin_destroy(lua_State* L)
     });
 }
 
-int object::builtin::builtin_name(lua_State* L)
+int builtin::object::builtin_name(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -145,19 +145,19 @@ int object::builtin::builtin_name(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_sound(lua_State* L)
+int builtin::object::builtin_sound(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
     auto sound = static_cast<SOUND>(lua->tointeger(2));
-    auto weak  = obj->weak_from_this_as<object>();
+    auto weak  = obj->weak_from_this_as<fb::game::object>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         obj->sound(sound);
         return lua->ensure_resume(*server, weak, [=]() {
@@ -166,7 +166,7 @@ int object::builtin::builtin_sound(lua_State* L)
     });
 }
 
-int object::builtin::builtin_position(lua_State* L)
+int builtin::object::builtin_position(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -174,17 +174,18 @@ int object::builtin::builtin_position(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this_as<object>();
+        auto weak = obj->weak_from_this_as<fb::game::object>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            lua->pushinteger(obj->_position.x);
-            lua->pushinteger(obj->_position.y);
+            auto position = obj->position();
             return lua->ensure_resume(*server, weak, [=]() {
+                lua->pushinteger(position.x);
+                lua->pushinteger(position.y);
                 return 2;
             });
         });
@@ -208,7 +209,7 @@ int object::builtin::builtin_position(lua_State* L)
             y = (uint16_t)lua->tointeger(3);
         }
 
-        auto weak = obj->weak_from_this_as<object>();
+        auto weak = obj->weak_from_this_as<fb::game::object>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
             obj->position(x, y, true);
             return lua->ensure_resume(*server, weak, [=]() {
@@ -218,7 +219,7 @@ int object::builtin::builtin_position(lua_State* L)
     }
 }
 
-int object::builtin::builtin_front_position(lua_State* L)
+int builtin::object::builtin_front_position(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -226,14 +227,14 @@ int object::builtin::builtin_front_position(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
     auto step = lua->tointeger(2, 1);
     obj->assert_thread();
 
-    auto weak = obj->weak_from_this_as<object>();
+    auto weak = obj->weak_from_this_as<fb::game::object>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         auto position = obj->front_position(step);
         return lua->ensure_resume(*server, weak, [=]() {
@@ -244,7 +245,7 @@ int object::builtin::builtin_front_position(lua_State* L)
     });
 }
 
-int object::builtin::builtin_direction(lua_State* L)
+int builtin::object::builtin_direction(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -252,17 +253,17 @@ int object::builtin::builtin_direction(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this_as<object>();
+        auto weak = obj->weak_from_this_as<fb::game::object>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto direction = obj->_direction;
+            auto direction = obj->direction();
             return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(direction);
+                lua->pushinteger(static_cast<uint8_t>(direction));
                 return 1;
             });
         });
@@ -270,7 +271,7 @@ int object::builtin::builtin_direction(lua_State* L)
     else
     {
         auto direction = static_cast<DIRECTION>(lua->tointeger(2));
-        auto weak      = obj->weak_from_this_as<object>();
+        auto weak      = obj->weak_from_this_as<fb::game::object>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
             obj->direction(direction);
             return lua->ensure_resume(*server, weak, [=]() {
@@ -280,7 +281,7 @@ int object::builtin::builtin_direction(lua_State* L)
     }
 }
 
-int object::builtin::builtin_chat(lua_State* L)
+int builtin::object::builtin_chat(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -288,7 +289,7 @@ int object::builtin::builtin_chat(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -296,7 +297,7 @@ int object::builtin::builtin_chat(lua_State* L)
     auto type     = lua->toenum(3, CHAT_TYPE::NORMAL);
     auto decorate = lua->toboolean(4, true);
 
-    auto weak = obj->weak_from_this_as<object>();
+    auto weak = obj->weak_from_this_as<fb::game::object>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         if (obj->is(OBJECT_TYPE::ITEM) == false)
             obj->chat(message, type, decorate);
@@ -306,7 +307,7 @@ int object::builtin::builtin_chat(lua_State* L)
     });
 }
 
-int object::builtin::builtin_buff(lua_State* L)
+int builtin::object::builtin_buff(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -314,7 +315,7 @@ int object::builtin::builtin_buff(lua_State* L)
 
     auto argc   = lua->argc();
     auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -347,14 +348,14 @@ int object::builtin::builtin_buff(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_unbuff(lua_State* L)
+int builtin::object::builtin_unbuff(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -393,14 +394,14 @@ int object::builtin::builtin_unbuff(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_isbuff(lua_State* L)
+int builtin::object::builtin_isbuff(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -454,19 +455,19 @@ int object::builtin::builtin_isbuff(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_effect(lua_State* L)
+int builtin::object::builtin_effect(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
     auto effect = static_cast<uint8_t>(lua->tointeger(2));
-    auto weak   = obj->weak_from_this_as<object>();
+    auto weak   = obj->weak_from_this_as<fb::game::object>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         obj->effect(effect);
         return lua->ensure_resume(*server, weak, [=]() {
@@ -475,7 +476,7 @@ int object::builtin::builtin_effect(lua_State* L)
     });
 }
 
-int object::builtin::builtin_map(lua_State* L)
+int builtin::object::builtin_map(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -483,7 +484,7 @@ int object::builtin::builtin_map(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -544,7 +545,7 @@ int object::builtin::builtin_map(lua_State* L)
         }
     }
 
-    static auto static_func = [](std::weak_ptr<object>                      weak,
+    static auto static_func = [](std::weak_ptr<fb::game::object>            weak,
                                  std::shared_ptr<fb::game::map>             map,
                                  const std::optional<fb::model::point16_t>& position) -> async::task<bool> {
         auto shared = weak.lock();
@@ -559,7 +560,7 @@ int object::builtin::builtin_map(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this_as<object>();
+        auto weak = obj->weak_from_this_as<fb::game::object>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
             auto map = obj->map();
             return lua->ensure_resume(*server, weak, [=]() {
@@ -573,7 +574,7 @@ int object::builtin::builtin_map(lua_State* L)
     }
     else
     {
-        auto weak = obj->weak_from_this_as<object>();
+        auto weak = obj->weak_from_this_as<fb::game::object>();
         server->threads.enqueue(weak, [=](auto& thread) -> async::task<void> {
             async::awaitable_then(static_func(weak, map, position), [=](auto result) {
                 auto success = result();
@@ -593,14 +594,14 @@ int object::builtin::builtin_map(lua_State* L)
     }
 }
 
-int object::builtin::builtin_mkitem(lua_State* L)
+int builtin::object::builtin_mkitem(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -616,7 +617,7 @@ int object::builtin::builtin_mkitem(lua_State* L)
     {
         auto server = lua->env<fb::game::server>("server");
         auto item   = model->make(*server);
-        item->map(obj->_map, obj->_position);
+        item->map(obj->map(), obj->position());
         lua->pushobject(item);
         server->send(*item, fb::protocol::game::response::update(*item), fb::game::scope::PIVOT);
     }
@@ -624,7 +625,7 @@ int object::builtin::builtin_mkitem(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_sight_in(lua_State* L)
+int builtin::object::builtin_sight_in(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -632,7 +633,7 @@ int object::builtin::builtin_sight_in(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -652,7 +653,7 @@ int object::builtin::builtin_sight_in(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_nears(lua_State* L)
+int builtin::object::builtin_nears(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -660,7 +661,7 @@ int object::builtin::builtin_nears(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -699,7 +700,7 @@ int object::builtin::builtin_nears(lua_State* L)
             auto matched = false;
             for (auto& point : points)
             {
-                if (objects[i]->_position == point)
+                if (objects[i]->position() == point)
                 {
                     matched = true;
                     break;
@@ -734,12 +735,10 @@ int object::builtin::builtin_nears(lua_State* L)
         {
             if (width != -1 && height != -1)
             {
-                if (objects[i]->_position.x < obj->_position.x - width ||
-                    objects[i]->_position.x > obj->_position.x + width)
+                if (objects[i]->x() < obj->x() - width || objects[i]->x() > obj->x() + width)
                     continue;
 
-                if (objects[i]->_position.y < obj->_position.y - height ||
-                    objects[i]->_position.y > obj->_position.y + height)
+                if (objects[i]->y() < obj->y() - height || objects[i]->y() > obj->y() + height)
                     continue;
             }
 
@@ -760,7 +759,7 @@ int object::builtin::builtin_nears(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_front(lua_State* L)
+int builtin::object::builtin_front(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -768,7 +767,7 @@ int object::builtin::builtin_front(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -784,7 +783,7 @@ int object::builtin::builtin_front(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_is(lua_State* L)
+int builtin::object::builtin_is(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -792,12 +791,12 @@ int object::builtin::builtin_is(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
     auto type = lua->toenum(2, OBJECT_TYPE::UNKNOWN);
-    auto weak = obj->weak_from_this_as<object>();
+    auto weak = obj->weak_from_this_as<fb::game::object>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         auto matched = obj->is(type);
         return lua->ensure_resume(*server, weak, [=]() {
@@ -807,7 +806,7 @@ int object::builtin::builtin_is(lua_State* L)
     });
 }
 
-int object::builtin::builtin_thread(lua_State* L)
+int builtin::object::builtin_thread(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -815,7 +814,7 @@ int object::builtin::builtin_thread(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -830,7 +829,7 @@ int object::builtin::builtin_thread(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_near(lua_State* L)
+int builtin::object::builtin_near(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -838,19 +837,20 @@ int object::builtin::builtin_near(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<object>(1);
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
     obj->assert_thread();
-    if (obj->_map == nullptr)
+    auto map = obj->map();
+    if (map == nullptr)
     {
         lua->pushboolean(false);
         return 1;
     }
 
-    auto you   = lua->touserdata<object>(2);
-    auto nears = obj->_map->nears(obj->_position);
+    auto you   = lua->touserdata<fb::game::object>(2);
+    auto nears = map->nears(obj->position());
     auto found = false;
     for (auto x : nears)
     {
@@ -864,7 +864,7 @@ int object::builtin::builtin_near(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_buffs(lua_State* L)
+int builtin::object::builtin_buffs(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -889,7 +889,7 @@ int object::builtin::builtin_buffs(lua_State* L)
     return 1;
 }
 
-int object::builtin::builtin_hidden(lua_State* L)
+int builtin::object::builtin_hidden(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

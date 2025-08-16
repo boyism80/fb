@@ -120,46 +120,27 @@ protected:                                                                   \
 public:                                                                      \
     virtual enum_value::OBJECT_TYPE what() const;                            \
     bool                            operator== (const object&) const;        \
-    bool                            operator!= (const object&) const;        \
-                                                                             \
-public:                                                                      \
-    static int builtin_name(lua_State* L);                                   \
-    static int builtin_look(lua_State* L);                                   \
-    static int builtin_color(lua_State* L);
+    bool                            operator!= (const object&) const;
 
-#define DECLARE_LIFE_EXTENSION           \
-                                         \
-public:                                  \
-    LUA_PROTOTYPE                        \
-                                         \
-public:                                  \
-    static int builtin_hp(lua_State* L); \
-    static int builtin_mp(lua_State* L);
+#define DECLARE_LIFE_EXTENSION \
+                               \
+public:                        \
+    LUA_PROTOTYPE
 
-#define DECLARE_ITEM_EXTENSION                                                                        \
-                                                                                                      \
-public:                                                                                               \
-    LUA_PROTOTYPE                                                                                     \
-                                                                                                      \
-public:                                                                                               \
-    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::ITEM)                                               \
-                                                                                                      \
-public:                                                                                               \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const;                                                  \
-    bool                               attr(enum_value::ITEM_ATTRIBUTE flag) const;                   \
-                                                                                                      \
-public:                                                                                               \
-    virtual std::shared_ptr<fb::game::item> make(fb::game::server& server, uint16_t count = 1) const; \
-                                                                                                      \
-public:                                                                                               \
-    static int builtin_make(lua_State* L);                                                            \
-    static int builtin_attr(lua_State* L);                                                            \
-    static int builtin_capacity(lua_State* L);                                                        \
-    static int builtin_durability(lua_State* L);                                                      \
-    static int builtin_price(lua_State* L);                                                           \
-    static int builtin_repair_price(lua_State* L);                                                    \
-    static int builtin_rename_price(lua_State* L);                                                    \
-    static int builtin_storage_fee(lua_State* L);
+#define DECLARE_ITEM_EXTENSION                                                      \
+                                                                                    \
+public:                                                                             \
+    LUA_PROTOTYPE                                                                   \
+                                                                                    \
+public:                                                                             \
+    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::ITEM)                             \
+                                                                                    \
+public:                                                                             \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const;                                \
+    bool                               attr(enum_value::ITEM_ATTRIBUTE flag) const; \
+                                                                                    \
+public:                                                                             \
+    virtual std::shared_ptr<fb::game::item> make(fb::game::server& server, uint16_t count = 1) const;
 
 #define DECLARE_CASH_EXTENSION                                                                               \
                                                                                                              \
@@ -234,11 +215,7 @@ public:                                                                         
         default:                                                                                             \
             return enum_value::WEAPON_TYPE::UNKNOWN;                                                         \
         }                                                                                                    \
-    }                                                                                                        \
-    static int builtin_damage_small(lua_State* L);                                                           \
-    static int builtin_damage_large(lua_State* L);                                                           \
-    static int builtin_sound(lua_State* L);                                                                  \
-    static int builtin_type(lua_State* L);
+    }
 
 #define DECLARE_ARMOR_EXTENSION                                                                              \
                                                                                                              \
@@ -290,33 +267,21 @@ public:                                                                         
         return enum_value::ITEM_ATTRIBUTE::AUXILIARY;                                                        \
     }
 
-#define DECLARE_NPC_EXTENSION                          \
-                                                       \
-public:                                                \
-    LUA_PROTOTYPE                                      \
-                                                       \
-public:                                                \
-    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::NPC) \
-                                                       \
-public:                                                \
-    static int builtin_sell(lua_State* L);             \
-    static int builtin_sell_price(lua_State* L);       \
-    static int builtin_buy(lua_State* L);              \
-    static int builtin_buy_price(lua_State* L);
+#define DECLARE_NPC_EXTENSION \
+                              \
+public:                       \
+    LUA_PROTOTYPE             \
+                              \
+public:                       \
+    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::NPC)
 
-#define DECLARE_MOB_EXTENSION                          \
-                                                       \
-public:                                                \
-    LUA_PROTOTYPE                                      \
-                                                       \
-public:                                                \
-    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::MOB) \
-                                                       \
-public:                                                \
-    static int builtin_speed(lua_State* L);            \
-    static int builtin_size(lua_State* L);             \
-    static int builtin_damage(lua_State* L);           \
-    static int builtin_drop(lua_State* L);
+#define DECLARE_MOB_EXTENSION \
+                              \
+public:                       \
+    LUA_PROTOTYPE             \
+                              \
+public:                       \
+    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::MOB)
 
 #define DECLARE_MOB_CONTAINER_EXTENSION \
                                         \
@@ -335,18 +300,10 @@ public:                                  \
 
 #define DECLARE_MAP_INHERIT : public fb::lua::luable
 
-#define DECLARE_MAP_EXTENSION                  \
-                                               \
-public:                                        \
-    LUA_PROTOTYPE                              \
-                                               \
-public:                                        \
-    static int builtin_id(lua_State* L);       \
-    static int builtin_name(lua_State* L);     \
-    static int builtin_root(lua_State* L);     \
-    static int builtin_cardinal(lua_State* L); \
-    static int builtin_revive(lua_State* L);   \
-    static int builtin_option(lua_State* L);
+#define DECLARE_MAP_EXTENSION \
+                              \
+public:                       \
+    LUA_PROTOTYPE
 
 #define DECLARE_MAP_CONTAINER_EXTENSION \
                                         \
@@ -369,18 +326,13 @@ public:                                                                         
 public:                                   \
     fb::model::spell* name2spell(const std::string& name) const;
 
-#define DECLARE_SPELL_EXTENSION            \
-                                           \
-public:                                    \
-    struct listener;                       \
-                                           \
-public:                                    \
-    LUA_PROTOTYPE                          \
-                                           \
-public:                                    \
-    static int builtin_type(lua_State* L); \
-    static int builtin_name(lua_State* L); \
-    static int builtin_message(lua_State* L);
+#define DECLARE_SPELL_EXTENSION \
+                                \
+public:                         \
+    struct listener;            \
+                                \
+public:                         \
+    LUA_PROTOTYPE
 
 #define DECLARE_PROMOTION_CONTAINER_EXTENSION                                                               \
                                                                                                             \
@@ -564,27 +516,16 @@ public:                                    \
 
 #define DECLARE_OBJECT_INHERIT  : public fb::lua::luable
 
-#define DECLARE_ACHIEVEMENT_EXTENSION       \
-                                            \
-public:                                     \
-    LUA_PROTOTYPE                           \
-                                            \
-public:                                     \
-    static int builtin_id(lua_State* L);    \
-    static int builtin_look(lua_State* L);  \
-    static int builtin_color(lua_State* L); \
-    static int builtin_text(lua_State* L);
+#define DECLARE_ACHIEVEMENT_EXTENSION \
+                                      \
+public:                               \
+    LUA_PROTOTYPE
 
 #define DECLARE_QUEST_INHERIT : public fb::lua::luable
 
-#define DECLARE_QUEST_EXTENSION                \
-                                               \
-public:                                        \
-    LUA_PROTOTYPE                              \
-                                               \
-public:                                        \
-    static int builtin_step(lua_State* L);     \
-    static int builtin_progress(lua_State* L); \
-    static int builtin_reward(lua_State* L);
+#define DECLARE_QUEST_EXTENSION \
+                                \
+public:                         \
+    LUA_PROTOTYPE
 
 #endif

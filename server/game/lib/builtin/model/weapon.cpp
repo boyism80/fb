@@ -1,8 +1,18 @@
 #include <fb/game/server.h>
-#include <fb/game/item.h>
 #include <fb/model/model.h>
+#include <fb/game/builtin/model.h>
 
-int fb::model::weapon::builtin_damage_small(lua_State* L)
+using namespace fb::game;
+
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::model::weapon, "fb.model.weapon")
+{"damage_small",        builtin::model::weapon::builtin_damage_small},
+{"damage_large",        builtin::model::weapon::builtin_damage_large},
+{"sound",               builtin::model::weapon::builtin_sound},
+{"type",                builtin::model::weapon::builtin_type},
+END_LUA_EXTENSION; // clang-format on
+
+int builtin::model::weapon::builtin_damage_small(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -16,7 +26,7 @@ int fb::model::weapon::builtin_damage_small(lua_State* L)
     return 2;
 }
 
-int fb::model::weapon::builtin_damage_large(lua_State* L)
+int builtin::model::weapon::builtin_damage_large(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -30,7 +40,7 @@ int fb::model::weapon::builtin_damage_large(lua_State* L)
     return 2;
 }
 
-int fb::model::weapon::builtin_sound(lua_State* L)
+int builtin::model::weapon::builtin_sound(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -43,7 +53,7 @@ int fb::model::weapon::builtin_sound(lua_State* L)
     return 1;
 }
 
-int fb::model::weapon::builtin_type(lua_State* L)
+int builtin::model::weapon::builtin_type(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

@@ -50,9 +50,6 @@ class group : public fb::lua::luable
 public:
     LUA_PROTOTYPE
 
-public:
-    struct builtin;
-
 private:
     server&                                        _server;
     uint32_t                                       _id;
@@ -167,54 +164,6 @@ public:
      * @return     Vector of character pointers for nearby group members
      */
     std::vector<std::weak_ptr<character>> nears(const fb::game::map& map, const fb::model::point16_t& position) const;
-};
-
-struct group::builtin
-{
-    /**
-     * @brief      Lua binding for getting the group master's name.
-     *
-     * @param[in]  L  The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_master(lua_State* L);
-
-    /**
-     * @brief      Lua binding for getting all group members.
-     *
-     * @param[in]  L  The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_members(lua_State* L);
-
-    /**
-     * @brief      Lua binding for finding nearby group members.
-     *
-     * @param[in]  L  The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_nears(lua_State* L);
-
-    /**
-     * @brief      Lua binding for sending messages to group members.
-     *
-     * @param[in]  L  The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_message(lua_State* L);
-
-    /**
-     * @brief      Lua binding for kicking a member from the group.
-     *
-     * @param[in]  L  The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_kick(lua_State* L);
 };
 
 } // namespace fb::game

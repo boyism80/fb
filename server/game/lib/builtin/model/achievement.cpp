@@ -1,6 +1,17 @@
 #include <fb/model/model.h>
+#include <fb/game/builtin/model.h>
 
-int fb::model::achievement::builtin_id(lua_State* L)
+using namespace fb::game;
+
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::model::achievement, "fb.model.achievement")
+{"id",                  builtin::model::achievement::builtin_id},
+{"look",                builtin::model::achievement::builtin_look},
+{"color",               builtin::model::achievement::builtin_color},
+{"text",                builtin::model::achievement::builtin_text},
+END_LUA_EXTENSION; // clang-format on
+
+int builtin::model::achievement::builtin_id(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -15,7 +26,7 @@ int fb::model::achievement::builtin_id(lua_State* L)
     return 1;
 }
 
-int fb::model::achievement::builtin_look(lua_State* L)
+int builtin::model::achievement::builtin_look(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -30,7 +41,7 @@ int fb::model::achievement::builtin_look(lua_State* L)
     return 1;
 }
 
-int fb::model::achievement::builtin_color(lua_State* L)
+int builtin::model::achievement::builtin_color(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -45,7 +56,7 @@ int fb::model::achievement::builtin_color(lua_State* L)
     return 1;
 }
 
-int fb::model::achievement::builtin_text(lua_State* L)
+int builtin::model::achievement::builtin_text(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

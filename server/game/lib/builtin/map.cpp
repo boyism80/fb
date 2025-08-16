@@ -1,27 +1,27 @@
-#include <fb/game/map.h>
+#include <fb/game/builtin/map.h>
 #include <fb/game/server.h>
 
 using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
-{"model",               map::builtin::builtin_model},
-{"width",               map::builtin::builtin_width},
-{"height",              map::builtin::builtin_height},
-{"area",                map::builtin::builtin_area},
-{"objects",             map::builtin::builtin_objects},
-{"nears",               map::builtin::builtin_nears},
-{"movable",             map::builtin::builtin_movable},
-{"door",                map::builtin::builtin_door},
-{"doors",               map::builtin::builtin_doors},
-{"contains",            map::builtin::builtin_contains},
-{"belows",              map::builtin::builtin_belows},
-{"tile",                map::builtin::builtin_tile},
-{"at",                  map::builtin::builtin_at},
-{"bulk_update",         map::builtin::builtin_bulk_update},
+{"model",               builtin::map::builtin_model},
+{"width",               builtin::map::builtin_width},
+{"height",              builtin::map::builtin_height},
+{"area",                builtin::map::builtin_area},
+{"objects",             builtin::map::builtin_objects},
+{"nears",               builtin::map::builtin_nears},
+{"movable",             builtin::map::builtin_movable},
+{"door",                builtin::map::builtin_door},
+{"doors",               builtin::map::builtin_doors},
+{"contains",            builtin::map::builtin_contains},
+{"belows",              builtin::map::builtin_belows},
+{"tile",                builtin::map::builtin_tile},
+{"at",                  builtin::map::builtin_at},
+{"bulk_update",         builtin::map::builtin_bulk_update},
 END_LUA_EXTENSION; // clang-format on
 
-int map::builtin::builtin_model(lua_State* L)
+int builtin::map::builtin_model(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -35,7 +35,7 @@ int map::builtin::builtin_model(lua_State* L)
     return 1;
 }
 
-int map::builtin::builtin_width(lua_State* L)
+int builtin::map::builtin_width(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -49,7 +49,7 @@ int map::builtin::builtin_width(lua_State* L)
     return 1;
 }
 
-int map::builtin::builtin_height(lua_State* L)
+int builtin::map::builtin_height(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -63,7 +63,7 @@ int map::builtin::builtin_height(lua_State* L)
     return 1;
 }
 
-int map::builtin::builtin_area(lua_State* L)
+int builtin::map::builtin_area(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -78,7 +78,7 @@ int map::builtin::builtin_area(lua_State* L)
     return 2;
 }
 
-int map::builtin::builtin_objects(lua_State* L)
+int builtin::map::builtin_objects(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -105,7 +105,7 @@ int map::builtin::builtin_objects(lua_State* L)
     return 1;
 }
 
-int map::builtin::builtin_nears(lua_State* L)
+int builtin::map::builtin_nears(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -140,7 +140,7 @@ int map::builtin::builtin_nears(lua_State* L)
     return 1;
 }
 
-int map::builtin::builtin_movable(lua_State* L)
+int builtin::map::builtin_movable(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -215,7 +215,7 @@ int map::builtin::builtin_movable(lua_State* L)
     });
 }
 
-int map::builtin::builtin_door(lua_State* L)
+int builtin::map::builtin_door(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -239,7 +239,7 @@ int map::builtin::builtin_door(lua_State* L)
     return 1;
 }
 
-int map::builtin::builtin_doors(lua_State* L)
+int builtin::map::builtin_doors(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -261,7 +261,7 @@ int map::builtin::builtin_doors(lua_State* L)
     return 1;
 }
 
-int map::builtin::builtin_contains(lua_State* L)
+int builtin::map::builtin_contains(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -288,7 +288,7 @@ int map::builtin::builtin_contains(lua_State* L)
     return 1;
 }
 
-int map::builtin::builtin_belows(lua_State* L)
+int builtin::map::builtin_belows(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -316,7 +316,7 @@ int map::builtin::builtin_belows(lua_State* L)
     return 1;
 }
 
-int map::builtin::builtin_tile(lua_State* L)
+int builtin::map::builtin_tile(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -355,7 +355,7 @@ int map::builtin::builtin_tile(lua_State* L)
     }
 }
 
-int map::builtin::builtin_at(lua_State* L)
+int builtin::map::builtin_at(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -395,7 +395,7 @@ int map::builtin::builtin_at(lua_State* L)
     });
 }
 
-int map::builtin::builtin_bulk_update(lua_State* L)
+int builtin::map::builtin_bulk_update(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

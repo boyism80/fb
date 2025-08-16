@@ -1,18 +1,20 @@
 #include <fb/game/mob.h>
 #include <fb/game/server.h>
+#include <fb/game/builtin/object.h>
+#include <fb/game/builtin/mob.h>
 
 using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(mob, "fb.game.mob")
-{"__eq",                object::builtin::builtin_eq},
-{"target",              mob::builtin::builtin_target},
-{"oblivion",            mob::builtin::builtin_oblivion},
-{"owner",               mob::builtin::builtin_owner},
-{"items",               mob::builtin::builtin_items},
+{"__eq",                builtin::object::builtin_eq},
+{"target",              builtin::mob::builtin_target},
+{"oblivion",            builtin::mob::builtin_oblivion},
+{"owner",               builtin::mob::builtin_owner},
+{"items",               builtin::mob::builtin_items},
 END_LUA_EXTENSION; // clang-format on
 
-int mob::builtin::builtin_target(lua_State* L)
+int builtin::mob::builtin_target(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -51,7 +53,7 @@ int mob::builtin::builtin_target(lua_State* L)
     }
 }
 
-int mob::builtin::builtin_oblivion(lua_State* L)
+int builtin::mob::builtin_oblivion(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -90,7 +92,7 @@ int mob::builtin::builtin_oblivion(lua_State* L)
     }
 }
 
-int mob::builtin::builtin_owner(lua_State* L)
+int builtin::mob::builtin_owner(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -115,7 +117,7 @@ int mob::builtin::builtin_owner(lua_State* L)
     });
 }
 
-int mob::builtin::builtin_items(lua_State* L)
+int builtin::mob::builtin_items(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

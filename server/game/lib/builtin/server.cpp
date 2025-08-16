@@ -1,4 +1,4 @@
-#include <fb/game/server.h>
+#include <fb/game/builtin/server.h>
 
 using namespace fb::game;
 
@@ -6,7 +6,7 @@ using namespace fb::game;
 IMPLEMENT_LUA_EXTENSION(fb::game::server, "")
 END_LUA_EXTENSION; // clang-format on
 
-int server::builtin::builtin_log(lua_State* L)
+int builtin::server::builtin_log(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -17,7 +17,7 @@ int server::builtin::builtin_log(lua_State* L)
     return 0;
 }
 
-int server::builtin::builtin_seed(lua_State* L)
+int builtin::server::builtin_seed(lua_State* L)
 {
     static std::random_device random;
     static std::mt19937       gen(random());
@@ -32,7 +32,7 @@ int server::builtin::builtin_seed(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_sleep(lua_State* L)
+int builtin::server::builtin_sleep(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -49,7 +49,7 @@ int server::builtin::builtin_sleep(lua_State* L)
     return lua->yield(0);
 }
 
-int server::builtin::builtin_baram_time(lua_State* L)
+int builtin::server::builtin_baram_time(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -59,7 +59,7 @@ int server::builtin::builtin_baram_time(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_name2mob(lua_State* L)
+int builtin::server::builtin_name2mob(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -80,7 +80,7 @@ int server::builtin::builtin_name2mob(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_name2spell(lua_State* L)
+int builtin::server::builtin_name2spell(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -101,7 +101,7 @@ int server::builtin::builtin_name2spell(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_name2npc(lua_State* L)
+int builtin::server::builtin_name2npc(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -122,7 +122,7 @@ int server::builtin::builtin_name2npc(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_name2map(lua_State* L)
+int builtin::server::builtin_name2map(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -143,7 +143,7 @@ int server::builtin::builtin_name2map(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_name2ch(lua_State* L)
+int builtin::server::builtin_name2ch(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -169,7 +169,7 @@ int server::builtin::builtin_name2ch(lua_State* L)
     });
 }
 
-int server::builtin::builtin_name2item(lua_State* L)
+int builtin::server::builtin_name2item(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -190,7 +190,7 @@ int server::builtin::builtin_name2item(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_pursuit_sell(lua_State* L)
+int builtin::server::builtin_pursuit_sell(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -230,7 +230,7 @@ int server::builtin::builtin_pursuit_sell(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_pursuit_sell_price(lua_State* L)
+int builtin::server::builtin_pursuit_sell_price(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -256,7 +256,7 @@ int server::builtin::builtin_pursuit_sell_price(lua_State* L)
     return 0;
 }
 
-int server::builtin::builtin_pursuit_sell_name(lua_State* L)
+int builtin::server::builtin_pursuit_sell_name(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -272,7 +272,7 @@ int server::builtin::builtin_pursuit_sell_name(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_pursuit_buy(lua_State* L)
+int builtin::server::builtin_pursuit_buy(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -308,7 +308,7 @@ int server::builtin::builtin_pursuit_buy(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_timer(lua_State* L)
+int builtin::server::builtin_timer(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -325,7 +325,7 @@ int server::builtin::builtin_timer(lua_State* L)
     return 0;
 }
 
-int server::builtin::builtin_weather(lua_State* L)
+int builtin::server::builtin_weather(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -340,7 +340,7 @@ int server::builtin::builtin_weather(lua_State* L)
     return 0;
 }
 
-int server::builtin::builtin_bright(lua_State* L)
+int builtin::server::builtin_bright(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -355,7 +355,7 @@ int server::builtin::builtin_bright(lua_State* L)
     return 0;
 }
 
-int server::builtin::builtin_name_with(lua_State* L)
+int builtin::server::builtin_name_with(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -377,7 +377,7 @@ int server::builtin::builtin_name_with(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_assert_korean(lua_State* L)
+int builtin::server::builtin_assert_korean(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -389,7 +389,7 @@ int server::builtin::builtin_assert_korean(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_cp949(lua_State* L)
+int builtin::server::builtin_cp949(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -401,7 +401,7 @@ int server::builtin::builtin_cp949(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_debug(lua_State* L)
+int builtin::server::builtin_debug(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -415,7 +415,7 @@ int server::builtin::builtin_debug(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_name2class(lua_State* L)
+int builtin::server::builtin_name2class(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -434,7 +434,7 @@ int server::builtin::builtin_name2class(lua_State* L)
     return 2;
 }
 
-int server::builtin::builtin_class2name(lua_State* L)
+int builtin::server::builtin_class2name(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -452,7 +452,7 @@ int server::builtin::builtin_class2name(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_save(lua_State* L)
+int builtin::server::builtin_save(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -473,7 +473,7 @@ int server::builtin::builtin_save(lua_State* L)
     return 0;
 }
 
-int server::builtin::builtin_mknpc(lua_State* L)
+int builtin::server::builtin_mknpc(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -583,7 +583,7 @@ int server::builtin::builtin_mknpc(lua_State* L)
     }
 }
 
-int server::builtin::builtin_maps(lua_State* L)
+int builtin::server::builtin_maps(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -600,7 +600,7 @@ int server::builtin::builtin_maps(lua_State* L)
     return 1;
 }
 
-int server::builtin::builtin_shutdown(lua_State* L)
+int builtin::server::builtin_shutdown(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -611,7 +611,7 @@ int server::builtin::builtin_shutdown(lua_State* L)
     return 0;
 }
 
-int server::builtin::builtin_broadcast(lua_State* L)
+int builtin::server::builtin_broadcast(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -637,7 +637,7 @@ int server::builtin::builtin_broadcast(lua_State* L)
     }
 }
 
-int server::builtin::builtin_assert_alive(lua_State* L)
+int builtin::server::builtin_assert_alive(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
