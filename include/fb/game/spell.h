@@ -64,9 +64,6 @@ class spell : public lua::luable
 public:
     LUA_PROTOTYPE
 
-public:
-    struct builtin;
-
 private:
     fb::model::datetime _next;
 
@@ -249,39 +246,6 @@ public:
 /**
  * @brief      Lua binding interface for spell functionality.
  */
-struct spell::builtin
-{
-    /**
-     * @brief      Lua binding for getting spell model data.
-     *
-     * @param[in]  L  The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_model(lua_State* L);
-
-    /**
-     * @brief      Lua binding for getting/setting spell delay.
-     *
-     * @param[in]  L  The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_delay(lua_State* L);
-
-    /**
-     * @brief      Lua binding for setting spell delay with specific parameters.
-     *
-     * @param[in]  L  The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_delay2(lua_State* L);
-};
-
-/**
- * @brief      Event listener interface for spell collection events.
- */
 struct spells::listener_t
 {
     /**
@@ -313,9 +277,6 @@ class buff : public lua::luable
 {
 public:
     LUA_PROTOTYPE
-
-public:
-    struct builtin;
 
 private:
     std::chrono::milliseconds _time;
@@ -485,30 +446,6 @@ public:
      * @return     The result of the array indexer
      */
     std::shared_ptr<buff> operator[] (uint32_t id) const;
-};
-
-/**
- * @brief      Lua binding interface for buff functionality.
- */
-struct buff::builtin
-{
-    /**
-     * @brief      Lua binding for getting buff model data.
-     *
-     * @param[in]  L  The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_model(lua_State* L);
-
-    /**
-     * @brief      Lua binding for getting/setting buff duration.
-     *
-     * @param[in]  L  The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_time(lua_State* L);
 };
 
 } // namespace fb::game

@@ -28,9 +28,6 @@ public:
     LUA_PROTOTYPE
 
 public:
-    struct builtin;
-
-public:
     std::string name; ///< The member's character name
     CLAN_ROLE   role; ///< The member's role within the clan hierarchy
 
@@ -50,41 +47,6 @@ public:
      * @brief      Destroys the clan member and cleans up resources.
      */
     ~clan_member() = default;
-};
-
-/**
- * @brief      Built-in Lua functions for clan member scripting integration.
- *
- *             This structure contains static functions that provide Lua script
- *             access to clan member properties and operations. These functions
- *             are registered with the Lua interpreter to enable script-based
- *             clan member management and queries.
- */
-struct clan_member::builtin
-{
-    /**
-     * @brief      Lua function to get the clan member's name.
-     *
-     *             Returns the character name of the clan member to Lua scripts,
-     *             allowing scripts to identify and work with specific members.
-     *
-     * @param      L   The Lua state for script execution.
-     *
-     * @return     Number of return values pushed to the Lua stack (1 for name).
-     */
-    static int builtin_name(lua_State* L);
-
-    /**
-     * @brief      Lua function to get the clan member's role.
-     *
-     *             Returns the clan role of the member to Lua scripts,
-     *             enabling role-based logic and hierarchy management.
-     *
-     * @param      L   The Lua state for script execution.
-     *
-     * @return     Number of return values pushed to the Lua stack (1 for role).
-     */
-    static int builtin_role(lua_State* L);
 };
 
 } // namespace fb::game

@@ -1,63 +1,64 @@
 #include <fb/game/server.h>
-#include <fb/game/life.h>
+#include <fb/game/builtin/object.h>
+#include <fb/game/builtin/life.h>
 #include <fb/game/map.h>
 
 using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(life, "fb.game.life")
-{"__eq",                object::builtin::builtin_eq},
-{"message",             life::builtin::builtin_message},
-{"hp",                  life::builtin::builtin_hp},
-{"mp",                  life::builtin::builtin_mp},
-{"heal",                life::builtin::builtin_heal},
-{"damage",              life::builtin::builtin_damage},
-{"mp_up",               life::builtin::builtin_mp_up},
-{"mp_down",             life::builtin::builtin_mp_down},
-{"action",              life::builtin::builtin_action},
-{"spell",               life::builtin::builtin_spell},
-{"spells",              life::builtin::builtin_spells},
-{"cast",                life::builtin::builtin_cast},
-{"cc",                  life::builtin::builtin_cc},
-{"add_cc",              life::builtin::builtin_add_cc},
-{"remove_cc",           life::builtin::builtin_remove_cc},
-{"attack",              life::builtin::builtin_attack},
-{"damage_rate",         life::builtin::builtin_damage_rate},
-{"damage_derate",       life::builtin::builtin_damage_derate},
-{"skill_damage_rate",   life::builtin::builtin_skill_damage_rate},
-{"paralysis",           life::builtin::builtin_paralysis},
-{"invincible",          life::builtin::builtin_invincible},
-{"cover",               life::builtin::builtin_cover},
-{"base_hp",             life::builtin::builtin_base_hp},
-{"buff_hp",             life::builtin::builtin_buff_hp},
-{"maxhp",               life::builtin::builtin_maxhp},
-{"base_mp",             life::builtin::builtin_base_mp},
-{"buff_mp",             life::builtin::builtin_buff_mp},
-{"maxmp",               life::builtin::builtin_maxmp},
-{"base_str",            life::builtin::builtin_base_str},
-{"buff_str",            life::builtin::builtin_buff_str},
-{"str",                 life::builtin::builtin_str},
-{"base_dex",            life::builtin::builtin_base_dex},
-{"buff_dex",            life::builtin::builtin_buff_dex},
-{"dex",                 life::builtin::builtin_dex},
-{"base_int",            life::builtin::builtin_base_int},
-{"buff_int",            life::builtin::builtin_buff_int},
-{"int",                 life::builtin::builtin_intelligence},
-{"base_phydef",         life::builtin::builtin_base_phydef},
-{"buff_phydef",         life::builtin::builtin_buff_phydef},
-{"phydef",              life::builtin::builtin_phydef},
-{"base_magdef",         life::builtin::builtin_base_magdef},
-{"buff_magdef",         life::builtin::builtin_buff_magdef},
-{"magdef",              life::builtin::builtin_magdef},
-{"base_dam",            life::builtin::builtin_base_dam},
-{"buff_dam",            life::builtin::builtin_buff_dam},
-{"dam",                 life::builtin::builtin_dam},
-{"base_hit",            life::builtin::builtin_base_hit},
-{"buff_hit",            life::builtin::builtin_buff_hit},
-{"hit",                 life::builtin::builtin_hit},
+{"__eq",                builtin::object::builtin_eq},
+{"message",             builtin::life::builtin_message},
+{"hp",                  builtin::life::builtin_hp},
+{"mp",                  builtin::life::builtin_mp},
+{"heal",                builtin::life::builtin_heal},
+{"damage",              builtin::life::builtin_damage},
+{"mp_up",               builtin::life::builtin_mp_up},
+{"mp_down",             builtin::life::builtin_mp_down},
+{"action",              builtin::life::builtin_action},
+{"spell",               builtin::life::builtin_spell},
+{"spells",              builtin::life::builtin_spells},
+{"cast",                builtin::life::builtin_cast},
+{"cc",                  builtin::life::builtin_cc},
+{"add_cc",              builtin::life::builtin_add_cc},
+{"remove_cc",           builtin::life::builtin_remove_cc},
+{"attack",              builtin::life::builtin_attack},
+{"damage_rate",         builtin::life::builtin_damage_rate},
+{"damage_derate",       builtin::life::builtin_damage_derate},
+{"skill_damage_rate",   builtin::life::builtin_skill_damage_rate},
+{"paralysis",           builtin::life::builtin_paralysis},
+{"invincible",          builtin::life::builtin_invincible},
+{"cover",               builtin::life::builtin_cover},
+{"base_hp",             builtin::life::builtin_base_hp},
+{"buff_hp",             builtin::life::builtin_buff_hp},
+{"maxhp",               builtin::life::builtin_maxhp},
+{"base_mp",             builtin::life::builtin_base_mp},
+{"buff_mp",             builtin::life::builtin_buff_mp},
+{"maxmp",               builtin::life::builtin_maxmp},
+{"base_str",            builtin::life::builtin_base_str},
+{"buff_str",            builtin::life::builtin_buff_str},
+{"str",                 builtin::life::builtin_str},
+{"base_dex",            builtin::life::builtin_base_dex},
+{"buff_dex",            builtin::life::builtin_buff_dex},
+{"dex",                 builtin::life::builtin_dex},
+{"base_int",            builtin::life::builtin_base_int},
+{"buff_int",            builtin::life::builtin_buff_int},
+{"int",                 builtin::life::builtin_intelligence},
+{"base_phydef",         builtin::life::builtin_base_phydef},
+{"buff_phydef",         builtin::life::builtin_buff_phydef},
+{"phydef",              builtin::life::builtin_phydef},
+{"base_magdef",         builtin::life::builtin_base_magdef},
+{"buff_magdef",         builtin::life::builtin_buff_magdef},
+{"magdef",              builtin::life::builtin_magdef},
+{"base_dam",            builtin::life::builtin_base_dam},
+{"buff_dam",            builtin::life::builtin_buff_dam},
+{"dam",                 builtin::life::builtin_dam},
+{"base_hit",            builtin::life::builtin_base_hit},
+{"buff_hit",            builtin::life::builtin_buff_hit},
+{"hit",                 builtin::life::builtin_hit},
 END_LUA_EXTENSION; // clang-format on
 
-int life::builtin::builtin_message(lua_State* L)
+int builtin::life::builtin_message(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -85,7 +86,7 @@ int life::builtin::builtin_message(lua_State* L)
     });
 }
 
-int life::builtin::builtin_hp(lua_State* L)
+int builtin::life::builtin_hp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -123,7 +124,7 @@ int life::builtin::builtin_hp(lua_State* L)
     }
 }
 
-int life::builtin::builtin_mp(lua_State* L)
+int builtin::life::builtin_mp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -161,7 +162,7 @@ int life::builtin::builtin_mp(lua_State* L)
     }
 }
 
-int life::builtin::builtin_heal(lua_State* L)
+int builtin::life::builtin_heal(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -183,7 +184,7 @@ int life::builtin::builtin_heal(lua_State* L)
     });
 }
 
-int life::builtin::builtin_damage(lua_State* L)
+int builtin::life::builtin_damage(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -207,7 +208,7 @@ int life::builtin::builtin_damage(lua_State* L)
     });
 }
 
-int life::builtin::builtin_mp_up(lua_State* L)
+int builtin::life::builtin_mp_up(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -229,7 +230,7 @@ int life::builtin::builtin_mp_up(lua_State* L)
     });
 }
 
-int life::builtin::builtin_mp_down(lua_State* L)
+int builtin::life::builtin_mp_down(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -251,7 +252,7 @@ int life::builtin::builtin_mp_down(lua_State* L)
     });
 }
 
-int life::builtin::builtin_action(lua_State* L)
+int builtin::life::builtin_action(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -275,7 +276,7 @@ int life::builtin::builtin_action(lua_State* L)
     });
 }
 
-int life::builtin::builtin_spell(lua_State* L)
+int builtin::life::builtin_spell(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -344,7 +345,7 @@ int life::builtin::builtin_spell(lua_State* L)
     }
 }
 
-int life::builtin::builtin_spells(lua_State* L)
+int builtin::life::builtin_spells(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -379,7 +380,7 @@ int life::builtin::builtin_spells(lua_State* L)
     });
 }
 
-int life::builtin::builtin_cast(lua_State* L)
+int builtin::life::builtin_cast(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -439,7 +440,7 @@ int life::builtin::builtin_cast(lua_State* L)
     return 0;
 }
 
-int life::builtin::builtin_cc(lua_State* L)
+int builtin::life::builtin_cc(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -477,7 +478,7 @@ int life::builtin::builtin_cc(lua_State* L)
     }
 }
 
-int life::builtin::builtin_add_cc(lua_State* L)
+int builtin::life::builtin_add_cc(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -515,7 +516,7 @@ int life::builtin::builtin_add_cc(lua_State* L)
     }
 }
 
-int life::builtin::builtin_remove_cc(lua_State* L)
+int builtin::life::builtin_remove_cc(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -537,7 +538,7 @@ int life::builtin::builtin_remove_cc(lua_State* L)
     });
 }
 
-int life::builtin::builtin_attack(lua_State* L)
+int builtin::life::builtin_attack(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -569,7 +570,7 @@ int life::builtin::builtin_attack(lua_State* L)
     });
 }
 
-int life::builtin::builtin_damage_rate(lua_State* L)
+int builtin::life::builtin_damage_rate(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -607,7 +608,7 @@ int life::builtin::builtin_damage_rate(lua_State* L)
     }
 }
 
-int life::builtin::builtin_damage_derate(lua_State* L)
+int builtin::life::builtin_damage_derate(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -645,7 +646,7 @@ int life::builtin::builtin_damage_derate(lua_State* L)
     }
 }
 
-int life::builtin::builtin_skill_damage_rate(lua_State* L)
+int builtin::life::builtin_skill_damage_rate(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -683,7 +684,7 @@ int life::builtin::builtin_skill_damage_rate(lua_State* L)
     }
 }
 
-int life::builtin::builtin_paralysis(lua_State* L)
+int builtin::life::builtin_paralysis(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -691,7 +692,7 @@ int life::builtin::builtin_paralysis(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<life>(1);
+    auto obj    = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -721,7 +722,7 @@ int life::builtin::builtin_paralysis(lua_State* L)
     }
 }
 
-int life::builtin::builtin_invincible(lua_State* L)
+int builtin::life::builtin_invincible(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -729,7 +730,7 @@ int life::builtin::builtin_invincible(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<life>(1);
+    auto obj    = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -759,7 +760,7 @@ int life::builtin::builtin_invincible(lua_State* L)
     }
 }
 
-int life::builtin::builtin_cover(lua_State* L)
+int builtin::life::builtin_cover(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -767,7 +768,7 @@ int life::builtin::builtin_cover(lua_State* L)
 
     auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
-    auto obj    = lua->touserdata<life>(1);
+    auto obj    = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -797,7 +798,7 @@ int life::builtin::builtin_cover(lua_State* L)
     }
 }
 
-int life::builtin::builtin_base_hp(lua_State* L)
+int builtin::life::builtin_base_hp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -819,7 +820,7 @@ int life::builtin::builtin_base_hp(lua_State* L)
     });
 }
 
-int life::builtin::builtin_buff_hp(lua_State* L)
+int builtin::life::builtin_buff_hp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -857,7 +858,7 @@ int life::builtin::builtin_buff_hp(lua_State* L)
     }
 }
 
-int life::builtin::builtin_maxhp(lua_State* L)
+int builtin::life::builtin_maxhp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -879,7 +880,7 @@ int life::builtin::builtin_maxhp(lua_State* L)
     });
 }
 
-int life::builtin::builtin_base_mp(lua_State* L)
+int builtin::life::builtin_base_mp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -901,7 +902,7 @@ int life::builtin::builtin_base_mp(lua_State* L)
     });
 }
 
-int life::builtin::builtin_buff_mp(lua_State* L)
+int builtin::life::builtin_buff_mp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -939,7 +940,7 @@ int life::builtin::builtin_buff_mp(lua_State* L)
     }
 }
 
-int life::builtin::builtin_maxmp(lua_State* L)
+int builtin::life::builtin_maxmp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -961,7 +962,7 @@ int life::builtin::builtin_maxmp(lua_State* L)
     });
 }
 
-int life::builtin::builtin_base_str(lua_State* L)
+int builtin::life::builtin_base_str(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -983,7 +984,7 @@ int life::builtin::builtin_base_str(lua_State* L)
     });
 }
 
-int life::builtin::builtin_buff_str(lua_State* L)
+int builtin::life::builtin_buff_str(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1021,7 +1022,7 @@ int life::builtin::builtin_buff_str(lua_State* L)
     }
 }
 
-int life::builtin::builtin_str(lua_State* L)
+int builtin::life::builtin_str(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1043,7 +1044,7 @@ int life::builtin::builtin_str(lua_State* L)
     });
 }
 
-int life::builtin::builtin_base_dex(lua_State* L)
+int builtin::life::builtin_base_dex(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1065,7 +1066,7 @@ int life::builtin::builtin_base_dex(lua_State* L)
     });
 }
 
-int life::builtin::builtin_buff_dex(lua_State* L)
+int builtin::life::builtin_buff_dex(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1103,7 +1104,7 @@ int life::builtin::builtin_buff_dex(lua_State* L)
     }
 }
 
-int life::builtin::builtin_dex(lua_State* L)
+int builtin::life::builtin_dex(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1125,7 +1126,7 @@ int life::builtin::builtin_dex(lua_State* L)
     });
 }
 
-int life::builtin::builtin_base_int(lua_State* L)
+int builtin::life::builtin_base_int(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1147,7 +1148,7 @@ int life::builtin::builtin_base_int(lua_State* L)
     });
 }
 
-int life::builtin::builtin_buff_int(lua_State* L)
+int builtin::life::builtin_buff_int(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1185,7 +1186,7 @@ int life::builtin::builtin_buff_int(lua_State* L)
     }
 }
 
-int life::builtin::builtin_intelligence(lua_State* L)
+int builtin::life::builtin_intelligence(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1207,7 +1208,7 @@ int life::builtin::builtin_intelligence(lua_State* L)
     });
 }
 
-int life::builtin::builtin_base_phydef(lua_State* L)
+int builtin::life::builtin_base_phydef(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1229,7 +1230,7 @@ int life::builtin::builtin_base_phydef(lua_State* L)
     });
 }
 
-int life::builtin::builtin_buff_phydef(lua_State* L)
+int builtin::life::builtin_buff_phydef(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1267,7 +1268,7 @@ int life::builtin::builtin_buff_phydef(lua_State* L)
     }
 }
 
-int life::builtin::builtin_phydef(lua_State* L)
+int builtin::life::builtin_phydef(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1289,7 +1290,7 @@ int life::builtin::builtin_phydef(lua_State* L)
     });
 }
 
-int life::builtin::builtin_base_magdef(lua_State* L)
+int builtin::life::builtin_base_magdef(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1311,7 +1312,7 @@ int life::builtin::builtin_base_magdef(lua_State* L)
     });
 }
 
-int life::builtin::builtin_buff_magdef(lua_State* L)
+int builtin::life::builtin_buff_magdef(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1349,7 +1350,7 @@ int life::builtin::builtin_buff_magdef(lua_State* L)
     }
 }
 
-int life::builtin::builtin_magdef(lua_State* L)
+int builtin::life::builtin_magdef(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1371,7 +1372,7 @@ int life::builtin::builtin_magdef(lua_State* L)
     });
 }
 
-int life::builtin::builtin_base_dam(lua_State* L)
+int builtin::life::builtin_base_dam(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1393,7 +1394,7 @@ int life::builtin::builtin_base_dam(lua_State* L)
     });
 }
 
-int life::builtin::builtin_buff_dam(lua_State* L)
+int builtin::life::builtin_buff_dam(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1431,7 +1432,7 @@ int life::builtin::builtin_buff_dam(lua_State* L)
     }
 }
 
-int life::builtin::builtin_dam(lua_State* L)
+int builtin::life::builtin_dam(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1453,7 +1454,7 @@ int life::builtin::builtin_dam(lua_State* L)
     });
 }
 
-int life::builtin::builtin_base_hit(lua_State* L)
+int builtin::life::builtin_base_hit(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1475,7 +1476,7 @@ int life::builtin::builtin_base_hit(lua_State* L)
     });
 }
 
-int life::builtin::builtin_buff_hit(lua_State* L)
+int builtin::life::builtin_buff_hit(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1513,7 +1514,7 @@ int life::builtin::builtin_buff_hit(lua_State* L)
     }
 }
 
-int life::builtin::builtin_hit(lua_State* L)
+int builtin::life::builtin_hit(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

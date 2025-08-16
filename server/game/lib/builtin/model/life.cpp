@@ -1,6 +1,15 @@
 #include <fb/model/model.h>
+#include <fb/game/builtin/model.h>
 
-int fb::model::life::builtin_hp(lua_State* L)
+using namespace fb::game;
+
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::model::life, "fb.model.life")
+{"hp",                  builtin::model::life::builtin_hp},
+{"mp",                  builtin::model::life::builtin_mp},
+END_LUA_EXTENSION; // clang-format on
+
+int builtin::model::life::builtin_hp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -14,7 +23,7 @@ int fb::model::life::builtin_hp(lua_State* L)
     return 1;
 }
 
-int fb::model::life::builtin_mp(lua_State* L)
+int builtin::model::life::builtin_mp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

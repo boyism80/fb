@@ -36,27 +36,15 @@ public:
 
 public:
     uint32_t    step() const;
+    void        step(uint32_t step);
     uint32_t    progress() const;
+    void        progress(uint32_t progress);
     std::string param() const;
     void        param(const std::string& param);
     bool        inc_progress(uint32_t value = 1);
     bool        inc_step(uint32_t value = 1);
     bool        complete();
     bool        completed() const;
-
-public:
-    static int builtin_model(lua_State* L);
-    static int builtin_step(lua_State* L);
-    static int builtin_progress(lua_State* L);
-    static int builtin_param(lua_State* L);
-    static int builtin_inc_progress(lua_State* L);
-    static int builtin_inc_step(lua_State* L);
-    static int builtin_complete(lua_State* L);
-    static int builtin_completed(lua_State* L);
-    static int builtin_completed_progress(lua_State* L);
-    static int builtin_completed_step(lua_State* L);
-
-public:
 };
 
 class quests : private std::unordered_map<uint32_t, std::shared_ptr<quest>>

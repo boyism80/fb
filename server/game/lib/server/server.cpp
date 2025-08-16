@@ -1,5 +1,6 @@
 #include <fb/game/server.h>
 #include <fb/game/handler.h>
+#include <fb/game/builtin/server.h>
 using namespace fb::game;
 using namespace std::chrono_literals;
 
@@ -53,35 +54,35 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build<weapon, equipment>();
     lua::build<character, life>();
 
-    lua::build("log", builtin::builtin_log);
-    lua::build("seed", builtin::builtin_seed);
-    lua::build("sleep", builtin::builtin_sleep);
-    lua::build("baram_time", builtin::builtin_baram_time);
-    lua::build("name2mob", builtin::builtin_name2mob);
-    lua::build("name2spell", builtin::builtin_name2spell);
-    lua::build("name2item", builtin::builtin_name2item);
-    lua::build("name2npc", builtin::builtin_name2npc);
-    lua::build("name2map", builtin::builtin_name2map);
-    lua::build("name2ch", builtin::builtin_name2ch);
-    lua::build("broadcast", builtin::builtin_broadcast);
-    lua::build("assert_alive", builtin::builtin_assert_alive);
-    lua::build("pursuit_sell", builtin::builtin_pursuit_sell);
-    lua::build("pursuit_sell_price", builtin::builtin_pursuit_sell_price);
-    lua::build("pursuit_sell_name", builtin::builtin_pursuit_sell_name);
-    lua::build("pursuit_buy", builtin::builtin_pursuit_buy);
-    lua::build("timer", builtin::builtin_timer);
-    lua::build("weather", builtin::builtin_weather);
-    lua::build("bright", builtin::builtin_bright);
-    lua::build("name_with", builtin::builtin_name_with);
-    lua::build("assert_korean", builtin::builtin_assert_korean);
-    lua::build("CP949", builtin::builtin_cp949);
-    lua::build("debug", builtin::builtin_debug);
-    lua::build("name2class", builtin::builtin_name2class);
-    lua::build("class2name", builtin::builtin_class2name);
-    lua::build("save", builtin::builtin_save);
-    lua::build("mknpc", builtin::builtin_mknpc);
-    lua::build("maps", builtin::builtin_maps);
-    lua::build("shutdown", builtin::builtin_shutdown);
+    lua::build("log", builtin::server::builtin_log);
+    lua::build("seed", builtin::server::builtin_seed);
+    lua::build("sleep", builtin::server::builtin_sleep);
+    lua::build("baram_time", builtin::server::builtin_baram_time);
+    lua::build("name2mob", builtin::server::builtin_name2mob);
+    lua::build("name2spell", builtin::server::builtin_name2spell);
+    lua::build("name2item", builtin::server::builtin_name2item);
+    lua::build("name2npc", builtin::server::builtin_name2npc);
+    lua::build("name2map", builtin::server::builtin_name2map);
+    lua::build("name2ch", builtin::server::builtin_name2ch);
+    lua::build("broadcast", builtin::server::builtin_broadcast);
+    lua::build("assert_alive", builtin::server::builtin_assert_alive);
+    lua::build("pursuit_sell", builtin::server::builtin_pursuit_sell);
+    lua::build("pursuit_sell_price", builtin::server::builtin_pursuit_sell_price);
+    lua::build("pursuit_sell_name", builtin::server::builtin_pursuit_sell_name);
+    lua::build("pursuit_buy", builtin::server::builtin_pursuit_buy);
+    lua::build("timer", builtin::server::builtin_timer);
+    lua::build("weather", builtin::server::builtin_weather);
+    lua::build("bright", builtin::server::builtin_bright);
+    lua::build("name_with", builtin::server::builtin_name_with);
+    lua::build("assert_korean", builtin::server::builtin_assert_korean);
+    lua::build("CP949", builtin::server::builtin_cp949);
+    lua::build("debug", builtin::server::builtin_debug);
+    lua::build("name2class", builtin::server::builtin_name2class);
+    lua::build("class2name", builtin::server::builtin_class2name);
+    lua::build("save", builtin::server::builtin_save);
+    lua::build("mknpc", builtin::server::builtin_mknpc);
+    lua::build("maps", builtin::server::builtin_maps);
+    lua::build("shutdown", builtin::server::builtin_shutdown);
 
     for (auto& [_, root] : ist)
     {
@@ -588,4 +589,26 @@ void server::update_time()
     }
 
     this->_time = updated;
+}
+
+async::task<bool> server::npc_interaction(character&                                         ch,
+                                          const std::string&                                 message,
+                                          const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
+{
+    ch.assert_thread();
+
+    if (npcs.size() == 0)
+        co_return false;
+
+    // Try new handler system first
+    for (auto& handler : this->_npc_interaction_handlers)
+    {
+        if (handler->matches(message))
+        {
+            co_await handler->handle(ch, message, npcs);
+            co_return true;
+        }
+    }
+
+    co_return false;
 }

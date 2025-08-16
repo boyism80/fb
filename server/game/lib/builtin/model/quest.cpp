@@ -1,7 +1,17 @@
-#include <fb/model/model.h>
 #include <fb/game/server.h>
+#include <fb/model/model.h>
+#include <fb/game/builtin/model.h>
 
-int fb::model::quest::builtin_step(lua_State* L)
+using namespace fb::game;
+
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::model::quest, "fb.model.quest")
+{"step",                builtin::model::quest::builtin_step},
+{"progress",            builtin::model::quest::builtin_progress},
+{"reward",              builtin::model::quest::builtin_reward},
+END_LUA_EXTENSION; // clang-format on
+
+int builtin::model::quest::builtin_step(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -16,7 +26,7 @@ int fb::model::quest::builtin_step(lua_State* L)
     return 1;
 }
 
-int fb::model::quest::builtin_progress(lua_State* L)
+int builtin::model::quest::builtin_progress(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -30,7 +40,7 @@ int fb::model::quest::builtin_progress(lua_State* L)
     return 1;
 }
 
-int fb::model::quest::builtin_reward(lua_State* L)
+int builtin::model::quest::builtin_reward(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

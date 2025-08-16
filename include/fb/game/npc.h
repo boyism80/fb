@@ -64,9 +64,6 @@ public:
 public:
     LUA_PROTOTYPE
 
-public:
-    struct builtin;
-
 private:
     uint16_t _soliloquy_time;
 
@@ -106,9 +103,6 @@ public:
      */
     void assert_thread() const override final;
 };
-
-struct npc::builtin
-{ };
 
 } // namespace fb::game
 

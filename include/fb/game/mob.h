@@ -144,7 +144,6 @@ public:
 
 public:
     struct listener_t;
-    struct builtin;
 
 public:
     /**
@@ -669,48 +668,6 @@ public:
  */
 struct mob::listener_t : public virtual fb::game::life::listener_t
 { };
-
-/**
- * @brief      Lua bindings for mob methods.
- */
-struct mob::builtin
-{
-    /**
-     * @brief      Lua binding to get or set the mob's current target.
-     *
-     * @param      L     The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_target(lua_State* L);
-
-    /**
-     * @brief      Lua binding to get or set the mob's oblivion target (last attacker).
-     *
-     * @param      L     The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_oblivion(lua_State* L);
-
-    /**
-     * @brief      Lua binding to get the mob's owner (if it's a spawned mob).
-     *
-     * @param      L     The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_owner(lua_State* L);
-
-    /**
-     * @brief      Lua binding to get the mob's item inventory.
-     *
-     * @param      L     The Lua state
-     *
-     * @return     Number of return values pushed to Lua stack
-     */
-    static int builtin_items(lua_State* L);
-};
 
 } // namespace fb::game
 

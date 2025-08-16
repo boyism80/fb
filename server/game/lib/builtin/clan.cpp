@@ -1,22 +1,23 @@
 #include <fb/game/clan.h>
 #include <fb/game/server.h>
+#include <fb/game/builtin/clan.h>
 
 using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(clan, "fb.game.clan")
-{"name",                clan::builtin::builtin_name},
-{"members",             clan::builtin::builtin_members},
-{"nears",               clan::builtin::builtin_nears},
-{"title",               clan::builtin::builtin_title},
-{"join",                clan::builtin::builtin_join},
-{"leave",               clan::builtin::builtin_leave},
-{"kick",                clan::builtin::builtin_kick},
-{"change_role",         clan::builtin::builtin_change_role},
-{"message",             clan::builtin::builtin_message},
+{"name",                builtin::clan::builtin_name},
+{"members",             builtin::clan::builtin_members},
+{"nears",               builtin::clan::builtin_nears},
+{"title",               builtin::clan::builtin_title},
+{"join",                builtin::clan::builtin_join},
+{"leave",               builtin::clan::builtin_leave},
+{"kick",                builtin::clan::builtin_kick},
+{"change_role",         builtin::clan::builtin_change_role},
+{"message",             builtin::clan::builtin_message},
 END_LUA_EXTENSION; // clang-format on
 
-int clan::builtin::builtin_name(lua_State* L)
+int builtin::clan::builtin_name(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -30,7 +31,7 @@ int clan::builtin::builtin_name(lua_State* L)
     return 1;
 }
 
-int clan::builtin::builtin_members(lua_State* L)
+int builtin::clan::builtin_members(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -42,8 +43,9 @@ int clan::builtin::builtin_members(lua_State* L)
         return 0;
 
     lua->new_table();
-    auto i = 0;
-    for (auto& [name, member] : clan->_members)
+    auto  i       = 0;
+    auto& members = clan->members();
+    for (auto& [name, member] : members)
     {
         lua->pushobject(member);
         lua_rawseti(L, -2, i + 1);
@@ -53,7 +55,7 @@ int clan::builtin::builtin_members(lua_State* L)
     return 1;
 }
 
-int clan::builtin::builtin_nears(lua_State* L)
+int builtin::clan::builtin_nears(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -90,7 +92,7 @@ int clan::builtin::builtin_nears(lua_State* L)
     return 1;
 }
 
-int clan::builtin::builtin_title(lua_State* L)
+int builtin::clan::builtin_title(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -149,7 +151,7 @@ int clan::builtin::builtin_title(lua_State* L)
     }
 }
 
-int clan::builtin::builtin_join(lua_State* L)
+int builtin::clan::builtin_join(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -217,7 +219,7 @@ int clan::builtin::builtin_join(lua_State* L)
     return lua->yield(0);
 }
 
-int clan::builtin::builtin_leave(lua_State* L)
+int builtin::clan::builtin_leave(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -255,7 +257,7 @@ int clan::builtin::builtin_leave(lua_State* L)
     return lua->yield(1);
 }
 
-int clan::builtin::builtin_kick(lua_State* L)
+int builtin::clan::builtin_kick(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -295,7 +297,7 @@ int clan::builtin::builtin_kick(lua_State* L)
     return lua->yield(1);
 }
 
-int clan::builtin::builtin_change_role(lua_State* L)
+int builtin::clan::builtin_change_role(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -346,7 +348,7 @@ int clan::builtin::builtin_change_role(lua_State* L)
     return lua->yield(1);
 }
 
-int clan::builtin::builtin_message(lua_State* L)
+int builtin::clan::builtin_message(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

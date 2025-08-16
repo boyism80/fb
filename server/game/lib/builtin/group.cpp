@@ -1,18 +1,18 @@
-#include <fb/game/group.h>
 #include <fb/game/server.h>
+#include <fb/game/builtin/group.h>
 
 using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(group, "fb.game.group")
-{"master",              group::builtin::builtin_master},
-{"members",             group::builtin::builtin_members},
-{"nears",               group::builtin::builtin_nears},
-{"message",             group::builtin::builtin_message},
-{"kick",                group::builtin::builtin_kick},
+{"master",              builtin::group::builtin_master},
+{"members",             builtin::group::builtin_members},
+{"nears",               builtin::group::builtin_nears},
+{"message",             builtin::group::builtin_message},
+{"kick",                builtin::group::builtin_kick},
 END_LUA_EXTENSION; // clang-format on
 
-int group::builtin::builtin_master(lua_State* L)
+int builtin::group::builtin_master(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -22,11 +22,12 @@ int group::builtin::builtin_master(lua_State* L)
     if (group == nullptr)
         return 0;
 
-    lua->pushstring(group->_master);
+    auto master = group->master();
+    lua->pushstring(master);
     return 1;
 }
 
-int group::builtin::builtin_members(lua_State* L)
+int builtin::group::builtin_members(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -37,15 +38,16 @@ int group::builtin::builtin_members(lua_State* L)
         return 0;
 
     lua->new_table();
-    for (int i = 0, n = group->_members.size(); i < n; i++)
+    auto members = group->members();
+    for (int i = 0, n = members.size(); i < n; i++)
     {
-        lua->pushstring(group->_members[i]);
+        lua->pushstring(members[i]);
         lua_rawseti(L, -2, i + 1);
     }
     return 1;
 }
 
-int group::builtin::builtin_nears(lua_State* L)
+int builtin::group::builtin_nears(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -86,7 +88,7 @@ int group::builtin::builtin_nears(lua_State* L)
     return 1;
 }
 
-int group::builtin::builtin_message(lua_State* L)
+int builtin::group::builtin_message(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -116,7 +118,7 @@ int group::builtin::builtin_message(lua_State* L)
     return lua->yield(1);
 }
 
-int group::builtin::builtin_kick(lua_State* L)
+int builtin::group::builtin_kick(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
