@@ -3,7 +3,7 @@
 using namespace fb::login::handler::protocol;
 
 create_account::create_account(fb::login::server& server) :
-    fb::handler<fb::login::server, fb::protocol::login::request::create>(server)
+    fb::handler::protocol<fb::login::server, fb::protocol::login::request::create>(server)
 { }
 
 async::task<bool> create_account::handle(fb::socket<fb::login::session>&       session,

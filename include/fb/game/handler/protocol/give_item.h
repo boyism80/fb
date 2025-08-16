@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class give_item : public fb::handler<fb::game::server, fb::protocol::game::request::give_item>
+class give_item : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::give_item>
 {
 public:
     give_item(fb::game::server& server);

@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class spell_cast : public fb::handler<fb::game::server, fb::protocol::game::request::spell_cast>
+class spell_cast : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::spell_cast>
 {
 public:
     spell_cast(fb::game::server& server);

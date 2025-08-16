@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class swap : public fb::handler<fb::game::server, fb::protocol::game::request::swap>
+class swap : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::swap>
 {
 public:
     swap(fb::game::server& server);

@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class group : public fb::handler<fb::game::server, fb::protocol::game::request::group>
+class group : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::group>
 {
 public:
     group(fb::game::server& server);

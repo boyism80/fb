@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 exit::exit(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::exit>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::exit>(server)
 { }
 
 async::task<bool> exit::handle(fb::socket<character>& session, fb::protocol::game::request::exit& request)

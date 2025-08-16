@@ -12,7 +12,7 @@ namespace fb::login::handler::protocol {
  *             Processes encryption setup and sends the user agreement text
  *             to connecting clients during the initial handshake process.
  */
-class agreement : public fb::handler<fb::login::server, fb::protocol::login::request::agreement>
+class agreement : public fb::handler::protocol<fb::login::server, fb::protocol::login::request::agreement>
 {
 public:
     /**

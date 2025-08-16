@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class loot : public fb::handler<fb::game::server, fb::protocol::game::request::loot>
+class loot : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::loot>
 {
 public:
     loot(fb::game::server& server);

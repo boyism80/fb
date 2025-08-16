@@ -4,7 +4,7 @@
 using namespace fb::game::handler::amqp;
 
 broadcast::broadcast(fb::game::server& server) :
-    fb::amqp_handler<fb::game::server, internal_resp::Broadcast>(server)
+    fb::handler::amqp<fb::game::server, internal_resp::Broadcast>(server)
 { }
 
 async::task<void> broadcast::handle(const internal_resp::Broadcast& message)

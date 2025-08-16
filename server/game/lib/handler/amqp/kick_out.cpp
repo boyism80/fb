@@ -4,7 +4,7 @@
 using namespace fb::game::handler::amqp;
 
 kick_out::kick_out(fb::game::server& server) :
-    fb::amqp_handler<fb::game::server, internal_resp::KickOut>(server)
+    fb::handler::amqp<fb::game::server, internal_resp::KickOut>(server)
 { }
 
 async::task<void> kick_out::handle(const internal_resp::KickOut& message)

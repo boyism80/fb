@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 item_combine::item_combine(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::item_combine>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::item_combine>(server)
 { }
 
 async::task<bool> item_combine::handle(fb::socket<character>&                     session,

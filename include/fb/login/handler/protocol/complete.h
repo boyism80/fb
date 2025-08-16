@@ -11,7 +11,7 @@ namespace fb::login::handler::protocol {
  *
  *             Finalizes the login process and prepares for character selection.
  */
-class complete : public fb::handler<fb::login::server, fb::protocol::login::request::complete>
+class complete : public fb::handler::protocol<fb::login::server, fb::protocol::login::request::complete>
 {
 public:
     /**

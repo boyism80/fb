@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::amqp {
 
-class kick_out : public fb::amqp_handler<fb::game::server, internal_resp::KickOut>
+class kick_out : public fb::handler::amqp<fb::game::server, internal_resp::KickOut>
 {
 public:
     kick_out(fb::game::server& server);

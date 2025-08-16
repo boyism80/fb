@@ -11,7 +11,7 @@ namespace fb::login::handler::protocol {
  *
  *             Validates current credentials and updates the password.
  */
-class change_password : public fb::handler<fb::login::server, fb::protocol::login::request::update_pw>
+class change_password : public fb::handler::protocol<fb::login::server, fb::protocol::login::request::update_pw>
 {
 public:
     /**

@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class exit : public fb::handler<fb::game::server, fb::protocol::game::request::exit>
+class exit : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::exit>
 {
 public:
     exit(fb::game::server& server);

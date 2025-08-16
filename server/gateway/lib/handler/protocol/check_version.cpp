@@ -3,7 +3,7 @@
 using namespace fb::gateway::handler::protocol;
 
 check_version::check_version(fb::gateway::server& server) :
-    fb::handler<fb::gateway::server, fb::protocol::gateway::request::version>(server)
+    fb::handler::protocol<fb::gateway::server, fb::protocol::gateway::request::version>(server)
 { }
 
 async::task<bool> check_version::handle(fb::socket<fb::gateway::session>&        session,

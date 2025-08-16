@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 map_update::map_update(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::map_update>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::map_update>(server)
 { }
 
 async::task<bool> map_update::handle(fb::socket<character>& session, fb::protocol::game::request::map_update& request)

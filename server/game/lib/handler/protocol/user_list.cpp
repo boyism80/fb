@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 user_list::user_list(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::user_list>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::user_list>(server)
 { }
 
 async::task<bool> user_list::handle(fb::socket<character>& session, fb::protocol::game::request::user_list& request)

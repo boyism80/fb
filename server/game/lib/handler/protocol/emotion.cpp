@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 emotion::emotion(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::emotion>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::emotion>(server)
 { }
 
 async::task<bool> emotion::handle(fb::socket<character>& session, fb::protocol::game::request::emotion& request)

@@ -4,7 +4,7 @@
 using namespace fb::game::handler::amqp;
 
 whisper::whisper(fb::game::server& server) :
-    fb::amqp_handler<fb::game::server, internal_resp::Whisper>(server)
+    fb::handler::amqp<fb::game::server, internal_resp::Whisper>(server)
 { }
 
 async::task<void> whisper::handle(const internal_resp::Whisper& message)

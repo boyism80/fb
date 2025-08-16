@@ -6,7 +6,7 @@
 
 namespace fb::login::handler::amqp {
 
-class shutdown : public fb::amqp_handler<fb::login::server, internal_resp::Shutdown>
+class shutdown : public fb::handler::amqp<fb::login::server, internal_resp::Shutdown>
 {
 public:
     shutdown(fb::login::server& server);

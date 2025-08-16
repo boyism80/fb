@@ -12,7 +12,7 @@ namespace fb::login::handler::protocol {
  *             Processes user authentication, validates credentials, and
  *             transfers clients to appropriate game servers upon successful login.
  */
-class login : public fb::handler<fb::login::server, fb::protocol::login::request::login>
+class login : public fb::handler::protocol<fb::login::server, fb::protocol::login::request::login>
 {
 public:
     /**

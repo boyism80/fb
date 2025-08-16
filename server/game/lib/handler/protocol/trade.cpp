@@ -2,7 +2,7 @@
 #include <fb/game/server.h>
 
 fb::game::handler::protocol::trade::trade(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::trade>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::trade>(server)
 { }
 
 async::task<bool> fb::game::handler::protocol::trade::handle(fb::socket<character>&              session,

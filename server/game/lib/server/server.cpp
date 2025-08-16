@@ -144,54 +144,55 @@ async::task<void> server::handle_start()
         async::awaitable_get(async_task);
     }
 
-    this->handler.protocol.bind<fb::game::handler::protocol::login>();              // 게임서버 접속 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::direction>();          // 방향전환 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::exit>();               // 접속 종료
-    this->handler.protocol.bind<fb::game::handler::protocol::update_move>();        // 이동과 맵 데이터 업데이트 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::move>(1s, 6);          // 이동 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::attack>(500ms, 2);     // 공격 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::loot>();               // 아이템 줍기 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::emotion>();            // 감정표현 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::map_update>();         // 맵 데이터 업데이트 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::update_screen>();      // 새로고침 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::item_active>();        // 아이템 사용 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::item_inactive>();      // 아이템 장착 해제 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::item_drop>();          // 아이템 버리기 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::item_drop_money>();    // 금전 버리기 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::front_info>();         // 앞방향 정보 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::self_info>();          // 나 자신의 정보 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::update_option>();      // 옵션 설정 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::click>();              // 오브젝트 클릭 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::item_info>();          // 인벤토리 우클릭 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::item_combine>();       // 아이템 조합 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::trade>();              // 교환 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::group>();              // 그룹 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::user_list>();          // 유저 리스트 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::chat>();               // 유저 채팅 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::bulletin>();           // 게시판 섹션 리스트 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::swap>();               // 스펠 순서 변경
-    this->handler.protocol.bind<fb::game::handler::protocol::dialog>();             // 다이얼로그
-    this->handler.protocol.bind<fb::game::handler::protocol::dialog>(0x39);         // 다이얼로그
-    this->handler.protocol.bind<fb::game::handler::protocol::item_throws>();        // 아이템 던지기 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::spell_cast>(500ms, 3); // 스펠 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::door>();               // 도어 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::whisper>();            // 귓속말 핸들러
-    this->handler.protocol.bind<fb::game::handler::protocol::map_world>();          // 월드맵 핸들러
+    this->handler.protocol.bind<fb::game::handler::protocol::login>();           // Game server connection handler
+    this->handler.protocol.bind<fb::game::handler::protocol::direction>();       // Direction change handler
+    this->handler.protocol.bind<fb::game::handler::protocol::exit>();            // Disconnect handler
+    this->handler.protocol.bind<fb::game::handler::protocol::update_move>();     // Update move and map data handler
+    this->handler.protocol.bind<fb::game::handler::protocol::move>();            // Move handler
+    this->handler.protocol.bind<fb::game::handler::protocol::attack>();          // Attack handler
+    this->handler.protocol.bind<fb::game::handler::protocol::loot>();            // Loot handler
+    this->handler.protocol.bind<fb::game::handler::protocol::emotion>();         // Emotion handler
+    this->handler.protocol.bind<fb::game::handler::protocol::map_update>();      // Map data update handler
+    this->handler.protocol.bind<fb::game::handler::protocol::update_screen>();   // Refresh handler
+    this->handler.protocol.bind<fb::game::handler::protocol::item_active>();     // Item use handler
+    this->handler.protocol.bind<fb::game::handler::protocol::item_inactive>();   // Item unequip handler
+    this->handler.protocol.bind<fb::game::handler::protocol::item_drop>();       // Item drop handler
+    this->handler.protocol.bind<fb::game::handler::protocol::item_drop_money>(); // Money drop handler
+    this->handler.protocol.bind<fb::game::handler::protocol::front_info>();      // Front info handler
+    this->handler.protocol.bind<fb::game::handler::protocol::self_info>();       // Self info handler
+    this->handler.protocol.bind<fb::game::handler::protocol::update_option>();   // Option setting handler
+    this->handler.protocol.bind<fb::game::handler::protocol::click>();           // Object click handler
+    this->handler.protocol.bind<fb::game::handler::protocol::item_info>();       // Inventory right-click handler
+    this->handler.protocol.bind<fb::game::handler::protocol::item_combine>();    // Item combine handler
+    this->handler.protocol.bind<fb::game::handler::protocol::trade>();           // Trade handler
+    this->handler.protocol.bind<fb::game::handler::protocol::group>();           // Group handler
+    this->handler.protocol.bind<fb::game::handler::protocol::user_list>();       // User list handler
+    this->handler.protocol.bind<fb::game::handler::protocol::chat>();            // User chat handler
+    this->handler.protocol.bind<fb::game::handler::protocol::bulletin>();        // Bulletin section list handler
+    this->handler.protocol.bind<fb::game::handler::protocol::swap>();            // Spell order change
+    this->handler.protocol.bind<fb::game::handler::protocol::dialog>();          // Dialog
+    this->handler.protocol.bind<fb::game::handler::protocol::dialog>(0x39);      // Dialog
+    this->handler.protocol.bind<fb::game::handler::protocol::item_throws>();     // Item throw handler
+    this->handler.protocol.bind<fb::game::handler::protocol::spell_cast>();      // Spell handler
+    this->handler.protocol.bind<fb::game::handler::protocol::door>();            // Door handler
+    this->handler.protocol.bind<fb::game::handler::protocol::whisper>();         // Whisper handler
+    this->handler.protocol.bind<fb::game::handler::protocol::map_world>();       // World map handler
     this->handler.protocol.bind<fb::game::handler::protocol::miss>();
     this->handler.protocol.bind<fb::game::handler::protocol::give_item>();
     this->handler.protocol.bind<fb::game::handler::protocol::give_money>();
     this->handler.protocol.bind<fb::game::handler::protocol::post>();
 
-    this->bind_timer(&server::handle_heart_beat, 1s);
-    this->bind_timer(&server::handle_announce,
-                     std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
-    this->bind_thread_timer(&server::handle_mob_action, 100ms); // 몹 행동 타이머
-    this->bind_thread_timer(&server::handle_mob_respawn, 1s);   // 몹 리젠 타이머
-    this->bind_thread_timer(&server::handle_buff_timer, 1s);    // 버프 타이머
-    this->bind_thread_timer(&server::handle_gear_timer, 1s);
-    this->bind_thread_timer(&server::handle_soliloquy_timer, 1s);
-    this->bind_thread_timer(&server::handle_save_timer,
-                            std::chrono::seconds(fb::config<uint32_t>("save"))); // DB 저장 타이머
+    this->bind_timer<fb::game::handler::timer::heart_beat>(1s);
+    this->bind_timer<fb::game::handler::timer::update_time>(1s);
+    this->bind_timer<fb::game::handler::timer::announce>(
+        std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
+
+    this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
+    this->bind_thread_timer<fb::game::handler::timer::mob_respawn_timer>(1s);
+    this->bind_thread_timer<fb::game::handler::timer::buff_timer>(1s);
+    this->bind_thread_timer<fb::game::handler::timer::gear_timer>(1s);
+    this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
+    this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
 
     this->bind_npc_interaction<fb::game::handler::npc_interaction::sell>();
     this->bind_npc_interaction<fb::game::handler::npc_interaction::buy>();
@@ -561,4 +562,30 @@ void server::rezen_force(const fb::game::map& map)
         }
         co_return;
     });
+}
+
+void server::update_status()
+{
+    auto root    = Json::Value{};
+    root["Name"] = this->name();
+    root["IP"]   = fb::config<std::string>("ip");
+    root["Port"] = fb::config<uint16_t>("port");
+    auto writer  = Json::FastWriter{};
+    auto output  = writer.write(root);
+
+    this->_redis.command<void>(std::format("SET heart-beat:Game:{} {}", this->id(), output));
+    this->_redis.command<void>(std::format("EXPIRE heart-beat:Game:{} 5", this->id()));
+}
+
+void server::update_time()
+{
+    auto updated = fb::model::datetime();
+    if (this->_time.hours() != updated.hours())
+    {
+        this->characters.foreach ([hours = updated.hours()](auto& ch) {
+            ch->update_time(hours);
+        });
+    }
+
+    this->_time = updated;
 }

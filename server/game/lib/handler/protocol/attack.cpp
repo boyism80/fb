@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 attack::attack(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::attack>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::attack>(server)
 { }
 
 async::task<bool> attack::handle(fb::socket<character>& session, fb::protocol::game::request::attack& request)

@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::amqp {
 
-class leave_group : public fb::amqp_handler<fb::game::server, internal_resp::LeaveGroup>
+class leave_group : public fb::handler::amqp<fb::game::server, internal_resp::LeaveGroup>
 {
 public:
     leave_group(fb::game::server& server);

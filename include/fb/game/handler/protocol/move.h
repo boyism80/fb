@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class move : public fb::handler<fb::game::server, fb::protocol::game::request::move>
+class move : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::move>
 {
 public:
     move(fb::game::server& server);

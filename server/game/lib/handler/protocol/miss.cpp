@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 miss::miss(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::miss>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::miss>(server)
 { }
 
 async::task<bool> miss::handle(fb::socket<character>& session, fb::protocol::game::request::miss& request)

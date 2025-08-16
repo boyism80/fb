@@ -5,7 +5,7 @@
 using namespace fb::game::handler::protocol;
 
 update_move::update_move(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::update_move>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::update_move>(server)
 { }
 
 async::task<bool> update_move::handle(fb::socket<character>& session, fb::protocol::game::request::update_move& request)

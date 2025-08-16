@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::amqp {
 
-class change_clan_role : public fb::amqp_handler<fb::game::server, internal_resp::ChangeClanRole>
+class change_clan_role : public fb::handler::amqp<fb::game::server, internal_resp::ChangeClanRole>
 {
 public:
     change_clan_role(fb::game::server& server);

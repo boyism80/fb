@@ -71,51 +71,11 @@ public:
 
 protected:
     /**
-     * @brief      Binds a member function as a thread-based timer callback.
-     *
-     *             Creates a timer that executes the specified member function at regular
-     *             intervals on the thread pool. The callback receives timing information
-     *             and thread ID for context-aware processing.
-     *
-     * @tparam     Class     The class type containing the member function
-     * @param[in]  fn        The member function to execute as timer callback
-     * @param[in]  duration  The time interval between timer executions
-     */
-    template <typename Class>
-    void bind_thread_timer(async::task<void> (Class::*fn)(const fb::model::datetime&, std::thread::id),
-                           const std::chrono::steady_clock::duration& duration)
-    {
-        auto c_func = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2);
-        this->threads.settimer(c_func, duration);
-    }
-
-    /**
-     * @brief      Binds a lambda function as a thread-based timer callback.
-     *
-     *             Creates a timer that executes the specified lambda function at regular
-     *             intervals on the thread pool. The callback receives timing information
-     *             and thread ID for context-aware processing.
-     *
-     * @param[in]  fn        The lambda function to execute as timer callback
-     * @param[in]  duration  The time interval between timer executions
-     */
-    void bind_thread_timer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)> fn,
-                           const std::chrono::steady_clock::duration&                                    duration)
-    {
-        this->threads.settimer(fn, duration);
-    }
-
-    /**
-     * @brief      Binds a member function as a coroutine-based timer callback with improved safety.
+     * @brief      Binds a member function as a coroutine-based timer callback.
      *
      *             Creates a coroutine-based timer that executes the specified member function
      *             at regular intervals using Boost.Asio's coroutine support. The timer runs
      *             asynchronously and continues until the async_executor is stopped.
-     *
-     *             Safety improvements:
-     *             - Uses weak_ptr to prevent dangling pointer issues
-     *             - Thread-safe running flag access
-     *             - Proper exception handling
      *
      * @tparam     Class     The class type containing the member function
      * @param[in]  fn        The member function to execute as timer callback
@@ -171,9 +131,74 @@ protected:
     }
 
     /**
-     * @brief      Binds a lambda function as a coroutine-based timer callback with improved safety.
+     * @brief      Binds a lambda function as a thread-based timer callback.
      *
-     *             Creates a coroutine-based timer that executes the specified lambda function
+     *             Creates a timer that executes the specified lambda function at regular
+     *             intervals on the thread pool. The callback receives timing information
+     *             and thread ID for context-aware processing.
+     *
+     * @param[in]  fn        The lambda function to execute as timer callback
+     * @param[in]  duration  The time interval between timer executions
+     */
+    void bind_thread_timer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)> fn,
+                           const std::chrono::steady_clock::duration&                                    duration)
+    {
+        this->threads.settimer(fn, duration);
+    }
+
+    /**
+     * @brief      Binds a timer handler to the thread pool.
+     *
+     *             Creates a timer that executes the specified handler at regular intervals
+     *             on the thread pool. The handler receives timing information and thread ID
+     *             for context-aware processing.
+     *
+     * @tparam     HandlerType  The type of the timer handler
+     * @param[in]  duration     The time interval between timer executions
+     */
+    template <typename HandlerType>
+    void bind_thread_timer(const std::chrono::steady_clock::duration& duration)
+    {
+        using server_type = typename HandlerType::server_type;
+
+        auto weak_this = this->weak_from_this();
+        this->threads.settimer(
+            [weak_this](const fb::model::datetime& now, std::thread::id id) -> async::task<void> {
+                auto shared_this = weak_this.lock();
+                if (!shared_this)
+                    co_return;
+
+                auto handler = std::make_shared<HandlerType>(*std::static_pointer_cast<server_type>(shared_this));
+                co_await handler->handle(now, id);
+            },
+            duration);
+    }
+
+    /**
+     * @brief      Binds a timer handler to the thread pool.
+     *
+     *             Creates a timer that executes the specified handler at regular intervals
+     *             on the thread pool.
+     *
+     * @tparam     HandlerType  The type of the timer handler
+     * @param[in]  interval     The time interval between timer executions
+     */
+    template <typename HandlerType>
+    void bind_timer(std::chrono::steady_clock::duration interval)
+    {
+        using server_type = typename HandlerType::server_type;
+        this->bind_timer(
+            [this]() -> async::task<void> {
+                auto handler = std::make_shared<HandlerType>(static_cast<server_type&>(*this));
+                co_await handler->handle();
+            },
+            interval);
+    }
+
+    /**
+     * @brief      Binds a member function as a coroutine-based timer callback with improved safety.
+     *
+     *             Creates a coroutine-based timer that executes the specified member function
      *             at regular intervals using Boost.Asio's coroutine support. The timer runs
      *             asynchronously and continues until the async_executor is stopped.
      *

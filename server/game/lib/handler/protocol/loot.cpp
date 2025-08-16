@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 loot::loot(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::loot>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::loot>(server)
 { }
 
 async::task<bool> loot::handle(fb::socket<character>& session, fb::protocol::game::request::loot& request)

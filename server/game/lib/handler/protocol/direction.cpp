@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 direction::direction(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::direction>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::direction>(server)
 { }
 
 async::task<bool> direction::handle(fb::socket<character>& session, fb::protocol::game::request::direction& request)

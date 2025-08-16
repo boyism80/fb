@@ -4,7 +4,7 @@
 using namespace fb::game::handler::amqp;
 
 set_clan_title::set_clan_title(fb::game::server& server) :
-    fb::amqp_handler<fb::game::server, internal_resp::SetClanTitle>(server)
+    fb::handler::amqp<fb::game::server, internal_resp::SetClanTitle>(server)
 { }
 
 async::task<void> set_clan_title::handle(const internal_resp::SetClanTitle& message)

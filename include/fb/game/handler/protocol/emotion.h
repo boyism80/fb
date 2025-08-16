@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class emotion : public fb::handler<fb::game::server, fb::protocol::game::request::emotion>
+class emotion : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::emotion>
 {
 public:
     emotion(fb::game::server& server);

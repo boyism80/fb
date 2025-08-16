@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 item_drop::item_drop(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::item_drop>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::item_drop>(server)
 { }
 
 async::task<bool> item_drop::handle(fb::socket<character>& session, fb::protocol::game::request::item_drop& request)

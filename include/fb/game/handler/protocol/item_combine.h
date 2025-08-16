@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class item_combine : public fb::handler<fb::game::server, fb::protocol::game::request::item_combine>
+class item_combine : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::item_combine>
 {
 public:
     item_combine(fb::game::server& server);

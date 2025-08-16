@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class attack : public fb::handler<fb::game::server, fb::protocol::game::request::attack>
+class attack : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::attack>
 {
 public:
     attack(fb::game::server& server);

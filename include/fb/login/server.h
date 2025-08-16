@@ -273,16 +273,6 @@ protected:
     [[nodiscard]] async::task<void> handle_start() final;
 
     /**
-     * @brief      Handles periodic heartbeat operations.
-     *
-     *             Sends heartbeat information to Redis to indicate server status
-     *             and availability to other services.
-     *
-     * @return     An async task that completes when heartbeat is sent.
-     */
-    [[nodiscard]] async::task<void> handle_heart_beat();
-
-    /**
      * @brief      Handles new client connections.
      *
      * @param      socket  The socket representing the new client connection.
@@ -321,6 +311,14 @@ protected:
     };
 
 public:
+    /**
+     * @brief      Updates server status and heartbeat information in Redis.
+     *
+     *             Sends heartbeat information to Redis to indicate server status
+     *             and availability to other services.
+     *
+     */
+    void update_status();
 };
 
 }} // namespace fb::login

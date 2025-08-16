@@ -12,7 +12,7 @@ namespace fb::login::handler::protocol {
  *             Validates account information, reserves the username, and creates
  *             a new character with initial stats and position.
  */
-class create_account : public fb::handler<fb::login::server, fb::protocol::login::request::create>
+class create_account : public fb::handler::protocol<fb::login::server, fb::protocol::login::request::create>
 {
 public:
     /**
