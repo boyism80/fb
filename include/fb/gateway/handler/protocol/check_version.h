@@ -12,7 +12,7 @@ namespace fb::gateway::handler::protocol {
  *             Validates client version compatibility and responds with
  *             appropriate version check results.
  */
-class check_version : public fb::handler<fb::gateway::server, fb::protocol::gateway::request::version>
+class check_version : public fb::handler::protocol<fb::gateway::server, fb::protocol::gateway::request::version>
 {
 public:
     /**

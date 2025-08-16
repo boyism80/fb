@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class update_option : public fb::handler<fb::game::server, fb::protocol::game::request::update_option>
+class update_option : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::update_option>
 {
 public:
     update_option(fb::game::server& server);

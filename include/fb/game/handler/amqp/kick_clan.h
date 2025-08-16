@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::amqp {
 
-class kick_clan : public fb::amqp_handler<fb::game::server, internal_resp::KickClan>
+class kick_clan : public fb::handler::amqp<fb::game::server, internal_resp::KickClan>
 {
 public:
     kick_clan(fb::game::server& server);

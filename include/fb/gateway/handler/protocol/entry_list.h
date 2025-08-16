@@ -12,7 +12,7 @@ namespace fb::gateway::handler::protocol {
  *             Provides available login server endpoints to connecting clients
  *             for server selection and load balancing.
  */
-class entry_list : public fb::handler<fb::gateway::server, fb::protocol::gateway::request::endpoint>
+class entry_list : public fb::handler::protocol<fb::gateway::server, fb::protocol::gateway::request::endpoint>
 {
 public:
     /**

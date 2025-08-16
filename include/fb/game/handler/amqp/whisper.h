@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::amqp {
 
-class whisper : public fb::amqp_handler<fb::game::server, internal_resp::Whisper>
+class whisper : public fb::handler::amqp<fb::game::server, internal_resp::Whisper>
 {
 public:
     whisper(fb::game::server& server);

@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 click::click(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::click>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::click>(server)
 { }
 
 async::task<bool> click::handle(fb::socket<character>& session, fb::protocol::game::request::click& request)

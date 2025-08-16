@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::amqp {
 
-class set_clan_title : public fb::amqp_handler<fb::game::server, internal_resp::SetClanTitle>
+class set_clan_title : public fb::handler::amqp<fb::game::server, internal_resp::SetClanTitle>
 {
 public:
     set_clan_title(fb::game::server& server);

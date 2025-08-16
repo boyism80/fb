@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class login : public fb::handler<fb::game::server, fb::protocol::game::request::login>
+class login : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::login>
 {
 private:
     using transfer_param = fb_reqs::login::transfer_param;
@@ -35,6 +35,6 @@ public:
     async::task<bool> handle(fb::socket<character>& session, fb::protocol::game::request::login& request) override;
 };
 
-} // namespace fb::game::handler::protocol::protocol
+} // namespace fb::game::handler::protocol
 
 #endif // FB_GAME_HANDLER_LOGIN_H

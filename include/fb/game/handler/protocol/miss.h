@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class miss : public fb::handler<fb::game::server, fb::protocol::game::request::miss>
+class miss : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::miss>
 {
 public:
     miss(fb::game::server& server);

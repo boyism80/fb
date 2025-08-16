@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::amqp {
 
-class enter_group : public fb::amqp_handler<fb::game::server, internal_resp::EnterGroup>
+class enter_group : public fb::handler::amqp<fb::game::server, internal_resp::EnterGroup>
 {
 public:
     enter_group(fb::game::server& server);

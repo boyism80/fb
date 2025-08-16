@@ -2,7 +2,7 @@
 #include <fb/game/server.h>
 
 fb::game::handler::protocol::dialog::dialog(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::dialog>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::dialog>(server)
 { }
 
 async::task<bool> fb::game::handler::protocol::dialog::handle(fb::socket<character>&               session,

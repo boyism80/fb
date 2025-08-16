@@ -39,11 +39,11 @@ async::task<void> server::handle_start()
 {
     co_await fb::acceptor<session>::handle_start();
 
-    this->bind_timer(&server::handle_heart_beat, 1s);
+    this->bind_timer<fb::login::handler::timer::heart_beat>(1s);
     this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.system");
 }
 
-async::task<void> server::handle_heart_beat()
+void server::update_status()
 {
     auto root    = Json::Value{};
     root["Name"] = this->name();
@@ -54,7 +54,6 @@ async::task<void> server::handle_heart_beat()
 
     this->_redis.command<void>(std::format("SET heart-beat:Login:{} {}", this->id(), output));
     this->_redis.command<void>(std::format("EXPIRE heart-beat:Login:{} 5", this->id()));
-    co_return;
 }
 
 const fb::protocol::login::response::agreement& server::agreement() const

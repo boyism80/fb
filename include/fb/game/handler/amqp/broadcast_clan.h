@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::amqp {
 
-class broadcast_clan : public fb::amqp_handler<fb::game::server, internal_resp::BroadcastClan>
+class broadcast_clan : public fb::handler::amqp<fb::game::server, internal_resp::BroadcastClan>
 {
 public:
     broadcast_clan(fb::game::server& server);

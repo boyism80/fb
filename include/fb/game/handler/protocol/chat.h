@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class chat : public fb::handler<fb::game::server, fb::protocol::game::request::chat>
+class chat : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::chat>
 {
 public:
     chat(fb::game::server& server);

@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::amqp {
 
-class join_clan : public fb::amqp_handler<fb::game::server, internal_resp::JoinClan>
+class join_clan : public fb::handler::amqp<fb::game::server, internal_resp::JoinClan>
 {
 public:
     join_clan(fb::game::server& server);

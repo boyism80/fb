@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 move::move(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::move>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::move>(server)
 { }
 
 async::task<bool> move::handle(fb::socket<character>&      session,

@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 update_option::update_option(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::update_option>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::update_option>(server)
 { }
 
 async::task<bool> update_option::handle(fb::socket<character>&                      session,

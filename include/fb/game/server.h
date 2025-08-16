@@ -800,85 +800,14 @@ protected:
 
 public:
     /**
-     * @brief      Handles mob AI actions and behavior updates.
-     *
-     * @param[in]  now   The current datetime for timing calculations.
-     * @param[in]  id    The thread identifier for this processing server.
-     *
-     * @return     An async task that completes when mob actions are processed.
+     * @brief      Updates server status and heartbeat information in Redis.
      */
-    [[nodiscard]] async::task<void> handle_mob_action(const fb::model::datetime& now, std::thread::id id);
+    void update_status();
 
     /**
-     * @brief      Handles mob respawning logic and timing.
-     *
-     * @param[in]  now   The current datetime for respawn timing.
-     * @param[in]  id    The thread identifier for this processing server.
-     *
-     * @return     An async task that completes when mob respawning is processed.
+     * @brief      Updates the server time.
      */
-    [[nodiscard]] async::task<void> handle_mob_respawn(const fb::model::datetime& now, std::thread::id id);
-
-    /**
-     * @brief      Handles buff/debuff timer updates and expiration.
-     *
-     * @param[in]  now   The current datetime for buff timing calculations.
-     * @param[in]  id    The thread identifier for this processing server.
-     *
-     * @return     An async task that completes when buff timers are processed.
-     */
-    [[nodiscard]] async::task<void> handle_buff_timer(const fb::model::datetime& now, std::thread::id id);
-
-    /**
-     * @brief      Handles equipment gear timer effects and durability.
-     *
-     * @param[in]  now   The current datetime for gear timing calculations.
-     * @param[in]  id    The thread identifier for this processing server.
-     *
-     * @return     An async task that completes when gear timers are processed.
-     */
-    [[nodiscard]] async::task<void> handle_gear_timer(const fb::model::datetime& now, std::thread::id id);
-
-    /**
-     * @brief      Handles NPC soliloquy/speech timer events.
-     *
-     * @param[in]  now   The current datetime for speech timing.
-     * @param[in]  id    The thread identifier for this processing server.
-     *
-     * @return     An async task that completes when soliloquy timers are processed.
-     */
-    [[nodiscard]] async::task<void> handle_soliloquy_timer(const fb::model::datetime& now, std::thread::id id);
-
-    /**
-     * @brief      Handles periodic character data saving operations.
-     *
-     * @param[in]  now   The current datetime for save timing.
-     * @param[in]  id    The thread identifier for this processing server.
-     *
-     * @return     An async task that completes when save operations are finished.
-     */
-    [[nodiscard]] async::task<void> handle_save_timer(const fb::model::datetime& now, std::thread::id id);
-
-    /**
-     * @brief      Handles game time updates and time-based events.
-     *
-     * @return     An async task that completes when time processing is finished.
-     */
-    [[nodiscard]] async::task<void> handle_time();
-
-    /**
-     * @brief      Handles periodic heartbeat operations for server health monitoring.
-     *
-     * @return     An async task that completes when heartbeat processing is finished.
-     */
-    [[nodiscard]] async::task<void> handle_heart_beat();
-
-    /**
-     * @brief      Handles server announcement broadcasting to all connected clients.
-     *
-     * @return     An async task that completes when announcement processing is finished.
-     */
-    [[nodiscard]] async::task<void> handle_announce();
+    void update_time();
 
 public:
     /**

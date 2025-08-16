@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class click : public fb::handler<fb::game::server, fb::protocol::game::request::click>
+class click : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::click>
 {
 public:
     click(fb::game::server& server);

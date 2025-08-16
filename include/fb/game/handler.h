@@ -70,4 +70,14 @@
 #include <fb/game/handler/npc_interaction/revive.h>
 #include <fb/game/handler/npc_interaction/withdraw_money.h>
 
+#include <fb/game/handler/timer/heart_beat.h>
+#include <fb/game/handler/timer/update_time.h>
+#include <fb/game/handler/timer/announce.h>
+#include <fb/game/handler/timer/buff_timer.h>
+#include <fb/game/handler/timer/gear_timer.h>
+#include <fb/game/handler/timer/mob_action_timer.h>
+#include <fb/game/handler/timer/mob_respawn_timer.h>
+#include <fb/game/handler/timer/soliloquy_timer.h>
+#include <fb/game/handler/timer/save_timer.h>
+
 #endif // FB_GAME_HANDLER_H

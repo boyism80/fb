@@ -15,4 +15,6 @@
 
 #include <fb/login/handler/amqp/shutdown.h>
 
+#include <fb/login/handler/timer/heart_beat.h>
+
 #endif // !__FB_LOGIN_HANDLER_H__

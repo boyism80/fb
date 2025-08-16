@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class item_info : public fb::handler<fb::game::server, fb::protocol::game::request::item_info>
+class item_info : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::item_info>
 {
 public:
     item_info(fb::game::server& server);

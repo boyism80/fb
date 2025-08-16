@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class user_list : public fb::handler<fb::game::server, fb::protocol::game::request::user_list>
+class user_list : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::user_list>
 {
 public:
     user_list(fb::game::server& server);

@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class map_world : public fb::handler<fb::game::server, fb::protocol::game::request::map_world>
+class map_world : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::map_world>
 {
 public:
     map_world(fb::game::server& server);

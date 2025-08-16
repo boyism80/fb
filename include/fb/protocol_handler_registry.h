@@ -91,35 +91,35 @@ public:
 
 public:
     /**
-     * @brief      Binds a handler to all commands with a default duration and limit.
+     * @brief      Binds a handler to all commands using the handler's rate limiting settings.
      *
      * @tparam     HandlerType  The type of the handler to bind.
-     * @param[in]  duration     The duration for rate limiting.
-     * @param[in]  limit        The maximum number of executions per duration.
      */
     template <typename HandlerType>
-    void bind(const std::chrono::steady_clock::duration& duration = 1s, uint32_t limit = 10)
+    void bind()
     {
         using protocol_type = typename HandlerType::protocol_type;
 
-        this->bind<HandlerType>(protocol_type::header, duration, limit);
+        this->bind<HandlerType>(protocol_type::header);
     }
 
     /**
-     * @brief      Binds a handler to a specific command with a default duration and limit.
+     * @brief      Binds a handler to a specific command using the handler's rate limiting settings.
      *
      * @tparam     HandlerType  The type of the handler to bind.
      * @param[in]  cmd          The command byte to bind the handler to.
-     * @param[in]  duration     The duration for rate limiting.
-     * @param[in]  limit        The maximum number of executions per duration.
      */
     template <typename HandlerType>
-    void bind(uint8_t cmd, const std::chrono::steady_clock::duration& duration = 1s, uint32_t limit = 10)
+    void bind(uint8_t cmd)
     {
         using session_type  = typename HandlerType::session_type;
         using protocol_type = typename HandlerType::protocol_type;
 
         auto& server = static_cast<typename HandlerType::server_type&>(this->_owner);
+
+        // Use HandlerType's static constants
+        auto duration = std::chrono::milliseconds(HandlerType::duration_ms);
+        auto limit    = HandlerType::limit;
 
         this->_deserializers.insert({cmd, [](auto& reader) -> async::task<fb::protocol::header*> {
                                          auto protocol = new typename HandlerType::protocol_type();

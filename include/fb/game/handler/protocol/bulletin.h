@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class bulletin : public fb::handler<fb::game::server, fb::protocol::game::request::bulletin>
+class bulletin : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::bulletin>
 {
 public:
     bulletin(fb::game::server& server);

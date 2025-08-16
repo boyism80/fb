@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 whisper::whisper(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::whisper>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::whisper>(server)
 { }
 
 async::task<bool> whisper::handle(fb::socket<character>& session, fb::protocol::game::request::whisper& request)

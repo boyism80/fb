@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 swap::swap(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::swap>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::swap>(server)
 { }
 
 async::task<bool> swap::handle(fb::socket<character>& session, fb::protocol::game::request::swap& request)

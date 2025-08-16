@@ -3,7 +3,7 @@
 using namespace fb::login::handler::protocol;
 
 change_password::change_password(fb::login::server& server) :
-    fb::handler<fb::login::server, fb::protocol::login::request::update_pw>(server)
+    fb::handler::protocol<fb::login::server, fb::protocol::login::request::update_pw>(server)
 { }
 
 async::task<bool> change_password::handle(fb::socket<fb::login::session>&          session,

@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 give_money::give_money(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::give_money>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::give_money>(server)
 { }
 
 async::task<bool> give_money::handle(fb::socket<character>& session, fb::protocol::game::request::give_money& request)

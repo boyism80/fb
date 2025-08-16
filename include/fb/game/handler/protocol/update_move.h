@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class update_move : public fb::handler<fb::game::server, fb::protocol::game::request::update_move>
+class update_move : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::update_move>
 {
 public:
     update_move(fb::game::server& server);

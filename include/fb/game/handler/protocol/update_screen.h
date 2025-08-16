@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class update_screen : public fb::handler<fb::game::server, fb::protocol::game::request::update_screen>
+class update_screen : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::update_screen>
 {
 public:
     update_screen(fb::game::server& server);

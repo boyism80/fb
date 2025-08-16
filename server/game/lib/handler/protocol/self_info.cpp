@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 self_info::self_info(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::self_info>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::self_info>(server)
 { }
 
 async::task<bool> self_info::handle(fb::socket<character>& session, fb::protocol::game::request::self_info& request)

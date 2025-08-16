@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class direction : public fb::handler<fb::game::server, fb::protocol::game::request::direction>
+class direction : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::direction>
 {
 public:
     direction(fb::game::server& server);

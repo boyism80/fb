@@ -3,7 +3,7 @@
 using namespace fb::login::handler::protocol;
 
 login::login(fb::login::server& server) :
-    fb::handler<fb::login::server, fb::protocol::login::request::login>(server)
+    fb::handler::protocol<fb::login::server, fb::protocol::login::request::login>(server)
 { }
 
 async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::protocol::login::request::login& request)

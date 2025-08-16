@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class item_active : public fb::handler<fb::game::server, fb::protocol::game::request::item_active>
+class item_active : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::item_active>
 {
 public:
     item_active(fb::game::server& server);

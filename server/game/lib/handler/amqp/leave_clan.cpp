@@ -4,7 +4,7 @@
 using namespace fb::game::handler::amqp;
 
 leave_clan::leave_clan(fb::game::server& server) :
-    fb::amqp_handler<fb::game::server, internal_resp::LeaveClan>(server)
+    fb::handler::amqp<fb::game::server, internal_resp::LeaveClan>(server)
 { }
 
 async::task<void> leave_clan::handle(const internal_resp::LeaveClan& message)

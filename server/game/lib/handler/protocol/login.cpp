@@ -4,7 +4,7 @@
 using namespace fb::game::handler::protocol;
 
 login::login(fb::game::server& server) :
-    fb::handler<fb::game::server, fb::protocol::game::request::login>(server)
+    fb::handler::protocol<fb::game::server, fb::protocol::game::request::login>(server)
 { }
 
 async::task<bool> login::init_ch(const internal::Character&           response,

@@ -4,7 +4,7 @@
 using namespace fb::game::handler::amqp;
 
 broadcast_clan::broadcast_clan(fb::game::server& server) :
-    fb::amqp_handler<fb::game::server, internal_resp::BroadcastClan>(server)
+    fb::handler::amqp<fb::game::server, internal_resp::BroadcastClan>(server)
 { }
 
 async::task<void> broadcast_clan::handle(const internal_resp::BroadcastClan& message)

@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class whisper : public fb::handler<fb::game::server, fb::protocol::game::request::whisper>
+class whisper : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::whisper>
 {
 public:
     whisper(fb::game::server& server);

@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::amqp {
 
-class write_mail : public fb::amqp_handler<fb::game::server, internal_resp::WriteMail>
+class write_mail : public fb::handler::amqp<fb::game::server, internal_resp::WriteMail>
 {
 public:
     write_mail(fb::game::server& server);

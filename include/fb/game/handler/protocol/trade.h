@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::protocol {
 
-class trade : public fb::handler<fb::game::server, fb::protocol::game::request::trade>
+class trade : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::trade>
 {
 public:
     trade(fb::game::server& server);
