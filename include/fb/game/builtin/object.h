@@ -5,9 +5,8 @@
 
 namespace fb::game::builtin {
 
-class object
+struct object
 {
-public:
     /**
      * @brief      Lua binding to get the object's model data.
      *

@@ -5,9 +5,8 @@
 
 namespace fb::game::builtin {
 
-class server
+struct server
 {
-public:
     /**
      * @brief      Lua builtin function to log a message.
      *

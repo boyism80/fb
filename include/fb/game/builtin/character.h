@@ -5,9 +5,8 @@
 
 namespace fb::game::builtin {
 
-class character
+struct character
 {
-public:
     /**
      * @brief      Lua binding for getting/setting character appearance.
      *

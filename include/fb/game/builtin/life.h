@@ -5,9 +5,8 @@
 
 namespace fb::game::builtin {
 
-class life
+struct life
 {
-public:
     /**
      * @brief      Lua binding for sending messages to life entities.
      *
