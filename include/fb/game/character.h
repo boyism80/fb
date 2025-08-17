@@ -713,12 +713,12 @@ public:
      * @brief      Updates a specific region of the character's map view.
      *
      * @param[in]  map       The map to update from
-     * @param[in]  position  The position of the region to update
+     * @param[in]  begin     The position of the region to update
      * @param[in]  size      The size of the region to update
      * @param[in]  crc       The CRC value of the map update
      */
     void update_map(const fb::game::map&        map,
-                    const fb::model::point16_t& position,
+                    const fb::model::point16_t& begin,
                     const fb::model::size8_t&   size,
                     uint16_t                    crc = 0);
 
@@ -1749,7 +1749,7 @@ public:
      */
     virtual void on_update_map(character&                  ch,
                                const fb::game::map&        map,
-                               const fb::model::point16_t& position,
+                               const fb::model::point16_t& begin,
                                const fb::model::size8_t&   size,
                                uint16_t                    crc) = 0;
 

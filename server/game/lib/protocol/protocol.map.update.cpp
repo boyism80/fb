@@ -6,8 +6,8 @@ namespace fb::protocol::game::request {
 async::task<void> map_update::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->position.x  = reader.read<uint16_t>();
-    this->position.y  = reader.read<uint16_t>();
+    this->begin.x     = reader.read<uint16_t>();
+    this->begin.y     = reader.read<uint16_t>();
     this->size.width  = reader.read<uint8_t>();
     this->size.height = reader.read<uint8_t>();
     this->crc         = reader.read<uint16_t>();
@@ -16,8 +16,8 @@ async::task<void> map_update::deserialize(fb::stream_reader<big_endian>& reader)
 async::task<void> map_update::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint16_t>(this->position_x);
-    writer.write<uint16_t>(this->position_y);
+    writer.write<uint16_t>(this->begin_x);
+    writer.write<uint16_t>(this->begin_y);
     writer.write<uint8_t>(this->width);
     writer.write<uint8_t>(this->height);
     writer.write<uint16_t>(this->crc);
@@ -44,15 +44,15 @@ async::task<void> map_update::serialize(fb::stream_writer<big_endian>& writer) c
         writer.write<uint8_t>(static_cast<uint8_t>(this->map.model.effect));
     }
 
-    writer.write<uint16_t>(this->position.x);
-    writer.write<uint16_t>(this->position.y);
+    writer.write<uint16_t>(this->begin.x);
+    writer.write<uint16_t>(this->begin.y);
     writer.write<uint8_t>(this->size.width);
     writer.write<uint8_t>(this->size.height);
 
     uint32_t map_size = this->size.width * this->size.height * sizeof(uint16_t) * 3; // tile id, block, object
-    for (int row = this->position.y; row < this->position.y + this->size.height; row++)
+    for (int row = this->begin.y; row < this->begin.y + this->size.height; row++)
     {
-        for (int col = this->position.x; col < this->position.x + this->size.width; col++)
+        for (int col = this->begin.x; col < this->begin.x + this->size.width; col++)
         {
             auto tile = this->map(col, row);
             if (tile == nullptr)
@@ -83,10 +83,10 @@ async::task<void> map_update::deserialize(fb::stream_reader<big_endian>& reader)
         this->effect = 0; // NONE
     }
 
-    this->position_x = reader.read<uint16_t>();
-    this->position_y = reader.read<uint16_t>();
-    this->width      = reader.read<uint8_t>();
-    this->height     = reader.read<uint8_t>();
+    this->begin_x = reader.read<uint16_t>();
+    this->begin_y = reader.read<uint16_t>();
+    this->width   = reader.read<uint8_t>();
+    this->height  = reader.read<uint8_t>();
 
     // Fully implement map tile data
     this->tiles.clear();

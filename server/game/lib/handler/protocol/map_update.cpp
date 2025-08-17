@@ -17,6 +17,6 @@ async::task<bool> map_update::handle(fb::socket<character>& session, fb::protoco
     if (map == nullptr)
         co_return true;
 
-    ch->update_map(*map, request.position, request.size, request.crc);
+    ch->update_map(*map, request.begin, request.size, request.crc);
     co_return true;
 }

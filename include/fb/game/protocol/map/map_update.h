@@ -39,12 +39,12 @@ public:
 
 public:
 #ifndef BOT
-    fb::model::point16_t position;
+    fb::model::point16_t begin;
     fb::model::size8_t   size;
     uint16_t             crc;
 #else
-    uint16_t position_x;
-    uint16_t position_y;
+    uint16_t begin_x;
+    uint16_t begin_y;
     uint8_t  width;
     uint8_t  height;
     uint16_t crc;
@@ -84,13 +84,13 @@ public:
 public:
 #ifndef BOT
     const fb::game::map&       map;
-    const fb::model::point16_t position;
+    const fb::model::point16_t begin;
     const fb::model::size8_t   size;
     mutable uint16_t           crc = 0;
 #else
     uint8_t                effect;
-    uint16_t               position_x;
-    uint16_t               position_y;
+    uint16_t               begin_x;
+    uint16_t               begin_y;
     uint8_t                width;
     uint8_t                height;
     std::vector<tile_data> tiles;
@@ -98,9 +98,9 @@ public:
 
 public:
 #ifndef BOT
-    map_update(const fb::game::map& map, const fb::model::point16_t& position, const fb::model::size8_t& size) :
+    map_update(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size) :
         map(map),
-        position(position),
+        begin(begin),
         size(size)
     { }
 #else
