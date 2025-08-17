@@ -218,16 +218,19 @@ bool ai::should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attack
 
     // Ignore if attacker is our owner
     auto owner = mob_obj.owner.lock();
-    if (attacker == owner)
-        return true;
-
-    // Check if attacker is a character
-    if (attacker->is(OBJECT_TYPE::CHARACTER))
+    if (owner != nullptr)
     {
-        // Check map PK settings
-        auto map = mob_obj.map();
-        if (map != nullptr && !ENUM_IN(map->model.option, MAP_OPTION::ENABLE_PK))
+        if (attacker == owner)
             return true;
+
+        // Check if attacker is a character
+        if (attacker->is(OBJECT_TYPE::CHARACTER))
+        {
+            // Check map PK settings
+            auto map = mob_obj.map();
+            if (map != nullptr && !ENUM_IN(map->model.option, MAP_OPTION::ENABLE_PK))
+                return true;
+        }
     }
 
     return false;
