@@ -9,10 +9,6 @@ function ON_MOB_ATTACK_1095(me, you)
         return
     end
 
-    local ptr_me = me:ptr()
-    local ptr_you = you:ptr()
-    local thread = me:thread()
-
     me:chat('여의주의 힘을 받은 용이여..')
     sleep(1000);
     

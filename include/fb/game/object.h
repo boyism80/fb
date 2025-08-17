@@ -106,6 +106,7 @@ public:
 
 private:
     std::shared_ptr<fb::game::sector> _sector;
+    mutable std::shared_mutex         _map_lock;
 
 protected:
     uint32_t                       _oid = 0;

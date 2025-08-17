@@ -167,9 +167,16 @@ async::task<bool> mob::call_script()
     else
         this->_attack_thread->pushnil();
 
-    auto& ctx   = this->server;
-    auto  weak  = this->weak_from_this();
-    std::ignore = co_await this->_attack_thread->call(2);
+    auto& ctx  = this->server;
+    auto  weak = this->weak_from_this();
+    try
+    {
+        std::ignore = co_await this->_attack_thread->call(2);
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::warn(e.what());
+    }
 
     auto shared = weak.lock();
     if (shared == nullptr)
@@ -210,6 +217,9 @@ std::shared_ptr<life> mob::target() const
 
     auto shared = this->_target.lock();
     if (shared == nullptr)
+        return nullptr;
+
+    if (shared->map() != this->map())
         return nullptr;
 
     if (shared->alive() == false)

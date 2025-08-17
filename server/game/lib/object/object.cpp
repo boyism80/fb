@@ -346,8 +346,7 @@ bool object::direction(DIRECTION value)
 
 std::shared_ptr<fb::game::map> object::map() const
 {
-    this->assert_thread();
-
+    auto _ = std::shared_lock(this->_map_lock);
     return this->_map;
 }
 
@@ -525,7 +524,10 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
                 }
             }
 
-            this->_map = nullptr;
+            {
+                auto _     = std::unique_lock(this->_map_lock);
+                this->_map = nullptr;
+            }
             co_await this->server.threads.switching(weak);
             this->_position = fb::model::point16_t(1, 1);
             co_return true;
@@ -546,8 +548,12 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
         if (this->_map != nullptr)
             std::ignore = co_await this->map(nullptr);
 
-        this->_map    = map;
-        this->_thread = map->thread();
+        {
+            auto _ = std::unique_lock(this->_map_lock);
+
+            this->_map    = map;
+            this->_thread = map->thread();
+        }
 
         co_await this->server.threads.switching(weak);
 
@@ -800,11 +806,15 @@ void object::hide(object& to, DESTROY_TYPE destroy_type)
 
 void object::thread(fb::thread* value)
 {
+    auto _ = std::unique_lock(this->_map_lock);
+
     this->_thread = value;
 }
 
 fb::thread* object::thread() const
 {
+    auto _ = std::shared_lock(this->_map_lock);
+
     if (this->_thread != nullptr)
         return this->_thread;
     else
