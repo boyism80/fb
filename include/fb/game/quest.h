@@ -26,12 +26,7 @@ public:
 
 public:
     quest(uint32_t id, std::weak_ptr<fb::game::character> owner);
-    quest(uint32_t                           id,
-          std::weak_ptr<fb::game::character> owner,
-          uint32_t                           step,
-          uint32_t                           progress,
-          bool                               completed,
-          std::string                        param);
+    quest(uint32_t id, std::weak_ptr<fb::game::character> owner, uint32_t step, uint32_t progress, bool completed, std::string param);
     ~quest() = default;
 
 public:

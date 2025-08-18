@@ -8,17 +8,10 @@
 
 namespace fb::game {
 
-// Forward declarations
 class character;
 class npc;
 class server;
 
-/**
- * @brief   Abstract base class for all NPC interaction handlers.
- *
- *          This class provides a common interface for all NPC interaction handlers,
- *          enabling polymorphic storage and execution of different handler types.
- */
 class npc_interaction_handler
 {
 public:
@@ -37,21 +30,8 @@ protected:
 public:
     virtual ~npc_interaction_handler() = default;
 
-    /**
-     * @brief   Checks if the message matches this handler's pattern.
-     *
-     * @param[in]  message  The user input message to check
-     * @return     True if the message matches the pattern, false otherwise
-     */
-    virtual bool matches(const std::string& message) const = 0;
-
-    /**
-     * @brief   Handles NPC interaction for matching messages.
-     *
-     * @param[in]  ch       The character performing the interaction
-     * @param[in]  message  The interaction message from the player
-     * @param[in]  npcs     The list of nearby NPCs
-     */
+public:
+    virtual bool              matches(const std::string& message) const                                         = 0;
     virtual async::task<void> handle(character_type& ch, const std::string& message, const npc_list_type& npcs) = 0;
 };
 

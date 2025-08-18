@@ -15,20 +15,9 @@
 #include <fb/config.h>
 #include <fb/bot/test_mode.h>
 
-/**
- * @brief      Template class for creating bot controllers based on test mode
- *
- *             This template class provides a clean way to create appropriate
- *             bot controllers based on the test mode without runtime branching.
- *
- * @tparam     Mode  The test mode enum value
- */
 template <fb::bot::test_mode Mode>
 class bot_controller_factory;
 
-/**
- * @brief      Specialization for load test mode
- */
 template <>
 class bot_controller_factory<fb::bot::test_mode::LOAD_TEST>
 {
@@ -64,9 +53,6 @@ public:
     }
 };
 
-/**
- * @brief      Specialization for integration test mode
- */
 template <>
 class bot_controller_factory<fb::bot::test_mode::INTEGRATION_TEST>
 {

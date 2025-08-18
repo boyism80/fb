@@ -34,12 +34,12 @@ void listener_impl::on_chat(object& me, const std::string& message, CHAT_TYPE ch
         break;
     }
 
-    this->server.send(me, fb_resp::chat(me, message, chat_type), scp);
+    std::ignore = this->server.send(me, fb_resp::chat(me, message, chat_type), scp);
 }
 
 void listener_impl::on_direction(object& me)
 {
-    this->server.send(me, fb_resp::direction(me), scope::PIVOT);
+    std::ignore = this->server.send(me, fb_resp::direction(me), scope::PIVOT);
 }
 
 void listener_impl::on_update_external(object& me, bool detailed)
@@ -64,7 +64,7 @@ void listener_impl::on_update_external(object& me, bool detailed)
     }
     else
     {
-        this->server.send(me, fb_resp::update(me), scope::PIVOT);
+        std::ignore = this->server.send(me, fb_resp::update(me), scope::PIVOT);
     }
 }
 
@@ -89,14 +89,14 @@ void listener_impl::on_hide(object& me, DESTROY_TYPE destroy_type)
     switch (destroy_type)
     {
     case DESTROY_TYPE::DEFAULT:
-        this->server.send(me, fb_resp::hide(me), scope::PIVOT, true);
+        std::ignore = this->server.send(me, fb_resp::hide(me), scope::PIVOT, true);
         break;
 
     case DESTROY_TYPE::DEAD:
         if (me.is(OBJECT_TYPE::LIFE) == false)
             throw std::runtime_error("object must be life type");
 
-        this->server.send(me, fb_resp::die(static_cast<life&>(me)), scope::PIVOT, true);
+        std::ignore = this->server.send(me, fb_resp::die(static_cast<life&>(me)), scope::PIVOT, true);
         break;
     }
 }
@@ -120,7 +120,7 @@ void listener_impl::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
 
 void listener_impl::on_move(object& me, const fb::model::point16_t& before)
 {
-    this->server.send(me, fb_resp::move(me, before), scope::PIVOT, true);
+    std::ignore = this->server.send(me, fb_resp::move(me, before), scope::PIVOT, true);
 }
 
 void listener_impl::on_buff(object& me, buff& buff)
@@ -135,11 +135,11 @@ void listener_impl::on_unbuff(object& me, buff& buff)
 
 void listener_impl::on_sound(object& me, SOUND sound)
 {
-    this->server.send(me, fb_resp::sound(me, sound), scope::PIVOT);
+    std::ignore = this->server.send(me, fb_resp::sound(me, sound), scope::PIVOT);
 }
 void listener_impl::on_effect(object& me, uint8_t value)
 {
-    this->server.send(me, fb_resp::effect(me, value), scope::PIVOT);
+    std::ignore = this->server.send(me, fb_resp::effect(me, value), scope::PIVOT);
 }
 
 void listener_impl::on_map_leave(object& me, const fb::game::map& map)

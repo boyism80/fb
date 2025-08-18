@@ -7,11 +7,8 @@ login::login(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::login>(server)
 { }
 
-async::task<bool> login::init_ch(const internal::Character&           response,
-                                 character&                           ch,
-                                 std::optional<uint32_t>              group,
-                                 std::optional<uint32_t>              clan,
-                                 const std::optional<transfer_param>& transfer)
+async::task<bool>
+login::init_ch(const internal::Character& response, character& ch, std::optional<uint32_t> group, std::optional<uint32_t> clan, const std::optional<transfer_param>& transfer)
 {
     auto map  = response.map;
     auto weak = ch.weak_from_this_as<character>();
@@ -66,7 +63,7 @@ async::task<bool> login::init_ch(const internal::Character&           response,
 
     if (group.has_value())
     {
-        this->server.upsert_group_then(group.value(), [&ch](auto& group) {
+        std::ignore = this->server.upsert_group_then(group.value(), [&ch](auto& group) {
             group->enter(ch.weak_from_this_as<character>());
             ch.group_id(group->id());
         });
@@ -158,10 +155,7 @@ void login::init_achievements(const std::vector<fb::protocol::internal::Achievem
         if (this->server.model.achievement.contains(achievement.model) == false)
             continue;
 
-        auto ptr = std::make_unique<fb::game::achievement>(this->server.model.achievement[achievement.model],
-                                                           achievement.text,
-                                                           achievement.icon,
-                                                           achievement.color);
+        auto ptr = std::make_unique<fb::game::achievement>(this->server.model.achievement[achievement.model], achievement.text, achievement.icon, achievement.color);
         ch.achievements.insert({achievement.model, std::move(ptr)});
     }
 }
@@ -204,15 +198,12 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     auto delay = fb::config<uint32_t>("delay");
     co_await this->server.sleep(std::chrono::seconds(delay));
 
-    auto&& login_resp = co_await this->server.http.post("internal",
-                                                        "/in-game/login",
-                                                        Login{request.id, request.name, fb::config<uint8_t>("id")});
+    auto&& login_resp = co_await this->server.http.post("internal", "/in-game/login", Login{request.id, request.name, fb::config<uint8_t>("id")});
     if (login_resp.error != (uint32_t)ERROR_CODE::NONE)
         co_return false;
 
-    auto&& response =
-        co_await this->server.http.get<internal_resp::Init>("internal", std::format("/user/init/{}", request.id));
-    auto map = request.transfer.has_value() ? request.transfer->map : response.character.map;
+    auto&& response = co_await this->server.http.get<internal_resp::Init>("internal", std::format("/user/init/{}", request.id));
+    auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
     if (weak.expired())
         co_return false;
 

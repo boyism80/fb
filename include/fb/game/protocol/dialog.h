@@ -50,13 +50,7 @@ public:
 #ifndef BOT
     dialog() = default;
 #else
-    dialog(dialog::INTERACTION interaction,
-           uint8_t             action,
-           std::string         message,
-           uint16_t            index,
-           uint16_t            pursuit,
-           std::string         name,
-           DIALOG_RESULT       button) :
+    dialog(dialog::INTERACTION interaction, uint8_t action, std::string message, uint16_t index, uint16_t pursuit, std::string name, DIALOG_RESULT button) :
         interaction(interaction),
         action(action),
         message(message),

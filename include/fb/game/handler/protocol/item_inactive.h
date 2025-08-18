@@ -15,8 +15,7 @@ public:
     item_inactive& operator= (const item_inactive&) = delete;
     item_inactive& operator= (item_inactive&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>&                      session,
-                             fb::protocol::game::request::item_inactive& request) override;
+    async::task<bool> handle(fb::socket<character>& session, fb::protocol::game::request::item_inactive& request) override;
 };
 
 } // namespace fb::game::handler::protocol

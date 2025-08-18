@@ -10,10 +10,10 @@ namespace fb::bot::integration {
 
 enum class dialog_type : uint8_t
 {
-    menu   = 0x01, // MENU
-    input  = 0x03, // INPUT
-    item   = 0x04, // ITEM
-    slot   = 0x05  // SLOT
+    menu  = 0x01,
+    input = 0x03,
+    item  = 0x04,
+    slot  = 0x05
 };
 
 struct dialog_item_data

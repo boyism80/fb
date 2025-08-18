@@ -24,12 +24,12 @@ private:
                                             std::optional<uint32_t>                  group,
                                             std::optional<uint32_t>                  clan,
                                             const std::optional<transfer_param>&     transfer);
-    void init_option(const fb::protocol::internal::Option& response, fb::game::character& ch);
-    void init_items(const std::vector<fb::protocol::internal::Item>& response, fb::game::character& ch);
-    void init_spells(const std::vector<fb::protocol::internal::Spell>& response, fb::game::character& ch);
-    void init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch);
-    void init_achievements(const std::vector<fb::protocol::internal::Achievement>& response, fb::game::character& ch);
-    std::string elapsed_message(const std::string& dt);
+    void                            init_option(const fb::protocol::internal::Option& response, fb::game::character& ch);
+    void                            init_items(const std::vector<fb::protocol::internal::Item>& response, fb::game::character& ch);
+    void                            init_spells(const std::vector<fb::protocol::internal::Spell>& response, fb::game::character& ch);
+    void                            init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch);
+    void                            init_achievements(const std::vector<fb::protocol::internal::Achievement>& response, fb::game::character& ch);
+    std::string                     elapsed_message(const std::string& dt);
 
 public:
     async::task<bool> handle(fb::socket<character>& session, fb::protocol::game::request::login& request) override;

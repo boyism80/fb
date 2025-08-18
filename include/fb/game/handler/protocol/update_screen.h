@@ -15,8 +15,7 @@ public:
     update_screen& operator= (const update_screen&) = delete;
     update_screen& operator= (update_screen&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>&                      session,
-                             fb::protocol::game::request::update_screen& request) override;
+    async::task<bool> handle(fb::socket<character>& session, fb::protocol::game::request::update_screen& request) override;
 };
 
 } // namespace fb::game::handler::protocol

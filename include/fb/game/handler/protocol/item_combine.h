@@ -15,8 +15,7 @@ public:
     item_combine& operator= (const item_combine&) = delete;
     item_combine& operator= (item_combine&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>&                     session,
-                             fb::protocol::game::request::item_combine& request) override;
+    async::task<bool> handle(fb::socket<character>& session, fb::protocol::game::request::item_combine& request) override;
 };
 
 } // namespace fb::game::handler::protocol

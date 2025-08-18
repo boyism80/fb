@@ -545,9 +545,8 @@ int builtin::object::builtin_map(lua_State* L)
         }
     }
 
-    static auto static_func = [](std::weak_ptr<fb::game::object>            weak,
-                                 std::shared_ptr<fb::game::map>             map,
-                                 const std::optional<fb::model::point16_t>& position) -> async::task<bool> {
+    static auto static_func =
+        [](std::weak_ptr<fb::game::object> weak, std::shared_ptr<fb::game::map> map, const std::optional<fb::model::point16_t>& position) -> async::task<bool> {
         auto shared = weak.lock();
         if (shared == nullptr)
             co_return false;
@@ -619,7 +618,7 @@ int builtin::object::builtin_mkitem(lua_State* L)
         auto item   = model->make(*server);
         item->map(obj->map(), obj->position());
         lua->pushobject(item);
-        server->send(*item, fb::protocol::game::response::update(*item), fb::game::scope::PIVOT);
+        std::ignore = server->send(*item, fb::protocol::game::response::update(*item), fb::game::scope::PIVOT);
     }
 
     return 1;

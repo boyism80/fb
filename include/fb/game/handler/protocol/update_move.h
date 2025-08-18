@@ -15,8 +15,7 @@ public:
     update_move& operator= (const update_move&) = delete;
     update_move& operator= (update_move&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>&                    session,
-                             fb::protocol::game::request::update_move& request) override;
+    async::task<bool> handle(fb::socket<character>& session, fb::protocol::game::request::update_move& request) override;
 };
 
 } // namespace fb::game::handler::protocol

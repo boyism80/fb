@@ -1,33 +1,6 @@
 #ifndef __ASYNC_EXECUTOR_H__
 #define __ASYNC_EXECUTOR_H__
 
-/**
- * @file    async_executor.h
- * @brief   Base async_executor classes for asynchronous operations and network acceptors
- * @author  FB Development Team
- *
- * @details This file implements the fundamental async_executor classes that serve as the
- *          foundation for the FB 2D MMORPG server architecture. It provides base
- *          classes for managing asynchronous operations, thread pools, timer systems,
- *          and network connection acceptance with comprehensive lifecycle management.
- *
- *          Key features:
- *          - Base async_executor class with Boost.Asio integration for asynchronous operations
- *          - Thread pool management with configurable worker thread counts
- *          - Comprehensive timer system supporting both thread-based and coroutine-based timers
- *          - Smart pointer integration for safe object lifetime management
- *          - Thread-switchable object management with automatic thread switching
- *          - TCP acceptor for handling incoming network connections
- *          - Exception-safe timer callbacks with proper error handling
- *          - Weak pointer support for preventing circular references in async operations
- *          - Thread safety assertions and validation for multi-threaded environments
- *          - Integration with the thread container system for efficient task distribution
- *
- * @note    This file provides the architectural foundation for all server components
- *          and is critical for proper asynchronous operation and network handling
- *          throughout the FB 2D MMORPG server infrastructure.
- */
-
 #include <boost/asio.hpp>
 #include <fb/thread_container.h>
 #include <fb/hash.h>
@@ -37,14 +10,6 @@
 
 namespace fb {
 
-/**
- * @brief      Base async_executor class for managing asynchronous operations and thread pools.
- *
- *             This class provides a foundation for managing asynchronous operations using
- *             Boost.Asio, thread pools, and timer functionality. It maintains thread-safe
- *             collections of switchable objects and provides timer binding capabilities
- *             for both thread-based and coroutine-based execution.
- */
 class async_executor : public std::enable_shared_from_this<async_executor>
 {
 public:
@@ -70,17 +35,6 @@ public:
     virtual ~async_executor() = default;
 
 protected:
-    /**
-     * @brief      Binds a member function as a coroutine-based timer callback.
-     *
-     *             Creates a coroutine-based timer that executes the specified member function
-     *             at regular intervals using Boost.Asio's coroutine support. The timer runs
-     *             asynchronously and continues until the async_executor is stopped.
-     *
-     * @tparam     Class     The class type containing the member function
-     * @param[in]  fn        The member function to execute as timer callback
-     * @param[in]  interval  The time interval between timer executions
-     */
     template <typename Class>
     void bind_timer(async::task<void> (Class::*fn)(void), std::chrono::steady_clock::duration interval)
     {
@@ -130,32 +84,11 @@ protected:
             boost::asio::detached);
     }
 
-    /**
-     * @brief      Binds a lambda function as a thread-based timer callback.
-     *
-     *             Creates a timer that executes the specified lambda function at regular
-     *             intervals on the thread pool. The callback receives timing information
-     *             and thread ID for context-aware processing.
-     *
-     * @param[in]  fn        The lambda function to execute as timer callback
-     * @param[in]  duration  The time interval between timer executions
-     */
-    void bind_thread_timer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)> fn,
-                           const std::chrono::steady_clock::duration&                                    duration)
+    void bind_thread_timer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)> fn, const std::chrono::steady_clock::duration& duration)
     {
         this->threads.settimer(fn, duration);
     }
 
-    /**
-     * @brief      Binds a timer handler to the thread pool.
-     *
-     *             Creates a timer that executes the specified handler at regular intervals
-     *             on the thread pool. The handler receives timing information and thread ID
-     *             for context-aware processing.
-     *
-     * @tparam     HandlerType  The type of the timer handler
-     * @param[in]  duration     The time interval between timer executions
-     */
     template <typename HandlerType>
     void bind_thread_timer(const std::chrono::steady_clock::duration& duration)
     {
@@ -174,15 +107,6 @@ protected:
             duration);
     }
 
-    /**
-     * @brief      Binds a timer handler to the thread pool.
-     *
-     *             Creates a timer that executes the specified handler at regular intervals
-     *             on the thread pool.
-     *
-     * @tparam     HandlerType  The type of the timer handler
-     * @param[in]  interval     The time interval between timer executions
-     */
     template <typename HandlerType>
     void bind_timer(std::chrono::steady_clock::duration interval)
     {
@@ -195,21 +119,6 @@ protected:
             interval);
     }
 
-    /**
-     * @brief      Binds a member function as a coroutine-based timer callback with improved safety.
-     *
-     *             Creates a coroutine-based timer that executes the specified member function
-     *             at regular intervals using Boost.Asio's coroutine support. The timer runs
-     *             asynchronously and continues until the async_executor is stopped.
-     *
-     *             Safety improvements:
-     *             - Uses weak_ptr to prevent dangling pointer issues
-     *             - Thread-safe running flag access
-     *             - Proper exception handling
-     *
-     * @param[in]  fn        The lambda function to execute as timer callback
-     * @param[in]  interval  The time interval between timer executions
-     */
     void bind_timer(std::function<async::task<void>()> fn, std::chrono::steady_clock::duration interval)
     {
         // Use weak_ptr for safe object reference
@@ -259,13 +168,6 @@ protected:
     }
 
 public:
-    /**
-     * @brief      Gets the IPv4 address from a hostname or IP address string.
-     *
-     * @param[in]  ip  The hostname or IP address to resolve.
-     *
-     * @return     The resolved IPv4 address as a string.
-     */
     std::string ipv4(const std::string& ip) const
     {
         try

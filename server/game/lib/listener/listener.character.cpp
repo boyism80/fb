@@ -72,15 +72,10 @@ void listener_impl::on_update_option(character& ch)
     ch.send(fb_resp::option(ch));
 }
 
-void listener_impl::on_update_map(character&                  ch,
-                                  const map&                  map,
-                                  const fb::model::point16_t& position,
-                                  const fb::model::size8_t&   size,
-                                  uint16_t                    crc)
+void listener_impl::on_update_map(character& ch, const map& map, const fb::model::point16_t& position, const fb::model::size8_t& size, uint16_t crc)
 {
-    auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 |
-                static_cast<uint64_t>(position.y) << 16 | static_cast<uint64_t>(size.width) << 8 |
-                static_cast<uint64_t>(size.height);
+    auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 | static_cast<uint64_t>(position.y) << 16 |
+                static_cast<uint64_t>(size.width) << 8 | static_cast<uint64_t>(size.height);
 
     this->server.map_update_cache.write(
         hash,
@@ -114,7 +109,7 @@ void listener_impl::on_update_internal(character& ch)
 
 void listener_impl::on_level_up(character& me)
 {
-    this->server.send(me, fb_resp::effect(me, 0x02), scope::PIVOT);
+    std::ignore = this->server.send(me, fb_resp::effect(me, 0x02), scope::PIVOT);
 }
 
 void listener_impl::on_update(character& me, STATE_LEVEL level)
@@ -132,10 +127,7 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
     auto p     = fb::model::point16_t{position};
     try
     {
-        auto&& response = co_await this->server.http.post(
-            "internal",
-            "/in-game/transfer",
-            Transfer{fb::protocol::internal::Service::Game, map.model.host, me.name(), false});
+        auto&& response = co_await this->server.http.post("internal", "/in-game/transfer", Transfer{fb::protocol::internal::Service::Game, map.model.host, me.name(), false});
         co_await this->server.threads.switching(weak);
         switch (static_cast<ERROR_CODE>(response.error))
         {
@@ -162,11 +154,7 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
 
         auto socket = me.socket();
         if (socket != nullptr)
-            std::ignore = this->server.transfer(*socket,
-                                                response.ip,
-                                                response.port,
-                                                fb::protocol::internal::Service::Game,
-                                                stream);
+            std::ignore = this->server.transfer(*socket, response.ip, response.port, fb::protocol::internal::Service::Game, stream);
         co_return true;
     }
     catch (std::exception& e)
@@ -250,10 +238,7 @@ void listener_impl::on_show_bulletin(character& ch)
     ch.send(fb_resp::bulletin_sections(this->server.model));
 }
 
-void listener_impl::on_show_bulletin(character&                          ch,
-                                     const fb::model::bulletin&          section,
-                                     const std::list<bulletin::article>& articles,
-                                     BULLETIN_BUTTON_ENABLE              flag)
+void listener_impl::on_show_bulletin(character& ch, const fb::model::bulletin& section, const std::list<bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag)
 {
     ch.send(fb_resp::bulletin_articles(section, articles, flag));
 }
@@ -295,7 +280,7 @@ void listener_impl::on_weather(character& ch, WEATHER_TYPE weather)
 
 void listener_impl::on_bright(character& ch, uint8_t value)
 {
-    this->server.send(ch, fb_resp::bright(value), scope::PIVOT);
+    std::ignore = this->server.send(ch, fb_resp::bright(value), scope::PIVOT);
 }
 
 void listener_impl::on_update_id(character& ch)

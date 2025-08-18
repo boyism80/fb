@@ -1,33 +1,6 @@
 #ifndef __BULLETIN_H__
 #define __BULLETIN_H__
 
-/**
- * @file    bulletin.h
- * @brief   Bulletin board system for community announcements and player posts
- * @author  FB Development Team
- *
- * @details This file implements the bulletin board system that provides community
- *          communication features for players to share announcements, news, and
- *          messages. The system supports multiple sections with different access
- *          levels and administrative controls for organized community interaction.
- *
- *          Key features:
- *          - Multi-section bulletin board organization with categorized content
- *          - Level-based access control for reading and writing permissions
- *          - Administrative section support for official announcements
- *          - Configurable minimum and maximum level requirements per section
- *          - Complete article management with metadata and content storage
- *          - Author identification and display name tracking
- *          - Date-based organization for chronological article sorting
- *          - Pagination support for efficient browsing of large article lists
- *          - Section association for proper content categorization
- *          - Comprehensive permission checking for secure access control
- *
- * @note    The bulletin system serves as the primary communication platform
- *          for server-wide announcements, community events, and player-generated
- *          content sharing within the game world.
- */
-
 #include <ctime>
 #include <stdint.h>
 #include <optional>
@@ -35,42 +8,16 @@
 
 namespace fb::game::bulletin {
 
-/**
- * @brief      Represents a bulletin board section with access control.
- *
- *             This class defines a section of a bulletin system, containing
- *             configuration for access permissions, level restrictions, and administrative
- *             controls. Each section can have different posting requirements and visibility
- *             settings based on player level and administrative status.
- *
- *             Key features:
- *             - Level-based access control for reading and writing
- *             - Administrative section support
- *             - Configurable minimum and maximum level requirements
- *             - Section identification and title management
- */
 class section
 {
 public:
-    const uint32_t               id;        ///< Unique section identifier
-    const std::string            title;     ///< Display title of the section
-    const std::optional<uint8_t> min_level; ///< Minimum level required for access
-    const std::optional<uint8_t> max_level; ///< Maximum level allowed for access
-    const bool                   admin;     ///< Whether this is an admin-only section
+    const uint32_t               id;
+    const std::string            title;
+    const std::optional<uint8_t> min_level;
+    const std::optional<uint8_t> max_level;
+    const bool                   admin;
 
 public:
-    /**
-     * @brief      Constructs a new bulletin section with specified parameters.
-     *
-     *             Creates a bulletin section with the given configuration,
-     *             including access restrictions and administrative settings.
-     *
-     * @param[in]  id         The unique identifier for this section.
-     * @param[in]  title      The display title of the section.
-     * @param[in]  min_level  The minimum level required for access (optional).
-     * @param[in]  max_level  The maximum level allowed for access (optional).
-     * @param[in]  admin      Whether this section requires admin privileges.
-     */
     section(uint32_t                      id,
             const std::string&            title,
             const std::optional<uint8_t>& min_level = std::nullopt,
@@ -85,65 +32,22 @@ public:
     ~section() = default;
 
 public:
-    /**
-     * @brief      Checks if a user can write to this section.
-     *
-     *             Determines whether a user with the specified level and admin status
-     *             has permission to post new articles in this section based on the
-     *             section's access control settings.
-     *
-     * @param[in]  level  The user's character level.
-     * @param[in]  admin  Whether the user has administrative privileges.
-     *
-     * @return     True if the user can write to this section, false otherwise.
-     */
     bool writable(uint8_t level, bool admin) const;
 };
 
-/**
- * @brief      Represents a bulletin article or post.
- *
- *             This class contains all the information for a single article posted
- *             to a bulletin section. It includes metadata such as author
- *             information, posting date, and the article content. Articles are
- *             organized within sections and can be paginated for display.
- *
- *             Key features:
- *             - Complete article metadata and content storage
- *             - Author identification and display name
- *             - Date tracking for chronological organization
- *             - Section association for proper categorization
- *             - Pagination support for large article lists
- */
 class article
 {
 public:
-    const uint32_t    id;         ///< Unique article identifier
-    const uint32_t    section;    ///< Section ID this article belongs to
-    const uint32_t    user;       ///< User ID of the article author
-    const uint8_t     month, day; ///< Publication date (month and day)
-    const std::string uname;      ///< Display name of the article author
-    const std::string title;      ///< Article title
-    const std::string contents;   ///< Article content text
-    const bool        next;       ///< Whether there are more articles available for pagination
+    const uint32_t    id;
+    const uint32_t    section;
+    const uint32_t    user;
+    const uint8_t     month, day;
+    const std::string uname;
+    const std::string title;
+    const std::string contents;
+    const bool        next;
 
 public:
-    /**
-     * @brief      Constructs a new bulletin article.
-     *
-     *             Creates an article with the specified metadata and content,
-     *             ready for display in the bulletin system.
-     *
-     * @param[in]  id        The unique identifier for this article.
-     * @param[in]  section   The section ID this article belongs to.
-     * @param[in]  user      The user ID of the article author.
-     * @param[in]  uname     The display name of the article author.
-     * @param[in]  title     The title of the article.
-     * @param[in]  month     The publication month.
-     * @param[in]  day       The publication day.
-     * @param[in]  contents  The article content text (optional).
-     * @param[in]  next      Whether there are more articles available for pagination.
-     */
     article(uint32_t           id,
             uint32_t           section,
             uint32_t           user,

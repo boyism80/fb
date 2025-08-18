@@ -25,7 +25,7 @@ void listener_impl::on_item_active(character& me, item& item)
 void listener_impl::on_item_throws(character& me, item& item, const fb::model::point16_t& to)
 {
     if (me.position() != to)
-        this->server.send(me, fb_resp::item_throws(me, item, to), scope::PIVOT);
+        std::ignore = this->server.send(me, fb_resp::item_throws(me, item, to), scope::PIVOT);
     else
-        this->server.send(me, fb_resp::action(me, ACTION::ATTACK, DURATION::THROW), scope::PIVOT);
+        std::ignore = this->server.send(me, fb_resp::action(me, ACTION::ATTACK, DURATION::THROW), scope::PIVOT);
 }

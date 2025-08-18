@@ -1,28 +1,30 @@
 #include <fb/game/character.h>
 #include <fb/game/trade.h>
 
-fb::game::trade::trade()
+using namespace fb::game;
+
+trade::trade()
 { }
 
-fb::game::trade::~trade()
+trade::~trade()
 { }
 
-void fb::game::trade::owner(std::shared_ptr<character> owner)
+void trade::owner(std::shared_ptr<character> owner)
 {
     this->_owner = owner->weak_from_this_as<character>();
 }
 
-std::shared_ptr<fb::game::character> fb::game::trade::owner() const
+std::shared_ptr<fb::game::character> trade::owner() const
 {
     return this->_owner.lock();
 }
 
-std::shared_ptr<fb::game::character> fb::game::trade::you() const
+std::shared_ptr<fb::game::character> trade::you() const
 {
     return this->_you.lock();
 }
 
-bool fb::game::trade::begin(std::shared_ptr<fb::game::character> you)
+bool trade::begin(std::shared_ptr<fb::game::character> you)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -91,7 +93,7 @@ bool fb::game::trade::begin(std::shared_ptr<fb::game::character> you)
     return false;
 }
 
-void fb::game::trade::end()
+void trade::end()
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -125,13 +127,13 @@ void fb::game::trade::end()
     this->_items.clear();
 }
 
-bool fb::game::trade::trading() const
+bool trade::trading() const
 {
     auto you = this->_you.lock();
     return you != nullptr;
 }
 
-bool fb::game::trade::up_item(uint8_t index)
+bool trade::up_item(uint8_t index)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -182,7 +184,7 @@ bool fb::game::trade::up_item(uint8_t index)
     return false;
 }
 
-bool fb::game::trade::up_money(uint32_t money)
+bool trade::up_money(uint32_t money)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -208,12 +210,12 @@ bool fb::game::trade::up_money(uint32_t money)
     return false;
 }
 
-uint32_t fb::game::trade::money() const
+uint32_t trade::money() const
 {
     return this->_money;
 }
 
-bool fb::game::trade::count(uint16_t count)
+bool trade::count(uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -256,7 +258,7 @@ bool fb::game::trade::count(uint16_t count)
     return false;
 }
 
-bool fb::game::trade::cancel()
+bool trade::cancel()
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -287,7 +289,7 @@ bool fb::game::trade::cancel()
     }
 }
 
-uint8_t fb::game::trade::add(uint8_t index)
+uint8_t trade::add(uint8_t index)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -301,7 +303,7 @@ uint8_t fb::game::trade::add(uint8_t index)
     return order;
 }
 
-void fb::game::trade::restore()
+void trade::restore()
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -322,7 +324,7 @@ void fb::game::trade::restore()
     owner->update(STATE_LEVEL::EXP_MONEY);
 }
 
-std::shared_ptr<fb::game::item> fb::game::trade::find(const fb::model::item& item) const
+std::shared_ptr<fb::game::item> trade::find(const fb::model::item& item) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -342,7 +344,7 @@ std::shared_ptr<fb::game::item> fb::game::trade::find(const fb::model::item& ite
     return nullptr;
 }
 
-void fb::game::trade::assert_exchange(const fb::game::trade& trade) const
+void trade::assert_exchange(const trade& trade) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -380,7 +382,7 @@ void fb::game::trade::assert_exchange(const fb::game::trade& trade) const
         throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
 }
 
-void fb::game::trade::exchange(trade& trade1, trade& trade2)
+void trade::exchange(trade& trade1, trade& trade2)
 {
     static auto push_buffer = [](trade& trade, std::vector<std::shared_ptr<fb::game::item>>& buffer) -> uint32_t {
         auto owner = trade._owner.lock();
@@ -439,7 +441,7 @@ void fb::game::trade::exchange(trade& trade1, trade& trade2)
     owner2->money_add(money1);
 }
 
-bool fb::game::trade::lock()
+bool trade::lock()
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -485,7 +487,7 @@ bool fb::game::trade::lock()
     }
 }
 
-const std::vector<std::shared_ptr<fb::game::item>> fb::game::trade::items() const
+const std::vector<std::shared_ptr<fb::game::item>> trade::items() const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -503,7 +505,7 @@ const std::vector<std::shared_ptr<fb::game::item>> fb::game::trade::items() cons
     return result;
 }
 
-const std::shared_ptr<fb::game::item> fb::game::trade::item(uint8_t index) const
+const std::shared_ptr<fb::game::item> trade::item(uint8_t index) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)

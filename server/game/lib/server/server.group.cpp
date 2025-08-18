@@ -27,10 +27,7 @@ async::task<void> server::upsert_group_then(uint32_t gid, const std::function<vo
         });
 }
 
-async::task<void> server::upsert_group_then(uint32_t                               gid,
-                                            const std::string&                     master,
-                                            const std::vector<std::string>&        members,
-                                            const std::function<void(group_ptr&)>& fn)
+async::task<void> server::upsert_group_then(uint32_t gid, const std::string& master, const std::vector<std::string>& members, const std::function<void(group_ptr&)>& fn)
 {
     co_await this->groups.async_write(
         gid,
@@ -189,25 +186,21 @@ async::task<void> server::on_leave_group(const internal_resp::LeaveGroup& resp)
     {
     case GroupAction::Leave:
     {
-        co_await this->upsert_group_then(gid,
-                                         resp.group.master,
-                                         resp.group.members,
-                                         [this, &resp, gid](auto& group) -> async::task<void> {
-                                             co_await this->characters.invoke(resp.member, [group](auto& ch) {
-                                                 ch->group_reset();
-                                                 group->detach(ch);
-                                             });
+        co_await this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp, gid](auto& group) -> async::task<void> {
+            co_await this->characters.invoke(resp.member, [group](auto& ch) {
+                ch->group_reset();
+                group->detach(ch);
+            });
 
-                                             auto members = std::vector<std::string>{resp.member};
-                                             members.push_back(resp.group.master);
-                                             this->characters.foreach (members, [member = resp.member](auto& ch) {
-                                                 if (ch->name() == member)
-                                                     ch->message("그룹 탈퇴", MESSAGE_TYPE::STATE);
-                                                 else
-                                                     ch->message(std::format("{}님 그룹에서 탈퇴", member),
-                                                                 MESSAGE_TYPE::STATE);
-                                             });
-                                         });
+            auto members = std::vector<std::string>{resp.member};
+            members.push_back(resp.group.master);
+            this->characters.foreach (members, [member = resp.member](auto& ch) {
+                if (ch->name() == member)
+                    ch->message("그룹 탈퇴", MESSAGE_TYPE::STATE);
+                else
+                    ch->message(std::format("{}님 그룹에서 탈퇴", member), MESSAGE_TYPE::STATE);
+            });
+        });
     }
     break;
 
@@ -233,33 +226,26 @@ async::task<void> server::on_kick_group(const internal_resp::KickGroup& resp)
     this->assert_group(resp.error, resp.member);
 
     auto gid = resp.group.id;
-    co_await this->upsert_group_then(gid,
-                                     resp.group.master,
-                                     resp.group.members,
-                                     [this, &resp, gid](auto& group) -> async::task<void> {
-                                         co_await this->characters.invoke(resp.member, [group](auto& ch) {
-                                             ch->group_reset();
-                                             group->detach(ch);
-                                         });
+    co_await this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp, gid](auto& group) -> async::task<void> {
+        co_await this->characters.invoke(resp.member, [group](auto& ch) {
+            ch->group_reset();
+            group->detach(ch);
+        });
 
-                                         auto members = std::vector<std::string>{resp.group.members};
-                                         members.push_back(resp.group.master);
-                                         this->characters.foreach (members, [member = resp.member](auto& ch) {
-                                             if (ch->name() == member)
-                                                 ch->message("그룹에서 추방당했습니다.", MESSAGE_TYPE::STATE);
-                                             else
-                                                 ch->message(std::format("{}님 그룹에서 추방당했습니다.", member),
-                                                             MESSAGE_TYPE::STATE);
-                                         });
-                                     });
+        auto members = std::vector<std::string>{resp.group.members};
+        members.push_back(resp.group.master);
+        this->characters.foreach (members, [member = resp.member](auto& ch) {
+            if (ch->name() == member)
+                ch->message("그룹에서 추방당했습니다.", MESSAGE_TYPE::STATE);
+            else
+                ch->message(std::format("{}님 그룹에서 추방당했습니다.", member), MESSAGE_TYPE::STATE);
+        });
+    });
 }
 
 async::task<void> server::broadcast(const group& group, const std::string& message, MESSAGE_TYPE type)
 {
-    auto&& resp = co_await this->http.post(
-        "internal",
-        "/group/broadcast",
-        BroadcastGroup{config<uint32_t>("host"), group.id(), message, static_cast<uint8_t>(type)});
+    auto&& resp = co_await this->http.post("internal", "/group/broadcast", BroadcastGroup{config<uint32_t>("host"), group.id(), message, static_cast<uint8_t>(type)});
 
     this->on_group_broadcast(resp);
 }
@@ -268,7 +254,7 @@ void server::on_group_broadcast(const internal_resp::BroadcastGroup& resp)
 {
     this->assert_group(resp.error, "");
 
-    this->upsert_group_then(resp.group, [this, message = resp.message, type = resp.type](auto& group) {
+    std::ignore = this->upsert_group_then(resp.group, [this, message = resp.message, type = resp.type](auto& group) {
         this->characters.foreach (group->members(), [message, type](auto& ch) {
             ch->message(message, static_cast<MESSAGE_TYPE>(type));
         });

@@ -1,33 +1,6 @@
 #ifndef __PARALLEL_WORKER_H__
 #define __PARALLEL_WORKER_H__
 
-/**
- * @file    parallel_worker.h
- * @brief   Template framework for parallel processing with automatic work distribution
- * @author  FB Development Team
- *
- * @details This file implements a comprehensive template framework for parallel processing
- *          that automatically distributes work across multiple threads and collects results.
- *          The system uses a producer-consumer pattern with thread-safe work distribution
- *          and result collection, ideal for CPU-intensive tasks that can be parallelized.
- *
- *          Key features:
- *          - Template-based parallel processing framework for type-safe operations
- *          - Automatic work distribution across available CPU cores
- *          - Thread-safe work queue management with mutex protection
- *          - Result collection in original order for deterministic output
- *          - Progress tracking with percentage completion callbacks
- *          - Exception handling and error reporting for individual work items
- *          - Specialization for void return types (side-effect only processing)
- *          - Generator-based work item production for memory-efficient processing
- *          - Configurable thread pool size based on hardware capabilities
- *          - Comprehensive callback system for monitoring and error handling
- *
- * @note    This parallel processing framework is used throughout the FB 2D MMORPG
- *          server for data processing tasks such as map generation, asset processing,
- *          and batch operations that can benefit from multi-threaded execution.
- */
-
 #include <memory>
 #include <vector>
 #include <unordered_map>
@@ -40,67 +13,20 @@
 
 namespace fb {
 
-/**
- * @brief      Template class for parallel processing of work items with output collection.
- *
- *             This class provides a framework for distributing work across multiple threads
- *             and collecting the results. It uses a producer-consumer pattern where work
- *             items are generated, processed in parallel, and results are collected in
- *             the original order. Ideal for CPU-intensive tasks that can be parallelized.
- *
- * @tparam     T     The type of input work items to be processed.
- * @tparam     R     The type of output results produced by processing.
- */
 template <typename T, typename R = void>
 class parallel_worker
 {
 protected:
-    /**
-     * @brief      Gets the ready generator.
-     *
-     * @return     The ready generator.
-     */
-    virtual fb::generator<T> on_ready() = 0;
-    /**
-     * @brief      Gets the work generator.
-     *
-     * @param[in]  value  The value.
-     *
-     * @return     The work generator.
-     */
+    virtual fb::generator<T> on_ready()              = 0;
     virtual fb::generator<R> on_work(const T& value) = 0;
-
-    /**
-     * @brief      Gets the worked generator.
-     *
-     * @param[in]  input  The input.
-     * @param[in]  output  The output.
-     * @param[in]  percent  The percent.
-     */
-    virtual void on_worked(const T& input, const R& output, double percent)
+    virtual void             on_worked(const T& input, const R& output, double percent)
     { }
-    /**
-     * @brief      Gets the error generator.
-     *
-     * @param[in]  input  The input.
-     * @param[in]  e  The exception.
-     */
     virtual void on_error(const T& input, std::exception& e)
     { }
-    /**
-     * @brief      Gets the finish generator.
-     *
-     * @param[in]  result  The result.
-     */
     virtual void on_finish(const std::vector<R>& result)
     { }
 
 public:
-    /**
-     * @brief      Runs the parallel worker.
-     *
-     * @param[in]  result  The result.
-     */
     void run(std::vector<R>& result)
     {
         auto indices   = std::unordered_map<T*, int>();
@@ -205,53 +131,20 @@ public:
     }
 };
 
-/**
- * @brief      Template specialization for parallel processing without output collection.
- *
- *             This specialization provides a framework for distributing work across
- *             multiple threads when no output collection is needed. Work items are
- *             processed in parallel for their side effects only. Ideal for tasks
- *             like file processing, database updates, or other operations where
- *             the processing itself is the goal rather than collecting results.
- *
- * @tparam     T     The type of input work items to be processed.
- */
 template <typename T>
 class parallel_worker<T, void>
 {
 protected:
-    /**
-     * @brief      Gets the ready generator.
-     *
-     * @return     The ready generator.
-     */
-    virtual fb::generator<T> on_ready() = 0;
-    /**
-     * @brief      Gets the work generator.
-     *
-     * @param[in]  value  The value.
-     */
-    virtual void on_work(const T& value) = 0;
-    virtual void on_worked(const T& input, double percent)
+    virtual fb::generator<T> on_ready()              = 0;
+    virtual void             on_work(const T& value) = 0;
+    virtual void             on_worked(const T& input, double percent)
     { }
-    /**
-     * @brief      Gets the error generator.
-     *
-     * @param[in]  input  The input.
-     * @param[in]  e  The exception.
-     */
     virtual void on_error(const T& input, std::exception& e)
     { }
-    /**
-     * @brief      Gets the finish generator.
-     */
     virtual void on_finish()
     { }
 
 public:
-    /**
-     * @brief      Runs the parallel worker.
-     */
     void run()
     {
         fb::locker<std::queue<T>> queue;
