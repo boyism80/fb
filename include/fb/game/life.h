@@ -436,7 +436,7 @@ public:
      *
      * @return     True if condition contains, False otherwise.
      */
-    bool condition_contains(CROWD_CONTROL value) const;
+    bool contains_cc(CROWD_CONTROL value) const;
 
     /**
      * @brief      Checks if the life entity is alive.

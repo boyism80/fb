@@ -683,19 +683,14 @@ protected:
      *
      * @return     The server ID as configured in the settings.
      */
-    uint8_t id() const
-    {
-        return fb::config<uint8_t>("id");
-    }
+    uint8_t id() const override final;
+
     /**
      * @brief      Gets the service type for this game server.
      *
      * @return     The service type identifier for game servers.
      */
-    Service service() const
-    {
-        return Service::Game;
-    }
+    Service service() const override final;
 
 public:
     /**
