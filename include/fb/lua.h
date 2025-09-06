@@ -197,6 +197,44 @@ public:
         }
         return 0;
     }
+
+    std::weak_ptr<luable> weak_from_this()
+    {
+        return std::weak_ptr<luable>(this->shared_from_this_as<luable>());
+    }
+
+    std::weak_ptr<const luable> weak_from_this() const
+    {
+        return std::weak_ptr<const luable>(this->shared_from_this_as<luable>());
+    }
+
+    template <typename T>
+    std::weak_ptr<T> weak_from_this_as()
+    {
+        static_assert(std::is_base_of_v<luable, T>, "T must inherit from luable");
+        return std::static_pointer_cast<T>(this->shared_from_this());
+    }
+
+    template <typename T>
+    std::weak_ptr<const T> weak_from_this_as() const
+    {
+        static_assert(std::is_base_of_v<luable, T>, "T must inherit from luable");
+        return std::static_pointer_cast<const T>(this->shared_from_this());
+    }
+
+    template <typename T>
+    std::shared_ptr<T> shared_from_this_as()
+    {
+        static_assert(std::is_base_of_v<luable, T>, "T must inherit from luable");
+        return std::static_pointer_cast<T>(this->shared_from_this());
+    }
+
+    template <typename T>
+    std::shared_ptr<const T> shared_from_this_as() const
+    {
+        static_assert(std::is_base_of_v<luable, T>, "T must inherit from luable");
+        return std::static_pointer_cast<const T>(this->shared_from_this());
+    }
 };
 
 class context
@@ -303,6 +341,9 @@ public:
                 catch (const std::bad_weak_ptr&)
                 {
                     // Fall back to raw pointer
+                    auto allocated = static_cast<const element_type**>(lua_newuserdata(*this, sizeof(const element_type*)));
+                    *allocated     = value;
+
                     auto& metaname = value->metaname();
                     luaL_getmetatable(*this, metaname.c_str());
                     lua_pushcfunction(*this, luable::builtin_gc<const element_type*>);
@@ -313,6 +354,9 @@ public:
             else
             {
                 // Store as raw pointer for non-thread_switchable objects
+                auto allocated = static_cast<const element_type**>(lua_newuserdata(*this, sizeof(const element_type*)));
+                *allocated     = value;
+
                 auto& metaname = value->metaname();
                 luaL_getmetatable(*this, metaname.c_str());
                 lua_pushcfunction(*this, luable::builtin_gc<const element_type*>);
@@ -348,6 +392,9 @@ public:
                 catch (const std::bad_weak_ptr&)
                 {
                     // Fall back to raw pointer
+                    auto allocated = static_cast<const element_type**>(lua_newuserdata(*this, sizeof(const element_type*)));
+                    *allocated     = &value;
+
                     auto& metaname = value.metaname();
                     luaL_getmetatable(*this, metaname.c_str());
                     lua_pushcfunction(*this, luable::builtin_gc<const element_type*>);
@@ -358,6 +405,9 @@ public:
             else
             {
                 // Store as raw pointer for non-thread_switchable objects
+                auto allocated = static_cast<const element_type**>(lua_newuserdata(*this, sizeof(const element_type*)));
+                *allocated     = &value;
+
                 auto& metaname = value.metaname();
                 luaL_getmetatable(*this, metaname.c_str());
                 lua_pushcfunction(*this, luable::builtin_gc<const element_type*>);
