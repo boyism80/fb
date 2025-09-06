@@ -331,6 +331,16 @@ std::shared_ptr<fb::game::character> server::handle_accepted(fb::socket<characte
     return this->make<character>(socket);
 }
 
+uint8_t server::id() const
+{
+    return fb::config<uint8_t>("id");
+}
+
+Service server::service() const
+{
+    return Service::Game;
+}
+
 async::task<void>
 server::send(object& object, const fb::protocol::header& header, fb::game::scope scope, bool exclude_self, bool encrypt)
 {

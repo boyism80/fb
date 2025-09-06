@@ -70,7 +70,6 @@ async::task<bool> chat::handle(fb::socket<character>& session, fb::protocol::gam
         }
     }
 
-    this->server.npc_interaction(*ch, request.message, npcs);
-
+    std::ignore = co_await this->server.npc_interaction(*ch, request.message, npcs);
     co_return true;
 }

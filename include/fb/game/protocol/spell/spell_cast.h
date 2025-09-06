@@ -34,11 +34,7 @@ public:
 #ifndef BOT
     spell_cast() = default;
 #else
-    spell_cast(SPELL_TYPE                        type,
-               uint8_t                           slot,
-               const std::string&                message,
-               uint32_t                          oid,
-               const fb::model::point<uint16_t>& position) :
+    spell_cast(SPELL_TYPE type, uint8_t slot, const std::string& message, uint32_t oid, const fb::model::point<uint16_t>& position) :
         type(type),
         slot(slot),
         message(message),

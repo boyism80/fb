@@ -18,31 +18,29 @@
         return (v);                               \
     }
 
-#define BEGIN_PREPROCESSOR                                  \
-    namespace fb { namespace model { namespace enum_value { \
-                                                            \
-    enum class DIRECTION;                                   \
-                                                            \
-    }}}                                                     \
-                                                            \
-    namespace fb { namespace model {                        \
-    class recipe_node;                                      \
-    }}                                                      \
-                                                            \
-    namespace fb { namespace game {                         \
-                                                            \
-    class server;                                           \
-    class map;                                              \
-    class character;                                        \
-    class buffs;                                            \
-    class objects;                                          \
-    class item;                                             \
-    class items;                                            \
-    class sector;                                           \
-    class sectors;                                          \
-    struct listener;                                        \
-                                                            \
-    }}
+#define BEGIN_PREPROCESSOR            \
+    namespace fb::model::enum_value { \
+                                      \
+    enum class DIRECTION;             \
+    }                                 \
+                                      \
+    namespace fb::model {             \
+    class recipe_node;                \
+    }                                 \
+                                      \
+    namespace fb::game {              \
+                                      \
+    class server;                     \
+    class map;                        \
+    class character;                  \
+    class buffs;                      \
+    class objects;                    \
+    class item;                       \
+    class items;                      \
+    class sector;                     \
+    class sectors;                    \
+    struct listener;                  \
+    }
 
 #define DECLARE_AFTER_TYPE             \
     using point8_t  = point<uint8_t>;  \
@@ -69,23 +67,11 @@ public:                                                                         
     struct point<T>& left(fb::model::enum_value::DIRECTION direction, T step = 1);     \
     struct point<T>& right(fb::model::enum_value::DIRECTION direction, T step = 1);    \
                                                                                        \
-    /**                                                                                \
-     * @brief      Calculates the Manhattan distance to another point.                 \
-     *                                                                                 \
-     * @param[in]  r  The point to calculate distance to                               \
-     * @return     The Manhattan distance between the points                           \
-     */                                                                                \
     T manhattan_distance(const point<T>& r) const                                      \
     {                                                                                  \
         return std::abs(this->x - r.x) + std::abs(this->y - r.y);                      \
     }                                                                                  \
                                                                                        \
-    /**                                                                                \
-     * @brief      Calculates the Euclidean distance to another point.                 \
-     *                                                                                 \
-     * @param[in]  r  The point to calculate distance to                               \
-     * @return     The Euclidean distance between the points                           \
-     */                                                                                \
     float distance(const point<T>& r) const                                            \
     {                                                                                  \
         auto dx = static_cast<float>(this->x - r.x);                                   \
@@ -341,29 +327,25 @@ public:                                                                         
     bool             name2class(const std::string& name, enum_value::CLASS& cls, uint8_t& promotion) const; \
     bool             class2name(enum_value::CLASS cls, uint8_t promotion, std::string& name) const;
 
-#define DECLARE_CONST_REGEX_EXTENSION                                                                              \
-                                                                                                                   \
-public:                                                                                                            \
-    static bool match_sell_message(const std::string& message, std::string& item, std::optional<uint16_t>& count); \
-    static bool match_buy_message(const std::string& message, std::string& item, uint16_t& count);                 \
-    static bool match_repair_message(const std::string& message, std::string& item);                               \
-    static bool match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money);           \
-    static bool match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money);          \
-    static bool match_store_item_message(const std::string&       message,                                         \
-                                         std::string&             item,                                            \
-                                         std::optional<uint16_t>& count);                                          \
-    static bool match_retrieve_item_message(const std::string&       message,                                      \
-                                            std::string&             item,                                         \
-                                            std::optional<uint16_t>& count);                                       \
-    static bool match_sell_list(const std::string& message);                                                       \
-    static bool match_buy_list(const std::string& message);                                                        \
-    static bool match_sell_price(const std::string& message, std::string& item);                                   \
-    static bool match_buy_price(const std::string& message, std::string& item);                                    \
-    static bool match_deposited_money(const std::string& message);                                                 \
-    static bool match_rename_weapon(const std::string& message, std::string& weapon, std::string& name);           \
-    static bool match_store_item_list(const std::string& message);                                                 \
-    static bool match_store_item_count(const std::string& message, std::string& item);                             \
-    static bool match_revive(const std::string& message, bool& discourteous);                                      \
+#define DECLARE_CONST_REGEX_EXTENSION                                                                                       \
+                                                                                                                            \
+public:                                                                                                                     \
+    static bool match_sell_message(const std::string& message, std::string& item, std::optional<uint16_t>& count);          \
+    static bool match_buy_message(const std::string& message, std::string& item, uint16_t& count);                          \
+    static bool match_repair_message(const std::string& message, std::string& item);                                        \
+    static bool match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money);                    \
+    static bool match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money);                   \
+    static bool match_store_item_message(const std::string& message, std::string& item, std::optional<uint16_t>& count);    \
+    static bool match_retrieve_item_message(const std::string& message, std::string& item, std::optional<uint16_t>& count); \
+    static bool match_sell_list(const std::string& message);                                                                \
+    static bool match_buy_list(const std::string& message);                                                                 \
+    static bool match_sell_price(const std::string& message, std::string& item);                                            \
+    static bool match_buy_price(const std::string& message, std::string& item);                                             \
+    static bool match_deposited_money(const std::string& message);                                                          \
+    static bool match_rename_weapon(const std::string& message, std::string& weapon, std::string& name);                    \
+    static bool match_store_item_list(const std::string& message);                                                          \
+    static bool match_store_item_count(const std::string& message, std::string& item);                                      \
+    static bool match_revive(const std::string& message, bool& discourteous);                                               \
     static bool match_appreciate(const std::string& message);
 
 #define DECLARE_SELL_CONTAINER_EXTENSION                                              \
@@ -378,17 +360,14 @@ public:                                                                         
     const fb::model::buy* find(uint32_t pursuit, const fb::model::item& item) const; \
     const fb::model::buy* find(const fb::model::npc& npc, const fb::model::item& item) const;
 
-#define DECLARE_RECIPE_EXTENSION                       \
-                                                       \
-public:                                                \
-    recipe(const std::vector<fb::model::dsl>& source,  \
-           const std::vector<fb::model::dsl>& success, \
-           const std::vector<fb::model::dsl>& failed,  \
-           double                             percent) :                           \
-        source(source),                                \
-        success(success),                              \
-        failed(failed),                                \
-        percent(percent)                               \
+#define DECLARE_RECIPE_EXTENSION                                                                                                                               \
+                                                                                                                                                               \
+public:                                                                                                                                                        \
+    recipe(const std::vector<fb::model::dsl>& source, const std::vector<fb::model::dsl>& success, const std::vector<fb::model::dsl>& failed, double percent) : \
+        source(source),                                                                                                                                        \
+        success(success),                                                                                                                                      \
+        failed(failed),                                                                                                                                        \
+        percent(percent)                                                                                                                                       \
     { }
 
 #define DECLARE_RECIPE_CONTAINER_CUSTOM_CONSTRUCTOR \

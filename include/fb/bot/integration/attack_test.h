@@ -7,12 +7,6 @@
 
 namespace fb::bot::integration {
 
-/**
- * @brief      Attack integration test implementation.
- *
- *             Tests bot attack functionality by spawning a monster and having
- *             the bot attack it until the monster is defeated.
- */
 class attack_test : public bot_integration_test
 {
 private:
@@ -23,21 +17,7 @@ private:
     bool                    _done = false;
 
 public:
-    /**
-     * @brief      Constructs a new attack test with controller reference.
-     *
-     *             Initializes the attack test and registers hooks for specific
-     *             protocol types to enable event-driven test execution.
-     *
-     * @param[in]  controller  Reference to the parent game bot controller.
-     */
     attack_test(game_bot_controller& controller);
-
-    /**
-     * @brief      Gets the test name.
-     *
-     * @return     "Attack Test" as the identifier.
-     */
     std::string name() const override final;
 
 private:
@@ -56,4 +36,4 @@ protected:
 
 } // namespace fb::bot::integration
 
-#endif // !__BOT_INTEGRATION_ATTACK_TEST_H__
+#endif // __BOT_INTEGRATION_ATTACK_TEST_H__

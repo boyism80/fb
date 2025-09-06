@@ -1,32 +1,6 @@
 #ifndef __PROTOCOL_GAME_H__
 #define __PROTOCOL_GAME_H__
 
-/**
- * @file       protocol.h
- * @brief      Central include header for all game protocol definitions.
- *
- *             This header file serves as a comprehensive include point for all
- *             game protocol message definitions used in client-server communication.
- *             It organizes protocol headers by functional categories such as bulletin
- *             operations, character management, item handling, spell casting, and
- *             dialog systems.
- *
- *             Protocol Categories:
- *             - Bulletin: Bulletin system and mail protocols
- *             - Character: Player character state and information protocols
- *             - Dialog: NPC interaction and menu system protocols
- *             - Item: Inventory, equipment, and item manipulation protocols
- *             - Life: Health, death, and life state protocols
- *             - Map: World navigation and map-related protocols
- *             - Object: Game object interaction and update protocols
- *             - Spell: Magic system and buff/debuff protocols
- *             - Trade: Player-to-player trading system protocols
- *
- *             This centralized approach ensures consistent protocol availability
- *             across the game server while maintaining organized categorization
- *             of related message types.
- */
-
 #include <fb/protocol/transfer.h>
 #include <fb/game/protocol/bulletin/bulletin.h>
 #include <fb/game/protocol/bulletin/bulletin_sections.h>

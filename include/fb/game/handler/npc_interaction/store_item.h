@@ -7,43 +7,19 @@
 
 namespace fb::game::handler::npc_interaction {
 
-/**
- * @brief   Handles NPC item storage interactions.
- *
- *          Processes player messages for item storage with NPCs.
- */
 class store_item : public fb::game::npc_interaction_handler
 {
 public:
-    /**
-     * @brief   Constructs a store_item handler.
-     *
-     * @param[in]  server  Reference to the game server
-     */
-    store_item(server_type& server) : npc_interaction_handler(server) {}
-
-    /**
-     * @brief   Checks if the message matches the store_item pattern.
-     *
-     * @param[in]  message  The user input message to check
-     * @return     True if the message matches the pattern, false otherwise
-     */
+    store_item(server_type& server) :
+        npc_interaction_handler(server)
+    { }
     bool matches(const std::string& message) const override
     {
         static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::STORE_ITEM);
         return boost::xpressive::regex_search(message, regex);
     }
 
-    /**
-     * @brief   Handles item storage interaction.
-     *
-     * @param[in]  ch       The character performing the interaction
-     * @param[in]  message  The interaction message from the player
-     * @param[in]  npcs     The list of nearby NPCs
-     */
-    async::task<void> handle(character_type& ch, 
-                           const std::string& message,
-                           const npc_list_type& npcs) override;
+    async::task<void> handle(character_type& ch, const std::string& message, const npc_list_type& npcs) override;
 };
 
 } // namespace fb::game::handler::npc_interaction

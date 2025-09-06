@@ -1,35 +1,6 @@
 #ifndef __FB_GAME_H__
 #define __FB_GAME_H__
 
-/**
- * @file    server.h
- * @brief   Main game server and world management system
- * @author  FB Development Team
- *
- * @details This file implements the central game server that coordinates
- *          all game systems and manages the complete game world state. The server
- *          serves as the main orchestrator for player connections, game objects,
- *          server-wide operations, and inter-service communication in the FB 2D MMORPG.
- *
- *          Key features:
- *          - Complete game world initialization and lifecycle management
- *          - Player character session management and authentication
- *          - Comprehensive map and object container management
- *          - Group and clan system coordination with sharded containers
- *          - Database integration with Redis for caching and persistence
- *          - AMQP integration for inter-service communication and messaging
- *          - Lua script execution environment for dynamic game logic
- *          - Thread pool management and work distribution across multiple threads
- *          - Real-time event processing and broadcasting to connected clients
- *          - Protocol handler registration and automatic message routing
- *          - Internal service communication (HTTP, AMQP) for distributed architecture
- *          - Comprehensive game mechanics coordination (combat, spells, trading, etc.)
- *
- * @note    The server is the singleton entry point for all game server
- *          operations and maintains the authoritative game state for the entire
- *          game world instance.
- */
-
 #include <boost/algorithm/string/join.hpp>
 #include <json/json.h>
 #include <fstream>
@@ -79,12 +50,6 @@ REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanRole, fb::protocol:
 
 namespace fb::game {
 
-/**
- * @brief      Enumeration defining the scope of operations within the game world.
- *
- *             This enum is used to determine the range or scope of various game operations
- *             such as message broadcasting, spell effects, or event notifications.
- */
 enum class scope
 {
     PIVOT, ///< Operation affects only the pivot/center object
@@ -93,24 +58,6 @@ enum class scope
     WORLD  ///< Operation affects the entire game world
 };
 
-/**
- * @brief      The main game server that manages all game world operations.
- *
- *             This class extends the acceptor to provide comprehensive game server functionality.
- *             It manages the complete game world including characters, maps, NPCs, items, spells,
- *             groups, clans, and all game mechanics. The server serves as the central coordinator
- *             for all game operations and maintains the game state.
- *
- *             Key responsibilities:
- *             - Character session management and authentication
- *             - Game world state management (maps, objects, NPCs)
- *             - Group and clan system coordination
- *             - Inter-service communication via AMQP
- *             - Lua scripting integration for game logic
- *             - Real-time game event processing
- *             - Database synchronization via Redis
- *             - Protocol handler registration and dispatch
- */
 class server : public fb::acceptor<fb::game::character>
 {
 public:
@@ -139,32 +86,8 @@ public:
     fb::sharded_container<map::cache_bytes, 1024, uint64_t> map_update_cache;
 
 public:
-    /**
-     * @brief      Constructs a new game server with network and world initialization.
-     *
-     *             Initializes the game server with the specified I/O server and port.
-     *             Sets up the game world, loads configuration, initializes Redis connection,
-     *             and prepares all game systems for operation.
-     *
-     * @param      io_context   The boost::asio I/O context for network operations.
-     * @param[in]  port         The TCP port number to listen on for client connections.
-     */
     server(boost::asio::io_context& io_context, uint16_t port);
-
-    /**
-     * @brief      Copy constructor is explicitly deleted.
-     *
-     *             The game server cannot be copied as it manages unique resources
-     *             like network connections, database connections, and game state.
-     */
     server(const server&) = delete;
-
-    /**
-     * @brief      Destroys the game server and cleans up all resources.
-     *
-     *             Ensures proper cleanup of all game objects, network connections,
-     *             database connections, and other resources before destruction.
-     */
     ~server();
 
 public:
@@ -192,10 +115,7 @@ public:
      * @param[in]  members  The list of member names in the group.
      * @param[in]  fn       The callback function to execute with the group lock.
      */
-    async::task<void> upsert_group_then(uint32_t                               gid,
-                                        const std::string&                     master,
-                                        const std::vector<std::string>&        members,
-                                        const std::function<void(group_ptr&)>& fn);
+    async::task<void> upsert_group_then(uint32_t gid, const std::string& master, const std::vector<std::string>& members, const std::function<void(group_ptr&)>& fn);
 
     /**
      * @brief      Updates clan information with data from internal protocol.
@@ -204,9 +124,7 @@ public:
      * @param      resp1  The clan information response
      * @param[in]  resp2  The clan member list response
      */
-    void update_clan(clan&                                                  clan,
-                     fb::protocol::internal::Clan&                          resp1,
-                     const std::vector<fb::protocol::internal::ClanMember>& resp2) const;
+    void update_clan(clan& clan, fb::protocol::internal::Clan& resp1, const std::vector<fb::protocol::internal::ClanMember>& resp2) const;
 
     /**
      * @brief      Updates or inserts a clan and executes a function with it.
@@ -214,8 +132,7 @@ public:
      * @param[in]  id    The clan identifier
      * @param[in]  fn    The function to execute with the clan lock
      */
-    async::task<void> upsert_clan_then(uint32_t                                                           id,
-                                       std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn);
+    async::task<void> upsert_clan_then(uint32_t id, std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn);
 
 private:
     /**
@@ -434,11 +351,7 @@ public:
      *
      * @return     An async task that completes when the message is sent.
      */
-    async::task<void> send(fb::game::object&           object,
-                           const fb::protocol::header& header,
-                           fb::game::scope             scope,
-                           bool                        exclude_self = false,
-                           bool                        encrypt      = true);
+    async::task<void> send(fb::game::object& object, const fb::protocol::header& header, fb::game::scope scope, bool exclude_self = false, bool encrypt = true);
 
     /**
      * @brief      Saves character data to persistent storage.
@@ -484,9 +397,7 @@ public:
      *
      * @return     An async task that completes when the broadcast is sent.
      */
-    [[nodiscard]] async::task<void> broadcast(const std::string& message,
-                                              MESSAGE_TYPE       type,
-                                              BROADCAST_TYPE     broadcast_type);
+    [[nodiscard]] async::task<void> broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type);
 
     /**
      * @brief      Creates a group with the specified character as leader.
@@ -519,9 +430,7 @@ public:
      *
      * @return     An async task that completes when the character is kicked from the group.
      */
-    [[nodiscard]] async::task<void> kick_group_member(const group&       group,
-                                                      const std::string& kicker,
-                                                      const std::string& target);
+    [[nodiscard]] async::task<void> kick_group_member(const group& group, const std::string& kicker, const std::string& target);
 
     /**
      * @brief      Broadcasts a message to all members of a group.
@@ -582,9 +491,7 @@ public:
      *
      * @return     An async task that completes when the character is kicked from the clan.
      */
-    [[nodiscard]] async::task<void> kick_clan_member(const clan&        clan,
-                                                     const std::string& kicker,
-                                                     const std::string& target);
+    [[nodiscard]] async::task<void> kick_clan_member(const clan& clan, const std::string& kicker, const std::string& target);
 
     /**
      * @brief      Changes the position of a clan member by an authorized member.
@@ -596,8 +503,7 @@ public:
      *
      * @return     An async task that completes when the position change is processed.
      */
-    [[nodiscard]] async::task<void>
-    change_clan_member_role(const clan& clan, uint32_t changer_uid, const std::string& target, CLAN_ROLE role);
+    [[nodiscard]] async::task<void> change_clan_member_role(const clan& clan, uint32_t changer_uid, const std::string& target, CLAN_ROLE role);
 
     /**
      * @brief      Broadcasts a message to all members of a clan.
@@ -620,8 +526,7 @@ public:
      *
      * @return     An async task returning the mail sending response.
      */
-    [[nodiscard]] async::task<internal_resp::WriteMail>
-    send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents);
+    [[nodiscard]] async::task<internal_resp::WriteMail> send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents);
 
     /**
      * @brief      Gets a list of mail messages for a character.
@@ -632,9 +537,7 @@ public:
      *
      * @return     An async task returning the mail list response.
      */
-    [[nodiscard]] async::task<internal_resp::GetMailList> mail_list(const character& ch,
-                                                                    uint16_t         offset,
-                                                                    uint16_t         count);
+    [[nodiscard]] async::task<internal_resp::GetMailList> mail_list(const character& ch, uint16_t offset, uint16_t count);
 
     /**
      * @brief      Reads the content of a specific mail message.
@@ -686,8 +589,7 @@ public:
      *
      * @return     An async task that completes when the article is written.
      */
-    [[nodiscard]] async::task<void>
-    write_bulletin(character& ch, uint16_t section, const std::string& title, const std::string& contents);
+    [[nodiscard]] async::task<void> write_bulletin(character& ch, uint16_t section, const std::string& title, const std::string& contents);
 
     /**
      * @brief      Deletes a bulletin article from a section.
@@ -781,19 +683,14 @@ protected:
      *
      * @return     The server ID as configured in the settings.
      */
-    uint8_t id() const
-    {
-        return fb::config<uint8_t>("id");
-    }
+    uint8_t id() const override final;
+
     /**
      * @brief      Gets the service type for this game server.
      *
      * @return     The service type identifier for game servers.
      */
-    Service service() const
-    {
-        return Service::Game;
-    }
+    Service service() const override final;
 
 public:
     /**
@@ -815,9 +712,7 @@ public:
      *
      * @return     True if any NPC interaction was handled successfully, false otherwise.
      */
-    async::task<bool> npc_interaction(character&                                         ch,
-                                      const std::string&                                 message,
-                                      const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
+    async::task<bool> npc_interaction(character& ch, const std::string& message, const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
 
     /**
      * @brief      Removes a character from a clan.

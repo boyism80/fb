@@ -41,57 +41,15 @@ using namespace fb::model::enum_value;
 
 namespace fb::game {
 
-/**
- * @brief      Forward declaration of the game server class.
- */
 class server;
-/**
- * @brief      Forward declaration of the map class.
- */
 class map;
-/**
- * @brief      Forward declaration of the character class.
- */
 class character;
-/**
- * @brief      Forward declaration of the buffs container class.
- */
 class buffs;
-/**
- * @brief      Forward declaration of the objects container class.
- */
 class objects;
-/**
- * @brief      Forward declaration of the items container class.
- */
 class items;
-/**
- * @brief      Forward declaration of the sector class.
- */
 class sector;
-/**
- * @brief      Forward declaration of the sectors container class.
- */
 class sectors;
 
-/**
- * @brief      Base class for all interactive objects in the game world.
- *
- *             This class serves as the foundation for all objects that can exist in the game world,
- *             including characters, NPCs, items, doors, and other interactive elements. It provides
- *             core functionality for positioning, movement, visibility, communication, and interaction
- *             within the game environment.
- *
- *             Key features:
- *             - Spatial positioning and movement within maps
- *             - Line-of-sight calculations and visibility management
- *             - Inter-object communication and chat system
- *             - Buff/debuff system integration
- *             - Thread-safe operations with automatic thread switching
- *             - Lua scripting integration for game logic
- *             - Event-driven architecture with listener pattern
- *             - Network communication capabilities
- */
 class object : public fb::thread_switchable
 {
 public:
@@ -122,37 +80,10 @@ public:
     fb::game::buffs   buffs;
 
 protected:
-    /**
-     * @brief      Constructs a new game object with the specified server and model.
-     *
-     *             Creates a new game object using the provided server for management,
-     *             model data for appearance and behavior, and initial parameters for
-     *             positioning and state setup.
-     *
-     * @param[in]  server   The game server that will manage this object's lifecycle
-     * @param[in]  model    The object model containing visual and behavioral data
-     * @param[in]  c        Initial parameters including position, direction, and other setup values
-     */
     object(fb::game::server& server, const fb::model::object& model, const initial_params& c);
-
-    /**
-     * @brief      Copy constructor for creating an object from another object.
-     *
-     *             Creates a new object by copying all properties and state from the
-     *             source object, including position, appearance, and internal data.
-     *
-     * @param[in]  right  The source object to copy all properties from
-     */
     object(const object& right);
 
 public:
-    /**
-     * @brief      Destroys the game object and cleans up all resources.
-     *
-     *             Removes the object from its current map, notifies listeners,
-     *             cleans up any associated resources, and ensures proper cleanup
-     *             of all references and connections.
-     */
     virtual ~object();
 
 private:
@@ -160,11 +91,6 @@ private:
      * @brief      Updates the object's sector information on the current map.
      */
     void update_sector();
-
-    /**
-     * @brief      Removes the object from its current map and cleans up references.
-     */
-    void leave();
 
     /**
      * @brief      Checks if two positions have line of sight on a map.
@@ -175,9 +101,7 @@ private:
      *
      * @return     True if positions have line of sight, false otherwise
      */
-    static bool sight(const fb::model::point16_t            me,
-                      const fb::model::point16_t            you,
-                      const std::shared_ptr<fb::game::map>& map);
+    static bool sight(const fb::model::point16_t me, const fb::model::point16_t you, const std::shared_ptr<fb::game::map>& map);
 
 public:
     /**
@@ -424,8 +348,7 @@ public:
      *
      * @return     True if the map change was successful, false otherwise
      */
-    virtual async::task<bool> map(std::shared_ptr<fb::game::map> map,
-                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual async::task<bool> map(std::shared_ptr<fb::game::map> map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
 
     /**
      * @brief      Moves the object to a different map at a specific position.
@@ -437,10 +360,7 @@ public:
      *
      * @return     True if the map change was successful, false otherwise
      */
-    virtual async::task<bool> map(std::shared_ptr<fb::game::map> map,
-                                  const fb::model::point16_t&    position,
-                                  DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT,
-                                  bool                           notify       = true);
+    virtual async::task<bool> map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT, bool notify = true);
 
     /**
      * @brief      Gets the map that this object is currently on.
@@ -504,8 +424,7 @@ public:
      *
      * @return     Vector of pointers to all objects found in that direction
      */
-    std::vector<std::shared_ptr<fb::game::object>> sides(DIRECTION   direction,
-                                                         OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<std::shared_ptr<fb::game::object>> sides(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      Gets the first object directly in front of this object.
@@ -591,8 +510,7 @@ public:
      *
      * @return     Vector of pointers to all nearby objects
      */
-    std::vector<std::shared_ptr<fb::game::object>> nears(OBJECT_TYPE type                = OBJECT_TYPE::UNKNOWN,
-                                                         bool        contains_super_hide = false) const;
+    std::vector<std::shared_ptr<fb::game::object>> nears(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN, bool contains_super_hide = false) const;
 
     /**
      * @brief      Sets the thread that this object belongs to.
@@ -809,10 +727,10 @@ struct object::listener_t
 struct object::initial_params
 {
 public:
-    uint32_t                       id; ///< Unique object identifier (0xFFFFFFFF for auto-assignment)
+    uint32_t                       id;                                 ///< Unique object identifier (0xFFFFFFFF for auto-assignment)
     const fb::model::point16_t     position  = fb::model::point16_t(); ///< Initial position coordinates on the map
     DIRECTION                      direction = DIRECTION::BOTTOM;      ///< Initial facing direction
-    std::shared_ptr<fb::game::map> map       = nullptr; ///< Pointer to the map where the object will be placed
+    std::shared_ptr<fb::game::map> map       = nullptr;                ///< Pointer to the map where the object will be placed
 };
 
 } // namespace fb::game

@@ -1,35 +1,6 @@
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
-/**
- * @file    socket.h
- * @brief   High-performance TCP socket wrapper with encryption and rate limiting
- * @author  FB Development Team
- *
- * @details This file implements a comprehensive TCP socket wrapper that extends
- *          boost::asio functionality with game server specific features including
- *          encryption/decryption, rate limiting, and thread-safe operations.
- *          The socket system is designed for high-performance network communication
- *          in the FB 2D MMORPG game server environment.
- *
- *          Key features:
- *          - High-performance TCP socket operations with boost::asio integration
- *          - Built-in encryption/decryption support with configurable encryption policies
- *          - Advanced rate limiting system with both global and per-command TPS limits
- *          - Thread-safe operations with proper synchronization mechanisms
- *          - Asynchronous I/O operations with customizable event handlers
- *          - Protocol-aware data streaming with automatic packet wrapping
- *          - Session data association with template-based type safety
- *          - Automatic connection lifecycle management with proper cleanup
- *          - Integration with the game server's threading and context systems
- *          - Comprehensive error handling and exception management
- *          - Performance monitoring and metrics collection capabilities
- *
- * @note    This socket system serves as the foundation for all network communication
- *          between game clients and the server, providing reliable and secure
- *          data transmission with optimal performance characteristics.
- */
-
 #include <exception>
 #include <unordered_map>
 #include <deque>
@@ -47,19 +18,6 @@
 
 namespace fb {
 
-/**
- * @brief      High-performance TCP socket wrapper with encryption and rate limiting.
- *
- *             This template class extends boost::asio TCP socket functionality with
- *             built-in encryption/decryption support, automatic rate limiting (TPS),
- *             and thread-safe operations. It provides asynchronous I/O operations
- *             with customizable event handlers for received data and connection closure.
- *             The socket integrates with the game server's threading system and
- *             supports protocol-aware data streaming with automatic packet wrapping.
- *
- * @tparam     T     The type of session data associated with this socket connection.
- *                   This allows each socket to carry custom state/context information.
- */
 template <typename T = void*>
 class socket : public boost::asio::ip::tcp::socket, public thread_switchable
 {
@@ -67,30 +25,12 @@ public:
     static constexpr uint32_t MAX_BUFFER_SIZE = 256;
 
 public:
-    /**
-     * @brief      The type of the read event handler.
-     */
     using handle_read_event = std::function<async::task<void>(fb::socket<T>&, fb::stream&)>;
-    /**
-     * @brief      The type of the event handler.
-     */
-    using handler_event = std::function<async::task<void>(fb::socket<T>&)>;
+    using handler_event     = std::function<async::task<void>(fb::socket<T>&)>;
 
-    /**
-     * @brief      Rate limiter for managing TPS (Transactions Per Second) limits.
-     *
-     *             This nested class handles both global socket TPS and per-command TPS limiting
-     *             using a unified tracking structure. It provides overloaded update() methods
-     *             for different use cases and tracks request counts with timestamps to enforce
-     *             rate limits effectively. This class is non-copyable and non-movable to ensure
-     *             data integrity.
-     */
     class rate_limiter
     {
     private:
-        /**
-         * @brief      Structure for tracking TPS measurements per command.
-         */
         struct tracker
         {
             fb::model::datetime last        = fb::model::datetime(); ///< Last reset time for rate limiting window
@@ -101,14 +41,8 @@ public:
         std::unordered_map<uint8_t, tracker> _commands; ///< Per-command TPS trackers
 
     public:
-        /**
-         * @brief      Default constructor.
-         */
         rate_limiter() = default;
 
-        /**
-         * @brief      Destructor.
-         */
         ~rate_limiter() = default;
 
         // Delete copy constructor and copy assignment operator
@@ -119,13 +53,6 @@ public:
         rate_limiter(rate_limiter&&)             = delete;
         rate_limiter& operator= (rate_limiter&&) = delete;
 
-        /**
-         * @brief      Updates and checks the global TPS limit for all requests.
-         *
-         * @param[in]  limit  The maximum number of requests allowed per second.
-         *
-         * @return     True if within limits, false if rate limited.
-         */
         bool update(uint32_t limit)
         {
             auto elapsed_time = fb::model::datetime() - this->_global.last;
@@ -141,15 +68,6 @@ public:
             return true;
         }
 
-        /**
-         * @brief      Updates and checks the TPS limit for a specific command.
-         *
-         * @param[in]  cmd       The command byte to track.
-         * @param[in]  duration  The time window for rate limiting.
-         * @param[in]  limit     The maximum transitions allowed in the window.
-         *
-         * @return     True if within limits, false if rate limited.
-         */
         bool update(uint8_t cmd, const std::chrono::steady_clock::duration& duration, uint32_t limit)
         {
             if (!this->_commands.contains(cmd))
@@ -183,25 +101,9 @@ protected:
     std::shared_ptr<T>                _data;
 
 public:
-    /**
-     * @brief      Rate limiter instance for this socket.
-     *
-     *             Provides direct access to rate limiting functionality with two update methods:
-     *             - update(limit): Global TPS limiting for all requests
-     *             - update(cmd, duration, limit): Per-command TPS limiting with custom windows
-     *
-     *             This instance is unique per socket and cannot be copied or moved.
-     */
     rate_limiter limiter;
 
 public:
-    /**
-     * @brief      Constructs a new instance.
-     *
-     * @param[in]  executor        The async_executor.
-     * @param[in]  handle_received The read event handler.
-     * @param[in]  handle_closed   The closed event handler.
-     */
     socket(fb::async_executor& executor, const handle_read_event& handle_received, const handler_event& handle_closed) :
         boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(executor)),
         _executor(executor),
@@ -210,18 +112,7 @@ public:
     { }
 
 public:
-    /**
-     * @brief      Constructs a new instance.
-     *
-     * @param[in]  executor        The async_executor.
-     * @param[in]  encryption      The encryption.
-     * @param[in]  handle_received The read event handler.
-     * @param[in]  handle_closed   The closed event handler.
-     */
-    socket(fb::async_executor&      executor,
-           const fb::encryption&    encryption,
-           const handle_read_event& handle_received,
-           const handler_event&     handle_closed) :
+    socket(fb::async_executor& executor, const fb::encryption& encryption, const handle_read_event& handle_received, const handler_event& handle_closed) :
         boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(executor)),
         _executor(executor),
         _handle_received(handle_received),
@@ -230,47 +121,21 @@ public:
     { }
 
 public:
-    /**
-     * @brief      Destroys the socket.
-     */
     ~socket() = default;
 
 protected:
-    /**
-     * @brief      Encrypts the stream.
-     *
-     * @param[in]  out  The stream to encrypt.
-     *
-     * @return     True if the stream was encrypted successfully, false otherwise.
-     */
     virtual bool on_encrypt(fb::stream& out)
     {
         return this->_encryption.encrypt(out);
     }
 
 protected:
-    /**
-     * @brief      Wraps the stream.
-     *
-     * @param[in]  out  The stream to wrap.
-     *
-     * @return     True if the stream was wrapped successfully, false otherwise.
-     */
     virtual bool on_wrap(fb::stream& out)
     {
         return this->_encryption.wrap(out);
     }
 
 public:
-    /**
-     * @brief      Sends a stream.
-     *
-     * @param[in]  stream   The stream to send.
-     * @param[in]  encrypt  Whether to encrypt the stream.
-     * @param[in]  wrap     Whether to wrap the stream.
-     *
-     * @return     A task that will complete when the stream is sent.
-     */
     async::task<size_t> send(const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
         auto promise = std::make_shared<async::task_completion_source<size_t>>();
@@ -308,21 +173,11 @@ public:
     }
 
 public:
-    /**
-     * @brief      Gets the IP address of the socket.
-     *
-     * @return     The IP address of the socket.
-     */
     std::string ip() const
     {
         return this->remote_endpoint().address().to_string();
     }
 
-    /**
-     * @brief      Gets the IP address of the socket as a raw integer.
-     *
-     * @return     The IP address of the socket as a raw integer.
-     */
     uint32_t ip_raw() const
     {
         try
@@ -339,26 +194,12 @@ public:
         }
     }
 
-    /**
-     * @brief      Gets the port of the socket.
-     *
-     * @return     The port of the socket.
-     */
     uint16_t port() const
     {
         return this->remote_endpoint().port();
     }
 
 public:
-    /**
-     * @brief      Sends a protocol header.
-     *
-     * @param[in]  response  The response to send.
-     * @param[in]  encrypt   Whether to encrypt the response.
-     * @param[in]  wrap      Whether to wrap the response.
-     *
-     * @return     A task that will complete when the header is sent.
-     */
     async::task<size_t> send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true)
     {
         auto stream = fb::stream();
@@ -368,19 +209,13 @@ public:
     }
 
 public:
-    /**
-     * @brief      Receives data from the socket.
-     *
-     * @return     A task that will complete when the data is received.
-     */
     boost::asio::awaitable<void> recv()
     {
         try
         {
             while (true)
             {
-                auto bytes_transferred =
-                    co_await this->async_read_some(boost::asio::buffer(this->_buffer), boost::asio::use_awaitable);
+                auto bytes_transferred = co_await this->async_read_some(boost::asio::buffer(this->_buffer), boost::asio::use_awaitable);
 
                 auto writer = fb::stream_writer<big_endian>(this->_stream);
                 writer.write(this->_buffer.data(), bytes_transferred);
@@ -430,22 +265,12 @@ public:
     }
 
 public:
-    /**
-     * @brief      Sets the data.
-     *
-     * @param[in]  value  The data.
-     */
     void data(std::shared_ptr<T> value)
     {
         this->_data = value;
     }
 
 public:
-    /**
-     * @brief      Gets the data.
-     *
-     * @return     The data.
-     */
     std::shared_ptr<T> data_ptr() const
     {
         return this->_data;
@@ -460,56 +285,30 @@ public:
     }
 
 public:
-    /**
-     * @brief      Gets the file descriptor of the socket.
-     *
-     * @return     The file descriptor of the socket.
-     */
     uint32_t fd() const
     {
         return (uint32_t)const_cast<fb::socket<T>*>(this)->native_handle();
     }
 
 public:
-    /**
-     * @brief      Gets the encryption.
-     *
-     * @return     The encryption.
-     */
     fb::encryption& encryption()
     {
         return this->_encryption;
     }
 
 public:
-    /**
-     * @brief      Sets the encryption.
-     *
-     * @param[in]  encryption  The encryption.
-     */
     void encryption(const fb::encryption& encryption)
     {
         this->_encryption = encryption;
     }
 
 public:
-    /**
-     * @brief      Sets the encryption.
-     *
-     * @param[in]  enctype  The encryption type.
-     * @param[in]  enckey  The encryption key.
-     */
     void encryption(uint8_t enctype, const uint8_t* enckey)
     {
         this->_encryption = fb::encryption(enctype, enckey);
     }
 
 public:
-    /**
-     * @brief      Gets the thread associated with the socket.
-     *
-     * @return     The thread associated with the socket.
-     */
     virtual fb::thread* thread() const override
     {
         if constexpr (std::is_base_of_v<fb::thread_switchable, T>)

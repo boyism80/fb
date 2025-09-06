@@ -10,9 +10,9 @@ namespace fb::bot::integration {
 
 enum class dialog_ext_type : uint8_t
 {
-    normal    = 0x00, // NORMAL
-    list      = 0x02, // LIST
-    input_ext = 0x04  // INPUT_EX
+    normal    = 0x00,
+    list      = 0x02,
+    input_ext = 0x04
 };
 
 class dialog_ext_bot : public fb::protocol::header

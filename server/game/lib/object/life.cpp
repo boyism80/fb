@@ -307,7 +307,7 @@ CROWD_CONTROL life::remove_cc(CROWD_CONTROL value)
     return this->_crowd_control;
 }
 
-bool life::condition_contains(CROWD_CONTROL value) const
+bool life::contains_cc(CROWD_CONTROL value) const
 {
     this->assert_thread();
     return uint32_t(this->_crowd_control) & uint32_t(value);

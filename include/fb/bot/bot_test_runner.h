@@ -13,21 +13,12 @@
 
 using namespace std::chrono_literals;
 
-/**
- * @brief      Displays statistics about spawned bots across all containers.
- *
- *             Aggregates bot counts from all container instances and displays
- *             the total statistics for each bot type.
- *
- * @param[in]  containers  Vector of bot container instances to aggregate from.
- */
 inline void display_spawned_bots(const std::vector<std::shared_ptr<fb::bot::bot_container>>& containers)
 {
     size_t total_gateway_count = 0;
     size_t total_login_count   = 0;
     size_t total_game_count    = 0;
 
-    // Aggregate counts from all containers
     for (const auto& container : containers)
     {
         total_gateway_count += container->gateway->bot_count();
@@ -41,19 +32,9 @@ inline void display_spawned_bots(const std::vector<std::shared_ptr<fb::bot::bot_
     fb::console::up(3);
 }
 
-/**
- * @brief      Template function to run the bot test with specified mode
- *
- *             This function encapsulates the bot test logic using template
- *             specialization to avoid runtime branching.
- *
- * @tparam     Mode  The test mode to run
- * @param[in]  config_path  Path to the configuration file
- */
 template <fb::bot::test_mode Mode>
 void run_bot_test(const std::string& config_path)
 {
-    // Initialize config system with direct path
     if (!fb::init_config(config_path))
     {
         fb::console::puts("Failed to initialize config system with file: {}", config_path);
@@ -74,10 +55,7 @@ void run_bot_test(const std::string& config_path)
         auto io = std::make_unique<boost::asio::io_context>();
         guards.push_back(std::make_unique<guard_type>(io->get_executor()));
 
-        // Create bot container
         auto container = std::make_shared<fb::bot::bot_container>(*io.get(), thread_count);
-
-        // Create appropriate bot_controllers using template specialization
         container->set_gateway_bot_controller(bot_controller_factory<Mode>::create_gateway_controller(*container));
         container->set_login_bot_controller(bot_controller_factory<Mode>::create_login_controller(*container));
         container->set_game_bot_controller(bot_controller_factory<Mode>::create_game_controller(*container));
@@ -92,7 +70,6 @@ void run_bot_test(const std::string& config_path)
     auto exit           = false;
     auto display_thread = std::unique_ptr<std::thread>();
 
-    // Only start display thread if specified by the factory
     if (bot_controller_factory<Mode>::should_create_display_thread())
     {
         display_thread = std::make_unique<std::thread>([&exit, &bot_containers]() {
@@ -115,7 +92,6 @@ void run_bot_test(const std::string& config_path)
 
     exit = true;
 
-    // Join display thread only if it was created
     if (display_thread)
     {
         display_thread->join();

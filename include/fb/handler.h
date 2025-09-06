@@ -7,17 +7,6 @@
 
 namespace fb::handler {
 
-/**
- * @brief   Base template class for protocol packet handlers.
- *
- *          This template provides the foundation for handling client protocol packets.
- *          Each handler processes a specific packet type and returns success/failure.
- *
- * @tparam  ServerType    The server class type (e.g., fb::game::server)
- * @tparam  ProtocolType  The protocol packet type (e.g., fb::protocol::game::request::login)
- * @tparam  DurationMs    The duration in milliseconds for rate limiting (default: 1000)
- * @tparam  Limit         The maximum number of executions per duration (default: 10)
- */
 template <typename ServerType, typename ProtocolType, uint32_t DurationMs = 1000, uint32_t Limit = 10>
 class protocol
 {
@@ -41,15 +30,6 @@ protected:
     virtual async::task<bool> handle(session_type& session, protocol_type& protocol) = 0;
 };
 
-/**
- * @brief   Base template class for AMQP message handlers.
- *
- *          This template provides the foundation for handling inter-service AMQP messages.
- *          Each handler processes a specific message type for server-to-server communication.
- *
- * @tparam  ServerType   The server class type (e.g., fb::game::server)
- * @tparam  MessageType  The AMQP message type (e.g., internal_resp::KickOut)
- */
 template <typename ServerType, typename MessageType>
 class amqp
 {
@@ -68,14 +48,6 @@ protected:
     virtual async::task<void> handle(const message_type& message) = 0;
 };
 
-/**
- * @brief   Base template class for timer-based handlers.
- *
- *          This template provides the foundation for handling periodic timer events.
- *          Each timer handler processes events at specified intervals.
- *
- * @tparam  ServerType    The server class type (e.g., fb::game::server)
- */
 template <typename ServerType>
 class timer
 {

@@ -1,32 +1,6 @@
 #ifndef __CHARACTER_H__
 #define __CHARACTER_H__
 
-/**
- * @file    character.h
- * @brief   Player character system for the FB 2D MMORPG game server
- * @author  FB Development Team
- *
- * @details This file implements the core player character system that handles all
- *          aspects of player avatars in the FB 2D MMORPG game server. Characters
- *          represent players in the game world and manage their state, equipment,
- *          skills, social relationships, and interactions.
- *
- *          Key features:
- *          - Complete character state management (stats, level, experience)
- *          - Equipment and inventory systems with item management
- *          - Spell casting and buff/debuff systems
- *          - Social systems (groups, clans, whispers, mail)
- *          - Achievement and progression tracking
- *          - Thread-safe operations with async/await patterns
- *          - Lua scripting integration for game logic
- *          - Real-time synchronization across server instances
- *          - Database persistence and character data management
- *          - Map movement and position tracking
- *
- * @note    Characters inherit from life and object classes, providing a complete
- *          game entity with combat, movement, and interaction capabilities.
- */
-
 #include <fb/game/life.h>
 #include <algorithm>
 #include <fb/game/dialog.h>
@@ -44,30 +18,8 @@
 
 namespace fb::game {
 
-/**
- * @brief      Forward declaration of the map class.
- */
 class map;
 
-/**
- * @brief      Represents a player character in the game world.
- *
- *             This class extends the life class to provide complete player character functionality.
- *             It manages all aspects of a player character including stats, inventory, equipment,
- *             spells, social features (groups, clans), and network communication. The character
- *             serves as the primary interface between the player client and the game world.
- *
- *             Key features:
- *             - Complete character progression system (level, experience, stats)
- *             - Inventory and equipment management
- *             - Spell and skill system integration
- *             - Group membership
- *             - Real-time network communication with client
- *             - Lua scripting integration for game logic
- *             - Achievement and quest system
- *             - Trading and economic interactions
- *             - PvP and PvE combat mechanics
- */
 class character : public life
 {
     friend class group;
@@ -98,32 +50,32 @@ private:
     std::string             _pw;
     std::optional<uint32_t> _birthday;
     fb::model::datetime     _updated_date;
-    uint16_t                _look        = 0;
-    uint8_t                 _color       = 0;
-    std::optional<uint8_t>  _armor_color = 0;
     stat_value<uint32_t>    _max_hp, _max_mp;
     stat_value<uint8_t>     _str, _dex, _int;
     stat_value<int32_t>     _phydef, _magdef;
     stat_value<int32_t>     _dam, _hit;
-    uint32_t                _experience   = 0;
-    uint8_t                 _regenerative = 0; // 재생력
-    NATION                  _nation       = NATION::GOGURYEO;
-    CREATURE                _creature     = CREATURE::DRAGON;
-    SEX                     _sex          = SEX::MAN;
-    STATE                   _state        = STATE::NORMAL;
-    uint8_t                 _level        = 1;
-    CLASS                   _class        = CLASS::NONE;
-    uint8_t                 _promotion    = 0;
-    uint32_t                _money        = 0;
-    std::optional<uint16_t> _disguise     = 0;
-    std::string             _title;
-    std::optional<uint32_t> _group_id      = std::nullopt;
-    std::optional<uint32_t> _clan_id       = std::nullopt;
-    uint16_t                _unread_mail   = 0;
-    uint16_t                _weapon_damage = 0;
-    bool                    _detect        = false;
-    mob_vector_t            _spawned_mobs  = {};
     fb::model::datetime     _last_spell_cast;
+    uint16_t                _look              = 0;
+    uint8_t                 _color             = 0;
+    std::optional<uint8_t>  _armor_color       = 0;
+    uint32_t                _experience        = 0;
+    uint8_t                 _regenerative      = 0;
+    NATION                  _nation            = NATION::GOGURYEO;
+    CREATURE                _creature          = CREATURE::DRAGON;
+    SEX                     _sex               = SEX::MAN;
+    STATE                   _state             = STATE::NORMAL;
+    uint8_t                 _level             = 1;
+    CLASS                   _class             = CLASS::NONE;
+    uint8_t                 _promotion         = 0;
+    uint32_t                _money             = 0;
+    std::optional<uint16_t> _disguise          = 0;
+    std::string             _title             = "";
+    std::optional<uint32_t> _group_id          = std::nullopt;
+    std::optional<uint32_t> _clan_id           = std::nullopt;
+    uint16_t                _unread_mail       = 0;
+    uint16_t                _weapon_damage     = 0;
+    bool                    _detect            = false;
+    mob_vector_t            _spawned_mobs      = {};
     bool                    _super_hide        = false;
     uint8_t                 _spell_cast_count  = 0;
     bool                    _options[0x0B + 1] = {
@@ -142,27 +94,7 @@ private:
     using object::based;
 
 public:
-    /**
-     * @brief      Constructs a new character instance with game context and network socket.
-     *
-     *             Initializes a new character with the provided game context and network socket.
-     *             The socket reference is used to obtain a weak_ptr internally to prevent
-     *             circular references and ensure proper cleanup when the socket is destroyed.
-     *             Sets up default values for all character attributes, initializes the
-     *             inventory and equipment systems, and prepares the character for game world
-     *             interaction.
-     *
-     * @param      server   The game server that manages this character.
-     * @param      socket   Reference to the network socket for client communication.
-     */
     character(fb::game::server& server, fb::socket<character>& socket);
-
-    /**
-     * @brief      Destroys the character and cleans up all associated resources.
-     *
-     *             Ensures proper cleanup of inventory items, spell effects, group/clan
-     *             memberships, and any other resources associated with the character.
-     */
     ~character();
 
 public:
@@ -207,9 +139,7 @@ public:
      *
      * @return     Number of bytes sent to the client
      */
-    async::task<size_t> send(const fb::protocol::header& response,
-                             bool                        encrypt = true,
-                             bool                        wrap    = true) override final;
+    async::task<size_t> send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true) override final;
 
     /**
      * @brief      Gets the object type (always CHARACTER).
@@ -228,10 +158,8 @@ public:
      *
      * @return     True if the map change was successful, false otherwise
      */
-    [[nodiscard]] async::task<bool> map(std::shared_ptr<fb::game::map> map,
-                                        const fb::model::point16_t&    position,
-                                        DESTROY_TYPE                   destroy_type = DESTROY_TYPE::DEFAULT,
-                                        bool                           notify       = true) override final;
+    [[nodiscard]] async::task<bool>
+    map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT, bool notify = true) override final;
 
 public:
     /**
@@ -308,9 +236,7 @@ public:
      *
      * @return     The actual damage dealt after calculations
      */
-    uint32_t damage(uint32_t                          value,
-                    std::shared_ptr<fb::game::object> from     = nullptr,
-                    bool                              critical = false) override final;
+    uint32_t damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false) override final;
 
     /**
      * @brief      Performs a character action with visual and audio effects.
@@ -717,10 +643,7 @@ public:
      * @param[in]  size      The size of the region to update
      * @param[in]  crc       The CRC value of the map update
      */
-    void update_map(const fb::game::map&        map,
-                    const fb::model::point16_t& begin,
-                    const fb::model::size8_t&   size,
-                    uint16_t                    crc = 0);
+    void update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size, uint16_t crc = 0);
 
     /**
      * @brief      Updates the character's background music.
@@ -974,9 +897,7 @@ public:
      * @param[in]  articles  The list of articles in the section
      * @param[in]  flag      The button enable flags for the bulletin
      */
-    void show_bulletin(const fb::model::bulletin&          section,
-                       const std::list<bulletin::article>& articles,
-                       BULLETIN_BUTTON_ENABLE              flag);
+    void show_bulletin(const fb::model::bulletin& section, const std::list<bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag);
 
     /**
      * @brief      Shows the bulletin.
@@ -1084,8 +1005,7 @@ public:
      *
      * @return     Pointer to the spawned mob, or nullptr if failed
      */
-    std::shared_ptr<fb::game::mob>
-    spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned = true, bool notify = true);
+    std::shared_ptr<fb::game::mob> spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned = true, bool notify = true);
 
     /**
      * @brief      Gets the list of mobs spawned by this character.
@@ -1601,8 +1521,7 @@ public:
      * @param[in]  fn        The function to execute for each character
      * @param[in]  characters  The characters to iterate over
      */
-    async::task<void> foreach (std::function<void(std::shared_ptr<fb::game::character>&)>&& fn,
-                               const std::vector<std::shared_ptr<fb::game::character>>&     characters);
+    async::task<void> foreach (std::function<void(std::shared_ptr<fb::game::character>&)>&& fn, const std::vector<std::shared_ptr<fb::game::character>>& characters);
 
     /**
      * @brief      Executes a function for each character in the container asynchronously.
@@ -1616,7 +1535,7 @@ public:
      * @param[in]  predict   The predicate function to filter characters
      */
     async::task<void> foreach_async(std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
-                                    std::function<bool(const std::shared_ptr<fb::game::character>&)> predict = nullptr);
+                                    std::function<bool(const std::shared_ptr<fb::game::character>&)>          predict = nullptr);
 
     /**
      * @brief      Executes a function for each character in the container asynchronously.
@@ -1625,7 +1544,7 @@ public:
      * @param[in]  characters  The characters to iterate over
      */
     async::task<void> foreach_async(std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
-                                    const std::vector<std::shared_ptr<fb::game::character>>& characters);
+                                    const std::vector<std::shared_ptr<fb::game::character>>&                  characters);
 
     /**
      * @brief      Executes a function for each character in the container.
@@ -1647,7 +1566,7 @@ public:
      */
     async::task<void> foreach_async(const std::vector<std::string>&                                           names,
                                     std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
-                                    std::function<void(const std::string& name)> miss = nullptr);
+                                    std::function<void(const std::string& name)>                              miss = nullptr);
 
     /**
      * @brief      Invokes a function for a specific character.
@@ -1656,9 +1575,7 @@ public:
      * @param[in]  fn    The function to invoke
      * @param[in]  miss  The function to call if a character is not found
      */
-    async::task<void> invoke(const std::string&                                           name,
-                             std::function<void(std::shared_ptr<fb::game::character>&)>&& fn,
-                             std::function<void(const std::string& name)>                 miss = nullptr);
+    async::task<void> invoke(const std::string& name, std::function<void(std::shared_ptr<fb::game::character>&)>&& fn, std::function<void(const std::string& name)> miss = nullptr);
 
     /**
      * @brief      Invokes a function for a specific character asynchronously.
@@ -1669,7 +1586,7 @@ public:
      */
     async::task<void> invoke_async(const std::string&                                                        name,
                                    std::function<async::task<void>(std::shared_ptr<fb::game::character>&)>&& fn,
-                                   std::function<void(const std::string& name)> miss = nullptr);
+                                   std::function<void(const std::string& name)>                              miss = nullptr);
 
 public:
     /**
@@ -1699,10 +1616,7 @@ public:
  *             and various game events. It extends multiple listener interfaces to
  *             provide comprehensive event handling for characters.
  */
-struct character::listener_t : public virtual life::listener_t,
-                               public virtual dialog::listener_t,
-                               public virtual trade::listener_t,
-                               public virtual equipment::listener_t
+struct character::listener_t : public virtual life::listener_t, public virtual dialog::listener_t, public virtual trade::listener_t, public virtual equipment::listener_t
 {
 public:
     /**
@@ -1747,11 +1661,7 @@ public:
      * @param[in]  size      The size of the region to update
      * @param[in]  crc       The CRC value of the map update
      */
-    virtual void on_update_map(character&                  ch,
-                               const fb::game::map&        map,
-                               const fb::model::point16_t& begin,
-                               const fb::model::size8_t&   size,
-                               uint16_t                    crc) = 0;
+    virtual void on_update_map(character& ch, const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size, uint16_t crc) = 0;
 
     /**
      * @brief      Called when the character's background music changes.
@@ -1824,10 +1734,7 @@ public:
      * @param[in]  articles  The list of articles in the section
      * @param[in]  flag      The button enable flags for the bulletin interface
      */
-    virtual void on_show_bulletin(character&                          ch,
-                                  const fb::model::bulletin&          section,
-                                  const std::list<bulletin::article>& articles,
-                                  BULLETIN_BUTTON_ENABLE              flag) = 0;
+    virtual void on_show_bulletin(character& ch, const fb::model::bulletin& section, const std::list<bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag) = 0;
 
     /**
      * @brief      Called when a specific bulletin article should be displayed to the character.
@@ -1845,9 +1752,7 @@ public:
      * @param[in]  mails  The list of mail summaries to display
      * @param[in]  flag   The button enable flags for the mail box interface
      */
-    virtual void on_show_mail_box(character&                                              ch,
-                                  const std::vector<fb::protocol::internal::MailSummary>& mails,
-                                  MAIL_BUTTON_ENABLE                                      flag) = 0;
+    virtual void on_show_mail_box(character& ch, const std::vector<fb::protocol::internal::MailSummary>& mails, MAIL_BUTTON_ENABLE flag) = 0;
 
     /**
      * @brief      Called when a specific mail should be displayed to the character.

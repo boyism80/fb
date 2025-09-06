@@ -1,33 +1,6 @@
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__
 
-/**
- * @file    console.h
- * @brief   Cross-platform console utility for formatted output and terminal control
- * @author  FB Development Team
- *
- * @details This file implements a comprehensive cross-platform console utility system
- *          that provides formatted text output, progress bars, cursor control, and
- *          terminal detection for the FB 2D MMORPG server. The system handles platform
- *          differences between Windows and Unix-like systems transparently.
- *
- *          Key features:
- *          - Cross-platform console output with Windows and Unix support
- *          - TTY detection for appropriate output formatting in different environments
- *          - Formatted text output with alignment options (left, right, center)
- *          - Progress bar display with percentage and text indicators
- *          - Cursor positioning and movement control for dynamic output
- *          - Thread-safe operations using recursive mutex for multi-threaded access
- *          - Template-based formatted output with std::format integration
- *          - Automatic fallback for non-TTY environments (pipes, redirects)
- *          - Terminal size detection and management for proper formatting
- *          - Comment system for temporary status messages and debugging
- *
- * @note    The console system provides the primary user interface for server
- *          administration and monitoring, supporting both interactive terminal
- *          usage and automated deployment scenarios with appropriate output formatting.
- */
-
 #ifdef _WIN32
 #include <io.h>
 #else
@@ -54,22 +27,9 @@ bool set_console_icon(int id);
 
 namespace fb {
 
-/**
- * @brief      Cross-platform console utility class for formatted output and terminal control.
- *
- *             This static class provides comprehensive console functionality including
- *             formatted text output with alignment options, progress bar display,
- *             cursor positioning, and terminal detection. It supports both TTY and
- *             non-TTY environments with appropriate fallbacks, and includes thread-safe
- *             operations for multi-threaded applications. The class handles platform
- *             differences between Windows and Unix-like systems transparently.
- */
 static class console
 {
 public:
-    /**
-     * @brief      Text alignment options for console output formatting.
-     */
     enum class align_type : uint8_t
     {
         left,
@@ -77,9 +37,6 @@ public:
         center
     };
 
-    /**
-     * @brief      Console text color options.
-     */
     enum class color : uint8_t
     {
         reset,
@@ -101,17 +58,10 @@ public:
         bright_white
     };
 
-    /**
-     * @brief      Console output mode options.
-     *
-     *             Controls how console output is formatted and displayed.
-     *             The actual behavior depends on both the mode setting and
-     *             system TTY availability.
-     */
     enum class mode : uint8_t
     {
-        tty,  ///< Use TTY features (colors, progress bars, cursor control)
-        plain ///< Use plain text output only
+        tty,
+        plain
     };
 
 private:
@@ -204,97 +154,23 @@ private:
     };
 
 public:
-    /**
-     * @brief      Constructs a new instance.
-     */
     console();
-    /**
-     * @brief      Destroys the object.
-     */
     ~console();
 
 public:
-    /**
-     * @brief      reference : https://github.com/jupyter-xeus/cpp-terminal
-     *
-     * @return     True if the system supports TTY, False otherwise.
-     */
-    static bool is_tty();
-
-    /**
-     * @brief      Gets the current console output mode.
-     *
-     * @return     The current mode setting.
-     */
-    static mode get_mode();
-
-    /**
-     * @brief      Sets the console output mode.
-     *
-     * @param[in]  new_mode  The new mode to set.
-     *
-     * @note       Setting TTY mode when system TTY is not available
-     *             will still result in plain text output.
-     */
-    static void set_mode(mode new_mode);
-
-    /**
-     * @brief      Updates the current policy based on system TTY and mode.
-     *
-     * @note       This function is called internally when mode changes.
-     */
-    static void update_policy();
-
-    /**
-     * @brief      Converts a color enum to ANSI color code string.
-     *
-     * @param[in]  color  The color to convert.
-     *
-     * @return     ANSI color code string.
-     */
+    static bool        is_tty();
+    static mode        get_mode();
+    static void        set_mode(mode new_mode);
+    static void        update_policy();
     static std::string colorize(color color);
 
 public:
-    /**
-     * @brief      Moves the cursor to a new line.
-     */
     static void newline();
-
-    /**
-     * @brief      Clears the current line.
-     */
     static void clear();
-
-    /**
-     * @brief      Saves a point.
-     */
     static void save_point();
-
-    /**
-     * @brief      Restores the previously saved cursor position.
-     */
     static void restore_point();
-
-    /**
-     * @brief      Moves the cursor up by the specified number of lines.
-     *
-     * @param[in]  line  The number of lines to move up.
-     */
     static void up(uint8_t line);
-
-    /**
-     * @brief      Moves the cursor down by the specified number of lines.
-     *
-     * @param[in]  line  The number of lines to move down.
-     */
     static void down(uint8_t line);
-
-    /**
-     * @brief      Displays a progress bar with text and percentage.
-     *
-     * @param[in]  text      The text to display alongside the progress bar.
-     * @param[in]  progress  The progress percentage (0.0 to 100.0).
-     */
     static void progress(const std::string& text, float progress);
 
 public:

@@ -7,43 +7,19 @@
 
 namespace fb::game::handler::npc_interaction {
 
-/**
- * @brief   Handles NPC sell list inquiry interactions.
- *
- *          Processes player messages for sell list inquiry with NPCs.
- */
 class sell_list : public fb::game::npc_interaction_handler
 {
 public:
-    /**
-     * @brief   Constructs a sell_list handler.
-     *
-     * @param[in]  server  Reference to the game server
-     */
-    sell_list(server_type& server) : npc_interaction_handler(server) {}
-
-    /**
-     * @brief   Checks if the message matches the sell_list pattern.
-     *
-     * @param[in]  message  The user input message to check
-     * @return     True if the message matches the pattern, false otherwise
-     */
+    sell_list(server_type& server) :
+        npc_interaction_handler(server)
+    { }
     bool matches(const std::string& message) const override
     {
         static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::SELL_LIST);
         return boost::xpressive::regex_search(message, regex);
     }
 
-    /**
-     * @brief   Handles sell list inquiry interaction.
-     *
-     * @param[in]  ch       The character performing the interaction
-     * @param[in]  message  The interaction message from the player
-     * @param[in]  npcs     The list of nearby NPCs
-     */
-    async::task<void> handle(character_type& ch, 
-                           const std::string& message,
-                           const npc_list_type& npcs) override;
+    async::task<void> handle(character_type& ch, const std::string& message, const npc_list_type& npcs) override;
 };
 
 } // namespace fb::game::handler::npc_interaction

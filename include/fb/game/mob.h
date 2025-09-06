@@ -1,32 +1,6 @@
 #ifndef __MOB_H__
 #define __MOB_H__
 
-/**
- * @file    mob.h
- * @brief   Monster and hostile NPC system for the FB 2D MMORPG game server
- * @author  FB Development Team
- *
- * @details This file implements the monster (mob) system that handles all computer-controlled
- *          hostile entities in the game world. Mobs are AI-driven creatures that can attack
- *          players, drop items when defeated, and are managed by an automatic respawn system
- *          to maintain proper game world population.
- *
- *          Key features:
- *          - AI-driven behavior system with target acquisition and combat logic
- *          - Comprehensive respawn (rezen) system for automatic mob population management
- *          - Item dropping system with configurable loot tables and drop rates
- *          - Owner-based mob spawning system for player summons and pets
- *          - Lua scripting integration for custom AI behaviors and special abilities
- *          - Thread-safe operations with proper thread assertion and management
- *          - Complete stat system with base values and temporary buff modifications
- *          - Target tracking and oblivion (last attacker) system for AI decision making
- *          - Visibility and hiding mechanics for stealth and special encounter mobs
- *          - Integration with the life entity system for combat and spell interactions
- *
- * @note    Mobs are the primary source of PvE content and provide challenges,
- *          rewards, and dynamic gameplay experiences throughout the game world.
- */
-
 #include <fb/game/life.h>
 #include <fb/game/item.h>
 #include <async/task.h>
@@ -35,26 +9,9 @@ using namespace std::chrono_literals;
 
 namespace fb::game {
 
-/**
- * @brief      Forward declaration of the character class.
- */
 class character;
-class ai; // Forward declaration for AI
+class ai;
 
-/**
- * @brief      Manages mob respawn (regen) functionality for a specific spawn point.
- *
- *             This class handles the respawning of mobs at designated spawn points throughout
- *             the game world. It manages spawn timing, mob count tracking, and coordinates
- *             with the threading system to ensure proper mob population across all maps.
- *
- *             Key features:
- *             - Automatic mob respawn timing and management
- *             - Spawn count tracking and limits
- *             - Thread-safe spawn operations
- *             - Integration with mob spawn model configuration
- *             - Respawn delay and cooldown management
- */
 class rezen
 {
 private:
@@ -66,20 +23,7 @@ public:
     const fb::model::mob_spawn& model;
 
 public:
-    /**
-     * @brief      Constructs a new rezen (respawn manager) instance.
-     *
-     *             Initializes a respawn manager for a specific mob spawn point using
-     *             the provided server and spawn model configuration.
-     *
-     * @param      server   The game server managing this respawn point.
-     * @param[in]  model    The mob spawn model containing spawn configuration.
-     */
     rezen(fb::game::server& server, const fb::model::mob_spawn& model);
-
-    /**
-     * @brief      Destroys the rezen instance.
-     */
     ~rezen() = default;
 
     /**
@@ -116,24 +60,6 @@ public:
     void force_spawn(std::thread::id thread_id);
 };
 
-/**
- * @brief      Represents a monster or hostile NPC in the game world.
- *
- *             This class extends the life class to provide functionality specific to
- *             computer-controlled hostile entities. Mobs have AI behavior, can attack
- *             players, drop items when killed, and are managed by the respawn system.
- *             They support various AI states, target tracking, and scripted behaviors.
- *
- *             Key features:
- *             - AI-driven behavior with target acquisition and combat
- *             - Item dropping system with configurable loot tables
- *             - Respawn system integration with rezen management
- *             - Owner-based mob spawning for player summons
- *             - Lua scripting integration for custom AI behaviors
- *             - Thread-safe operations with proper assertions
- *             - Buff/debuff system integration
- *             - Visibility and hiding mechanics
- */
 class mob : public life
 {
 public:
@@ -146,13 +72,6 @@ public:
     struct listener_t;
 
 public:
-    /**
-     * @brief      Initial parameters for mob construction.
-     *
-     *             This structure extends the base life initial parameters with
-     *             mob-specific configuration options including spawn state,
-     *             respawn management, and ownership information.
-     */
     struct initial_params : fb::game::life::initial_params
     {
     public:
@@ -187,35 +106,8 @@ public:
     mob::listener_t& listener;
 
 public:
-    /**
-     * @brief      Constructs a new mob with the specified parameters.
-     *
-     *             Creates a mob instance using the provided server, model data,
-     *             and initialization parameters. Sets up AI behavior, stats,
-     *             and respawn management based on the configuration.
-     *
-     * @param      server  The game server managing this mob.
-     * @param[in]  model    The mob model containing base stats and behavior.
-     * @param[in]  params   The initialization parameters for this mob instance.
-     */
     mob(fb::game::server& server, const fb::model::mob& model, const initial_params& params);
-
-    /**
-     * @brief      Copy constructor for mob duplication.
-     *
-     *             Creates a copy of an existing mob, preserving its current state
-     *             and configuration for duplication or backup purposes.
-     *
-     * @param[in]  right  The mob to copy from.
-     */
     mob(const mob& right);
-
-    /**
-     * @brief      Destroys the mob and cleans up resources.
-     *
-     *             Handles proper cleanup of AI threads, item drops, respawn
-     *             management, and other mob-specific resources.
-     */
     ~mob();
 
 private:
@@ -586,9 +478,7 @@ public:
      *
      * @return     The actual damage dealt after defense calculations.
      */
-    uint32_t damage(uint32_t                          value,
-                    std::shared_ptr<fb::game::object> from     = nullptr,
-                    bool                              critical = false) override final;
+    uint32_t damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false) override final;
 
     /**
      * @brief      Kills the mob and handles death processing.
@@ -599,8 +489,7 @@ public:
      * @param      from          The object that caused the death (optional).
      * @param[in]  destroy_type  The type of destruction (normal, admin, etc.).
      */
-    void kill(std::shared_ptr<fb::game::object> from         = nullptr,
-              DESTROY_TYPE                      destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    void kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
 
     /**
      * @brief      Drops items when the mob dies.
@@ -659,13 +548,6 @@ public:
     void hidden(bool enabled);
 };
 
-/**
- * @brief      Event listener interface for mob-specific events.
- *
- *             This interface extends the life listener to provide event handling
- *             specifically for mob entities. Currently inherits all functionality
- *             from the life listener without additional mob-specific events.
- */
 struct mob::listener_t : public virtual fb::game::life::listener_t
 { };
 

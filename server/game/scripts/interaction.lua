@@ -1,3 +1,16 @@
+function string_split(self, delimiter)
+    local result = { }
+    local from  = 1
+    local delim_from, delim_to = string.find( self, delimiter, from  )
+    while delim_from do
+        table.insert( result, string.sub( self, from , delim_from-1 ) )
+        from  = delim_to + 1
+        delim_from, delim_to = string.find( self, delimiter, from  )
+    end
+    table.insert( result, string.sub( self, from  ) )
+    return result
+end
+
 function is_miss(me, you)
     if debug() then
         return false
@@ -298,12 +311,13 @@ function any_action(me)
 end
 
 function on_chat(me, message)
+
     if string.sub(message, 1, 1) ~= '/' then
         return false
     end
 
     message = string.sub(message, 2, string.len(message))
-    args = message:split(' ')
+    args = string_split(message, ' ')
 
     local cmd = args[1]
     if command_funcs[cmd] == nil then

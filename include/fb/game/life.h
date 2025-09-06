@@ -1,54 +1,10 @@
 #ifndef __LIFE_H__
 #define __LIFE_H__
 
-/**
- * @file    life.h
- * @brief   Base class for all living entities with combat and magic capabilities
- * @author  FB Development Team
- *
- * @details This file implements the life entity system that extends the base object
- *          class to provide functionality specific to living entities such as player
- *          characters and monsters. Life entities have health points, mana points,
- *          combat statistics, and can engage in combat and spell casting.
- *
- *          Key features:
- *          - HP/MP management with base and buffed values calculation
- *          - Complete combat statistics system (STR, DEX, INT, damage, defense)
- *          - Spell system integration with casting mechanics and cooldowns
- *          - Comprehensive buff/debuff system with crowd control effects
- *          - Advanced combat mechanics (damage calculation, critical hits, miss chance)
- *          - Status effects management (paralysis, invincibility, cover protection)
- *          - Experience points and character progression support
- *          - Lua scripting integration for dynamic combat behavior
- *          - Event-driven architecture with specialized life entity listeners
- *          - Thread-safe operations for multi-threaded game server environment
- *
- * @note    This class serves as the foundation for all entities that can participate
- *          in combat, cast spells, and have health/mana resources in the game world.
- */
-
 #include <fb/game/object.h>
 
 namespace fb::game {
 
-/**
- * @brief      Base class for all living entities in the game world.
- *
- *             This abstract class extends the object class to provide functionality specific
- *             to living entities such as characters and mobs. It manages health points (HP),
- *             magic points (MP), combat statistics, spell casting, buff/debuff effects, and
- *             various status conditions that affect living entities.
- *
- *             Key features:
- *             - HP/MP management with base and buffed values
- *             - Complete combat statistics system (STR, DEX, INT, damage, defense)
- *             - Spell system integration with casting and cooldowns
- *             - Buff/debuff system with crowd control effects
- *             - Combat mechanics (damage calculation, critical hits, miss chance)
- *             - Status effects (paralysis, invincibility, cover)
- *             - Lua scripting integration for dynamic behavior
- *             - Event-driven architecture with listener pattern
- */
 class life : public object
 {
 public:
@@ -72,25 +28,7 @@ public:
     fb::game::spells spells;
 
 protected:
-    /**
-     * @brief      Constructs a new life entity with specified parameters.
-     *
-     *             Initializes a life entity with the provided server, model configuration,
-     *             and initial parameters. Sets up HP/MP values, combat statistics, and
-     *             spell system based on the model data.
-     *
-     * @param      server   The game server managing this life entity.
-     * @param[in]  model    The life model containing base statistics and configuration.
-     * @param[in]  params   Initial parameters for entity creation.
-     */
     life(fb::game::server& server, const fb::model::life& model, const initial_params& params);
-
-    /**
-     * @brief      Destroys the life entity and cleans up resources.
-     *
-     *             Ensures proper cleanup of spells, buffs, and other resources
-     *             associated with this life entity.
-     */
     virtual ~life();
 
 public:
@@ -457,8 +395,7 @@ public:
      * @param      from          The object that caused the death (optional)
      * @param[in]  destroy_type  How the entity should be destroyed
      */
-    virtual void kill(std::shared_ptr<fb::game::object> from         = nullptr,
-                      DESTROY_TYPE                      destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual void kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
 
     /**
      * @brief      Gets the current crowd control effects.
@@ -499,7 +436,7 @@ public:
      *
      * @return     True if condition contains, False otherwise.
      */
-    bool condition_contains(CROWD_CONTROL value) const;
+    bool contains_cc(CROWD_CONTROL value) const;
 
     /**
      * @brief      Checks if the life entity is alive.

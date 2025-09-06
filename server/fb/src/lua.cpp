@@ -149,6 +149,128 @@ std::string context::tostring(int offset, const std::string& default_value)
     return CP949(x, PLATFORM::WINDOWS);
 }
 
+std::string context::arg_string(int offset)
+{
+    return tostring(offset);
+}
+std::string context::ret_string(int offset)
+{
+    return tostring(-offset);
+}
+
+int context::tointeger(int offset, int default_value)
+{
+    if (this->argc() < offset)
+        return default_value;
+    else if (lua_type(*this, offset) != LUA_TNUMBER)
+        return default_value;
+    else
+        return (int)lua_tointeger(*this, offset);
+}
+lua_Integer context::tonumber(int offset, lua_Integer default_value)
+{
+    if (this->argc() < offset)
+        return default_value;
+    else if (lua_type(*this, offset) != LUA_TNUMBER)
+        return default_value;
+    else
+        return lua_tonumber(*this, offset);
+}
+
+int context::arg_integer(int offset)
+{
+    return tointeger(offset);
+}
+
+int context::ret_integer(int offset)
+{
+    return tointeger(-offset);
+}
+
+bool context::toboolean(int offset, bool default_value)
+{
+    if (this->argc() < offset)
+        return default_value;
+    else if (lua_type(*this, offset) != LUA_TBOOLEAN)
+        return default_value;
+    else
+        return lua_toboolean(*this, offset);
+}
+
+bool context::arg_boolean(int offset)
+{
+    return toboolean(offset);
+}
+
+bool context::ret_boolean(int offset)
+{
+    return toboolean(-offset);
+}
+
+bool context::is_string(int offset)
+{
+    return lua_isstring(*this, offset);
+}
+
+bool context::is_obj(int offset)
+{
+    return lua_isuserdata(*this, offset);
+}
+
+bool context::is_function(int offset)
+{
+    if (this->argc() < offset)
+        return false;
+    else if (lua_type(*this, offset) != LUA_TFUNCTION)
+        return false;
+    else
+        return true;
+}
+
+bool context::is_table(int offset)
+{
+    return lua_istable(*this, offset);
+}
+
+bool context::is_number(int offset)
+{
+    return lua_isnumber(*this, offset);
+}
+
+bool context::is_nil(int offset)
+{
+    return lua_isnil(*this, offset);
+}
+
+int context::rawgeti(int offset_t, int offset_e)
+{
+    return lua_rawgeti(*this, offset_t, offset_e);
+}
+
+void context::rawseti(int offset_t, int offset_e)
+{
+    lua_rawseti(*this, offset_t, offset_e);
+}
+
+int context::rawlen(int offset_t)
+{
+    return (int)lua_rawlen(*this, offset_t);
+}
+
+void context::remove(int offset)
+{
+    lua_remove(*this, offset);
+}
+void context::new_table()
+{
+    lua_newtable(*this);
+}
+
+bool context::next(int offset)
+{
+    return lua_next(*this, offset) != 0;
+}
+
 void fb::lua::context::parent(context* parent)
 {
     this->_parent = parent;
@@ -251,6 +373,11 @@ void fb::lua::context::resume(int argc, int* n)
     }
 }
 
+int context::yield(int retc)
+{
+    return lua_yield(*this, retc);
+}
+
 int context::state() const
 {
     return this->_state;
@@ -281,10 +408,7 @@ void context::pending(bool value)
     this->_state = value ? LUA_PENDING : LUA_YIELD;
 }
 
-int context::ensure_yield(fb::async_executor&                  executor,
-                          std::weak_ptr<fb::thread_switchable> weak,
-                          std::function<int(bool)>             fn,
-                          bool                                 no_yield)
+int context::ensure_yield(fb::async_executor& executor, std::weak_ptr<fb::thread_switchable> weak, std::function<int(bool)> fn, bool no_yield)
 {
     auto shared = weak.lock();
     if (shared == nullptr)
@@ -316,10 +440,7 @@ int context::ensure_yield(fb::async_executor&                  executor,
     }
 }
 
-int fb::lua::context::ensure_resume(fb::async_executor&                  executor,
-                                    std::weak_ptr<fb::thread_switchable> weak,
-                                    std::function<int()>                 fn,
-                                    bool                                 force_resume)
+int fb::lua::context::ensure_resume(fb::async_executor& executor, std::weak_ptr<fb::thread_switchable> weak, std::function<int()> fn, bool force_resume)
 {
     auto shared = weak.lock();
     if (shared == nullptr)
