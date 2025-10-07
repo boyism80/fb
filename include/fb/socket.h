@@ -22,7 +22,7 @@ template <typename T = void*>
 class socket : public boost::asio::ip::tcp::socket, public thread_switchable
 {
 public:
-    static constexpr uint32_t MAX_BUFFER_SIZE = 256;
+    static constexpr uint32_t MAX_BUFFER_SIZE = 4096;
 
 public:
     using handle_read_event = std::function<async::task<void>(fb::socket<T>&, fb::stream&)>;
@@ -90,6 +90,7 @@ public:
     };
 
 private:
+    mutable uint32_t    _fd = 0xFFFFFFFF;
     fb::async_executor& _executor;
     fb::encryption      _encryption;
     handle_read_event   _handle_received;
@@ -287,7 +288,11 @@ public:
 public:
     uint32_t fd() const
     {
-        return (uint32_t)const_cast<fb::socket<T>*>(this)->native_handle();
+        if (this->_fd != 0xFFFFFFFF)
+            return this->_fd;
+
+        this->_fd = (uint32_t)const_cast<fb::socket<T>*>(this)->native_handle();
+        return this->_fd;
     }
 
 public:
