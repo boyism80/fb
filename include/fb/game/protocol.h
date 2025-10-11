@@ -16,6 +16,7 @@
 #include <fb/game/protocol/emotion.h>
 #include <fb/game/protocol/update_screen.h>
 #include <fb/game/protocol/front_info.h>
+#include <fb/game/protocol/friends.h>
 #include <fb/game/protocol/self_info.h>
 #include <fb/game/protocol/update_option.h>
 #include <fb/game/protocol/click.h>

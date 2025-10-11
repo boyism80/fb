@@ -182,11 +182,11 @@ async::task<void> server::handle_start()
     this->handler.protocol.bind<fb::game::handler::protocol::give_item>();
     this->handler.protocol.bind<fb::game::handler::protocol::give_money>();
     this->handler.protocol.bind<fb::game::handler::protocol::post>();
+    this->handler.protocol.bind<fb::game::handler::protocol::friends>();
 
     this->bind_timer<fb::game::handler::timer::heart_beat>(1s);
     this->bind_timer<fb::game::handler::timer::update_time>(1s);
-    this->bind_timer<fb::game::handler::timer::announce>(
-        std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
+    this->bind_timer<fb::game::handler::timer::announce>(std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
 
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
     this->bind_thread_timer<fb::game::handler::timer::mob_respawn_timer>(1s);
@@ -341,8 +341,7 @@ Service server::service() const
     return Service::Game;
 }
 
-async::task<void>
-server::send(object& object, const fb::protocol::header& header, fb::game::scope scope, bool exclude_self, bool encrypt)
+async::task<void> server::send(object& object, const fb::protocol::header& header, fb::game::scope scope, bool exclude_self, bool encrypt)
 {
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);
@@ -461,19 +460,16 @@ async::task<void> server::save(character& ch)
     auto achievements = std::vector<internal::Achievement>();
     for (auto& [model, achievement] : ch.achievements)
     {
-        achievements.push_back(
-            internal::Achievement{ch.id(), model, achievement->text, achievement->icon, achievement->color});
+        achievements.push_back(internal::Achievement{ch.id(), model, achievement->text, achievement->icon, achievement->color});
     }
 
     auto quests = std::vector<internal::Quest>();
     for (auto& [qid, quest] : ch.quests)
     {
-        quests.push_back(
-            internal::Quest{ch.id(), qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
+        quests.push_back(internal::Quest{ch.id(), qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
-    std::ignore =
-        co_await this->http.post("internal", "/user/save", Save{ch.to_protocol(), items, spells, achievements, quests});
+    std::ignore = co_await this->http.post("internal", "/user/save", Save{ch.to_protocol(), items, spells, achievements, quests});
 
     co_await this->threads.switching(weak);
     ch.send(fb_resp::save());
@@ -522,10 +518,7 @@ async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE typ
     {
     case BROADCAST_TYPE::GLOBAL:
     {
-        auto&& resp =
-            co_await this->http.post("internal",
-                                     "/in-game/broadcast",
-                                     Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
+        auto&& resp = co_await this->http.post("internal", "/in-game/broadcast", Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
         this->on_broadcast(resp);
     }
     break;
@@ -601,9 +594,7 @@ void server::update_time()
     this->_time = updated;
 }
 
-async::task<bool> server::npc_interaction(character&                                         ch,
-                                          const std::string&                                 message,
-                                          const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
+async::task<bool> server::npc_interaction(character& ch, const std::string& message, const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
 
