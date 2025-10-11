@@ -43,7 +43,8 @@ async::task<void> dialog_ch_list::serialize(fb::stream_writer<big_endian>& write
     writer.write<uint32_t>(0);
     writer.write<uint16_t>(0);
     writer.write<uint8_t>(1);
-    writer.write<uint16_t>(0);
+    writer.write<uint8_t>(this->button_prev);
+    writer.write<uint8_t>(0);
     writer.write<std::string, uint16_t>(message);
     writer.write<uint8_t>(list.size());
     for (int i = 0; i < list.size(); i++)
