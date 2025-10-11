@@ -5,8 +5,7 @@ fb::game::handler::protocol::bulletin::bulletin(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::bulletin>(server)
 { }
 
-async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<character>&                 session,
-                                                                fb::protocol::game::request::bulletin& request)
+async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<character>& session, fb::protocol::game::request::bulletin& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -31,7 +30,11 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 auto&& resp = co_await this->server.mail_list(*ch, request.offset, 20);
                 co_await this->server.threads.switching(weak);
 
-                ch->show_mail_box(resp.summary_list, MAIL_BUTTON_ENABLE::NEW);
+                auto flag = MAIL_BUTTON_ENABLE::NONE;
+                if (ch->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
+                    flag |= MAIL_BUTTON_ENABLE::NEW;
+
+                ch->show_mail_box(resp.summary_list, flag);
             }
             else
             {
@@ -64,7 +67,10 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             {
                 auto&& resp = co_await this->server.read_mail(*ch, request.article);
                 co_await this->server.threads.switching(weak);
-                auto flag = MAIL_BUTTON_ENABLE::NEW;
+                auto flag = MAIL_BUTTON_ENABLE::UP;
+                if (ch->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
+                    flag |= MAIL_BUTTON_ENABLE::NEW;
+
                 ch->show_mail_box(resp.mail, flag);
             }
             else
@@ -138,11 +144,14 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
     {
         try
         {
-            auto&& resp = co_await this->server.mail_list(*ch, 0xFFFF, 20); // TODO: 20 -> const
+            auto&& resp = co_await this->server.mail_list(*ch, 0xFFFF, fb::model::const_value::mail::COUNT_PER_PAGE);
             co_await this->server.threads.switching(weak);
 
             this->server.assert_mail(resp.error);
-            ch->show_mail_box(resp.summary_list, MAIL_BUTTON_ENABLE::NEW);
+            auto flag = MAIL_BUTTON_ENABLE::NONE;
+            if (ch->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
+                flag |= MAIL_BUTTON_ENABLE::NEW;
+            ch->show_mail_box(resp.summary_list, flag);
         }
         catch (std::exception& e)
         {
@@ -158,7 +167,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
         {
             auto&& resp = co_await this->server.send_mail(*ch, request.user, request.title, request.contents);
             co_await this->server.threads.switching(weak);
-            ch->show_bulletin_message("우편을 보냈습니다.", true, true);
+            ch->show_bulletin_message("우편을 보냈습니다.", true, false);
         }
         catch (std::exception& e)
         {
