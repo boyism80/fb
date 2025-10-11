@@ -930,6 +930,14 @@ namespace Fb.Model.ConstValue
         public const string Appreciate = "(감사합니다|고맙습니다)";
     }
 
+    public static class Script
+    {
+        public const string F1EventScript = "scripts/server.lua";
+        public const string F2EventScript = "scripts/server.lua";
+        public const string F1EventFunc = "ON_F1_EVENT";
+        public const string F2EventFunc = "ON_F2_EVENT";
+    }
+
     public static class String
     {
         public const string MessageAccountInvalidName = "이름이 길거나 적합하지 않습니다.";

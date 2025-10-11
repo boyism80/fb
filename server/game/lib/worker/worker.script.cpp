@@ -13,6 +13,8 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
     scripts.insert("scripts/interaction.lua");
     scripts.insert("scripts/command.lua");
     scripts.insert("scripts/script.lua");
+    scripts.insert(fb::model::const_value::script::F1_EVENT_SCRIPT);
+    scripts.insert(fb::model::const_value::script::F2_EVENT_SCRIPT);
 
     for (auto& [k, v] : this->_server.model.spell)
     {
