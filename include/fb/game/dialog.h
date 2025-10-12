@@ -52,7 +52,7 @@ public:
     std::optional<uint8_t>  weapon_color = std::nullopt;
     std::optional<uint8_t>  armor        = std::nullopt;
     std::optional<uint8_t>  armor_color  = std::nullopt;
-    std::optional<uint16_t> shield       = std::nullopt;
+    std::optional<uint8_t>  shield       = std::nullopt;
     std::optional<uint8_t>  shield_color = std::nullopt;
 
 public:

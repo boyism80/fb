@@ -1288,15 +1288,15 @@ namespace Fb.Model
         [JsonProperty("hair_color")]
         public byte HairColor { get; set; }
         [JsonProperty("weapon")]
-        public uint? Weapon { get; set; }
+        public ushort Weapon { get; set; }
         [JsonProperty("weapon_color")]
         public byte WeaponColor { get; set; }
         [JsonProperty("armor")]
-        public uint? Armor { get; set; }
+        public ushort Armor { get; set; }
         [JsonProperty("armor_color")]
         public byte ArmorColor { get; set; }
         [JsonProperty("shield")]
-        public uint? Shield { get; set; }
+        public byte Shield { get; set; }
         [JsonProperty("shield_color")]
         public byte ShieldColor { get; set; }
         [JsonProperty("disguise")]

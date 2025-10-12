@@ -15,10 +15,9 @@ void character_portrait::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(this->armor_color.value_or(0x00));
     writer.write<uint16_t>(this->weapon.value_or(0xFFFF));
     writer.write<uint8_t>(this->weapon_color.value_or(0x00));
-    writer.write<uint16_t>(this->shield.value_or(0xFFFF));
+    writer.write<uint8_t>(this->shield.value_or(0xFF));
     writer.write<uint8_t>(this->shield_color.value_or(0x00));
-    writer.write<uint16_t>(0x00);
-    writer.write<uint8_t>(0x00);
+    writer.write<uint32_t>(0x00);
 }
 
 void object_portrait::serialize(fb::stream_writer<big_endian>& writer) const
