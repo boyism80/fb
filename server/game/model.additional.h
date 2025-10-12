@@ -165,6 +165,9 @@ public:                                                                         
 #define DECLARE_EQUIPMENT_EXTENSION                   \
                                                       \
 public:                                               \
+    LUA_PROTOTYPE                                     \
+                                                      \
+public:                                               \
     virtual enum_value::ITEM_ATTRIBUTE attr() const   \
     {                                                 \
         return enum_value::ITEM_ATTRIBUTE::EQUIPMENT; \

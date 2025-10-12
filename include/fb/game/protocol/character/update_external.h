@@ -22,11 +22,11 @@ struct preset_serializer
     uint16_t                   hair;
     uint8_t                    hair_color;
     std::optional<uint16_t>    armor;
-    uint8_t                    armor_color;
+    std::optional<uint8_t>     armor_color;
     std::optional<uint16_t>    weapon;
-    uint8_t                    weapon_color;
+    std::optional<uint8_t>     weapon_color;
     std::optional<uint8_t>     shield;
-    uint8_t                    shield_color;
+    std::optional<uint8_t>     shield_color;
     std::optional<uint16_t>    disguise;
     HEAD_MARKER                head_marker;
     std::string                name;
@@ -47,17 +47,17 @@ struct preset_serializer
         if (this->state == STATE::DISGUISE)
         {
             writer.write<uint16_t>(this->disguise.value());
-            writer.write<uint8_t>(this->armor_color);
+            writer.write<uint8_t>(this->armor_color.value_or(0x00));
         }
         else
         {
-            writer.write<uint16_t>(this->hair);      // face
-            writer.write<uint8_t>(this->hair_color); // hair color
+            writer.write<uint16_t>(this->hair);
+            writer.write<uint8_t>(this->hair_color);
 
             if (this->armor.has_value())
             {
                 writer.write<uint8_t>(this->armor.value());
-                writer.write<uint8_t>(this->armor_color);
+                writer.write<uint8_t>(this->armor_color.value_or(0x00));
             }
             else
             {
@@ -68,7 +68,7 @@ struct preset_serializer
             if (this->weapon.has_value())
             {
                 writer.write<uint16_t>(this->weapon.value());
-                writer.write<uint8_t>(this->weapon_color);
+                writer.write<uint8_t>(this->weapon_color.value_or(0x00));
             }
             else
             {
@@ -79,7 +79,7 @@ struct preset_serializer
             if (this->shield.has_value())
             {
                 writer.write<uint8_t>(this->shield.value());
-                writer.write<uint8_t>(this->shield_color);
+                writer.write<uint8_t>(this->shield_color.value_or(0x00));
             }
             else
             {
@@ -134,11 +134,11 @@ public:
                                            .hair         = ch.look(),
                                            .hair_color   = ch.color(),
                                            .armor        = std::nullopt,
-                                           .armor_color  = 0x00,
+                                           .armor_color  = std::nullopt,
                                            .weapon       = std::nullopt,
-                                           .weapon_color = 0x00,
+                                           .weapon_color = std::nullopt,
                                            .shield       = std::nullopt,
-                                           .shield_color = 0x00,
+                                           .shield_color = std::nullopt,
                                            .disguise     = ch.disguise(),
                                            .head_marker  = head_marker(ch, to),
                                            .name         = ch.name()})
@@ -146,19 +146,19 @@ public:
         if (ch.items.armor() != nullptr)
         {
             preset.armor       = ch.items.armor()->based<fb::model::armor>().dress;
-            preset.armor_color = ch.items.armor()->color();
+            preset.armor_color = ch.armor_color();
         }
 
         if (ch.items.weapon() != nullptr)
         {
             preset.weapon       = ch.items.weapon()->based<fb::model::weapon>().dress;
-            preset.weapon_color = ch.items.weapon()->color();
+            preset.weapon_color = std::nullopt;
         }
 
         if (ch.items.shield() != nullptr)
         {
             preset.shield       = ch.items.shield()->based<fb::model::shield>().dress;
-            preset.shield_color = ch.items.shield()->color();
+            preset.shield_color = std::nullopt;
         }
     }
     update_external(const preset_serializer<Detailed>& preset) :

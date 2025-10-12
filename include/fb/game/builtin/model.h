@@ -30,6 +30,11 @@ struct item
     static int builtin_storage_fee(lua_State* L);
 };
 
+struct equipment
+{
+    static int builtin_dress(lua_State* L);
+};
+
 struct weapon
 {
     static int builtin_damage_small(lua_State* L);
