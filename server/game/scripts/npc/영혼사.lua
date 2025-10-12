@@ -134,10 +134,10 @@ function NPC_28(me, npc)
             return
         end
 
-        local face = 0
+        local hair = 0
         while true do
             local preset = {
-                ['face'] = face
+                ['hair'] = hair
             }
             index, button = me:list(npc, '다음에 또 수술을 해 줄 수는 있지만, 수술을 계속한다고 결코 좋아지지는 않는다. 이 모습을 선택하겠느냐?', {'선택', '이전 모습으로', '다음 모습으로', '수술 포기'}, false, preset)
             if index == nil then
@@ -157,7 +157,7 @@ function NPC_28(me, npc)
                     goto ROOT
                 end
 
-                me:look(face)
+                me:look(hair)
                 me:money(money - 1000000)
                 if me:dialog(npc, '새 얼굴이 마음에 드는가? 맘에 안들어도 다시 해 줄 수는 없네.', false, true) == DIALOG_RESULT_QUIT then
                     return
@@ -169,9 +169,9 @@ function NPC_28(me, npc)
 
                 goto ROOT
             elseif index == 1 then
-                face = (face - 1 + 102) % 102
+                hair = (hair - 1 + 102) % 102
             elseif index == 2 then
-                face = (face + 1) % 102
+                hair = (hair + 1) % 102
             elseif index == 3 then
                 me:dialog(npc, '수술 포기')
                 return

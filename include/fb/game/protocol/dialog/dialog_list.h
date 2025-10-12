@@ -14,11 +14,16 @@ namespace fb::protocol::game::response {
 class dialog_list : public fb::protocol::header
 {
 public:
+#ifndef BOT
+    using portrait_ptr = std::unique_ptr<fb::game::dialog::portrait>;
+#endif
+
+public:
     static constexpr uint8_t header = 0x30;
 
 public:
 #ifndef BOT
-    const fb::model::object&            object;
+    const portrait_ptr                  portrait;
     const std::vector<std::string>      lists;
     const std::string                   message;
     const bool                          button_prev;
@@ -36,7 +41,20 @@ public:
 
 public:
 #ifndef BOT
-    dialog_list(const fb::model::object&        object,
+    dialog_list(const fb::game::object&         object,
+                const std::vector<std::string>& list,
+                const std::string&              message,
+                bool                            button_prev,
+                uint32_t                        oid         = 0xFFFFFFFD,
+                fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::LIST);
+    dialog_list(fb::model::model&               model,
+                const fb::model::object&        object,
+                const std::vector<std::string>& list,
+                const std::string&              message,
+                bool                            button_prev,
+                uint32_t                        oid         = 0xFFFFFFFD,
+                fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::LIST);
+    dialog_list(portrait_ptr&&                  portrait,
                 const std::vector<std::string>& list,
                 const std::string&              message,
                 bool                            button_prev,

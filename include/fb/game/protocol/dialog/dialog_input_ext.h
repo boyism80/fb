@@ -15,10 +15,13 @@ class dialog_input_ext : public fb::protocol::header
 {
 public:
     static constexpr uint8_t header = 0x30;
+#ifndef BOT
+    using portrait_ptr = std::unique_ptr<fb::game::dialog::portrait>;
+#endif
 
 public:
 #ifndef BOT
-    const fb::model::object&            obj;
+    const portrait_ptr                  portrait;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const std::string                   top, bottom;
@@ -40,7 +43,16 @@ public:
 
 public:
 #ifndef BOT
-    dialog_input_ext(const fb::model::object&      obj,
+    dialog_input_ext(fb::model::model&             model,
+                     const fb::model::object&      obj,
+                     const std::string&            message,
+                     const std::string&            top,
+                     const std::string&            bottom,
+                     int                           maxlen      = 0xFF,
+                     bool                          button_prev = false,
+                     uint32_t                      oid         = 0xFFFFFFFD,
+                     fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX);
+    dialog_input_ext(const fb::game::object&       object,
                      const std::string&            message,
                      const std::string&            top,
                      const std::string&            bottom,

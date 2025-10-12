@@ -2877,52 +2877,52 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
         return 0;
     }
 
-    auto message       = lua->tostring(3);
-    auto size          = lua->rawlen(4);
-    auto button_prev   = lua->toboolean(5);
-    auto custom_preset = (argc >= 6 && lua_type(L, 6) == LUA_TTABLE);
-    auto preset        = fb::game::dialog::preset(*ch);
-    if (custom_preset)
+    auto message         = lua->tostring(3);
+    auto size            = lua->rawlen(4);
+    auto button_prev     = lua->toboolean(5);
+    auto custom_portrait = (argc >= 6 && lua_type(L, 6) == LUA_TTABLE);
+    auto portrait        = new fb::game::dialog::character_portrait();
+    if (custom_portrait)
     {
         lua->pushstring("sex");
         if (lua_rawget(L, 6) == LUA_TNUMBER)
-            preset.sex = static_cast<SEX>(lua->tointeger(-1));
+            portrait->sex = static_cast<SEX>(lua->tointeger(-1));
 
         lua->pushstring("state");
         if (lua_rawget(L, 6) == LUA_TNUMBER)
-            preset.state = static_cast<STATE>(lua->tointeger(-1));
+            portrait->state = static_cast<STATE>(lua->tointeger(-1));
 
-        lua->pushstring("face");
+        lua->pushstring("hair");
         if (lua_rawget(L, 6) == LUA_TNUMBER)
-            preset.face = lua->tointeger(-1);
+            portrait->hair = lua->tointeger(-1);
 
         lua->pushstring("hair_color");
         if (lua_rawget(L, 6) == LUA_TNUMBER)
-            preset.hair_color = lua->tointeger(-1);
+            portrait->hair_color = lua->tointeger(-1);
 
         lua->pushstring("weapon");
         if (lua_rawget(L, 6) == LUA_TNUMBER)
-            preset.weapon = lua->tointeger(-1);
+            portrait->weapon = lua->tointeger(-1);
 
         lua->pushstring("weapon_color");
         if (lua_rawget(L, 6) == LUA_TNUMBER)
-            preset.weapon_color = lua->tointeger(-1);
+            portrait->weapon_color = lua->tointeger(-1);
 
         lua->pushstring("armor");
         if (lua_rawget(L, 6) == LUA_TNUMBER)
-            preset.armor = lua->tointeger(-1);
+            portrait->armor = lua->tointeger(-1);
 
         lua->pushstring("armor_color");
         if (lua_rawget(L, 6) == LUA_TNUMBER)
-            preset.armor_color = lua->tointeger(-1);
+            portrait->armor_color = lua->tointeger(-1);
 
         lua->pushstring("shield");
         if (lua_rawget(L, 6) == LUA_TNUMBER)
-            preset.shield = lua->tointeger(-1);
+            portrait->shield = lua->tointeger(-1);
 
         lua->pushstring("shield_color");
         if (lua_rawget(L, 6) == LUA_TNUMBER)
-            preset.shield_color = lua->tointeger(-1);
+            portrait->shield_color = lua->tointeger(-1);
     }
 
     auto menus = std::vector<std::string>();
@@ -2933,8 +2933,8 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     }
 
     std::ignore = server->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
-        if (custom_preset)
-            ch->listener.on_dialog(*ch, *model, message, menus, button_prev, preset, oid);
+        if (custom_portrait)
+            ch->listener.on_dialog(*ch, std::unique_ptr<fb::game::dialog::portrait>(portrait), message, menus, button_prev, oid);
         else
             ch->listener.on_dialog(*ch, *model, message, menus, button_prev, oid);
 
