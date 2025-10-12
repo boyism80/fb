@@ -94,13 +94,12 @@ public:
     void on_dialog(character& me, const fb::model::object& obj, const std::string& message, const std::vector<std::string>& menus, uint32_t seq = 0xFFFFFFFD) override final;
     void on_dialog(character& me, const fb::model::object& obj, const std::string& message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD)
         override final;
-    void on_dialog(character&                      me,
-                   const fb::model::object&        obj,
-                   const std::string&              message,
-                   const std::vector<std::string>& menus,
-                   bool                            button_prev,
-                   const dialog::preset&           preset,
-                   uint32_t                        seq = 0xFFFFFFFD) override final;
+    void on_dialog(character&                                    me,
+                   std::unique_ptr<fb::game::dialog::portrait>&& portrait,
+                   const std::string&                            message,
+                   const std::vector<std::string>&               menus,
+                   bool                                          button_prev,
+                   uint32_t                                      seq = 0xFFFFFFFD) override final;
     void on_dialog(character& me, const fb::model::object& obj, const std::string& message, const std::vector<uint8_t>& item_slots, uint32_t seq = 0xFFFFFFFD) override final;
     void on_dialog(character&                          me,
                    const fb::model::object&            obj,

@@ -266,5 +266,16 @@ namespace Internal.Controllers
             _rabbitMqService.Publish(response, "amq.direct", $"fb.global");
             return Task.FromResult(response);
         }
+
+        [HttpPost("update-friends")]
+        public Task<Response.UpdateFriends> UpdateFriends(Request.UpdateFriends request)
+        {
+            var response = new Response.UpdateFriends
+            {
+                Error = (uint)ErrorCode.None
+            };
+
+            return Task.FromResult(response);
+        }
     }
 }

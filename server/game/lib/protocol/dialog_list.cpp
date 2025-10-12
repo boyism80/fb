@@ -3,13 +3,42 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-dialog_list::dialog_list(const fb::model::object&        object,
+dialog_list::dialog_list(const fb::game::object&         object,
                          const std::vector<std::string>& lists,
                          const std::string&              message,
                          bool                            button_prev,
                          uint32_t                        oid,
                          fb::game::dialog::interaction   interaction) :
-    object(object),
+    portrait(fb::game::dialog::portrait_factory::create(object)),
+    lists(lists),
+    message(message),
+    button_prev(button_prev),
+    oid(oid),
+    interaction(interaction)
+{ }
+
+dialog_list::dialog_list(fb::model::model&               model,
+                         const fb::model::object&        object,
+                         const std::vector<std::string>& lists,
+                         const std::string&              message,
+                         bool                            button_prev,
+                         uint32_t                        oid,
+                         fb::game::dialog::interaction   interaction) :
+    portrait(fb::game::dialog::portrait_factory::create(model, object)),
+    lists(lists),
+    message(message),
+    button_prev(button_prev),
+    oid(oid),
+    interaction(interaction)
+{ }
+
+dialog_list::dialog_list(portrait_ptr&&                  portrait,
+                         const std::vector<std::string>& lists,
+                         const std::string&              message,
+                         bool                            button_prev,
+                         uint32_t                        oid,
+                         fb::game::dialog::interaction   interaction) :
+    portrait(std::move(portrait)),
     lists(lists),
     message(message),
     button_prev(button_prev),
@@ -26,13 +55,7 @@ async::task<void> dialog_list::serialize(fb::stream_writer<big_endian>& writer) 
     writer.write<uint8_t>(2);
     writer.write<uint8_t>(static_cast<uint8_t>(interaction));
     writer.write<uint32_t>(this->oid);
-    writer.write<uint8_t>(this->object.look > 0xBFFF ? 0x02 : 0x01);
-    writer.write<uint8_t>(0x01);
-    writer.write<uint16_t>(this->object.look);
-    writer.write<uint8_t>(this->object.color);
-    writer.write<uint8_t>(this->object.look > 0xBFFF ? 0x02 : 0x01);
-    writer.write<uint16_t>(this->object.look);
-    writer.write<uint8_t>(this->object.color);
+    this->portrait->serialize(writer);
     writer.write<uint32_t>(1);
     writer.write<uint8_t>(this->button_prev); // button prev
     writer.write<uint8_t>(1);

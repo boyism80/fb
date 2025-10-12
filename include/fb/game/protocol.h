@@ -16,6 +16,7 @@
 #include <fb/game/protocol/emotion.h>
 #include <fb/game/protocol/update_screen.h>
 #include <fb/game/protocol/front_info.h>
+#include <fb/game/protocol/friends.h>
 #include <fb/game/protocol/self_info.h>
 #include <fb/game/protocol/update_option.h>
 #include <fb/game/protocol/click.h>
@@ -60,7 +61,6 @@
 #include <fb/game/protocol/dialog/dialog.h>
 #include <fb/game/protocol/dialog/dialog_menu.h>
 #include <fb/game/protocol/dialog/dialog_list.h>
-#include <fb/game/protocol/dialog/dialog_ch_list.h>
 #include <fb/game/protocol/dialog/dialog_slot.h>
 #include <fb/game/protocol/dialog/dialog_item.h>
 #include <fb/game/protocol/dialog/dialog_input.h>

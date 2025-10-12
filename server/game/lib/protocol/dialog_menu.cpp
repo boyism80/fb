@@ -3,12 +3,25 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-dialog_menu::dialog_menu(const fb::model::object&        obj,
+dialog_menu::dialog_menu(fb::model::model&               model,
+                         const fb::model::object&        obj,
                          const std::vector<std::string>& menus,
                          const std::string&              message,
                          uint32_t                        oid,
                          fb::game::dialog::interaction   interaction) :
-    obj(obj),
+    portrait(fb::game::dialog::portrait_factory::create(model, obj)),
+    menus(menus),
+    message(message),
+    oid(oid),
+    interaction(interaction)
+{ }
+
+dialog_menu::dialog_menu(const fb::game::object&         object,
+                         const std::vector<std::string>& menus,
+                         const std::string&              message,
+                         uint32_t                        oid,
+                         fb::game::dialog::interaction   interaction) :
+    portrait(fb::game::dialog::portrait_factory::create(object)),
     menus(menus),
     message(message),
     oid(oid),
@@ -24,13 +37,7 @@ async::task<void> dialog_menu::serialize(fb::stream_writer<big_endian>& writer) 
     writer.write<uint8_t>(0x01);
     writer.write<uint8_t>(static_cast<uint8_t>(interaction));
     writer.write<uint32_t>(this->oid);
-    writer.write<uint8_t>(this->obj.look > 0xBFFF ? 0x02 : 0x01);
-    writer.write<uint8_t>(0x01);
-    writer.write<uint16_t>(this->obj.look);
-    writer.write<uint8_t>(this->obj.color);
-    writer.write<uint8_t>(this->obj.look > 0xBFFF ? 0x02 : 0x01);
-    writer.write<uint16_t>(this->obj.look);
-    writer.write<uint8_t>(this->obj.color);
+    this->portrait->serialize(writer);
     writer.write<std::string, uint16_t>(message);
 
     writer.write<uint16_t>((uint16_t)menus.size());

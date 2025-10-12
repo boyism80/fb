@@ -16,6 +16,7 @@
 #include <fb/game/handler/protocol/item_drop.h>
 #include <fb/game/handler/protocol/item_drop_money.h>
 #include <fb/game/handler/protocol/front_info.h>
+#include <fb/game/handler/protocol/friends.h>
 #include <fb/game/handler/protocol/self_info.h>
 #include <fb/game/handler/protocol/update_option.h>
 #include <fb/game/handler/protocol/click.h>

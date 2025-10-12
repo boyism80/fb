@@ -44,7 +44,9 @@ void listener_impl::on_direction(object& me)
 
 void listener_impl::on_update_external(object& me, bool detailed)
 {
-    if (me.is(OBJECT_TYPE::CHARACTER))
+    switch (me.what())
+    {
+    case OBJECT_TYPE::CHARACTER:
     {
         auto map = me.map();
         if (map == nullptr)
@@ -62,9 +64,46 @@ void listener_impl::on_update_external(object& me, bool detailed)
                 you->send(fb_resp::update_external<false>(static_cast<character&>(me), *you));
         }
     }
-    else
+    break;
+
+    case OBJECT_TYPE::NPC:
+    {
+        auto& npc   = static_cast<fb::game::npc&>(me);
+        auto& model = npc.based<fb::model::npc>();
+        if (model.preset.has_value())
+        {
+            auto& preset     = this->server.model.preset[model.preset.value()];
+            auto  serializer = fb_resp::preset_serializer<true>{.oid          = npc.oid(),
+                                                                .position     = npc.position(),
+                                                                .direction    = npc.direction(),
+                                                                .sex          = preset.sex,
+                                                                .state        = preset.state,
+                                                                .hair         = preset.hair,
+                                                                .hair_color   = preset.hair_color,
+                                                                .armor        = preset.armor,
+                                                                .armor_color  = preset.armor_color,
+                                                                .weapon       = preset.weapon,
+                                                                .weapon_color = preset.weapon_color,
+                                                                .shield       = preset.shield,
+                                                                .shield_color = preset.shield_color,
+                                                                .disguise     = preset.disguise,
+                                                                .head_marker  = HEAD_MARKER::NONE,
+                                                                .name         = npc.name()};
+
+            std::ignore = this->server.send(me, fb_resp::update_external<true>(serializer), scope::PIVOT);
+        }
+        else
+        {
+            std::ignore = this->server.send(me, fb_resp::update(me), scope::PIVOT);
+        }
+    }
+    break;
+
+    default:
     {
         std::ignore = this->server.send(me, fb_resp::update(me), scope::PIVOT);
+    }
+    break;
     }
 }
 
@@ -73,15 +112,55 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
     if (me.hidden(you))
         return;
 
-    if (me.is(OBJECT_TYPE::CHARACTER))
+    switch (me.what())
+    {
+    case OBJECT_TYPE::CHARACTER:
     {
         if (detailed)
             you.send(fb_resp::update_external<true>(static_cast<character&>(me), you));
         else
             you.send(fb_resp::update_external<false>(static_cast<character&>(me), you));
     }
-    else
+    break;
+
+    case OBJECT_TYPE::NPC:
+    {
+        auto& npc   = static_cast<fb::game::npc&>(me);
+        auto& model = npc.based<fb::model::npc>();
+        if (model.preset.has_value())
+        {
+            auto& preset     = this->server.model.preset[model.preset.value()];
+            auto  serializer = fb_resp::preset_serializer<true>{.oid          = npc.oid(),
+                                                                .position     = npc.position(),
+                                                                .direction    = npc.direction(),
+                                                                .sex          = preset.sex,
+                                                                .state        = preset.state,
+                                                                .hair         = preset.hair,
+                                                                .hair_color   = preset.hair_color,
+                                                                .armor        = preset.armor,
+                                                                .armor_color  = preset.armor_color,
+                                                                .weapon       = preset.weapon,
+                                                                .weapon_color = preset.weapon_color,
+                                                                .shield       = preset.shield,
+                                                                .shield_color = preset.shield_color,
+                                                                .disguise     = preset.disguise,
+                                                                .head_marker  = HEAD_MARKER::NONE,
+                                                                .name         = npc.name()};
+            you.send(fb_resp::update_external<true>(serializer));
+        }
+        else
+        {
+            you.send(fb_resp::update(me));
+        }
+    }
+    break;
+
+    default:
+    {
         you.send(fb_resp::update(me));
+    }
+    break;
+    }
 }
 
 void listener_impl::on_hide(object& me, DESTROY_TYPE destroy_type)

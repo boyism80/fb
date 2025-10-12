@@ -253,3 +253,8 @@ table Broadcast {
   type: ubyte;
   error: uint;
 }
+
+table UpdateFriends
+{
+  error: uint;
+}

@@ -204,3 +204,8 @@ table Broadcast {
   message: string;
   type: ubyte;
 }
+
+table UpdateFriends {
+  user: uint;
+  names: [string];
+}

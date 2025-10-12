@@ -15,10 +15,13 @@ class dialog_item : public fb::protocol::header
 {
 public:
     static constexpr uint8_t header = 0x2F;
+#ifndef BOT
+    using portrait_ptr = std::unique_ptr<fb::game::dialog::portrait>;
+#endif
 
 public:
 #ifndef BOT
-    const fb::model::object&            obj;
+    const portrait_ptr                  portrait;
     const fb::game::dialog::item_pairs& items;
     const std::string                   message;
     const uint16_t                      pursuit;
@@ -45,7 +48,15 @@ public:
 
 public:
 #ifndef BOT
-    dialog_item(const fb::model::object&            obj,
+    dialog_item(fb::model::model&                   model,
+                const fb::model::object&            obj,
+                const fb::game::dialog::item_pairs& items,
+                const std::string&                  message,
+                uint32_t                            oid         = 0xFFFFFFFD,
+                uint16_t                            pursuit     = 0xFFFF,
+                fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::ITEM);
+
+    dialog_item(const fb::game::object&             object,
                 const fb::game::dialog::item_pairs& items,
                 const std::string&                  message,
                 uint32_t                            oid         = 0xFFFFFFFD,
