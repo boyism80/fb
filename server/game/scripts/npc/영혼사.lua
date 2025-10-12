@@ -137,8 +137,25 @@ function NPC_28(me, npc)
         local hair = 0
         while true do
             local portrait = {
-                ['hair'] = hair
+                ['hair'] = hair,
+                ['hair_color'] = me:color(),
+                ['sex'] = me:sex()
             }
+
+            local equipments = me:equipments()
+            if equipments[EQUIPMENT_PARTS_ARMOR] ~= nil then
+                local model = equipments[EQUIPMENT_PARTS_ARMOR]:model()
+                portrait['armor'] = model:dress()
+                portrait['armor_color'] = me:armor_color()
+            end
+            if equipments[EQUIPMENT_PARTS_WEAPON] ~= nil then
+                local model = equipments[EQUIPMENT_PARTS_WEAPON]:model()
+                portrait['weapon'] = model:dress()
+            end
+            if equipments[EQUIPMENT_PARTS_SHIELD] ~= nil then
+                local model = equipments[EQUIPMENT_PARTS_SHIELD]:model()
+                portrait['shield'] = model:dress()
+            end
             index, button = me:list(portrait, '다음에 또 수술을 해 줄 수는 있지만, 수술을 계속한다고 결코 좋아지지는 않는다. 이 모습을 선택하겠느냐?', {'선택', '이전 모습으로', '다음 모습으로', '수술 포기'}, false)
             if index == nil then
                 return

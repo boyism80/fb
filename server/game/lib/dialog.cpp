@@ -87,22 +87,22 @@ std::unique_ptr<portrait> portrait_factory::create(const fb::game::object& obj)
         ptr->hair_color = ch.color();
 
         if (ch.items.weapon() != nullptr)
-            ptr->weapon = ch.items.weapon()->based<fb::model::weapon>().dress;
-        else
-            ptr->weapon = std::nullopt;
-        ptr->weapon_color = std::nullopt;
+        {
+            ptr->weapon       = ch.items.weapon()->based<fb::model::weapon>().dress;
+            ptr->weapon_color = std::nullopt;
+        }
 
         if (ch.items.armor() != nullptr)
-            ptr->armor = ch.items.armor()->based<fb::model::armor>().dress;
-        else
-            ptr->armor = std::nullopt;
-        ptr->armor_color = ch.items.armor()->color();
+        {
+            ptr->armor       = ch.items.armor()->based<fb::model::armor>().dress;
+            ptr->armor_color = ch.armor_color();
+        }
 
         if (ch.items.shield() != nullptr)
-            ptr->shield = ch.items.shield()->based<fb::model::shield>().dress;
-        else
-            ptr->shield = std::nullopt;
-        ptr->shield_color = std::nullopt;
+        {
+            ptr->shield       = ch.items.shield()->based<fb::model::shield>().dress;
+            ptr->shield_color = std::nullopt;
+        }
 
         return std::unique_ptr<portrait>(ptr);
     }
