@@ -4652,11 +4652,11 @@ public:
     const fb::model::enum_value::SEX sex;
     const uint16_t hair;
     const uint8_t hair_color;
-    const std::optional<uint32_t> weapon;
+    const uint16_t weapon;
     const uint8_t weapon_color;
-    const std::optional<uint32_t> armor;
+    const uint16_t armor;
     const uint8_t armor_color;
-    const std::optional<uint32_t> shield;
+    const uint8_t shield;
     const uint8_t shield_color;
     const std::optional<uint16_t> disguise;
     const fb::model::enum_value::STATE state;
@@ -4674,11 +4674,11 @@ DECLARE_PRESET_CONSTRUCTOR
         sex(fb::model::build<fb::model::enum_value::SEX>(json["sex"])),
         hair(fb::model::build<uint16_t>(json["hair"])),
         hair_color(fb::model::build<uint8_t>(json["hair_color"])),
-        weapon(fb::model::build<std::optional<uint32_t>>(json["weapon"])),
+        weapon(fb::model::build<uint16_t>(json["weapon"])),
         weapon_color(fb::model::build<uint8_t>(json["weapon_color"])),
-        armor(fb::model::build<std::optional<uint32_t>>(json["armor"])),
+        armor(fb::model::build<uint16_t>(json["armor"])),
         armor_color(fb::model::build<uint8_t>(json["armor_color"])),
-        shield(fb::model::build<std::optional<uint32_t>>(json["shield"])),
+        shield(fb::model::build<uint8_t>(json["shield"])),
         shield_color(fb::model::build<uint8_t>(json["shield_color"])),
         disguise(fb::model::build<std::optional<uint16_t>>(json["disguise"])),
         state(fb::model::build<fb::model::enum_value::STATE>(json["state"]))

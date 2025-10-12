@@ -136,10 +136,10 @@ function NPC_28(me, npc)
 
         local hair = 0
         while true do
-            local preset = {
+            local portrait = {
                 ['hair'] = hair
             }
-            index, button = me:list(npc, '다음에 또 수술을 해 줄 수는 있지만, 수술을 계속한다고 결코 좋아지지는 않는다. 이 모습을 선택하겠느냐?', {'선택', '이전 모습으로', '다음 모습으로', '수술 포기'}, false, preset)
+            index, button = me:list(portrait, '다음에 또 수술을 해 줄 수는 있지만, 수술을 계속한다고 결코 좋아지지는 않는다. 이 모습을 선택하겠느냐?', {'선택', '이전 모습으로', '다음 모습으로', '수술 포기'}, false)
             if index == nil then
                 return
             end
