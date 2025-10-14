@@ -1,32 +1,6 @@
 #ifndef __OBJECT_H__
 #define __OBJECT_H__
 
-/**
- * @file    object.h
- * @brief   Base class for all interactive objects in the FB 2D MMORPG game world
- * @author  FB Development Team
- *
- * @details This file implements the fundamental object system that serves as the
- *          foundation for all interactive entities in the FB 2D MMORPG game server.
- *          Every entity that can exist in the game world (characters, NPCs, items,
- *          doors, etc.) inherits from this base object class.
- *
- *          Key features:
- *          - Spatial positioning and movement within game maps
- *          - Line-of-sight calculations and visibility management
- *          - Inter-object communication and chat system
- *          - Buff/debuff system integration for temporary effects
- *          - Thread-safe operations with automatic thread switching
- *          - Lua scripting integration for flexible game logic
- *          - Event-driven architecture with comprehensive listener pattern
- *          - Network communication capabilities for client updates
- *          - Sector-based spatial optimization for performance
- *          - Direction-based movement and interaction system
- *
- * @note    This is the core foundation class that all game entities inherit from,
- *          providing essential functionality for existence in the game world.
- */
-
 #include <fb/lua.h>
 #include <fb/stream.h>
 #include <fb/protocol/header.h>
@@ -59,6 +33,8 @@ public:
 public:
     LUA_PROTOTYPE
 
+    using map_ptr = std::shared_ptr<fb::game::map>;
+
     friend fb::game::buffs;
     friend fb::game::items;
 
@@ -67,12 +43,12 @@ private:
     mutable std::shared_mutex         _map_lock;
 
 protected:
-    uint32_t                       _oid = 0;
-    const fb::model::object&       _model;
-    fb::model::point16_t           _position  = fb::model::point16_t(0, 0);
-    DIRECTION                      _direction = DIRECTION::BOTTOM;
-    std::shared_ptr<fb::game::map> _map       = nullptr;
-    fb::thread*                    _thread    = nullptr;
+    uint32_t                 _oid = 0;
+    const fb::model::object& _model;
+    fb::model::point16_t     _position  = fb::model::point16_t(0, 0);
+    DIRECTION                _direction = DIRECTION::BOTTOM;
+    map_ptr                  _map       = nullptr;
+    fb::thread*              _thread    = nullptr;
 
 public:
     listener_t&       listener;
@@ -87,30 +63,10 @@ public:
     virtual ~object();
 
 private:
-    /**
-     * @brief      Updates the object's sector information on the current map.
-     */
-    void update_sector();
-
-    /**
-     * @brief      Checks if two positions have line of sight on a map.
-     *
-     * @param[in]  me    Source position
-     * @param[in]  you   Target position
-     * @param[in]  map   The map to check line of sight on
-     *
-     * @return     True if positions have line of sight, false otherwise
-     */
-    static bool sight(const fb::model::point16_t me, const fb::model::point16_t you, const std::shared_ptr<fb::game::map>& map);
+    void        update_sector();
+    static bool sight(const fb::model::point16_t me, const fb::model::point16_t you, const map_ptr& map);
 
 public:
-    /**
-     * @brief      Gets the underlying model cast to a specific type.
-     *
-     * @tparam     T     The model type to cast to
-     *
-     * @return     Reference to the model cast as the specified type
-     */
     template <typename T> const T& based() const
     {
         return static_cast<const T&>(this->_model);
@@ -119,618 +75,92 @@ public:
     virtual void on_init();
 
 public:
-    /**
-     * @brief      Destroys the object and cleans up all resources.
-     *
-     * @param[in]  destroy_type  The type of destruction to perform
-     *
-     * @return     Task that completes when the destruction is complete
-     */
-    [[nodiscard]] virtual async::task<void> destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-
-    /**
-     * @brief      Sends a data stream to the object.
-     *
-     * @param[in]  stream   The data stream to send
-     * @param[in]  encrypt  Whether to encrypt the data
-     * @param[in]  wrap     Whether to wrap the data in protocol headers
-     *
-     * @return     Number of bytes sent
-     */
-    virtual async::task<size_t> send(const fb::stream& stream, bool encrypt = true, bool wrap = true);
-
-    /**
-     * @brief      Sends a protocol response to the object.
-     *
-     * @param[in]  response  The protocol response to send
-     * @param[in]  encrypt   Whether to encrypt the response
-     * @param[in]  wrap      Whether to wrap the response in protocol headers
-     *
-     * @return     Number of bytes sent
-     */
-    virtual async::task<size_t> send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true);
-
-    /**
-     * @brief      Gets the object's oid number.
-     *
-     * @return     The current oid number
-     */
-    uint32_t oid() const;
-
-    /**
-     * @brief      Sets the object's oid number.
-     *
-     * @param[in]  value  The new oid number
-     */
-    void oid(uint32_t value);
-
-    /**
-     * @brief      Gets the underlying model object.
-     *
-     * @return     Reference to the base model object
-     */
-    const fb::model::object& based() const;
-
-    /**
-     * @brief      Checks if the object is of a specific type.
-     *
-     * @param[in]  type  The object type to check against
-     *
-     * @return     True if the object is of the specified type, false otherwise
-     */
-    bool is(OBJECT_TYPE type) const;
-
-    /**
-     * @brief      Gets the object's name.
-     *
-     * @return     Reference to the object's name string
-     */
-    virtual const std::string& name() const;
-
-    /**
-     * @brief      Gets the object's visual appearance ID.
-     *
-     * @return     The appearance/sprite ID for rendering
-     */
-    virtual uint16_t look() const;
-
-    /**
-     * @brief      Gets the object's color value.
-     *
-     * @return     The color value for rendering
-     */
-    virtual uint8_t color() const;
-
-    /**
-     * @brief      Gets the object's type identifier.
-     *
-     * @return     The object type.
-     */
-    virtual OBJECT_TYPE what() const;
-
-    /**
-     * @brief      Updates the object's external appearance to all nearby objects.
-     *
-     * @param[in]  detailed  Whether to use detailed update (minimal data) or full update
-     */
-    virtual void update_external(bool detailed);
-
-    /**
-     * @brief      Updates the object's external appearance to a specific target.
-     *
-     * @param      you       The target object to send the update to
-     * @param[in]  detailed  Whether to use detailed update (minimal data) or full update
-     */
-    virtual void update_external(object& you, bool detailed);
-
-    /**
-     * @brief      Checks if the object is in super hide mode (invisible to all).
-     *
-     * @return     True if the object is super hidden, false otherwise
-     */
-    virtual bool super_hide() const;
-
-    /**
-     * @brief      Checks if this object is hidden from a specific target.
-     *
-     * @param[in]  target  The target object to check visibility against
-     *
-     * @return     True if this object is hidden from the target, false otherwise
-     */
-    virtual bool hidden(const object& target) const;
-
-    /**
-     * @brief      Sends a chat message from this object.
-     *
-     * @param[in]  message    The message text to send
-     * @param[in]  chat_type  The type of chat (normal, shout, etc.)
-     * @param[in]  decorate   Whether to add decorative formatting to the message
-     */
-    void chat(const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
-
-    /**
-     * @brief      Gets the object's current position.
-     *
-     * @return     Reference to the object's position coordinates
-     */
-    const fb::model::point16_t& position() const;
-
-    /**
-     * @brief      Sets the object's position using coordinates.
-     *
-     * @param[in]  x        The X coordinate
-     * @param[in]  y        The Y coordinate
-     * @param[in]  refresh  Whether to refresh the object's visual state
-     *
-     * @return     True if position was set successfully, false otherwise
-     */
-    virtual bool position(uint16_t x, uint16_t y, bool refresh = false);
-
-    /**
-     * @brief      Sets the object's position using a point structure.
-     *
-     * @param[in]  position  The new position coordinates
-     * @param[in]  refresh   Whether to refresh the object's visual state
-     *
-     * @return     True if position was set successfully, false otherwise
-     */
-    virtual bool position(const fb::model::point16_t position, bool refresh = false);
-
-    /**
-     * @brief      Moves the object in its current direction.
-     *
-     * @return     True if the move was successful, false otherwise
-     */
-    bool move();
-
-    /**
-     * @brief      Moves the object in a specific direction.
-     *
-     * @param[in]  direction  The direction to move in
-     *
-     * @return     True if the move was successful, false otherwise
-     */
-    virtual bool move(DIRECTION direction);
-
-    /**
-     * @brief      Gets the object's X coordinate.
-     *
-     * @return     The X coordinate value
-     */
-    uint16_t x() const;
-
-    /**
-     * @brief      Sets the object's X coordinate.
-     *
-     * @param[in]  value  The new X coordinate value
-     *
-     * @return     True if the coordinate was set successfully, false otherwise
-     */
-    bool x(uint16_t value);
-
-    /**
-     * @brief      Gets the object's Y coordinate.
-     *
-     * @return     The Y coordinate value
-     */
-    uint16_t y() const;
-
-    /**
-     * @brief      Sets the object's Y coordinate.
-     *
-     * @param[in]  value  The new Y coordinate value
-     *
-     * @return     True if the coordinate was set successfully, false otherwise
-     */
-    bool y(uint16_t value);
-
-    /**
-     * @brief      Gets the object's facing direction.
-     *
-     * @return     The current facing direction
-     */
-    DIRECTION direction() const;
-
-    /**
-     * @brief      Sets the object's facing direction.
-     *
-     * @param[in]  value  The new facing direction
-     *
-     * @return     True if the direction was set successfully, false otherwise
-     */
-    bool direction(DIRECTION value);
-
-    /**
-     * @brief      Moves the object to a different map.
-     *
-     * @param      map           The target map to move to
-     * @param[in]  destroy_type  How to handle the object when leaving current map
-     *
-     * @return     True if the map change was successful, false otherwise
-     */
-    virtual async::task<bool> map(std::shared_ptr<fb::game::map> map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-
-    /**
-     * @brief      Moves the object to a different map at a specific position.
-     *
-     * @param      map           The target map to move to
-     * @param[in]  position      The position on the target map
-     * @param[in]  destroy_type  How to handle the object when leaving current map
-     * @param[in]  notify        Whether to notify other objects about the move
-     *
-     * @return     True if the map change was successful, false otherwise
-     */
-    virtual async::task<bool> map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT, bool notify = true);
-
-    /**
-     * @brief      Gets the map that this object is currently on.
-     *
-     * @return     Pointer to the current map, or nullptr if not on any map
-     */
-    std::shared_ptr<fb::game::map> map() const;
-
-    /**
-     * @brief      Checks if this object can see a specific position.
-     *
-     * @param[in]  position  The position to check line of sight to
-     *
-     * @return     True if the position is visible, false if blocked
-     */
-    bool sight(const fb::model::point16_t& position) const;
-
-    /**
-     * @brief      Checks if this object can see another object.
-     *
-     * @param[in]  object  The target object to check line of sight to
-     *
-     * @return     True if the target object is visible, false if blocked or hidden
-     */
-    bool sight(const fb::game::object& object) const;
-
-    /**
-     * @brief      Gets the position at the specified side direction from this object.
-     *
-     * @param[in]  direction  The direction to get the side position for
-     * @param[in]  step       The number of steps in that direction
-     *
-     * @return     The position coordinates at the specified side and distance
-     */
-    fb::model::point16_t side_position(DIRECTION direction, int step = 1) const;
-
-    /**
-     * @brief      Gets the position in front of this object.
-     *
-     * @param[in]  step  The number of steps forward from current position
-     *
-     * @return     The position coordinates in front of this object
-     */
-    fb::model::point16_t front_position(int step = 1) const;
-
-    /**
-     * @brief      Gets the first object at the specified side direction.
-     *
-     * @param[in]  direction  The direction to look for objects
-     * @param[in]  type       The type of object to find (UNKNOWN for any type)
-     *
-     * @return     Pointer to the first object found, or nullptr if none
-     */
-    std::shared_ptr<fb::game::object> side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-
-    /**
-     * @brief      Gets all objects at the specified side direction.
-     *
-     * @param[in]  direction  The direction to look for objects
-     * @param[in]  type       The type of object to find (UNKNOWN for any type)
-     *
-     * @return     Vector of pointers to all objects found in that direction
-     */
+    [[nodiscard]] virtual async::task<void>        destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual async::task<size_t>                    send(const fb::stream& stream, bool encrypt = true, bool wrap = true);
+    virtual async::task<size_t>                    send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true);
+    uint32_t                                       oid() const;
+    void                                           oid(uint32_t value);
+    const fb::model::object&                       based() const;
+    bool                                           is(OBJECT_TYPE type) const;
+    virtual const std::string&                     name() const;
+    virtual uint16_t                               look() const;
+    virtual uint8_t                                color() const;
+    virtual OBJECT_TYPE                            what() const;
+    virtual void                                   update_external(bool detailed);
+    virtual void                                   update_external(object& you, bool detailed);
+    virtual bool                                   super_hide() const;
+    virtual bool                                   hidden(const object& target) const;
+    void                                           chat(const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
+    const fb::model::point16_t&                    position() const;
+    virtual bool                                   position(uint16_t x, uint16_t y, bool refresh = false);
+    virtual bool                                   position(const fb::model::point16_t position, bool refresh = false);
+    bool                                           move();
+    virtual bool                                   move(DIRECTION direction);
+    uint16_t                                       x() const;
+    bool                                           x(uint16_t value);
+    uint16_t                                       y() const;
+    bool                                           y(uint16_t value);
+    DIRECTION                                      direction() const;
+    bool                                           direction(DIRECTION value);
+    virtual async::task<bool>                      map(map_ptr map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual async::task<bool>                      map(map_ptr map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT, bool notify = true);
+    map_ptr                                        map() const;
+    bool                                           sight(const fb::model::point16_t& position) const;
+    bool                                           sight(const fb::game::object& object) const;
+    fb::model::point16_t                           side_position(DIRECTION direction, int step = 1) const;
+    fb::model::point16_t                           front_position(int step = 1) const;
+    std::shared_ptr<fb::game::object>              side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     std::vector<std::shared_ptr<fb::game::object>> sides(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-
-    /**
-     * @brief      Gets the first object directly in front of this object.
-     *
-     * @param[in]  type  The type of object to find (UNKNOWN for any type)
-     *
-     * @return     Pointer to the first object found in front, or nullptr if none
-     */
-    std::shared_ptr<fb::game::object> forward(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-
-    /**
-     * @brief      Gets all objects directly in front of this object.
-     *
-     * @param[in]  type  The type of object to find (UNKNOWN for any type)
-     *
-     * @return     Vector of pointers to all objects found in front
-     */
+    std::shared_ptr<fb::game::object>              forward(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     std::vector<std::shared_ptr<fb::game::object>> forwards(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-
-    /**
-     * @brief      Calculates the exact distance to another object.
-     *
-     * @param[in]  right  The target object to measure distance to
-     *
-     * @return     The exact distance as a floating-point value
-     */
-    double distance(const object& right) const;
-
-    /**
-     * @brief      Calculates the squared distance to another object (faster than exact distance).
-     *
-     * @param[in]  right  The target object to measure distance to
-     *
-     * @return     The squared distance as an integer value
-     */
-    uint32_t distance_sqrt(const object& right) const;
-
-    /**
-     * @brief      Checks if this object meets the specified conditions.
-     *
-     * @param[in]  conditions  The list of DSL conditions to evaluate
-     *
-     * @return     True if all conditions are met, false otherwise
-     */
-    virtual bool condition(const std::vector<fb::model::dsl>& conditions) const;
-
-    /**
-     * @brief      Checks if this object is available for interaction.
-     *
-     * @return     True if the object is available, false if busy or unavailable
-     */
-    virtual bool available() const;
-
-    /**
-     * @brief      Hides this object from all other objects.
-     *
-     * @param[in]  destroy_type  The type of destruction/hiding to perform
-     */
-    virtual void hide(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-
-    /**
-     * @brief      Hides this object from a specific target object.
-     *
-     * @param      to            The target object to hide from
-     * @param[in]  destroy_type  The type of destruction/hiding to perform
-     */
-    virtual void hide(fb::game::object& to, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-
-    /**
-     * @brief      Gets all objects within line of sight.
-     *
-     * @param[in]  type  The type of object to find (UNKNOWN for any type)
-     *
-     * @return     Vector of pointers to all visible objects
-     */
+    double                                         distance(const object& right) const;
+    uint32_t                                       distance_sqrt(const object& right) const;
+    virtual bool                                   condition(const std::vector<fb::model::dsl>& conditions) const;
+    virtual bool                                   available() const;
+    virtual void                                   hide(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual void                                   hide(fb::game::object& to, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     std::vector<std::shared_ptr<fb::game::object>> sight_in(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-
-    /**
-     * @brief      Gets all nearby objects within the same sector.
-     *
-     * @param[in]  type                 The type of object to find (UNKNOWN for any type)
-     * @param[in]  contains_super_hide  Whether to include super hidden objects
-     *
-     * @return     Vector of pointers to all nearby objects
-     */
     std::vector<std::shared_ptr<fb::game::object>> nears(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN, bool contains_super_hide = false) const;
-
-    /**
-     * @brief      Sets the thread that this object belongs to.
-     *
-     * @param[in]  value  Pointer to the thread managing this object
-     */
-    void thread(fb::thread* value);
-
-    /**
-     * @brief      Gets the thread that this object belongs to.
-     *
-     * @return     Pointer to the thread managing this object
-     */
-    virtual fb::thread* thread() const override;
-
-    /**
-     * @brief      Updates the object's unique identifier.
-     */
-    virtual void update_id();
-
-    /**
-     * @brief      Updates the object with new map information.
-     *
-     * @param[in]  map   The map to update with
-     */
-    virtual void update_map(const fb::game::map& map);
-
-    /**
-     * @brief      Updates the background music for this object.
-     *
-     * @param[in]  bgm     The background music ID to play
-     * @param[in]  volume  The volume level (0-255)
-     */
-    virtual void update_bgm(uint16_t bgm, uint8_t volume);
-
-    /**
-     * @brief      Updates the object's position information to clients.
-     */
-    virtual void update_position();
-
-    /**
-     * @brief      Plays a sound effect for this object.
-     *
-     * @param[in]  sound  The sound effect to play
-     */
-    void sound(SOUND sound);
-
-    /**
-     * @brief      Applies a visual effect to this object.
-     *
-     * @param[in]  value  The effect ID to apply
-     */
-    void effect(uint8_t value);
+    void                                           thread(fb::thread* value);
+    virtual fb::thread*                            thread() const override;
+    virtual void                                   update_id();
+    virtual void                                   update_map(const fb::game::map& map);
+    virtual void                                   update_bgm(uint16_t bgm, uint8_t volume);
+    virtual void                                   update_position();
+    void                                           sound(SOUND sound);
+    void                                           effect(uint8_t value);
 
 public:
-    /**
-     * @brief      Equality operator.
-     *
-     * @param[in]  right  The source object to compare with
-     *
-     * @return     The result of the equality
-     */
     bool operator== (const object& right) const;
-
-    /**
-     * @brief      Inequality operator.
-     *
-     * @param[in]  right  The source object to compare with
-     *
-     * @return     The result of the inequality
-     */
     bool operator!= (const object& right) const;
 };
 
-/**
- * @brief      Event listener interface for object-related events.
- *
- *             This interface defines all the callback methods that handle various
- *             object events such as creation, destruction, movement, communication,
- *             and visual updates. Implementations of this interface receive
- *             notifications when objects perform actions or change state.
- */
 struct object::listener_t
 {
-    /**
-     * @brief      Called when an object sends a chat message.
-     *
-     * @param      me         The object that sent the chat message
-     * @param[in]  message    The chat message text
-     * @param[in]  chat_type  The type of chat (normal, shout, whisper, etc.)
-     */
     virtual void on_chat(fb::game::object& me, const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL) = 0;
-
-    /**
-     * @brief      Called when an object changes its facing direction.
-     *
-     * @param      me    The object that changed its facing direction
-     */
-    virtual void on_direction(fb::game::object& me) = 0;
-
-    /**
-     * @brief      Called when an object's external appearance is updated to all nearby objects.
-     *
-     * @param      me     The object whose appearance is being updated
-     * @param[in]  detailed  Whether this is a detailed update (minimal data) or full update
-     */
-    virtual void on_update_external(fb::game::object& me, bool detailed) = 0;
-
-    /**
-     * @brief      Called when an object's external appearance is updated to a specific target object.
-     *
-     * @param      me     The object whose appearance is being updated
-     * @param      you    The target object receiving the appearance update
-     * @param[in]  detailed  Whether this is a detailed update (minimal data) or full update
-     */
-    virtual void on_update_external(fb::game::object& me, fb::game::object& you, bool detailed) = 0;
-
-    /**
-     * @brief      Called when an object is hidden from all other objects.
-     *
-     * @param      me            The object being hidden
-     * @param[in]  destroy_type  The type of hiding/destruction being performed
-     */
-    virtual void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
-
-    /**
-     * @brief      Called when an object is hidden from a specific target object.
-     *
-     * @param      me            The object being hidden
-     * @param      you           The target object that can no longer see the hidden object
-     * @param[in]  destroy_type  The type of hiding/destruction being performed
-     */
-    virtual void on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type) = 0;
-
-    /**
-     * @brief      Called when an object moves to a new position.
-     *
-     * @param      me      The object that moved
-     * @param[in]  before  The object's previous position before the move
-     */
-    virtual void on_move(fb::game::object& me, const fb::model::point16_t& before) = 0;
-
-    /**
-     * @brief      Called when a buff is applied to an object.
-     *
-     * @param      me    The object receiving the buff
-     * @param      buff  The buff being applied
-     */
-    virtual void on_buff(fb::game::object& me, fb::game::buff& buff) = 0;
-
-    /**
-     * @brief      Called when a buff is removed from an object.
-     *
-     * @param      me    The object losing the buff
-     * @param      buff  The buff being removed
-     */
-    virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
-
-    /**
-     * @brief      Called when an object is created and added to the game world.
-     *
-     * @param      me    The object being created
-     */
-    virtual void on_create(fb::game::object& me) = 0;
-
-    /**
-     * @brief      Called when an object is destroyed and removed from the game world.
-     *
-     * @param      me    The object being destroyed
-     */
-    virtual void on_destroy(fb::game::object& me) = 0;
-
-    /**
-     * @brief      Called when an object plays a sound effect.
-     *
-     * @param      ch     The object playing the sound effect
-     * @param[in]  sound  The sound effect being played
-     */
-    virtual void on_sound(fb::game::object& ch, SOUND sound) = 0;
-
-    /**
-     * @brief      Called when an object applies a visual effect.
-     *
-     * @param      ch     The object applying the visual effect
-     * @param[in]  value  The effect ID being applied
-     */
-    virtual void on_effect(fb::game::object& ch, uint8_t value) = 0;
-
-    /**
-     * @brief      Called when an object leaves a map.
-     *
-     * @param      me    The object leaving the map
-     * @param      map   The map being left
-     */
-    virtual void on_map_leave(fb::game::object& me, const fb::game::map& map) = 0;
-
-    /**
-     * @brief      Called when an object enters a map.
-     *
-     * @param      me    The object entering the map
-     * @param      map   The map being entered
-     */
-    virtual void on_map_enter(fb::game::object& me, const fb::game::map& map) = 0;
+    virtual void on_direction(fb::game::object& me)                                                                 = 0;
+    virtual void on_update_external(fb::game::object& me, bool detailed)                                            = 0;
+    virtual void on_update_external(fb::game::object& me, fb::game::object& you, bool detailed)                     = 0;
+    virtual void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)                   = 0;
+    virtual void on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type)                    = 0;
+    virtual void on_move(fb::game::object& me, const fb::model::point16_t& before)                                  = 0;
+    virtual void on_buff(fb::game::object& me, fb::game::buff& buff)                                                = 0;
+    virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff)                                              = 0;
+    virtual void on_create(fb::game::object& me)                                                                    = 0;
+    virtual void on_destroy(fb::game::object& me)                                                                   = 0;
+    virtual void on_sound(fb::game::object& ch, SOUND sound)                                                        = 0;
+    virtual void on_effect(fb::game::object& ch, uint8_t value)                                                     = 0;
+    virtual void on_map_leave(fb::game::object& me, const fb::game::map& map)                                       = 0;
+    virtual void on_map_enter(fb::game::object& me, const fb::game::map& map)                                       = 0;
 };
 
-/**
- * @brief      Initialization parameters for creating game objects.
- *
- *             This structure contains the essential parameters needed to initialize
- *             a game object, including its position, direction, map assignment,
- *             and unique identifier. These parameters are used during object
- *             construction to set up the initial state.
- */
 struct object::initial_params
 {
 public:
-    uint32_t                       id;                                 ///< Unique object identifier (0xFFFFFFFF for auto-assignment)
-    const fb::model::point16_t     position  = fb::model::point16_t(); ///< Initial position coordinates on the map
-    DIRECTION                      direction = DIRECTION::BOTTOM;      ///< Initial facing direction
-    std::shared_ptr<fb::game::map> map       = nullptr;                ///< Pointer to the map where the object will be placed
+    uint32_t                   id;
+    const fb::model::point16_t position  = fb::model::point16_t();
+    DIRECTION                  direction = DIRECTION::BOTTOM;
+    map_ptr                    map       = nullptr;
 };
 
 } // namespace fb::game

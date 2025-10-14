@@ -41,22 +41,19 @@ std::shared_ptr<character> character::container::find(const std::string& name) c
     return it != this->_from_name.end() ? it->second : nullptr;
 }
 
-async::task<void> character::container::foreach (std::function<void(std::shared_ptr<character>&)>&&     fn,
-                                                 std::function<bool(const std::shared_ptr<character>&)> predict)
+async::task<void> character::container::foreach (character_function_t&& fn, character_predicate_t predict)
 {
     co_await this->foreach_async(
-        [fn](std::shared_ptr<character>& ch) -> async::task<void> {
+        [fn](character_ptr_t& ch) -> async::task<void> {
             fn(ch);
             co_return;
         },
         std::move(predict));
 }
 
-async::task<void>
-character::container::foreach_async(std::function<async::task<void>(std::shared_ptr<character>&)>&& fn,
-                                    std::function<bool(const std::shared_ptr<character>&)>          predict)
+async::task<void> character::container::foreach_async(character_async_function_t&& fn, character_predicate_t predict)
 {
-    auto targets = std::vector<std::shared_ptr<character>>();
+    auto targets = std::vector<character_ptr_t>();
     for (auto& [uid, ch] : this->_from_uid)
     {
         if (predict != nullptr && predict(ch) == false)
@@ -68,20 +65,17 @@ character::container::foreach_async(std::function<async::task<void>(std::shared_
     co_await this->foreach_async(std::move(fn), std::move(targets));
 }
 
-async::task<void> character::container::foreach (std::function<void(std::shared_ptr<character>&)>&& fn,
-                                                 const std::vector<std::shared_ptr<character>>&     characters)
+async::task<void> character::container::foreach (character_function_t&& fn, const std::vector<character_ptr_t>& characters)
 {
     co_await this->foreach_async(
-        [fn](std::shared_ptr<character>& ch) -> async::task<void> {
+        [fn](character_ptr_t& ch) -> async::task<void> {
             fn(ch);
             co_return;
         },
         std::move(characters));
 }
 
-async::task<void>
-character::container::foreach_async(std::function<async::task<void>(std::shared_ptr<character>&)>&& fn,
-                                    const std::vector<std::shared_ptr<character>>&                  characters)
+async::task<void> character::container::foreach_async(character_async_function_t&& fn, const std::vector<character_ptr_t>& characters)
 {
     auto thread = this->_server.threads.current();
     auto group  = std::unordered_map<fb::thread*, std::vector<std::weak_ptr<character>>>();
@@ -113,25 +107,20 @@ character::container::foreach_async(std::function<async::task<void>(std::shared_
         co_await thread->switching();
 }
 
-async::task<void> character::container::foreach (const std::vector<std::string>& names,
-                                                 std::function<void(std::shared_ptr<character>&)> && fn,
-                                                 std::function<void(const std::string& name)> miss)
+async::task<void> character::container::foreach (const std::vector<std::string>& names, character_function_t && fn, character_function_t_miss miss)
 {
     co_await this->foreach_async(
         std::move(names),
-        [fn, miss](std::shared_ptr<character>& ch) -> async::task<void> {
+        [fn, miss](character_ptr_t& ch) -> async::task<void> {
             fn(ch);
             co_return;
         },
         std::move(miss));
 }
 
-async::task<void>
-character::container::foreach_async(const std::vector<std::string>&                                 names,
-                                    std::function<async::task<void>(std::shared_ptr<character>&)>&& fn,
-                                    std::function<void(const std::string& name)>                    miss)
+async::task<void> character::container::foreach_async(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss)
 {
-    auto targets = std::vector<std::shared_ptr<character>>();
+    auto targets = std::vector<character_ptr_t>();
     for (auto& name : names)
     {
         auto ch = this->find(name);
@@ -147,9 +136,7 @@ character::container::foreach_async(const std::vector<std::string>&             
     co_await this->foreach_async(std::move(fn), std::move(targets));
 }
 
-async::task<void> character::container::invoke(const std::string&                                 name,
-                                               std::function<void(std::shared_ptr<character>&)>&& fn,
-                                               std::function<void(const std::string& name)>       miss)
+async::task<void> character::container::invoke(const std::string& name, character_function_t&& fn, character_function_t_miss miss)
 {
     auto ch = this->find(name);
     if (ch == nullptr)
@@ -166,9 +153,7 @@ async::task<void> character::container::invoke(const std::string&               
         co_await before->switching();
 }
 
-async::task<void> character::container::invoke_async(const std::string& name,
-                                                     std::function<async::task<void>(std::shared_ptr<character>&)>&& fn,
-                                                     std::function<void(const std::string& name)> miss)
+async::task<void> character::container::invoke_async(const std::string& name, character_async_function_t&& fn, character_function_t_miss miss)
 {
     auto ch = this->find(name);
     if (ch == nullptr)
