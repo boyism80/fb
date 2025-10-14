@@ -3173,7 +3173,7 @@ int fb::game::builtin::character::builtin_quest(lua_State* L)
     }
 
     auto id    = lua->tointeger(2);
-    auto quest = ch->quest(id);
+    auto quest = ch->quests[id];
     if (quest == nullptr)
         lua->pushnil();
     else
@@ -3200,13 +3200,13 @@ int fb::game::builtin::character::builtin_start_quest(lua_State* L)
         return 1;
     }
 
-    if (ch->start_quest(id) == false)
+    if (ch->quests.start(id) == false)
     {
         lua->pushboolean(false);
         return 1;
     }
 
-    auto quest = ch->quest(id);
+    auto quest = ch->quests[id];
     if (quest == nullptr)
         lua->pushnil();
     else
@@ -3235,13 +3235,13 @@ int fb::game::builtin::character::builtin_remove_quest(lua_State* L)
     if (lua->is_number(2))
     {
         auto id = lua->tointeger(2);
-        lua->pushboolean(ch->remove_quest(id));
+        lua->pushboolean(ch->quests.remove(id));
         return 1;
     }
     else if (lua->is_userdata<fb::game::quest>(2))
     {
         auto quest = lua->touserdata<fb::game::quest>(2);
-        lua->pushboolean(ch->remove_quest(quest->id));
+        lua->pushboolean(ch->quests.remove(quest->id));
         return 1;
     }
     else

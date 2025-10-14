@@ -228,9 +228,6 @@ public:
     const std::vector<std::shared_ptr<fb::game::mob>>& spawned_mobs() const;
     bool                                               detach_spawned_mob(fb::game::mob& mob);
     async::task<void>                                  death_penalty();
-    std::shared_ptr<fb::game::quest>                   quest(uint32_t id) const;
-    bool                                               start_quest(uint32_t id);
-    bool                                               remove_quest(uint32_t id);
     bool                                               reward(const std::vector<fb::model::dsl>& reward);
     fb::protocol::internal::Character                  to_protocol() const;
 #pragma region stat

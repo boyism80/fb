@@ -57,10 +57,7 @@ OBJECT_TYPE character::what() const
     return OBJECT_TYPE::CHARACTER;
 }
 
-async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
-                                 const fb::model::point16_t&    position,
-                                 DESTROY_TYPE                   destroy_type,
-                                 bool                           notify)
+async::task<bool> character::map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type, bool notify)
 {
     if (this->_thread == nullptr)
         co_return true;
@@ -391,8 +388,7 @@ bool character::creature(CREATURE value)
 {
     this->assert_thread();
 
-    if (value != CREATURE::DRAGON && value != CREATURE::PHOENIX && value != CREATURE::TIGER &&
-        value != CREATURE::TURTLE)
+    if (value != CREATURE::DRAGON && value != CREATURE::PHOENIX && value != CREATURE::TIGER && value != CREATURE::TURTLE)
         return false;
 
     this->_creature = value;
@@ -831,10 +827,7 @@ void character::update_map()
         this->update_map(*this->_map);
 }
 
-void character::update_map(const fb::game::map&        map,
-                           const fb::model::point16_t& begin,
-                           const fb::model::size8_t&   size,
-                           uint16_t                    crc)
+void character::update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size, uint16_t crc)
 {
     this->listener.on_update_map(*this, map, begin, size, crc);
 }
@@ -1258,9 +1251,7 @@ void character::show_bulletin()
     this->listener.on_show_bulletin(*this);
 }
 
-void character::show_bulletin(const fb::model::bulletin&                    section,
-                              const std::list<fb::game::bulletin::article>& articles,
-                              BULLETIN_BUTTON_ENABLE                        flag)
+void character::show_bulletin(const fb::model::bulletin& section, const std::list<fb::game::bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag)
 {
     this->listener.on_show_bulletin(*this, section, articles, flag);
 }
@@ -1336,8 +1327,7 @@ bool character::detect() const
     return this->_detect;
 }
 
-std::shared_ptr<fb::game::mob>
-character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify)
+std::shared_ptr<fb::game::mob> character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify)
 {
     auto map = this->_map;
     if (map == nullptr)
@@ -1914,12 +1904,10 @@ async::task<void> character::death_penalty()
 
     auto cls   = this->cls();
     auto level = this->level();
-    if (this->server.model.ability.contains(cls) && this->server.model.ability[cls].contains(level) &&
-        this->server.model.ability[cls].contains(level - 1))
+    if (this->server.model.ability.contains(cls) && this->server.model.ability[cls].contains(level) && this->server.model.ability[cls].contains(level - 1))
     {
-        auto penalty =
-            uint32_t(this->server.model.ability[cls][level].exp * fb::model::const_value::death_penalty::exp);
-        auto gained = this->exp() - this->server.model.ability[cls][level - 1].stacked_exp;
+        auto penalty = uint32_t(this->server.model.ability[cls][level].exp * fb::model::const_value::death_penalty::exp);
+        auto gained  = this->exp() - this->server.model.ability[cls][level - 1].stacked_exp;
 
         penalty = std::min(gained, penalty);
         if (penalty > 0)
@@ -1928,36 +1916,6 @@ async::task<void> character::death_penalty()
             this->message(std::format("경험치를 {} 잃었습니다.", penalty));
         }
     }
-}
-
-std::shared_ptr<fb::game::quest> character::quest(uint32_t id) const
-{
-    if (this->quests.contains(id) == false)
-        return nullptr;
-
-    return this->quests.at(id);
-}
-
-bool character::start_quest(uint32_t id)
-{
-    if (this->server.model.quest.contains(id) == false)
-        return false;
-
-    auto& attr = this->server.model.quest_attribute[id];
-    if (this->condition(attr.condition) == false)
-        return false;
-
-    this->quests.add(id, 0, 0, false, "");
-    return true;
-}
-
-bool character::remove_quest(uint32_t id)
-{
-    if (this->quests.contains(id) == false)
-        return false;
-
-    this->quests.erase(id);
-    return true;
 }
 
 bool character::reward(const std::vector<fb::model::dsl>& reward)
