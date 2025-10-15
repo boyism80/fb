@@ -325,14 +325,6 @@ void character::armor_color(std::optional<uint8_t> value)
     this->update_external(true);
 }
 
-uint8_t character::current_armor_color() const
-{
-    this->assert_thread();
-
-    auto armor = this->items.armor();
-    return this->_armor_color.value_or(armor != nullptr ? armor->color() : 0x00);
-}
-
 std::optional<uint16_t> character::disguise() const
 {
     this->assert_thread();

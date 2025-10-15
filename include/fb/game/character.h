@@ -134,7 +134,6 @@ public:
     void                                               color(uint8_t value);
     std::optional<uint8_t>                             armor_color() const;
     void                                               armor_color(std::optional<uint8_t> value);
-    uint8_t                                            current_armor_color() const;
     std::optional<uint16_t>                            disguise() const;
     void                                               disguise(uint16_t value);
     void                                               undisguise();
