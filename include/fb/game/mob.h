@@ -36,6 +36,8 @@ class mob : public life
 public:
     using model_type = fb::model::mob;
 
+    friend class mob_stat;
+
 public:
     LUA_PROTOTYPE
 
@@ -57,28 +59,17 @@ private:
     std::weak_ptr<life>                          _oblivion;
     rezen*                                       _rezen         = nullptr;
     lua::context*                                _attack_thread = nullptr;
-    uint32_t                                     _buff_hp       = 0;
-    uint32_t                                     _buff_mp       = 0;
-    uint8_t                                      _buff_str      = 0;
-    uint8_t                                      _buff_dex      = 0;
-    uint8_t                                      _buff_int      = 0;
-    int8_t                                       _buff_phydef   = 0;
-    int8_t                                       _buff_magdef   = 0;
-    uint8_t                                      _buff_dam      = 0;
-    uint8_t                                      _buff_hit      = 0;
     std::vector<std::shared_ptr<fb::game::item>> _items;
     bool                                         _hidden = false;
     std::unique_ptr<ai>                          _ai_strategy;
 
 public:
     const std::weak_ptr<character> owner;
-
-public:
-    mob::listener_t& listener;
+    mob::listener_t&               listener;
+    fb::game::mob_stat             stat;
 
 public:
     mob(fb::game::server& server, const fb::model::mob& model, const initial_params& params);
-    mob(const mob& right);
     ~mob();
 
 private:
@@ -87,35 +78,8 @@ private:
     void                            AI(const fb::model::datetime& now);
 
 public:
-    bool     near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const;
-    bool     move_step(const fb::model::point16_t& position);
-    uint32_t base_hp() const override final;
-    uint32_t buff_hp() const override final;
-    void     buff_hp(uint32_t value) override final;
-    uint32_t base_mp() const override final;
-    uint32_t buff_mp() const override final;
-    void     buff_mp(uint32_t value) override final;
-    uint8_t  base_str() const override final;
-    uint8_t  buff_str() const override final;
-    void     buff_str(uint8_t value) override final;
-    uint8_t  base_dex() const override final;
-    uint8_t  buff_dex() const override final;
-    void     buff_dex(uint8_t value) override final;
-    uint8_t  base_int() const override final;
-    uint8_t  buff_int() const override final;
-    void     buff_int(uint8_t value) override final;
-    int8_t   base_phydef() const override final;
-    int8_t   buff_phydef() const override final;
-    void     buff_phydef(int8_t value) override final;
-    int8_t   base_magdef() const override final;
-    int8_t   buff_magdef() const override final;
-    void     buff_magdef(int8_t value) override final;
-    uint8_t  base_dam() const override final;
-    uint8_t  buff_dam() const override final;
-    void     buff_dam(uint8_t value) override final;
-    uint8_t  base_hit() const override final;
-    uint8_t  buff_hit() const override final;
-    void     buff_hit(uint8_t value) override final;
+    bool near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const;
+    bool move_step(const fb::model::point16_t& position);
 
 public:
     [[nodiscard]] async::task<void>                     action(fb::model::datetime now);
@@ -128,7 +92,6 @@ public:
     std::shared_ptr<fb::game::life>                     update_target();
     virtual bool                                        available() const;
     uint32_t                                            auto_attack_damage(MOB_SIZE size) const override final;
-    uint32_t                                            damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false) override final;
     void                                                kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     async::task<void>                                   drop_items();
     void                                                assert_thread() const override final;

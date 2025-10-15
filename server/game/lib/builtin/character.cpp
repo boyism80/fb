@@ -2031,7 +2031,7 @@ int builtin::character::builtin_base_hp(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_hp = ch->base_hp();
+            auto base_hp = ch->stat.base_hp();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_hp);
                 return 1;
@@ -2043,7 +2043,7 @@ int builtin::character::builtin_base_hp(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_hp(value);
+            ch->stat.base_hp(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2067,7 +2067,7 @@ int builtin::character::builtin_base_mp(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_mp = ch->base_mp();
+            auto base_mp = ch->stat.base_mp();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_mp);
                 return 1;
@@ -2079,7 +2079,7 @@ int builtin::character::builtin_base_mp(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_mp(value);
+            ch->stat.base_mp(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2103,7 +2103,7 @@ int builtin::character::builtin_base_str(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_str = ch->base_str();
+            auto base_str = ch->stat.base_str();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_str);
                 return 1;
@@ -2115,7 +2115,7 @@ int builtin::character::builtin_base_str(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_str(value);
+            ch->stat.base_str(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2139,7 +2139,7 @@ int builtin::character::builtin_base_dex(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_dex = ch->base_dex();
+            auto base_dex = ch->stat.base_dex();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_dex);
                 return 1;
@@ -2151,7 +2151,7 @@ int builtin::character::builtin_base_dex(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_dex(value);
+            ch->stat.base_dex(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2175,7 +2175,7 @@ int builtin::character::builtin_base_int(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_int = ch->base_int();
+            auto base_int = ch->stat.base_int();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_int);
                 return 1;
@@ -2187,7 +2187,7 @@ int builtin::character::builtin_base_int(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_int(value);
+            ch->stat.base_int(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2211,7 +2211,7 @@ int builtin::character::builtin_base_dam(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_dam = ch->base_dam();
+            auto base_dam = ch->stat.base_dam();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_dam);
                 return 1;
@@ -2223,7 +2223,7 @@ int builtin::character::builtin_base_dam(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_dam(value);
+            ch->stat.base_dam(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2247,7 +2247,7 @@ int builtin::character::builtin_base_hit(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_hit = ch->base_hit();
+            auto base_hit = ch->stat.base_hit();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_hit);
                 return 1;
@@ -2259,7 +2259,7 @@ int builtin::character::builtin_base_hit(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_hit(value);
+            ch->stat.base_hit(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });

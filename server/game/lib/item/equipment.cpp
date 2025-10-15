@@ -53,7 +53,7 @@ bool fb::game::equipment::active()
         case DSL::strength:
         {
             auto params = fb::model::dsl::strength(dsl.params);
-            if (owner->str() < params.value)
+            if (owner->stat.str() < params.value)
                 throw std::runtime_error("너무 무겁습니다.");
         }
         break;
@@ -61,7 +61,7 @@ bool fb::game::equipment::active()
         case DSL::dexterity:
         {
             auto params = fb::model::dsl::dexterity(dsl.params);
-            if (owner->dex() < params.value)
+            if (owner->stat.dex() < params.value)
                 throw std::runtime_error("민첩함이 부족합니다.");
         }
         break;
@@ -69,7 +69,7 @@ bool fb::game::equipment::active()
         case DSL::intelligence:
         {
             auto params = fb::model::dsl::intelligence(dsl.params);
-            if (owner->intelligence() < params.value)
+            if (owner->stat.intelligence() < params.value)
                 throw std::runtime_error("지능이 부족합니다.");
         }
         break;
@@ -223,12 +223,10 @@ std::string fb::game::equipment::tip_message() const
     auto&             model = this->based<fb::model::equipment>();
 
     sstream << this->name() << std::endl;
-    sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(model.durability) << ' '
-            << std::fixed << std::setprecision(1) << (this->_durability / (float)model.durability) * 100 << '%'
-            << std::endl;
+    sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(model.durability) << ' ' << std::fixed << std::setprecision(1)
+            << (this->_durability / (float)model.durability) * 100 << '%' << std::endl;
     sstream << this->mid_message();
-    sstream << "무장:   " << std::to_string(model.defensive_physical) << " Hit:  " << std::to_string(model.hit)
-            << " Dam:  " << std::to_string(model.damage);
+    sstream << "무장:   " << std::to_string(model.defensive_physical) << " Hit:  " << std::to_string(model.hit) << " Dam:  " << std::to_string(model.damage);
 
     if (model.base_hp)
         sstream << std::left << std::setw(14) << std::endl << "체력치 상승:" << std::to_string(model.base_hp);

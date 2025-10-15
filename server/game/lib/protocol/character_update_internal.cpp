@@ -22,13 +22,13 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
         writer.write<uint8_t>(static_cast<uint8_t>(this->ch.creature())); // creature
         writer.write<uint8_t>(0x00);                                      // Unknown (clan?)
         writer.write<uint8_t>(this->ch.level());                          // level
-        writer.write<uint32_t>(this->ch.maxhp());                         // base hp
-        writer.write<uint32_t>(this->ch.maxmp());                         // base mp
-        writer.write<uint8_t>(this->ch.str());
-        writer.write<uint8_t>(this->ch.intelligence());
+        writer.write<uint32_t>(this->ch.stat.maxhp());                    // base hp
+        writer.write<uint32_t>(this->ch.stat.maxmp());                    // base mp
+        writer.write<uint8_t>(this->ch.stat.str());
+        writer.write<uint8_t>(this->ch.stat.intelligence());
         writer.write<uint8_t>(0x03);
         writer.write<uint8_t>(0x03);
-        writer.write<uint8_t>(this->ch.dex());
+        writer.write<uint8_t>(this->ch.stat.dex());
         writer.write<uint8_t>(0x03);
         writer.write<uint32_t>(0x00);
         writer.write<uint8_t>(0x00);
@@ -36,8 +36,8 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
 
     if (ENUM_IN(this->level, STATE_LEVEL::HP_MP))
     {
-        writer.write<uint32_t>(this->ch.hp()); // current hp
-        writer.write<uint32_t>(this->ch.mp()); // current mp
+        writer.write<uint32_t>(this->ch.stat.hp()); // current hp
+        writer.write<uint32_t>(this->ch.stat.mp()); // current mp
     }
 
     if (ENUM_IN(this->level, STATE_LEVEL::EXP_MONEY))

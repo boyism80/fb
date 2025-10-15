@@ -33,7 +33,7 @@ bool run_away_ai::execute(mob& mob_obj, const datetime& now)
     }
 
     // Run away if HP is low, otherwise act like containment AI
-    auto hp_ratio = static_cast<float>(mob_obj.hp()) / mob_obj.base_hp();
+    auto hp_ratio = static_cast<float>(mob_obj.stat.hp()) / mob_obj.stat.base_hp();
     if (hp_ratio <= LOW_HP_THRESHOLD)
     {
         super::run_from_target(mob_obj, target);

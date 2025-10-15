@@ -23,6 +23,7 @@ class map;
 class character : public life
 {
     friend class group;
+    friend class character_stat;
 
 public:
     using object::map;
@@ -49,10 +50,6 @@ private:
     std::string             _pw;
     std::optional<uint32_t> _birthday;
     fb::model::datetime     _updated_date;
-    stat_value<uint32_t>    _max_hp, _max_mp;
-    stat_value<uint8_t>     _str, _dex, _int;
-    stat_value<int32_t>     _phydef, _magdef;
-    stat_value<int32_t>     _dam, _hit;
     fb::model::datetime     _last_spell_cast;
     uint16_t                _look              = 0;
     uint8_t                 _color             = 0;
@@ -88,6 +85,7 @@ public:
     fb::lua::context* dialog = nullptr;
     achievement_map_t achievements; // order required
     listener_t&       listener;
+    character_stat    stat;
 
 private:
     using object::based;
@@ -119,7 +117,6 @@ public:
     bool                                               transferring() const;
     async::task<void>                                  attack(DURATION duration = DURATION::ATTACK) override final;
     uint32_t                                           auto_attack_damage(MOB_SIZE size) const override final;
-    uint32_t                                           damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false) override final;
     void                                               action(ACTION action, DURATION duration, uint8_t sound = 0x00) override final;
     const std::string&                                 name() const override final;
     void                                               name(const std::string& value);
@@ -165,8 +162,6 @@ public:
     uint32_t                                           money_add(uint32_t value);
     void                                               money_reduce(uint32_t value);
     fb::game::cash*                                    money_drop(uint32_t value);
-    uint32_t                                           regenerative() const;
-    void                                               regenerative(uint8_t value);
     bool                                               option(OPTION key) const;
     void                                               option(OPTION key, bool value, bool notify = true);
     bool                                               option_toggle(OPTION key, bool notify = true);
@@ -229,59 +224,10 @@ public:
     async::task<void>                                  death_penalty();
     bool                                               reward(const std::vector<fb::model::dsl>& reward);
     fb::protocol::internal::Character                  to_protocol() const;
-#pragma region stat
-
-public:
-    uint32_t base_hp() const override final;
-    uint32_t buff_hp() const override final;
-    uint32_t maxhp() const override final;
-    void     base_hp(uint32_t value);
-    void     buff_hp(uint32_t value) override final;
-    uint32_t base_mp() const override final;
-    uint32_t buff_mp() const override final;
-    uint32_t maxmp() const override final;
-    void     base_mp(uint32_t value);
-    void     buff_mp(uint32_t value) override final;
-    uint8_t  base_str() const override final;
-    uint8_t  buff_str() const override final;
-    uint8_t  str() const override final;
-    void     base_str(uint8_t value);
-    void     buff_str(uint8_t value) override final;
-    uint8_t  base_dex() const override final;
-    uint8_t  buff_dex() const override final;
-    uint8_t  dex() const override final;
-    void     base_dex(uint8_t value);
-    void     buff_dex(uint8_t value) override final;
-    uint8_t  base_int() const override final;
-    uint8_t  buff_int() const override final;
-    uint8_t  intelligence() const override final;
-    void     base_int(uint8_t value);
-    void     buff_int(uint8_t value) override final;
-    int8_t   base_phydef() const override final;
-    int8_t   buff_phydef() const override final;
-    int8_t   phydef() const override final;
-    void     base_phydef(int8_t value);
-    void     buff_phydef(int8_t value) override final;
-    int8_t   base_magdef() const override final;
-    int8_t   buff_magdef() const override final;
-    int8_t   magdef() const override final;
-    void     base_magdef(int8_t value);
-    void     buff_magdef(int8_t value) override final;
-    uint8_t  base_dam() const override final;
-    uint8_t  buff_dam() const override final;
-    uint8_t  dam() const override final;
-    void     base_dam(uint8_t value);
-    void     buff_dam(uint8_t value) override final;
-    uint8_t  base_hit() const override final;
-    uint8_t  buff_hit() const override final;
-    uint8_t  hit() const override final;
-    void     base_hit(uint8_t value);
-    void     buff_hit(uint8_t value) override final;
-    bool     super_hide() const override final;
-    void     super_hide(bool enabled);
-    bool     hidden(const fb::game::object& target) const override final;
-    bool     hidden(ROLE role) const;
-#pragma endregion
+    bool                                               super_hide() const override final;
+    void                                               super_hide(bool enabled);
+    bool                                               hidden(const fb::game::object& target) const override final;
+    bool                                               hidden(ROLE role) const;
 };
 
 class character::container

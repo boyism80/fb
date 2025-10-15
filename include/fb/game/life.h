@@ -2,6 +2,7 @@
 #define __LIFE_H__
 
 #include <fb/game/object.h>
+#include <fb/game/stat.h>
 
 namespace fb::game {
 
@@ -15,8 +16,6 @@ public:
     struct initial_params;
 
 protected:
-    uint32_t      _hp                = 0;
-    uint32_t      _mp                = 0;
     uint32_t      _damage_rate       = 1000;
     uint32_t      _skill_damage_rate = 1000;
     uint32_t      _damage_derate     = 1000;
@@ -28,66 +27,18 @@ protected:
 public:
     listener_t&      listener;
     fb::game::spells spells;
+    fb::game::stat&  stat;
 
 protected:
-    life(fb::game::server& server, const fb::model::life& model, const initial_params& params);
+    life(fb::game::server& server, const fb::model::life& model, fb::game::stat& stat, const initial_params& params);
     virtual ~life();
 
 public:
     virtual void on_init() override;
 
-#pragma region stat
-
-public:
-    virtual uint32_t base_hp() const = 0;
-    virtual uint32_t buff_hp() const = 0;
-    virtual uint32_t maxhp() const;
-    virtual void     buff_hp(uint32_t value) = 0;
-    virtual uint32_t base_mp() const         = 0;
-    virtual uint32_t buff_mp() const         = 0;
-    virtual uint32_t maxmp() const;
-    virtual void     buff_mp(uint32_t value) = 0;
-    virtual uint8_t  base_str() const        = 0;
-    virtual uint8_t  buff_str() const        = 0;
-    virtual uint8_t  str() const;
-    virtual void     buff_str(uint8_t value) = 0;
-    virtual uint8_t  base_dex() const        = 0;
-    virtual uint8_t  buff_dex() const        = 0;
-    virtual uint8_t  dex() const;
-    virtual void     buff_dex(uint8_t value) = 0;
-    virtual uint8_t  base_int() const        = 0;
-    virtual uint8_t  buff_int() const        = 0;
-    virtual uint8_t  intelligence() const;
-    virtual void     buff_int(uint8_t value) = 0;
-    virtual int8_t   base_phydef() const     = 0;
-    virtual int8_t   buff_phydef() const     = 0;
-    virtual int8_t   phydef() const;
-    virtual void     buff_phydef(int8_t value) = 0;
-    virtual int8_t   base_magdef() const       = 0;
-    virtual int8_t   buff_magdef() const       = 0;
-    virtual int8_t   magdef() const;
-    virtual void     buff_magdef(int8_t value) = 0;
-    virtual uint8_t  base_dam() const          = 0;
-    virtual uint8_t  buff_dam() const          = 0;
-    virtual uint8_t  dam() const;
-    virtual void     buff_dam(uint8_t value) = 0;
-    virtual uint8_t  base_hit() const        = 0;
-    virtual uint8_t  buff_hit() const        = 0;
-    virtual uint8_t  hit() const;
-    virtual void     buff_hit(uint8_t value) = 0;
-#pragma endregion
-
 public:
     virtual async::task<void> attack(DURATION duration = DURATION::ATTACK);
-    uint32_t                  hp() const;
-    void                      hp(uint32_t value);
-    uint32_t                  mp() const;
-    void                      mp(uint32_t value);
     virtual uint32_t          exp() const;
-    virtual uint32_t          heal(uint32_t value, fb::game::object* from = nullptr);
-    virtual uint32_t          damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false);
-    virtual uint32_t          mp_up(uint32_t value, fb::game::object* from = nullptr);
-    virtual uint32_t          mp_down(uint32_t value, fb::game::object* from = nullptr);
     virtual void              update(STATE_LEVEL value = STATE_LEVEL::LEVEL_MIN);
     void                      update_hp(uint32_t diff, bool critical);
     virtual void              kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
@@ -131,8 +82,6 @@ struct life::listener_t : public virtual fb::game::object::listener_t, public vi
 struct life::initial_params : public fb::game::object::initial_params
 {
 public:
-    uint32_t hp  = 0;
-    uint32_t mp  = 0;
     uint32_t exp = 0;
 };
 

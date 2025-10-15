@@ -54,19 +54,17 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     for (int i = 0; i < spawn_count; i++)
     {
         // Use smart pointer for mob creation
-        auto mob = this->_server.make<fb::game::mob>(this->_server.model.mob[this->model.mob],
-                                                     mob::initial_params{.alive = true, .rezen = this});
+        auto mob = this->_server.make<fb::game::mob>(this->_server.model.mob[this->model.mob], mob::initial_params{.alive = true, .rezen = this});
 
         mob->direction(DIRECTION(std::rand() % 4));
-        mob->heal(mob->base_hp());
+        mob->stat.heal(mob->stat.base_hp());
 
         while (true)
         {
             auto width    = this->model.end.x - this->model.begin.x;
             auto height   = this->model.end.y - this->model.begin.y;
             auto map      = this->_server.maps[this->model.parent];
-            auto position = fb::model::point16_t(this->model.begin.x + (width > 0 ? std::rand() % width : 0),
-                                                 this->model.begin.y + (height > 0 ? std::rand() % height : 0));
+            auto position = fb::model::point16_t(this->model.begin.x + (width > 0 ? std::rand() % width : 0), this->model.begin.y + (height > 0 ? std::rand() % height : 0));
 
             if (position.x > map->width() - 1 || position.y > map->height() - 1)
                 continue;
@@ -104,7 +102,8 @@ void rezen::force_spawn(std::thread::id thread_id)
 }
 
 mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_params& params) :
-    life(server, model, params),
+    stat(*this),
+    life(server, model, stat, params),
     listener(server.listener),
     _rezen(params.rezen),
     owner(params.owner != nullptr ? params.owner->weak_from_this_as<character>() : std::weak_ptr<character>())
@@ -115,17 +114,10 @@ mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_pa
     this->hidden(!params.alive);
     if (params.alive)
     {
-        this->heal(this->base_hp());
-        this->mp_up(this->base_mp());
+        this->stat.heal(this->stat.base_hp());
+        this->stat.mp_up(this->stat.base_mp());
     }
 }
-
-mob::mob(const mob& right) :
-    life(right),
-    listener(right.listener),
-    _action_time(right._action_time),
-    _target(right._target)
-{ }
 
 mob::~mob()
 {
@@ -389,26 +381,6 @@ bool mob::available() const
     return this->alive();
 }
 
-uint32_t mob::damage(uint32_t value, std::shared_ptr<object> from, bool critical)
-{
-    this->assert_thread();
-
-    auto result = life::damage(value, from, critical);
-    if (!this->alive())
-    {
-        this->kill(from, DESTROY_TYPE::DEAD);
-        return result;
-    }
-
-    // Handle damage in AI strategy
-    if (this->_ai_strategy && from && from->is(OBJECT_TYPE::LIFE))
-    {
-        this->_ai_strategy->on_damage(*this, std::static_pointer_cast<life>(from), fb::model::datetime());
-    }
-
-    return result;
-}
-
 uint32_t mob::auto_attack_damage(MOB_SIZE size) const
 {
     this->assert_thread();
@@ -530,153 +502,4 @@ bool mob::hidden(const fb::game::object& target) const
 void mob::hidden(bool enabled)
 {
     this->_hidden = enabled;
-}
-
-uint32_t mob::base_hp() const
-{
-    auto& model = this->based<fb::model::mob>();
-    return model.hp;
-}
-
-uint32_t mob::buff_hp() const
-{
-    return this->_buff_hp;
-}
-
-void mob::buff_hp(uint32_t value)
-{
-    this->_buff_hp = value;
-}
-
-uint32_t mob::base_mp() const
-{
-    auto& model = this->based<fb::model::mob>();
-    return model.mp;
-}
-
-uint32_t mob::buff_mp() const
-{
-    return this->_buff_mp;
-}
-
-void mob::buff_mp(uint32_t value)
-{
-    this->_buff_mp = value;
-}
-
-uint8_t mob::base_str() const
-{
-    // auto& model = this->based<fb::model::mob>();
-    // return model.str;
-    return 0;
-}
-
-uint8_t mob::buff_str() const
-{
-    return this->_buff_str;
-}
-
-void mob::buff_str(uint8_t value)
-{
-    this->_buff_str = value;
-}
-
-uint8_t mob::base_dex() const
-{
-    // auto& model = this->based<fb::model::mob>();
-    // return model.dex;
-    return 0;
-}
-
-uint8_t mob::buff_dex() const
-{
-    return this->_buff_dex;
-}
-
-void mob::buff_dex(uint8_t value)
-{
-    this->_buff_dex = value;
-}
-
-uint8_t mob::base_int() const
-{
-    // auto& model = this->based<fb::model::mob>();
-    // return model.int;
-    return 0;
-}
-
-uint8_t mob::buff_int() const
-{
-    return this->_buff_int;
-}
-
-void mob::buff_int(uint8_t value)
-{
-    this->_buff_int = value;
-}
-
-int8_t mob::base_phydef() const
-{
-    auto& model = this->based<fb::model::mob>();
-    return model.defensive_physical;
-}
-
-int8_t mob::buff_phydef() const
-{
-    return this->_buff_phydef;
-}
-
-void mob::buff_phydef(int8_t value)
-{
-    this->_buff_phydef = value;
-}
-
-int8_t mob::base_magdef() const
-{
-    auto& model = this->based<fb::model::mob>();
-    return model.defensive_magical;
-}
-
-int8_t mob::buff_magdef() const
-{
-    return this->_buff_magdef;
-}
-
-void mob::buff_magdef(int8_t value)
-{
-    this->_buff_magdef = value;
-}
-
-uint8_t mob::base_dam() const
-{
-    // auto& model = this->based<fb::model::mob>();
-    // return model.dam;
-    return 0;
-}
-
-uint8_t mob::buff_dam() const
-{
-    return this->_buff_dam;
-}
-
-void mob::buff_dam(uint8_t value)
-{
-    this->_buff_dam = value;
-}
-
-uint8_t mob::base_hit() const
-{
-    // auto& model = this->based<fb::model::mob>();
-    // return model.hit;
-    return 0;
-}
-
-uint8_t mob::buff_hit() const
-{
-    return this->_buff_hit;
-}
-
-void mob::buff_hit(uint8_t value)
-{
-    this->_buff_hit = value;
 }
