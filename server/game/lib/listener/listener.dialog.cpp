@@ -32,12 +32,12 @@ void listener_impl::on_dialog(character& me, const fb::game::object& obj, const 
     me.send(fb_resp::dialog_list(obj, menus, message, button_prev, oid));
 }
 
-void listener_impl::on_dialog(character&                                    me,
-                              std::unique_ptr<fb::game::dialog::portrait>&& portrait,
-                              const std::string&                            message,
-                              const std::vector<std::string>&               menus,
-                              bool                                          button_prev,
-                              uint32_t                                      oid)
+void listener_impl::on_dialog(character&                            me,
+                              std::unique_ptr<fb::game::portrait>&& portrait,
+                              const std::string&                    message,
+                              const std::vector<std::string>&       menus,
+                              bool                                  button_prev,
+                              uint32_t                              oid)
 {
     me.send(fb_resp::dialog_list(std::move(portrait), menus, message, button_prev, oid));
 }

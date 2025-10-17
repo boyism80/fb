@@ -15,7 +15,7 @@ class dialog_list : public fb::protocol::header
 {
 public:
 #ifndef BOT
-    using portrait_ptr = std::unique_ptr<fb::game::dialog::portrait>;
+    using portrait_ptr = std::unique_ptr<fb::game::portrait>;
 #endif
 
 public:

@@ -2867,7 +2867,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     auto oid      = uint32_t{0xFFFFFFFD};
     auto obj      = std::shared_ptr<fb::game::object>(nullptr);
     auto model    = static_cast<const fb::model::object*>(nullptr);
-    auto portrait = static_cast<fb::game::dialog::character_portrait*>(nullptr);
+    auto portrait = static_cast<fb::game::character_portrait*>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
         obj = lua->touserdata<fb::game::object>(2);
@@ -2879,7 +2879,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     }
     else if (lua->is_table(2))
     {
-        portrait = new fb::game::dialog::character_portrait();
+        portrait = new fb::game::character_portrait();
         lua->pushstring("sex");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
             portrait->sex = static_cast<SEX>(lua->tointeger(-1));
@@ -2938,7 +2938,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
 
     std::ignore = server->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
         if (portrait != nullptr)
-            ch->listener.on_dialog(*ch, std::unique_ptr<fb::game::dialog::portrait>(portrait), message, menus, button_prev, oid);
+            ch->listener.on_dialog(*ch, std::unique_ptr<fb::game::portrait>(portrait), message, menus, button_prev, oid);
         else if (obj != nullptr)
             ch->listener.on_dialog(*ch, *obj, message, menus, button_prev, oid);
         else

@@ -16,7 +16,7 @@ class dialog_input : public fb::protocol::header
 public:
     static constexpr uint8_t header = 0x2F;
 #ifndef BOT
-    using portrait_ptr = std::unique_ptr<fb::game::dialog::portrait>;
+    using portrait_ptr = std::unique_ptr<fb::game::portrait>;
 #endif
 
 public:
