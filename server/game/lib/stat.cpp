@@ -41,111 +41,133 @@ fb::game::stat::stat(stat&& other) :
 
 uint32_t fb::game::stat::buff_hp() const
 {
+    this->owner.assert_thread();
     return this->_buff_hp;
 }
 
 void fb::game::stat::buff_hp(uint32_t value)
 {
+    this->owner.assert_thread();
     this->_buff_hp = value;
 }
 
 uint32_t fb::game::stat::buff_mp() const
 {
+    this->owner.assert_thread();
     return this->_buff_mp;
 }
 
 void fb::game::stat::buff_mp(uint32_t value)
 {
+    this->owner.assert_thread();
     this->_buff_mp = value;
 }
 
 uint8_t fb::game::stat::buff_str() const
 {
+    this->owner.assert_thread();
     return this->_buff_str;
 }
 
 void fb::game::stat::buff_str(uint8_t value)
 {
+    this->owner.assert_thread();
     this->_buff_str = value;
 }
 
 uint8_t fb::game::stat::buff_dex() const
 {
+    this->owner.assert_thread();
     return this->_buff_dex;
 }
 
 void fb::game::stat::buff_dex(uint8_t value)
 {
+    this->owner.assert_thread();
     this->_buff_dex = value;
 }
 
 uint8_t fb::game::stat::buff_int() const
 {
+    this->owner.assert_thread();
     return this->_buff_int;
 }
 
 void fb::game::stat::buff_int(uint8_t value)
 {
+    this->owner.assert_thread();
     this->_buff_int = value;
 }
 
 int8_t fb::game::stat::buff_phydef() const
 {
+    this->owner.assert_thread();
     return this->_buff_phydef;
 }
 
 void fb::game::stat::buff_phydef(int8_t value)
 {
+    this->owner.assert_thread();
     this->_buff_phydef = value;
 }
 
 int8_t fb::game::stat::buff_magdef() const
 {
+    this->owner.assert_thread();
     return this->_buff_magdef;
 }
 
 void fb::game::stat::buff_magdef(int8_t value)
 {
+    this->owner.assert_thread();
     this->_buff_magdef = value;
 }
 
 uint8_t fb::game::stat::buff_dam() const
 {
+    this->owner.assert_thread();
     return this->_buff_dam;
 }
 
 void fb::game::stat::buff_dam(uint8_t value)
 {
+    this->owner.assert_thread();
     this->_buff_dam = value;
 }
 
 uint8_t fb::game::stat::buff_hit() const
 {
+    this->owner.assert_thread();
     return this->_buff_hit;
 }
 
 void fb::game::stat::buff_hit(uint8_t value)
 {
+    this->owner.assert_thread();
     this->_buff_hit = value;
 }
 
 uint32_t fb::game::stat::buff_regenerative() const
 {
+    this->owner.assert_thread();
     return this->_buff_regenerative;
 }
 
 void fb::game::stat::buff_regenerative(uint32_t value)
 {
+    this->owner.assert_thread();
     this->_buff_regenerative = value;
 }
 
 uint32_t fb::game::stat::hp() const
 {
+    this->owner.assert_thread();
     return this->_hp;
 }
 
 void fb::game::stat::hp(uint32_t value)
 {
+    this->owner.assert_thread();
     this->_hp = value;
     this->owner.update(STATE_LEVEL::HP_MP);
 }
@@ -185,11 +207,13 @@ uint32_t fb::game::stat::damage(uint32_t value, std::shared_ptr<fb::game::object
 
 uint32_t fb::game::stat::mp() const
 {
+    this->owner.assert_thread();
     return this->_mp;
 }
 
 void fb::game::stat::mp(uint32_t value)
 {
+    this->owner.assert_thread();
     this->_mp = value;
     this->owner.update(STATE_LEVEL::HP_MP);
 }
@@ -212,6 +236,7 @@ uint32_t fb::game::stat::mp_down(uint32_t value, fb::game::object* from)
 
 uint32_t fb::game::stat::maxhp() const
 {
+    this->owner.assert_thread();
     auto base = this->base_hp();
     auto buff = this->buff_hp();
     auto max  = std::numeric_limits<uint32_t>::max();
@@ -223,6 +248,7 @@ uint32_t fb::game::stat::maxhp() const
 
 uint32_t fb::game::stat::maxmp() const
 {
+    this->owner.assert_thread();
     auto base = this->base_mp();
     auto buff = this->buff_mp();
     auto max  = std::numeric_limits<uint32_t>::max();
@@ -234,6 +260,7 @@ uint32_t fb::game::stat::maxmp() const
 
 uint8_t fb::game::stat::str() const
 {
+    this->owner.assert_thread();
     auto base = this->base_str();
     auto buff = this->buff_str();
     auto max  = std::numeric_limits<uint8_t>::max();
@@ -245,6 +272,7 @@ uint8_t fb::game::stat::str() const
 
 uint8_t fb::game::stat::dex() const
 {
+    this->owner.assert_thread();
     auto base = this->base_dex();
     auto buff = this->buff_dex();
     auto max  = std::numeric_limits<uint8_t>::max();
@@ -256,6 +284,7 @@ uint8_t fb::game::stat::dex() const
 
 uint8_t fb::game::stat::intelligence() const
 {
+    this->owner.assert_thread();
     auto base = this->base_int();
     auto buff = this->buff_int();
     auto max  = std::numeric_limits<uint8_t>::max();
@@ -267,6 +296,7 @@ uint8_t fb::game::stat::intelligence() const
 
 int8_t fb::game::stat::phydef() const
 {
+    this->owner.assert_thread();
     auto base = this->base_phydef();
     auto buff = this->buff_phydef();
     auto sum  = (int16_t)base + (int16_t)buff;
@@ -275,6 +305,7 @@ int8_t fb::game::stat::phydef() const
 
 int8_t fb::game::stat::magdef() const
 {
+    this->owner.assert_thread();
     auto base = this->base_magdef();
     auto buff = this->buff_magdef();
     auto sum  = (int16_t)base + (int16_t)buff;
@@ -283,6 +314,7 @@ int8_t fb::game::stat::magdef() const
 
 uint8_t fb::game::stat::dam() const
 {
+    this->owner.assert_thread();
     auto base = this->base_dam();
     auto buff = this->buff_dam();
     auto max  = std::numeric_limits<uint8_t>::max();
@@ -294,6 +326,7 @@ uint8_t fb::game::stat::dam() const
 
 uint8_t fb::game::stat::hit() const
 {
+    this->owner.assert_thread();
     auto base = this->base_hit();
     auto buff = this->buff_hit();
     auto max  = std::numeric_limits<uint8_t>::max();
@@ -305,6 +338,7 @@ uint8_t fb::game::stat::hit() const
 
 uint32_t fb::game::stat::regenerative() const
 {
+    this->owner.assert_thread();
     auto base = this->base_regenerative();
     auto buff = this->buff_regenerative();
     auto max  = std::numeric_limits<uint32_t>::max();
@@ -321,71 +355,85 @@ character_stat::character_stat(character& owner) :
 
 void character_stat::base_hp(uint32_t value)
 {
+    this->owner.assert_thread();
     this->_max_hp = value;
 }
 
 void character_stat::base_mp(uint32_t value)
 {
+    this->owner.assert_thread();
     this->_max_mp = value;
 }
 
 void character_stat::base_str(uint8_t value)
 {
+    this->owner.assert_thread();
     this->_str = value;
 }
 
 void character_stat::base_dex(uint8_t value)
 {
+    this->owner.assert_thread();
     this->_dex = value;
 }
 
 void character_stat::base_int(uint8_t value)
 {
+    this->owner.assert_thread();
     this->_int = value;
 }
 
 void character_stat::base_phydef(int8_t value)
 {
+    this->owner.assert_thread();
     this->_phydef = value;
 }
 
 void character_stat::base_magdef(int8_t value)
 {
+    this->owner.assert_thread();
     this->_magdef = value;
 }
 
 void character_stat::base_dam(uint8_t value)
 {
+    this->owner.assert_thread();
     this->_dam = value;
 }
 
 void character_stat::base_hit(uint8_t value)
 {
+    this->owner.assert_thread();
     this->_hit = value;
 }
 
 void character_stat::base_regenerative(uint32_t value)
 {
+    this->owner.assert_thread();
     this->_regenerative = value;
 }
 
 uint32_t character_stat::base_hp() const
 {
+    this->owner.assert_thread();
     return this->_max_hp;
 }
 
 uint32_t character_stat::base_mp() const
 {
+    this->owner.assert_thread();
     return this->_max_mp;
 }
 
 uint8_t character_stat::base_str() const
 {
+    this->owner.assert_thread();
     return this->_str;
 }
 
 uint8_t character_stat::str() const
 {
+    this->owner.assert_thread();
     auto str        = fb::game::stat::str();
     auto additional = (uint32_t)0;
     for (auto& [_, equipment] : this->owner.items.equipments())
@@ -406,11 +454,13 @@ uint8_t character_stat::str() const
 
 uint8_t character_stat::base_dex() const
 {
+    this->owner.assert_thread();
     return this->_dex;
 }
 
 uint8_t character_stat::dex() const
 {
+    this->owner.assert_thread();
     auto dex        = fb::game::stat::dex();
     auto additional = (uint32_t)0;
     for (auto& [_, equipment] : this->owner.items.equipments())
@@ -431,11 +481,13 @@ uint8_t character_stat::dex() const
 
 uint8_t character_stat::base_int() const
 {
+    this->owner.assert_thread();
     return this->_int;
 }
 
 uint8_t character_stat::intelligence() const
 {
+    this->owner.assert_thread();
     auto intelligence = fb::game::stat::intelligence();
     auto additional   = (uint32_t)0;
     for (auto& [_, equipment] : this->owner.items.equipments())
@@ -456,11 +508,13 @@ uint8_t character_stat::intelligence() const
 
 int8_t character_stat::base_phydef() const
 {
+    this->owner.assert_thread();
     return this->_phydef;
 }
 
 int8_t character_stat::phydef() const
 {
+    this->owner.assert_thread();
     auto phydef     = fb::game::stat::phydef();
     auto additional = (uint32_t)0;
     for (auto& [_, equipment] : this->owner.items.equipments())
@@ -478,11 +532,13 @@ int8_t character_stat::phydef() const
 
 int8_t character_stat::base_magdef() const
 {
+    this->owner.assert_thread();
     return this->_magdef;
 }
 
 int8_t character_stat::magdef() const
 {
+    this->owner.assert_thread();
     auto magdef     = fb::game::stat::magdef();
     auto additional = (uint32_t)0;
     for (auto& [_, equipment] : this->owner.items.equipments())
@@ -500,11 +556,13 @@ int8_t character_stat::magdef() const
 
 uint8_t character_stat::base_dam() const
 {
+    this->owner.assert_thread();
     return this->_dam;
 }
 
 uint8_t character_stat::dam() const
 {
+    this->owner.assert_thread();
     auto dam        = fb::game::stat::dam();
     auto additional = (uint32_t)0;
     for (auto& [_, equipment] : this->owner.items.equipments())
@@ -525,11 +583,13 @@ uint8_t character_stat::dam() const
 
 uint8_t character_stat::base_hit() const
 {
+    this->owner.assert_thread();
     return this->_hit;
 }
 
 uint8_t character_stat::hit() const
 {
+    this->owner.assert_thread();
     auto hit        = fb::game::stat::hit();
     auto additional = (uint32_t)0;
     for (auto& [_, equipment] : this->owner.items.equipments())
@@ -550,6 +610,7 @@ uint8_t character_stat::hit() const
 
 uint32_t character_stat::base_regenerative() const
 {
+    this->owner.assert_thread();
     return this->_regenerative;
 }
 
@@ -618,18 +679,21 @@ mob_stat::mob_stat(mob_stat&& other) :
 
 uint32_t mob_stat::base_hp() const
 {
+    this->owner.assert_thread();
     auto& model = this->owner.based<fb::model::mob>();
     return model.hp;
 }
 
 uint32_t mob_stat::base_mp() const
 {
+    this->owner.assert_thread();
     auto& model = this->owner.based<fb::model::mob>();
     return model.mp;
 }
 
 uint8_t mob_stat::base_str() const
 {
+    this->owner.assert_thread();
     // auto& model = this->owner.based<fb::model::mob>();
     // return model.str;
     return 0;
@@ -637,6 +701,7 @@ uint8_t mob_stat::base_str() const
 
 uint8_t mob_stat::base_dex() const
 {
+    this->owner.assert_thread();
     // auto& model = this->owner.based<fb::model::mob>();
     // return model.dex;
     return 0;
@@ -644,6 +709,7 @@ uint8_t mob_stat::base_dex() const
 
 uint8_t mob_stat::base_int() const
 {
+    this->owner.assert_thread();
     // auto& model = this->owner.based<fb::model::mob>();
     // return model.int;
     return 0;
@@ -651,18 +717,21 @@ uint8_t mob_stat::base_int() const
 
 int8_t mob_stat::base_phydef() const
 {
+    this->owner.assert_thread();
     auto& model = this->owner.based<fb::model::mob>();
     return model.defensive_physical;
 }
 
 int8_t mob_stat::base_magdef() const
 {
+    this->owner.assert_thread();
     auto& model = this->owner.based<fb::model::mob>();
     return model.defensive_magical;
 }
 
 uint8_t mob_stat::base_dam() const
 {
+    this->owner.assert_thread();
     // auto& model = this->owner.based<fb::model::mob>();
     // return model.dam;
     return 0;
@@ -670,6 +739,7 @@ uint8_t mob_stat::base_dam() const
 
 uint8_t mob_stat::base_hit() const
 {
+    this->owner.assert_thread();
     // auto& model = this->owner.based<fb::model::mob>();
     // return model.hit;
     return 0;
@@ -677,6 +747,7 @@ uint8_t mob_stat::base_hit() const
 
 uint32_t mob_stat::base_regenerative() const
 {
+    this->owner.assert_thread();
     return 0;
 }
 
