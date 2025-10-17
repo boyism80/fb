@@ -18,10 +18,10 @@ void listener_impl::send_update_preset(fb::game::object& obj, const fb::model::p
                                                                                       preset.state,
                                                                                       preset.hair,
                                                                                       preset.hair_color,
-                                                                                      preset.armor,
-                                                                                      preset.armor_color,
                                                                                       preset.weapon,
                                                                                       preset.weapon_color,
+                                                                                      preset.armor,
+                                                                                      preset.armor_color,
                                                                                       preset.shield,
                                                                                       preset.shield_color,
                                                                                       preset.disguise)};

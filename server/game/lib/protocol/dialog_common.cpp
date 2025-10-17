@@ -10,7 +10,7 @@ dialog::dialog(fb::model::model&             model,
                bool                          button_next,
                uint32_t                      oid,
                fb::game::dialog::interaction interaction) :
-    portrait(fb::game::dialog::portrait_factory::create(model, object)),
+    portrait(fb::game::portrait_factory::create(model, object)),
     message(message),
     button_prev(button_prev),
     button_next(button_next),
@@ -19,7 +19,7 @@ dialog::dialog(fb::model::model&             model,
 { }
 
 dialog::dialog(const fb::game::object& object, const std::string& message, bool button_prev, bool button_next, uint32_t oid, fb::game::dialog::interaction interaction) :
-    portrait(fb::game::dialog::portrait_factory::create(object)),
+    portrait(fb::game::portrait_factory::create(object)),
     message(message),
     button_prev(button_prev),
     button_next(button_next),

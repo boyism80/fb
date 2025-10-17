@@ -10,6 +10,7 @@
 
 namespace fb::protocol::game::response {
 
+#ifndef BOT
 template <bool Detailed>
 struct preset_serializer
 {
@@ -81,6 +82,7 @@ struct preset_serializer
         writer.write<std::string, uint8_t>(this->name);
     }
 };
+#endif
 
 // Template implementation for compile-time optimization
 template <bool Detailed>
