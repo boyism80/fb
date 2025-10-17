@@ -4,14 +4,14 @@ namespace fb::protocol::game::response {
 
 #ifndef BOT
 dialog_input::dialog_input(fb::model::model& model, const fb::model::object& obj, const std::string& message, uint32_t oid, fb::game::dialog::interaction interaction) :
-    portrait(fb::game::dialog::portrait_factory::create(model, obj)),
+    portrait(fb::game::portrait_factory::create(model, obj)),
     message(message),
     oid(oid),
     interaction(interaction)
 { }
 
 dialog_input::dialog_input(const fb::game::object& object, const std::string& message, uint32_t oid, fb::game::dialog::interaction interaction) :
-    portrait(fb::game::dialog::portrait_factory::create(object)),
+    portrait(fb::game::portrait_factory::create(object)),
     message(message),
     oid(oid),
     interaction(interaction)

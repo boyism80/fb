@@ -25,6 +25,9 @@ public:
     listener_impl& operator= (const listener_impl&) = delete;
     listener_impl& operator= (listener_impl&&)      = delete;
 
+private:
+    void send_update_preset(fb::game::object& obj, const fb::model::preset& preset);
+
 public:
     void on_create(fb::game::object& me) override final;
     void on_destroy(fb::game::object& me) override final;
@@ -97,7 +100,7 @@ public:
     void on_dialog(character& me, const fb::game::object& obj, const std::string& message, const std::vector<std::string>& menus, uint32_t seq = 0xFFFFFFFD) override final;
     void on_dialog(character& me, const fb::model::object& obj, const std::string& message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) override final;
     void on_dialog(character& me, const fb::game::object& obj, const std::string& message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) override final;
-    void on_dialog(character& me, std::unique_ptr<fb::game::dialog::portrait>&& portrait, const std::string& message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) override final;
+    void on_dialog(character& me, std::unique_ptr<fb::game::portrait>&& portrait, const std::string& message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) override final;
     void on_dialog(character& me, const fb::model::object& obj, const std::string& message, const std::vector<uint8_t>& item_slots, uint32_t seq = 0xFFFFFFFD) override final;
     void on_dialog(character& me, const fb::game::object& obj, const std::string& message, const std::vector<uint8_t>& item_slots, uint32_t seq = 0xFFFFFFFD) override final;
     void on_dialog(character& me, const fb::model::object& obj, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint32_t seq = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF) override final;

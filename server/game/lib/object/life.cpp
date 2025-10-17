@@ -4,11 +4,10 @@
 
 using namespace fb::game;
 
-life::life(fb::game::server& server, const fb::model::life& model, const initial_params& params) :
+life::life(fb::game::server& server, const fb::model::life& model, fb::game::stat& stat, const initial_params& params) :
     object(server, model, params),
     listener(server.listener),
-    _hp(params.hp),
-    _mp(params.mp)
+    stat(stat)
 { }
 
 life::~life()
@@ -17,55 +16,6 @@ life::~life()
 void life::on_init()
 {
     this->spells.owner(this->shared_from_this_as<life>());
-}
-
-uint32_t life::heal(uint32_t value, fb::game::object* from)
-{
-    this->assert_thread();
-    auto before = this->_hp;
-    this->hp(this->_hp + std::min(value, this->maxhp() - this->_hp));
-    this->update_hp(this->_hp - before, false);
-    return this->_hp - before;
-}
-
-uint32_t life::damage(uint32_t value, std::shared_ptr<fb::game::object> from, bool critical)
-{
-    this->assert_thread();
-    if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
-    {
-        auto ch = std::static_pointer_cast<fb::game::character>(from);
-        for (auto mob : ch->spawned_mobs())
-        {
-            if (mob.get() == this)
-                continue;
-
-            mob->target(std::static_pointer_cast<fb::game::life>(this->shared_from_this()));
-        }
-    }
-
-    if (this->invincible())
-        return 0;
-
-    auto before = this->_hp;
-    this->hp(this->_hp - std::min(value, this->_hp));
-    this->update_hp(before - this->_hp, critical);
-    return before - this->_hp;
-}
-
-uint32_t life::mp_up(uint32_t value, fb::game::object* from)
-{
-    this->assert_thread();
-    auto before = this->_mp;
-    this->mp(this->_mp + std::min(value, this->maxmp() - this->_mp));
-    return this->_mp - before;
-}
-
-uint32_t life::mp_down(uint32_t value, fb::game::object* from)
-{
-    this->assert_thread();
-    auto before = this->_mp;
-    this->mp(this->_mp - std::min(value, this->_mp));
-    return before - this->_mp;
 }
 
 void life::update(STATE_LEVEL value)
@@ -78,7 +28,7 @@ void life::update_hp(uint32_t diff, bool critical)
 
 void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type)
 {
-    this->_hp = 0;
+    this->stat.hp(0);
 
     // Call listener for packet response
     this->listener.on_dead(*this, from);
@@ -235,46 +185,6 @@ async::task<void> life::attack(DURATION duration)
     }
 }
 
-uint32_t life::hp() const
-{
-    this->assert_thread();
-    return this->_hp;
-}
-
-void life::hp(uint32_t value)
-{
-    this->assert_thread();
-    auto before = this->_hp;
-    this->_hp   = value;
-    this->update(STATE_LEVEL::HP_MP);
-}
-
-uint32_t life::mp() const
-{
-    this->assert_thread();
-    return this->_mp;
-}
-
-void life::mp(uint32_t value)
-{
-    this->assert_thread();
-    auto before = this->_mp;
-    this->_mp   = value;
-    this->update(STATE_LEVEL::HP_MP);
-}
-
-uint32_t life::base_hp() const
-{
-    this->assert_thread();
-    return static_cast<const fb::model::life&>(this->_model).hp;
-}
-
-uint32_t life::base_mp() const
-{
-    this->assert_thread();
-    return static_cast<const fb::model::life&>(this->_model).mp;
-}
-
 uint32_t life::exp() const
 {
     this->assert_thread();
@@ -316,7 +226,7 @@ bool life::contains_cc(CROWD_CONTROL value) const
 bool life::alive() const
 {
     this->assert_thread();
-    return this->_hp != 0;
+    return this->stat.hp() != 0;
 }
 
 bool life::active(fb::game::spell& spell, const std::string& message)
@@ -441,7 +351,7 @@ bool life::calculate_miss(life& you) const
 uint32_t life::calculate_damage(uint32_t value, const life& life, bool critical) const
 {
     this->assert_thread();
-    auto n                 = (100 - life.phydef()) / 10;
+    auto n                 = (100 - life.stat.phydef()) / 10;
     auto defensive_percent = -125 + (n * (2 * 14.75f - (n - 1) / 2.0f)) / 2.0f;
     auto damage            = value - uint32_t(defensive_percent * (value / 100.0f));
 
@@ -517,97 +427,4 @@ void life::cover(bool value)
 bool life::cover() const
 {
     return this->_cover;
-}
-
-uint32_t life::maxhp() const
-{
-    auto base = this->base_hp();
-    auto buff = this->buff_hp();
-    auto max  = std::numeric_limits<uint32_t>::max();
-    if (max - base < buff)
-        return max;
-
-    return base + buff;
-}
-
-uint32_t life::maxmp() const
-{
-    auto base = this->base_mp();
-    auto buff = this->buff_mp();
-    auto max  = std::numeric_limits<uint32_t>::max();
-    if (max - base < buff)
-        return max;
-
-    return base + buff;
-}
-
-uint8_t life::str() const
-{
-    auto base = this->base_str();
-    auto buff = this->buff_str();
-    auto max  = std::numeric_limits<uint8_t>::max();
-    if (max - base < buff)
-        return max;
-
-    return base + buff;
-}
-
-uint8_t life::dex() const
-{
-    auto base = this->base_dex();
-    auto buff = this->buff_dex();
-    auto max  = std::numeric_limits<uint8_t>::max();
-    if (max - base < buff)
-        return max;
-
-    return base + buff;
-}
-
-uint8_t life::intelligence() const
-{
-    auto base = this->base_int();
-    auto buff = this->buff_int();
-    auto max  = std::numeric_limits<uint8_t>::max();
-    if (max - base < buff)
-        return max;
-
-    return base + buff;
-}
-
-int8_t life::phydef() const
-{
-    auto base = this->base_phydef();
-    auto buff = this->buff_phydef();
-    auto sum  = (int16_t)base + (int16_t)buff;
-    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
-}
-
-int8_t life::magdef() const
-{
-    auto base = this->base_magdef();
-    auto buff = this->buff_magdef();
-    auto sum  = (int16_t)base + (int16_t)buff;
-    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
-}
-
-uint8_t life::dam() const
-{
-    auto base = this->base_dam();
-    auto buff = this->buff_dam();
-    auto max  = std::numeric_limits<uint8_t>::max();
-    if (max - base < buff)
-        return max;
-
-    return base + buff;
-}
-
-uint8_t life::hit() const
-{
-    auto base = this->base_hit();
-    auto buff = this->buff_hit();
-    auto max  = std::numeric_limits<uint8_t>::max();
-    if (max - base < buff)
-        return max;
-
-    return base + buff;
 }

@@ -47,7 +47,7 @@ void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS p
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 
     sstream.str(std::string());
-    sstream << std::format("갑옷 강도  {}  {} S  {}", me.phydef(), me.regenerative(), me.magdef());
+    sstream << std::format("갑옷 강도  {}  {} S  {}", me.stat.phydef(), me.stat.regenerative(), me.stat.magdef());
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 }
 

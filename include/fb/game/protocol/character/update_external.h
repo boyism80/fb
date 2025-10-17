@@ -5,31 +5,21 @@
 #include <fb/model/model.h>
 #ifndef BOT
 #include <fb/game/character.h>
+#include <fb/game/portrait.h>
 #endif
-
-using namespace fb::model::enum_value;
 
 namespace fb::protocol::game::response {
 
+#ifndef BOT
 template <bool Detailed>
 struct preset_serializer
 {
     uint32_t                   oid;
     fb::model::point<uint16_t> position;
     DIRECTION                  direction;
-    SEX                        sex;
-    STATE                      state;
-    uint16_t                   hair;
-    uint8_t                    hair_color;
-    std::optional<uint16_t>    armor;
-    std::optional<uint8_t>     armor_color;
-    std::optional<uint16_t>    weapon;
-    std::optional<uint8_t>     weapon_color;
-    std::optional<uint8_t>     shield;
-    std::optional<uint8_t>     shield_color;
-    std::optional<uint16_t>    disguise;
     HEAD_MARKER                head_marker;
     std::string                name;
+    character_portrait         portrait;
 
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
@@ -41,34 +31,34 @@ struct preset_serializer
         }
 
         writer.write<uint32_t>(this->oid);
-        writer.write<uint8_t>(this->state == STATE::DISGUISE);  // 변신유무
-        writer.write<uint8_t>(static_cast<uint8_t>(this->sex)); // sex
-        writer.write<uint8_t>(static_cast<uint8_t>(this->state));
-        if (this->state == STATE::DISGUISE)
+        writer.write<uint8_t>(this->portrait.state == STATE::DISGUISE);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->portrait.sex));
+        writer.write<uint8_t>(static_cast<uint8_t>(this->portrait.state));
+        if (this->portrait.state == STATE::DISGUISE)
         {
-            writer.write<uint16_t>(this->disguise.value());
-            writer.write<uint8_t>(this->armor_color.value_or(0x00));
+            writer.write<uint16_t>(this->portrait.disguise.value());
+            writer.write<uint8_t>(this->portrait.armor_color.value_or(0x00));
         }
         else
         {
-            writer.write<uint16_t>(this->hair);
-            writer.write<uint8_t>(this->hair_color);
+            writer.write<uint16_t>(this->portrait.hair);
+            writer.write<uint8_t>(this->portrait.hair_color);
 
-            if (this->armor.has_value())
+            if (this->portrait.armor.has_value())
             {
-                writer.write<uint8_t>(this->armor.value());
-                writer.write<uint8_t>(this->armor_color.value_or(0x00));
+                writer.write<uint8_t>(this->portrait.armor.value());
+                writer.write<uint8_t>(this->portrait.armor_color.value_or(0x00));
             }
             else
             {
-                writer.write<uint8_t>(static_cast<uint8_t>(this->sex));
+                writer.write<uint8_t>(static_cast<uint8_t>(this->portrait.sex));
                 writer.write<uint8_t>(0x00);
             }
 
-            if (this->weapon.has_value())
+            if (this->portrait.weapon.has_value())
             {
-                writer.write<uint16_t>(this->weapon.value());
-                writer.write<uint8_t>(this->weapon_color.value_or(0x00));
+                writer.write<uint16_t>(this->portrait.weapon.value());
+                writer.write<uint8_t>(this->portrait.weapon_color.value_or(0x00));
             }
             else
             {
@@ -76,10 +66,10 @@ struct preset_serializer
                 writer.write<uint8_t>(0x00);
             }
 
-            if (this->shield.has_value())
+            if (this->portrait.shield.has_value())
             {
-                writer.write<uint8_t>(this->shield.value());
-                writer.write<uint8_t>(this->shield_color.value_or(0x00));
+                writer.write<uint8_t>(this->portrait.shield.value());
+                writer.write<uint8_t>(this->portrait.shield_color.value_or(0x00));
             }
             else
             {
@@ -92,6 +82,7 @@ struct preset_serializer
         writer.write<std::string, uint8_t>(this->name);
     }
 };
+#endif
 
 // Template implementation for compile-time optimization
 template <bool Detailed>
@@ -126,39 +117,31 @@ public:
 public:
 #ifndef BOT
     update_external(const fb::game::character& ch, const fb::game::object& to) :
-        preset(preset_serializer<Detailed>{.oid          = ch.oid(),
-                                           .position     = ch.position(),
-                                           .direction    = ch.direction(),
-                                           .sex          = ch.sex(),
-                                           .state        = ch.state(),
-                                           .hair         = ch.look(),
-                                           .hair_color   = ch.color(),
-                                           .armor        = std::nullopt,
-                                           .armor_color  = std::nullopt,
-                                           .weapon       = std::nullopt,
-                                           .weapon_color = std::nullopt,
-                                           .shield       = std::nullopt,
-                                           .shield_color = std::nullopt,
-                                           .disguise     = ch.disguise(),
-                                           .head_marker  = head_marker(ch, to),
-                                           .name         = ch.name()})
+        preset(preset_serializer<Detailed>{
+            .oid         = ch.oid(),
+            .position    = ch.position(),
+            .direction   = ch.direction(),
+            .head_marker = head_marker(ch, to),
+            .name        = ch.name(),
+            .portrait =
+                character_portrait(ch.sex(), ch.state(), ch.look(), ch.color(), std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt)})
     {
         if (ch.items.armor() != nullptr)
         {
-            preset.armor       = ch.items.armor()->based<fb::model::armor>().dress;
-            preset.armor_color = ch.armor_color();
+            preset.portrait.armor       = ch.items.armor()->based<fb::model::armor>().dress;
+            preset.portrait.armor_color = ch.armor_color();
         }
 
         if (ch.items.weapon() != nullptr)
         {
-            preset.weapon       = ch.items.weapon()->based<fb::model::weapon>().dress;
-            preset.weapon_color = std::nullopt;
+            preset.portrait.weapon       = ch.items.weapon()->based<fb::model::weapon>().dress;
+            preset.portrait.weapon_color = std::nullopt;
         }
 
         if (ch.items.shield() != nullptr)
         {
-            preset.shield       = ch.items.shield()->based<fb::model::shield>().dress;
-            preset.shield_color = std::nullopt;
+            preset.portrait.shield       = ch.items.shield()->based<fb::model::shield>().dress;
+            preset.portrait.shield_color = std::nullopt;
         }
     }
     update_external(const preset_serializer<Detailed>& preset) :

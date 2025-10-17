@@ -26,10 +26,10 @@ login::init_ch(const internal::Character& response, character& ch, std::optional
     ch.money(response.money);
     ch.items.deposited(response.deposited_money);
     ch.sex(SEX(response.sex));
-    ch.base_hp(response.base_hp);
-    ch.hp(response.hp);
-    ch.base_mp(response.base_mp);
-    ch.mp(response.mp);
+    ch.stat.base_hp(response.base_hp);
+    ch.stat.hp(response.hp);
+    ch.stat.base_mp(response.base_mp);
+    ch.stat.mp(response.mp);
     ch.level(response.level);
     ch.exp(response.exp);
     ch.state(STATE(response.state));

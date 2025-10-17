@@ -15,7 +15,7 @@ async::task<void> update_hp::serialize(fb::stream_writer<big_endian>& writer) co
 {
     co_await header::serialize(writer);
 
-    auto percent = (uint8_t)std::ceil((this->me.hp() / static_cast<double>(this->me.base_hp())) * 100);
+    auto percent = (uint8_t)std::ceil((this->me.stat.hp() / static_cast<double>(this->me.stat.base_hp())) * 100);
     writer.write<uint8_t>(header);
     writer.write<uint32_t>(this->me.oid());
     writer.write<uint8_t>(this->critical);

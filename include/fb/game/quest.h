@@ -71,7 +71,8 @@ public:
 public:
     void owner(std::weak_ptr<fb::game::character> owner);
     void add(uint32_t id, uint32_t step, uint32_t progress, bool completed, std::string param);
-    void remove(uint32_t id);
+    bool start(uint32_t id);
+    bool remove(uint32_t id);
 };
 
 } // namespace fb::game

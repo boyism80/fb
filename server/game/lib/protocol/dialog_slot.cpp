@@ -9,7 +9,7 @@ dialog_slot::dialog_slot(fb::model::model&             model,
                          const std::string&            message,
                          uint32_t                      oid,
                          fb::game::dialog::interaction interaction) :
-    portrait(fb::game::dialog::portrait_factory::create(model, obj)),
+    portrait(fb::game::portrait_factory::create(model, obj)),
     slots(slots),
     message(message),
     oid(oid),
@@ -17,7 +17,7 @@ dialog_slot::dialog_slot(fb::model::model&             model,
 { }
 
 dialog_slot::dialog_slot(const fb::game::object& object, const std::vector<uint8_t>& slots, const std::string& message, uint32_t oid, fb::game::dialog::interaction interaction) :
-    portrait(fb::game::dialog::portrait_factory::create(object)),
+    portrait(fb::game::portrait_factory::create(object)),
     slots(slots),
     message(message),
     oid(oid),

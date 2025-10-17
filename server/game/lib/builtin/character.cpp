@@ -2031,7 +2031,7 @@ int builtin::character::builtin_base_hp(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_hp = ch->base_hp();
+            auto base_hp = ch->stat.base_hp();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_hp);
                 return 1;
@@ -2043,7 +2043,7 @@ int builtin::character::builtin_base_hp(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_hp(value);
+            ch->stat.base_hp(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2067,7 +2067,7 @@ int builtin::character::builtin_base_mp(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_mp = ch->base_mp();
+            auto base_mp = ch->stat.base_mp();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_mp);
                 return 1;
@@ -2079,7 +2079,7 @@ int builtin::character::builtin_base_mp(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_mp(value);
+            ch->stat.base_mp(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2103,7 +2103,7 @@ int builtin::character::builtin_base_str(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_str = ch->base_str();
+            auto base_str = ch->stat.base_str();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_str);
                 return 1;
@@ -2115,7 +2115,7 @@ int builtin::character::builtin_base_str(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_str(value);
+            ch->stat.base_str(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2139,7 +2139,7 @@ int builtin::character::builtin_base_dex(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_dex = ch->base_dex();
+            auto base_dex = ch->stat.base_dex();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_dex);
                 return 1;
@@ -2151,7 +2151,7 @@ int builtin::character::builtin_base_dex(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_dex(value);
+            ch->stat.base_dex(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2175,7 +2175,7 @@ int builtin::character::builtin_base_int(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_int = ch->base_int();
+            auto base_int = ch->stat.base_int();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_int);
                 return 1;
@@ -2187,7 +2187,7 @@ int builtin::character::builtin_base_int(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_int(value);
+            ch->stat.base_int(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2211,7 +2211,7 @@ int builtin::character::builtin_base_dam(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_dam = ch->base_dam();
+            auto base_dam = ch->stat.base_dam();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_dam);
                 return 1;
@@ -2223,7 +2223,7 @@ int builtin::character::builtin_base_dam(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_dam(value);
+            ch->stat.base_dam(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2247,7 +2247,7 @@ int builtin::character::builtin_base_hit(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto base_hit = ch->base_hit();
+            auto base_hit = ch->stat.base_hit();
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(base_hit);
                 return 1;
@@ -2259,7 +2259,7 @@ int builtin::character::builtin_base_hit(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->base_hit(value);
+            ch->stat.base_hit(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2867,7 +2867,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     auto oid      = uint32_t{0xFFFFFFFD};
     auto obj      = std::shared_ptr<fb::game::object>(nullptr);
     auto model    = static_cast<const fb::model::object*>(nullptr);
-    auto portrait = static_cast<fb::game::dialog::character_portrait*>(nullptr);
+    auto portrait = static_cast<fb::game::character_portrait*>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
         obj = lua->touserdata<fb::game::object>(2);
@@ -2879,7 +2879,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     }
     else if (lua->is_table(2))
     {
-        portrait = new fb::game::dialog::character_portrait();
+        portrait = new fb::game::character_portrait();
         lua->pushstring("sex");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
             portrait->sex = static_cast<SEX>(lua->tointeger(-1));
@@ -2938,7 +2938,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
 
     std::ignore = server->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
         if (portrait != nullptr)
-            ch->listener.on_dialog(*ch, std::unique_ptr<fb::game::dialog::portrait>(portrait), message, menus, button_prev, oid);
+            ch->listener.on_dialog(*ch, std::unique_ptr<fb::game::portrait>(portrait), message, menus, button_prev, oid);
         else if (obj != nullptr)
             ch->listener.on_dialog(*ch, *obj, message, menus, button_prev, oid);
         else
@@ -3173,7 +3173,7 @@ int fb::game::builtin::character::builtin_quest(lua_State* L)
     }
 
     auto id    = lua->tointeger(2);
-    auto quest = ch->quest(id);
+    auto quest = ch->quests[id];
     if (quest == nullptr)
         lua->pushnil();
     else
@@ -3200,13 +3200,13 @@ int fb::game::builtin::character::builtin_start_quest(lua_State* L)
         return 1;
     }
 
-    if (ch->start_quest(id) == false)
+    if (ch->quests.start(id) == false)
     {
         lua->pushboolean(false);
         return 1;
     }
 
-    auto quest = ch->quest(id);
+    auto quest = ch->quests[id];
     if (quest == nullptr)
         lua->pushnil();
     else
@@ -3235,13 +3235,13 @@ int fb::game::builtin::character::builtin_remove_quest(lua_State* L)
     if (lua->is_number(2))
     {
         auto id = lua->tointeger(2);
-        lua->pushboolean(ch->remove_quest(id));
+        lua->pushboolean(ch->quests.remove(id));
         return 1;
     }
     else if (lua->is_userdata<fb::game::quest>(2))
     {
         auto quest = lua->touserdata<fb::game::quest>(2);
-        lua->pushboolean(ch->remove_quest(quest->id));
+        lua->pushboolean(ch->quests.remove(quest->id));
         return 1;
     }
     else

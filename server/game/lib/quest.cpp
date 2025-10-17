@@ -9,12 +9,7 @@ quest::quest(uint32_t id, std::weak_ptr<fb::game::character> owner) :
     owner(owner)
 { }
 
-quest::quest(uint32_t                           id,
-             std::weak_ptr<fb::game::character> owner,
-             uint32_t                           step,
-             uint32_t                           progress,
-             bool                               completed,
-             std::string                        param) :
+quest::quest(uint32_t id, std::weak_ptr<fb::game::character> owner, uint32_t step, uint32_t progress, bool completed, std::string param) :
     id(id),
     owner(owner),
     _step(step),
@@ -129,14 +124,32 @@ void quests::owner(std::weak_ptr<fb::game::character> owner)
 
 void quests::add(uint32_t id, uint32_t step, uint32_t progress, bool completed, std::string param)
 {
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return;
-
     this->insert({id, std::make_shared<quest>(id, this->_owner, step, progress, completed, param)});
 }
 
-void quests::remove(uint32_t id)
+bool quests::start(uint32_t id)
 {
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return false;
+
+    auto& model = owner->server.model;
+    if (model.quest.contains(id) == false)
+        return false;
+
+    auto& attr = model.quest_attribute[id];
+    if (owner->condition(attr.condition) == false)
+        return false;
+
+    this->add(id, 0, 0, false, "");
+    return true;
+}
+
+bool quests::remove(uint32_t id)
+{
+    if (this->contains(id) == false)
+        return false;
+
     this->erase(id);
+    return true;
 }
