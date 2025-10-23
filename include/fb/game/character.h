@@ -114,7 +114,6 @@ public:
     void                                               id(uint32_t id);
     ROLE                                               role() const;
     void                                               role(ROLE value);
-    bool                                               transferring() const;
     async::task<void>                                  attack(DURATION duration = DURATION::ATTACK) override final;
     uint32_t                                           auto_attack_damage(MOB_SIZE size) const override final;
     void                                               action(ACTION action, DURATION duration, uint8_t sound = 0x00) override final;

@@ -48,11 +48,11 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
 
     if (ENUM_IN(this->level, STATE_LEVEL::CROWD_CONTROL))
     {
-        writer.write<uint8_t>(this->ch.contains_cc(CROWD_CONTROL::DIRECTION));
-        writer.write<uint8_t>(this->ch.contains_cc(CROWD_CONTROL::SIGHT));
-        writer.write<uint8_t>(this->ch.contains_cc(CROWD_CONTROL::HEAR));
-        writer.write<uint8_t>(this->ch.contains_cc(CROWD_CONTROL::CHAT));
-        writer.write<uint8_t>(this->ch.contains_cc(CROWD_CONTROL::MAP));
+        writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::DIRECTION));
+        writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::SIGHT));
+        writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::HEAR));
+        writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::CHAT));
+        writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::MAP));
     }
 
     writer.write<uint8_t>(this->ch.unread_mail());

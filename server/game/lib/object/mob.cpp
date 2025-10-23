@@ -357,7 +357,7 @@ void mob::AI(const fb::model::datetime& now)
     if (this->_attack_thread != nullptr)
         return;
 
-    if (ENUM_IN(this->crowd_control(), CROWD_CONTROL::SIGHT))
+    if (ENUM_IN(static_cast<CROWD_CONTROL>(this->cc), CROWD_CONTROL::SIGHT))
         return;
 
     auto& model = this->based<fb::model::mob>();

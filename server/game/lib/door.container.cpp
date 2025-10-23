@@ -1,38 +1,38 @@
-#include <fb/game/door/container.h>
+#include <fb/game/door.h>
 #include <fb/game/character.h>
 #include <fb/game/server.h>
 #include <fb/game/map.h>
 
 using namespace fb::game;
 
-door_container::door_container(const fb::game::map& map) :
+door::container::container(const fb::game::map& map) :
     map(map)
 { }
 
-door_container::~door_container()
+door::container::~container()
 { }
 
-door_container::iterator door_container::begin()
+door::container::iterator door::container::begin()
 {
-    return door_container::iterator(super::begin(), *this);
+    return door::container::iterator(super::begin(), *this);
 }
 
-door_container::iterator door_container::end()
+door::container::iterator door::container::end()
 {
-    return door_container::iterator(super::end(), *this);
+    return door::container::iterator(super::end(), *this);
 }
 
-door_container::const_iterator door_container::begin() const
+door::container::const_iterator door::container::begin() const
 {
-    return door_container::const_iterator(super::cbegin(), *this);
+    return door::container::const_iterator(super::cbegin(), *this);
 }
 
-door_container::const_iterator door_container::end() const
+door::container::const_iterator door::container::end() const
 {
-    return door_container::const_iterator(super::cend(), *this);
+    return door::container::const_iterator(super::cend(), *this);
 }
 
-void door_container::add(std::shared_ptr<door>& door)
+void door::container::add(std::shared_ptr<door>& door)
 {
     auto pivot = door->pivot;
     for (int i = 0; i < door->width; i++)
@@ -43,7 +43,7 @@ void door_container::add(std::shared_ptr<door>& door)
     }
 }
 
-fb::game::door* door_container::find(const character& ch) const
+fb::game::door* door::container::find(const character& ch) const
 {
     auto direction = ch.direction();
     auto position  = ch.position();
@@ -73,29 +73,24 @@ fb::game::door* door_container::find(const character& ch) const
     return this->at(index).get();
 }
 
-door_container::iterator::iterator(const door_container::base_iterator& i, const door_container& container) :
-    door_container::base_iterator(i),
-    pair(i != static_cast<const super&>(container).end()
-             ? std::make_optional<std::pair<fb::model::point16_t, door&>>(container.map.point(i->first),
-                                                                          *i->second.get())
-             : std::nullopt)
+door::container::iterator::iterator(const door::container::base_iterator& i, const container& container) :
+    door::container::base_iterator(i),
+    pair(i != static_cast<const super&>(container).end() ? std::make_optional<std::pair<fb::model::point16_t, door&>>(container.map.point(i->first), *i->second.get())
+                                                         : std::nullopt)
 { }
 
-std::pair<fb::model::point16_t, fb::game::door&> door_container::iterator::operator* ()
+std::pair<fb::model::point16_t, fb::game::door&> door::container::iterator::operator* ()
 {
     return this->pair.value();
 }
 
-door_container::const_iterator::const_iterator(const door_container::const_base_iterator& i,
-                                               const door_container&                      container) :
-    door_container::const_base_iterator(i),
-    pair(i != static_cast<const super&>(container).end()
-             ? std::make_optional<std::pair<fb::model::point16_t, door&>>(container.map.point(i->first),
-                                                                          *i->second.get())
-             : std::nullopt)
+door::container::const_iterator::const_iterator(const door::container::const_base_iterator& i, const container& container) :
+    door::container::const_base_iterator(i),
+    pair(i != static_cast<const super&>(container).end() ? std::make_optional<std::pair<fb::model::point16_t, door&>>(container.map.point(i->first), *i->second.get())
+                                                         : std::nullopt)
 { }
 
-const std::pair<fb::model::point16_t, fb::game::door&> door_container::const_iterator::operator* () const
+const std::pair<fb::model::point16_t, fb::game::door&> door::container::const_iterator::operator* () const
 {
     return this->pair.value();
 }
