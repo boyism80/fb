@@ -169,3 +169,21 @@ async::task<void> character::container::invoke_async(const std::string& name, ch
     if (before != nullptr)
         co_await before->switching();
 }
+
+character::container::character_ptr_t& character::container::operator[] (uint32_t uid)
+{
+    auto ch = this->find(uid);
+    if (ch == nullptr)
+        throw std::out_of_range("out of range exception");
+
+    return ch;
+}
+
+character::container::character_ptr_t& character::container::operator[] (const std::string& name)
+{
+    auto ch = this->find(name);
+    if (ch == nullptr)
+        throw std::out_of_range("out of range exception");
+
+    return ch;
+}

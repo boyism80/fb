@@ -50,12 +50,10 @@ private:
     std::string             _pw;
     std::optional<uint32_t> _birthday;
     fb::model::datetime     _updated_date;
-    fb::model::datetime     _last_spell_cast;
     uint16_t                _look              = 0;
     uint8_t                 _color             = 0;
     std::optional<uint8_t>  _armor_color       = 0;
     uint32_t                _experience        = 0;
-    uint8_t                 _regenerative      = 0;
     NATION                  _nation            = NATION::GOGURYEO;
     CREATURE                _creature          = CREATURE::DRAGON;
     SEX                     _sex               = SEX::MAN;
@@ -73,7 +71,6 @@ private:
     bool                    _detect            = false;
     mob_vector_t            _spawned_mobs      = {};
     bool                    _super_hide        = false;
-    uint8_t                 _spell_cast_count  = 0;
     bool                    _options[0x0B + 1] = {
         1,
     };
@@ -253,9 +250,9 @@ public:
     void            insert(character_ptr_t ch);
     void            remove(character_ptr_t ch);
     character_ptr_t find(uint32_t uid) const;
+    character_ptr_t find(const std::string& name) const;
     bool            contains(const std::string& name) const;
     bool            contains(uint32_t uid) const;
-    character_ptr_t find(const std::string& name) const;
     async::task<void> foreach (character_function_t&& fn, character_predicate_t predicate = nullptr);
     async::task<void> foreach (character_function_t&& fn, const std::vector<character_ptr_t>& characters);
     async::task<void> foreach_async(character_async_function_t&& fn, character_predicate_t predict = nullptr);

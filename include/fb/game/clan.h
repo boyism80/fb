@@ -12,8 +12,10 @@ public:
     LUA_PROTOTYPE
 
 private:
-    using member_map    = std::unordered_map<std::string, clan_member>;
-    using character_map = std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>>;
+    using character_ptr_t    = std::shared_ptr<fb::game::character>;
+    using character_weak_ptr = std::weak_ptr<fb::game::character>;
+    using member_map         = std::unordered_map<std::string, clan_member>;
+    using character_map      = std::unordered_map<uint32_t, character_weak_ptr>;
 
 private:
     server&                    _server;
@@ -24,26 +26,26 @@ private:
     character_map              _characters;
 
 public:
-    clan(server& server, uint32_t id, const std::string& name, const std::optional<std::string>& title, const std::unordered_map<std::string, clan_member>& members);
+    clan(server& server, uint32_t id, const std::string& name, const std::optional<std::string>& title, const member_map& members);
     clan(const clan&) = delete;
     clan(clan&&);
     ~clan() = default;
 
 public:
-    void                                                update(const std::string& name, const std::optional<std::string>& title, const std::vector<clan_member>& members);
-    uint32_t                                            id() const;
-    const std::string&                                  name() const;
-    const std::optional<std::string>&                   title() const;
-    void                                                title(const std::optional<std::string>& title);
-    const std::unordered_map<std::string, clan_member>& members() const;
-    clan_member*                                        member(const std::string& name);
-    void                                                join(const clan_member& member);
-    void                                                leave(const std::string& member);
-    void                                                change_role(const std::string& member_name, CLAN_ROLE new_role);
-    const std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>>& characters() const;
-    void                                                                    attach_character(std::weak_ptr<character> ch);
-    void                                                                    detach(std::weak_ptr<character> ch);
-    std::vector<std::shared_ptr<fb::game::character>>                       nears(const fb::game::map& map, const fb::model::point16_t& position) const;
+    void                              update(const std::string& name, const std::optional<std::string>& title, const std::vector<clan_member>& members);
+    uint32_t                          id() const;
+    const std::string&                name() const;
+    const std::optional<std::string>& title() const;
+    void                              title(const std::optional<std::string>& title);
+    const member_map&                 members() const;
+    clan_member*                      member(const std::string& name);
+    void                              join(const clan_member& member);
+    void                              leave(const std::string& member);
+    void                              change_role(const std::string& member_name, CLAN_ROLE new_role);
+    const character_map&              characters() const;
+    void                              attach_character(character_weak_ptr ch);
+    void                              detach(character_weak_ptr ch);
+    std::vector<character_ptr_t>      nears(const fb::game::map& map, const fb::model::point16_t& position) const;
 };
 
 } // namespace fb::game
