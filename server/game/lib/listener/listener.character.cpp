@@ -248,14 +248,20 @@ void listener_impl::on_show_bulletin(character& ch, const bulletin::article& art
     ch.send(fb_resp::bulletin_article(article, flag));
 }
 
-void listener_impl::on_show_mail_box(character& ch, const std::vector<MailSummary>& mails, MAIL_BUTTON_ENABLE flag)
+void listener_impl::on_show_mail_box(character& ch, const std::vector<mail_box::summary>& mails, MAIL_BUTTON_ENABLE flag)
 {
-    ch.send(fb_resp::bulletin_mails(mails, flag));
+    auto dto = std::vector<MailSummary>();
+    for (auto& summary : mails)
+    {
+        dto.push_back(MailSummary{summary.id, summary.user, summary.sender, summary.sender_name, summary.read, summary.title, summary.created_date});
+    }
+    ch.send(fb_resp::bulletin_mails(dto, flag));
 }
 
-void listener_impl::on_show_mail_box(character& ch, const Mail& mail, MAIL_BUTTON_ENABLE flag)
+void listener_impl::on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag)
 {
-    ch.send(fb_resp::bulletin_mail(mail, flag));
+    auto dto = Mail{mail.id, mail.user, mail.sender, mail.sender_name, mail.title, mail.contents, mail.read, mail.created_date};
+    ch.send(fb_resp::bulletin_mail(dto, flag));
 }
 
 void listener_impl::on_show_bulletin_message(character& ch, const std::string& message, bool success, bool mail)

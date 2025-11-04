@@ -16,7 +16,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
     {
     case BULLETIN_ACTION::SECTIONS:
     {
-        ch->show_bulletin();
+        ch->bulletin.show();
     }
     break;
 
@@ -34,7 +34,13 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 if (ch->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
                     flag |= MAIL_BUTTON_ENABLE::NEW;
 
-                ch->show_mail_box(resp.summary_list, flag);
+                auto dao = std::vector<mail_box::summary>();
+                for (auto& summary : resp.summary_list)
+                {
+                    dao.push_back(mail_box::summary{summary.id, summary.user, summary.sender, summary.sender_name, summary.read, summary.title, summary.created_date});
+                }
+
+                ch->mail_box.show(dao, flag);
             }
             else
             {
@@ -47,13 +53,18 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 if (ch->condition(model.condition))
                     flag |= BULLETIN_BUTTON_ENABLE::WRITE;
 
-                ch->show_bulletin(model, articles, flag);
+                ch->bulletin.show(model, articles, flag);
             }
         }
         catch (std::exception& e)
         {
             if (weak.expired() == false)
-                ch->show_bulletin_message(e.what(), false, mail);
+            {
+                if (mail)
+                    ch->mail_box.message(e.what(), false);
+                else
+                    ch->bulletin.message(e.what(), false);
+            }
         }
     }
     break;
@@ -71,7 +82,15 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 if (ch->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
                     flag |= MAIL_BUTTON_ENABLE::NEW;
 
-                ch->show_mail_box(resp.mail, flag);
+                ch->mail_box.show(mail_box::mail{resp.mail.id,
+                                                 resp.mail.user,
+                                                 resp.mail.sender,
+                                                 resp.mail.sender_name,
+                                                 resp.mail.title,
+                                                 resp.mail.contents,
+                                                 resp.mail.read,
+                                                 resp.mail.created_date},
+                                  flag);
             }
             else
             {
@@ -85,13 +104,18 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 if (ch->condition(this->server.model.bulletin[article.section].condition) == false)
                     flag |= BULLETIN_BUTTON_ENABLE::WRITE;
 
-                ch->show_bulletin(article, flag);
+                ch->bulletin.show(article, flag);
             }
         }
         catch (std::exception& e)
         {
             if (weak.expired() == false)
-                ch->show_bulletin_message(e.what(), false, mail);
+            {
+                if (mail)
+                    ch->mail_box.message(e.what(), false);
+                else
+                    ch->bulletin.message(e.what(), false);
+            }
         }
     }
     break;
@@ -103,12 +127,12 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             co_await this->server.write_bulletin(*ch, request.section, request.title, request.contents);
             co_await this->server.threads.switching(weak);
 
-            ch->show_bulletin_message(_TEXT(MESSAGE_BULLETIN_WRITE), true, false);
+            ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_WRITE), true);
         }
         catch (std::exception& e)
         {
             if (weak.expired() == false)
-                ch->show_bulletin_message(e.what(), false, false);
+                ch->bulletin.message(e.what(), false);
         }
     }
     break;
@@ -122,20 +146,24 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             {
                 auto&& resp = co_await this->server.delete_mail(*ch, request.article);
                 co_await this->server.threads.switching(weak);
-                ch->show_bulletin_message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, true);
+                ch->mail_box.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true);
             }
             else
             {
                 co_await this->server.delete_bulletin(*ch, request.section, request.article);
                 co_await this->server.threads.switching(weak);
-
-                ch->show_bulletin_message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, false);
+                ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true);
             }
         }
         catch (std::exception& e)
         {
             if (weak.expired() == false)
-                ch->show_bulletin_message(e.what(), false, mail);
+            {
+                if (mail)
+                    ch->mail_box.message(e.what(), false);
+                else
+                    ch->bulletin.message(e.what(), false);
+            }
         }
     }
     break;
@@ -151,12 +179,19 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             auto flag = MAIL_BUTTON_ENABLE::NONE;
             if (ch->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
                 flag |= MAIL_BUTTON_ENABLE::NEW;
-            ch->show_mail_box(resp.summary_list, flag);
+
+            auto dao = std::vector<mail_box::summary>();
+            for (auto& summary : resp.summary_list)
+            {
+                dao.push_back(mail_box::summary{summary.id, summary.user, summary.sender, summary.sender_name, summary.read, summary.title, summary.created_date});
+            }
+
+            ch->mail_box.show(dao, flag);
         }
         catch (std::exception& e)
         {
             if (weak.expired() == false)
-                ch->show_bulletin_message(e.what(), false, true);
+                ch->mail_box.message(e.what(), false);
         }
     }
     break;
@@ -167,12 +202,12 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
         {
             auto&& resp = co_await this->server.send_mail(*ch, request.user, request.title, request.contents);
             co_await this->server.threads.switching(weak);
-            ch->show_bulletin_message("우편을 보냈습니다.", true, false);
+            ch->mail_box.message("우편을 보냈습니다.", true, false);
         }
         catch (std::exception& e)
         {
             if (weak.expired() == false)
-                ch->show_bulletin_message(e.what(), false, true);
+                ch->mail_box.message(e.what(), false);
         }
     }
     break;

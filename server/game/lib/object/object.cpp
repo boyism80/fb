@@ -20,10 +20,7 @@ object::object(fb::game::server& server, const fb::model::object& model, const i
 }
 
 object::object(const object& right) :
-    object(
-        right.server,
-        right._model,
-        initial_params{.id = right._oid, .position = right._position, .direction = right._direction, .map = right._map})
+    object(right.server, right._model, initial_params{.id = right._oid, .position = right._position, .direction = right._direction, .map = right._map})
 { }
 
 object::~object()
@@ -391,9 +388,7 @@ bool object::sight(const object& object) const
     return this->sight(object._position);
 }
 
-bool object::sight(const fb::model::point16_t            me,
-                   const fb::model::point16_t            you,
-                   const std::shared_ptr<fb::game::map>& map)
+bool object::sight(const fb::model::point16_t me, const fb::model::point16_t you, const map_ptr& map)
 {
     fb::model::point16_t begin, end;
 
@@ -432,7 +427,7 @@ bool object::sight(const fb::model::point16_t            me,
     return begin.x <= you.x && end.x >= you.x && begin.y <= you.y && end.y >= you.y;
 }
 
-async::task<bool> object::map(std::shared_ptr<fb::game::map> map, DESTROY_TYPE destroy_type)
+async::task<bool> object::map(map_ptr map, DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
 
@@ -469,10 +464,7 @@ async::task<bool> object::map(std::shared_ptr<fb::game::map> map, DESTROY_TYPE d
     }
 }
 
-async::task<bool> object::map(std::shared_ptr<fb::game::map> map,
-                              const fb::model::point16_t&    position,
-                              DESTROY_TYPE                   destroy_type,
-                              bool                           notify)
+async::task<bool> object::map(map_ptr map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type, bool notify)
 {
     this->assert_thread();
 
@@ -776,8 +768,7 @@ uint32_t object::distance_sqrt(const object& right) const
 {
     this->assert_thread();
 
-    return (uint32_t)std::pow(this->_position.x - right._position.x, 2) +
-           (uint32_t)std::pow(this->_position.y - right._position.y, 2);
+    return (uint32_t)std::pow(this->_position.x - right._position.x, 2) + (uint32_t)std::pow(this->_position.y - right._position.y, 2);
 }
 
 bool object::condition(const std::vector<fb::model::dsl>& conditions) const

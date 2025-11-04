@@ -110,10 +110,7 @@ uint32_t character::auto_attack_damage(MOB_SIZE size) const
 
     auto weapon = this->items.weapon();
     auto model  = weapon != nullptr ? &weapon->based<fb::model::weapon>() : nullptr;
-
-    // TODO: 이거 크리터졌을때가 아니라 때리는 몹 타입으로 small, large 써야함
-
-    if (weapon == nullptr) // no weapon
+    if (weapon == nullptr)
     {
         return 1 + std::rand() % 5;
     }
@@ -969,9 +966,7 @@ void character::unride()
             throw std::runtime_error(_TEXT(MESSAGE_RIDE_UNRIDE));
 
         auto& model = this->server.model.mob[fb::model::const_value::mob::horse];
-        // Use smart pointer for horse creation
-        auto horse_shared = this->server.make<mob>(model, mob::initial_params{.alive = true});
-        auto horse        = horse_shared.get(); // For compatibility with existing code
+        auto  horse = this->server.make<mob>(model, mob::initial_params{.alive = true});
         horse->map(this->_map, this->front_position());
 
         this->state(STATE::NORMAL);
@@ -1150,24 +1145,6 @@ fb::protocol::internal::Character character::to_protocol() const
     return dto;
 }
 
-uint16_t character::unread_mail() const
-{
-    this->assert_thread();
-
-    return this->_unread_mail;
-}
-
-void character::unread_mail(uint16_t value)
-{
-    this->assert_thread();
-
-    if (this->_unread_mail != value)
-    {
-        this->_unread_mail = value;
-        this->update(STATE_LEVEL::LEVEL_MIN);
-    }
-}
-
 void character::browse_ch(const character& ch)
 {
     this->listener.on_browse_character(*this, ch);
@@ -1181,36 +1158,6 @@ void character::item_tooltip(const item& item, uint16_t position)
 void character::show_user_list()
 {
     this->listener.on_show_user_list(*this);
-}
-
-void character::show_bulletin()
-{
-    this->listener.on_show_bulletin(*this);
-}
-
-void character::show_bulletin(const fb::model::bulletin& section, const std::list<fb::game::bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag)
-{
-    this->listener.on_show_bulletin(*this, section, articles, flag);
-}
-
-void character::show_bulletin(const fb::game::bulletin::article& article, BULLETIN_BUTTON_ENABLE flag)
-{
-    this->listener.on_show_bulletin(*this, article, flag);
-}
-
-void character::show_mail_box(const std::vector<MailSummary>& mails, MAIL_BUTTON_ENABLE flag)
-{
-    this->listener.on_show_mail_box(*this, mails, flag);
-}
-
-void character::show_mail_box(const Mail& mail, MAIL_BUTTON_ENABLE flag)
-{
-    this->listener.on_show_mail_box(*this, mail, flag);
-}
-
-void character::show_bulletin_message(const std::string& message, bool success, bool mail)
-{
-    this->listener.on_show_bulletin_message(*this, message, success, mail);
 }
 
 void character::show_world_map(uint32_t id, uint16_t index)

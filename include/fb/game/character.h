@@ -13,6 +13,7 @@
 #include <fb/game/trade.h>
 #include <fb/game/achievement.h>
 #include <fb/game/bulletin.h>
+#include <fb/game/mail_box.h>
 #include <fb/game/stat.h>
 #include <fb/game/quest.h>
 
@@ -66,7 +67,6 @@ private:
     std::string             _title             = "";
     std::optional<uint32_t> _group_id          = std::nullopt;
     std::optional<uint32_t> _clan_id           = std::nullopt;
-    uint16_t                _unread_mail       = 0;
     uint16_t                _weapon_damage     = 0;
     bool                    _detect            = false;
     mob_vector_t            _spawned_mobs      = {};
@@ -76,13 +76,15 @@ private:
     };
 
 public:
-    fb::game::trade   trade;
-    fb::game::items   items;
-    fb::game::quests  quests;
-    fb::lua::context* dialog = nullptr;
-    achievement_map_t achievements; // order required
-    listener_t&       listener;
-    character_stat    stat;
+    fb::game::trade    trade;
+    fb::game::items    items;
+    fb::game::quests   quests;
+    fb::game::bulletin bulletin = fb::game::bulletin(*this);
+    fb::game::mail_box mail_box = fb::game::mail_box(*this);
+    fb::lua::context*  dialog   = nullptr;
+    achievement_map_t  achievements;
+    listener_t&        listener;
+    character_stat     stat;
 
 private:
     using object::based;
@@ -194,17 +196,9 @@ public:
     void                                               thread(fb::thread* value);
     void                                               assert_thread() const override final;
     void                                               update(STATE_LEVEL value = STATE_LEVEL::LEVEL_MIN) override final;
-    uint16_t                                           unread_mail() const;
-    void                                               unread_mail(uint16_t value);
     void                                               browse_ch(const character& ch);
     void                                               item_tooltip(const item& iteem, uint16_t position);
     void                                               show_user_list();
-    void                                               show_bulletin();
-    void                                               show_bulletin(const fb::model::bulletin& section, const std::list<bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag);
-    void                                               show_bulletin(const bulletin::article& article, BULLETIN_BUTTON_ENABLE flag);
-    void                                               show_mail_box(const std::vector<fb::protocol::internal::MailSummary>& mails, MAIL_BUTTON_ENABLE flag);
-    void                                               show_mail_box(const fb::protocol::internal::Mail& mail, MAIL_BUTTON_ENABLE flag);
-    void                                               show_bulletin_message(const std::string& message, bool success, bool mail);
     void                                               show_world_map(uint32_t id, uint16_t index);
     void                                               timer(uint32_t time, TIMER_TYPE type);
     void                                               weather(WEATHER_TYPE weather);
@@ -285,8 +279,8 @@ public:
     virtual void              on_show_bulletin(character& ch)                                                                                                                = 0;
     virtual void              on_show_bulletin(character& ch, const fb::model::bulletin& section, const std::list<bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag) = 0;
     virtual void              on_show_bulletin(character& ch, const bulletin::article& value, BULLETIN_BUTTON_ENABLE flag)                                                   = 0;
-    virtual void              on_show_mail_box(character& ch, const std::vector<fb::protocol::internal::MailSummary>& mails, MAIL_BUTTON_ENABLE flag)                        = 0;
-    virtual void              on_show_mail_box(character& ch, const fb::protocol::internal::Mail& mail, MAIL_BUTTON_ENABLE flag)                                             = 0;
+    virtual void              on_show_mail_box(character& ch, const std::vector<mail_box::summary>& mails, MAIL_BUTTON_ENABLE flag)                                          = 0;
+    virtual void              on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag)                                                           = 0;
     virtual void              on_show_bulletin_message(character& ch, const std::string& message, bool success, bool mail)                                                   = 0;
     virtual void              on_show_world_map(character& ch, uint32_t id, uint16_t index)                                                                                  = 0;
     virtual void              on_timer(character& ch, uint32_t time, TIMER_TYPE type)                                                                                        = 0;

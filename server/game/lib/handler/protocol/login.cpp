@@ -214,7 +214,7 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
         co_return false;
     co_await this->server.threads.switching(weak);
 
-    ch->unread_mail(response.mail);
+    ch->mail_box.unread_count(response.mail);
 
     this->init_items(response.items, *ch);
     this->init_spells(response.spells, *ch);

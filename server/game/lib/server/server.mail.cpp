@@ -30,19 +30,16 @@ void server::on_write_mail(const internal_resp::WriteMail& resp)
 
     auto weak = ch->weak_from_this_as<character>();
     this->threads.enqueue(weak, [ch, unread = resp.unread](auto& thread) -> async::task<void> {
-        ch->unread_mail(unread);
+        ch->mail_box.unread_count(unread);
         co_return;
     });
 }
 
-async::task<internal_resp::WriteMail>
-server::send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents)
+async::task<internal_resp::WriteMail> server::send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents)
 {
     auto   weak   = ch.weak_from_this();
     auto   thread = ch.thread();
-    auto&& resp   = co_await this->http.post("internal",
-                                           "/mail/write",
-                                           WriteMail{ch.id(), to, title, contents, config<uint32_t>("id")});
+    auto&& resp   = co_await this->http.post("internal", "/mail/write", WriteMail{ch.id(), to, title, contents, config<uint32_t>("id")});
     co_await this->threads.switching(weak);
 
     this->assert_mail(resp.error);
@@ -53,9 +50,7 @@ server::send_mail(const character& ch, const std::string& to, const std::string&
 async::task<internal_resp::GetMailList> server::mail_list(const character& ch, uint16_t offset, uint16_t count)
 {
     auto   weak = ch.weak_from_this();
-    auto&& resp = co_await this->http.get<internal_resp::GetMailList>(
-        "internal",
-        std::format("/mail/{}?offset={}&count={}", ch.id(), offset, count));
+    auto&& resp = co_await this->http.get<internal_resp::GetMailList>("internal", std::format("/mail/{}?offset={}&count={}", ch.id(), offset, count));
     co_await this->threads.switching(weak);
 
     this->assert_mail(resp.error);
@@ -70,7 +65,7 @@ async::task<internal_resp::GetMail> server::read_mail(character& ch, uint16_t id
     co_await this->threads.switching(weak);
 
     this->assert_mail(resp.error);
-    ch.unread_mail(resp.unread);
+    ch.mail_box.unread_count(resp.unread);
     co_return std::move(resp);
 }
 
@@ -80,6 +75,6 @@ async::task<internal_resp::DeleteMail> server::delete_mail(character& ch, uint16
     auto&& resp = co_await this->http.post("internal", "/mail/delete", DeleteMail{ch.id(), id});
     co_await this->threads.switching(weak);
     this->assert_mail(resp.error);
-    ch.unread_mail(resp.unread);
+    ch.mail_box.unread_count(resp.unread);
     co_return std::move(resp);
 }

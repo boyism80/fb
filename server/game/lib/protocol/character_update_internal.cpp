@@ -55,7 +55,7 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
         writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::MAP));
     }
 
-    writer.write<uint8_t>(this->ch.unread_mail());
+    writer.write<uint8_t>(this->ch.mail_box.unread_count());
     writer.write<uint8_t>(this->ch.option(OPTION::FAST_MOVE));
     writer.write<uint8_t>(0x00);
 }
