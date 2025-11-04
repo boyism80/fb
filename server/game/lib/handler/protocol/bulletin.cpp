@@ -101,7 +101,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 if (article.next)
                     flag |= BULLETIN_BUTTON_ENABLE::NEXT;
 
-                if (ch->condition(this->server.model.bulletin[article.section].condition) == false)
+                if (ch->condition(this->server.model.bulletin[article.section].condition))
                     flag |= BULLETIN_BUTTON_ENABLE::WRITE;
 
                 ch->bulletin.show(article, flag);
