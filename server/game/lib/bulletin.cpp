@@ -27,20 +27,3 @@ void bulletin::message(const std::string& message, bool success)
 {
     this->owner.listener.on_show_bulletin_message(this->owner, message, success, false);
 }
-
-bool bulletin::section::writable(uint8_t level, bool admin) const
-{
-    if (admin)
-        return true;
-
-    if (this->admin)
-        return false;
-
-    if (this->min_level != std::nullopt && level < this->min_level.value())
-        return false;
-
-    if (this->max_level != std::nullopt && level > this->max_level.value())
-        return false;
-
-    return true;
-}
