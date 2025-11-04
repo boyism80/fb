@@ -257,8 +257,8 @@ public:
     async::task<void> invoke_async(const std::string& name, character_async_function_t&& fn, character_function_t_miss miss = nullptr);
 
 public:
-    character_ptr_t& operator[] (uint32_t uid);
-    character_ptr_t& operator[] (const std::string& name);
+    character_ptr_t operator[] (uint32_t uid);
+    character_ptr_t operator[] (const std::string& name);
 };
 
 struct character::listener_t : public virtual life::listener_t, public virtual dialog::listener_t, public virtual trade::listener_t, public virtual equipment::listener_t

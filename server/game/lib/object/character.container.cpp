@@ -170,7 +170,7 @@ async::task<void> character::container::invoke_async(const std::string& name, ch
         co_await before->switching();
 }
 
-character::container::character_ptr_t& character::container::operator[] (uint32_t uid)
+character::container::character_ptr_t character::container::operator[] (uint32_t uid)
 {
     auto ch = this->find(uid);
     if (ch == nullptr)
@@ -179,7 +179,7 @@ character::container::character_ptr_t& character::container::operator[] (uint32_
     return ch;
 }
 
-character::container::character_ptr_t& character::container::operator[] (const std::string& name)
+character::container::character_ptr_t character::container::operator[] (const std::string& name)
 {
     auto ch = this->find(name);
     if (ch == nullptr)
