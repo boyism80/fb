@@ -324,8 +324,24 @@ function on_chat(me, message)
         return false
     end
     
+    local cmd_data = command_funcs[cmd]
+    local cmd_func = nil
+    local required_privilege = ROLE_USER
+    
+    if type(cmd_data) == 'table' then
+        cmd_func = cmd_data['command']
+        required_privilege = cmd_data['privilege'] or ROLE_USER
+    else
+        cmd_func = cmd_data
+    end
+    
+    if me:role() < required_privilege then
+        me:message("권한이 부족합니다.")
+        return true
+    end
+    
     table.remove(args, 1)
-    return command_funcs[cmd](me, args)
+    return cmd_func(me, args)
 end
 
 function on_login(me)
