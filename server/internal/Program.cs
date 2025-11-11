@@ -104,6 +104,8 @@ public class Program
         builder.Services.AddSingleton<SessionService>();
         builder.Services.AddScoped<DbContext>();
         builder.Services.AddSingleton<WriteBackService>();
+        builder.Services.AddSingleton<Internal.Service.BulletinOperationService>();
+        builder.Services.AddHostedService<Internal.Service.BulletinOperationBackgroundService>();
         builder.Services.AddHostedService<ShutdownListenerService>();
         builder.Services.AddHealthChecks();
 

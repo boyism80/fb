@@ -74,7 +74,7 @@ async::task<void> server::delete_bulletin(character& ch, uint16_t section, uint1
     if (ch.condition(this->model.bulletin[section].condition) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_NOT_AUTH));
 
-    auto&& resp = co_await this->http.post("internal", "/bulletin/delete", DeleteArticle{id, ch.id()});
+    auto&& resp = co_await this->http.post("internal", "/bulletin/delete", DeleteArticle{id, section, ch.id()});
 
     switch (resp.result)
     {

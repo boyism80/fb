@@ -21,20 +21,24 @@ public struct DeleteArticle : IFlatbufferObject
   public DeleteArticle __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Section { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint User { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.DeleteArticle> CreateDeleteArticle(FlatBufferBuilder builder,
       uint id = 0,
+      uint section = 0,
       uint user = 0) {
-    builder.StartTable(2);
+    builder.StartTable(3);
     DeleteArticle.AddUser(builder, user);
+    DeleteArticle.AddSection(builder, section);
     DeleteArticle.AddId(builder, id);
     return DeleteArticle.EndDeleteArticle(builder);
   }
 
-  public static void StartDeleteArticle(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void StartDeleteArticle(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
-  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
+  public static void AddSection(FlatBufferBuilder builder, uint section) { builder.AddUint(1, section, 0); }
+  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(2, user, 0); }
   public static Offset<fb.protocol._internal.request.raw.DeleteArticle> EndDeleteArticle(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.DeleteArticle>(o);
@@ -50,7 +54,8 @@ static public class DeleteArticleVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Id*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Section*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
