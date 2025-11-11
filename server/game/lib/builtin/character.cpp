@@ -24,6 +24,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"promotion",           builtin::character::builtin_promotion},
 {"level",               builtin::character::builtin_level},
 {"assert",              builtin::character::builtin_assert},
+{"role",                builtin::character::builtin_role},
 {"deposited_money",     builtin::character::builtin_deposited_money},
 {"stored_item",         builtin::character::builtin_stored_item},
 {"store_item",          builtin::character::builtin_store_item},
