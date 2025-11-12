@@ -714,24 +714,6 @@ namespace fb.protocol._internal
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate));
         }
-        public static Offset<fb.protocol._internal.request.raw.GetUnreceivedSystemMails> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetUnreceivedSystemMails value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.GetUnreceivedSystemMails.CreateGetUnreceivedSystemMails(builder,
-                builder.Build(value.User));
-        }
-        public static Offset<fb.protocol._internal.request.raw.SendSystemMailToUser> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SendSystemMailToUser value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.SendSystemMailToUser.CreateSendSystemMailToUser(builder,
-                builder.Build(value.User),
-                builder.Build(value.SystemMailId),
-                builder.Build(value.Host));
-        }
         public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
         {
             if (value == null)
@@ -1143,26 +1125,6 @@ namespace fb.protocol._internal
                 builder.Build(value.Mail),
                 builder.Build(value.Error));
         }
-        public static Offset<fb.protocol._internal.response.raw.GetUnreceivedSystemMails> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetUnreceivedSystemMails value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.response.raw.GetUnreceivedSystemMails.CreateGetUnreceivedSystemMails(builder,
-                builder.Build(value.SystemMailIds),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol._internal.response.raw.SendSystemMailToUser> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SendSystemMailToUser value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.response.raw.SendSystemMailToUser.CreateSendSystemMailToUser(builder,
-                builder.Build(value.Mail),
-                builder.Build(value.Host),
-                builder.Build(value.Unread),
-                builder.Build(value.Error));
-        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Buff> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.Buff>(value.Select(x => Build(builder, x)).ToArray());
@@ -1212,12 +1174,6 @@ namespace fb.protocol._internal
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.SystemMail> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.SystemMail>(value.Select(x => Build(builder, x)).ToArray());
-        }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<uint> value)
-        {
-            builder.StartVector(4, value.Count, 4);
-            builder.Add(value.ToArray());
-            return builder.EndVector();
         }
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
@@ -1869,24 +1825,6 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate));
         }
-        public static Offset<fb.protocol._internal.request.raw.GetUnreceivedSystemMails> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetUnreceivedSystemMails value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.GetUnreceivedSystemMails.CreateGetUnreceivedSystemMails(builder,
-                builder.Build(value.User));
-        }
-        public static Offset<fb.protocol._internal.request.raw.SendSystemMailToUser> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SendSystemMailToUser value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.SendSystemMailToUser.CreateSendSystemMailToUser(builder,
-                builder.Build(value.User),
-                builder.Build(value.SystemMailId),
-                builder.Build(value.Host));
-        }
         public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
         {
             if (value == null)
@@ -2298,26 +2236,6 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Mail),
                 builder.Build(value.Error));
         }
-        public static Offset<fb.protocol._internal.response.raw.GetUnreceivedSystemMails> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetUnreceivedSystemMails value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.response.raw.GetUnreceivedSystemMails.CreateGetUnreceivedSystemMails(builder,
-                builder.Build(value.SystemMailIds),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol._internal.response.raw.SendSystemMailToUser> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SendSystemMailToUser value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.response.raw.SendSystemMailToUser.CreateSendSystemMailToUser(builder,
-                builder.Build(value.Mail),
-                builder.Build(value.Host),
-                builder.Build(value.Unread),
-                builder.Build(value.Error));
-        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Buff> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.Buff>(value.Select(x => Build(builder, x)).ToArray());
@@ -2368,12 +2286,6 @@ namespace fb.protocol._internal.request
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.SystemMail>(value.Select(x => Build(builder, x)).ToArray());
         }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<uint> value)
-        {
-            builder.StartVector(4, value.Count, 4);
-            builder.Add(value.ToArray());
-            return builder.EndVector();
-        }
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
             return (fb.protocol._internal.raw.Service)value;
@@ -2420,9 +2332,7 @@ namespace fb.protocol._internal.request
         Broadcast,
         UpdateFriends,
         GetSystemMails,
-        WriteSystemMail,
-        GetUnreceivedSystemMails,
-        SendSystemMailToUser
+        WriteSystemMail
     }
 }
 namespace fb.protocol._internal.response
@@ -3044,24 +2954,6 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate));
         }
-        public static Offset<fb.protocol._internal.request.raw.GetUnreceivedSystemMails> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetUnreceivedSystemMails value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.GetUnreceivedSystemMails.CreateGetUnreceivedSystemMails(builder,
-                builder.Build(value.User));
-        }
-        public static Offset<fb.protocol._internal.request.raw.SendSystemMailToUser> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SendSystemMailToUser value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.SendSystemMailToUser.CreateSendSystemMailToUser(builder,
-                builder.Build(value.User),
-                builder.Build(value.SystemMailId),
-                builder.Build(value.Host));
-        }
         public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
         {
             if (value == null)
@@ -3473,26 +3365,6 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Mail),
                 builder.Build(value.Error));
         }
-        public static Offset<fb.protocol._internal.response.raw.GetUnreceivedSystemMails> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetUnreceivedSystemMails value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.response.raw.GetUnreceivedSystemMails.CreateGetUnreceivedSystemMails(builder,
-                builder.Build(value.SystemMailIds),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol._internal.response.raw.SendSystemMailToUser> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SendSystemMailToUser value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.response.raw.SendSystemMailToUser.CreateSendSystemMailToUser(builder,
-                builder.Build(value.Mail),
-                builder.Build(value.Host),
-                builder.Build(value.Unread),
-                builder.Build(value.Error));
-        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Buff> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.Buff>(value.Select(x => Build(builder, x)).ToArray());
@@ -3542,12 +3414,6 @@ namespace fb.protocol._internal.response
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.SystemMail> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.SystemMail>(value.Select(x => Build(builder, x)).ToArray());
-        }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<uint> value)
-        {
-            builder.StartVector(4, value.Count, 4);
-            builder.Add(value.ToArray());
-            return builder.EndVector();
         }
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
@@ -3601,9 +3467,7 @@ namespace fb.protocol._internal.response
         Broadcast,
         UpdateFriends,
         GetSystemMails,
-        WriteSystemMail,
-        GetUnreceivedSystemMails,
-        SendSystemMailToUser
+        WriteSystemMail
     }
 }
 
@@ -5860,82 +5724,6 @@ namespace fb.protocol._internal.request
             return new WriteSystemMail(bytes);
         }
     }
-    public class GetUnreceivedSystemMails : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.GetUnreceivedSystemMails;
-        public uint User { get; set; } = 0;
-
-        public GetUnreceivedSystemMails()
-        { }
-
-        public GetUnreceivedSystemMails(fb.protocol._internal.request.raw.GetUnreceivedSystemMails raw)
-        {
-            User = raw.User;
-        }
-
-        public GetUnreceivedSystemMails(byte[] bytes) : this(fb.protocol._internal.request.raw.GetUnreceivedSystemMails.GetRootAsGetUnreceivedSystemMails(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = FlatBufferBuilderPool.Get();
-            try
-            {
-                var offset = builder.Build(this);
-                builder.Finish(offset.Value);
-                return builder.SizedByteArray();
-            }
-            finally
-            {
-                FlatBufferBuilderPool.Return(builder);
-            }
-        }
-
-        public static GetUnreceivedSystemMails Deserialize(byte[] bytes)
-        {
-            return new GetUnreceivedSystemMails(bytes);
-        }
-    }
-    public class SendSystemMailToUser : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.SendSystemMailToUser;
-        public uint User { get; set; } = 0;
-        public uint SystemMailId { get; set; } = 0;
-        public uint Host { get; set; } = 0;
-
-        public SendSystemMailToUser()
-        { }
-
-        public SendSystemMailToUser(fb.protocol._internal.request.raw.SendSystemMailToUser raw)
-        {
-            User = raw.User;
-            SystemMailId = raw.SystemMailId;
-            Host = raw.Host;
-        }
-
-        public SendSystemMailToUser(byte[] bytes) : this(fb.protocol._internal.request.raw.SendSystemMailToUser.GetRootAsSendSystemMailToUser(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = FlatBufferBuilderPool.Get();
-            try
-            {
-                var offset = builder.Build(this);
-                builder.Finish(offset.Value);
-                return builder.SizedByteArray();
-            }
-            finally
-            {
-                FlatBufferBuilderPool.Return(builder);
-            }
-        }
-
-        public static SendSystemMailToUser Deserialize(byte[] bytes)
-        {
-            return new SendSystemMailToUser(bytes);
-        }
-    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -5978,8 +5766,6 @@ namespace fb.protocol._internal.request
                 FlatBufferProtocolType.UpdateFriends => typeof(fb.protocol._internal.request.UpdateFriends),
                 FlatBufferProtocolType.GetSystemMails => typeof(fb.protocol._internal.request.GetSystemMails),
                 FlatBufferProtocolType.WriteSystemMail => typeof(fb.protocol._internal.request.WriteSystemMail),
-                FlatBufferProtocolType.GetUnreceivedSystemMails => typeof(fb.protocol._internal.request.GetUnreceivedSystemMails),
-                FlatBufferProtocolType.SendSystemMailToUser => typeof(fb.protocol._internal.request.SendSystemMailToUser),
                 _ => throw new ArgumentException(),
             };
         }
@@ -7628,86 +7414,6 @@ namespace fb.protocol._internal.response
             return new WriteSystemMail(bytes);
         }
     }
-    public class GetUnreceivedSystemMails : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.GetUnreceivedSystemMails;
-        public List<uint> SystemMailIds { get; set; } = new List<uint>();
-        public uint Error { get; set; } = 0;
-
-        public GetUnreceivedSystemMails()
-        { }
-
-        public GetUnreceivedSystemMails(fb.protocol._internal.response.raw.GetUnreceivedSystemMails raw)
-        {
-            SystemMailIds = Enumerable.Range(0, raw.SystemMailIdsLength).Select(i => raw.SystemMailIds(i)).Select(x => x).ToList();
-            Error = raw.Error;
-        }
-
-        public GetUnreceivedSystemMails(byte[] bytes) : this(fb.protocol._internal.response.raw.GetUnreceivedSystemMails.GetRootAsGetUnreceivedSystemMails(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = FlatBufferBuilderPool.Get();
-            try
-            {
-                var offset = builder.Build(this);
-                builder.Finish(offset.Value);
-                return builder.SizedByteArray();
-            }
-            finally
-            {
-                FlatBufferBuilderPool.Return(builder);
-            }
-        }
-
-        public static GetUnreceivedSystemMails Deserialize(byte[] bytes)
-        {
-            return new GetUnreceivedSystemMails(bytes);
-        }
-    }
-    public class SendSystemMailToUser : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.SendSystemMailToUser;
-        public fb.protocol._internal.Mail Mail { get; set; } = new fb.protocol._internal.Mail();
-        public uint Host { get; set; } = 0;
-        public ushort Unread { get; set; } = 0;
-        public uint Error { get; set; } = 0;
-
-        public SendSystemMailToUser()
-        { }
-
-        public SendSystemMailToUser(fb.protocol._internal.response.raw.SendSystemMailToUser raw)
-        {
-            Mail = new Mail(raw.Mail.Value);
-            Host = raw.Host;
-            Unread = raw.Unread;
-            Error = raw.Error;
-        }
-
-        public SendSystemMailToUser(byte[] bytes) : this(fb.protocol._internal.response.raw.SendSystemMailToUser.GetRootAsSendSystemMailToUser(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = FlatBufferBuilderPool.Get();
-            try
-            {
-                var offset = builder.Build(this);
-                builder.Finish(offset.Value);
-                return builder.SizedByteArray();
-            }
-            finally
-            {
-                FlatBufferBuilderPool.Return(builder);
-            }
-        }
-
-        public static SendSystemMailToUser Deserialize(byte[] bytes)
-        {
-            return new SendSystemMailToUser(bytes);
-        }
-    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -7756,8 +7462,6 @@ namespace fb.protocol._internal.response
                 FlatBufferProtocolType.UpdateFriends => typeof(fb.protocol._internal.response.UpdateFriends),
                 FlatBufferProtocolType.GetSystemMails => typeof(fb.protocol._internal.response.GetSystemMails),
                 FlatBufferProtocolType.WriteSystemMail => typeof(fb.protocol._internal.response.WriteSystemMail),
-                FlatBufferProtocolType.GetUnreceivedSystemMails => typeof(fb.protocol._internal.response.GetUnreceivedSystemMails),
-                FlatBufferProtocolType.SendSystemMailToUser => typeof(fb.protocol._internal.response.SendSystemMailToUser),
                 _ => throw new ArgumentException(),
             };
         }

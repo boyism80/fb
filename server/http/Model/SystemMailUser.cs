@@ -58,18 +58,6 @@ namespace Http.Model
         /// </summary>
         /// <value>The expiration date and time, or null if the mail never expires.</value>
         public DateTime? ExpireDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this system mail is marked as deleted.
-        /// </summary>
-        /// <value>True if the system mail is soft-deleted; otherwise, false.</value>
-        public bool Deleted { get; set; }
-
-        /// <summary>
-        /// Gets or sets the date and time when the system mail was created for this user.
-        /// </summary>
-        /// <value>The creation timestamp of the system mail user record.</value>
-        public DateTime CreatedDate { get; set; }
     }
 }
 

@@ -48,7 +48,8 @@ namespace Http.Reepository
         {
             return await GetAll(new SystemMailUserKey
             {
-                User = user
+                User = user,
+                MailId = 0
             });
         }
 

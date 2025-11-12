@@ -220,13 +220,3 @@ table WriteSystemMail {
   contents: string;
   expire_date: string?;
 }
-
-table GetUnreceivedSystemMails {
-  user: uint;
-}
-
-table SendSystemMailToUser {
-  user: uint;
-  system_mail_id: uint;
-  host: uint;
-}

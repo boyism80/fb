@@ -79,8 +79,6 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.updatefriends_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.getsystemmails_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.writesystemmail_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.getunreceivedsystemmails_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.sendsystemmailtouser_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.shutdown_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.kickout_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.login_generated.h>
@@ -122,8 +120,6 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.updatefriends_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getsystemmails_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.writesystemmail_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getunreceivedsystemmails_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.sendsystemmailtouser_generated.h>
 
 namespace fb::protocol::internal
 {
@@ -184,8 +180,6 @@ namespace fb::protocol::internal::request
     class UpdateFriends;
     class GetSystemMails;
     class WriteSystemMail;
-    class GetUnreceivedSystemMails;
-    class SendSystemMailToUser;
 } // end of namespace fb::protocol::internal::request
 namespace fb::protocol::internal::response
 {
@@ -230,8 +224,6 @@ namespace fb::protocol::internal::response
     class UpdateFriends;
     class GetSystemMails;
     class WriteSystemMail;
-    class GetUnreceivedSystemMails;
-    class SendSystemMailToUser;
 } // end of namespace fb::protocol::internal::response
 
 
@@ -375,8 +367,6 @@ template <> struct FlatBufferOffset<fb::protocol::internal::request::Broadcast> 
 template <> struct FlatBufferOffset<fb::protocol::internal::request::UpdateFriends> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::UpdateFriends> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::GetSystemMails> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::GetSystemMails> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::WriteSystemMail> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::WriteSystemMail> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::GetUnreceivedSystemMails> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::GetUnreceivedSystemMails> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::SendSystemMailToUser> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SendSystemMailToUser> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Shutdown> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::KickOut> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Login> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Login> type; };
@@ -418,8 +408,6 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::Broadcast>
 template <> struct FlatBufferOffset<fb::protocol::internal::response::UpdateFriends> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::UpdateFriends> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::GetSystemMails> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetSystemMails> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::WriteSystemMail> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::WriteSystemMail> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::GetUnreceivedSystemMails> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetUnreceivedSystemMails> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::SendSystemMailToUser> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::SendSystemMailToUser> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Service> { typedef fb::protocol::internal::raw::Service type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::GroupAction> { typedef fb::protocol::internal::raw::GroupAction type; };
 template <typename T> struct FlatBufferOffset<std::optional<T>> { typedef typename FlatBufferOffset<T>::type type; };
@@ -534,10 +522,6 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::GetSystemMails> build<
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::WriteSystemMail> build<fb::protocol::internal::request::WriteSystemMail>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteSystemMail& value);
 template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::GetUnreceivedSystemMails> build<fb::protocol::internal::request::GetUnreceivedSystemMails>(FlatBufferBuilder& builder, const fb::protocol::internal::request::GetUnreceivedSystemMails& value);
-template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::SendSystemMailToUser> build<fb::protocol::internal::request::SendSystemMailToUser>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SendSystemMailToUser& value);
-template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> build<fb::protocol::internal::response::Shutdown>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Shutdown& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> build<fb::protocol::internal::response::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickOut& value);
@@ -619,10 +603,6 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::GetSystemMails> build<fb::protocol::internal::response::GetSystemMails>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetSystemMails& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::WriteSystemMail> build<fb::protocol::internal::response::WriteSystemMail>(FlatBufferBuilder& builder, const fb::protocol::internal::response::WriteSystemMail& value);
-template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::GetUnreceivedSystemMails> build<fb::protocol::internal::response::GetUnreceivedSystemMails>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetUnreceivedSystemMails& value);
-template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::SendSystemMailToUser> build<fb::protocol::internal::response::SendSystemMailToUser>(FlatBufferBuilder& builder, const fb::protocol::internal::response::SendSystemMailToUser& value);
 
 template <typename T> inline static
 std::vector<T> unpack(const flatbuffers::Vector<typename FlatBufferOffset<T>::type> *value);
@@ -1478,8 +1458,6 @@ enum class FlatBufferProtocolType
     UpdateFriends,
     GetSystemMails,
     WriteSystemMail,
-    GetUnreceivedSystemMails,
-    SendSystemMailToUser,
 };
 
 class Shutdown
@@ -2899,86 +2877,6 @@ public:
         return WriteSystemMail(*raw);
     }
 };
-class GetUnreceivedSystemMails
-{
-public:
-    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::GetUnreceivedSystemMails;
-
-public:
-    uint32_t user = 0;
-
-public:
-    GetUnreceivedSystemMails() = default;
-
-    GetUnreceivedSystemMails(const GetUnreceivedSystemMails& x)
-        : user(x.user)
-    { }
-
-    GetUnreceivedSystemMails(uint32_t user)
-        : user(user)
-    { }
-
-    GetUnreceivedSystemMails(const fb::protocol::internal::request::raw::GetUnreceivedSystemMails& raw)
-        : user(raw.user())
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::request::GetUnreceivedSystemMails>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static GetUnreceivedSystemMails Deserialize(const uint8_t* bytes)
-    {
-        auto raw = fb::protocol::internal::request::raw::GetGetUnreceivedSystemMails(bytes);
-        return GetUnreceivedSystemMails(*raw);
-    }
-};
-class SendSystemMailToUser
-{
-public:
-    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::SendSystemMailToUser;
-
-public:
-    uint32_t user = 0;
-    uint32_t system_mail_id = 0;
-    uint32_t host = 0;
-
-public:
-    SendSystemMailToUser() = default;
-
-    SendSystemMailToUser(const SendSystemMailToUser& x)
-        : user(x.user), system_mail_id(x.system_mail_id), host(x.host)
-    { }
-
-    SendSystemMailToUser(uint32_t user, uint32_t system_mail_id, uint32_t host)
-        : user(user), system_mail_id(system_mail_id), host(host)
-    { }
-
-    SendSystemMailToUser(const fb::protocol::internal::request::raw::SendSystemMailToUser& raw)
-        : user(raw.user()), system_mail_id(raw.system_mail_id()), host(raw.host())
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::request::SendSystemMailToUser>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static SendSystemMailToUser Deserialize(const uint8_t* bytes)
-    {
-        auto raw = fb::protocol::internal::request::raw::GetSendSystemMailToUser(bytes);
-        return SendSystemMailToUser(*raw);
-    }
-};
 
 } // end of namespace fb::protocol::internal::request
 
@@ -3027,8 +2925,6 @@ enum class FlatBufferProtocolType
     UpdateFriends,
     GetSystemMails,
     WriteSystemMail,
-    GetUnreceivedSystemMails,
-    SendSystemMailToUser,
 };
 
 class Shutdown
@@ -4706,88 +4602,6 @@ public:
         return WriteSystemMail(*raw);
     }
 };
-class GetUnreceivedSystemMails
-{
-public:
-    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::GetUnreceivedSystemMails;
-
-public:
-    std::vector<uint32_t> system_mail_ids = {};
-    uint32_t error = 0;
-
-public:
-    GetUnreceivedSystemMails() = default;
-
-    GetUnreceivedSystemMails(const GetUnreceivedSystemMails& x)
-        : system_mail_ids(x.system_mail_ids), error(x.error)
-    { }
-
-    GetUnreceivedSystemMails(std::vector<uint32_t> system_mail_ids, uint32_t error)
-        : system_mail_ids(system_mail_ids), error(error)
-    { }
-
-    GetUnreceivedSystemMails(const fb::protocol::internal::response::raw::GetUnreceivedSystemMails& raw)
-        : system_mail_ids(unpack<uint32_t>(raw.system_mail_ids())), error(raw.error())
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::response::GetUnreceivedSystemMails>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static GetUnreceivedSystemMails Deserialize(const uint8_t* bytes)
-    {
-        auto raw = fb::protocol::internal::response::raw::GetGetUnreceivedSystemMails(bytes);
-        return GetUnreceivedSystemMails(*raw);
-    }
-};
-class SendSystemMailToUser
-{
-public:
-    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::SendSystemMailToUser;
-
-public:
-    fb::protocol::internal::Mail mail;
-    uint32_t host = 0;
-    uint16_t unread = 0;
-    uint32_t error = 0;
-
-public:
-    SendSystemMailToUser() = default;
-
-    SendSystemMailToUser(const SendSystemMailToUser& x)
-        : mail(x.mail), host(x.host), unread(x.unread), error(x.error)
-    { }
-
-    SendSystemMailToUser(const fb::protocol::internal::Mail& mail, uint32_t host, uint16_t unread, uint32_t error)
-        : mail(mail), host(host), unread(unread), error(error)
-    { }
-
-    SendSystemMailToUser(const fb::protocol::internal::response::raw::SendSystemMailToUser& raw)
-        : mail(*raw.mail()), host(raw.host()), unread(raw.unread()), error(raw.error())
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::response::SendSystemMailToUser>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static SendSystemMailToUser Deserialize(const uint8_t* bytes)
-    {
-        auto raw = fb::protocol::internal::response::raw::GetSendSystemMailToUser(bytes);
-        return SendSystemMailToUser(*raw);
-    }
-};
 
 } // end of namespace fb::protocol::internal::response
 
@@ -5330,20 +5144,6 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::WriteSystemMail> build
             flatbuffers::build<std::optional<std::string>>(builder, value.expire_date));
 }
 template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::GetUnreceivedSystemMails> build<fb::protocol::internal::request::GetUnreceivedSystemMails>(FlatBufferBuilder& builder, const fb::protocol::internal::request::GetUnreceivedSystemMails& value)
-{
-    return fb::protocol::internal::request::raw::CreateGetUnreceivedSystemMails(builder,
-            flatbuffers::build<uint32_t>(builder, value.user));
-}
-template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::SendSystemMailToUser> build<fb::protocol::internal::request::SendSystemMailToUser>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SendSystemMailToUser& value)
-{
-    return fb::protocol::internal::request::raw::CreateSendSystemMailToUser(builder,
-            flatbuffers::build<uint32_t>(builder, value.user),
-            flatbuffers::build<uint32_t>(builder, value.system_mail_id),
-            flatbuffers::build<uint32_t>(builder, value.host));
-}
-template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> build<fb::protocol::internal::response::Shutdown>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Shutdown& value)
 {
     return fb::protocol::internal::response::raw::CreateShutdown(builder);
@@ -5669,22 +5469,6 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::WriteSystemMail> buil
 {
     return fb::protocol::internal::response::raw::CreateWriteSystemMail(builder,
             flatbuffers::build<fb::protocol::internal::SystemMail>(builder, value.mail),
-            flatbuffers::build<uint32_t>(builder, value.error));
-}
-template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::GetUnreceivedSystemMails> build<fb::protocol::internal::response::GetUnreceivedSystemMails>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetUnreceivedSystemMails& value)
-{
-    return fb::protocol::internal::response::raw::CreateGetUnreceivedSystemMails(builder,
-            flatbuffers::build<std::vector<uint32_t>>(builder, value.system_mail_ids),
-            flatbuffers::build<uint32_t>(builder, value.error));
-}
-template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::SendSystemMailToUser> build<fb::protocol::internal::response::SendSystemMailToUser>(FlatBufferBuilder& builder, const fb::protocol::internal::response::SendSystemMailToUser& value)
-{
-    return fb::protocol::internal::response::raw::CreateSendSystemMailToUser(builder,
-            flatbuffers::build<fb::protocol::internal::Mail>(builder, value.mail),
-            flatbuffers::build<uint32_t>(builder, value.host),
-            flatbuffers::build<uint16_t>(builder, value.unread),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 

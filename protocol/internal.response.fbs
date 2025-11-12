@@ -269,15 +269,3 @@ table WriteSystemMail {
   mail: fb.protocol.internal.SystemMail;
   error: uint;
 }
-
-table GetUnreceivedSystemMails {
-  system_mail_ids: [uint];
-  error: uint;
-}
-
-table SendSystemMailToUser {
-  mail: fb.protocol.internal.Mail;
-  host: uint;
-  unread: ushort;
-  error: uint;
-}

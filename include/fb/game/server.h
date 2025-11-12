@@ -192,7 +192,6 @@ public:
     [[nodiscard]] async::task<void>                         whisper(character& sender, std::string receiver_name, std::string message);
     [[nodiscard]] async::task<void>                         fetch_system_mails();
     std::vector<system_mail>                                get_system_mails() const;
-    void                                                    on_send_system_mail(const internal_resp::SendSystemMailToUser& resp);
 
 protected:
     bool                                 decrypt_policy(uint8_t cmd) const override final;

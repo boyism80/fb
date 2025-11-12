@@ -80,7 +80,7 @@ public class Program
             .ForMember(x => x.Qid, x => x.MapFrom(u => u.Id))
             .ReverseMap();
 
-            cfg.CreateMap<Protocol.SystemMailUser, Http.Model.SystemMailUser>()
+            cfg.CreateMap<fb.protocol._internal.SystemMailUser, Http.Model.SystemMailUser>()
             .ForMember(x => x.User, x => x.MapFrom(u => u.User))
             .ForMember(x => x.MailId, x => x.MapFrom(u => u.MailId))
             .ForMember(x => x.Read, x => x.MapFrom(u => u.Read))
