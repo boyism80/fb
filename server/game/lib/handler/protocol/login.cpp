@@ -160,6 +160,18 @@ void login::init_achievements(const std::vector<fb::protocol::internal::Achievem
     }
 }
 
+void login::init_system_mail_users(const std::vector<fb::protocol::internal::SystemMailUser>& response, fb::game::character& ch)
+{
+    for (auto& smu : response)
+    {
+        ch.mail_box.add_system_mail_user(smu.mail_id, smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value()) : std::nullopt);
+        if (smu.read)
+        {
+            ch.mail_box.update_system_mail_user_read(smu.mail_id, true);
+        }
+    }
+}
+
 std::string login::elapsed_message(const std::string& dt)
 {
     auto elapsed = fb::model::datetime() - fb::model::datetime(dt);
@@ -220,6 +232,7 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     this->init_spells(response.spells, *ch);
     this->init_achievements(response.achievements, *ch);
     this->init_quests(response.quests, *ch);
+    this->init_system_mail_users(response.received_system_mails, *ch);
     this->init_option(response.option, *ch);
     ch->init();
     ch->update_time(this->server.time().hours());

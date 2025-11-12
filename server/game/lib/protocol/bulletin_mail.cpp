@@ -18,7 +18,7 @@ async::task<void> bulletin_mail::serialize(fb::stream_writer<big_endian>& writer
     writer.write<uint8_t>(static_cast<uint8_t>(flag));
     writer.write<uint8_t>(0x00);
     writer.write<uint16_t>(mail.id);
-    writer.write<std::string>(mail.sender_name);
+    writer.write<std::string>(mail.sender);
     writer.write<uint8_t>(static_cast<uint8_t>(dt.month()));
     writer.write<uint8_t>(static_cast<uint8_t>(dt.day()));
     writer.write<std::string>(mail.title);
@@ -32,12 +32,12 @@ async::task<void> bulletin_mail::deserialize(fb::stream_reader<big_endian>& read
     reader.read<uint8_t>(); // 0x05
     this->flag = static_cast<MAIL_BUTTON_ENABLE>(reader.read<uint8_t>());
     reader.read<uint8_t>(); // 0x00
-    this->id          = reader.read<uint16_t>();
-    this->sender_name = reader.read<std::string, uint8_t>();
-    this->month       = reader.read<uint8_t>();
-    this->day         = reader.read<uint8_t>();
-    this->title       = reader.read<std::string, uint8_t>();
-    this->contents    = reader.read<std::string, uint16_t>();
+    this->id       = reader.read<uint16_t>();
+    this->sender   = reader.read<std::string, uint8_t>();
+    this->month    = reader.read<uint8_t>();
+    this->day      = reader.read<uint8_t>();
+    this->title    = reader.read<std::string, uint8_t>();
+    this->contents = reader.read<std::string, uint16_t>();
     reader.read<uint8_t>(); // 0x00
 }
 #endif

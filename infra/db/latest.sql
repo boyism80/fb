@@ -191,7 +191,7 @@ DROP TABLE IF EXISTS `mail`;
 CREATE TABLE `mail` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `user` int unsigned NOT NULL,
-  `sender` int NOT NULL,
+  `sender` varchar(64) NOT NULL,
   `title` varchar(64) NOT NULL,
   `contents` varchar(256) NOT NULL,
   `read` tinyint NOT NULL DEFAULT '0',
@@ -214,6 +214,44 @@ CREATE TABLE `mail_sequence` (
   `user` int NOT NULL,
   `id` int NOT NULL,
   PRIMARY KEY (`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `system_mail`
+--
+
+DROP TABLE IF EXISTS `system_mail`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `system_mail` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `title` varchar(64) NOT NULL,
+  `contents` varchar(256) NOT NULL,
+  `expire_date` datetime DEFAULT NULL,
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `system_mail_user`
+--
+
+DROP TABLE IF EXISTS `system_mail_user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `system_mail_user` (
+  `mail_id` int unsigned NOT NULL,
+  `user` int unsigned NOT NULL,
+  `read` tinyint NOT NULL DEFAULT '0',
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`mail_id`,`user`),
+  KEY `IX_USER` (`user`),
+  KEY `IX_MAIL_ID` (`mail_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -522,8 +560,6 @@ BEGIN
            mail.`read`,
            mail.`created_date`
     FROM mail
-    LEFT JOIN `name` AS N
-    ON mail.sender = N.id
     WHERE mail.`user` = user AND mail.`deleted` = 0 AND position >= mail.`id`
     ORDER BY mail.`id` DESC
     LIMIT 0, count;
@@ -556,7 +592,7 @@ BEGIN
 	SELECT * FROM `mail`
     WHERE mail.`id` = id AND
           mail.`user` = user AND
-          `deleted` = 0;
+          mail.`deleted` = 0;
           
 	COMMIT;
 END ;;

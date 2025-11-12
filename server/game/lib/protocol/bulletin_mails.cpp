@@ -22,7 +22,7 @@ async::task<void> bulletin_mails::serialize(fb::stream_writer<big_endian>& write
     {
         writer.write<bool>(!mail.read);
         writer.write<uint16_t>(mail.id);
-        writer.write<std::string>(mail.sender_name);
+        writer.write<std::string>(mail.sender);
 
         auto dt = fb::model::datetime(mail.created_date);
         writer.write<uint8_t>(static_cast<uint8_t>(dt.month()));
@@ -46,12 +46,12 @@ async::task<void> bulletin_mails::deserialize(fb::stream_reader<big_endian>& rea
     for (int i = 0; i < count; i++)
     {
         mail_data mail;
-        mail.unread      = reader.read<bool>();
-        mail.id          = reader.read<uint16_t>();
-        mail.sender_name = reader.read<std::string, uint8_t>();
-        mail.month       = reader.read<uint8_t>();
-        mail.day         = reader.read<uint8_t>();
-        mail.title       = reader.read<std::string, uint8_t>();
+        mail.unread = reader.read<bool>();
+        mail.id     = reader.read<uint16_t>();
+        mail.sender = reader.read<std::string, uint8_t>();
+        mail.month  = reader.read<uint8_t>();
+        mail.day    = reader.read<uint8_t>();
+        mail.title  = reader.read<std::string, uint8_t>();
         this->mails.push_back(mail);
     }
 

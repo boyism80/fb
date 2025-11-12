@@ -39,11 +39,18 @@ async::task<internal_resp::WriteMail> server::send_mail(const character& ch, con
 {
     auto   weak   = ch.weak_from_this();
     auto   thread = ch.thread();
-    auto&& resp   = co_await this->http.post("internal", "/mail/write", WriteMail{ch.id(), to, title, contents, config<uint32_t>("id")});
+    auto&& resp   = co_await this->http.post("internal", "/mail/write", WriteMail{ch.name(), to, title, contents, config<uint32_t>("id")});
     co_await this->threads.switching(weak);
 
     this->assert_mail(resp.error);
     this->on_write_mail(resp);
+    co_return std::move(resp);
+}
+
+async::task<internal_resp::WriteMail> server::send_mail(const std::string& sender, const std::string& to, const std::string& title, const std::string& contents)
+{
+    auto&& resp = co_await this->http.post("internal", "/mail/write", WriteMail{sender, to, title, contents, config<uint32_t>("id")});
+    this->assert_mail(resp.error);
     co_return std::move(resp);
 }
 

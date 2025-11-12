@@ -186,5 +186,156 @@ namespace Internal.Controllers
                 };
             }
         }
+
+        /// <summary>
+        /// Retrieves all active (non-expired and non-deleted) system mails.
+        /// Returns system mails that are currently valid for distribution to users.
+        /// </summary>
+        /// <returns>A response containing the list of active system mails or error details.</returns>
+        [HttpPost("system/get")]
+        public async Task<Response.GetSystemMails> GetSystemMails()
+        {
+            try
+            {
+                var systemMails = await _dbContext.SystemMail.GetAll();
+                var protocolMails = systemMails.Select(m => new Protocol.SystemMail
+                {
+                    Id = m.Id,
+                    Title = m.Title,
+                    Contents = m.Contents,
+                    ExpireDate = m.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
+                    CreatedDate = m.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                }).ToList();
+
+                return new Response.GetSystemMails
+                {
+                    Mails = protocolMails,
+                    Error = (uint)ErrorCode.None
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.GetSystemMails
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
+        /// <summary>
+        /// Creates a new system mail and publishes notification via RabbitMQ.
+        /// Invalidates Redis cache to ensure all game servers fetch the latest system mails.
+        /// </summary>
+        /// <param name="request">The system mail writing request containing title, contents, and optional expiration date.</param>
+        /// <returns>A response with the created system mail information or error details.</returns>
+        [HttpPost("system/write")]
+        public async Task<Response.WriteSystemMail> WriteSystemMail(Request.WriteSystemMail request)
+        {
+            try
+            {
+                DateTime? expireDate = null;
+                if (!string.IsNullOrEmpty(request.ExpireDate))
+                {
+                    if (DateTime.TryParse(request.ExpireDate, out var parsedDate))
+                        expireDate = parsedDate;
+                }
+
+                var systemMail = await _dbContext.SystemMail.Write(request.Title, request.Contents, expireDate);
+                var protocolMail = new Protocol.SystemMail
+                {
+                    Id = systemMail.Id,
+                    Title = systemMail.Title,
+                    Contents = systemMail.Contents,
+                    ExpireDate = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
+                    CreatedDate = systemMail.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                };
+
+                var response = new Response.WriteSystemMail
+                {
+                    Mail = protocolMail,
+                    Error = (uint)ErrorCode.None
+                };
+
+                // Publish notification to all game servers via RabbitMQ
+                _rabbitMqService.Publish(response, "amq.direct", "fb.system_mail");
+
+                return response;
+            }
+            catch (Exception)
+            {
+                return new Response.WriteSystemMail
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the list of system mail IDs that a user has not yet received.
+        /// Used by game servers to determine which system mails to send to logged-in users.
+        /// </summary>
+        /// <param name="user">The unique identifier of the user.</param>
+        /// <returns>A response containing the list of unreceived system mail IDs or error details.</returns>
+        [HttpPost("system/unreceived")]
+        public async Task<Response.GetUnreceivedSystemMails> GetUnreceivedSystemMails([FromBody] Request.GetUnreceivedSystemMails request)
+        {
+            try
+            {
+                var unreceivedMailIds = await _dbContext.SystemMail.GetUnreceivedSystemMails(request.User);
+                return new Response.GetUnreceivedSystemMails
+                {
+                    SystemMailIds = unreceivedMailIds,
+                    Error = (uint)ErrorCode.None
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.GetUnreceivedSystemMails
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
+        /// <summary>
+        /// Sends a system mail to a specific user by copying it to the mail table.
+        /// Creates a mail entry and records it in system_mail_user to prevent duplicates.
+        /// </summary>
+        /// <param name="request">The request containing user ID and system mail ID.</param>
+        /// <returns>A response with the created mail information and unread count or error details.</returns>
+        [HttpPost("system/send")]
+        public async Task<Response.SendSystemMailToUser> SendSystemMailToUser([FromBody] Request.SendSystemMailToUser request)
+        {
+            try
+            {
+                var mail = await _dbContext.SystemMail.SendSystemMailToUser(request.User, request.SystemMailId);
+                if (mail == null)
+                {
+                    return new Response.SendSystemMailToUser
+                    {
+                        Error = (uint)ErrorCode.MailNotExists
+                    };
+                }
+
+                var response = new Response.SendSystemMailToUser
+                {
+                    Mail = _mapper.Map<Protocol.Mail>(mail),
+                    Host = request.Host,
+                    Unread = await _dbContext.Mail.Unread(request.User),
+                    Error = (uint)ErrorCode.None
+                };
+
+                // Publish notification via RabbitMQ (same as regular mail)
+                _rabbitMqService.Publish(response, "amq.direct", $"fb.mail");
+                return response;
+            }
+            catch (Exception)
+            {
+                return new Response.SendSystemMailToUser
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
     }
 }

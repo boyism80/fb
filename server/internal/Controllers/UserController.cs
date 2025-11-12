@@ -366,6 +366,7 @@ namespace Internal.Controllers
                     });
 
                 await _dbContext.SaveChangesAsync();
+                var receivedSystemMails = await _dbContext.SystemMailUser.Get(uid);
                 return new Response.Init
                 {
                     Character = _mapper.Map<Protocol.Character>(ch),
@@ -373,6 +374,7 @@ namespace Internal.Controllers
                     Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
                     Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
                     Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
+                    ReceivedSystemMails = receivedSystemMails.Where(smu => !smu.Deleted).Select(_mapper.Map<Protocol.SystemMailUser>).ToList(),
                     Option = _mapper.Map<Protocol.Option>(option),
                     Clan = sync.Clan,
                     Group = sync.Group,
@@ -430,6 +432,9 @@ namespace Internal.Controllers
 
                 var quests = Override(_mapper.Map<Protocol.Quest[], Quest[]>(request.Quests.ToArray()), await _dbContext.Quest.Get(request.Character.Id));
                 _dbContext.Quest.Set(quests.ToArray());
+
+                var receivedSystemMails = Override(_mapper.Map<Protocol.SystemMailUser[], SystemMailUser[]>(request.ReceivedSystemMails.ToArray()), await _dbContext.SystemMailUser.Get(request.Character.Id));
+                _dbContext.SystemMailUser.Set(receivedSystemMails.ToArray());
 
                 await _dbContext.SaveChangesAsync();
                 return new Response.Save

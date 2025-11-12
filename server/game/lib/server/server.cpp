@@ -188,6 +188,7 @@ async::task<void> server::handle_start()
     this->bind_timer<fb::game::handler::timer::heart_beat>(1s);
     this->bind_timer<fb::game::handler::timer::update_time>(1s);
     this->bind_timer<fb::game::handler::timer::announce>(std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
+    this->bind_timer<fb::game::handler::timer::system_mail_timer>(30s);
 
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
     this->bind_thread_timer<fb::game::handler::timer::mob_respawn_timer>(1s);
@@ -195,6 +196,7 @@ async::task<void> server::handle_start()
     this->bind_thread_timer<fb::game::handler::timer::gear_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
+    this->bind_thread_timer<fb::game::handler::timer::system_mail_distribution_timer>(5s);
 
     this->bind_npc_interaction<fb::game::handler::npc_interaction::sell>();
     this->bind_npc_interaction<fb::game::handler::npc_interaction::buy>();
@@ -217,6 +219,7 @@ async::task<void> server::handle_start()
     this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(std::format("fb.game.{}", config<uint32_t>("id")));
     this->handler.amqp.bind<fb::game::handler::amqp::whisper>(std::format("fb.game.{}", config<uint32_t>("id")));
     this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.system");
+    this->handler.amqp.bind<fb::game::handler::amqp::write_system_mail>("fb.system_mail");
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast>("fb.global");
     this->handler.amqp.bind<fb::game::handler::amqp::enter_group>("fb.group");
     this->handler.amqp.bind<fb::game::handler::amqp::leave_group>("fb.group");
@@ -470,7 +473,22 @@ async::task<void> server::save(character& ch)
         quests.push_back(internal::Quest{ch.id(), qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
-    std::ignore = co_await this->http.post("internal", "/user/save", Save{ch.to_protocol(), items, spells, achievements, quests});
+    // Get system mail users from character's in-memory collection
+    // Exclude expired system mails (they will be marked as deleted in UserController)
+    auto        received_system_mails = std::vector<internal::SystemMailUser>();
+    auto        now                   = fb::model::datetime();
+    const auto& system_mail_users     = ch.mail_box.get_system_mail_users();
+    for (const auto& [mail_id, smu] : system_mail_users)
+    {
+        // Skip expired system mails
+        if (smu.expire_date.has_value() && smu.expire_date.value() < now)
+            continue;
+
+        received_system_mails.push_back(
+            internal::SystemMailUser{ch.id(), mail_id, smu.read, smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value().to_string()) : std::nullopt});
+    }
+
+    std::ignore = co_await this->http.post("internal", "/user/save", Save{ch.to_protocol(), items, spells, achievements, quests, received_system_mails});
 
     co_await this->threads.switching(weak);
     ch.send(fb_resp::save());
@@ -506,6 +524,7 @@ const fb::model::datetime& server::time() const
 void server::handle_init_amqp(fb::amqp::socket& amqp)
 {
     this->handler.amqp.declare_queue("amq.direct", "fb.system");
+    this->handler.amqp.declare_queue("amq.direct", "fb.system_mail");
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
     this->handler.amqp.declare_queue("amq.direct", "fb.global");
     this->handler.amqp.declare_queue("amq.direct", "fb.group");

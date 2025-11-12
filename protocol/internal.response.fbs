@@ -121,6 +121,7 @@ table Init {
   option: fb.protocol.internal.Option;
   achievements: [fb.protocol.internal.Achievement];
   quests: [fb.protocol.internal.Quest];
+  received_system_mails: [fb.protocol.internal.SystemMailUser];
   mail: uint;
 }
 
@@ -256,5 +257,27 @@ table Broadcast {
 
 table UpdateFriends
 {
+  error: uint;
+}
+
+table GetSystemMails {
+  mails: [fb.protocol.internal.SystemMail];
+  error: uint;
+}
+
+table WriteSystemMail {
+  mail: fb.protocol.internal.SystemMail;
+  error: uint;
+}
+
+table GetUnreceivedSystemMails {
+  system_mail_ids: [uint];
+  error: uint;
+}
+
+table SendSystemMailToUser {
+  mail: fb.protocol.internal.Mail;
+  host: uint;
+  unread: ushort;
   error: uint;
 }

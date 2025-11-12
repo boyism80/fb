@@ -16,6 +16,7 @@
 #include <fb/game/mail_box.h>
 #include <fb/game/stat.h>
 #include <fb/game/quest.h>
+#include <set>
 
 namespace fb::game {
 
@@ -25,6 +26,7 @@ class character : public life
 {
     friend class group;
     friend class character_stat;
+    friend class server;
 
 public:
     using object::map;

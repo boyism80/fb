@@ -19,16 +19,10 @@ namespace Http.Model
         public uint User { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique identifier of the sender user.
+        /// Gets or sets the name of the sender.
         /// </summary>
-        /// <value>The sender character's unique ID.</value>
-        public uint Sender { get; set; }
-
-        /// <summary>
-        /// Gets or sets the display name of the sender.
-        /// </summary>
-        /// <value>The sender's character name for display purposes.</value>
-        public string SenderName { get; set; }
+        /// <value>The sender's character name.</value>
+        public string Sender { get; set; }
 
         /// <summary>
         /// Gets or sets the title/subject of the mail message.

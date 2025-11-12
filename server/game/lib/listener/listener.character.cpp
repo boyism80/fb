@@ -253,14 +253,14 @@ void listener_impl::on_show_mail_box(character& ch, const std::vector<mail_box::
     auto dto = std::vector<MailSummary>();
     for (auto& summary : mails)
     {
-        dto.push_back(MailSummary{summary.id, summary.user, summary.sender, summary.sender_name, summary.read, summary.title, summary.created_date});
+        dto.push_back(MailSummary{summary.id, summary.user, summary.sender, summary.read, summary.title, summary.created_date});
     }
     ch.send(fb_resp::bulletin_mails(dto, flag));
 }
 
 void listener_impl::on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag)
 {
-    auto dto = Mail{mail.id, mail.user, mail.sender, mail.sender_name, mail.title, mail.contents, mail.read, mail.created_date};
+    auto dto = Mail{mail.id, mail.user, mail.sender, mail.title, mail.contents, mail.read, mail.created_date};
     ch.send(fb_resp::bulletin_mail(dto, flag));
 }
 

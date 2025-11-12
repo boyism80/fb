@@ -15,6 +15,9 @@
 #include <fb/shard_container.h>
 #include <fb/game/clan.h>
 #include <fb/game/npc_interaction_handler.h>
+#include <fb/game/system_mail.h>
+#include <fb/locker.h>
+#include <vector>
 
 using namespace fb::protocol::internal;
 using namespace fb::protocol::internal::request;
@@ -48,6 +51,8 @@ REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::intern
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
 REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanRole, fb::protocol::internal::response::ChangeClanRole)
 REGISTER_RESPONSE(fb::protocol::internal::request::UpdateFriends, fb::protocol::internal::response::UpdateFriends)
+REGISTER_RESPONSE(fb::protocol::internal::request::GetSystemMails, fb::protocol::internal::response::GetSystemMails)
+REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol::internal::response::WriteSystemMail)
 
 namespace fb::game {
 
@@ -73,9 +78,10 @@ public:
     using npc_interaction_handler_list = std::vector<npc_interaction_handler_ptr>;
 
 private:
-    fb::model::datetime          _time;
-    npc_interaction_handler_list _npc_interaction_handlers;
-    fb::redis                    _redis;
+    fb::model::datetime                  _time;
+    npc_interaction_handler_list         _npc_interaction_handlers;
+    fb::redis                            _redis;
+    fb::locker<std::vector<system_mail>> _system_mails;
 
 public:
     fb::game::listener_impl listener;
@@ -175,6 +181,7 @@ public:
     [[nodiscard]] async::task<void>                         change_clan_member_role(const clan& clan, uint32_t changer_uid, const std::string& target, CLAN_ROLE role);
     [[nodiscard]] async::task<void>                         broadcast(const clan& clan, const std::string& message, MESSAGE_TYPE type);
     [[nodiscard]] async::task<internal_resp::WriteMail>     send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents);
+    [[nodiscard]] async::task<internal_resp::WriteMail>     send_mail(const std::string& sender, const std::string& to, const std::string& title, const std::string& contents);
     [[nodiscard]] async::task<internal_resp::GetMailList>   mail_list(const character& ch, uint16_t offset, uint16_t count);
     [[nodiscard]] async::task<internal_resp::GetMail>       read_mail(character& ch, uint16_t id);
     [[nodiscard]] async::task<internal_resp::DeleteMail>    delete_mail(character& ch, uint16_t id);
@@ -183,6 +190,9 @@ public:
     [[nodiscard]] async::task<void>                         write_bulletin(character& ch, uint16_t section, const std::string& title, const std::string& contents);
     [[nodiscard]] async::task<void>                         delete_bulletin(character& ch, uint16_t section, uint16_t id);
     [[nodiscard]] async::task<void>                         whisper(character& sender, std::string receiver_name, std::string message);
+    [[nodiscard]] async::task<void>                         fetch_system_mails();
+    std::vector<system_mail>                                get_system_mails() const;
+    void                                                    on_send_system_mail(const internal_resp::SendSystemMailToUser& resp);
 
 protected:
     bool                                 decrypt_policy(uint8_t cmd) const override final;

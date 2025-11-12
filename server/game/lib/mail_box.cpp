@@ -39,3 +39,34 @@ void mail_box::unread_count(uint16_t value)
         this->owner.update(STATE_LEVEL::LEVEL_MIN);
     }
 }
+
+void mail_box::add_system_mail_user(uint32_t mail_id, const std::optional<std::string>& expire_date)
+{
+    this->owner.assert_thread();
+    auto it = this->_system_mail_users.find(mail_id);
+    if (it == this->_system_mail_users.end())
+    {
+        this->_system_mail_users[mail_id] = system_mail_user{mail_id, false, expire_date};
+    }
+    else
+    {
+        // Update expire_date if it changed
+        it->second.expire_date = expire_date.has_value() ? std::make_optional<fb::model::datetime>(expire_date.value()) : std::nullopt;
+    }
+}
+
+void mail_box::update_system_mail_user_read(uint32_t mail_id, bool read)
+{
+    this->owner.assert_thread();
+    auto it = this->_system_mail_users.find(mail_id);
+    if (it != this->_system_mail_users.end())
+    {
+        it->second.read = read;
+    }
+}
+
+const std::map<uint32_t, system_mail_user>& mail_box::get_system_mail_users() const
+{
+    this->owner.assert_thread();
+    return this->_system_mail_users;
+}
