@@ -197,5 +197,5 @@ function NPC_24(me, npc)
 		}
 	}
 
-	NPC_BASIC_CLASS(me, npc, CLASS_MAGE, spells)
+	NPC_BASIC_CLASS(me, npc, CLASS.MAGE, spells)
 end

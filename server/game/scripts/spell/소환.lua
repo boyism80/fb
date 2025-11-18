@@ -31,7 +31,7 @@ function ON_CAST_4(me, spell, name)
     if spell_cast(me, nil, nil, {mp=mp}) then
         local new_x, new_y = TELEPORT_LOOKUP(me, map, x, y, direction)
         ch:map(map, new_x, new_y)
-        me:action(ACTION_CAST_SPELL, DURATION_SPELL)
+        me:action(ACTION.CAST_SPELL, DURATION.SPELL)
         me:sound(sound)
         me:effect(effect)
         me:message(string.format('%s 외웠습니다.', name_with(spell:name())))

@@ -28,7 +28,7 @@ function ON_CONCAST_4018(me, caster, buff)
     local end_y = y+3
     local targets = {}
     local spell = name2spell('파력무참진')
-    for _, obj in pairs(me:nears(OBJECT_TYPE_LIFE)) do
+    for _, obj in pairs(me:nears(OBJECT_TYPE.LIFE)) do
         local obj_x, obj_y = obj:position()
         if not obj:isbuff(spell) and obj_x >= begin_x and obj_x <= end_x and obj_y >= begin_y and obj_y <= end_y then
             table.insert(targets, obj)
@@ -40,7 +40,7 @@ function ON_CONCAST_4018(me, caster, buff)
         count = count + 1
         obj:effect(107)
         obj:buff(spell, 2, me)
-        if me ~= obj and obj:is(OBJECT_TYPE_CHARACTER) then
+        if me ~= obj and obj:is(OBJECT_TYPE.CHARACTER) then
             obj:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
         end
     end

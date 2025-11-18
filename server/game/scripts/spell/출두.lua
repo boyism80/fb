@@ -33,6 +33,6 @@ function ON_CAST_3_BULK(me, spell, map, position, direction, sound, effect)
     me:direction(direction)
     me:sound(sound)
     me:effect(effect)
-    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+    me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     me:message(string.format('%s 외웠습니다.', name_with(spell)))
 end

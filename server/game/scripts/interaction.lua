@@ -37,11 +37,11 @@ function is_back_attack(me, you)
 
     local x1, y1 = me:position()
     local x2, y2 = you:position()
-    if direction1 == DIRECTION_LEFT then
+    if direction1 == DIRECTION.LEFT then
         return x1 > x2
     elseif direction1 == DIREECTION_TOP then
         return y1 > y2
-    elseif direction1 == DIRECTION_RIGHT then
+    elseif direction1 == DIRECTION.RIGHT then
         return x1 < x2
     else
         return y1 < y2
@@ -53,18 +53,18 @@ function damage(me, you, rate, sound)
         rate = 1.0
     end
 
-    local size = MOB_SIZE_SMALL
-    if you:is(OBJECT_TYPE_MOB) then
+    local size = MOB_SIZE.SMALL
+    if you:is(OBJECT_TYPE.MOB) then
         local model = you:model()
         size = model:size()
     end
 
     local damage = 0
-    if me:is(OBJECT_TYPE_CHARACTER) then
+    if me:is(OBJECT_TYPE.CHARACTER) then
         local weapon = me:weapon()
         if weapon == nil then
             damage = math.random(1, 5)
-        elseif size == MOB_SIZE_SMALL then
+        elseif size == MOB_SIZE.SMALL then
             local min, max = weapon:model():damage_small()
             damage = math.random(min, max) + me:weapon_damage()
         else
@@ -106,10 +106,10 @@ function on_attack(me, additional_attack)
     end
 
     local option = map:model():option()
-    local pk = (option & MAP_OPTION_ENABLE_PK) == MAP_OPTION_ENABLE_PK
-    local enemy_type = OBJECT_TYPE_LIFE
+    local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
+    local enemy_type = OBJECT_TYPE.LIFE
     if not pk then
-        enemy_type = OBJECT_TYPE_MOB
+        enemy_type = OBJECT_TYPE.MOB
     end
 
     if additional_attack == nil then
@@ -117,21 +117,21 @@ function on_attack(me, additional_attack)
     end
 
     if not additional_attack then
-        me:action(ACTION_ATTACK, DURATION_ATTACK)
+        me:action(ACTION.ATTACK, DURATION.ATTACK)
     end
 
     local weapon = nil
     local is_bow = false
-    if me:is(OBJECT_TYPE_CHARACTER) and not additional_attack then
+    if me:is(OBJECT_TYPE.CHARACTER) and not additional_attack then
         weapon = me:weapon()
         if weapon ~= nil then
             local model = weapon:model()
-            is_bow = model:type() == WEAPON_TYPE_BOW
+            is_bow = model:type() == WEAPON_TYPE.BOW
 
             local sound = model:sound()
             if sound == 0 then
                 if not is_bow then
-                    sound = SOUND_SWING
+                    sound = SOUND.SWING
                 end
             end
             me:sound(sound)
@@ -149,11 +149,11 @@ function on_attack(me, additional_attack)
         for i = 1, range do
             local obj_x = x
             local obj_y = y
-            if direction == DIRECTION_LEFT then
+            if direction == DIRECTION.LEFT then
                 obj_x = obj_x - i
-            elseif direction == DIRECTION_RIGHT then
+            elseif direction == DIRECTION.RIGHT then
                 obj_x = obj_x + i
-            elseif direction == DIRECTION_TOP then
+            elseif direction == DIRECTION.TOP then
                 obj_y = obj_y - i
             else
                 obj_y = obj_y + i
@@ -175,7 +175,7 @@ function on_attack(me, additional_attack)
         end
     else
         local front = nil
-        if me:is(OBJECT_TYPE_MOB) then
+        if me:is(OBJECT_TYPE.MOB) then
             front = me:target()
             if front ~= nil then
                 local x_front, y_front = front:position()
@@ -192,7 +192,7 @@ function on_attack(me, additional_attack)
         end
         local damaged_sound = nil
         if weapon ~= nil then
-            damaged_sound = SOUND_DAMAGE
+            damaged_sound = SOUND.DAMAGE
         end
         if front ~= nil and not is_miss(me, front) then
             damage(me, front, nil, damaged_sound)
@@ -201,7 +201,7 @@ function on_attack(me, additional_attack)
 
         if me:isbuff('측면공격') then
             local points = {}
-            if direction == DIRECTION_LEFT or direction == DIRECTION_RIGHT then
+            if direction == DIRECTION.LEFT or direction == DIRECTION.RIGHT then
                 table.insert(points, {x, y-1})
                 table.insert(points, {x, y+1})
             else
@@ -218,11 +218,11 @@ function on_attack(me, additional_attack)
 
         if me:isbuff('후면공격') then
             local points = {}
-            if direction == DIRECTION_LEFT then
+            if direction == DIRECTION.LEFT then
                 table.insert(points, {x+1, y})
-            elseif direction == DIRECTION_TOP then
+            elseif direction == DIRECTION.TOP then
                 table.insert(points, {x, y+1})
-            elseif direction == DIRECTION_RIGHT then
+            elseif direction == DIRECTION.RIGHT then
                 table.insert(points, {x-1, y})
             else
                 table.insert(points, {x, y-1})
@@ -264,7 +264,7 @@ end
 function on_loot(me)
     for _, buff_name in pairs(relative_buff_name('투명')) do
         if me:isbuff(buff_name) then
-            me:state(STATE_NORMAL)
+            me:state(STATE.NORMAL)
             me:unbuff(buff_name)
         end
     end
@@ -326,11 +326,11 @@ function on_chat(me, message)
     
     local cmd_data = command_funcs[cmd]
     local cmd_func = nil
-    local required_privilege = ROLE_USER
+    local required_privilege = ROLE.USER
     
     if type(cmd_data) == 'table' then
         cmd_func = cmd_data['command']
-        required_privilege = cmd_data['privilege'] or ROLE_USER
+        required_privilege = cmd_data['privilege'] or ROLE.USER
     else
         cmd_func = cmd_data
     end
@@ -353,33 +353,33 @@ function on_login(me)
     local button = nil
 ::BIRTHDAY_DIALOG_1::
     button = me:dialog(npc, '대단히 중요하니 끝까지 읽어 주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.', false, true)
-    if button == DIALOG_RESULT_QUIT then
+    if button == DIALOG_RESULT.QUIT then
         return
     end
 
 ::BIRTHDAY_DIALOG_2::
     button = me:dialog(npc, '대충 2차 비밀번호 설정하라고 강경하게 말하는 내용', true, true)
-    if button == DIALOG_RESULT_QUIT then
+    if button == DIALOG_RESULT.QUIT then
         return
     end
 
-    if button == DIALOG_RESULT_PREV then
+    if button == DIALOG_RESULT.PREV then
         goto BIRTHDAY_DIALOG_1
     end
 
 ::BIRTHDAY_DIALOG_3::
     local birthday = me:input(npc, '2차 비밀번호 설정 뭘로 할래요?', '내 생년월일은,', '입니다.', 6, true)
-    if birthday == DIALOG_RESULT_QUIT then
+    if birthday == DIALOG_RESULT.QUIT then
         return
     end
 
-    if birthday == DIALOG_RESULT_PREV then
+    if birthday == DIALOG_RESULT.PREV then
         goto BIRTHDAY_DIALOG_2
     end
 
     if birthday == '' then
         button = me:dialog(npc, '제대로 입력하세요.', false, true)
-        if button == DIALOG_RESULT_QUIT then
+        if button == DIALOG_RESULT.QUIT then
             return
         end
         goto BIRTHDAY_DIALOG_3
@@ -387,7 +387,7 @@ function on_login(me)
 
     if #birthday ~= 6 then
         button = me:dialog(npc, '생년월일이 너무 짧습니다.', false, true)
-        if button == DIALOG_RESULT_QUIT then
+        if button == DIALOG_RESULT.QUIT then
             return
         end
 

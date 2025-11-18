@@ -5,7 +5,7 @@ function ON_CAST_2012(me, spell)
     local effect = 20
     local buff_time = 180
     if buff_cast(me, me, spell, {mp=mp, sound=sound, effect=effect}) then
-        me:state(STATE_HALF_CLOACK)
+        me:state(STATE.HALF_CLOACK)
         me:buff(spell, buff_time)
     end
 end
@@ -17,5 +17,5 @@ end
 
 -- 투명 버프 해제 효과
 function ON_UNBUFF_2012(me, spell)
-    me:state(STATE_NORMAL)
+    me:state(STATE.NORMAL)
 end

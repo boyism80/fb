@@ -1,6 +1,6 @@
 command_funcs = {
     ['명령어'] = {
-        ['privilege'] = ROLE_USER,
+        ['privilege'] = ROLE.USER,
         ['usage'] = '- 사용 가능한 명령어 목록 표시',
         ['command'] = function (me, args)
             local user_role = me:role()
@@ -12,10 +12,10 @@ command_funcs = {
                     local usage = nil
                     
                     if type(cmd_data) == 'table' then
-                        privilege = cmd_data['privilege'] or ROLE_ADMIN
+                        privilege = cmd_data['privilege'] or ROLE.ADMIN
                         usage = cmd_data['usage'] or ''
                     else
-                        privilege = ROLE_ADMIN
+                        privilege = ROLE.ADMIN
                         usage = '- (설명 없음)'
                     end
                     
@@ -33,16 +33,16 @@ command_funcs = {
                 return a.name < b.name
             end)
             
-            me:message("=== 사용 가능한 명령어 목록 ===", MESSAGE_TYPE_BROWN)
+            me:message("=== 사용 가능한 명령어 목록 ===", MESSAGE_TYPE.BROWN)
             for i, cmd in ipairs(available_commands) do
                 local role_name = ''
-                if cmd.privilege == ROLE_OWNER then
+                if cmd.privilege == ROLE.OWNER then
                     role_name = '[OWNER]'
-                elseif cmd.privilege == ROLE_SUPERADMIN then
+                elseif cmd.privilege == ROLE.SUPERADMIN then
                     role_name = '[SUPERADMIN]'
-                elseif cmd.privilege == ROLE_ADMIN then
+                elseif cmd.privilege == ROLE.ADMIN then
                     role_name = '[ADMIN]'
-                elseif cmd.privilege == ROLE_MODERATOR then
+                elseif cmd.privilege == ROLE.MODERATOR then
                     role_name = '[MODERATOR]'
                 end
                 
@@ -50,16 +50,16 @@ command_funcs = {
                 if role_name ~= '' then
                     line = line .. ' ' .. role_name
                 end
-                me:message(line, MESSAGE_TYPE_BROWN)
+                me:message(line, MESSAGE_TYPE.BROWN)
             end
-            me:message(string.format("총 %d개의 명령어가 있습니다.", #available_commands), MESSAGE_TYPE_BROWN)
+            me:message(string.format("총 %d개의 명령어가 있습니다.", #available_commands), MESSAGE_TYPE.BROWN)
             
             return true
         end,
     },
 
     ['관리자'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 관리자 권한 부여',
         ['command'] = function (me, args)
             me:mkspell('강제이동(좌)')
@@ -71,7 +71,7 @@ command_funcs = {
     },
 
     ['권한변경'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<유저이름> <직책> - 권한 변경',
         ['command'] = function (me, args)
             local name, role = table.unpack(args)
@@ -109,7 +109,7 @@ command_funcs = {
     },
 
     ['경험치'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<경험치> - 경험치 설정',
         ['command'] = function (me, args)
             local exp = table.unpack(args)
@@ -128,7 +128,7 @@ command_funcs = {
     },
 
     ['맵이동'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<맵이름> [x] [y] - 맵 이동',
         ['command'] = function (me, args)
             local map, x, y = table.unpack(args)
@@ -158,7 +158,7 @@ command_funcs = {
     },
 
     ['사운드'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<사운드ID> - 사운드 재생',
         ['command'] = function (me, args)
             local sound = table.unpack(args)
@@ -177,7 +177,7 @@ command_funcs = {
     },
 
     ['액션'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<액션ID> - 액션 실행',
         ['command'] = function (me, args)
             local action = table.unpack(args)
@@ -196,7 +196,7 @@ command_funcs = {
     },
 
     ['날씨'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<날씨값> - 날씨 설정',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -215,7 +215,7 @@ command_funcs = {
     },
 
     ['밝기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<밝기값> - 밝기 설정',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -234,7 +234,7 @@ command_funcs = {
     },
 
     ['타이머'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<시간(초)> - 타이머 설정',
         ['command'] = function (me, args)
             local time = table.unpack(args)
@@ -253,7 +253,7 @@ command_funcs = {
     },
 
     ['타이틀'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<타이틀> - 타이틀 설정',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -267,7 +267,7 @@ command_funcs = {
     },
 
     ['이펙트'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<이펙트ID> - 이펙트 실행',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -286,7 +286,7 @@ command_funcs = {
     },
 
     ['변신'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<변신ID> - 변신',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -305,7 +305,7 @@ command_funcs = {
     },
 
     ['변신해제'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 변신 해제',
         ['command'] = function (me, args)
             me:disguise(nil)
@@ -314,7 +314,7 @@ command_funcs = {
     },
 
     ['마법배우기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<마법이름> - 마법 학습',
         ['command'] = function (me, args)
             local name = table.unpack(args)
@@ -328,7 +328,7 @@ command_funcs = {
     },
 
     ['마법지우기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '[슬롯] - 마법 삭제',
         ['command'] = function (me, args)
             if #args == 0 then
@@ -347,7 +347,7 @@ command_funcs = {
     },
 
     ['몬스터생성'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<몬스터이름> [x] [y] - 몬스터 생성',
         ['command'] = function (me, args)
             local name, x, y = table.unpack(args)
@@ -372,7 +372,7 @@ command_funcs = {
     },
 
     ['몬스터범위생성'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<몬스터이름> <거리> - 범위 내 몬스터 생성',
         ['command'] = function (me, args)
             local name, distance = table.unpack(args)
@@ -435,7 +435,7 @@ command_funcs = {
     },
 
     ['몬스터제거'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 모든 몬스터 제거',
         ['command'] = function (me, args)
             local map = me:map()
@@ -444,7 +444,7 @@ command_funcs = {
                 return true
             end
 
-            local objects = map:objects(OBJECT_TYPE_MOB)
+            local objects = map:objects(OBJECT_TYPE.MOB)
             for _, object in ipairs(objects) do
                 object:destroy()
             end
@@ -454,7 +454,7 @@ command_funcs = {
     },
 
     ['직업바꾸기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<직업이름> - 직업 변경',
         ['command'] = function (me, args)
             local name = table.unpack(args)
@@ -475,7 +475,7 @@ command_funcs = {
     },
 
     ['레벨바꾸기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<레벨> - 레벨 설정',
         ['command'] = function (me, args)
             local level = table.unpack(args)
@@ -494,7 +494,7 @@ command_funcs = {
     },
 
     ['힘바꾸기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<힘값> - 힘 설정',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -513,7 +513,7 @@ command_funcs = {
     },
 
     ['민첩바꾸기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<민첩값> - 민첩 설정',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -532,7 +532,7 @@ command_funcs = {
     },
 
     ['지력바꾸기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<지력값> - 지력 설정',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -551,7 +551,7 @@ command_funcs = {
     },
 
     ['스탯바꾸기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<힘> <민첩> <지력> - 스탯 설정',
         ['command'] = function (me, args)
             local str, dex, int = table.unpack(args)
@@ -574,7 +574,7 @@ command_funcs = {
     },
 
     ['체력바꾸기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<체력값> - 체력 설정',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -589,15 +589,15 @@ command_funcs = {
             end
             me:base_hp(value)
             me:hp(me:maxhp())
-            if me:state() == STATE_GHOST then
-                me:state(STATE_NORMAL)
+            if me:state() == STATE.GHOST then
+                me:state(STATE.NORMAL)
             end
             return true
         end,
     },
 
     ['마력바꾸기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<마력값> - 마력 설정',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -617,7 +617,7 @@ command_funcs = {
     },
 
     ['현재체력'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<체력값> - 현재 체력 설정',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -636,7 +636,7 @@ command_funcs = {
     },
 
     ['현재마력'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<마력값> - 현재 마력 설정',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -655,7 +655,7 @@ command_funcs = {
     },
 
     ['아이템생성'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<아이템이름> [개수] [저장여부] - 아이템 생성',
         ['command'] = function (me, args)
             local name, count, store = table.unpack(args)
@@ -685,7 +685,7 @@ command_funcs = {
     },
 
     ['월드맵'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<월드맵이름> - 월드맵 설정',
         ['command'] = function (me, args)
             local name = table.unpack(args)
@@ -699,7 +699,7 @@ command_funcs = {
     },
 
     ['스크립트'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 스크립트 실행',
         ['command'] = function (me, args)
             me:script("script.lua", "func", 1, "hello", "good")
@@ -708,7 +708,7 @@ command_funcs = {
     },
 
     ['머리바꾸기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<머리ID> - 머리 변경',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -727,7 +727,7 @@ command_funcs = {
     },
 
     ['머리염색'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<색상ID> - 머리 염색',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -746,7 +746,7 @@ command_funcs = {
     },
 
     ['갑옷염색'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<색상ID> - 갑옷 염색',
         ['command'] = function (me, args)
             local value = table.unpack(args)
@@ -765,7 +765,7 @@ command_funcs = {
     },
 
     ['맵타일'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '[타일ID] - 맵 타일 정보/설정',
         ['command'] = function (me, args)
             local map = me:map()
@@ -787,7 +787,7 @@ command_funcs = {
                 else
                     blocked = 'false'
                 end
-                me:message(string.format('타일 : %d\n오브젝트 : %d\n블록 : %s', id, obj, blocked), MESSAGE_TYPE_POPUP)
+                me:message(string.format('타일 : %d\n오브젝트 : %d\n블록 : %s', id, obj, blocked), MESSAGE_TYPE.POPUP)
             else
                 local value = table.unpack(args)
                 if not value then
@@ -806,7 +806,7 @@ command_funcs = {
     },
 
     ['서버저장'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 서버 저장',
         ['command'] = function (me, args)
             save()
@@ -815,7 +815,7 @@ command_funcs = {
     },
 
     ['랜덤이동'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 랜덤 맵 이동',
         ['command'] = function (me, args)
             local maps = maps()
@@ -832,7 +832,7 @@ command_funcs = {
     },
 
     ['엔피씨생성'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<NPC이름> [맵이름] [x] [y] - NPC 생성',
         ['command'] = function (me, args)
             local name, map, x, y = table.unpack(args)
@@ -867,10 +867,10 @@ command_funcs = {
     },
 
     ['엔피씨제거'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- NPC 제거',
         ['command'] = function (me, args)
-            local front = me:front(OBJECT_TYPE_NPC)
+            local front = me:front(OBJECT_TYPE.NPC)
             if front == nil then
                 return true
             end
@@ -881,7 +881,7 @@ command_funcs = {
     },
 
     ['내구도'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<퍼센트> - 장비 내구도 설정',
         ['command'] = function (me, args)
             local percent = table.unpack(args)
@@ -902,7 +902,7 @@ command_funcs = {
 
             for _, item in pairs(me:items()) do
                 local model = item:model()
-                if model:attr(ITEM_ATTRIBUTE_EQUIPMENT) then
+                if model:attr(ITEM_ATTRIBUTE.EQUIPMENT) then
                     item:durability(model:durability() * (percent / 100.0))
                 end
             end
@@ -911,7 +911,7 @@ command_funcs = {
     },
 
     ['sleep'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<시간(초)> - 대기',
         ['command'] = function (me, args)
             local time = table.unpack(args)
@@ -931,7 +931,7 @@ command_funcs = {
     },
 
     ['광고'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<너비> <높이> <URL> [시간] - 광고 표시',
         ['command'] = function (me, args)
             local width, height, url, time = table.unpack(args)
@@ -961,7 +961,7 @@ command_funcs = {
     },
 
     ['웹'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<타입> <URL> - 웹 페이지 열기',
         ['command'] = function (me, args)
             local type, url, message = table.unpack(args)
@@ -982,7 +982,7 @@ command_funcs = {
     },
 
     ['메일쓰기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<받는사람> <제목> <내용> - 메일 전송',
         ['command'] = function (me, args)
             local to, title, contents = table.unpack(args)
@@ -996,7 +996,7 @@ command_funcs = {
     },
 
     ['쿨타임초기화'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 스킬 쿨타임 초기화',
         ['command'] = function (me, args)
             for slot, spell in pairs(me:spells()) do
@@ -1007,7 +1007,7 @@ command_funcs = {
     },
 
     ['금전'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<금액> - 금전 설정',
         ['command'] = function (me, args)
             local money = table.unpack(args)
@@ -1026,20 +1026,20 @@ command_funcs = {
     },
 
     ['성전환'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 성별 변경',
         ['command'] = function (me, args)
-            if me:sex() == SEX_MAN then
-                me:sex(SEX_WOMAN)
+            if me:sex() == SEX.MAN then
+                me:sex(SEX.WOMAN)
             else
-                me:sex(SEX_MAN)
+                me:sex(SEX.MAN)
             end
             return true
         end,
     },
 
     ['성별바꾸기'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<성별> - 성별 변경',
         ['command'] = function (me, args)
             local sex = table.unpack(args)
@@ -1059,7 +1059,7 @@ command_funcs = {
     },
 
     ['업적'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<ID> <텍스트> [아이콘] [색상] - 업적 추가',
         ['command'] = function (me, args)
             local id, text, icon, color = table.unpack(args)
@@ -1096,7 +1096,7 @@ command_funcs = {
     },
 
     ['업적초기화'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 업적 초기화',
         ['command'] = function (me, args)
             local achievements = me:achievements()
@@ -1108,7 +1108,7 @@ command_funcs = {
     },
 
     ['버프해제'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 모든 버프 해제',
         ['command'] = function (me, args)
             for _, buff in pairs(me:buffs()) do
@@ -1119,7 +1119,7 @@ command_funcs = {
     },
 
     ['아이템삭제'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 맵의 모든 아이템 삭제',
         ['command'] = function (me, args)
             local map = me:map()
@@ -1128,7 +1128,7 @@ command_funcs = {
                 return true
             end
 
-            for _, item in pairs(map:objects(OBJECT_TYPE_ITEM)) do
+            for _, item in pairs(map:objects(OBJECT_TYPE.ITEM)) do
                 item:destroy()
             end
             return true
@@ -1136,7 +1136,7 @@ command_funcs = {
     },
 
     ['아이템초기화'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 인벤토리 아이템 초기화',
         ['command'] = function (me, args)
             for slot, item in pairs(me:items()) do
@@ -1147,7 +1147,7 @@ command_funcs = {
     },
 
     ['리스폰'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '[전역여부] - 몬스터 강제 리스폰',
         ['command'] = function (me, args)
             local global = table.unpack(args)
@@ -1166,7 +1166,7 @@ command_funcs = {
     },
 
     ['퀘스트완료'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<ID> - 퀘스트 완료',
         ['command'] = function (me, args)
             local id = table.unpack(args)
@@ -1194,7 +1194,7 @@ command_funcs = {
     },
 
     ['퀘스트제거'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<ID> - 퀘스트 제거',
         ['command'] = function (me, args)
             local id = table.unpack(args)
@@ -1215,7 +1215,7 @@ command_funcs = {
     },
 
     ['서버종료'] = {
-        ['privilege'] = ROLE_SUPERADMIN,
+        ['privilege'] = ROLE.SUPERADMIN,
         ['usage'] = '[지연시간] - 서버 종료',
         ['command'] = function (me, args)
             local delay = table.unpack(args)
@@ -1262,7 +1262,7 @@ command_funcs = {
                     message = string.format('%s %d초', message, secs)
                 end
 
-                broadcast(string.format('[공지] %s 후 서버가 종료됩니다.', message), MESSAGE_TYPE_NOTIFY, BROADCAST_TYPE_GLOBAL)
+                broadcast(string.format('[공지] %s 후 서버가 종료됩니다.', message), MESSAGE_TYPE.NOTIFY, BROADCAST_TYPE.GLOBAL)
                 sleep(term * 1000)
                 delay = delay - term
             end

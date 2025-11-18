@@ -20,12 +20,12 @@ function ON_CAST_2022(me, spell)
         return failed(me)
     end
 
-    local nears = me:nears(0xFF & ~OBJECT_TYPE_ITEM)
+    local nears = me:nears(0xFF & ~OBJECT_TYPE.ITEM)
     local x, y = me:position()
     local direction = me:direction()
     local targets = {}
     for i = 1, 4 do
-        local obj = front_obj(x, y, direction, i, nears, OBJECT_TYPE_LIFE)
+        local obj = front_obj(x, y, direction, i, nears, OBJECT_TYPE.LIFE)
         if obj ~= nil then
             table.insert(targets, obj)
         end
