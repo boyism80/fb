@@ -35,7 +35,7 @@ async::task<bool> update_option::handle(fb::socket<character>&                  
     default:
         auto   next = !ch->option(option);
         auto&& resp = co_await this->server.http.post("internal",
-                                                      "/user/option",
+                                                      "/in-game/option",
                                                       SetOption{ch->id(), static_cast<uint8_t>(option), next});
         co_await this->server.threads.switching(weak);
 

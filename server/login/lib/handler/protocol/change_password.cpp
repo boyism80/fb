@@ -6,8 +6,7 @@ change_password::change_password(fb::login::server& server) :
     fb::handler::protocol<fb::login::server, fb::protocol::login::request::update_pw>(server)
 { }
 
-async::task<bool> change_password::handle(fb::socket<fb::login::session>&          session,
-                                          fb::protocol::login::request::update_pw& request)
+async::task<bool> change_password::handle(fb::socket<fb::login::session>& session, fb::protocol::login::request::update_pw& request)
 {
     auto weak = session.weak_from_this_as<fb::socket<fb::login::session>>();
     try
@@ -17,34 +16,28 @@ async::task<bool> change_password::handle(fb::socket<fb::login::session>&       
         auto delay = fb::config<uint32_t>("transfer delay");
         co_await this->server.sleep(std::chrono::seconds(delay));
 
-        if (request.name.length() < fb::config("name_size:min").asInt() ||
-            request.name.length() > fb::config("name_size:max").asInt())
+        if (request.name.length() < fb::config("name_size:min").asInt() || request.name.length() > fb::config("name_size:max").asInt())
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
         // Name must be full-hangul characters
-        if (fb::config<bool>("login:account option:allow other language") == false &&
-            assert_korean(request.name) == false)
+        if (fb::config<bool>("login:account option:allow other language") == false && assert_korean(request.name) == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
         // Name cannot contains subcharacters in forbidden list
         if (this->server.is_forbidden(request.name))
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
-        if (request.pw.length() < fb::config("pw_size:min").asInt() ||
-            request.pw.length() > fb::config("pw_size:max").asInt())
+        if (request.pw.length() < fb::config("pw_size:min").asInt() || request.pw.length() > fb::config("pw_size:max").asInt())
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
 
-        if (request.new_pw.length() < fb::config("pw_size:min").asInt() ||
-            request.new_pw.length() > fb::config("pw_size:max").asInt())
+        if (request.new_pw.length() < fb::config("pw_size:min").asInt() || request.new_pw.length() > fb::config("pw_size:max").asInt())
             throw newpw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
 
         // TODO : 너무 쉬운 비밀번호인지 체크
         if (request.pw == request.new_pw)
             throw newpw_exception(_TEXT(MESSAGE_ACCOUNT_NEW_PW_EQUALIZATION));
 
-        auto&& response =
-            co_await this->server.http.get<internal::response::GetUid>("internal",
-                                                                       std::format("/user/uid/{}", request.name));
+        auto&& response = co_await this->server.http.get<internal::response::GetUid>("internal", std::format("/account/uid/{}", request.name));
         co_await this->server.threads.switching(weak);
 
         if (response.success == false)
@@ -52,9 +45,7 @@ async::task<bool> change_password::handle(fb::socket<fb::login::session>&       
 
         auto uid = response.uid;
 
-        auto&& response2 = co_await this->server.http.post("internal",
-                                                           "/user/change-pw",
-                                                           ChangePw{uid, request.pw, request.new_pw, request.birthday});
+        auto&& response2 = co_await this->server.http.post("internal", "/account/change-pw", ChangePw{uid, request.pw, request.new_pw, request.birthday});
 
         co_await this->server.threads.switching(weak);
 

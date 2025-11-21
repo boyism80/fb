@@ -6,8 +6,7 @@ create_account::create_account(fb::login::server& server) :
     fb::handler::protocol<fb::login::server, fb::protocol::login::request::create>(server)
 { }
 
-async::task<bool> create_account::handle(fb::socket<fb::login::session>&       session,
-                                         fb::protocol::login::request::create& request)
+async::task<bool> create_account::handle(fb::socket<fb::login::session>& session, fb::protocol::login::request::create& request)
 {
     auto fd   = session.fd();
     auto weak = session.weak_from_this_as<fb::socket<fb::login::session>>();
@@ -18,7 +17,7 @@ async::task<bool> create_account::handle(fb::socket<fb::login::session>&       s
         auto pw   = std::string(request.pw);
 
         this->server.assert_account(name, pw);
-        auto&& response1 = co_await this->server.http.post("internal", "/user/reserve-name", ReserveName{name});
+        auto&& response1 = co_await this->server.http.post("internal", "/account/reserve", ReserveName{name});
         co_await this->server.threads.switching(weak);
 
         if (response1.success == false)
@@ -33,20 +32,19 @@ async::task<bool> create_account::handle(fb::socket<fb::login::session>&       s
         auto   init_x    = static_cast<uint16_t>(config<>("init:position")[i]["x"].asUInt());
         auto   init_y    = static_cast<uint16_t>(config<>("init:position")[i]["y"].asUInt());
         auto   admin     = fb::config<bool>("admin_mode");
-        auto&& response2 = co_await this->server.http.post(
-            "internal",
-            "/user/init-ch",
-            InitCharacter{
-                uid,
-                name,
-                pw,
-                fb::config<uint32_t>("init:hp:base") + dist(gen) % fb::config<uint32_t>("init:hp:range"), // hp
-                fb::config<uint32_t>("init:mp:base") + dist(gen) % fb::config<uint32_t>("init:mp:range"), // mp
-                fb::config<uint16_t>("init:map"),                                                         // map
-                init_x,                                                                                   // position_x
-                init_y,                                                                                   // position_y
-                static_cast<uint8_t>(admin ? ROLE::ADMIN : ROLE::USER),                                   // admin
-            });
+        auto&& response2 = co_await this->server.http.post("internal",
+                                                           "/account/init",
+                                                           InitCharacter{
+                                                               uid,
+                                                               name,
+                                                               pw,
+                                                               fb::config<uint32_t>("init:hp:base") + dist(gen) % fb::config<uint32_t>("init:hp:range"), // hp
+                                                               fb::config<uint32_t>("init:mp:base") + dist(gen) % fb::config<uint32_t>("init:mp:range"), // mp
+                                                               fb::config<uint16_t>("init:map"),                                                         // map
+                                                               init_x,                                                                                   // position_x
+                                                               init_y,                                                                                   // position_y
+                                                               static_cast<uint8_t>(admin ? ROLE::ADMIN : ROLE::USER),                                   // admin
+                                                           });
 
         co_await this->server.threads.switching(weak);
 

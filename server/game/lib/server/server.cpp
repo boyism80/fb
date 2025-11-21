@@ -470,7 +470,7 @@ async::task<void> server::save(character& ch)
         quests.push_back(internal::Quest{ch.id(), qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
-    std::ignore = co_await this->http.post("internal", "/user/save", Save{ch.to_protocol(), items, spells, achievements, quests});
+    std::ignore = co_await this->http.post("internal", "/in-game/save", Save{ch.to_protocol(), items, spells, achievements, quests});
 
     co_await this->threads.switching(weak);
     ch.send(fb_resp::save());
