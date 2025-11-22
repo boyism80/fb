@@ -42,6 +42,7 @@ public:
     // System mail user management
     void                                        add_system_mail_user(uint32_t mail_id, const std::optional<std::string>& expire_date);
     void                                        update_system_mail_user_read(uint32_t mail_id, bool read);
+    bool                                        try_mark_system_mail_user_as_sent(uint32_t mail_id);
     const std::map<uint32_t, system_mail_user>& get_system_mail_users() const;
 };
 

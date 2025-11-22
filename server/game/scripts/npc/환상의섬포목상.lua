@@ -6,11 +6,11 @@ function NPC_132(me, npc)
     end
 
     if selected == 0 then
-        if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
             goto NPC_132_000
         end
     elseif selected == 1 then
-        if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
             goto NPC_132_000
         end
     else

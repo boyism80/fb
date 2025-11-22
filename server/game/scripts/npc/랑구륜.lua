@@ -15,6 +15,6 @@ function NPC_2(me, npc)
     me:list(npc, string.format('%s 승급하시겠습니까?', name_with(name, '으로', '로')), {'예', '아니오'})
     me:promotion(promotion+1)
 
-    broadcast(string.format('%s님이 %s 승급하셨습니다. 축하해주세요.', me:name(), name_with(name, '으로', '로')), MESSAGE_TYPE_WORLD, BROADCAST_TYPE_GLOBAL)
+    broadcast(string.format('%s님이 %s 승급하셨습니다. 축하해주세요.', me:name(), name_with(name, '으로', '로')), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.GLOBAL)
     me:dialog(npc, string.format('축하합니다. %s 승급하셨습니다.', name_with(name, '으로', '로')))
 end

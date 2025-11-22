@@ -84,6 +84,7 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("mknpc", builtin::server::builtin_mknpc);
     lua::build("maps", builtin::server::builtin_maps);
     lua::build("shutdown", builtin::server::builtin_shutdown);
+    lua::build("send_system_mail", builtin::server::builtin_send_system_mail);
 
     for (auto& [_, root] : ist)
     {
@@ -474,7 +475,7 @@ async::task<void> server::save(character& ch)
     }
 
     // Get system mail users from character's in-memory collection
-    // Exclude expired system mails (they will be marked as deleted in UserController)
+    // Exclude expired system mails (they will be marked as deleted in InGameController)
     auto        received_system_mails = std::vector<internal::SystemMailUser>();
     auto        now                   = fb::model::datetime();
     const auto& system_mail_users     = ch.mail_box.get_system_mail_users();
@@ -488,7 +489,7 @@ async::task<void> server::save(character& ch)
             internal::SystemMailUser{ch.id(), mail_id, smu.read, smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value().to_string()) : std::nullopt});
     }
 
-    std::ignore = co_await this->http.post("internal", "/user/save", Save{ch.to_protocol(), items, spells, achievements, quests, received_system_mails});
+    std::ignore = co_await this->http.post("internal", "/in-game/save", Save{ch.to_protocol(), items, spells, achievements, quests, received_system_mails});
 
     co_await this->threads.switching(weak);
     ch.send(fb_resp::save());

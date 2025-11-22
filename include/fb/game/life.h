@@ -40,7 +40,7 @@ public:
 public:
     virtual async::task<void> attack(DURATION duration = DURATION::ATTACK);
     virtual uint32_t          exp() const;
-    virtual void              update(STATE_LEVEL value = STATE_LEVEL::LEVEL_MIN);
+    virtual void              update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
     void                      update_hp(uint32_t diff, bool critical);
     virtual void              kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     virtual bool              alive() const;

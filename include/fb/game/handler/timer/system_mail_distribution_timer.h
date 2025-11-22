@@ -22,19 +22,11 @@ public:
 
     /**
      * @brief Handles the timer's execution, distributing system mails to logged-in users.
-     * Processes a limited number of users per execution to prevent overload.
      * @param now The current datetime.
      * @param id The thread ID where this timer is executing.
      * @return An asynchronous task representing the operation.
      */
     async::task<void> handle(const fb::model::datetime& now, std::thread::id id) override;
-
-private:
-    /**
-     * @brief Maximum number of users to process per timer execution.
-     * This prevents overload when there are many logged-in users.
-     */
-    static constexpr size_t PROCESS_LIMIT = 100;
 };
 
 } // namespace fb::game::handler::timer

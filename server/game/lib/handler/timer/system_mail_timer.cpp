@@ -13,4 +13,3 @@ async::task<void> system_mail_timer::handle()
 }
 
 } // namespace fb::game::handler::timer
-

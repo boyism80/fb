@@ -51,6 +51,7 @@ async::task<internal_resp::WriteMail> server::send_mail(const std::string& sende
 {
     auto&& resp = co_await this->http.post("internal", "/mail/write", WriteMail{sender, to, title, contents, config<uint32_t>("id")});
     this->assert_mail(resp.error);
+    this->on_write_mail(resp);
     co_return std::move(resp);
 }
 

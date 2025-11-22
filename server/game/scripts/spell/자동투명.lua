@@ -10,11 +10,11 @@ end
 
 -- 자동투명 버프 효과
 function ON_BUFF_13(me, spell)
-    me:state(STATE_HALF_CLOACK)
+    me:state(STATE.HALF_CLOACK)
 end
 
 -- 자동투명 버프 해제 효과
 function ON_UNBUFF_13(me, spell)
-    me:state(STATE_NORMAL)
+    me:state(STATE.NORMAL)
 
 end

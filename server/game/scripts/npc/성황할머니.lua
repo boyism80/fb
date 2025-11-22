@@ -1,5 +1,5 @@
 function NPC_18(me, npc)
-    if me:state() ~= STATE_GHOST then
+    if me:state() ~= STATE.GHOST then
         return me:dialog(npc, '사망 상태가 아닐 때 나오는 메시지')
     end
 
@@ -20,6 +20,6 @@ function NPC_18(me, npc)
     end
 
     me:dialog(npc, '너의 각오를 믿고 새로운 생명을 내리노니 나에게 한 맹세를 잊지 말고 하루하루를 신께 감사하는 마음으로 살아가도록 하여라.')
-    me:state(STATE_NORMAL)
+    me:state(STATE.NORMAL)
     me:hp(50)
 end

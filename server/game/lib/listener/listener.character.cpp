@@ -112,7 +112,7 @@ void listener_impl::on_level_up(character& me)
     std::ignore = this->server.send(me, fb_resp::effect(me, 0x02), scope::PIVOT);
 }
 
-void listener_impl::on_update(character& me, STATE_LEVEL level)
+void listener_impl::on_update(character& me, UPDATE_STATE_LEVEL level)
 {
     me.send(fb_resp::update_internal(me, level));
 }

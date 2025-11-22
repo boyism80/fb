@@ -20,32 +20,32 @@ public:
 
 public:
 #ifdef BOT
-    STATE_LEVEL level;
-    uint8_t     ch_nation        = 0;
-    uint8_t     ch_creature      = 0;
-    uint8_t     ch_level         = 0;
-    uint32_t    ch_base_hp       = 0;
-    uint32_t    ch_base_mp       = 0;
-    uint8_t     ch_strength      = 0;
-    uint8_t     ch_intelligence  = 0;
-    uint8_t     ch_dexterity     = 0;
-    uint32_t    ch_hp            = 0;
-    uint32_t    ch_mp            = 0;
-    uint32_t    ch_exp           = 0;
-    uint32_t    ch_money         = 0;
-    uint32_t    ch_crowd_control = 0;
-    uint8_t     ch_mail          = 0;
-    uint8_t     ch_fast_move     = 0;
+    UPDATE_STATE_LEVEL level;
+    uint8_t            ch_nation        = 0;
+    uint8_t            ch_creature      = 0;
+    uint8_t            ch_level         = 0;
+    uint32_t           ch_base_hp       = 0;
+    uint32_t           ch_base_mp       = 0;
+    uint8_t            ch_strength      = 0;
+    uint8_t            ch_intelligence  = 0;
+    uint8_t            ch_dexterity     = 0;
+    uint32_t           ch_hp            = 0;
+    uint32_t           ch_mp            = 0;
+    uint32_t           ch_exp           = 0;
+    uint32_t           ch_money         = 0;
+    uint32_t           ch_crowd_control = 0;
+    uint8_t            ch_mail          = 0;
+    uint8_t            ch_fast_move     = 0;
 #else
     const fb::game::character& ch;
-    const STATE_LEVEL          level;
+    const UPDATE_STATE_LEVEL   level;
 #endif
 
 public:
 #ifdef BOT
     update_internal() = default;
 #else
-    update_internal(const fb::game::character& ch, STATE_LEVEL level);
+    update_internal(const fb::game::character& ch, UPDATE_STATE_LEVEL level);
 #endif
 
 public:

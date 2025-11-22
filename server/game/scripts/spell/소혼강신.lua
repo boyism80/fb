@@ -37,19 +37,19 @@ function ON_CAST_4001(me, spell, message)
     end
 
     local x, y = me:position()
-    local direction = DIRECTION_BOTTOM
+    local direction = DIRECTION.BOTTOM
     if x > 0 and map:movable(me, x-1, y) then
         x = x - 1
-        direction = DIRECTION_RIGHT
+        direction = DIRECTION.RIGHT
     elseif x < map:width() and map:movable(me, x+1, y) then
         x = x + 1
-        direction = DIRECTION_LEFT
+        direction = DIRECTION.LEFT
     elseif y > 0 and map:movable(me, x, y-1) then
         y = y - 1
-        direction = DIRECTION_BOTTOM
+        direction = DIRECTION.BOTTOM
     elseif y < map:width() and map:movable(me, x, y+1) then
         y = y + 1
-        direction = DIRECTION_TOP
+        direction = DIRECTION.TOP
     end
     local mob = me:spawn_mob(message, x, y)
     mob:direction(direction)

@@ -13,7 +13,7 @@ function ON_CAST_2008(me, spell)
     end
 
     local x, y = me:front_position()
-    local items = map:belows(x, y, OBJECT_TYPE_ITEM)
+    local items = map:belows(x, y, OBJECT_TYPE.ITEM)
     me:gain(table.unpack(items))
-    me:chat('노획', CHAT_TYPE_BLUE, false)
+    me:chat('노획', CHAT_TYPE.BLUE, false)
 end

@@ -5,7 +5,7 @@ function ON_CAST_4037(me, you, spell)
     local sound = 95
     local effect = 64
     local delay = math.min(60, me:maxmp() // 10000)
-    if me:is(OBJECT_TYPE_CHARACTER) then
+    if me:is(OBJECT_TYPE.CHARACTER) then
         local weapon = me:weapon()
         if weapon ~= nil then
             local name = weapon:name()

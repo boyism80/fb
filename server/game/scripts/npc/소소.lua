@@ -15,12 +15,12 @@ function NPC_63(me, npc)
             end
 
             if index == 0 then
-                if me:dialog(npc, '그럼 네 얼굴을 그 모습을 고쳐주도록 하지.', false, true) == DIALOG_RESULT_QUIT then
+                if me:dialog(npc, '그럼 네 얼굴을 그 모습을 고쳐주도록 하지.', false, true) == DIALOG_RESULT.QUIT then
                     return
                 end
 
                 me:color(hair_color)
-                if me:dialog(npc, '새 얼굴이 마음에 드는가? 맘에 안들어도 다시 해 줄 수는 없네.', false, true) == DIALOG_RESULT_QUIT then
+                if me:dialog(npc, '새 얼굴이 마음에 드는가? 맘에 안들어도 다시 해 줄 수는 없네.', false, true) == DIALOG_RESULT.QUIT then
                     return
                 end
 

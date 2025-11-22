@@ -7,7 +7,7 @@ function ON_CAST_2016(me, spell)
     local damage = me:hp() + me:mp()
     local message = '필살검무'
 
-    local front = me:front(OBJECT_TYPE_LIFE)
+    local front = me:front(OBJECT_TYPE.LIFE)
     if not attack_cast(me, front, spell, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect}) then
         return
     end

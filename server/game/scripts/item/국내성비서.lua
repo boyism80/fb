@@ -7,6 +7,6 @@ function ON_ACTIVE_4004(me, item)
     local map = maps[i]
 
     if me:map(map) then
-        me:rmitem(item, 1, ITEM_DELETE_TYPE_REDUCE)
+        me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE)
     end
 end

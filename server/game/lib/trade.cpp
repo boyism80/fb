@@ -197,7 +197,7 @@ bool trade::up_money(uint32_t money)
     try
     {
         this->_money = std::min<uint32_t>(owner->money(), money);
-        owner->update(STATE_LEVEL::EXP_MONEY);
+        owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
         owner->listener.on_trade_money(*owner, *you, this->_money);
 
         return true;
@@ -321,7 +321,7 @@ void trade::restore()
     this->_items.clear();
 
     this->_money = 0;
-    owner->update(STATE_LEVEL::EXP_MONEY);
+    owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 }
 
 std::shared_ptr<fb::game::item> trade::find(const fb::model::item& item) const
@@ -471,8 +471,8 @@ bool trade::lock()
             owner->listener.on_trade_success(*owner, *you);
 
             // Update state after successful trade
-            owner->update(STATE_LEVEL::EXP_MONEY);
-            you->update(STATE_LEVEL::EXP_MONEY);
+            owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+            you->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 
             this->end();
             return true;

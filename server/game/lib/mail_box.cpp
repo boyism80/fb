@@ -36,7 +36,7 @@ void mail_box::unread_count(uint16_t value)
     if (this->_unread_count != value)
     {
         this->_unread_count = value;
-        this->owner.update(STATE_LEVEL::LEVEL_MIN);
+        this->owner.update(UPDATE_STATE_LEVEL::MINIMUM);
     }
 }
 
@@ -63,6 +63,23 @@ void mail_box::update_system_mail_user_read(uint32_t mail_id, bool read)
     {
         it->second.read = read;
     }
+}
+
+bool mail_box::try_mark_system_mail_user_as_sent(uint32_t mail_id)
+{
+    this->owner.assert_thread();
+    auto it = this->_system_mail_users.find(mail_id);
+    if (it != this->_system_mail_users.end())
+    {
+        // Atomically check and set: only mark as sent if not already sent
+        if (!it->second.read)
+        {
+            it->second.read = true;
+            return true; // Successfully marked as sent (was not sent before)
+        }
+        return false; // Already sent
+    }
+    return false; // Mail not found
 }
 
 const std::map<uint32_t, system_mail_user>& mail_box::get_system_mail_users() const

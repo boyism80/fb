@@ -1,15 +1,15 @@
 -- 부활 캐스팅
 function ON_CAST_4014(me, you, spell)
-    if not you:is(OBJECT_TYPE_LIFE) then
+    if not you:is(OBJECT_TYPE.LIFE) then
         me:message('걸리지 않습니다.')
         return false
     end
     
     local error = nil
     if me == you then
-        error = me:assert(STATE_RIDING)
+        error = me:assert(STATE.RIDING)
     else
-        error = me:assert(STATE_RIDING, STATE_GHOST)
+        error = me:assert(STATE.RIDING, STATE.GHOST)
     end
     if error ~= nil then
         return me:message(error)
@@ -18,8 +18,8 @@ function ON_CAST_4014(me, you, spell)
         return
     end
 
-    if you:is(OBJECT_TYPE_CHARACTER) and you:state() == STATE_GHOST then
-        you:state(STATE_NORMAL)
+    if you:is(OBJECT_TYPE.CHARACTER) and you:state() == STATE.GHOST then
+        you:state(STATE.NORMAL)
         you:hp(math.max(30, you:hp()))
     end
 end

@@ -613,7 +613,7 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_WRITE`(
     IN user INT, 
-    IN sender INT, 
+    IN sender NVARCHAR(64), 
     IN title NVARCHAR(64), 
     IN contents NVARCHAR(256)
 )

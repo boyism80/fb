@@ -194,10 +194,11 @@ public:
     bool                                               alive() const;
     bool                                               condition(const std::vector<fb::model::dsl>& conditions) const override final;
     void                                               message(const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
+    async::task<void>                                  process_system_mails();
     fb::thread*                                        thread() const override final;
     void                                               thread(fb::thread* value);
     void                                               assert_thread() const override final;
-    void                                               update(STATE_LEVEL value = STATE_LEVEL::LEVEL_MIN) override final;
+    void                                               update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) override final;
     void                                               browse_ch(const character& ch);
     void                                               item_tooltip(const item& iteem, uint16_t position);
     void                                               show_user_list();
@@ -292,7 +293,7 @@ public:
     virtual void              on_character_init(character& ch)                                                                                                               = 0;
     virtual void              on_update_position(character& ch)                                                                                                              = 0;
     virtual void              on_level_up(character& me)                                                                                                                     = 0;
-    virtual void              on_update(character& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN)                                                                           = 0;
+    virtual void              on_update(character& me, UPDATE_STATE_LEVEL level = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL)                         = 0;
     virtual async::task<bool> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position)                                                           = 0;
 };
 

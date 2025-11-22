@@ -214,7 +214,7 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     if (login_resp.error != (uint32_t)ERROR_CODE::NONE)
         co_return false;
 
-    auto&& response = co_await this->server.http.get<internal_resp::Init>("internal", std::format("/user/init/{}", request.id));
+    auto&& response = co_await this->server.http.get<internal_resp::Init>("internal", std::format("/in-game/init/{}", request.id));
     auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
     if (weak.expired())
         co_return false;
@@ -235,6 +235,7 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     this->init_system_mail_users(response.received_system_mails, *ch);
     this->init_option(response.option, *ch);
     ch->init();
+    co_await ch->process_system_mails();
     ch->update_time(this->server.time().hours());
     if (request.from == internal::Service::Login)
     {
@@ -254,7 +255,7 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
         }
     }
 
-    ch->update(STATE_LEVEL::LEVEL_MAX);
+    ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();
     this->server.characters.insert(ch->shared_from_this_as<character>());
     co_return true;

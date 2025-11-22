@@ -304,7 +304,7 @@ void character::undisguise()
     if (this->state() == STATE::DISGUISE)
         this->state(STATE::NORMAL);
 
-    this->update(STATE_LEVEL::LEVEL_MAX);
+    this->update(UPDATE_STATE_LEVEL::ALL);
 }
 
 NATION character::nation() const
@@ -355,7 +355,7 @@ void character::level(uint8_t value)
     this->assert_thread();
 
     this->_level = value;
-    this->update(STATE_LEVEL::LEVEL_MAX);
+    this->update(UPDATE_STATE_LEVEL::ALL);
 }
 
 bool character::level_up()
@@ -468,7 +468,7 @@ void character::cls(CLASS value)
 
     this->_class = value;
     this->update_id();
-    this->update(STATE_LEVEL::LEVEL_MAX);
+    this->update(UPDATE_STATE_LEVEL::ALL);
 }
 
 uint8_t character::promotion() const
@@ -483,7 +483,7 @@ void character::promotion(uint8_t value)
 
     this->_promotion = value;
     this->update_id();
-    this->update(STATE_LEVEL::LEVEL_MAX);
+    this->update(UPDATE_STATE_LEVEL::ALL);
 }
 
 uint32_t character::exp() const
@@ -501,7 +501,7 @@ void character::exp(uint32_t value)
         return;
 
     this->_experience = value;
-    this->update(STATE_LEVEL::EXP_MONEY);
+    this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 }
 
 uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
@@ -581,13 +581,13 @@ uint32_t character::reduce_exp(uint32_t value)
     {
         uint32_t lack     = value - this->_experience;
         this->_experience = 0;
-        this->update(STATE_LEVEL::EXP_MONEY);
+        this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
         return lack;
     }
     else
     {
         this->_experience -= value;
-        this->update(STATE_LEVEL::EXP_MONEY);
+        this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
         return 0;
     }
 }
@@ -643,7 +643,7 @@ void character::money(uint32_t value)
     this->assert_thread();
 
     this->_money = value;
-    this->update(STATE_LEVEL::EXP_MONEY);
+    this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 }
 
 uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
@@ -725,7 +725,7 @@ void character::option(OPTION key, bool value, bool notify)
     if (this->_options[opt] == value)
         return;
 
-    this->update(STATE_LEVEL::LEVEL_MIN);
+    this->update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
     this->_options[opt] = value;
     this->update_option();
 
@@ -1070,6 +1070,86 @@ void character::message(const std::string& message, MESSAGE_TYPE type)
     this->listener.on_message(*this, message, type);
 }
 
+async::task<void> character::process_system_mails()
+{
+    this->assert_thread();
+
+    auto system_mails = this->server.get_system_mails();
+    if (system_mails.empty())
+        co_return;
+
+    auto now = fb::model::datetime();
+
+    const auto& system_mail_users = this->mail_box.get_system_mail_users();
+    auto        user_mail_ids     = std::set<uint32_t>();
+    for (const auto& [mail_id, smu] : system_mail_users)
+    {
+        user_mail_ids.insert(mail_id);
+    }
+
+    for (const auto& mail : system_mails)
+    {
+        if (mail.expire_date.has_value() && mail.expire_date.value() < now)
+            continue;
+
+        if (user_mail_ids.find(mail.id) == user_mail_ids.end())
+        {
+            this->mail_box.add_system_mail_user(mail.id, mail.expire_date.has_value() ? std::make_optional(mail.expire_date.value().to_string()) : std::nullopt);
+        }
+    }
+
+    for (const auto& [mail_id, smu] : system_mail_users)
+    {
+        if (smu.read)
+            continue;
+
+        bool               mail_exists = false;
+        const system_mail* mail_ptr    = nullptr;
+        for (const auto& mail : system_mails)
+        {
+            if (mail.id == mail_id)
+            {
+                if (mail.expire_date.has_value() && mail.expire_date.value() < now)
+                    break;
+
+                mail_exists = true;
+                mail_ptr    = &mail;
+                break;
+            }
+        }
+
+        if (!mail_exists)
+            continue;
+
+        try
+        {
+            if (!this->mail_box.try_mark_system_mail_user_as_sent(mail_id))
+                continue;
+
+            if (mail_ptr == nullptr)
+            {
+                this->mail_box.update_system_mail_user_read(mail_id, false);
+                continue;
+            }
+
+            const auto& mail = *mail_ptr;
+
+            auto&& resp = co_await this->server.http.post("internal", "/mail/write", WriteMail{"시스템", this->name(), mail.title, mail.contents, fb::config<uint32_t>("id")});
+
+            if (resp.error != 0)
+                this->mail_box.update_system_mail_user_read(mail_id, false);
+            else
+                this->server.on_write_mail(resp);
+        }
+        catch (...)
+        {
+            this->mail_box.update_system_mail_user_read(mail_id, false);
+        }
+    }
+
+    co_return;
+}
+
 fb::thread* character::thread() const
 {
     if (this->_thread != nullptr)
@@ -1088,7 +1168,7 @@ void character::assert_thread() const
     object::assert_thread();
 }
 
-void character::update(STATE_LEVEL value)
+void character::update(UPDATE_STATE_LEVEL value)
 {
     this->assert_thread();
     this->listener.on_update(*this, value);
