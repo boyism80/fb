@@ -52,6 +52,7 @@ private:
     ROLE                    _role;
     std::string             _pw;
     std::optional<uint32_t> _birthday;
+    fb::model::datetime     _created_date;
     fb::model::datetime     _updated_date;
     uint16_t                _look              = 0;
     uint8_t                 _color             = 0;
@@ -123,6 +124,8 @@ public:
     void                                               pw(const std::string& value);
     const std::optional<uint32_t>&                     birthday() const;
     void                                               birthday(const std::optional<uint32_t>& value);
+    const fb::model::datetime&                         created_date() const;
+    void                                               created_date(const fb::model::datetime& value);
     const fb::model::datetime&                         updated_date() const;
     void                                               updated_date(const fb::model::datetime& value);
     uint16_t                                           look() const override final;

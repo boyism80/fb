@@ -222,6 +222,18 @@ void fb::game::character::birthday(const std::optional<uint32_t>& value)
     this->_birthday = value;
 }
 
+const fb::model::datetime& character::created_date() const
+{
+    this->assert_thread();
+    return this->_created_date;
+}
+
+void character::created_date(const fb::model::datetime& value)
+{
+    this->assert_thread();
+    this->_created_date = value;
+}
+
 const fb::model::datetime& character::updated_date() const
 {
     this->assert_thread();
@@ -1078,7 +1090,8 @@ async::task<void> character::process_system_mails()
     if (system_mails.empty())
         co_return;
 
-    auto now = fb::model::datetime();
+    auto now          = fb::model::datetime();
+    auto created_date = this->created_date();
 
     const auto& system_mail_users = this->mail_box.get_system_mail_users();
     auto        user_mail_ids     = std::set<uint32_t>();
@@ -1090,6 +1103,9 @@ async::task<void> character::process_system_mails()
     for (const auto& mail : system_mails)
     {
         if (mail.expire_date.has_value() && mail.expire_date.value() < now)
+            continue;
+
+        if (mail.created_date < created_date)
             continue;
 
         if (user_mail_ids.find(mail.id) == user_mail_ids.end())
@@ -1110,6 +1126,9 @@ async::task<void> character::process_system_mails()
             if (mail.id == mail_id)
             {
                 if (mail.expire_date.has_value() && mail.expire_date.value() < now)
+                    break;
+
+                if (mail.created_date < created_date)
                     break;
 
                 mail_exists = true;

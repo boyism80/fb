@@ -16,6 +16,7 @@ login::init_ch(const internal::Character& response, character& ch, std::optional
     ch.name(response.name);
     ch.pw(response.pw);
     ch.birthday(response.birth);
+    ch.created_date(fb::model::datetime(response.created_date));
     ch.updated_date(fb::model::datetime(response.updated_date));
     ch.role(static_cast<ROLE>(response.role));
     ch.cls(static_cast<CLASS>(response.class_type));

@@ -29,6 +29,7 @@ public class Program
             cfg.CreateMap<Http.Model.Character, Character>()
             .ForMember(x => x.ClassType, x => x.MapFrom(u => u.Class))
             .ForMember(x => x.Buffs, x => x.MapFrom(u => u.Buffs))
+            .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
             .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => u.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
             .ForMember(x => x.Position, x => x.MapFrom(u => new Position { X = u.PositionX, Y = u.PositionY }))
             .ForMember(x => x.Role, x => x.MapFrom(u => (byte)u.Role));
