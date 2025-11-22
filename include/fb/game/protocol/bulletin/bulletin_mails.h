@@ -24,7 +24,7 @@ public:
     {
         bool        unread;
         uint16_t    id;
-        std::string sender_name;
+        std::string sender;
         uint8_t     month;
         uint8_t     day;
         std::string title;

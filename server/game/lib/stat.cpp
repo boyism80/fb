@@ -169,7 +169,7 @@ void fb::game::stat::hp(uint32_t value)
 {
     this->owner.assert_thread();
     this->_hp = value;
-    this->owner.update(STATE_LEVEL::HP_MP);
+    this->owner.update(UPDATE_STATE_LEVEL::HP_MP);
 }
 
 uint32_t fb::game::stat::heal(uint32_t value, fb::game::object* from)
@@ -215,7 +215,7 @@ void fb::game::stat::mp(uint32_t value)
 {
     this->owner.assert_thread();
     this->_mp = value;
-    this->owner.update(STATE_LEVEL::HP_MP);
+    this->owner.update(UPDATE_STATE_LEVEL::HP_MP);
 }
 
 uint32_t fb::game::stat::mp_up(uint32_t value, fb::game::object* from)

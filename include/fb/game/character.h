@@ -16,6 +16,7 @@
 #include <fb/game/mail_box.h>
 #include <fb/game/stat.h>
 #include <fb/game/quest.h>
+#include <set>
 
 namespace fb::game {
 
@@ -25,6 +26,7 @@ class character : public life
 {
     friend class group;
     friend class character_stat;
+    friend class server;
 
 public:
     using object::map;
@@ -50,6 +52,7 @@ private:
     ROLE                    _role;
     std::string             _pw;
     std::optional<uint32_t> _birthday;
+    fb::model::datetime     _created_date;
     fb::model::datetime     _updated_date;
     uint16_t                _look              = 0;
     uint8_t                 _color             = 0;
@@ -121,6 +124,8 @@ public:
     void                                               pw(const std::string& value);
     const std::optional<uint32_t>&                     birthday() const;
     void                                               birthday(const std::optional<uint32_t>& value);
+    const fb::model::datetime&                         created_date() const;
+    void                                               created_date(const fb::model::datetime& value);
     const fb::model::datetime&                         updated_date() const;
     void                                               updated_date(const fb::model::datetime& value);
     uint16_t                                           look() const override final;
@@ -192,10 +197,11 @@ public:
     bool                                               alive() const;
     bool                                               condition(const std::vector<fb::model::dsl>& conditions) const override final;
     void                                               message(const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
+    async::task<void>                                  process_system_mails();
     fb::thread*                                        thread() const override final;
     void                                               thread(fb::thread* value);
     void                                               assert_thread() const override final;
-    void                                               update(STATE_LEVEL value = STATE_LEVEL::LEVEL_MIN) override final;
+    void                                               update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) override final;
     void                                               browse_ch(const character& ch);
     void                                               item_tooltip(const item& iteem, uint16_t position);
     void                                               show_user_list();
@@ -290,7 +296,7 @@ public:
     virtual void              on_character_init(character& ch)                                                                                                               = 0;
     virtual void              on_update_position(character& ch)                                                                                                              = 0;
     virtual void              on_level_up(character& me)                                                                                                                     = 0;
-    virtual void              on_update(character& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN)                                                                           = 0;
+    virtual void              on_update(character& me, UPDATE_STATE_LEVEL level = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL)                         = 0;
     virtual async::task<bool> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position)                                                           = 0;
 };
 

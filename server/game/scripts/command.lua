@@ -995,6 +995,26 @@ command_funcs = {
         end,
     },
 
+    ['시스템메일'] = {
+        ['privilege'] = ROLE_ADMIN,
+        ['usage'] = '<제목> <내용> [만료일] - 시스템 메일 전송',
+        ['command'] = function (me, args)
+            local title, contents, expire_date = table.unpack(args)
+            if not title or not contents then
+                me:message("사용법: /시스템메일 <제목> <내용> [만료일]")
+                return true
+            end
+            
+            local success = send_system_mail(title, contents, expire_date)
+            if success then
+                me:message("시스템 메일이 성공적으로 전송되었습니다.", MESSAGE_TYPE_BROWN)
+            else
+                me:message("시스템 메일 전송에 실패했습니다.", MESSAGE_TYPE_BROWN)
+            end
+            return true
+        end,
+    },
+
     ['쿨타임초기화'] = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 스킬 쿨타임 초기화',

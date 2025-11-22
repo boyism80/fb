@@ -29,6 +29,7 @@ private:
     void                            init_spells(const std::vector<fb::protocol::internal::Spell>& response, fb::game::character& ch);
     void                            init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch);
     void                            init_achievements(const std::vector<fb::protocol::internal::Achievement>& response, fb::game::character& ch);
+    void                            init_system_mail_users(const std::vector<fb::protocol::internal::SystemMailUser>& response, fb::game::character& ch);
     std::string                     elapsed_message(const std::string& dt);
 
 public:

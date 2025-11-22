@@ -27,11 +27,10 @@ struct Mail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ID = 4,
     VT_USER = 6,
     VT_SENDER = 8,
-    VT_SENDER_NAME = 10,
-    VT_TITLE = 12,
-    VT_CONTENTS = 14,
-    VT_READ = 16,
-    VT_CREATED_DATE = 18
+    VT_TITLE = 10,
+    VT_CONTENTS = 12,
+    VT_READ = 14,
+    VT_CREATED_DATE = 16
   };
   uint16_t id() const {
     return GetField<uint16_t>(VT_ID, 0);
@@ -39,11 +38,8 @@ struct Mail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
-  uint32_t sender() const {
-    return GetField<uint32_t>(VT_SENDER, 0);
-  }
-  const ::flatbuffers::String *sender_name() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_SENDER_NAME);
+  const ::flatbuffers::String *sender() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SENDER);
   }
   const ::flatbuffers::String *title() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
@@ -61,9 +57,8 @@ struct Mail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_ID, 2) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
-           VerifyField<uint32_t>(verifier, VT_SENDER, 4) &&
-           VerifyOffset(verifier, VT_SENDER_NAME) &&
-           verifier.VerifyString(sender_name()) &&
+           VerifyOffset(verifier, VT_SENDER) &&
+           verifier.VerifyString(sender()) &&
            VerifyOffset(verifier, VT_TITLE) &&
            verifier.VerifyString(title()) &&
            VerifyOffset(verifier, VT_CONTENTS) &&
@@ -85,11 +80,8 @@ struct MailBuilder {
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(Mail::VT_USER, user, 0);
   }
-  void add_sender(uint32_t sender) {
-    fbb_.AddElement<uint32_t>(Mail::VT_SENDER, sender, 0);
-  }
-  void add_sender_name(::flatbuffers::Offset<::flatbuffers::String> sender_name) {
-    fbb_.AddOffset(Mail::VT_SENDER_NAME, sender_name);
+  void add_sender(::flatbuffers::Offset<::flatbuffers::String> sender) {
+    fbb_.AddOffset(Mail::VT_SENDER, sender);
   }
   void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
     fbb_.AddOffset(Mail::VT_TITLE, title);
@@ -118,8 +110,7 @@ inline ::flatbuffers::Offset<Mail> CreateMail(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t id = 0,
     uint32_t user = 0,
-    uint32_t sender = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> sender_name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> sender = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> contents = 0,
     bool read = false,
@@ -128,7 +119,6 @@ inline ::flatbuffers::Offset<Mail> CreateMail(
   builder_.add_created_date(created_date);
   builder_.add_contents(contents);
   builder_.add_title(title);
-  builder_.add_sender_name(sender_name);
   builder_.add_sender(sender);
   builder_.add_user(user);
   builder_.add_id(id);
@@ -140,13 +130,12 @@ inline ::flatbuffers::Offset<Mail> CreateMailDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t id = 0,
     uint32_t user = 0,
-    uint32_t sender = 0,
-    const char *sender_name = nullptr,
+    const char *sender = nullptr,
     const char *title = nullptr,
     const char *contents = nullptr,
     bool read = false,
     const char *created_date = nullptr) {
-  auto sender_name__ = sender_name ? _fbb.CreateString(sender_name) : 0;
+  auto sender__ = sender ? _fbb.CreateString(sender) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto contents__ = contents ? _fbb.CreateString(contents) : 0;
   auto created_date__ = created_date ? _fbb.CreateString(created_date) : 0;
@@ -154,8 +143,7 @@ inline ::flatbuffers::Offset<Mail> CreateMailDirect(
       _fbb,
       id,
       user,
-      sender,
-      sender_name__,
+      sender__,
       title__,
       contents__,
       read,

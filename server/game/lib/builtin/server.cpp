@@ -611,6 +611,51 @@ int builtin::server::builtin_shutdown(lua_State* L)
     return 0;
 }
 
+int builtin::server::builtin_send_system_mail(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+
+    auto title = lua->tostring(1);
+    if (title.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto contents = lua->tostring(2);
+    if (contents.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto expire_date = std::optional<std::string>{std::nullopt};
+    if (argc >= 3 && lua->is_nil(3) == false && lua->is_string(3))
+        expire_date = lua->tostring(3);
+
+    static auto fn = [](fb::game::server* server, fb::lua::context* lua, const std::string& title, const std::string& contents, const std::optional<std::string>& expire_date)
+        -> async::task<void> {
+        auto   success = false;
+        auto&& resp = co_await server->http.post("internal", "/mail/system/write", WriteSystemMail{title, contents, expire_date.has_value() ? expire_date.value() : std::string{}});
+        success     = resp.error == 0;
+
+        co_await lua->switching();
+        lua->pushboolean(success);
+        lua->resume(1);
+    };
+
+    async::awaitable_then(fn(server, lua, title, contents, expire_date), [lua](auto result) {
+        result();
+    });
+
+    return lua->yield(1);
+}
+
 int builtin::server::builtin_broadcast(lua_State* L)
 {
     auto lua = fb::lua::get(L);
