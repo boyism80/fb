@@ -28,6 +28,7 @@ namespace AdminTool.Services
 
         /// <summary>
         /// Retrieves a paginated list of users with optional search filtering.
+        /// Uses the global 'name' table to efficiently query across sharded 'user' tables.
         /// </summary>
         /// <param name="page">The page number (1-based).</param>
         /// <param name="pageSize">The number of items per page.</param>
@@ -35,48 +36,106 @@ namespace AdminTool.Services
         /// <returns>A result object containing the user list and pagination information.</returns>
         public async Task<UserListResult> GetUsers(int page, int pageSize, string? searchTerm = null)
         {
-            await using var conn = _dbContext.Connection(-1);
+            await using var globalConn = _dbContext.Connection(-1);
 
             var offset = (page - 1) * pageSize;
-            var whereClause = "WHERE `deleted` = 0";
+            var whereClause = "";
             var searchParam = "";
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                whereClause += " AND `name` LIKE @searchTerm";
+                whereClause = "WHERE n.`name` LIKE @searchTerm";
                 searchParam = $"%{searchTerm}%";
             }
 
-            // Get total count
-            var countQuery = $"SELECT COUNT(*) FROM `user` {whereClause}";
-            var totalCount = await conn.QueryFirstOrDefaultAsync<int>(countQuery, new { searchTerm = searchParam });
-
-            // Get paginated results
-            var query = $"""
-                SELECT 
-                    `id`,
-                    `name`,
-                    `role`,
-                    `level`,
-                    `money`,
-                    `created_date`,
-                    `updated_date`
-                FROM `user`
+            // Get total count from name table (global DB)
+            var countQuery = $"""
+                SELECT COUNT(*) 
+                FROM `name` n
                 {whereClause}
-                ORDER BY `id` DESC
+                """;
+            var totalCount = await globalConn.QueryFirstOrDefaultAsync<int>(countQuery, new { searchTerm = searchParam });
+
+            // Get paginated name IDs with ban information from global DB
+            var nameQuery = $"""
+                SELECT 
+                    n.`id` AS Id,
+                    n.`name` AS Name,
+                    CASE WHEN b.`user` IS NOT NULL AND b.`deleted` = 0 THEN 1 ELSE 0 END AS IsBanned,
+                    b.`reason` AS BanReason,
+                    b.`expire_date` AS BanExpireDate
+                FROM `name` n
+                LEFT JOIN `ban` b ON n.`id` = b.`user` AND b.`deleted` = 0
+                {whereClause}
+                ORDER BY n.`id` DESC
                 LIMIT @pageSize OFFSET @offset
                 """;
 
-            var users = await conn.QueryAsync<UserListItem>(query, new
+            var nameResults = await globalConn.QueryAsync<NameWithBanInfo>(nameQuery, new
             {
                 searchTerm = searchParam,
                 pageSize,
                 offset
             });
 
+            var nameList = nameResults.ToList();
+            if (!nameList.Any())
+            {
+                return new UserListResult
+                {
+                    Users = new List<UserListItem>(),
+                    TotalCount = totalCount,
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                };
+            }
+
+            // Get user details from sharded user tables
+            var userIds = nameList.Select(n => n.Id).ToList();
+            var userDetailsDict = new Dictionary<uint, UserListItem>();
+
+            // Query each shard for user details
+            foreach (var (conn, idList) in _dbContext.Connections(userIds))
+            {
+                var userQuery = """
+                    SELECT 
+                        `id`,
+                        `name`,
+                        `role`,
+                        `level`,
+                        `money`,
+                        `created_date`,
+                        `updated_date`
+                    FROM `user`
+                    WHERE `id` IN @userIds AND `deleted` = 0
+                    """;
+
+                var shardUsers = await conn.QueryAsync<UserListItem>(userQuery, new { userIds = idList });
+                foreach (var user in shardUsers)
+                {
+                    userDetailsDict[user.Id] = user;
+                }
+
+                await conn.DisposeAsync();
+            }
+
+            // Combine name/ban info with user details
+            var resultUsers = new List<UserListItem>();
+            foreach (var nameInfo in nameList)
+            {
+                if (userDetailsDict.TryGetValue(nameInfo.Id, out var userDetail))
+                {
+                    userDetail.IsBanned = nameInfo.IsBanned == 1;
+                    userDetail.BanReason = nameInfo.BanReason;
+                    userDetail.BanExpireDate = nameInfo.BanExpireDate;
+                    resultUsers.Add(userDetail);
+                }
+            }
+
             return new UserListResult
             {
-                Users = users.ToList(),
+                Users = resultUsers,
                 TotalCount = totalCount,
                 Page = page,
                 PageSize = pageSize,
@@ -157,6 +216,21 @@ namespace AdminTool.Services
         /// Gets or sets the last update date.
         /// </summary>
         public DateTime UpdatedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the user is currently banned.
+        /// </summary>
+        public bool IsBanned { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ban reason if the user is banned.
+        /// </summary>
+        public string? BanReason { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ban expiration date if the user is banned.
+        /// </summary>
+        public DateTime? BanExpireDate { get; set; }
     }
 
     /// <summary>
@@ -203,6 +277,37 @@ namespace AdminTool.Services
         /// Gets or sets a value indicating whether the user is currently banned.
         /// </summary>
         public bool IsBanned { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ban reason if the user is banned.
+        /// </summary>
+        public string? BanReason { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ban expiration date if the user is banned.
+        /// </summary>
+        public DateTime? BanExpireDate { get; set; }
+    }
+
+    /// <summary>
+    /// Represents name table entry with ban information.
+    /// </summary>
+    internal class NameWithBanInfo
+    {
+        /// <summary>
+        /// Gets or sets the name ID (user ID).
+        /// </summary>
+        public uint Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the character name.
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets whether the user is banned (1 = banned, 0 = not banned).
+        /// </summary>
+        public int IsBanned { get; set; }
 
         /// <summary>
         /// Gets or sets the ban reason if the user is banned.
