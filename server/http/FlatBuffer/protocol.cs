@@ -527,6 +527,7 @@ namespace fb.protocol._internal
 
             return fb.protocol._internal.request.raw.DeleteArticle.CreateDeleteArticle(builder,
                 builder.Build(value.Id),
+                builder.Build(value.Section),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteMail value)
@@ -1639,6 +1640,7 @@ namespace fb.protocol._internal.request
 
             return fb.protocol._internal.request.raw.DeleteArticle.CreateDeleteArticle(builder,
                 builder.Build(value.Id),
+                builder.Build(value.Section),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteMail value)
@@ -2769,6 +2771,7 @@ namespace fb.protocol._internal.response
 
             return fb.protocol._internal.request.raw.DeleteArticle.CreateDeleteArticle(builder,
                 builder.Build(value.Id),
+                builder.Build(value.Section),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteMail value)
@@ -4945,6 +4948,7 @@ namespace fb.protocol._internal.request
     {
         public int ProtocolType => (int)FlatBufferProtocolType.DeleteArticle;
         public uint Id { get; set; } = 0;
+        public uint Section { get; set; } = 0;
         public uint User { get; set; } = 0;
 
         public DeleteArticle()
@@ -4953,6 +4957,7 @@ namespace fb.protocol._internal.request
         public DeleteArticle(fb.protocol._internal.request.raw.DeleteArticle raw)
         {
             Id = raw.Id;
+            Section = raw.Section;
             User = raw.User;
         }
 

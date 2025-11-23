@@ -3,17 +3,17 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-bulletin_message::bulletin_message(const std::string& text, bool success, bool mail) :
+bulletin_message::bulletin_message(const std::string& text, bool success, bool unknown) :
     text(text),
     success(success),
-    mail(mail)
+    unknown(unknown)
 { }
 
 async::task<void> bulletin_message::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint8_t>(this->mail ? 0x07 : 0x06);
+    writer.write<uint8_t>(this->unknown ? 0x07 : 0x06);
     writer.write<uint8_t>(this->success);
     writer.write<std::string>(this->text);
     writer.write<uint8_t>(0x00);
@@ -23,7 +23,7 @@ async::task<void> bulletin_message::deserialize(fb::stream_reader<big_endian>& r
 {
     co_await header::deserialize(reader);
     uint8_t type  = reader.read<uint8_t>();
-    this->mail    = (type == 0x07);
+    this->unknown = (type == 0x07);
     this->success = reader.read<uint8_t>();
     this->text    = reader.read<std::string, uint8_t>();
     reader.read<uint8_t>(); // 0x00

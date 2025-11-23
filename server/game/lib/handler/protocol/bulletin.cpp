@@ -61,9 +61,9 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             if (weak.expired() == false)
             {
                 if (mail)
-                    ch->mail_box.message(e.what(), false);
+                    ch->mail_box.message(e.what(), false, true);
                 else
-                    ch->bulletin.message(e.what(), false);
+                    ch->bulletin.message(e.what(), false, true);
             }
         }
     }
@@ -105,9 +105,9 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             if (weak.expired() == false)
             {
                 if (mail)
-                    ch->mail_box.message(e.what(), false);
+                    ch->mail_box.message(e.what(), false, true);
                 else
-                    ch->bulletin.message(e.what(), false);
+                    ch->bulletin.message(e.what(), false, true);
             }
         }
     }
@@ -120,12 +120,12 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             co_await this->server.write_bulletin(*ch, request.section, request.title, request.contents);
             co_await this->server.threads.switching(weak);
 
-            ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_WRITE), true);
+            ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_WRITE), true, false);
         }
         catch (std::exception& e)
         {
             if (weak.expired() == false)
-                ch->bulletin.message(e.what(), false);
+                ch->bulletin.message(e.what(), false, false);
         }
     }
     break;
@@ -139,13 +139,13 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             {
                 auto&& resp = co_await this->server.delete_mail(*ch, request.article);
                 co_await this->server.threads.switching(weak);
-                ch->mail_box.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true);
+                ch->mail_box.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, false);
             }
             else
             {
                 co_await this->server.delete_bulletin(*ch, request.section, request.article);
                 co_await this->server.threads.switching(weak);
-                ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true);
+                ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, true);
             }
         }
         catch (std::exception& e)
@@ -153,9 +153,9 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             if (weak.expired() == false)
             {
                 if (mail)
-                    ch->mail_box.message(e.what(), false);
+                    ch->mail_box.message(e.what(), false, true);
                 else
-                    ch->bulletin.message(e.what(), false);
+                    ch->bulletin.message(e.what(), false, true);
             }
         }
     }
@@ -184,7 +184,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
         catch (std::exception& e)
         {
             if (weak.expired() == false)
-                ch->mail_box.message(e.what(), false);
+                ch->mail_box.message(e.what(), false, true);
         }
     }
     break;
@@ -200,7 +200,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
         catch (std::exception& e)
         {
             if (weak.expired() == false)
-                ch->mail_box.message(e.what(), false);
+                ch->mail_box.message(e.what(), false, true);
         }
     }
     break;

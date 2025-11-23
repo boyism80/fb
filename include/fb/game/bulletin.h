@@ -29,7 +29,7 @@ public:
     void show();
     void show(const fb::model::bulletin& model, const std::list<article>& articles, BULLETIN_BUTTON_ENABLE flag);
     void show(const article& article, BULLETIN_BUTTON_ENABLE flag);
-    void message(const std::string& message, bool success);
+    void message(const std::string& message, bool success, bool unknown = false);
 };
 
 struct bulletin::article

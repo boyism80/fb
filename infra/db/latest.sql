@@ -54,7 +54,7 @@ DROP TABLE IF EXISTS `bulletin`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `bulletin` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `id` int unsigned NOT NULL,
   `section` int unsigned NOT NULL,
   `user` int unsigned NOT NULL,
   `title` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
@@ -62,10 +62,24 @@ CREATE TABLE `bulletin` (
   `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`id`,`section`),
   KEY `fk.bulletin.owner_idx` (`user`),
   CONSTRAINT `fk.bulletin.user` FOREIGN KEY (`user`) REFERENCES `name` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `bulletin_sequence`
+--
+
+DROP TABLE IF EXISTS `bulletin_sequence`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `bulletin_sequence` (
+  `section` int unsigned NOT NULL,
+  `id` int unsigned NOT NULL,
+  PRIMARY KEY (`section`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -413,8 +427,35 @@ CREATE TABLE `user` (
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BULLETIN_ADD`(section INT, uid INT, title NVARCHAR(64), contents NVARCHAR(256))
 BEGIN
-	INSERT INTO bulletin (`section`, `user`, `title`, `contents`)
-    VALUES (section, uid, title, contents);
+    DECLARE new_id INT UNSIGNED;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 0 AS RESULT;
+    END;
+
+    START TRANSACTION;
+
+    SELECT id INTO new_id 
+    FROM bulletin_sequence 
+    WHERE bulletin_sequence.`section` = section FOR UPDATE;
+
+    IF new_id IS NULL THEN
+        SET new_id = 1;
+        INSERT INTO bulletin_sequence (`section`, `id`) VALUES (section, new_id);
+    ELSE
+        SET new_id = new_id + 1;
+        UPDATE bulletin_sequence SET id = new_id WHERE bulletin_sequence.`section` = section;
+    END IF;
+
+    INSERT INTO bulletin (`id`, `section`, `user`, `title`, `contents`)
+    VALUES (new_id, section, uid, title, contents);
+
+    COMMIT;
+
+    SELECT 1 AS RESULT;
+    SELECT * FROM bulletin WHERE bulletin.`id` = new_id AND bulletin.`section` = section;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -722,4 +763,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-23  3:44:05
+-- Dump completed on 2025-11-23 17:53:02

@@ -1202,6 +1202,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.name             = this->_name;
     dto.pw               = this->_pw;
     dto.birth            = this->_birthday;
+    dto.created_date     = this->_created_date.to_string();
     dto.updated_date     = fb::model::datetime().to_string();
     dto.role             = static_cast<uint8_t>(this->_role);
     dto.look             = this->_look;

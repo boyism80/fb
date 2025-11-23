@@ -35,7 +35,7 @@ public:
 public:
     void     show(const std::vector<summary>& summaries, MAIL_BUTTON_ENABLE flag);
     void     show(const mail& mail, MAIL_BUTTON_ENABLE flag);
-    void     message(const std::string& message, bool success, bool unknown = true);
+    void     message(const std::string& message, bool success, bool error = true);
     uint16_t unread_count() const;
     void     unread_count(uint16_t value);
 

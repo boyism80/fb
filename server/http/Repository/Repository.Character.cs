@@ -17,7 +17,7 @@ namespace Http.Reepository
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CharacterRepository"/> class.
-        /// </summary>
+        /// </summary>Level
         /// <param name="dbContext">The database context for connection management.</param>
         /// <param name="redisService">The Redis service for cache operations.</param>
         /// <param name="distributedLock">The distributed lock service for concurrency control.</param>

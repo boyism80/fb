@@ -2077,21 +2077,22 @@ public:
 
 public:
     uint32_t id = 0;
+    uint32_t section = 0;
     uint32_t user = 0;
 
 public:
     DeleteArticle() = default;
 
     DeleteArticle(const DeleteArticle& x)
-        : id(x.id), user(x.user)
+        : id(x.id), section(x.section), user(x.user)
     { }
 
-    DeleteArticle(uint32_t id, uint32_t user)
-        : id(id), user(user)
+    DeleteArticle(uint32_t id, uint32_t section, uint32_t user)
+        : id(id), section(section), user(user)
     { }
 
     DeleteArticle(const fb::protocol::internal::request::raw::DeleteArticle& raw)
-        : id(raw.id()), user(raw.user())
+        : id(raw.id()), section(raw.section()), user(raw.user())
     { }
 
 public:
@@ -4996,6 +4997,7 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteArticle> build<f
 {
     return fb::protocol::internal::request::raw::CreateDeleteArticle(builder,
             flatbuffers::build<uint32_t>(builder, value.id),
+            flatbuffers::build<uint32_t>(builder, value.section),
             flatbuffers::build<uint32_t>(builder, value.user));
 }
 template <>

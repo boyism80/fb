@@ -107,6 +107,7 @@ table WriteArticle {
 
 table DeleteArticle {
   id: uint;
+  section: uint;
   user: uint;
 }
 
