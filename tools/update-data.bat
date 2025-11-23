@@ -1,6 +1,6 @@
 @ECHO OFF
 
-@REM git submodule update --recursive --remote data-converter
+git submodule update --recursive --remote data-converter
 PUSHD data-converter
 
 SET DISABLE_TTY=%1
