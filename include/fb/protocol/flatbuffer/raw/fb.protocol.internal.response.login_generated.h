@@ -28,7 +28,9 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ERROR = 4,
     VT_LOGON = 6,
     VT_IP = 8,
-    VT_PORT = 10
+    VT_PORT = 10,
+    VT_BAN_REASON = 12,
+    VT_BAN_EXPIRE_DATE = 14
   };
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
@@ -42,6 +44,12 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint16_t port() const {
     return GetField<uint16_t>(VT_PORT, 0);
   }
+  const ::flatbuffers::String *ban_reason() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_BAN_REASON);
+  }
+  const ::flatbuffers::String *ban_expire_date() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_BAN_EXPIRE_DATE);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
@@ -49,6 +57,10 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_IP) &&
            verifier.VerifyString(ip()) &&
            VerifyField<uint16_t>(verifier, VT_PORT, 2) &&
+           VerifyOffset(verifier, VT_BAN_REASON) &&
+           verifier.VerifyString(ban_reason()) &&
+           VerifyOffset(verifier, VT_BAN_EXPIRE_DATE) &&
+           verifier.VerifyString(ban_expire_date()) &&
            verifier.EndTable();
   }
 };
@@ -69,6 +81,12 @@ struct LoginBuilder {
   void add_port(uint16_t port) {
     fbb_.AddElement<uint16_t>(Login::VT_PORT, port, 0);
   }
+  void add_ban_reason(::flatbuffers::Offset<::flatbuffers::String> ban_reason) {
+    fbb_.AddOffset(Login::VT_BAN_REASON, ban_reason);
+  }
+  void add_ban_expire_date(::flatbuffers::Offset<::flatbuffers::String> ban_expire_date) {
+    fbb_.AddOffset(Login::VT_BAN_EXPIRE_DATE, ban_expire_date);
+  }
   explicit LoginBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -85,8 +103,12 @@ inline ::flatbuffers::Offset<Login> CreateLogin(
     uint32_t error = 0,
     bool logon = false,
     ::flatbuffers::Offset<::flatbuffers::String> ip = 0,
-    uint16_t port = 0) {
+    uint16_t port = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> ban_reason = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> ban_expire_date = 0) {
   LoginBuilder builder_(_fbb);
+  builder_.add_ban_expire_date(ban_expire_date);
+  builder_.add_ban_reason(ban_reason);
   builder_.add_ip(ip);
   builder_.add_error(error);
   builder_.add_port(port);
@@ -99,14 +121,20 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
     uint32_t error = 0,
     bool logon = false,
     const char *ip = nullptr,
-    uint16_t port = 0) {
+    uint16_t port = 0,
+    const char *ban_reason = nullptr,
+    const char *ban_expire_date = nullptr) {
   auto ip__ = ip ? _fbb.CreateString(ip) : 0;
+  auto ban_reason__ = ban_reason ? _fbb.CreateString(ban_reason) : 0;
+  auto ban_expire_date__ = ban_expire_date ? _fbb.CreateString(ban_expire_date) : 0;
   return fb::protocol::internal::response::raw::CreateLogin(
       _fbb,
       error,
       logon,
       ip__,
-      port);
+      port,
+      ban_reason__,
+      ban_expire_date__);
 }
 
 inline const fb::protocol::internal::response::raw::Login *GetLogin(const void *buf) {

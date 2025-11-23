@@ -1199,7 +1199,9 @@ enum class ERROR_CODE
     INVALID_CLAN_ROLE = 36, 
     CANNOT_KICK_SELF = 37, 
     CANNOT_CHANGE_CLAN_ROLE_SELF = 38, 
-    CANNOT_INVITE_SELF = 39
+    CANNOT_INVITE_SELF = 39, 
+    NOT_FOUND_BAN = 40, 
+    BANNED = 41
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -1246,7 +1248,9 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(const std::string k)
         { "INVALID_CLAN_ROLE", ERROR_CODE::INVALID_CLAN_ROLE }, 
         { "CANNOT_KICK_SELF", ERROR_CODE::CANNOT_KICK_SELF }, 
         { "CANNOT_CHANGE_CLAN_ROLE_SELF", ERROR_CODE::CANNOT_CHANGE_CLAN_ROLE_SELF }, 
-        { "CANNOT_INVITE_SELF", ERROR_CODE::CANNOT_INVITE_SELF }
+        { "CANNOT_INVITE_SELF", ERROR_CODE::CANNOT_INVITE_SELF }, 
+        { "NOT_FOUND_BAN", ERROR_CODE::NOT_FOUND_BAN }, 
+        { "BANNED", ERROR_CODE::BANNED }
     };
 
     auto i = enums.find(k);
@@ -1300,7 +1304,9 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::INVALID_CLAN_ROLE, "INVALID_CLAN_ROLE" }, 
         { ERROR_CODE::CANNOT_KICK_SELF, "CANNOT_KICK_SELF" }, 
         { ERROR_CODE::CANNOT_CHANGE_CLAN_ROLE_SELF, "CANNOT_CHANGE_CLAN_ROLE_SELF" }, 
-        { ERROR_CODE::CANNOT_INVITE_SELF, "CANNOT_INVITE_SELF" }
+        { ERROR_CODE::CANNOT_INVITE_SELF, "CANNOT_INVITE_SELF" }, 
+        { ERROR_CODE::NOT_FOUND_BAN, "NOT_FOUND_BAN" }, 
+        { ERROR_CODE::BANNED, "BANNED" }
     };
 
     auto i = enums.find(k);
@@ -3305,6 +3311,10 @@ inline void enum_map<fb::model::enum_value::ERROR_CODE>(lua_State* lua)
     lua_setfield(lua, -2, "CANNOT_CHANGE_CLAN_ROLE_SELF");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ERROR_CODE::CANNOT_INVITE_SELF));
     lua_setfield(lua, -2, "CANNOT_INVITE_SELF");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ERROR_CODE::NOT_FOUND_BAN));
+    lua_setfield(lua, -2, "NOT_FOUND_BAN");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ERROR_CODE::BANNED));
+    lua_setfield(lua, -2, "BANNED");
     lua_setglobal(lua, "ERROR_CODE");
 }
 

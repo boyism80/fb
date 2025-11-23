@@ -425,7 +425,11 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "CANNOT_CHANGE_CLAN_ROLE_SELF")]
         CannotChangeClanRoleSelf = 38, 
         [EnumMember(Value = "CANNOT_INVITE_SELF")]
-        CannotInviteSelf = 39
+        CannotInviteSelf = 39, 
+        [EnumMember(Value = "NOT_FOUND_BAN")]
+        NotFoundBan = 40, 
+        [EnumMember(Value = "BANNED")]
+        Banned = 41
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

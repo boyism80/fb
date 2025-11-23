@@ -99,12 +99,10 @@ public:
 
         auto cmd = static_cast<uint32_t>(message_type::FlatBufferProtocolType);
         this->_handlers[route].insert({cmd, [this](const uint8_t* ptr) -> async::task<void> {
-                                           auto protocol = std::make_shared<message_type>();
-                                           protocol->Deserialize(ptr);
-
-                                           auto& server  = static_cast<typename HandlerType::server_type&>(this->_owner);
-                                           auto  handler = std::make_shared<HandlerType>(server);
-                                           co_await handler->handle(*protocol);
+                                           auto  protocol = message_type::Deserialize(ptr);
+                                           auto& server   = static_cast<typename HandlerType::server_type&>(this->_owner);
+                                           auto  handler  = std::make_shared<HandlerType>(server);
+                                           co_await handler->handle(protocol);
                                        }});
     }
 

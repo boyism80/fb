@@ -221,3 +221,13 @@ table WriteSystemMail {
   contents: string;
   expire_date: string?;
 }
+
+table Ban {
+  name: string;
+  reason: string;
+  days: uint?;
+}
+
+table Unban {
+  name: string;
+}

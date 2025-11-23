@@ -1015,6 +1015,58 @@ command_funcs = {
         end,
     },
 
+    ['밴'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '<유저이름> <사유> [기간(일)] - 유저 밴',
+        ['command'] = function (me, args)
+            local name, reason, days = table.unpack(args)
+            if not name or not reason then
+                me:message("사용법: /밴 <유저이름> <사유> [기간(일)]")
+                return true
+            end
+            
+            if days then
+                days = tonumber(days)
+                if not days or days < 0 then
+                    me:message("기간은 0 이상의 숫자여야 합니다. (0 또는 생략 시 영구정지)")
+                    return true
+                end
+            end
+            
+            local success, error_msg = ban(me, name, reason, days)
+            if success then
+                if days and days > 0 then
+                    me:message(string.format("%s 유저를 %d일간 밴했습니다. (사유: %s)", name, days, reason), MESSAGE_TYPE.BROWN)
+                else
+                    me:message(string.format("%s 유저를 영구정지했습니다. (사유: %s)", name, reason), MESSAGE_TYPE.BROWN)
+                end
+            else
+                me:message(string.format("밴 실패: %s", error_msg or "알 수 없는 오류"), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
+
+    ['밴해제'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '<유저이름> - 유저 밴 해제',
+        ['command'] = function (me, args)
+            local name = table.unpack(args)
+            if not name then
+                me:message("사용법: /밴해제 <유저이름>")
+                return true
+            end
+            
+            local success, error_msg = unban(me, name)
+            if success then
+                me:message(string.format("%s 유저의 밴을 해제했습니다.", name), MESSAGE_TYPE.BROWN)
+            else
+                me:message(string.format("밴 해제 실패: %s", error_msg or "알 수 없는 오류"), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
+
     ['쿨타임초기화'] = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 스킬 쿨타임 초기화',

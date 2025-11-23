@@ -74,6 +74,32 @@ namespace Internal.Controllers
         {
             try
             {
+                // Check if user is banned
+                var userId = await _dbContext.Character.GetCharacterId(request.Name);
+                if (userId.HasValue)
+                {
+                    var ban = await _dbContext.Ban.Get(userId.Value);
+                    if (ban != null)
+                    {
+                        // Check if ban is expired
+                        if (ban.ExpireDate.HasValue && ban.ExpireDate.Value <= DateTime.Now)
+                        {
+                            // Ban expired, remove it
+                            await _dbContext.Ban.Delete(userId.Value);
+                        }
+                        else
+                        {
+                            // User is still banned - return ban info in response
+                            return new Response.Login
+                            {
+                                Error = (uint)ErrorCode.Banned,
+                                BanReason = ban.Reason,
+                                BanExpireDate = ban.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss")
+                            };
+                        }
+                    }
+                }
+
                 var redis = _redisService.Redis(-1);
                 var conf = await redis.Connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol._internal.Service.Game, Id = request.Host }.Key);
                 if (conf == null)
@@ -155,6 +181,35 @@ namespace Internal.Controllers
         {
             try
             {
+                // Check if user is banned (only if name is provided)
+                if (!string.IsNullOrEmpty(request.Name))
+                {
+                    var userId = await _dbContext.Character.GetCharacterId(request.Name);
+                    if (userId.HasValue)
+                    {
+                        var ban = await _dbContext.Ban.Get(userId.Value);
+                        if (ban != null)
+                        {
+                            // Check if ban is expired
+                            if (ban.ExpireDate.HasValue && ban.ExpireDate.Value <= DateTime.Now)
+                            {
+                                // Ban expired, remove it
+                                await _dbContext.Ban.Delete(userId.Value);
+                            }
+                            else
+                            {
+                                // User is still banned - return ban info in response
+                                return new Response.Transfer
+                                {
+                                    Error = (uint)ErrorCode.Banned,
+                                    BanReason = ban.Reason,
+                                    BanExpireDate = ban.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss")
+                                };
+                            }
+                        }
+                    }
+                }
+
                 var conn = _redisService.Redis(-1).Connection;
                 var gameConf = await conn.StringGetAsync(new HeartBeatKey { Service = request.Service, Id = request.Id }.Key);
                 if (gameConf.IsNull)

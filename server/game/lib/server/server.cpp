@@ -85,6 +85,8 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("maps", builtin::server::builtin_maps);
     lua::build("shutdown", builtin::server::builtin_shutdown);
     lua::build("send_system_mail", builtin::server::builtin_send_system_mail);
+    lua::build("ban", builtin::server::builtin_ban);
+    lua::build("unban", builtin::server::builtin_unban);
 
     for (auto& [_, root] : ist)
     {
@@ -231,6 +233,7 @@ async::task<void> server::handle_start()
     this->handler.amqp.bind<fb::game::handler::amqp::kick_clan>("fb.clan");
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>("fb.clan");
     this->handler.amqp.bind<fb::game::handler::amqp::write_mail>("fb.mail");
+    this->handler.amqp.bind<fb::game::handler::amqp::ban>("fb.ban");
 }
 
 bool server::decrypt_policy(uint8_t cmd) const
@@ -531,6 +534,7 @@ void server::handle_init_amqp(fb::amqp::socket& amqp)
     this->handler.amqp.declare_queue("amq.direct", "fb.group");
     this->handler.amqp.declare_queue("amq.direct", "fb.clan");
     this->handler.amqp.declare_queue("amq.direct", "fb.mail");
+    this->handler.amqp.declare_queue("amq.direct", "fb.ban");
 }
 
 async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)

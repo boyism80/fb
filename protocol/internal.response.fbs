@@ -18,6 +18,8 @@ table Login {
   logon: bool;
   ip: string;
   port: ushort;
+  ban_reason: string;
+  ban_expire_date: string?;
 }
 
 
@@ -32,6 +34,8 @@ table Transfer {
   error: uint;
   ip: string;
   port: ushort;
+  ban_reason: string;
+  ban_expire_date: string?;
 }
 
 
@@ -267,5 +271,17 @@ table GetSystemMails {
 
 table WriteSystemMail {
   mail: fb.protocol.internal.SystemMail;
+  error: uint;
+}
+
+table Ban {
+  name: string;
+  reason: string;
+  expire_date: string?;
+  error: uint;
+}
+
+table Unban {
+  name: string;
   error: uint;
 }

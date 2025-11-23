@@ -79,6 +79,11 @@ namespace Http.Service
         public SystemMailUserRepository SystemMailUser => Bind<SystemMailUserRepository>();
 
         /// <summary>
+        /// Gets the ban repository instance.
+        /// </summary>
+        public BanRepository Ban => Bind<BanRepository>();
+
+        /// <summary>
         /// Gets the number of shared database instances configured.
         /// </summary>
         /// <value>The count of database shards excluding the default (-1) connection.</value>

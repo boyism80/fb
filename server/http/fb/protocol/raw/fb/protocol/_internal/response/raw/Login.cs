@@ -30,13 +30,31 @@ public struct Login : IFlatbufferObject
 #endif
   public byte[] GetIpArray() { return __p.__vector_as_array<byte>(8); }
   public ushort Port { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public string BanReason { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetBanReasonBytes() { return __p.__vector_as_span<byte>(12, 1); }
+#else
+  public ArraySegment<byte>? GetBanReasonBytes() { return __p.__vector_as_arraysegment(12); }
+#endif
+  public byte[] GetBanReasonArray() { return __p.__vector_as_array<byte>(12); }
+  public string BanExpireDate { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetBanExpireDateBytes() { return __p.__vector_as_span<byte>(14, 1); }
+#else
+  public ArraySegment<byte>? GetBanExpireDateBytes() { return __p.__vector_as_arraysegment(14); }
+#endif
+  public byte[] GetBanExpireDateArray() { return __p.__vector_as_array<byte>(14); }
 
   public static Offset<fb.protocol._internal.response.raw.Login> CreateLogin(FlatBufferBuilder builder,
       uint error = 0,
       bool logon = false,
       StringOffset ipOffset = default(StringOffset),
-      ushort port = 0) {
-    builder.StartTable(4);
+      ushort port = 0,
+      StringOffset ban_reasonOffset = default(StringOffset),
+      StringOffset ban_expire_dateOffset = default(StringOffset)) {
+    builder.StartTable(6);
+    Login.AddBanExpireDate(builder, ban_expire_dateOffset);
+    Login.AddBanReason(builder, ban_reasonOffset);
     Login.AddIp(builder, ipOffset);
     Login.AddError(builder, error);
     Login.AddPort(builder, port);
@@ -44,11 +62,13 @@ public struct Login : IFlatbufferObject
     return Login.EndLogin(builder);
   }
 
-  public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(0, error, 0); }
   public static void AddLogon(FlatBufferBuilder builder, bool logon) { builder.AddBool(1, logon, false); }
   public static void AddIp(FlatBufferBuilder builder, StringOffset ipOffset) { builder.AddOffset(2, ipOffset.Value, 0); }
   public static void AddPort(FlatBufferBuilder builder, ushort port) { builder.AddUshort(3, port, 0); }
+  public static void AddBanReason(FlatBufferBuilder builder, StringOffset banReasonOffset) { builder.AddOffset(4, banReasonOffset.Value, 0); }
+  public static void AddBanExpireDate(FlatBufferBuilder builder, StringOffset banExpireDateOffset) { builder.AddOffset(5, banExpireDateOffset.Value, 0); }
   public static Offset<fb.protocol._internal.response.raw.Login> EndLogin(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.Login>(o);
@@ -67,6 +87,8 @@ static public class LoginVerify
       && verifier.VerifyField(tablePos, 6 /*Logon*/, 1 /*bool*/, 1, false)
       && verifier.VerifyString(tablePos, 8 /*Ip*/, false)
       && verifier.VerifyField(tablePos, 10 /*Port*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyString(tablePos, 12 /*BanReason*/, false)
+      && verifier.VerifyString(tablePos, 14 /*BanExpireDate*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

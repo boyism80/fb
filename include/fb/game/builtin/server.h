@@ -37,6 +37,8 @@ struct server
     static int builtin_maps(lua_State* L);
     static int builtin_shutdown(lua_State* L);
     static int builtin_send_system_mail(lua_State* L);
+    static int builtin_ban(lua_State* L);
+    static int builtin_unban(lua_State* L);
 };
 
 } // namespace fb::game::builtin

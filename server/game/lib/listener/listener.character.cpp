@@ -1,4 +1,5 @@
 #include <fb/game/server.h>
+#include <fb/game/handler/amqp/ban.h>
 
 using namespace fb::game;
 
@@ -136,6 +137,11 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
 
         case ERROR_CODE::SERVER_NOT_READY:
             throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+
+        case ERROR_CODE::BANNED:
+        {
+            throw std::runtime_error(fb::game::handler::amqp::ban::build_ban_message(response.ban_reason, response.ban_expire_date));
+        }
 
         default:
             throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), response.error));

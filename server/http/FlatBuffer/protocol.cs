@@ -716,6 +716,24 @@ namespace fb.protocol._internal
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate));
         }
+        public static Offset<fb.protocol._internal.request.raw.Ban> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Ban value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Ban.CreateBan(builder,
+                builder.Build(value.Name),
+                builder.Build(value.Reason),
+                builder.Build(value.Days));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Unban> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Unban value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Unban.CreateUnban(builder,
+                builder.Build(value.Name));
+        }
         public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
         {
             if (value == null)
@@ -742,7 +760,9 @@ namespace fb.protocol._internal
                 builder.Build(value.Error),
                 builder.Build(value.Logon),
                 builder.Build(value.Ip),
-                builder.Build(value.Port));
+                builder.Build(value.Port),
+                builder.Build(value.BanReason),
+                builder.Build(value.BanExpireDate));
         }
         public static Offset<fb.protocol._internal.response.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Logout value)
         {
@@ -760,7 +780,9 @@ namespace fb.protocol._internal
             return fb.protocol._internal.response.raw.Transfer.CreateTransfer(builder,
                 builder.Build(value.Error),
                 builder.Build(value.Ip),
-                builder.Build(value.Port));
+                builder.Build(value.Port),
+                builder.Build(value.BanReason),
+                builder.Build(value.BanExpireDate));
         }
         public static Offset<fb.protocol._internal.response.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Whisper value)
         {
@@ -1125,6 +1147,26 @@ namespace fb.protocol._internal
 
             return fb.protocol._internal.response.raw.WriteSystemMail.CreateWriteSystemMail(builder,
                 builder.Build(value.Mail),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Ban> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Ban value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Ban.CreateBan(builder,
+                builder.Build(value.Name),
+                builder.Build(value.Reason),
+                builder.Build(value.ExpireDate),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Unban> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Unban value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Unban.CreateUnban(builder,
+                builder.Build(value.Name),
                 builder.Build(value.Error));
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Buff> value)
@@ -1829,6 +1871,24 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate));
         }
+        public static Offset<fb.protocol._internal.request.raw.Ban> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Ban value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Ban.CreateBan(builder,
+                builder.Build(value.Name),
+                builder.Build(value.Reason),
+                builder.Build(value.Days));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Unban> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Unban value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Unban.CreateUnban(builder,
+                builder.Build(value.Name));
+        }
         public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
         {
             if (value == null)
@@ -1855,7 +1915,9 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Error),
                 builder.Build(value.Logon),
                 builder.Build(value.Ip),
-                builder.Build(value.Port));
+                builder.Build(value.Port),
+                builder.Build(value.BanReason),
+                builder.Build(value.BanExpireDate));
         }
         public static Offset<fb.protocol._internal.response.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Logout value)
         {
@@ -1873,7 +1935,9 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.response.raw.Transfer.CreateTransfer(builder,
                 builder.Build(value.Error),
                 builder.Build(value.Ip),
-                builder.Build(value.Port));
+                builder.Build(value.Port),
+                builder.Build(value.BanReason),
+                builder.Build(value.BanExpireDate));
         }
         public static Offset<fb.protocol._internal.response.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Whisper value)
         {
@@ -2240,6 +2304,26 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Mail),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol._internal.response.raw.Ban> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Ban value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Ban.CreateBan(builder,
+                builder.Build(value.Name),
+                builder.Build(value.Reason),
+                builder.Build(value.ExpireDate),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Unban> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Unban value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Unban.CreateUnban(builder,
+                builder.Build(value.Name),
+                builder.Build(value.Error));
+        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Buff> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.Buff>(value.Select(x => Build(builder, x)).ToArray());
@@ -2336,7 +2420,9 @@ namespace fb.protocol._internal.request
         Broadcast,
         UpdateFriends,
         GetSystemMails,
-        WriteSystemMail
+        WriteSystemMail,
+        Ban,
+        Unban
     }
 }
 namespace fb.protocol._internal.response
@@ -2960,6 +3046,24 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate));
         }
+        public static Offset<fb.protocol._internal.request.raw.Ban> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Ban value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Ban.CreateBan(builder,
+                builder.Build(value.Name),
+                builder.Build(value.Reason),
+                builder.Build(value.Days));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Unban> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Unban value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Unban.CreateUnban(builder,
+                builder.Build(value.Name));
+        }
         public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
         {
             if (value == null)
@@ -2986,7 +3090,9 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Error),
                 builder.Build(value.Logon),
                 builder.Build(value.Ip),
-                builder.Build(value.Port));
+                builder.Build(value.Port),
+                builder.Build(value.BanReason),
+                builder.Build(value.BanExpireDate));
         }
         public static Offset<fb.protocol._internal.response.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Logout value)
         {
@@ -3004,7 +3110,9 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.response.raw.Transfer.CreateTransfer(builder,
                 builder.Build(value.Error),
                 builder.Build(value.Ip),
-                builder.Build(value.Port));
+                builder.Build(value.Port),
+                builder.Build(value.BanReason),
+                builder.Build(value.BanExpireDate));
         }
         public static Offset<fb.protocol._internal.response.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Whisper value)
         {
@@ -3371,6 +3479,26 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Mail),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol._internal.response.raw.Ban> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Ban value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Ban.CreateBan(builder,
+                builder.Build(value.Name),
+                builder.Build(value.Reason),
+                builder.Build(value.ExpireDate),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Unban> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Unban value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Unban.CreateUnban(builder,
+                builder.Build(value.Name),
+                builder.Build(value.Error));
+        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Buff> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.Buff>(value.Select(x => Build(builder, x)).ToArray());
@@ -3473,7 +3601,9 @@ namespace fb.protocol._internal.response
         Broadcast,
         UpdateFriends,
         GetSystemMails,
-        WriteSystemMail
+        WriteSystemMail,
+        Ban,
+        Unban
     }
 }
 
@@ -5734,6 +5864,82 @@ namespace fb.protocol._internal.request
             return new WriteSystemMail(bytes);
         }
     }
+    public class Ban : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Ban;
+        public string Name { get; set; } = string.Empty;
+        public string Reason { get; set; } = string.Empty;
+        public uint? Days { get; set; } = null;
+
+        public Ban()
+        { }
+
+        public Ban(fb.protocol._internal.request.raw.Ban raw)
+        {
+            Name = raw.Name;
+            Reason = raw.Reason;
+            Days = raw.Days != null ? (uint?)raw.Days.Value.Value : null;
+        }
+
+        public Ban(byte[] bytes) : this(fb.protocol._internal.request.raw.Ban.GetRootAsBan(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static Ban Deserialize(byte[] bytes)
+        {
+            return new Ban(bytes);
+        }
+    }
+    public class Unban : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Unban;
+        public string Name { get; set; } = string.Empty;
+
+        public Unban()
+        { }
+
+        public Unban(fb.protocol._internal.request.raw.Unban raw)
+        {
+            Name = raw.Name;
+        }
+
+        public Unban(byte[] bytes) : this(fb.protocol._internal.request.raw.Unban.GetRootAsUnban(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static Unban Deserialize(byte[] bytes)
+        {
+            return new Unban(bytes);
+        }
+    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -5776,6 +5982,8 @@ namespace fb.protocol._internal.request
                 FlatBufferProtocolType.UpdateFriends => typeof(fb.protocol._internal.request.UpdateFriends),
                 FlatBufferProtocolType.GetSystemMails => typeof(fb.protocol._internal.request.GetSystemMails),
                 FlatBufferProtocolType.WriteSystemMail => typeof(fb.protocol._internal.request.WriteSystemMail),
+                FlatBufferProtocolType.Ban => typeof(fb.protocol._internal.request.Ban),
+                FlatBufferProtocolType.Unban => typeof(fb.protocol._internal.request.Unban),
                 _ => throw new ArgumentException(),
             };
         }
@@ -5863,6 +6071,8 @@ namespace fb.protocol._internal.response
         public bool Logon { get; set; } = false;
         public string Ip { get; set; } = string.Empty;
         public ushort Port { get; set; } = 0;
+        public string BanReason { get; set; } = string.Empty;
+        public string BanExpireDate { get; set; } = null;
 
         public Login()
         { }
@@ -5873,6 +6083,8 @@ namespace fb.protocol._internal.response
             Logon = raw.Logon;
             Ip = raw.Ip;
             Port = raw.Port;
+            BanReason = raw.BanReason;
+            BanExpireDate = raw.BanExpireDate;
         }
 
         public Login(byte[] bytes) : this(fb.protocol._internal.response.raw.Login.GetRootAsLogin(new ByteBuffer(bytes)))
@@ -5940,6 +6152,8 @@ namespace fb.protocol._internal.response
         public uint Error { get; set; } = 0;
         public string Ip { get; set; } = string.Empty;
         public ushort Port { get; set; } = 0;
+        public string BanReason { get; set; } = string.Empty;
+        public string BanExpireDate { get; set; } = null;
 
         public Transfer()
         { }
@@ -5949,6 +6163,8 @@ namespace fb.protocol._internal.response
             Error = raw.Error;
             Ip = raw.Ip;
             Port = raw.Port;
+            BanReason = raw.BanReason;
+            BanExpireDate = raw.BanExpireDate;
         }
 
         public Transfer(byte[] bytes) : this(fb.protocol._internal.response.raw.Transfer.GetRootAsTransfer(new ByteBuffer(bytes)))
@@ -7424,6 +7640,86 @@ namespace fb.protocol._internal.response
             return new WriteSystemMail(bytes);
         }
     }
+    public class Ban : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Ban;
+        public string Name { get; set; } = string.Empty;
+        public string Reason { get; set; } = string.Empty;
+        public string ExpireDate { get; set; } = null;
+        public uint Error { get; set; } = 0;
+
+        public Ban()
+        { }
+
+        public Ban(fb.protocol._internal.response.raw.Ban raw)
+        {
+            Name = raw.Name;
+            Reason = raw.Reason;
+            ExpireDate = raw.ExpireDate;
+            Error = raw.Error;
+        }
+
+        public Ban(byte[] bytes) : this(fb.protocol._internal.response.raw.Ban.GetRootAsBan(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static Ban Deserialize(byte[] bytes)
+        {
+            return new Ban(bytes);
+        }
+    }
+    public class Unban : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Unban;
+        public string Name { get; set; } = string.Empty;
+        public uint Error { get; set; } = 0;
+
+        public Unban()
+        { }
+
+        public Unban(fb.protocol._internal.response.raw.Unban raw)
+        {
+            Name = raw.Name;
+            Error = raw.Error;
+        }
+
+        public Unban(byte[] bytes) : this(fb.protocol._internal.response.raw.Unban.GetRootAsUnban(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static Unban Deserialize(byte[] bytes)
+        {
+            return new Unban(bytes);
+        }
+    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -7472,6 +7768,8 @@ namespace fb.protocol._internal.response
                 FlatBufferProtocolType.UpdateFriends => typeof(fb.protocol._internal.response.UpdateFriends),
                 FlatBufferProtocolType.GetSystemMails => typeof(fb.protocol._internal.response.GetSystemMails),
                 FlatBufferProtocolType.WriteSystemMail => typeof(fb.protocol._internal.response.WriteSystemMail),
+                FlatBufferProtocolType.Ban => typeof(fb.protocol._internal.response.Ban),
+                FlatBufferProtocolType.Unban => typeof(fb.protocol._internal.response.Unban),
                 _ => throw new ArgumentException(),
             };
         }
