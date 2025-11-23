@@ -26,6 +26,7 @@ builder.Services.AddSingleton<WriteBackService>();
 builder.Services.AddScoped<DbContext>();
 builder.Services.AddScoped<BanService>();
 builder.Services.AddScoped<CacheService>();
+builder.Services.AddSingleton<ServerStateService>();
 
 // Admin tool services
 builder.Services.AddScoped<AdminTool.Services.AuthService>();

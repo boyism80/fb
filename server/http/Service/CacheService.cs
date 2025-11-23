@@ -1,4 +1,5 @@
 using Http.Redis;
+using Http.Redis.Key;
 using StackExchange.Redis;
 
 namespace Http.Service
@@ -11,16 +12,19 @@ namespace Http.Service
     {
         private readonly RedisService _redisService;
         private readonly ILogger<CacheService> _logger;
+        private readonly ServerStateService? _serverStateService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CacheService"/> class.
         /// </summary>
         /// <param name="redisService">The Redis service for cache operations.</param>
         /// <param name="logger">The logger for recording cache operations.</param>
-        public CacheService(RedisService redisService, ILogger<CacheService> logger)
+        /// <param name="serverStateService">The server state service for checking running servers (optional).</param>
+        public CacheService(RedisService redisService, ILogger<CacheService> logger, ServerStateService? serverStateService = null)
         {
             _redisService = redisService;
             _logger = logger;
+            _serverStateService = serverStateService;
         }
 
         /// <summary>
@@ -62,6 +66,33 @@ namespace Http.Service
             }
             _logger.LogInformation("Cache cleared: {Count} keys deleted", count);
             return count;
+        }
+
+        /// <summary>
+        /// Clears all user sessions from Redis.
+        /// This operation is only safe when no servers are running.
+        /// </summary>
+        /// <returns>True if sessions were cleared; false if servers are still running or ServerStateService is not available.</returns>
+        public async Task<bool> ClearUserSessions()
+        {
+            if (_serverStateService == null)
+            {
+                _logger.LogWarning("Cannot clear user sessions: ServerStateService is not available");
+                return false;
+            }
+
+            var hasRunning = await _serverStateService.HasRunningServers();
+            if (hasRunning)
+            {
+                _logger.LogWarning("Cannot clear user sessions: servers are still running");
+                return false;
+            }
+
+            var redis = _redisService.Redis(-1);
+            var sessionKey = new SessionKey().Key;
+            await redis.Connection.KeyDeleteAsync(new RedisKey(sessionKey));
+            _logger.LogInformation("User sessions cleared");
+            return true;
         }
     }
 }

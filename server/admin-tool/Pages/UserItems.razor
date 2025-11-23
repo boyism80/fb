@@ -1,10 +1,13 @@
 @page "/users/{userId:int}/items"
 @using AdminTool.Services
+@using Fb.Model
+@using Fb.Model.EnumValue
 @using Http.Model
 @using Http.Service
 @using Microsoft.AspNetCore.Authorization
 @inject DbContext DbContext
 @inject UserService UserService
+@inject Model Model
 @attribute [Authorize(Roles = "Admin,Operator")]
 
 <PageTitle>User Items - Admin Tool</PageTitle>
@@ -51,7 +54,7 @@
                             <thead>
                                 <tr>
                                     <th>Parts</th>
-                                    <th>Model ID</th>
+                                    <th>Item Name</th>
                                     <th>Count</th>
                                     <th>Durability</th>
                                     <th>Custom Name</th>
@@ -62,7 +65,7 @@
                                 {
                                     <tr>
                                         <td>@GetPartsName(item.Parts)</td>
-                                        <td>@item.Model</td>
+                                        <td>@GetItemName(item.Model)</td>
                                         <td>@item.Count</td>
                                         <td>@(item.Durability?.ToString() ?? "N/A")</td>
                                         <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
@@ -92,7 +95,7 @@
                             <thead>
                                 <tr>
                                     <th>Index</th>
-                                    <th>Model ID</th>
+                                    <th>Item Name</th>
                                     <th>Count</th>
                                     <th>Durability</th>
                                     <th>Custom Name</th>
@@ -103,7 +106,7 @@
                                 {
                                     <tr>
                                         <td>@item.Index</td>
-                                        <td>@item.Model</td>
+                                        <td>@GetItemName(item.Model)</td>
                                         <td>@item.Count</td>
                                         <td>@(item.Durability?.ToString() ?? "N/A")</td>
                                         <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
@@ -133,7 +136,7 @@
                             <thead>
                                 <tr>
                                     <th>Index</th>
-                                    <th>Model ID</th>
+                                    <th>Item Name</th>
                                     <th>Count</th>
                                     <th>Durability</th>
                                     <th>Custom Name</th>
@@ -144,7 +147,7 @@
                                 {
                                     <tr>
                                         <td>@item.Index</td>
-                                        <td>@item.Model</td>
+                                        <td>@GetItemName(item.Model)</td>
                                         <td>@item.Count</td>
                                         <td>@(item.Durability?.ToString() ?? "N/A")</td>
                                         <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
@@ -238,18 +241,33 @@
 
     private string GetPartsName(short parts)
     {
-        return parts switch
+        var equipmentParts = (EquipmentParts)parts;
+        return equipmentParts switch
         {
-            1 => "Weapon",
-            2 => "Armor",
-            4 => "Shield",
-            8 => "Helmet",
-            16 => "Ring (Left)",
-            32 => "Ring (Right)",
-            64 => "Auxiliary (Left)",
-            128 => "Auxiliary (Right)",
+            EquipmentParts.Weapon => "Weapon",
+            EquipmentParts.Armor => "Armor",
+            EquipmentParts.Shield => "Shield",
+            EquipmentParts.Helmet => "Helmet",
+            EquipmentParts.LeftHand => "Ring (Left)",
+            EquipmentParts.RightHand => "Ring (Right)",
+            EquipmentParts.LeftAux => "Auxiliary (Left)",
+            EquipmentParts.RightAux => "Auxiliary (Right)",
+            EquipmentParts.Unknown => "Unknown",
             _ => $"Unknown ({parts})"
         };
+    }
+
+    private string GetItemName(uint modelId)
+    {
+        try
+        {
+            var item = Model.Item[modelId];
+            return item?.Name ?? $"Unknown (ID: {modelId})";
+        }
+        catch
+        {
+            return $"Unknown (ID: {modelId})";
+        }
     }
 }
 

@@ -113,6 +113,7 @@ public class Program
         builder.Services.AddSingleton<IMapper>(_ => new Mapper(config));
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<SessionService>();
+        builder.Services.AddSingleton<ServerStateService>();
         builder.Services.AddScoped<DbContext>();
         builder.Services.AddScoped<BanService>();
         builder.Services.AddScoped<CacheService>();
