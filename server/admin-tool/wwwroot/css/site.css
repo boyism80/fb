@@ -27,6 +27,10 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-primary);
 }
 
+h2 {
+    font-weight: 600;
+}
+
 h1:focus {
     outline: none;
 }
@@ -59,6 +63,25 @@ a:hover, .btn-link:hover {
 .btn-success {
     background-color: var(--success-color);
     border-color: var(--success-color);
+}
+
+.btn-outline-secondary {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    background-color: transparent;
+}
+
+.btn-outline-secondary:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+.btn-outline-secondary:disabled {
+    color: var(--text-secondary);
+    background-color: transparent;
+    border-color: var(--border-color);
+    opacity: 0.5;
 }
 
 .content {
@@ -95,6 +118,14 @@ a:hover, .btn-link:hover {
     color: var(--text-secondary);
 }
 
+.form-label {
+    color: var(--text-primary);
+}
+
+label {
+    color: var(--text-primary);
+}
+
 .card {
     background-color: var(--bg-secondary);
     border-color: var(--border-color);
@@ -109,14 +140,32 @@ a:hover, .btn-link:hover {
 
 .table {
     color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.table thead th {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.table tbody td {
+    border-color: var(--border-color);
+    color: var(--text-primary);
 }
 
 .table-striped > tbody > tr:nth-of-type(odd) > td {
     background-color: var(--bg-tertiary);
 }
 
+.table-striped > tbody > tr:nth-of-type(even) > td {
+    background-color: var(--bg-secondary);
+}
+
 .table-hover > tbody > tr:hover > td {
-    background-color: var(--bg-tertiary);
+    background-color: rgba(88, 166, 255, 0.1);
+    color: var(--text-primary);
 }
 
 .alert {
