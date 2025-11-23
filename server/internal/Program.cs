@@ -114,6 +114,8 @@ public class Program
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<SessionService>();
         builder.Services.AddScoped<DbContext>();
+        builder.Services.AddScoped<BanService>();
+        builder.Services.AddScoped<CacheService>();
         builder.Services.AddSingleton<WriteBackService>();
         builder.Services.AddSingleton<Internal.Service.BulletinOperationService>();
         builder.Services.AddHostedService<Internal.Service.BulletinOperationBackgroundService>();

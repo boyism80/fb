@@ -15,20 +15,23 @@ namespace Internal.Controllers
     [Route("ban")]
     public class BanController : ControllerBase
     {
-        private readonly DbContext _dbContext;
+        private readonly BanService _banService;
         private readonly RabbitMqService _rabbitMqService;
+        private readonly DbContext _dbContext;
         private readonly ILogger<BanController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BanController"/> class.
         /// </summary>
-        /// <param name="dbContext">The database context for data operations.</param>
+        /// <param name="banService">The ban service for ban management operations.</param>
         /// <param name="rabbitMqService">The RabbitMQ service for ban notifications.</param>
+        /// <param name="dbContext">The database context for saving changes.</param>
         /// <param name="logger">The logger for recording operations and errors.</param>
-        public BanController(DbContext dbContext, RabbitMqService rabbitMqService, ILogger<BanController> logger)
+        public BanController(BanService banService, RabbitMqService rabbitMqService, DbContext dbContext, ILogger<BanController> logger)
         {
-            _dbContext = dbContext;
+            _banService = banService;
             _rabbitMqService = rabbitMqService;
+            _dbContext = dbContext;
             _logger = logger;
         }
 
@@ -43,42 +46,19 @@ namespace Internal.Controllers
         {
             try
             {
-                // Get user ID from name
-                var userId = await _dbContext.Character.GetCharacterId(request.Name) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                // Calculate expire date
-                DateTime? expireDate = null;
-                if (request.Days.HasValue)
-                {
-                    expireDate = DateTime.Now.AddDays(request.Days.Value);
-                }
-
-                // Create or update ban
-                var ban = new Http.Model.Ban
-                {
-                    User = userId,
-                    Reason = request.Reason,
-                    ExpireDate = expireDate,
-                    CreatedDate = DateTime.Now,
-                    UpdatedDate = DateTime.Now
-                };
-
-                _dbContext.Ban.Set(ban);
+                var result = await _banService.BanUser(request.Name, request.Reason, request.Days);
                 await _dbContext.SaveChangesAsync();
 
-                // Publish notification via RabbitMQ
                 var response = new Response.Ban
                 {
                     Name = request.Name,
                     Reason = request.Reason,
-                    ExpireDate = expireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
-                    Error = (uint)ErrorCode.None
+                    ExpireDate = result.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
+                    Error = (uint)result.Error
                 };
-                _rabbitMqService.Publish(response, "amq.direct", "fb.ban");
 
-                _logger.LogInformation("User {Name} (ID: {UserId}) has been banned. Reason: {Reason}, Expire: {ExpireDate}",
-                    request.Name, userId, request.Reason, expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Permanent");
+                // Publish notification via RabbitMQ
+                _rabbitMqService.Publish(response, "amq.direct", "fb.ban");
 
                 return response;
             }
@@ -87,6 +67,7 @@ namespace Internal.Controllers
                 return new Response.Ban
                 {
                     Name = request.Name,
+                    Reason = request.Reason,
                     Error = (uint)e.Error
                 };
             }
@@ -96,6 +77,7 @@ namespace Internal.Controllers
                 return new Response.Ban
                 {
                     Name = request.Name,
+                    Reason = request.Reason,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
@@ -111,28 +93,17 @@ namespace Internal.Controllers
         {
             try
             {
-                // Get user ID from name
-                var userId = await _dbContext.Character.GetCharacterId(request.Name) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                // Check if ban exists
-                var ban = await _dbContext.Ban.Get(userId);
-                if (ban == null)
-                    throw new LogicException(ErrorCode.NotFoundBan);
-
-                // Delete ban
-                await _dbContext.Ban.Delete(userId);
+                var result = await _banService.UnbanUser(request.Name);
                 await _dbContext.SaveChangesAsync();
 
-                // Publish notification via RabbitMQ
                 var response = new Response.Unban
                 {
                     Name = request.Name,
-                    Error = (uint)ErrorCode.None
+                    Error = (uint)result.Error
                 };
-                _rabbitMqService.Publish(response, "amq.direct", "fb.ban");
 
-                _logger.LogInformation("User {Name} (ID: {UserId}) has been unbanned.", request.Name, userId);
+                // Publish notification via RabbitMQ
+                _rabbitMqService.Publish(response, "amq.direct", "fb.unban");
 
                 return response;
             }

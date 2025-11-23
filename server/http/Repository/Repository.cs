@@ -165,7 +165,23 @@ namespace Http.Reepository
     /// <typeparam name="TKey">The key type that implements IRedisValueKey for Redis integration.</typeparam>
     public abstract class RedisValueRepository<TModel, TKey> : Repository<TModel, TKey> where TModel : class, IModel, TKey where TKey : IRedisValueKey
     {
+        /// <summary>
+        /// Lua script for updating value expiry in Redis cache.
+        /// Sets a value and conditionally sets expiry if no references exist.
+        /// </summary>
+        private static readonly string UpdateValueExpiryScript = """
+            redis.call('set', @key, @value)
+
+            local contains_refs = redis.call('hexists', @cref, @key)
+            if contains_refs == 0 then
+                redis.call('expire', @key, @expiry)
+            end
+
+            return contains_refs
+            """;
+
         private readonly Dictionary<string, string> _local = new Dictionary<string, string>();
+        private readonly Dictionary<Service.Redis, LoadedLuaScript> _updateValueExpiryScripts = new Dictionary<Service.Redis, LoadedLuaScript>();
         private readonly RedisService _redisService;
         private readonly RedisDistributedLockService _distributedLock;
         private readonly WriteBackService _dbExecuteService;
@@ -229,7 +245,13 @@ namespace Http.Reepository
                 var mysqlValue = await base.Get(key);
                 if (mysqlValue != null)
                 {
-                    await _redisService.Redis(key).ScriptEvaluateAsync("update_value_expiry.lua", new
+                    if (!_updateValueExpiryScripts.TryGetValue(redis, out var script))
+                    {
+                        script = LuaScript.Prepare(UpdateValueExpiryScript).Load(redis.GetServer());
+                        _updateValueExpiryScripts[redis] = script;
+                    }
+
+                    await redis.Connection.ScriptEvaluateAsync(script, new
                     {
                         key = key.GetRedisKey(),
                         value = JsonConvert.SerializeObject(mysqlValue),
@@ -306,7 +328,34 @@ namespace Http.Reepository
     /// <typeparam name="TKey">The key type that implements IRedisHashKey for Redis hash integration.</typeparam>
     public abstract class RedisHashRepository<TModel, TKey> : Repository<TModel, TKey> where TModel : class, IModel, TKey where TKey : IRedisHashKey
     {
+        /// <summary>
+        /// Lua script for updating hash expiry in Redis cache.
+        /// Sets multiple hash fields and conditionally sets expiry if no references exist.
+        /// </summary>
+        private static readonly string UpdateHashExpiryScript = """
+            local CACHE_KEY = KEYS[1]
+            local COUNT_REFS = KEYS[2]
+            local EXPIRY = tonumber(ARGV[1])
+            local LENGTH = tonumber(ARGV[2])
+
+            local offset = 2
+            for i = 1, LENGTH do
+                local field = ARGV[offset + i]
+                local value = ARGV[offset + i + 1]
+                redis.call('hset', CACHE_KEY, field, value)
+                offset = offset + 1
+            end
+
+            local contains_refs = redis.call('hexists', COUNT_REFS, CACHE_KEY)
+            if contains_refs == 0 then
+                redis.call('expire', CACHE_KEY, EXPIRY)
+            end
+
+            return {contains_refs}
+            """;
+
         private readonly Dictionary<string, Dictionary<string, string>> _local = new Dictionary<string, Dictionary<string, string>>();
+        private readonly Dictionary<Service.Redis, LoadedLuaScript> _updateHashExpiryScripts = new Dictionary<Service.Redis, LoadedLuaScript>();
         private readonly RedisService _redisService;
         private readonly RedisDistributedLockService _distributedLock;
         private readonly WriteBackService _dbExecuteService;
@@ -468,7 +517,13 @@ namespace Http.Reepository
                             values.Add(k);
                             values.Add(JsonConvert.SerializeObject(v));
                         }
-                        var result = await redis.ScriptEvaluateAsync("update_hash_expiry.lua",
+                        if (!_updateHashExpiryScripts.TryGetValue(redis, out var script))
+                        {
+                            script = LuaScript.Prepare(UpdateHashExpiryScript).Load(redis.GetServer());
+                            _updateHashExpiryScripts[redis] = script;
+                        }
+
+                        var result = await redis.Connection.ScriptEvaluateAsync(script.Hash,
                             keys:
                             [
                                 g.Key,

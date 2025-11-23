@@ -9,6 +9,7 @@ const gateway = require('./gateway')
 const login = require('./login')
 const game = require('./game')
 const bot = require('./bot')
+const adminTool = require('./admin-tool')
 const fs = require('fs');
 const path = require('path')
 
@@ -32,4 +33,5 @@ const writeBackService = wb.setup(namespace, conf, [redisService, rabbitmqServic
 const gatewayService = gateway.setup(namespace, conf, [internalService])
 const loginService = login.setup(namespace, conf, [internalService])
 const gameService = game.setup(namespace, conf, [internalService])
+const adminToolService = adminTool.setup(namespace, conf, [redisService, rabbitmqService])
 // bot.setup(namespace, conf, [gatewayService, loginService, gameService])

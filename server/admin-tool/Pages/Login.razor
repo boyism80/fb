@@ -1,0 +1,113 @@
+@page "/login"
+@using AdminTool.Services
+@using AdminTool.Authentication
+@using System.ComponentModel.DataAnnotations
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Login - Admin Tool</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Admin Tool Login</h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @ErrorMessage
+                        </div>
+                    }
+
+                    <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Character Name</label>
+                            <InputText id="username" class="form-control" @bind-Value="loginModel.Username" />
+                            <ValidationMessage For="@(() => loginModel.Username)" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <InputText id="password" type="password" class="form-control" @bind-Value="loginModel.Password" />
+                            <ValidationMessage For="@(() => loginModel.Password)" />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
+                            @if (isLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            }
+                            Login
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private string? ErrorMessage;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        ErrorMessage = null;
+        isLoading = true;
+
+        try
+        {
+            var result = await AuthService.Authenticate(loginModel.Username, loginModel.Password);
+            if (result.Success && result.UserId.HasValue && result.Role.HasValue)
+            {
+                // Update authentication state
+                if (AuthenticationStateProvider is CustomAuthenticationStateProvider customProvider)
+                {
+                    var authData = new AuthData
+                    {
+                        UserId = result.UserId.Value,
+                        UserName = result.UserName,
+                        Role = result.Role.Value.ToString()
+                    };
+                    await customProvider.MarkUserAsAuthenticated(authData);
+                }
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                ErrorMessage = result.Error;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private class LoginModel
+    {
+        [Required(ErrorMessage = "Character name is required")]
+        public string Username { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Password is required")]
+        public string Password { get; set; } = string.Empty;
+    }
+}
+
