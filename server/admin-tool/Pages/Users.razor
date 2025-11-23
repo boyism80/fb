@@ -102,18 +102,21 @@
                             </td>
                             <td>@user.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
                             <td>
-                                @if (user.IsBanned)
-                                {
-                                    <button class="btn btn-sm btn-success" @onclick="() => ShowUnbanModal(user)" disabled="@isProcessing">
-                                        Unban
-                                    </button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-sm btn-danger" @onclick="() => ShowBanModal(user)" disabled="@isProcessing">
-                                        Ban
-                                    </button>
-                                }
+                                <div class="btn-group" role="group">
+                                    <a href="/users/@user.Id/items" class="btn btn-sm btn-outline-primary">Items</a>
+                                    @if (user.IsBanned)
+                                    {
+                                        <button class="btn btn-sm btn-success" @onclick="() => ShowUnbanModal(user)" disabled="@isProcessing">
+                                            Unban
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-danger" @onclick="() => ShowBanModal(user)" disabled="@isProcessing">
+                                            Ban
+                                        </button>
+                                    }
+                                </div>
                             </td>
                         </tr>
                     }
