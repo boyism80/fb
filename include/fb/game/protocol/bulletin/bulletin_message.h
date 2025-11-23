@@ -17,16 +17,16 @@ public:
 #ifndef BOT
     const std::string text;
     const bool        success;
-    const bool        mail;
+    const bool        unknown;
 #else
     std::string text;
     bool        success;
-    bool        mail;
+    bool        unknown;
 #endif
 
 public:
 #ifndef BOT
-    bulletin_message(const std::string& text, bool success, bool mail = false);
+    bulletin_message(const std::string& text, bool success, bool unknown = false);
 #else
     bulletin_message() = default;
 #endif

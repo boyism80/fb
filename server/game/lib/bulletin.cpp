@@ -23,7 +23,7 @@ void bulletin::show(const article& article, BULLETIN_BUTTON_ENABLE flag)
     this->owner.listener.on_show_bulletin(this->owner, article, flag);
 }
 
-void bulletin::message(const std::string& message, bool success)
+void bulletin::message(const std::string& message, bool success, bool unknown)
 {
-    this->owner.listener.on_show_bulletin_message(this->owner, message, success, false);
+    this->owner.listener.on_show_bulletin_message(this->owner, message, success, unknown);
 }

@@ -264,9 +264,9 @@ void listener_impl::on_show_mail_box(character& ch, const mail_box::mail& mail, 
     ch.send(fb_resp::bulletin_mail(dto, flag));
 }
 
-void listener_impl::on_show_bulletin_message(character& ch, const std::string& message, bool success, bool mail)
+void listener_impl::on_show_bulletin_message(character& ch, const std::string& message, bool success, bool unknown)
 {
-    ch.send(fb_resp::bulletin_message(message, success, mail));
+    ch.send(fb_resp::bulletin_message(message, success, unknown));
 }
 
 void listener_impl::on_show_world_map(character& ch, uint32_t id, uint16_t index)

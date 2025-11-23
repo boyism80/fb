@@ -18,10 +18,10 @@ void mail_box::show(const mail& mail, MAIL_BUTTON_ENABLE flag)
     this->owner.listener.on_show_mail_box(this->owner, mail, flag);
 }
 
-void mail_box::message(const std::string& message, bool success, bool unknown)
+void mail_box::message(const std::string& message, bool success, bool error)
 {
     this->owner.assert_thread();
-    this->owner.listener.on_show_bulletin_message(this->owner, message, success, unknown);
+    this->owner.listener.on_show_bulletin_message(this->owner, message, success, error);
 }
 
 uint16_t mail_box::unread_count() const
