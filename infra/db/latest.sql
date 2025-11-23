@@ -532,13 +532,11 @@ DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BULLETIN_GET`(IN section INT, IN article INT)
 BEGIN
     SELECT A.`id`,
-           N.`id` AS `user`,
-           N.`name` AS `user_name`,
+           A.`user`,
            A.`title`,
            A.`contents`,
            A.`created_date` 
     FROM `bulletin` AS A
-    LEFT JOIN `name` AS N ON A.`user` = N.id
     WHERE A.`id` = article AND A.`section` = section AND `deleted` = 0;
     
     SELECT EXISTS(SELECT * FROM `bulletin`
@@ -566,13 +564,10 @@ CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BULLETIN_GET_LIST`(IN section INT, IN pos
 BEGIN
     SELECT A.`id`,
            A.`section`,
-           N.`id` AS `user`,
-           N.`name` AS `user_name`,
+           A.`user`,
            A.`title`,
            A.`created_date`
     FROM bulletin AS A
-    LEFT JOIN `name` AS N
-    ON A.user = N.id
     WHERE A.`section` = section AND A.`deleted` = 0 AND position >= A.`id`
     ORDER BY A.`id` DESC
     LIMIT 0, 20;

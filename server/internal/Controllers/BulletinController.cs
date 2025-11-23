@@ -63,7 +63,21 @@ namespace Internal.Controllers
             dynamicParams.Add("position", offset);
             var articles = await conn.QueryAsync<Http.Model.Bulletin>($"USP_BULLETIN_GET_LIST", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
 
-            var summaryList = _mapper.Map<List<Http.Model.Bulletin>, List<ArticleSummary>>(articles.ToList());
+            var articleList = articles.ToList();
+            if (articleList.Any())
+            {
+                // Get user names from global DB
+                var userIds = articleList.Select(a => a.User).Distinct().ToList();
+                var userNames = await _dbContext.Character.GetName(userIds);
+                
+                // Set user names
+                foreach (var article in articleList)
+                {
+                    article.UserName = userNames.TryGetValue(article.User, out var name) ? name : string.Empty;
+                }
+            }
+
+            var summaryList = _mapper.Map<List<Http.Model.Bulletin>, List<ArticleSummary>>(articleList);
             return new Response.GetArticleList
             {
                 SummaryList = summaryList
@@ -89,6 +103,9 @@ namespace Internal.Controllers
                 await using var reader = await conn.QueryMultipleAsync($"USP_BULLETIN_GET", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
                 var article = await reader.ReadFirstOrDefaultAsync<Http.Model.Bulletin>() ??
                     throw new LogicException(Fb.Model.EnumValue.ErrorCode.ArticleNotExists);
+
+                // Get user name from global DB
+                article.UserName = await _dbContext.Character.GetName(article.User) ?? string.Empty;
 
                 var next = await reader.ReadFirstAsync<bool>();
                 return new Response.GetArticle
