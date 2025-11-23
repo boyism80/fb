@@ -79,6 +79,8 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.updatefriends_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.getsystemmails_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.writesystemmail_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.ban_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.unban_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.shutdown_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.kickout_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.login_generated.h>
@@ -120,6 +122,8 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.updatefriends_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getsystemmails_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.writesystemmail_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.ban_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.unban_generated.h>
 
 namespace fb::protocol::internal
 {
@@ -180,6 +184,8 @@ namespace fb::protocol::internal::request
     class UpdateFriends;
     class GetSystemMails;
     class WriteSystemMail;
+    class Ban;
+    class Unban;
 } // end of namespace fb::protocol::internal::request
 namespace fb::protocol::internal::response
 {
@@ -224,6 +230,8 @@ namespace fb::protocol::internal::response
     class UpdateFriends;
     class GetSystemMails;
     class WriteSystemMail;
+    class Ban;
+    class Unban;
 } // end of namespace fb::protocol::internal::response
 
 
@@ -367,6 +375,8 @@ template <> struct FlatBufferOffset<fb::protocol::internal::request::Broadcast> 
 template <> struct FlatBufferOffset<fb::protocol::internal::request::UpdateFriends> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::UpdateFriends> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::GetSystemMails> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::GetSystemMails> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::WriteSystemMail> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::WriteSystemMail> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::Ban> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Ban> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::Unban> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Unban> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Shutdown> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::KickOut> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Login> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Login> type; };
@@ -408,6 +418,8 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::Broadcast>
 template <> struct FlatBufferOffset<fb::protocol::internal::response::UpdateFriends> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::UpdateFriends> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::GetSystemMails> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetSystemMails> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::WriteSystemMail> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::WriteSystemMail> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::Ban> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Ban> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::Unban> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Unban> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Service> { typedef fb::protocol::internal::raw::Service type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::GroupAction> { typedef fb::protocol::internal::raw::GroupAction type; };
 template <typename T> struct FlatBufferOffset<std::optional<T>> { typedef typename FlatBufferOffset<T>::type type; };
@@ -522,6 +534,10 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::GetSystemMails> build<
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::WriteSystemMail> build<fb::protocol::internal::request::WriteSystemMail>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteSystemMail& value);
 template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::Ban> build<fb::protocol::internal::request::Ban>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Ban& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::Unban> build<fb::protocol::internal::request::Unban>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Unban& value);
+template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> build<fb::protocol::internal::response::Shutdown>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Shutdown& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> build<fb::protocol::internal::response::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickOut& value);
@@ -603,6 +619,10 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::GetSystemMails> build<fb::protocol::internal::response::GetSystemMails>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetSystemMails& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::WriteSystemMail> build<fb::protocol::internal::response::WriteSystemMail>(FlatBufferBuilder& builder, const fb::protocol::internal::response::WriteSystemMail& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::Ban> build<fb::protocol::internal::response::Ban>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Ban& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::Unban> build<fb::protocol::internal::response::Unban>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Unban& value);
 
 template <typename T> inline static
 std::vector<T> unpack(const flatbuffers::Vector<typename FlatBufferOffset<T>::type> *value);
@@ -1459,6 +1479,8 @@ enum class FlatBufferProtocolType
     UpdateFriends,
     GetSystemMails,
     WriteSystemMail,
+    Ban,
+    Unban,
 };
 
 class Shutdown
@@ -2879,6 +2901,86 @@ public:
         return WriteSystemMail(*raw);
     }
 };
+class Ban
+{
+public:
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Ban;
+
+public:
+    std::string name;
+    std::string reason;
+    std::optional<uint32_t> days = std::nullopt;
+
+public:
+    Ban() = default;
+
+    Ban(const Ban& x)
+        : name(x.name), reason(x.reason), days(x.days)
+    { }
+
+    Ban(const std::string& name, const std::string& reason, const std::optional<uint32_t>& days)
+        : name(name), reason(reason), days(days)
+    { }
+
+    Ban(const fb::protocol::internal::request::raw::Ban& raw)
+        : name(flatbuffers::option::decode(raw.name()->c_str())), reason(flatbuffers::option::decode(raw.reason()->c_str())), days(raw.days() != nullptr ? raw.days()->value() : std::optional<uint32_t>())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::request::Ban>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static Ban Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::request::raw::GetBan(bytes);
+        return Ban(*raw);
+    }
+};
+class Unban
+{
+public:
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Unban;
+
+public:
+    std::string name;
+
+public:
+    Unban() = default;
+
+    Unban(const Unban& x)
+        : name(x.name)
+    { }
+
+    Unban(const std::string& name)
+        : name(name)
+    { }
+
+    Unban(const fb::protocol::internal::request::raw::Unban& raw)
+        : name(flatbuffers::option::decode(raw.name()->c_str()))
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::request::Unban>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static Unban Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::request::raw::GetUnban(bytes);
+        return Unban(*raw);
+    }
+};
 
 } // end of namespace fb::protocol::internal::request
 
@@ -2927,6 +3029,8 @@ enum class FlatBufferProtocolType
     UpdateFriends,
     GetSystemMails,
     WriteSystemMail,
+    Ban,
+    Unban,
 };
 
 class Shutdown
@@ -3011,20 +3115,22 @@ public:
     bool logon = false;
     std::string ip;
     uint16_t port = 0;
+    std::string ban_reason;
+    std::optional<std::string> ban_expire_date = std::nullopt;
 
 public:
     Login() = default;
 
     Login(const Login& x)
-        : error(x.error), logon(x.logon), ip(x.ip), port(x.port)
+        : error(x.error), logon(x.logon), ip(x.ip), port(x.port), ban_reason(x.ban_reason), ban_expire_date(x.ban_expire_date)
     { }
 
-    Login(uint32_t error, bool logon, const std::string& ip, uint16_t port)
-        : error(error), logon(logon), ip(ip), port(port)
+    Login(uint32_t error, bool logon, const std::string& ip, uint16_t port, const std::string& ban_reason, const std::optional<std::string>& ban_expire_date)
+        : error(error), logon(logon), ip(ip), port(port), ban_reason(ban_reason), ban_expire_date(ban_expire_date)
     { }
 
     Login(const fb::protocol::internal::response::raw::Login& raw)
-        : error(raw.error()), logon(raw.logon()), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port())
+        : error(raw.error()), logon(raw.logon()), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port()), ban_reason(flatbuffers::option::decode(raw.ban_reason()->c_str())), ban_expire_date(raw.ban_expire_date() != nullptr ? flatbuffers::option::decode(raw.ban_expire_date()->c_str()) : std::optional<std::string>())
     { }
 
 public:
@@ -3091,20 +3197,22 @@ public:
     uint32_t error = 0;
     std::string ip;
     uint16_t port = 0;
+    std::string ban_reason;
+    std::optional<std::string> ban_expire_date = std::nullopt;
 
 public:
     Transfer() = default;
 
     Transfer(const Transfer& x)
-        : error(x.error), ip(x.ip), port(x.port)
+        : error(x.error), ip(x.ip), port(x.port), ban_reason(x.ban_reason), ban_expire_date(x.ban_expire_date)
     { }
 
-    Transfer(uint32_t error, const std::string& ip, uint16_t port)
-        : error(error), ip(ip), port(port)
+    Transfer(uint32_t error, const std::string& ip, uint16_t port, const std::string& ban_reason, const std::optional<std::string>& ban_expire_date)
+        : error(error), ip(ip), port(port), ban_reason(ban_reason), ban_expire_date(ban_expire_date)
     { }
 
     Transfer(const fb::protocol::internal::response::raw::Transfer& raw)
-        : error(raw.error()), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port())
+        : error(raw.error()), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port()), ban_reason(flatbuffers::option::decode(raw.ban_reason()->c_str())), ban_expire_date(raw.ban_expire_date() != nullptr ? flatbuffers::option::decode(raw.ban_expire_date()->c_str()) : std::optional<std::string>())
     { }
 
 public:
@@ -4604,6 +4712,88 @@ public:
         return WriteSystemMail(*raw);
     }
 };
+class Ban
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::Ban;
+
+public:
+    std::string name;
+    std::string reason;
+    std::optional<std::string> expire_date = std::nullopt;
+    uint32_t error = 0;
+
+public:
+    Ban() = default;
+
+    Ban(const Ban& x)
+        : name(x.name), reason(x.reason), expire_date(x.expire_date), error(x.error)
+    { }
+
+    Ban(const std::string& name, const std::string& reason, const std::optional<std::string>& expire_date, uint32_t error)
+        : name(name), reason(reason), expire_date(expire_date), error(error)
+    { }
+
+    Ban(const fb::protocol::internal::response::raw::Ban& raw)
+        : name(flatbuffers::option::decode(raw.name()->c_str())), reason(flatbuffers::option::decode(raw.reason()->c_str())), expire_date(raw.expire_date() != nullptr ? flatbuffers::option::decode(raw.expire_date()->c_str()) : std::optional<std::string>()), error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::Ban>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static Ban Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::raw::GetBan(bytes);
+        return Ban(*raw);
+    }
+};
+class Unban
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::Unban;
+
+public:
+    std::string name;
+    uint32_t error = 0;
+
+public:
+    Unban() = default;
+
+    Unban(const Unban& x)
+        : name(x.name), error(x.error)
+    { }
+
+    Unban(const std::string& name, uint32_t error)
+        : name(name), error(error)
+    { }
+
+    Unban(const fb::protocol::internal::response::raw::Unban& raw)
+        : name(flatbuffers::option::decode(raw.name()->c_str())), error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::Unban>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static Unban Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::raw::GetUnban(bytes);
+        return Unban(*raw);
+    }
+};
 
 } // end of namespace fb::protocol::internal::response
 
@@ -5148,6 +5338,20 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::WriteSystemMail> build
             flatbuffers::build<std::optional<std::string>>(builder, value.expire_date));
 }
 template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::Ban> build<fb::protocol::internal::request::Ban>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Ban& value)
+{
+    return fb::protocol::internal::request::raw::CreateBan(builder,
+            flatbuffers::build<std::string>(builder, value.name),
+            flatbuffers::build<std::string>(builder, value.reason),
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.days));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::Unban> build<fb::protocol::internal::request::Unban>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Unban& value)
+{
+    return fb::protocol::internal::request::raw::CreateUnban(builder,
+            flatbuffers::build<std::string>(builder, value.name));
+}
+template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> build<fb::protocol::internal::response::Shutdown>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Shutdown& value)
 {
     return fb::protocol::internal::response::raw::CreateShutdown(builder);
@@ -5166,7 +5370,9 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Login> build<fb::prot
             flatbuffers::build<uint32_t>(builder, value.error),
             flatbuffers::build<bool>(builder, value.logon),
             flatbuffers::build<std::string>(builder, value.ip),
-            flatbuffers::build<uint16_t>(builder, value.port));
+            flatbuffers::build<uint16_t>(builder, value.port),
+            flatbuffers::build<std::string>(builder, value.ban_reason),
+            flatbuffers::build<std::optional<std::string>>(builder, value.ban_expire_date));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Logout> build<fb::protocol::internal::response::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Logout& value)
@@ -5180,7 +5386,9 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Transfer> build<fb::p
     return fb::protocol::internal::response::raw::CreateTransfer(builder,
             flatbuffers::build<uint32_t>(builder, value.error),
             flatbuffers::build<std::string>(builder, value.ip),
-            flatbuffers::build<uint16_t>(builder, value.port));
+            flatbuffers::build<uint16_t>(builder, value.port),
+            flatbuffers::build<std::string>(builder, value.ban_reason),
+            flatbuffers::build<std::optional<std::string>>(builder, value.ban_expire_date));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Whisper> build<fb::protocol::internal::response::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Whisper& value)
@@ -5473,6 +5681,22 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::WriteSystemMail> buil
 {
     return fb::protocol::internal::response::raw::CreateWriteSystemMail(builder,
             flatbuffers::build<fb::protocol::internal::SystemMail>(builder, value.mail),
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::Ban> build<fb::protocol::internal::response::Ban>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Ban& value)
+{
+    return fb::protocol::internal::response::raw::CreateBan(builder,
+            flatbuffers::build<std::string>(builder, value.name),
+            flatbuffers::build<std::string>(builder, value.reason),
+            flatbuffers::build<std::optional<std::string>>(builder, value.expire_date),
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::Unban> build<fb::protocol::internal::response::Unban>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Unban& value)
+{
+    return fb::protocol::internal::response::raw::CreateUnban(builder,
+            flatbuffers::build<std::string>(builder, value.name),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 
