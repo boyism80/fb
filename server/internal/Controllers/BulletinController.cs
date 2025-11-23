@@ -57,7 +57,7 @@ namespace Internal.Controllers
         [HttpGet("{section}")]
         public async Task<Response.GetArticleList> GetArticleList(uint section, [FromQuery(Name = "offset")] ushort offset)
         {
-            await using var conn = _dbContext.Connection(-1);
+            await using var conn = _dbContext.Connection(section);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("section", section);
             dynamicParams.Add("position", offset);
@@ -82,7 +82,7 @@ namespace Internal.Controllers
         {
             try
             {
-                await using var conn = _dbContext.Connection(-1);
+                await using var conn = _dbContext.Connection(section);
                 var dynamicParams = new DynamicParameters();
                 dynamicParams.Add("section", section);
                 dynamicParams.Add("article", id);

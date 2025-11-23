@@ -63,8 +63,7 @@ CREATE TABLE `bulletin` (
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`,`section`),
-  KEY `fk.bulletin.owner_idx` (`user`),
-  CONSTRAINT `fk.bulletin.user` FOREIGN KEY (`user`) REFERENCES `name` (`id`)
+  KEY `fk.bulletin.owner_idx` (`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
