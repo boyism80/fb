@@ -16,7 +16,7 @@ namespace Http.Service
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Redis"/> class.
-        /// Establishes connection to Redis server and loads Lua scripts from the specified directory.
+        /// Establishes connection to Redis server and loads Lua scripts from code and files.
         /// </summary>
         /// <param name="host">The Redis host configuration containing connection details.</param>
         public Redis(RedisHost host)
@@ -38,9 +38,10 @@ namespace Http.Service
 
             foreach (var file in Directory.GetFiles(path, "*.lua"))
             {
+                var fileName = Path.GetFileName(file);
                 var script = LuaScript.Prepare(File.ReadAllText(file));
                 var loadedScript = script.Load(_redis.GetServer(_redis.GetEndPoints()[0]));
-                _loadedLuaScripts.Add(Path.GetFileName(file), loadedScript);
+                _loadedLuaScripts.Add(fileName, loadedScript);
             }
         }
 
@@ -64,6 +65,15 @@ namespace Http.Service
             {
                 return _redis.GetDatabase(0);
             }
+        }
+
+        /// <summary>
+        /// Gets the Redis server instance for script loading.
+        /// </summary>
+        /// <returns>The Redis server instance.</returns>
+        public IServer GetServer()
+        {
+            return _redis.GetServer(_redis.GetEndPoints()[0]);
         }
     }
 

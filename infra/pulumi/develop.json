@@ -282,5 +282,17 @@
             },
             "replicas": 5
         }
+    },
+    "admin-tool": {
+        "section-1": {
+            "replicas": 1,
+            "port": {
+                "cluster": 80,
+                "node": 30210
+            },
+            "mysql": "section-1",
+            "redis": "section-1",
+            "rabbitmq": "section-1"
+        }
     }
 }

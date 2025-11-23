@@ -33,8 +33,10 @@ XCOPY "tools\data-converter\bin\output\json\server\*.json" "server\bot\json\*.js
 
 DEL /s /q "server\http\Model\Model.cs"
 RMDIR /s /q "server\internal\json"
+RMDIR /s /q "server\admin-tool\json"
 XCOPY "tools\data-converter\bin\output\C#\server\*.cs" "server\http\Model\*.cs"
 XCOPY "tools\data-converter\bin\output\json\server\*.json" "server\internal\json\*.json"
+XCOPY "tools\data-converter\bin\output\json\server\*.json" "server\admin-tool\json\*.json"
 POPD
 
 GOTO SKIP_PAUSE

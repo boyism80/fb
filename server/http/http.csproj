@@ -17,4 +17,10 @@
     <PackageReference Include="DistributedLock" Version="2.5.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Redis\Script\*.lua">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
