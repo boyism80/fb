@@ -4,9 +4,11 @@
 @using Http.Model
 @using Fb.Model.EnumValue
 @using Microsoft.AspNetCore.Authorization
+@using Response = fb.protocol._internal.response
 @inject UserService UserService
 @inject BanService BanService
 @inject DbContext DbContext
+@inject RabbitMqService RabbitMqService
 @attribute [Authorize(Roles = "Admin,Operator")]
 
 <PageTitle>Users - Admin Tool</PageTitle>
@@ -340,8 +342,18 @@
                 days = parsedDays;
             }
 
-            await BanService.BanUser(selectedUser.Name, banModel.Reason, days);
+            var result = await BanService.BanUser(selectedUser.Name, banModel.Reason, days);
             await DbContext.SaveChangesAsync();
+
+            // Publish notification via RabbitMQ
+            var response = new Response.Ban
+            {
+                Name = selectedUser.Name,
+                Reason = banModel.Reason,
+                ExpireDate = result.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
+                Error = (uint)result.Error
+            };
+            RabbitMqService.Publish(response, "amq.direct", "fb.ban");
 
             successMessage = $"User {selectedUser.Name} has been banned successfully.";
             CloseBanModal();
@@ -368,8 +380,16 @@
 
         try
         {
-            await BanService.UnbanUser(selectedUser.Name);
+            var result = await BanService.UnbanUser(selectedUser.Name);
             await DbContext.SaveChangesAsync();
+
+            // Publish notification via RabbitMQ
+            var response = new Response.Unban
+            {
+                Name = selectedUser.Name,
+                Error = (uint)result.Error
+            };
+            RabbitMqService.Publish(response, "amq.direct", "fb.unban");
 
             successMessage = $"User {selectedUser.Name} has been unbanned successfully.";
             CloseUnbanModal();
