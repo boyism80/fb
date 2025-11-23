@@ -20,14 +20,14 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
         this->server.assert_account(name, pw);
 
         auto&& response =
-            co_await this->server.http.get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
+            co_await this->server.http.get<internal::response::GetUid>("internal", std::format("/account/uid/{}", name));
         co_await this->server.threads.switching(weak);
 
         if (response.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
         auto   uid       = response.uid;
-        auto&& response2 = co_await this->server.http.post("internal", "/user/authenticate", Authenticate{uid, pw});
+        auto&& response2 = co_await this->server.http.post("internal", "/account/authenticate", Authenticate{uid, pw});
         co_await this->server.threads.switching(weak);
 
         switch (response2.error_code)

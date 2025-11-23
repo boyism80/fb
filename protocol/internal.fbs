@@ -57,6 +57,7 @@ table Character {
     aux_bot_color: ubyte?;
     buffs: [Buff];
     title: string;
+    created_date: string;
     updated_date: string;
 }
 
@@ -119,8 +120,7 @@ table Article {
 table MailSummary {
     id: ushort;
     user: uint;
-    sender: uint;
-    sender_name: string;
+    sender: string;
     read: bool;
     title: string;
     created_date: string;
@@ -129,8 +129,7 @@ table MailSummary {
 table Mail {
     id: ushort;
     user: uint;
-    sender: uint;
-    sender_name: string;
+    sender: string;
     title: string;
     contents: string;
     read: bool;
@@ -170,4 +169,19 @@ table Quest {
     progress: uint;
     param: string;
     completed: bool;
+}
+
+table SystemMail {
+    id: uint;
+    title: string;
+    contents: string;
+    expire_date: string?;
+    created_date: string;
+}
+
+table SystemMailUser {
+    user: uint;
+    mail_id: uint;
+    read: bool;
+    expire_date: string?;
 }

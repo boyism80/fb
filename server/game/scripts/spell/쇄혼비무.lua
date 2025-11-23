@@ -23,7 +23,7 @@ function ON_CAST_1019(me, spell)
         end
     end
 
-    local nears = me:nears(0xFF & ~OBJECT_TYPE_ITEM)
+    local nears = me:nears(0xFF & ~OBJECT_TYPE.ITEM)
     local x, y = me:position()
     local direction = me:direction()
     local front = front_obj(x, y, direction, 4, nears)
@@ -34,11 +34,11 @@ function ON_CAST_1019(me, spell)
     local hp_consume = (me:hp() * 2) // 3
     me:hp(math.max(1, me:hp() - hp_consume))
 
-    if direction == DIRECTION_LEFT then
+    if direction == DIRECTION.LEFT then
         x = x-3
-    elseif direction == DIRECTION_RIGHT then
+    elseif direction == DIRECTION.RIGHT then
         x = x+3
-    elseif direction == DIRECTION_TOP then
+    elseif direction == DIRECTION.TOP then
         y = y-3
     else
         y = y+3

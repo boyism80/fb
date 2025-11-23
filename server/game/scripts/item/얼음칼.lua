@@ -5,7 +5,7 @@ function ON_ATTACK_29(me, item)
         return false
     end
 
-    local front = me:front(OBJECT_TYPE_LIFE)
+    local front = me:front(OBJECT_TYPE.LIFE)
     if front == nil then
         return
     end

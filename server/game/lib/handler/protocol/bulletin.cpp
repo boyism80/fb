@@ -37,7 +37,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 auto dao = std::vector<mail_box::summary>();
                 for (auto& summary : resp.summary_list)
                 {
-                    dao.push_back(mail_box::summary{summary.id, summary.user, summary.sender, summary.sender_name, summary.read, summary.title, summary.created_date});
+                    dao.push_back(mail_box::summary{summary.id, summary.user, summary.sender, summary.read, summary.title, summary.created_date});
                 }
 
                 ch->mail_box.show(dao, flag);
@@ -82,14 +82,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 if (ch->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
                     flag |= MAIL_BUTTON_ENABLE::NEW;
 
-                ch->mail_box.show(mail_box::mail{resp.mail.id,
-                                                 resp.mail.user,
-                                                 resp.mail.sender,
-                                                 resp.mail.sender_name,
-                                                 resp.mail.title,
-                                                 resp.mail.contents,
-                                                 resp.mail.read,
-                                                 resp.mail.created_date},
+                ch->mail_box.show(mail_box::mail{resp.mail.id, resp.mail.user, resp.mail.sender, resp.mail.title, resp.mail.contents, resp.mail.read, resp.mail.created_date},
                                   flag);
             }
             else
@@ -183,7 +176,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             auto dao = std::vector<mail_box::summary>();
             for (auto& summary : resp.summary_list)
             {
-                dao.push_back(mail_box::summary{summary.id, summary.user, summary.sender, summary.sender_name, summary.read, summary.title, summary.created_date});
+                dao.push_back(mail_box::summary{summary.id, summary.user, summary.sender, summary.read, summary.title, summary.created_date});
             }
 
             ch->mail_box.show(dao, flag);

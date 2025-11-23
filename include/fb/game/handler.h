@@ -52,6 +52,7 @@
 #include <fb/game/handler/amqp/kick_clan.h>
 #include <fb/game/handler/amqp/broadcast_clan.h>
 #include <fb/game/handler/amqp/write_mail.h>
+#include <fb/game/handler/amqp/write_system_mail.h>
 
 #include <fb/game/handler/npc_interaction/appreciate.h>
 #include <fb/game/handler/npc_interaction/buy.h>
@@ -74,6 +75,8 @@
 #include <fb/game/handler/timer/heart_beat.h>
 #include <fb/game/handler/timer/update_time.h>
 #include <fb/game/handler/timer/announce.h>
+#include <fb/game/handler/timer/system_mail_timer.h>
+#include <fb/game/handler/timer/system_mail_distribution_timer.h>
 #include <fb/game/handler/timer/buff_timer.h>
 #include <fb/game/handler/timer/gear_timer.h>
 #include <fb/game/handler/timer/mob_action_timer.h>

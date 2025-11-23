@@ -186,5 +186,88 @@ namespace Internal.Controllers
                 };
             }
         }
+
+        /// <summary>
+        /// Retrieves all active (non-expired and non-deleted) system mails.
+        /// Returns system mails that are currently valid for distribution to users.
+        /// </summary>
+        /// <returns>A response containing the list of active system mails or error details.</returns>
+        [HttpPost("system/get")]
+        public async Task<Response.GetSystemMails> GetSystemMails()
+        {
+            try
+            {
+                var systemMails = await _dbContext.SystemMail.GetAll();
+                var protocolMails = systemMails.Select(m => new Protocol.SystemMail
+                {
+                    Id = m.Id,
+                    Title = m.Title,
+                    Contents = m.Contents,
+                    ExpireDate = m.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
+                    CreatedDate = m.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                }).ToList();
+
+                return new Response.GetSystemMails
+                {
+                    Mails = protocolMails,
+                    Error = (uint)ErrorCode.None
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.GetSystemMails
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
+        /// <summary>
+        /// Creates a new system mail and publishes notification via RabbitMQ.
+        /// Invalidates Redis cache to ensure all game servers fetch the latest system mails.
+        /// </summary>
+        /// <param name="request">The system mail writing request containing title, contents, and optional expiration date.</param>
+        /// <returns>A response with the created system mail information or error details.</returns>
+        [HttpPost("system/write")]
+        public async Task<Response.WriteSystemMail> WriteSystemMail(Request.WriteSystemMail request)
+        {
+            try
+            {
+                DateTime? expireDate = null;
+                if (!string.IsNullOrEmpty(request.ExpireDate))
+                {
+                    if (DateTime.TryParse(request.ExpireDate, out var parsedDate))
+                        expireDate = parsedDate;
+                }
+
+                var systemMail = await _dbContext.SystemMail.Write(request.Title, request.Contents, expireDate);
+                var protocolMail = new Protocol.SystemMail
+                {
+                    Id = systemMail.Id,
+                    Title = systemMail.Title,
+                    Contents = systemMail.Contents,
+                    ExpireDate = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
+                    CreatedDate = systemMail.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                };
+
+                var response = new Response.WriteSystemMail
+                {
+                    Mail = protocolMail,
+                    Error = (uint)ErrorCode.None
+                };
+
+                // Publish notification to all game servers via RabbitMQ
+                _rabbitMqService.Publish(response, "amq.direct", "fb.system_mail");
+
+                return response;
+            }
+            catch (Exception)
+            {
+                return new Response.WriteSystemMail
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
     }
 }

@@ -1,6 +1,6 @@
 -- 공력주입 캐스팅
 function ON_CAST_4010(me, you, spell)
-    if not you:is(OBJECT_TYPE_LIFE) then
+    if not you:is(OBJECT_TYPE.LIFE) then
         return me:message('걸리지 않습니다.')
     end
 

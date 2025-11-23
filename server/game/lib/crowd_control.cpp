@@ -26,7 +26,7 @@ CROWD_CONTROL crowd_control::add(CROWD_CONTROL value)
 {
     this->_owner.assert_thread();
     this->_value = CROWD_CONTROL(this->_value | value);
-    this->_owner.update(STATE_LEVEL::CROWD_CONTROL);
+    this->_owner.update(UPDATE_STATE_LEVEL::CROWD_CONTROL);
     return this->_value;
 }
 
@@ -34,7 +34,7 @@ CROWD_CONTROL crowd_control::remove(CROWD_CONTROL value)
 {
     this->_owner.assert_thread();
     this->_value = CROWD_CONTROL(this->_value & ~value);
-    this->_owner.update(STATE_LEVEL::CROWD_CONTROL);
+    this->_owner.update(UPDATE_STATE_LEVEL::CROWD_CONTROL);
     return this->_value;
 }
 
@@ -48,14 +48,14 @@ void crowd_control::clear()
 {
     this->_owner.assert_thread();
     this->_value = CROWD_CONTROL::NONE;
-    this->_owner.update(STATE_LEVEL::CROWD_CONTROL);
+    this->_owner.update(UPDATE_STATE_LEVEL::CROWD_CONTROL);
 }
 
 void crowd_control::set(CROWD_CONTROL value)
 {
     this->_owner.assert_thread();
     this->_value = value;
-    this->_owner.update(STATE_LEVEL::CROWD_CONTROL);
+    this->_owner.update(UPDATE_STATE_LEVEL::CROWD_CONTROL);
 }
 
 crowd_control::operator CROWD_CONTROL () const

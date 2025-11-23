@@ -50,7 +50,7 @@ public:
     void on_dead(life& me, std::shared_ptr<object> you) override final;
     void on_update_hp(life& me, uint32_t diff, bool critical) override final;
     void on_action(life& me, ACTION action, DURATION duration, uint8_t sound) override final;
-    void on_update(character& me, STATE_LEVEL level) override final;
+    void on_update(character& me, UPDATE_STATE_LEVEL level) override final;
     void on_message(character& me, const std::string& message, MESSAGE_TYPE type) override final;
     void on_option_changed(character& me, OPTION option, bool enabled) override final;
     void on_update_option(character& me) override final;

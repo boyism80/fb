@@ -7,7 +7,7 @@ function ON_CAST_2027(me, spell)
     local damage = me:hp() + math.min(me:mp(), 20000)
     local message = '백호검무'
 
-    local front = me:front(OBJECT_TYPE_LIFE)
+    local front = me:front(OBJECT_TYPE.LIFE)
     if not attack_cast(me, front, spell, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect}) then
         return
     end

@@ -172,5 +172,5 @@ function NPC_26(me, npc)
 		}
 	}
 
-	NPC_BASIC_CLASS(me, npc, CLASS_POET, spells)
+	NPC_BASIC_CLASS(me, npc, CLASS.POET, spells)
 end

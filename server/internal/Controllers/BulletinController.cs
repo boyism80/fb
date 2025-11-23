@@ -6,7 +6,6 @@ using Http;
 using Http.Service;
 using Internal.Service;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Request = fb.protocol._internal.request;
 using Response = fb.protocol._internal.response;
 
@@ -23,7 +22,7 @@ namespace Internal.Controllers
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
-        private readonly BulletinOperationService _bulletinOperationService;
+        private readonly BulletinOperationService _bulletinService;
         private readonly ILogger<BulletinController> _logger;
 
         /// <summary>
@@ -44,7 +43,7 @@ namespace Internal.Controllers
             _configuration = configuration;
             _mapper = mapper;
             _dbContext = dbContext;
-            _bulletinOperationService = bulletinOperationService;
+            _bulletinService = bulletinOperationService;
             _logger = logger;
         }
 
@@ -119,7 +118,7 @@ namespace Internal.Controllers
         {
             try
             {
-                var success = await _bulletinOperationService.EnqueueWriteAsync(
+                var success = await _bulletinService.Write(
                     request.Section,
                     request.User,
                     request.Title,
@@ -152,7 +151,7 @@ namespace Internal.Controllers
         {
             try
             {
-                var result = await _bulletinOperationService.EnqueueDeleteAsync(
+                var result = await _bulletinService.Delete(
                     request.Section,
                     request.Id,
                     request.User

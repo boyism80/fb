@@ -22,57 +22,53 @@ public struct MailSummary : IFlatbufferObject
 
   public ushort Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Sender { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string SenderName { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string Sender { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetSenderNameBytes() { return __p.__vector_as_span<byte>(10, 1); }
+  public Span<byte> GetSenderBytes() { return __p.__vector_as_span<byte>(8, 1); }
 #else
-  public ArraySegment<byte>? GetSenderNameBytes() { return __p.__vector_as_arraysegment(10); }
+  public ArraySegment<byte>? GetSenderBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
-  public byte[] GetSenderNameArray() { return __p.__vector_as_array<byte>(10); }
-  public bool Read { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-  public string Title { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetSenderArray() { return __p.__vector_as_array<byte>(8); }
+  public bool Read { get { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public string Title { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(14, 1); }
+  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(12, 1); }
 #else
-  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(14); }
+  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(12); }
 #endif
-  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(14); }
-  public string CreatedDate { get { int o = __p.__offset(16); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(12); }
+  public string CreatedDate { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetCreatedDateBytes() { return __p.__vector_as_span<byte>(16, 1); }
+  public Span<byte> GetCreatedDateBytes() { return __p.__vector_as_span<byte>(14, 1); }
 #else
-  public ArraySegment<byte>? GetCreatedDateBytes() { return __p.__vector_as_arraysegment(16); }
+  public ArraySegment<byte>? GetCreatedDateBytes() { return __p.__vector_as_arraysegment(14); }
 #endif
-  public byte[] GetCreatedDateArray() { return __p.__vector_as_array<byte>(16); }
+  public byte[] GetCreatedDateArray() { return __p.__vector_as_array<byte>(14); }
 
   public static Offset<fb.protocol._internal.raw.MailSummary> CreateMailSummary(FlatBufferBuilder builder,
       ushort id = 0,
       uint user = 0,
-      uint sender = 0,
-      StringOffset sender_nameOffset = default(StringOffset),
+      StringOffset senderOffset = default(StringOffset),
       bool read = false,
       StringOffset titleOffset = default(StringOffset),
       StringOffset created_dateOffset = default(StringOffset)) {
-    builder.StartTable(7);
+    builder.StartTable(6);
     MailSummary.AddCreatedDate(builder, created_dateOffset);
     MailSummary.AddTitle(builder, titleOffset);
-    MailSummary.AddSenderName(builder, sender_nameOffset);
-    MailSummary.AddSender(builder, sender);
+    MailSummary.AddSender(builder, senderOffset);
     MailSummary.AddUser(builder, user);
     MailSummary.AddId(builder, id);
     MailSummary.AddRead(builder, read);
     return MailSummary.EndMailSummary(builder);
   }
 
-  public static void StartMailSummary(FlatBufferBuilder builder) { builder.StartTable(7); }
+  public static void StartMailSummary(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddId(FlatBufferBuilder builder, ushort id) { builder.AddUshort(0, id, 0); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
-  public static void AddSender(FlatBufferBuilder builder, uint sender) { builder.AddUint(2, sender, 0); }
-  public static void AddSenderName(FlatBufferBuilder builder, StringOffset senderNameOffset) { builder.AddOffset(3, senderNameOffset.Value, 0); }
-  public static void AddRead(FlatBufferBuilder builder, bool read) { builder.AddBool(4, read, false); }
-  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(5, titleOffset.Value, 0); }
-  public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(6, createdDateOffset.Value, 0); }
+  public static void AddSender(FlatBufferBuilder builder, StringOffset senderOffset) { builder.AddOffset(2, senderOffset.Value, 0); }
+  public static void AddRead(FlatBufferBuilder builder, bool read) { builder.AddBool(3, read, false); }
+  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(4, titleOffset.Value, 0); }
+  public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(5, createdDateOffset.Value, 0); }
   public static Offset<fb.protocol._internal.raw.MailSummary> EndMailSummary(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.MailSummary>(o);
@@ -89,11 +85,10 @@ static public class MailSummaryVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Id*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Sender*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 10 /*SenderName*/, false)
-      && verifier.VerifyField(tablePos, 12 /*Read*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyString(tablePos, 14 /*Title*/, false)
-      && verifier.VerifyString(tablePos, 16 /*CreatedDate*/, false)
+      && verifier.VerifyString(tablePos, 8 /*Sender*/, false)
+      && verifier.VerifyField(tablePos, 10 /*Read*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyString(tablePos, 12 /*Title*/, false)
+      && verifier.VerifyString(tablePos, 14 /*CreatedDate*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

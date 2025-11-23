@@ -18,7 +18,7 @@ void life::on_init()
     this->spells.owner(this->shared_from_this_as<life>());
 }
 
-void life::update(STATE_LEVEL value)
+void life::update(UPDATE_STATE_LEVEL value)
 { }
 
 void life::update_hp(uint32_t diff, bool critical)

@@ -7,7 +7,7 @@ function ON_CAST_2005(me, you, spell)
         return
     end
 
-    if you:is(OBJECT_TYPE_CHARACTER) then
+    if you:is(OBJECT_TYPE.CHARACTER) then
         local title = you:title()
         if title == nil then
             title = ''
@@ -25,8 +25,8 @@ function ON_CAST_2005(me, you, spell)
             message = string.format('%s\n가진 물건 : %s', message, table.concat(item_names, ', '))
         end
 
-        me:message(message, MESSAGE_TYPE_POPUP)
-    elseif you:is(OBJECT_TYPE_MOB) then
+        me:message(message, MESSAGE_TYPE.POPUP)
+    elseif you:is(OBJECT_TYPE.MOB) then
         local message = you:name()
         local item_names = {}
         if you:owner() == nil then
@@ -42,8 +42,8 @@ function ON_CAST_2005(me, you, spell)
         if #item_names > 0 then
             message = string.format('%s\n가진 물건 : %s', message, table.concat(item_names, ', '))
         end
-        me:message(message, MESSAGE_TYPE_POPUP)
+        me:message(message, MESSAGE_TYPE.POPUP)
     else
-        me:message(you:name(), MESSAGE_TYPE_POPUP)
+        me:message(you:name(), MESSAGE_TYPE.POPUP)
     end
 end

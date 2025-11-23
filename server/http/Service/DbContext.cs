@@ -69,6 +69,16 @@ namespace Http.Service
         public QuestRepository Quest => Bind<QuestRepository>();
 
         /// <summary>
+        /// Gets the system mail repository instance.
+        /// </summary>
+        public SystemMailRepository SystemMail => Bind<SystemMailRepository>();
+
+        /// <summary>
+        /// Gets the system mail user repository instance.
+        /// </summary>
+        public SystemMailUserRepository SystemMailUser => Bind<SystemMailUserRepository>();
+
+        /// <summary>
         /// Gets the number of shared database instances configured.
         /// </summary>
         /// <value>The count of database shards excluding the default (-1) connection.</value>

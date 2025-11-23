@@ -23,10 +23,10 @@ function ON_CAST_1018(me, spell)
         end
     end
 
-    local nears = me:nears(0xFF & ~OBJECT_TYPE_ITEM)
+    local nears = me:nears(0xFF & ~OBJECT_TYPE.ITEM)
     local x, y = me:position()
     local direction = me:direction()
-    local front = front_obj(x, y, direction, 4, nears, OBJECT_TYPE_LIFE)
+    local front = front_obj(x, y, direction, 4, nears, OBJECT_TYPE.LIFE)
     if front == nil then
         return failed_attack_spell(me)
     end
@@ -34,17 +34,17 @@ function ON_CAST_1018(me, spell)
     local hp_consume = (me:hp() * 2) // 3
     me:hp(math.max(1, me:hp() - hp_consume))
 
-    if direction == DIRECTION_LEFT then
+    if direction == DIRECTION.LEFT then
         x = x-1
-    elseif direction == DIRECTION_RIGHT then
+    elseif direction == DIRECTION.RIGHT then
         x = x+1
-    elseif direction == DIRECTION_TOP then
+    elseif direction == DIRECTION.TOP then
         y = y-1
     else
         y = y+1
     end 
 
-    if front:is(OBJECT_TYPE_LIFE) then
+    if front:is(OBJECT_TYPE.LIFE) then
         front:position(x, y)
     end
 

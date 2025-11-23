@@ -3,7 +3,7 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-update_internal::update_internal(const fb::game::character& ch, STATE_LEVEL level) :
+update_internal::update_internal(const fb::game::character& ch, UPDATE_STATE_LEVEL level) :
     ch(ch),
     level(level)
 { }
@@ -16,7 +16,7 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(static_cast<uint8_t>(this->level));
 
-    if (ENUM_IN(this->level, STATE_LEVEL::BASED))
+    if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::BASED))
     {
         writer.write<uint8_t>(static_cast<uint8_t>(this->ch.nation()));   // nation
         writer.write<uint8_t>(static_cast<uint8_t>(this->ch.creature())); // creature
@@ -34,19 +34,19 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
         writer.write<uint8_t>(0x00);
     }
 
-    if (ENUM_IN(this->level, STATE_LEVEL::HP_MP))
+    if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::HP_MP))
     {
         writer.write<uint32_t>(this->ch.stat.hp()); // current hp
         writer.write<uint32_t>(this->ch.stat.mp()); // current mp
     }
 
-    if (ENUM_IN(this->level, STATE_LEVEL::EXP_MONEY))
+    if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::EXP_MONEY))
     {
         writer.write<uint32_t>(this->ch.exp());                            // exp
         writer.write<uint32_t>(this->ch.money() - this->ch.trade.money()); // money
     }
 
-    if (ENUM_IN(this->level, STATE_LEVEL::CROWD_CONTROL))
+    if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::CROWD_CONTROL))
     {
         writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::DIRECTION));
         writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::SIGHT));
@@ -63,8 +63,8 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
 async::task<void> update_internal::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->level = static_cast<fb::model::enum_value::STATE_LEVEL>(reader.read<uint8_t>());
-    if (ENUM_IN(this->level, STATE_LEVEL::BASED))
+    this->level = static_cast<fb::model::enum_value::UPDATE_STATE_LEVEL>(reader.read<uint8_t>());
+    if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::BASED))
     {
         this->ch_nation   = reader.read<uint8_t>();
         this->ch_creature = reader.read<uint8_t>();
@@ -82,19 +82,19 @@ async::task<void> update_internal::deserialize(fb::stream_reader<big_endian>& re
         reader.read<uint8_t>();
     }
 
-    if (ENUM_IN(this->level, STATE_LEVEL::HP_MP))
+    if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::HP_MP))
     {
         this->ch_hp = reader.read<uint32_t>();
         this->ch_mp = reader.read<uint32_t>();
     }
 
-    if (ENUM_IN(this->level, STATE_LEVEL::EXP_MONEY))
+    if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::EXP_MONEY))
     {
         this->ch_exp   = reader.read<uint32_t>();
         this->ch_money = reader.read<uint32_t>();
     }
 
-    if (ENUM_IN(this->level, STATE_LEVEL::CROWD_CONTROL))
+    if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::CROWD_CONTROL))
     {
         if (reader.read<uint8_t>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::DIRECTION;

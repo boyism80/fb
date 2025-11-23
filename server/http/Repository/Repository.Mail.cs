@@ -40,19 +40,6 @@ namespace Http.Reepository
             dynamicParams.Add("count", count);
             var mails = await conn.QueryAsync<Http.Model.Mail>($"USP_MAIL_GET_LIST", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
 
-            if (mails.Any())
-            {
-                var names = await _dbContext.Character.GetName(mails.Select(x => x.Sender));
-                foreach (var mail in mails)
-                {
-                    if (names.TryGetValue(mail.Sender, out var name))
-                        mail.SenderName = name;
-                    else
-                        mail.SenderName = "Unknown";
-                }
-                ;
-            }
-
             return mails.ToList();
         }
 
@@ -73,27 +60,32 @@ namespace Http.Reepository
             var mail = await conn.QueryFirstOrDefaultAsync<Mail>($"USP_MAIL_READ", dynamicParams, commandType: System.Data.CommandType.StoredProcedure) ??
                 throw new LogicException(ErrorCode.MailNotExists);
 
-            mail.SenderName = await _dbContext.Character.GetName(mail.Sender) ?? "Unknown";
             return mail;
         }
 
         /// <summary>
         /// Creates and sends a new mail message to a specified user.
-        /// Validates both sender and recipient existence before creating the mail.
         /// </summary>
-        /// <param name="user">The name of the recipient character.</param>
-        /// <param name="sender">The unique identifier of the sender character.</param>
+        /// <param name="user">The name of the recipient character or user ID as string.</param>
+        /// <param name="sender">The name of the sender character.</param>
         /// <param name="title">The subject/title of the mail message.</param>
         /// <param name="contents">The body content of the mail message.</param>
-        /// <returns>The created mail message with resolved sender name.</returns>
-        /// <exception cref="LogicException">Thrown when the recipient or sender character is not found, or mail creation fails.</exception>
-        public async Task<Mail> Write(string user, uint sender, string title, string contents)
+        /// <returns>The created mail message.</returns>
+        /// <exception cref="LogicException">Thrown when the recipient character is not found, or mail creation fails.</exception>
+        public async Task<Mail> Write(string user, string sender, string title, string contents)
         {
-            var uid = await _dbContext.Character.GetCharacterId(user) ??
-                throw new LogicException(ErrorCode.NotFoundCharacter);
-
-            var senderName = await _dbContext.Character.GetName(sender) ??
-                throw new LogicException(ErrorCode.NotFoundCharacter);
+            uint uid;
+            if (uint.TryParse(user, out var userId))
+            {
+                // User ID provided directly (for offline users)
+                uid = userId;
+            }
+            else
+            {
+                // Character name provided
+                uid = await _dbContext.Character.GetCharacterId(user) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+            }
 
             await using var conn = _dbContext.Connection(uid);
             var dynamicParams = new DynamicParameters();
@@ -110,7 +102,6 @@ namespace Http.Reepository
             var mail = await reader.ReadFirstOrDefaultAsync<Http.Model.Mail>() ??
                 throw new LogicException(ErrorCode.MailNotExists);
 
-            mail.SenderName = senderName;
             return mail;
         }
 

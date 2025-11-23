@@ -12,7 +12,7 @@ function ON_CAST_4038(me, you, spell)
         return
     end
     
-    if you:is(OBJECT_TYPE_LIFE) then
+    if you:is(OBJECT_TYPE.LIFE) then
         you:heal(10000)
     end
 end

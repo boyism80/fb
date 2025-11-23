@@ -12,17 +12,17 @@ function ON_CAST_1017(me, spell)
     local direction = me:direction()
 
     local positions = {}
-    if direction == DIRECTION_LEFT then
+    if direction == DIRECTION.LEFT then
         table.insert(positions, {x-1, y  })
         table.insert(positions, {x-2, y-1})
         table.insert(positions, {x-2, y  })
         table.insert(positions, {x-2, y+1})
-    elseif direction == DIRECTION_TOP then
+    elseif direction == DIRECTION.TOP then
         table.insert(positions, {x  , y-1})
         table.insert(positions, {x-1, y-2})
         table.insert(positions, {x  , y-2})
         table.insert(positions, {x+1, y-2})
-    elseif direction == DIRECTION_RIGHT then
+    elseif direction == DIRECTION.RIGHT then
         table.insert(positions, {x+1, y  })
         table.insert(positions, {x+2, y-1})
         table.insert(positions, {x+2, y  })
@@ -33,7 +33,7 @@ function ON_CAST_1017(me, spell)
         table.insert(positions, {x  , y+2})
         table.insert(positions, {x+1, y+2})
     end
-    for _, obj in pairs(me:nears(OBJECT_TYPE_LIFE)) do
+    for _, obj in pairs(me:nears(OBJECT_TYPE.LIFE)) do
         local obj_x, obj_y = obj:position()
         for _, position in pairs(positions) do
             if obj_x == position[1] and obj_y == position[2] then

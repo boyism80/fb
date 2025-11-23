@@ -5,7 +5,7 @@ function ON_CAST_2(me, spell, message)
         return
     end
 
-    if me:state() ~= STATE_GHOST then
+    if me:state() ~= STATE.GHOST then
         me:message('인간은 쓸 수 없음이니...')
         return
     end
@@ -18,9 +18,9 @@ function ON_CAST_2(me, spell, message)
 
     local input = nil
     if message == '좌' then
-        input = CARDINAL_DIRECTION_WEST
+        input = CARDINAL_DIRECTION.WEST
     elseif message == '우' then
-        input = CARDINAL_DIRECTION_EAST
+        input = CARDINAL_DIRECTION.EAST
     else
         return
     end

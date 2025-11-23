@@ -1,9 +1,7 @@
 using Dapper;
-using Http;
 using Http.Extension;
 using Http.Service;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Internal.Service
 {
@@ -14,7 +12,7 @@ namespace Internal.Service
     public class BulletinOperationBackgroundService : BackgroundService
     {
         private readonly BulletinOperationService _operationService;
-        private readonly DbContext _dbContext;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<BulletinOperationBackgroundService> _logger;
 
         /// <summary>
@@ -31,15 +29,15 @@ namespace Internal.Service
         /// Initializes a new instance of the <see cref="BulletinOperationBackgroundService"/> class.
         /// </summary>
         /// <param name="operationService">The bulletin operation service for queue management.</param>
-        /// <param name="dbContext">The database context for executing database operations.</param>
+        /// <param name="scopeFactory">The service scope factory for creating scoped service instances.</param>
         /// <param name="logger">The logger for recording batch processing operations and errors.</param>
         public BulletinOperationBackgroundService(
             BulletinOperationService operationService,
-            DbContext dbContext,
+            IServiceScopeFactory scopeFactory,
             ILogger<BulletinOperationBackgroundService> logger)
         {
             _operationService = operationService;
-            _dbContext = dbContext;
+            _scopeFactory = scopeFactory;
             _logger = logger;
         }
 
@@ -84,7 +82,7 @@ namespace Internal.Service
 
         /// <summary>
         /// Processes write requests grouped by section.
-        /// Executes bulk INSERT operations against the appropriate database shards.
+        /// Executes bulk INSERT operations with section-specific sequence management.
         /// </summary>
         /// <param name="writes">Dictionary mapping section IDs to their write request batches.</param>
         /// <param name="cancellationToken">The cancellation token for stopping the operation.</param>
@@ -94,24 +92,68 @@ namespace Internal.Service
             // Group by section and process
             foreach (var (section, requests) in writes)
             {
+                using var scope = _scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
                 try
                 {
                     // Modular sharding: section % SharedDbSize
-                    var dbIndex = GetDbIndexForSection(section);
+                    var dbIndex = GetDbIndexForSection(section, dbContext);
 
-                    await using var conn = _dbContext.Connection(dbIndex);
+                    await using var conn = dbContext.Connection(dbIndex);
+                    await conn.OpenAsync(cancellationToken);
 
-                    // Build bulk INSERT query
-                    var sql = BuildBulkInsertQuery(requests);
-                    await conn.ExecuteAsync(sql);
+                    // Start transaction for sequence management
+                    await using var transaction = await conn.BeginTransactionAsync(cancellationToken);
 
-                    // Notify success
-                    foreach (var request in requests)
+                    try
                     {
-                        request.CompletionSource.SetResult(true);
-                    }
+                        // Get current sequence for this section (with lock)
+                        var currentSequence = await conn.QueryFirstOrDefaultAsync<uint?>(
+                            "SELECT id FROM bulletin_sequence WHERE `section` = @section FOR UPDATE",
+                            new { section },
+                            transaction);
 
-                    _logger.LogInformation($"Processed {requests.Count} bulletin writes for section {section}");
+                        uint startId;
+                        if (currentSequence == null)
+                        {
+                            // First articles for this section
+                            startId = 1;
+                            await conn.ExecuteAsync(
+                                "INSERT INTO bulletin_sequence (`section`, `id`) VALUES (@section, @id)",
+                                new { section, id = (uint)(startId + requests.Count - 1) },
+                                transaction);
+                        }
+                        else
+                        {
+                            // Increment sequence by request count
+                            startId = currentSequence.Value + 1;
+                            await conn.ExecuteAsync(
+                                "UPDATE bulletin_sequence SET id = @id WHERE `section` = @section",
+                                new { section, id = (uint)(startId + requests.Count - 1) },
+                                transaction);
+                        }
+
+                        // Build bulk INSERT query with assigned IDs
+                        var sql = BuildBulkInsertQuery(requests, section, startId);
+                        await conn.ExecuteAsync(sql, transaction: transaction);
+
+                        // Commit transaction
+                        await transaction.CommitAsync(cancellationToken);
+
+                        // Notify success
+                        foreach (var request in requests)
+                        {
+                            request.CompletionSource.SetResult(true);
+                        }
+
+                        _logger.LogInformation($"Processed {requests.Count} bulletin writes for section {section} (IDs: {startId}-{startId + requests.Count - 1})");
+                    }
+                    catch
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        throw;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -138,12 +180,15 @@ namespace Internal.Service
             // Group by section and process (same approach as writes)
             foreach (var (section, requests) in deletes)
             {
+                using var scope = _scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
                 try
                 {
                     // Modular sharding: section % SharedDbSize
-                    var dbIndex = GetDbIndexForSection(section);
+                    var dbIndex = GetDbIndexForSection(section, dbContext);
 
-                    await using var conn = _dbContext.Connection(dbIndex);
+                    await using var conn = dbContext.Connection(dbIndex);
 
                     // Build bulk UPDATE query
                     var sql = BuildBulkDeleteQuery(requests);
@@ -177,30 +222,34 @@ namespace Internal.Service
         /// Determines the database shard index for a given section using modular sharding.
         /// </summary>
         /// <param name="section">The section identifier to determine the shard for.</param>
+        /// <param name="dbContext">The database context to get SharedDbSize from.</param>
         /// <returns>The database index to use for the section. Returns -1 if SharedDbSize is zero (common DB).</returns>
-        private int GetDbIndexForSection(uint section)
+        private int GetDbIndexForSection(uint section, DbContext dbContext)
         {
             // Modular sharding: section % SharedDbSize
             // If SharedDbSize is 0, use -1 (common DB)
-            if (_dbContext.SharedDbSize == 0)
+            if (dbContext.SharedDbSize == 0)
                 return -1;
 
-            return (int)(section % _dbContext.SharedDbSize);
+            return (int)(section % dbContext.SharedDbSize);
         }
 
         /// <summary>
-        /// Builds a bulk INSERT SQL query for multiple write requests.
+        /// Builds a bulk INSERT SQL query for multiple write requests with assigned IDs.
         /// Uses MySql.Escape to prevent SQL injection.
         /// </summary>
         /// <param name="requests">The list of write requests to include in the bulk insert.</param>
-        /// <returns>A SQL INSERT statement with multiple value rows.</returns>
-        private string BuildBulkInsertQuery(List<BulletinWriteRequest> requests)
+        /// <param name="section">The section identifier for all requests.</param>
+        /// <param name="startId">The starting ID to assign to the first request.</param>
+        /// <returns>A SQL INSERT statement with multiple value rows including assigned IDs.</returns>
+        private string BuildBulkInsertQuery(List<BulletinWriteRequest> requests, uint section, uint startId)
         {
             // Use MySql.Escape for SQL injection prevention
-            var values = string.Join(", ", requests.Select(r =>
-                $"({r.Section}, {r.User}, {r.Title.Escape()}, {r.Contents.Escape()})"));
+            // Assign sequential IDs starting from startId
+            var values = string.Join(", ", requests.Select((r, index) =>
+                $"({startId + index}, {section}, {r.User}, {r.Title.Escape()}, {r.Contents.Escape()})"));
 
-            return $"INSERT INTO bulletin (section, `user`, title, contents) VALUES {values}";
+            return $"INSERT INTO bulletin (`id`, `section`, `user`, title, contents) VALUES {values}";
         }
 
         /// <summary>

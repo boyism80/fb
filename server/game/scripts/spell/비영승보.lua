@@ -3,13 +3,13 @@ function ON_CAST_2015_LOOKUP(me, you, direction)
     
     local mine_x, mine_y = me:position()
     local your_x, your_y = you:position()
-    if direction == DIRECTION_TOP then
+    if direction == DIRECTION.TOP then
         mine_x = your_x
         mine_y = your_y - 1
-    elseif direction == DIRECTION_RIGHT then
+    elseif direction == DIRECTION.RIGHT then
         mine_x = your_x + 1
         mine_y = your_y
-    elseif direction == DIRECTION_BOTTOM then
+    elseif direction == DIRECTION.BOTTOM then
         mine_x = your_x
         mine_y = your_y + 1
     else
@@ -29,13 +29,13 @@ end
 
 -- 비영승보 캐스팅
 function ON_CAST_2015(me, spell)
-    local err = me:assert({STATE_GHOST, STATE_RIDING})
+    local err = me:assert({STATE.GHOST, STATE.RIDING})
     if err then
         me:message(err)
         return
     end
 
-    local front = me:front(0xff & (~OBJECT_TYPE_ITEM))
+    local front = me:front(0xff & (~OBJECT_TYPE.ITEM))
     if front == nil then
         return
     end
@@ -44,7 +44,7 @@ function ON_CAST_2015(me, spell)
     for _, dir in pairs({direction + 0, direction + 3, direction + 1}) do
         if ON_CAST_2015_LOOKUP(me, front, dir % 4) then
             me:attack(14)
-            me:action(ACTION_CAST_SPELL, 25)
+            me:action(ACTION.CAST_SPELL, 25)
             me:message('비영승보를 외웠습니다.')
             me:sound(30)
             break

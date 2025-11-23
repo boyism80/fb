@@ -1,93 +1,38 @@
-using Http.Util;
 using AutoMapper;
 using Dapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
 using Http.Service;
+using Http.Util;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.ObjectPool;
 using System.Buffers;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
-using Option = Http.Model.Option;
-using Protocol = fb.protocol._internal;
 using Request = fb.protocol._internal.request;
 using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
 {
     /// <summary>
-    /// Provides user management operations for the internal API.
-    /// Handles user authentication, character creation, data saving, and user preferences.
+    /// Provides account management operations for the internal API.
+    /// Handles user authentication, character creation, and password management.
+    /// Used by the login server for account-related operations.
     /// </summary>
     [ApiController]
-    [Route("user")]
-    public class UserController : ControllerBase
+    [Route("account")]
+    public class AccountController : ControllerBase
     {
-        private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
         private readonly RedisService _redisService;
-        private readonly RedisDistributedLockService _distributedLock;
-        private readonly ILogger<UserController> _logger;
+        private readonly ILogger<AccountController> _logger;
 
         // Object pool for SHA256 instances to reduce GC pressure
-        // Limit pool size to 16 instances (reasonable for most scenarios)
+        // Limit pool size to 64 instances (reasonable for most scenarios)
         private static readonly ObjectPool<SHA256> _sha256Pool = new DefaultObjectPool<SHA256>(new Sha256PooledObjectPolicy(), 64);
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UserController"/> class.
-        /// </summary>
-        /// <param name="configuration">The application configuration.</param>
-        /// <param name="mapper">The AutoMapper instance for object mapping.</param>
-        /// <param name="dbContext">The database context for data operations.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
-        /// <param name="logger">The logger for recording user operations.</param>
-        public UserController(IConfiguration configuration,
-            IMapper mapper,
-            DbContext dbContext,
-            RedisService redisService,
-            RedisDistributedLockService distributedLock,
-            ILogger<UserController> logger)
-        {
-            _configuration = configuration;
-            _mapper = mapper;
-            _dbContext = dbContext;
-            _redisService = redisService;
-            _distributedLock = distributedLock;
-            _logger = logger;
-        }
-
-        /// <summary>
-        /// Retrieves the unique identifier for a character by name.
-        /// </summary>
-        /// <param name="name">The character name to look up.</param>
-        /// <returns>A response containing the character's UID if found.</returns>
-        [HttpGet("uid/{name}")]
-        public async Task<Response.GetUid> Uid(string name)
-        {
-            try
-            {
-                var uid = await _dbContext.Character.GetCharacterId(name) ??
-                throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                return new Response.GetUid
-                {
-                    Uid = uid,
-                    Success = true
-                };
-            }
-            catch (Exception)
-            {
-                return new Response.GetUid
-                {
-                    Success = false
-                };
-            }
-        }
 
         /// <summary>
         /// Computes a SHA256 hash of the input string.
@@ -166,6 +111,53 @@ namespace Internal.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AccountController"/> class.
+        /// </summary>
+        /// <param name="mapper">The AutoMapper instance for object mapping.</param>
+        /// <param name="dbContext">The database context for data operations.</param>
+        /// <param name="redisService">The Redis service for cache operations.</param>
+        /// <param name="logger">The logger for recording account operations.</param>
+        public AccountController(IMapper mapper,
+            DbContext dbContext,
+            RedisService redisService,
+            ILogger<AccountController> logger)
+        {
+            _mapper = mapper;
+            _dbContext = dbContext;
+            _redisService = redisService;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Retrieves the unique identifier for a character by name.
+        /// </summary>
+        /// <param name="name">The character name to look up.</param>
+        /// <returns>A response containing the character's UID if found.</returns>
+        [HttpGet("uid/{name}")]
+        public async Task<Response.GetUid> Uid(string name)
+        {
+            try
+            {
+                var uid = await _dbContext.Character.GetCharacterId(name) ??
+                throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                return new Response.GetUid
+                {
+                    Uid = uid,
+                    Success = true
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.GetUid
+                {
+                    Success = false
+                };
+            }
+        }
+
         /// <summary>
         /// Authenticates a user with their credentials.
         /// Verifies the user ID and password hash against stored values.
@@ -205,7 +197,7 @@ namespace Internal.Controllers
         /// </summary>
         /// <param name="request">The name reservation request.</param>
         /// <returns>A response indicating success and the assigned UID.</returns>
-        [HttpPost("reserve-name")]
+        [HttpPost("reserve")]
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
             await using var connection = _dbContext.Connection(-1);
@@ -227,7 +219,7 @@ namespace Internal.Controllers
         /// </summary>
         /// <param name="request">The character initialization request.</param>
         /// <returns>A response indicating the success of character creation.</returns>
-        [HttpPost("init-ch")]
+        [HttpPost("init")]
         public async Task<Response.InitCharacter> InitCharacter(Request.InitCharacter request)
         {
             var ch = new Character
@@ -261,7 +253,7 @@ namespace Internal.Controllers
         /// </summary>
         /// <param name="request">The character creation request with appearance data.</param>
         /// <returns>A response indicating the success of character completion.</returns>
-        [HttpPost("mk-ch")]
+        [HttpPost("make")]
         public async Task<Response.MakeCharacter> MakeCharacter(Request.MakeCharacter request)
         {
             try
@@ -342,182 +334,7 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        [HttpGet("init/{uid}")]
-        public async Task<Response.Init> Init(uint uid)
-        {
-            var ch = await _dbContext.Character.Get(uid);
-            var items = await _dbContext.Item.Get(uid);
-            var spells = await _dbContext.Spell.Get(uid);
-            var achievements = await _dbContext.Achievement.Get(uid);
-            var quests = await _dbContext.Quest.Get(uid);
-            var option = await _dbContext.Option.Get(uid) ??
-                _dbContext.Option.Set(new Option
-                {
-                    Uid = uid,
-                });
-
-            await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(uid)))
-            {
-                var sync = await _dbContext.CharacterSync.Get(uid) ??
-                    _dbContext.CharacterSync.Set(new CharacterSync
-                    {
-                        Uid = uid
-                    });
-
-                await _dbContext.SaveChangesAsync();
-                return new Response.Init
-                {
-                    Character = _mapper.Map<Protocol.Character>(ch),
-                    Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
-                    Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
-                    Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
-                    Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
-                    Option = _mapper.Map<Protocol.Option>(option),
-                    Clan = sync.Clan,
-                    Group = sync.Group,
-                    Mail = await _dbContext.Mail.Unread(uid)
-                };
-            }
-        }
-
-        private T[] Override<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey
-        {
-            var src = request.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
-            var dst = exists.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
-
-            var deletedKeys = dst.Keys.Except(src.Keys).ToArray();
-            if (deletedKeys.Length > 0)
-            {
-                _logger.LogWarning($"deleted keys : {string.Join(", ", deletedKeys)}");
-            }
-
-            foreach (var x in dst.Values)
-            {
-                x.Deleted = true;
-            }
-
-            foreach (var key in src.Keys.ToArray())
-            {
-                dst[key] = src[key];
-            }
-
-            return dst.Values.ToArray();
-        }
-
-        [HttpPost("save")]
-        public async Task<Response.Save> Save(Request.Save request)
-        {
-            try
-            {
-                var exists = await _dbContext.Character.Get(request.Character.Id) ??
-                    throw new Exception();
-
-                if (exists.Deleted)
-                    throw new Exception();
-
-                var ch = _mapper.Map<Character>(request.Character);
-                _dbContext.Character.Set(ch);
-
-                var items = Override(_mapper.Map<Protocol.Item[], Item[]>(request.Items.ToArray()), await _dbContext.Item.Get(request.Character.Id));
-                _dbContext.Item.Set(items);
-
-                var spells = Override(_mapper.Map<Protocol.Spell[], Spell[]>(request.Spells.ToArray()), await _dbContext.Spell.Get(request.Character.Id));
-                _dbContext.Spell.Set(spells.ToArray());
-
-                var achievements = Override(_mapper.Map<Protocol.Achievement[], Achievement[]>(request.Achievements.ToArray()), await _dbContext.Achievement.Get(request.Character.Id));
-                _dbContext.Achievement.Set(achievements.ToArray());
-
-                var quests = Override(_mapper.Map<Protocol.Quest[], Quest[]>(request.Quests.ToArray()), await _dbContext.Quest.Get(request.Character.Id));
-                _dbContext.Quest.Set(quests.ToArray());
-
-                await _dbContext.SaveChangesAsync();
-                return new Response.Save
-                {
-                    Success = true
-                };
-            }
-            catch (Exception)
-            {
-                return new Response.Save
-                {
-                    Success = false
-                };
-            }
-        }
-
-        [HttpPost("option")]
-        public async Task<Response.SetOption> Option(Request.SetOption request)
-        {
-            try
-            {
-                var option = await _dbContext.Option.Get(request.User) ??
-                    throw new Exception($"option {request.User} not found");
-
-                switch ((Fb.Model.EnumValue.Option)request.Type)
-                {
-                    case Fb.Model.EnumValue.Option.Whisper:
-                        option.Whisper = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.Group:
-                        option.Group = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.Roar:
-                        option.Roar = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.RoarWorlds:
-                        option.RoarWorlds = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.MagicEffect:
-                        option.MagicEffect = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.WeatherEffect:
-                        option.WeatherEffect = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.FixedMove:
-                        option.FixedMove = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.Trade:
-                        option.Trade = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.FastMove:
-                        option.FastMove = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.EffectSound:
-                        option.EffectSound = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.PkProtect:
-                        option.PkProtect = request.Enabled;
-                        break;
-
-                    default:
-                        throw new Exception($"invalid option type : {request.Type}");
-                }
-                _dbContext.Option.Set(option);
-
-                await _dbContext.SaveChangesAsync();
-                return new Response.SetOption
-                {
-                    Success = true
-                };
-            }
-            catch (Exception)
-            {
-                return new Response.SetOption
-                {
-                    Success = false
-                };
-            }
-        }
     }
 }
+
+

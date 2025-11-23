@@ -103,5 +103,5 @@ function NPC_22(me, npc)
         }
     }
 
-    NPC_BASIC_CLASS(me, npc, CLASS_WARRIOR, spells)
+    NPC_BASIC_CLASS(me, npc, CLASS.WARRIOR, spells)
 end

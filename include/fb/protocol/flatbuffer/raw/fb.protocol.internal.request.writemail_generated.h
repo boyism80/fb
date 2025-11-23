@@ -31,8 +31,8 @@ struct WriteMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CONTENTS = 10,
     VT_HOST = 12
   };
-  uint32_t sender() const {
-    return GetField<uint32_t>(VT_SENDER, 0);
+  const ::flatbuffers::String *sender() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SENDER);
   }
   const ::flatbuffers::String *user() const {
     return GetPointer<const ::flatbuffers::String *>(VT_USER);
@@ -48,7 +48,8 @@ struct WriteMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_SENDER, 4) &&
+           VerifyOffset(verifier, VT_SENDER) &&
+           verifier.VerifyString(sender()) &&
            VerifyOffset(verifier, VT_USER) &&
            verifier.VerifyString(user()) &&
            VerifyOffset(verifier, VT_TITLE) &&
@@ -64,8 +65,8 @@ struct WriteMailBuilder {
   typedef WriteMail Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_sender(uint32_t sender) {
-    fbb_.AddElement<uint32_t>(WriteMail::VT_SENDER, sender, 0);
+  void add_sender(::flatbuffers::Offset<::flatbuffers::String> sender) {
+    fbb_.AddOffset(WriteMail::VT_SENDER, sender);
   }
   void add_user(::flatbuffers::Offset<::flatbuffers::String> user) {
     fbb_.AddOffset(WriteMail::VT_USER, user);
@@ -92,7 +93,7 @@ struct WriteMailBuilder {
 
 inline ::flatbuffers::Offset<WriteMail> CreateWriteMail(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t sender = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> sender = 0,
     ::flatbuffers::Offset<::flatbuffers::String> user = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> contents = 0,
@@ -108,17 +109,18 @@ inline ::flatbuffers::Offset<WriteMail> CreateWriteMail(
 
 inline ::flatbuffers::Offset<WriteMail> CreateWriteMailDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t sender = 0,
+    const char *sender = nullptr,
     const char *user = nullptr,
     const char *title = nullptr,
     const char *contents = nullptr,
     uint32_t host = 0) {
+  auto sender__ = sender ? _fbb.CreateString(sender) : 0;
   auto user__ = user ? _fbb.CreateString(user) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto contents__ = contents ? _fbb.CreateString(contents) : 0;
   return fb::protocol::internal::request::raw::CreateWriteMail(
       _fbb,
-      sender,
+      sender__,
       user__,
       title__,
       contents__,

@@ -29,7 +29,7 @@ namespace Internal.Service
         /// <param name="title">The article title.</param>
         /// <param name="contents">The article contents.</param>
         /// <returns>A task that completes with true if the write succeeds, false otherwise.</returns>
-        public Task<bool> EnqueueWriteAsync(uint section, uint user, string title, string contents)
+        public Task<bool> Write(uint section, uint user, string title, string contents)
         {
             var request = new BulletinWriteRequest
             {
@@ -54,7 +54,7 @@ namespace Internal.Service
         /// <param name="id">The article identifier to delete.</param>
         /// <param name="user">The user identifier who is deleting the article.</param>
         /// <returns>A task that completes with the deletion result code (1 for success, negative values for errors).</returns>
-        public Task<int> EnqueueDeleteAsync(uint section, uint id, uint user)
+        public Task<int> Delete(uint section, uint id, uint user)
         {
             var request = new BulletinDeleteRequest
             {

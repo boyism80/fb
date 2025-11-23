@@ -1,5 +1,5 @@
 function npc_revive(me, npc, discourteous)
-    if me:state() ~= STATE_GHOST then
+    if me:state() ~= STATE.GHOST then
         return true
     end
 
@@ -23,14 +23,14 @@ function npc_revive(me, npc, discourteous)
         npc:chat('너의 정성에 감복하여 살려줄터이니 잠시 기다려라....')
         sleep(1000)
         npc:chat('영은 생을 얻을지어니...')
-        me:state(STATE_NORMAL)
+        me:state(STATE.NORMAL)
         me:hp(50)
     end
     return true
 end
 
 function npc_appreciate(me, npc)
-    if me:state() == STATE_GHOST then
+    if me:state() == STATE.GHOST then
         return true
     end
 
@@ -90,7 +90,7 @@ function npc_rename_weapon(me, npc, from, to)
         return true
     end
 
-    if model:attr(ITEM_ATTRIBUTE_WEAPON) == false then
+    if model:attr(ITEM_ATTRIBUTE.WEAPON) == false then
         npc:chat(string.format('%s 무기가 아닙니다.', name_with(model:name(), '은', '는')))
         return true
     end
@@ -222,7 +222,7 @@ function npc_repair(me, npc, name)
             return true
         end
 
-        if not model:attr(ITEM_ATTRIBUTE_EQUIPMENT) then
+        if not model:attr(ITEM_ATTRIBUTE.EQUIPMENT) then
             npc:chat('뭘 고쳐줘?')
             return true
         end
@@ -247,7 +247,7 @@ function npc_repair(me, npc, name)
     else
         for slot, item in pairs(me:items()) do
             local model = item:model()
-            if model:attr(ITEM_ATTRIBUTE_EQUIPMENT) and model:repair_price() ~= nil and model:durability() > item:durability() then
+            if model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and model:repair_price() ~= nil and model:durability() > item:durability() then
                 table.insert(items, item)
             end
         end
@@ -314,7 +314,7 @@ function npc_store_item(me, npc, name, count)
         count = item:count()
     end
 
-    if model:attr(ITEM_ATTRIBUTE_BUNDLE) then
+    if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
         if count > item:count() then
             npc:chat('갯수가 모자라는데요?')
             return true
@@ -356,7 +356,7 @@ function npc_retrieve_item(me, npc, name, count)
         count = item:count()
     end
 
-    if model:attr(ITEM_ATTRIBUTE_BUNDLE) then
+    if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
         if count > item:count() then
             npc:chat('그만큼 맡고 있지 않습니다.')
             return true
@@ -395,7 +395,7 @@ function npc_sell_item(me, npc, name, count)
         return true
     end
 
-    local is_bundle = model:attr(ITEM_ATTRIBUTE_BUNDLE)
+    local is_bundle = model:attr(ITEM_ATTRIBUTE.BUNDLE)
     if not is_bundle then
         count = 1
     end
@@ -450,7 +450,7 @@ function npc_buy_item(me, npc, name, count)
     if model == nil then
         return true
     end
-    local is_bundle = model:attr(ITEM_ATTRIBUTE_BUNDLE)
+    local is_bundle = model:attr(ITEM_ATTRIBUTE.BUNDLE)
 
     local price = npc:model():buy_price(name)
     if price == nil then
@@ -507,10 +507,10 @@ function npc_buy_item(me, npc, name, count)
     end
 
     if is_bundle then
-        me:rmitem(slots[1], count, ITEM_DELETE_TYPE_SELL)
+        me:rmitem(slots[1], count, ITEM_DELETE_TYPE.SELL)
     else
         for _, slot in pairs(slots) do
-            me:rmitem(slot, 1, ITEM_DELETE_TYPE_SELL)
+            me:rmitem(slot, 1, ITEM_DELETE_TYPE.SELL)
         end
     end
     me:money(me:money() + price)
@@ -618,14 +618,14 @@ function NPC_BUY_DIALOG(me, npc)
 ::NPC_BUY_DIALOG_000::
     local slot = me:slot(npc, '뭘 팔래요?', slots)
     if slot == nil then
-        return DIALOG_RESULT_NEXT
+        return DIALOG_RESULT.NEXT
     end
 
     local item = items[slot]
     local model = item:model()
     local price = purchase_list[model:name()]
     local count = 1
-    if model:attr(ITEM_ATTRIBUTE_BUNDLE) then
+    if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
         count = me:input(npc, '몇개나 파시겠어요?')
         if count == nil then
             goto NPC_BUY_DIALOG_000
@@ -650,9 +650,9 @@ function NPC_BUY_DIALOG(me, npc)
     end
     if me:menu(npc, message, {'네', '아니오'}) == 0 then
         me:money(me:money() + price)
-        me:rmitem(slot, count, ITEM_DELETE_TYPE_SELL)
+        me:rmitem(slot, count, ITEM_DELETE_TYPE.SELL)
     end
-    return DIALOG_RESULT_NEXT
+    return DIALOG_RESULT.NEXT
 end
 
 function NPC_SELL_DIALOG(me, npc)
@@ -666,10 +666,10 @@ function NPC_SELL_DIALOG(me, npc)
         end
         local selected, button = me:list(npc, '무엇을 사시겠어요?', menu, true)
         if selected == nil then
-            if button == DIALOG_RESULT_QUIT then
-                return DIALOG_RESULT_QUIT
+            if button == DIALOG_RESULT.QUIT then
+                return DIALOG_RESULT.QUIT
             else
-                return DIALOG_RESULT_NEXT
+                return DIALOG_RESULT.NEXT
             end
         end
         pursuit = pursuit[selected+1]
@@ -681,7 +681,7 @@ function NPC_SELL_DIALOG(me, npc)
 ::NPC_SELL_DIALOG_000::
     local selected = me:item(npc, '제가 파는 물건들입니다. 그림도 있고, 옆에 가격도 함께 드리니 잘 생각하시고 골라주세요.', list)
     if selected == nil then
-        return DIALOG_RESULT_NEXT
+        return DIALOG_RESULT.NEXT
     end
 
     local count = 1
@@ -690,7 +690,7 @@ function NPC_SELL_DIALOG(me, npc)
         return me:dialog(npc, 'This player is a hacker.')
     end
 
-    local is_bundle = item:attr(ITEM_ATTRIBUTE_BUNDLE)
+    local is_bundle = item:attr(ITEM_ATTRIBUTE.BUNDLE)
     if is_bundle then
         count = me:input(npc, '몇개나 사시겠어요?')
         if count == nil then
@@ -746,7 +746,7 @@ function repairable_slots(me)
 
     for slot, item in pairs(items) do
         local model = item:model()
-        if model:attr(ITEM_ATTRIBUTE_EQUIPMENT) and model:repair_price() ~= nil then
+        if model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and model:repair_price() ~= nil then
             local current = item:durability()
             local max = model:durability()
             if current < max then
@@ -778,7 +778,7 @@ function NPC_REPAIR_DIALOG(me, npc)
 
     local selected = me:slot(npc, '무엇을 고치시겠습니까?', slots)
     if selected == nil then
-        return DIALOG_RESULT_NEXT
+        return DIALOG_RESULT.NEXT
     end
 
     local item = items[selected]
@@ -796,10 +796,10 @@ function NPC_REPAIR_DIALOG(me, npc)
             else
                 me:money(money - price)
                 item:durability(model:durability())
-                return DIALOG_RESULT_NEXT
+                return DIALOG_RESULT.NEXT
             end
         else
-            return DIALOG_RESULT_NEXT
+            return DIALOG_RESULT.NEXT
         end
     end
 end
@@ -843,7 +843,7 @@ function NPC_REPAIR_ALL_DIALOG(me, npc)
                 return me:dialog(npc, '모두 고쳤습니다.')
             end
         else
-            return DIALOG_RESULT_NEXT
+            return DIALOG_RESULT.NEXT
         end
     end
 end
@@ -853,7 +853,7 @@ end
 function NPC_HOLD_MONEY_DIALOG(me, npc)
     local count = me:input(npc, '얼마나 맡아드릴까요?')
     if count == nil then
-        return DIALOG_RESULT_NEXT
+        return DIALOG_RESULT.NEXT
     end
 
     count = tonumber(count)
@@ -895,10 +895,10 @@ function NPC_HOLD_ITEM_DIALOG(me, npc)
     local item = items[slot]
     local model = item:model()
     local count = 1
-    if model:attr(ITEM_ATTRIBUTE_BUNDLE) then
+    if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
         count = me:input(npc, '얼마나 맡아드릴까요?')
         if count == nil then
-            return DIALOG_RESULT_NEXT
+            return DIALOG_RESULT.NEXT
         end
 
         count = tonumber(count)
@@ -930,12 +930,12 @@ function NPC_HOLD_ITEM_DIALOG(me, npc)
                 me:money(me:money() - storage_fee)
             end
         else
-            return DIALOG_RESULT_NEXT
+            return DIALOG_RESULT.NEXT
         end
     end
 
     me:store_item(item, count)
-    if model:attr(ITEM_ATTRIBUTE_BUNDLE) then
+    if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
         return me:dialog(npc, string.format('%s %d개를 맡았습니다.', model:name(), count), false, true)
     else
         return me:dialog(npc, string.format('%s 맡았습니다.', name_with(model:name()), count), false, true)
@@ -952,7 +952,7 @@ function NPC_RETURN_MONEY_DIALOG(me, npc)
 
     local count = me:input(npc, string.format('제가 %d전을 보관하고 있습니다. 얼마나 돌려드릴까요?', deposited_money))
     if count == nil then
-        return DIALOG_RESULT_NEXT
+        return DIALOG_RESULT.NEXT
     end
 
     count = tonumber(count)
@@ -987,17 +987,17 @@ function NPC_RETURN_ITEM_DIALOG(me, npc)
 
     local selected = me:item(npc, '제가 맡고 있는 물건들입니다. 무엇을 찾으시겠습니까?', list)
     if selected == nil then
-        return DIALOG_RESULT_NEXT
+        return DIALOG_RESULT.NEXT
     end
 
     local stored_item = me:stored_item(selected)
     local model = stored_item:model()
     local count = 1
-    if model:attr(ITEM_ATTRIBUTE_BUNDLE)  then
+    if model:attr(ITEM_ATTRIBUTE.BUNDLE)  then
         if stored_item:count() > 1 then
             count = me:input(npc, '얼마나 돌려드릴까요?')
             if count == nil then
-                return DIALOG_RESULT_NEXT
+                return DIALOG_RESULT.NEXT
             end
         else
             count = 1
@@ -1026,7 +1026,7 @@ function NPC_RETURN_ITEM_DIALOG(me, npc)
         return me:dialog(npc, '공간이 부족합니다.', false, true)
     end
 
-    if model:attr(ITEM_ATTRIBUTE_BUNDLE) and count > 1 then
+    if model:attr(ITEM_ATTRIBUTE.BUNDLE) and count > 1 then
         return me:dialog(npc, string.format('%s %d개를 돌려드렸습니다.', model:name(), count), false, true)
     else
         return me:dialog(npc, string.format('%s 돌려드렸습니다.', name_with(model:name()), count), false, true)
@@ -1038,7 +1038,7 @@ function NPC_RENAME_WEAPON_DIALOG(me, npc)
     local items = {}
     for slot, item in pairs(me:items()) do
         local model = item:model()
-        if model:attr(ITEM_ATTRIBUTE_WEAPON) and model:rename_price() ~= nil then
+        if model:attr(ITEM_ATTRIBUTE.WEAPON) and model:rename_price() ~= nil then
             table.insert(slots, slot)
             items[slot] = item
         end
@@ -1047,7 +1047,7 @@ function NPC_RENAME_WEAPON_DIALOG(me, npc)
 ::NPC_RENAME_WEAPON_DIALOG_001::
     local slot = me:slot(npc, '어떤 장비에 별칭을 부여하시겠어요?', slots)
     if slot == nil then
-        return DIALOG_RESULT_NEXT
+        return DIALOG_RESULT.NEXT
     end
 
     local weapon = items[slot]
@@ -1083,7 +1083,7 @@ function NPC_RENAME_WEAPON_DIALOG(me, npc)
 
             me:money(money - price)
         else
-            return DIALOG_RESULT_NEXT
+            return DIALOG_RESULT.NEXT
         end
     end
 
@@ -1092,7 +1092,7 @@ function NPC_RENAME_WEAPON_DIALOG(me, npc)
 end
 
 function NPC_BASIC_CLASS(me, npc, class, spells)
-::NPC_BASIC_CLASS_000::
+::NPC_BASIC_CLASS.000::
     local level = me:level()
     local class_name = class2name(class)
     if me:class() == class then
@@ -1111,10 +1111,10 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             end
 
             if #preview == 0 then
-                if me:dialog(npc, '내가 알려줄 마법이 없구나..', false, true) == DIALOG_RESULT_QUIT then
+                if me:dialog(npc, '내가 알려줄 마법이 없구나..', false, true) == DIALOG_RESULT.QUIT then
                     return
                 end
-                goto NPC_BASIC_CLASS_000
+                goto NPC_BASIC_CLASS.000
             end
 
             table.sort(preview, function(a, b) return spells[a].level < spells[b].level end)
@@ -1125,7 +1125,7 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
 
             local name = preview[selected+1]
             local spell = spells[name]
-            if me:dialog(npc, string.format('%s %s', name_with(name, '은', '는'), spell.desc), false, true) == DIALOG_RESULT_QUIT then
+            if me:dialog(npc, string.format('%s %s', name_with(name, '은', '는'), spell.desc), false, true) == DIALOG_RESULT.QUIT then
                 return
             end
 
@@ -1140,10 +1140,10 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
                 end
             end
 
-            if me:dialog(npc, string.format('%s 배우기 위해서는 %s를 바쳐야 하네', name_with(name), table.concat(material, ', ')), false, true) == DIALOG_RESULT_QUIT then
+            if me:dialog(npc, string.format('%s 배우기 위해서는 %s를 바쳐야 하네', name_with(name), table.concat(material, ', ')), false, true) == DIALOG_RESULT.QUIT then
                 return
             end
-            goto NPC_BASIC_CLASS_000
+            goto NPC_BASIC_CLASS.000
         elseif selected == 1 then
             local learned_spells = {}
             for _, spell in pairs(me:spells()) do
@@ -1158,10 +1158,10 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             end
 
             if #preview == 0 then
-                if me:dialog(npc, '내가 알려줄 마법이 없구나..', false, true) == DIALOG_RESULT_QUIT then
+                if me:dialog(npc, '내가 알려줄 마법이 없구나..', false, true) == DIALOG_RESULT.QUIT then
                     return
                 end
-                goto NPC_BASIC_CLASS_000
+                goto NPC_BASIC_CLASS.000
             end
 
             table.sort(preview, function(a, b) return spells[a].level < spells[b].level end)
@@ -1172,7 +1172,7 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
 
             local name = preview[selected+1]
             local spell = spells[name]
-            if me:dialog(npc, string.format('%s %s', name_with(name, '은', '는'), spell.desc), false, true) == DIALOG_RESULT_QUIT then
+            if me:dialog(npc, string.format('%s %s', name_with(name, '은', '는'), spell.desc), false, true) == DIALOG_RESULT.QUIT then
                 return
             end
             
@@ -1191,10 +1191,10 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             end
 
             if selected == 1 then
-                if me:dialog(npc, '이 모든 것은 네 탓이니, 다음에 이 곳에 올 때는 더 굳은 각오를 가지고 오도록 하거라.', false, true) == DIALOG_RESULT_QUIT then
+                if me:dialog(npc, '이 모든 것은 네 탓이니, 다음에 이 곳에 올 때는 더 굳은 각오를 가지고 오도록 하거라.', false, true) == DIALOG_RESULT.QUIT then
                     return
                 end
-                goto NPC_BASIC_CLASS_000
+                goto NPC_BASIC_CLASS.000
             end
 
             local enough = true
@@ -1214,10 +1214,10 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             end
 
             if not enough then
-                if me:dialog(npc, '필요한 것들을 구해보도록 하게. 자네라면 할 수 있겠지?', false, true) == DIALOG_RESULT_QUIT then
+                if me:dialog(npc, '필요한 것들을 구해보도록 하게. 자네라면 할 수 있겠지?', false, true) == DIALOG_RESULT.QUIT then
                     return
                 end
-                goto NPC_BASIC_CLASS_000
+                goto NPC_BASIC_CLASS.000
             end
 
             for _, m in pairs(spell.material) do
@@ -1228,10 +1228,10 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
                 end
             end
             me:mkspell(name)
-            if me:dialog(npc, '배움의 길은 끝이 없으니 더더욱 노력하는 자세를 갖도록 하거라', false, true) == DIALOG_RESULT_QUIT then
+            if me:dialog(npc, '배움의 길은 끝이 없으니 더더욱 노력하는 자세를 갖도록 하거라', false, true) == DIALOG_RESULT.QUIT then
                 return
             end
-            goto NPC_BASIC_CLASS_000
+            goto NPC_BASIC_CLASS.000
         elseif selected == 2 then
             local learned_spells = {}
             for _, spell in pairs(me:spells()) do
@@ -1243,13 +1243,13 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             end
 
             me:rmspell(learned_spells[selected+1])
-            if me:dialog(npc, '배움의 길은 끝이 없으니 더더욱 노력하는 자세를 갖도록 하거라', false, true) == DIALOG_RESULT_QUIT then
+            if me:dialog(npc, '배움의 길은 끝이 없으니 더더욱 노력하는 자세를 갖도록 하거라', false, true) == DIALOG_RESULT.QUIT then
                 return
             end
-            goto NPC_BASIC_CLASS_000
+            goto NPC_BASIC_CLASS.000
         elseif selected == 3 then
             local title = me:input(npc, '네 정성이 갸륵하니... 그래, 무슨 칭호를 받고 싶으냐?', '받고싶은 칭호는', '입니다.', 10, true)
-            if title == DIALOG_RESULT_QUIT then
+            if title == DIALOG_RESULT.QUIT then
                 return
             end
 
@@ -1259,26 +1259,26 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             end
 
             if me:money() < 5000 then
-                if me:dialog(npc, '예끼 이놈! 감히 돈도 없으면서 날 찾아와?', false, true) == DIALOG_RESULT_QUIT then
+                if me:dialog(npc, '예끼 이놈! 감히 돈도 없으면서 날 찾아와?', false, true) == DIALOG_RESULT.QUIT then
                     return
                 end
-                goto NPC_BASIC_CLASS_000
+                goto NPC_BASIC_CLASS.000
             end
 
-            if me:dialog(npc, '그럼, 너의 소원을 들어주겠노라', false, true) == DIALOG_RESULT_QUIT then
+            if me:dialog(npc, '그럼, 너의 소원을 들어주겠노라', false, true) == DIALOG_RESULT.QUIT then
                 return
             end
             me:money(me:money() - 5000)
             me:title(title)
-            if me:dialog(npc, '칭호를 받았으니, 자신감을 가 지고 다니게나...', false, true) == DIALOG_RESULT_QUIT then
+            if me:dialog(npc, '칭호를 받았으니, 자신감을 가 지고 다니게나...', false, true) == DIALOG_RESULT.QUIT then
                 return
             end
-            goto NPC_BASIC_CLASS_000
+            goto NPC_BASIC_CLASS.000
         end
     else
         local button = me:menu(npc, '험난한 길을 걷는 수행자여, 무슨 일로 저를 찾으셨소?', {class_name .. '직업가지기'})
         if button == 0 then
-            if me:class() ~= CLASS_NONE then
+            if me:class() ~= CLASS.NONE then
                 me:dialog(npc, '이미 직업이 있지 않느냐? 한번 선택한 직업은 바꿀 수 없느니라.')
                 return
             end
@@ -1286,74 +1286,74 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             if level < 5 then
                 me:dialog(npc, '아직 너의 정성이 부족하니 다음에 이 곳에 올 때에는 보다 큰 각오를 갖고 나를 찾아오도록 하여라.')
             end
-::NPC_BASIC_CLASS_001::
+::NPC_BASIC_CLASS.001::
             button = me:dialog(npc, class_name .. '의 길을 가려면, 몇 가지 맹세를 해야하느니.', false, true)
-            if button == DIALOG_RESULT_QUIT then
+            if button == DIALOG_RESULT.QUIT then
                 return
             end
 
-::NPC_BASIC_CLASS_002::
+::NPC_BASIC_CLASS.002::
             local selected, button = me:list(npc, '첫째로, 하늘에서 굽어보고 계신 천제(天帝) 앞에 복종을 맹세하겠느냐?', {'예', '아니오'}, true)
             if selected ~= 0 then
-                goto NPC_BASIC_CLASS_STOP
+                goto NPC_BASIC_CLASS.STOP
             end
-            if button == DIALOG_RESULT_QUIT then
+            if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if button == DIALOG_RESULT_PREV then
-                goto NPC_BASIC_CLASS_001
+            if button == DIALOG_RESULT.PREV then
+                goto NPC_BASIC_CLASS.001
             end
-::NPC_BASIC_CLASS_003::
+::NPC_BASIC_CLASS.003::
             selected, button = me:list(npc, '둘째로, 험난한 ' .. class_name .. '수련의 길에 너의 평생을 바칠 것을 맹세하겠느냐?', {'예', '아니오'}, true)
             if selected ~= 0 then
-                goto NPC_BASIC_CLASS_STOP
+                goto NPC_BASIC_CLASS.STOP
             end
-            if button == DIALOG_RESULT_QUIT then
+            if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if button == DIALOG_RESULT_PREV then
-                goto NPC_BASIC_CLASS_002
+            if button == DIALOG_RESULT.PREV then
+                goto NPC_BASIC_CLASS.002
             end
-::NPC_BASIC_CLASS_004::
+::NPC_BASIC_CLASS.004::
             selected, button = me:list(npc, '셋째로, 불의를 보고 그냥 지나치지 않을 것을 맹세하겠느냐?', {'예', '아니오'}, true)
             if selected ~= 0 then
-                goto NPC_BASIC_CLASS_STOP
+                goto NPC_BASIC_CLASS.STOP
             end
-            if button == DIALOG_RESULT_QUIT then
+            if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if button == DIALOG_RESULT_PREV then
-                goto NPC_BASIC_CLASS_003
+            if button == DIALOG_RESULT.PREV then
+                goto NPC_BASIC_CLASS.003
             end
-::NPC_BASIC_CLASS_005::
+::NPC_BASIC_CLASS.005::
             selected, button = me:list(npc, '훌륭하군. 그렇다면, 지금까지의 맹세를 증명하기 위해 도토리를 10개 바치거라.', {'예', '아니오'}, true)
             if selected ~= 0 then
-                goto NPC_BASIC_CLASS_STOP
-            elseif button == DIALOG_RESULT_QUIT then
+                goto NPC_BASIC_CLASS.STOP
+            elseif button == DIALOG_RESULT.QUIT then
                 return
-            elseif button == DIALOG_RESULT_PREV then
-                goto NPC_BASIC_CLASS_004
+            elseif button == DIALOG_RESULT.PREV then
+                goto NPC_BASIC_CLASS.004
             else
                 local item = me:item('도토리')
                 if item == nil then
-                    goto NPC_BASIC_CLASS_STOP
+                    goto NPC_BASIC_CLASS.STOP
                 elseif item:count() < 10 then
-                    goto NPC_BASIC_CLASS_STOP
+                    goto NPC_BASIC_CLASS.STOP
                 else
                     me:rmitem('도토리', 10)
                     me:class(class)
-                    if me:dialog(npc, '자네는 이제 ' .. class_name .. '으로써의 끝없는 길을 가게 되었네.', false, true) == DIALOG_RESULT_QUIT then
+                    if me:dialog(npc, '자네는 이제 ' .. class_name .. '으로써의 끝없는 길을 가게 되었네.', false, true) == DIALOG_RESULT.QUIT then
                         return
                     end
 
-                    if me:dialog(npc, '그 길은 멀고도 험난할 테니, 마음을 굳건히 하거라.', false, true) == DIALOG_RESULT_QUIT then
+                    if me:dialog(npc, '그 길은 멀고도 험난할 테니, 마음을 굳건히 하거라.', false, true) == DIALOG_RESULT.QUIT then
                         return
                     end
-                    goto NPC_BASIC_CLASS_000
+                    goto NPC_BASIC_CLASS.000
                 end
             end
 
-::NPC_BASIC_CLASS_STOP::
+::NPC_BASIC_CLASS.STOP::
             me:dialog(npc, '아직 너의 정성이 부족하니 다음에 이 곳에 올 때에는 보다 큰 각오를 갖고 나를 찾아오도록 하여라.')
         end
     end
