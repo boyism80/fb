@@ -69,6 +69,20 @@ CREATE TABLE `bulletin` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `bulletin_sequence`
+--
+
+DROP TABLE IF EXISTS `bulletin_sequence`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `bulletin_sequence` (
+  `section` int unsigned NOT NULL,
+  `id` int unsigned NOT NULL,
+  PRIMARY KEY (`section`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `character_sync`
 --
 
@@ -214,20 +228,6 @@ CREATE TABLE `mail_sequence` (
   `user` int NOT NULL,
   `id` int NOT NULL,
   PRIMARY KEY (`user`)
-) ENGINE=InnoDB DEFAULT CHARSET=euckr;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `bulletin_sequence`
---
-
-DROP TABLE IF EXISTS `bulletin_sequence`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `bulletin_sequence` (
-  `section` int unsigned NOT NULL,
-  `id` int unsigned NOT NULL,
-  PRIMARY KEY (`section`)
 ) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -458,10 +458,6 @@ BEGIN
     SELECT * FROM bulletin WHERE bulletin.`id` = new_id AND bulletin.`section` = section;
 END ;;
 DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -767,4 +763,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-23  3:44:05
+-- Dump completed on 2025-11-23 17:53:02
