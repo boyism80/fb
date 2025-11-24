@@ -1,0 +1,206 @@
+@page "/systemmail"
+@using AdminTool.Authentication
+@using Http.Service
+@using Http.Model
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.ComponentModel.DataAnnotations
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject DbContext DbContext
+@inject RabbitMqService RabbitMqService
+@attribute [Authorize(Roles = "Admin,Operator")]
+
+<PageTitle>System Mail - Admin Tool</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h2>System Mail</h2>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @successMessage
+            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Create System Mail</h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@mailModel" OnValidSubmit="@HandleSubmit">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            <InputText id="title" class="form-control" @bind-Value="mailModel.Title" />
+                            <ValidationMessage For="@(() => mailModel.Title)" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="contents" class="form-label">Contents</label>
+                            <InputTextArea id="contents" class="form-control" rows="10"
+                                @bind-Value="mailModel.Contents" />
+                            <ValidationMessage For="@(() => mailModel.Contents)" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="expireDate" class="form-label">Expire Date (Optional)</label>
+                            <InputDate id="expireDate" class="form-control" @bind-Value="expireDateValue" />
+                            <small class="form-text text-muted">Leave empty for no expiration</small>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <InputCheckbox id="sendImmediately" class="form-check-input"
+                                    @bind-Value="mailModel.SendImmediately" />
+                                <label class="form-check-label" for="sendImmediately">
+                                    Send immediately to all users
+                                </label>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-secondary" @onclick="ResetForm"
+                                disabled="@isProcessing">
+                                Reset
+                            </button>
+                            <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"
+                                        aria-hidden="true"></span>
+                                }
+                                Create System Mail
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Logged in as:</strong> @currentUserName</p>
+                    <p><strong>User ID:</strong> @currentUserId</p>
+                    <hr />
+                    <p class="text-muted small">
+                        System mails are sent to all users. The sender will be set to your logged-in user account.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private SystemMailModel mailModel = new();
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isProcessing = false;
+    private uint currentUserId = 0;
+    private string currentUserName = string.Empty;
+    private DateTime? expireDateValue = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var userNameClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name);
+
+            if (userIdClaim != null && uint.TryParse(userIdClaim.Value, out var userId))
+            {
+                currentUserId = userId;
+            }
+
+            if (userNameClaim != null)
+            {
+                currentUserName = userNameClaim.Value;
+            }
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (currentUserId == 0)
+        {
+            errorMessage = "User ID not found. Please log in again.";
+            return;
+        }
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            DateTime? expireDate = expireDateValue;
+
+            var systemMail = await DbContext.SystemMail.Write(currentUserId, mailModel.Title, mailModel.Contents, expireDate);
+            await DbContext.SaveChangesAsync();
+
+            // Publish notification to all game servers via RabbitMQ
+            var protocolMail = new fb.protocol._internal.SystemMail
+            {
+                Id = systemMail.Id,
+                Sender = systemMail.Sender,
+                Title = systemMail.Title,
+                Contents = systemMail.Contents,
+                ExpireDate = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
+                CreatedDate = systemMail.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+            };
+
+            var response = new fb.protocol._internal.response.WriteSystemMail
+            {
+                Mail = protocolMail,
+                Error = 0
+            };
+
+            RabbitMqService.Publish(response, "amq.direct", "fb.system_mail");
+
+            successMessage = $"System mail has been created successfully. Mail ID: {systemMail.Id}";
+            ResetForm();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error creating system mail: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        mailModel = new SystemMailModel();
+        expireDateValue = null;
+    }
+
+    private class SystemMailModel
+    {
+        [Required(ErrorMessage = "Title is required")]
+        [StringLength(64, ErrorMessage = "Title must be 64 characters or less")]
+        public string Title { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Contents is required")]
+        [StringLength(256, ErrorMessage = "Contents must be 256 characters or less")]
+        public string Contents { get; set; } = string.Empty;
+
+        public bool SendImmediately { get; set; } = true;
+    }
+}

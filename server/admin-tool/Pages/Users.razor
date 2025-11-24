@@ -1,14 +1,21 @@
 @page "/users"
 @using AdminTool.Services
+@using AdminTool.Authentication
 @using Http.Service
 @using Http.Model
 @using Fb.Model.EnumValue
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using System.ComponentModel.DataAnnotations
 @using Response = fb.protocol._internal.response
 @inject UserService UserService
 @inject BanService BanService
 @inject DbContext DbContext
 @inject RabbitMqService RabbitMqService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @attribute [Authorize(Roles = "Admin,Operator")]
 
 <PageTitle>Users - Admin Tool</PageTitle>
@@ -20,7 +27,8 @@
         </div>
         <div class="col-md-6">
             <div class="input-group">
-                <input type="text" class="form-control" placeholder="Search by name..." @bind="searchTerm" @bind:event="oninput" @onkeypress="HandleKeyPress" />
+                <input type="text" class="form-control" placeholder="Search by name..." @bind="searchTerm"
+                    @bind:event="oninput" @onkeypress="HandleKeyPress" />
                 <button class="btn btn-outline-secondary" type="button" @onclick="SearchUsers" disabled="@isLoading">
                     <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Search
                 </button>
@@ -104,15 +112,24 @@
                             <td>
                                 <div class="btn-group" role="group">
                                     <a href="/users/@user.Id/items" class="btn btn-sm btn-outline-primary">Items</a>
+                                    @if (CanModifyUser(user))
+                                    {
+                                        <button class="btn btn-sm btn-outline-warning" @onclick="() => ShowChangeRoleModal(user)"
+                                            disabled="@isProcessing">
+                                            Change Role
+                                        </button>
+                                    }
                                     @if (user.IsBanned)
                                     {
-                                        <button class="btn btn-sm btn-success" @onclick="() => ShowUnbanModal(user)" disabled="@isProcessing">
+                                        <button class="btn btn-sm btn-success" @onclick="() => ShowUnbanModal(user)"
+                                            disabled="@isProcessing">
                                             Unban
                                         </button>
                                     }
                                     else
                                     {
-                                        <button class="btn btn-sm btn-danger" @onclick="() => ShowBanModal(user)" disabled="@isProcessing">
+                                        <button class="btn btn-sm btn-danger" @onclick="() => ShowBanModal(user)"
+                                            disabled="@isProcessing">
                                             Ban
                                         </button>
                                     }
@@ -129,7 +146,8 @@
             <nav>
                 <ul class="pagination justify-content-center">
                     <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="#" @onclick="() => ChangePage(currentPage - 1)" @onclick:preventDefault>Previous</a>
+                        <a class="page-link" href="#" @onclick="() => ChangePage(currentPage - 1)"
+                            @onclick:preventDefault>Previous</a>
                     </li>
                     @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(userList.TotalPages, currentPage + 2); i++)
                     {
@@ -139,14 +157,16 @@
                         </li>
                     }
                     <li class="page-item @(currentPage >= userList.TotalPages ? "disabled" : "")">
-                        <a class="page-link" href="#" @onclick="() => ChangePage(currentPage + 1)" @onclick:preventDefault>Next</a>
+                        <a class="page-link" href="#" @onclick="() => ChangePage(currentPage + 1)"
+                            @onclick:preventDefault>Next</a>
                     </li>
                 </ul>
             </nav>
         }
 
         <div class="text-center text-muted">
-            Showing @((currentPage - 1) * pageSize + 1) to @(Math.Min(currentPage * pageSize, userList.TotalCount)) of @userList.TotalCount users
+            Showing @((currentPage - 1) * pageSize + 1) to @(Math.Min(currentPage * pageSize, userList.TotalCount)) of
+            @userList.TotalCount users
         </div>
     }
     else if (!isLoading)
@@ -233,6 +253,51 @@
     </div>
 }
 
+<!-- Change Role Modal -->
+@if (showChangeRoleModal)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Role: @selectedUser?.Name</h5>
+                    <button type="button" class="btn-close" @onclick="CloseChangeRoleModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@roleModel" OnValidSubmit="@HandleChangeRole">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label for="currentRole" class="form-label">Current Role</label>
+                            <input type="text" class="form-control" id="currentRole"
+                                value="@((Role)(selectedUser?.Role ?? (byte)Role.User))" readonly />
+                        </div>
+                        <div class="mb-3">
+                            <label for="newRole" class="form-label">New Role</label>
+                            <InputSelect id="newRole" class="form-select" @bind-Value="roleModel.NewRoleString">
+                                @foreach (var role in GetAvailableRoles())
+                                {
+                                    <option value="@((int)role)">@role</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => roleModel.NewRoleString)" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="CloseChangeRoleModal">Cancel</button>
+                            <button type="submit" class="btn btn-warning" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                Change Role
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private UserListResult? userList;
     private string searchTerm = string.Empty;
@@ -245,12 +310,48 @@
 
     private bool showBanModal = false;
     private bool showUnbanModal = false;
+    private bool showChangeRoleModal = false;
     private UserListItem? selectedUser;
     private BanModel banModel = new();
+    private RoleModel roleModel = new();
+    private Role currentUserRole = Role.User;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadCurrentUserRole();
         await LoadUsers();
+    }
+
+    private async Task LoadCurrentUserRole()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            var roleClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Role);
+            if (roleClaim != null && Enum.TryParse<Role>(roleClaim.Value, out var role))
+            {
+                currentUserRole = role;
+            }
+        }
+    }
+
+    private bool CanModifyUser(UserListItem user)
+    {
+        var userRole = (Role)user.Role;
+        return userRole < currentUserRole;
+    }
+
+    private List<Role> GetAvailableRoles()
+    {
+        var roles = new List<Role>();
+        foreach (Role role in Enum.GetValues(typeof(Role)))
+        {
+            if (role <= currentUserRole)
+            {
+                roles.Add(role);
+            }
+        }
+        return roles;
     }
 
     private async Task LoadUsers()
@@ -326,6 +427,91 @@
     {
         showUnbanModal = false;
         selectedUser = null;
+    }
+
+    private void ShowChangeRoleModal(UserListItem user)
+    {
+        selectedUser = user;
+        roleModel = new RoleModel
+        {
+            NewRoleString = ((int)user.Role).ToString()
+        };
+        showChangeRoleModal = true;
+    }
+
+    private void CloseChangeRoleModal()
+    {
+        showChangeRoleModal = false;
+        selectedUser = null;
+        roleModel = new RoleModel();
+    }
+
+    private async Task HandleChangeRole()
+    {
+        if (selectedUser == null)
+            return;
+
+        var userRole = (Role)selectedUser.Role;
+        if (userRole >= currentUserRole)
+        {
+            errorMessage = "You cannot modify users with equal or higher role than yours.";
+            CloseChangeRoleModal();
+            return;
+        }
+
+        if (await UserService.IsOnline(selectedUser.Name))
+        {
+            errorMessage = "Cannot change role while the user is online. Please try again after they log out.";
+            CloseChangeRoleModal();
+            return;
+        }
+
+        if (!int.TryParse(roleModel.NewRoleString, out var newRoleInt) || !Enum.IsDefined(typeof(Role), newRoleInt))
+        {
+            errorMessage = "Invalid role selected.";
+            CloseChangeRoleModal();
+            return;
+        }
+
+        var newRole = (Role)newRoleInt;
+        if (newRole > currentUserRole)
+        {
+            errorMessage = "You cannot assign a role higher than your own role.";
+            CloseChangeRoleModal();
+            return;
+        }
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var character = await DbContext.Character.Get(selectedUser.Id);
+            if (character == null)
+            {
+                errorMessage = "Character not found.";
+                CloseChangeRoleModal();
+                return;
+            }
+
+            character.Role = newRole;
+            character.UpdatedDate = DateTime.Now;
+            DbContext.Character.Set(character);
+            await DbContext.SaveChangesAsync();
+
+            successMessage = $"User {selectedUser.Name}'s role has been changed to {newRole} successfully.";
+            CloseChangeRoleModal();
+            await LoadUsers();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error changing role: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
     }
 
     private async Task HandleBan()
@@ -415,5 +601,10 @@
 
         public string? Days { get; set; }
     }
-}
 
+    private class RoleModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Role is required")]
+        public string NewRoleString { get; set; } = "0";
+    }
+}

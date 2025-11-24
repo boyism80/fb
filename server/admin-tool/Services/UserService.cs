@@ -1,8 +1,10 @@
 using Dapper;
 using Http;
 using Http.Model;
+using Http.Redis.Key;
 using Http.Service;
 using MySqlConnector;
+using StackExchange.Redis;
 
 namespace AdminTool.Services
 {
@@ -14,16 +16,19 @@ namespace AdminTool.Services
     {
         private readonly DbContext _dbContext;
         private readonly ILogger<UserService> _logger;
+        private readonly RedisService _redisService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserService"/> class.
         /// </summary>
         /// <param name="dbContext">The database context for data operations.</param>
         /// <param name="logger">The logger for recording operations.</param>
-        public UserService(DbContext dbContext, ILogger<UserService> logger)
+        /// <param name="redisService">The Redis service for session lookups.</param>
+        public UserService(DbContext dbContext, ILogger<UserService> logger, RedisService redisService)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _redisService = redisService;
         }
 
         /// <summary>
@@ -174,6 +179,36 @@ namespace AdminTool.Services
                 BanReason = ban?.Reason,
                 BanExpireDate = ban?.ExpireDate
             };
+        }
+
+        /// <summary>
+        /// Determines whether a user is currently online by inspecting the session cache.
+        /// </summary>
+        /// <param name="userName">The character name to inspect.</param>
+        /// <returns>True if the user has an active session; otherwise, false.</returns>
+        public async Task<bool> IsOnline(string userName)
+        {
+            if (string.IsNullOrWhiteSpace(userName))
+                return false;
+
+            try
+            {
+                var redis = _redisService.Redis(-1);
+                if (redis == null)
+                {
+                    _logger.LogWarning("Redis service instance is not available for IsOnline check.");
+                    return false;
+                }
+
+                var key = new SessionKey().Key;
+                var connection = redis.Connection;
+                return await connection.HashExistsAsync(new RedisKey(key), new RedisValue(userName));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to check online status for user {UserName}", userName);
+                return false;
+            }
         }
     }
 
