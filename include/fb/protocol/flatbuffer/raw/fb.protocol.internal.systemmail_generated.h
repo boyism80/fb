@@ -25,13 +25,17 @@ struct SystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SystemMailBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ID = 4,
-    VT_TITLE = 6,
-    VT_CONTENTS = 8,
-    VT_EXPIRE_DATE = 10,
-    VT_CREATED_DATE = 12
+    VT_SENDER = 6,
+    VT_TITLE = 8,
+    VT_CONTENTS = 10,
+    VT_EXPIRE_DATE = 12,
+    VT_CREATED_DATE = 14
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
+  }
+  uint32_t sender() const {
+    return GetField<uint32_t>(VT_SENDER, 0);
   }
   const ::flatbuffers::String *title() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
@@ -48,6 +52,7 @@ struct SystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_SENDER, 4) &&
            VerifyOffset(verifier, VT_TITLE) &&
            verifier.VerifyString(title()) &&
            VerifyOffset(verifier, VT_CONTENTS) &&
@@ -66,6 +71,9 @@ struct SystemMailBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_id(uint32_t id) {
     fbb_.AddElement<uint32_t>(SystemMail::VT_ID, id, 0);
+  }
+  void add_sender(uint32_t sender) {
+    fbb_.AddElement<uint32_t>(SystemMail::VT_SENDER, sender, 0);
   }
   void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
     fbb_.AddOffset(SystemMail::VT_TITLE, title);
@@ -93,6 +101,7 @@ struct SystemMailBuilder {
 inline ::flatbuffers::Offset<SystemMail> CreateSystemMail(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
+    uint32_t sender = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> contents = 0,
     ::flatbuffers::Offset<::flatbuffers::String> expire_date = 0,
@@ -102,6 +111,7 @@ inline ::flatbuffers::Offset<SystemMail> CreateSystemMail(
   builder_.add_expire_date(expire_date);
   builder_.add_contents(contents);
   builder_.add_title(title);
+  builder_.add_sender(sender);
   builder_.add_id(id);
   return builder_.Finish();
 }
@@ -109,6 +119,7 @@ inline ::flatbuffers::Offset<SystemMail> CreateSystemMail(
 inline ::flatbuffers::Offset<SystemMail> CreateSystemMailDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
+    uint32_t sender = 0,
     const char *title = nullptr,
     const char *contents = nullptr,
     const char *expire_date = nullptr,
@@ -120,6 +131,7 @@ inline ::flatbuffers::Offset<SystemMail> CreateSystemMailDirect(
   return fb::protocol::internal::raw::CreateSystemMail(
       _fbb,
       id,
+      sender,
       title__,
       contents__,
       expire_date__,

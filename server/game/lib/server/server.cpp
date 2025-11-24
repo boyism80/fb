@@ -84,7 +84,6 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("mknpc", builtin::server::builtin_mknpc);
     lua::build("maps", builtin::server::builtin_maps);
     lua::build("shutdown", builtin::server::builtin_shutdown);
-    lua::build("send_system_mail", builtin::server::builtin_send_system_mail);
     lua::build("ban", builtin::server::builtin_ban);
     lua::build("unban", builtin::server::builtin_unban);
 

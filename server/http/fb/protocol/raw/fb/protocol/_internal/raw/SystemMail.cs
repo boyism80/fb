@@ -21,56 +21,60 @@ public struct SystemMail : IFlatbufferObject
   public SystemMail __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Title { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public uint Sender { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Title { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(6, 1); }
+  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(8, 1); }
 #else
-  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(6); }
+  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
-  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(6); }
-  public string Contents { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(8); }
+  public string Contents { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetContentsBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetContentsBytes() { return __p.__vector_as_span<byte>(10, 1); }
 #else
-  public ArraySegment<byte>? GetContentsBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetContentsBytes() { return __p.__vector_as_arraysegment(10); }
 #endif
-  public byte[] GetContentsArray() { return __p.__vector_as_array<byte>(8); }
-  public string ExpireDate { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetContentsArray() { return __p.__vector_as_array<byte>(10); }
+  public string ExpireDate { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetExpireDateBytes() { return __p.__vector_as_span<byte>(10, 1); }
+  public Span<byte> GetExpireDateBytes() { return __p.__vector_as_span<byte>(12, 1); }
 #else
-  public ArraySegment<byte>? GetExpireDateBytes() { return __p.__vector_as_arraysegment(10); }
+  public ArraySegment<byte>? GetExpireDateBytes() { return __p.__vector_as_arraysegment(12); }
 #endif
-  public byte[] GetExpireDateArray() { return __p.__vector_as_array<byte>(10); }
-  public string CreatedDate { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetExpireDateArray() { return __p.__vector_as_array<byte>(12); }
+  public string CreatedDate { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetCreatedDateBytes() { return __p.__vector_as_span<byte>(12, 1); }
+  public Span<byte> GetCreatedDateBytes() { return __p.__vector_as_span<byte>(14, 1); }
 #else
-  public ArraySegment<byte>? GetCreatedDateBytes() { return __p.__vector_as_arraysegment(12); }
+  public ArraySegment<byte>? GetCreatedDateBytes() { return __p.__vector_as_arraysegment(14); }
 #endif
-  public byte[] GetCreatedDateArray() { return __p.__vector_as_array<byte>(12); }
+  public byte[] GetCreatedDateArray() { return __p.__vector_as_array<byte>(14); }
 
   public static Offset<fb.protocol._internal.raw.SystemMail> CreateSystemMail(FlatBufferBuilder builder,
       uint id = 0,
+      uint sender = 0,
       StringOffset titleOffset = default(StringOffset),
       StringOffset contentsOffset = default(StringOffset),
       StringOffset expire_dateOffset = default(StringOffset),
       StringOffset created_dateOffset = default(StringOffset)) {
-    builder.StartTable(5);
+    builder.StartTable(6);
     SystemMail.AddCreatedDate(builder, created_dateOffset);
     SystemMail.AddExpireDate(builder, expire_dateOffset);
     SystemMail.AddContents(builder, contentsOffset);
     SystemMail.AddTitle(builder, titleOffset);
+    SystemMail.AddSender(builder, sender);
     SystemMail.AddId(builder, id);
     return SystemMail.EndSystemMail(builder);
   }
 
-  public static void StartSystemMail(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartSystemMail(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
-  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(1, titleOffset.Value, 0); }
-  public static void AddContents(FlatBufferBuilder builder, StringOffset contentsOffset) { builder.AddOffset(2, contentsOffset.Value, 0); }
-  public static void AddExpireDate(FlatBufferBuilder builder, StringOffset expireDateOffset) { builder.AddOffset(3, expireDateOffset.Value, 0); }
-  public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(4, createdDateOffset.Value, 0); }
+  public static void AddSender(FlatBufferBuilder builder, uint sender) { builder.AddUint(1, sender, 0); }
+  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(2, titleOffset.Value, 0); }
+  public static void AddContents(FlatBufferBuilder builder, StringOffset contentsOffset) { builder.AddOffset(3, contentsOffset.Value, 0); }
+  public static void AddExpireDate(FlatBufferBuilder builder, StringOffset expireDateOffset) { builder.AddOffset(4, expireDateOffset.Value, 0); }
+  public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(5, createdDateOffset.Value, 0); }
   public static Offset<fb.protocol._internal.raw.SystemMail> EndSystemMail(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.SystemMail>(o);
@@ -86,10 +90,11 @@ static public class SystemMailVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Id*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 6 /*Title*/, false)
-      && verifier.VerifyString(tablePos, 8 /*Contents*/, false)
-      && verifier.VerifyString(tablePos, 10 /*ExpireDate*/, false)
-      && verifier.VerifyString(tablePos, 12 /*CreatedDate*/, false)
+      && verifier.VerifyField(tablePos, 6 /*Sender*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 8 /*Title*/, false)
+      && verifier.VerifyString(tablePos, 10 /*Contents*/, false)
+      && verifier.VerifyString(tablePos, 12 /*ExpireDate*/, false)
+      && verifier.VerifyString(tablePos, 14 /*CreatedDate*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

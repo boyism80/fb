@@ -5,6 +5,7 @@ using namespace fb::game;
 
 system_mail::system_mail(const fb::protocol::internal::SystemMail& dto) :
     id(dto.id),
+    sender(dto.sender),
     title(dto.title),
     contents(dto.contents),
     created_date(fb::model::datetime(dto.created_date))

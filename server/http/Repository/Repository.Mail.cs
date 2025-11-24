@@ -67,12 +67,12 @@ namespace Http.Reepository
         /// Creates and sends a new mail message to a specified user.
         /// </summary>
         /// <param name="user">The name of the recipient character or user ID as string.</param>
-        /// <param name="sender">The name of the sender character.</param>
+        /// <param name="sender">The sender's user ID.</param>
         /// <param name="title">The subject/title of the mail message.</param>
         /// <param name="contents">The body content of the mail message.</param>
-        /// <returns>The created mail message.</returns>
+        /// <returns>The created mail message with resolved sender name.</returns>
         /// <exception cref="LogicException">Thrown when the recipient character is not found, or mail creation fails.</exception>
-        public async Task<Mail> Write(string user, string sender, string title, string contents)
+        public async Task<Mail> Write(string user, uint sender, string title, string contents)
         {
             uint uid;
             if (uint.TryParse(user, out var userId))

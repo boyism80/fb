@@ -1152,8 +1152,7 @@ async::task<void> character::process_system_mails()
             }
 
             const auto& mail = *mail_ptr;
-
-            auto&& resp = co_await this->server.http.post("internal", "/mail/write", WriteMail{"시스템", this->name(), mail.title, mail.contents, fb::config<uint32_t>("id")});
+            auto&& resp = co_await this->server.http.post("internal", "/mail/write", WriteMail{mail.sender, this->name(), mail.title, mail.contents, fb::config<uint32_t>("id")});
 
             if (resp.error != 0)
                 this->mail_box.update_system_mail_user_read(mail_id, false);

@@ -91,6 +91,7 @@ namespace Http.Reepository
             var sql = $"""
                 INSERT INTO `system_mail` (
                     `id`,
+                    `sender`,
                     `title`,
                     `contents`,
                     `expire_date`,
@@ -99,6 +100,7 @@ namespace Http.Reepository
                     `updated_date`)
                 VALUES (
                     {value.Id.Escape()},
+                    {value.Sender.Escape()},
                     {value.Title.Escape()},
                     {value.Contents.Escape()},
                     {value.ExpireDate.Escape()},
@@ -106,6 +108,7 @@ namespace Http.Reepository
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
+                    `sender`=VALUES(`sender`),
                     `title`=VALUES(`title`), 
                     `contents`=VALUES(`contents`), 
                     `expire_date`=VALUES(`expire_date`),
@@ -119,23 +122,25 @@ namespace Http.Reepository
         /// <summary>
         /// Creates a new system mail and queues it for database write-back.
         /// </summary>
+        /// <param name="sender">The sender's user ID for the system mail.</param>
         /// <param name="title">The title/subject of the system mail.</param>
         /// <param name="contents">The body content of the system mail.</param>
         /// <param name="expireDate">Optional expiration date for the system mail.</param>
         /// <returns>The created system mail with assigned ID.</returns>
-        public async Task<SystemMail> Write(string title, string contents, DateTime? expireDate)
+        public async Task<SystemMail> Write(uint sender, string title, string contents, DateTime? expireDate)
         {
             var query = @"
-                INSERT INTO system_mail (title, contents, expire_date, deleted, created_date, updated_date)
-                VALUES (@title, @contents, @expireDate, 0, NOW(), NOW());
+                INSERT INTO system_mail (sender, title, contents, expire_date, deleted, created_date, updated_date)
+                VALUES (@sender, @title, @contents, @expireDate, 0, NOW(), NOW());
                 SELECT LAST_INSERT_ID();";
 
             await using var conn = _dbContext.Connection(0);
-            var id = await conn.QueryFirstOrDefaultAsync<uint>(query, new { title, contents, expireDate });
+            var id = await conn.QueryFirstOrDefaultAsync<uint>(query, new { sender, title, contents, expireDate });
 
             var systemMail = new SystemMail
             {
                 Id = id,
+                Sender = sender,
                 Title = title,
                 Contents = contents,
                 ExpireDate = expireDate,

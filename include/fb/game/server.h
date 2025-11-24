@@ -183,7 +183,6 @@ public:
     [[nodiscard]] async::task<void>                         change_clan_member_role(const clan& clan, uint32_t changer_uid, const std::string& target, CLAN_ROLE role);
     [[nodiscard]] async::task<void>                         broadcast(const clan& clan, const std::string& message, MESSAGE_TYPE type);
     [[nodiscard]] async::task<internal_resp::WriteMail>     send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents);
-    [[nodiscard]] async::task<internal_resp::WriteMail>     send_mail(const std::string& sender, const std::string& to, const std::string& title, const std::string& contents);
     [[nodiscard]] async::task<internal_resp::GetMailList>   mail_list(const character& ch, uint16_t offset, uint16_t count);
     [[nodiscard]] async::task<internal_resp::GetMail>       read_mail(character& ch, uint16_t id);
     [[nodiscard]] async::task<internal_resp::DeleteMail>    delete_mail(character& ch, uint16_t id);

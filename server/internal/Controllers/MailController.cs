@@ -52,6 +52,17 @@ namespace Internal.Controllers
             {
                 var mails = await _dbContext.Mail.GetList(user, offset, count);
                 var summaryList = _mapper.Map<List<Http.Model.Mail>, List<Protocol.MailSummary>>(mails.ToList());
+
+                // Resolve sender names from UIDs (name table is in global DB, cannot JOIN)
+                var senderIds = mails.Select(m => m.Sender).Distinct().ToList();
+                var senderNames = await _dbContext.Character.GetName(senderIds);
+
+                // Fill sender names into protocol objects
+                for (int i = 0; i < summaryList.Count; i++)
+                {
+                    summaryList[i].Sender = senderNames.GetValueOrDefault(mails[i].Sender) ?? string.Empty;
+                }
+
                 return new Response.GetMailList
                 {
                     SummaryList = summaryList
@@ -88,9 +99,15 @@ namespace Internal.Controllers
                 var mail = await _dbContext.Mail.Get(user, id) ??
                     throw new LogicException(ErrorCode.NotFoundMail);
 
+                var protocolMail = _mapper.Map<Protocol.Mail>(mail);
+
+                // Resolve sender name from UID (name table is in global DB, cannot JOIN)
+                var senderName = await _dbContext.Character.GetName(mail.Sender) ?? string.Empty;
+                protocolMail.Sender = senderName;
+
                 return new Response.GetMail
                 {
-                    Mail = _mapper.Map<Protocol.Mail>(mail),
+                    Mail = protocolMail,
                     Unread = await _dbContext.Mail.Unread(user),
                     Error = (uint)ErrorCode.None,
                 };
@@ -115,7 +132,7 @@ namespace Internal.Controllers
         /// Handles mail writing requests to send messages between users.
         /// Creates a new mail message and publishes notification via RabbitMQ.
         /// </summary>
-        /// <param name="request">The mail writing request containing recipient, sender, title, and content.</param>
+        /// <param name="request">The mail writing request containing recipient, sender UID, title, and content.</param>
         /// <returns>A response with the created mail information and unread count or error details.</returns>
         [HttpPost("write")]
         public async Task<Response.WriteMail> Write(Request.WriteMail request)
@@ -123,9 +140,15 @@ namespace Internal.Controllers
             try
             {
                 var mail = await _dbContext.Mail.Write(request.User, request.Sender, request.Title, request.Contents);
+                var protocolMail = _mapper.Map<Protocol.Mail>(mail);
+
+                // Resolve sender name from UID (name table is in global DB, cannot JOIN)
+                var senderName = await _dbContext.Character.GetName(mail.Sender) ?? string.Empty;
+                protocolMail.Sender = senderName;
+
                 var response = new Response.WriteMail
                 {
-                    Mail = _mapper.Map<Protocol.Mail>(mail),
+                    Mail = protocolMail,
                     Host = request.Host,
                     Unread = await _dbContext.Mail.Unread(mail.User),
                     Error = (uint)ErrorCode.None
@@ -201,6 +224,7 @@ namespace Internal.Controllers
                 var protocolMails = systemMails.Select(m => new Protocol.SystemMail
                 {
                     Id = m.Id,
+                    Sender = m.Sender,
                     Title = m.Title,
                     Contents = m.Contents,
                     ExpireDate = m.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -226,7 +250,7 @@ namespace Internal.Controllers
         /// Creates a new system mail and publishes notification via RabbitMQ.
         /// Invalidates Redis cache to ensure all game servers fetch the latest system mails.
         /// </summary>
-        /// <param name="request">The system mail writing request containing title, contents, and optional expiration date.</param>
+        /// <param name="request">The system mail writing request containing sender, title, contents, and optional expiration date.</param>
         /// <returns>A response with the created system mail information or error details.</returns>
         [HttpPost("system/write")]
         public async Task<Response.WriteSystemMail> WriteSystemMail(Request.WriteSystemMail request)
@@ -240,10 +264,11 @@ namespace Internal.Controllers
                         expireDate = parsedDate;
                 }
 
-                var systemMail = await _dbContext.SystemMail.Write(request.Title, request.Contents, expireDate);
+                var systemMail = await _dbContext.SystemMail.Write(request.Sender, request.Title, request.Contents, expireDate);
                 var protocolMail = new Protocol.SystemMail
                 {
                     Id = systemMail.Id,
+                    Sender = systemMail.Sender,
                     Title = systemMail.Title,
                     Contents = systemMail.Contents,
                     ExpireDate = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),

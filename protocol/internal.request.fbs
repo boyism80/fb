@@ -112,7 +112,7 @@ table DeleteArticle {
 }
 
 table WriteMail {
-  sender: string;
+  sender: uint;
   user: string;
   title: string;
   contents: string;
@@ -217,6 +217,7 @@ table GetSystemMails {
 }
 
 table WriteSystemMail {
+  sender: uint;
   title: string;
   contents: string;
   expire_date: string?;

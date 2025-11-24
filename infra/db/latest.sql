@@ -204,7 +204,7 @@ DROP TABLE IF EXISTS `mail`;
 CREATE TABLE `mail` (
   `id` int unsigned NOT NULL,
   `user` int unsigned NOT NULL,
-  `sender` varchar(64) NOT NULL,
+  `sender` int unsigned NOT NULL,
   `title` varchar(64) NOT NULL,
   `contents` varchar(256) NOT NULL,
   `read` tinyint NOT NULL DEFAULT '0',
@@ -346,6 +346,7 @@ DROP TABLE IF EXISTS `system_mail`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `system_mail` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `sender` int unsigned NOT NULL,
   `title` varchar(64) NOT NULL,
   `contents` varchar(256) NOT NULL,
   `expire_date` datetime DEFAULT NULL,
@@ -668,7 +669,7 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_WRITE`(
     IN user INT, 
-    IN sender NVARCHAR(64), 
+    IN sender INT, 
     IN title NVARCHAR(64), 
     IN contents NVARCHAR(256)
 )

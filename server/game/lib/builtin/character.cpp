@@ -77,6 +77,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"start_quest",         builtin::character::builtin_start_quest},
 {"remove_quest",        builtin::character::builtin_remove_quest},
 {"can_start_quest",     builtin::character::builtin_can_start_quest},
+{"send_system_mail",    builtin::character::builtin_send_system_mail},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::character::builtin_look(lua_State* L)
@@ -3279,4 +3280,54 @@ int fb::game::builtin::character::builtin_can_start_quest(lua_State* L)
     auto& attr = server->model.quest_attribute[id];
     lua->pushboolean(ch->condition(attr.condition));
     return 1;
+}
+
+int builtin::character::builtin_send_system_mail(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto title = lua->tostring(2);
+    if (title.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto contents = lua->tostring(3);
+    if (contents.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto expire_date = std::optional<std::string>{std::nullopt};
+    if (argc >= 3 && lua->is_nil(3) == false && lua->is_string(3))
+        expire_date = lua->tostring(3);
+
+    static auto fn =
+        [](fb::game::server* server, fb::lua::context* lua, uint32_t sender, const std::string& title, const std::string& contents, const std::optional<std::string>& expire_date)
+        -> async::task<void> {
+        auto   success = false;
+        auto&& resp =
+            co_await server->http.post("internal", "/mail/system/write", WriteSystemMail{sender, title, contents, expire_date.has_value() ? expire_date.value() : std::string{}});
+        success = resp.error == 0;
+
+        co_await lua->switching();
+        lua->pushboolean(success);
+        lua->resume(1);
+    };
+
+    async::awaitable_then(fn(server, lua, ch->id(), title, contents, expire_date), [lua](auto result) {
+        result();
+    });
+
+    return lua->yield(1);
 }

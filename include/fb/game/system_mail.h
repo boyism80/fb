@@ -25,6 +25,11 @@ struct system_mail
     uint32_t id;
 
     /**
+     * @brief Sender's user ID for the system mail.
+     */
+    uint32_t sender;
+
+    /**
      * @brief Title/subject of the system mail message.
      */
     std::string title;

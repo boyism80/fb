@@ -173,6 +173,7 @@ table Quest {
 
 table SystemMail {
     id: uint;
+    sender: uint;
     title: string;
     contents: string;
     expire_date: string?;

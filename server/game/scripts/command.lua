@@ -996,7 +996,7 @@ command_funcs = {
     },
 
     ['시스템메일'] = {
-        ['privilege'] = ROLE_ADMIN,
+        ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<제목> <내용> [만료일] - 시스템 메일 전송',
         ['command'] = function (me, args)
             local title, contents, expire_date = table.unpack(args)
@@ -1005,11 +1005,11 @@ command_funcs = {
                 return true
             end
             
-            local success = send_system_mail(title, contents, expire_date)
+            local success = me:send_system_mail(title, contents, expire_date)
             if success then
-                me:message("시스템 메일이 성공적으로 전송되었습니다.", MESSAGE_TYPE_BROWN)
+                me:message("시스템 메일이 성공적으로 전송되었습니다.", MESSAGE_TYPE.BROWN)
             else
-                me:message("시스템 메일 전송에 실패했습니다.", MESSAGE_TYPE_BROWN)
+                me:message("시스템 메일 전송에 실패했습니다.", MESSAGE_TYPE.BROWN)
             end
             return true
         end,

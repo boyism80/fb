@@ -41,6 +41,12 @@ namespace Http.Model
     public class SystemMail : SystemMailKey, IModel
     {
         /// <summary>
+        /// Gets or sets the sender's user ID for the system mail.
+        /// </summary>
+        /// <value>The unique identifier of the user who created this system mail.</value>
+        public uint Sender { get; set; }
+
+        /// <summary>
         /// Gets or sets the title/subject of the system mail message.
         /// </summary>
         /// <value>The mail subject line displayed to all users.</value>

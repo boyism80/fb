@@ -353,6 +353,7 @@ namespace fb.protocol._internal
 
             return fb.protocol._internal.raw.SystemMail.CreateSystemMail(builder,
                 builder.Build(value.Id),
+                builder.Build(value.Sender),
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate),
@@ -712,6 +713,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.WriteSystemMail.CreateWriteSystemMail(builder,
+                builder.Build(value.Sender),
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate));
@@ -1508,6 +1510,7 @@ namespace fb.protocol._internal.request
 
             return fb.protocol._internal.raw.SystemMail.CreateSystemMail(builder,
                 builder.Build(value.Id),
+                builder.Build(value.Sender),
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate),
@@ -1867,6 +1870,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.WriteSystemMail.CreateWriteSystemMail(builder,
+                builder.Build(value.Sender),
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate));
@@ -2683,6 +2687,7 @@ namespace fb.protocol._internal.response
 
             return fb.protocol._internal.raw.SystemMail.CreateSystemMail(builder,
                 builder.Build(value.Id),
+                builder.Build(value.Sender),
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate),
@@ -3042,6 +3047,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.WriteSystemMail.CreateWriteSystemMail(builder,
+                builder.Build(value.Sender),
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate));
@@ -4360,6 +4366,7 @@ namespace fb.protocol._internal
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SystemMail;
         public uint Id { get; set; } = 0;
+        public uint Sender { get; set; } = 0;
         public string Title { get; set; } = string.Empty;
         public string Contents { get; set; } = string.Empty;
         public string ExpireDate { get; set; } = null;
@@ -4371,6 +4378,7 @@ namespace fb.protocol._internal
         public SystemMail(fb.protocol._internal.raw.SystemMail raw)
         {
             Id = raw.Id;
+            Sender = raw.Sender;
             Title = raw.Title;
             Contents = raw.Contents;
             ExpireDate = raw.ExpireDate;
@@ -5117,7 +5125,7 @@ namespace fb.protocol._internal.request
     public class WriteMail : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.WriteMail;
-        public string Sender { get; set; } = string.Empty;
+        public uint Sender { get; set; } = 0;
         public string User { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Contents { get; set; } = string.Empty;
@@ -5827,6 +5835,7 @@ namespace fb.protocol._internal.request
     public class WriteSystemMail : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.WriteSystemMail;
+        public uint Sender { get; set; } = 0;
         public string Title { get; set; } = string.Empty;
         public string Contents { get; set; } = string.Empty;
         public string ExpireDate { get; set; } = null;
@@ -5836,6 +5845,7 @@ namespace fb.protocol._internal.request
 
         public WriteSystemMail(fb.protocol._internal.request.raw.WriteSystemMail raw)
         {
+            Sender = raw.Sender;
             Title = raw.Title;
             Contents = raw.Contents;
             ExpireDate = raw.ExpireDate;

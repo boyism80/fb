@@ -20,13 +20,7 @@ public struct WriteMail : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public WriteMail __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Sender { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetSenderBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetSenderBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetSenderArray() { return __p.__vector_as_array<byte>(4); }
+  public uint Sender { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public string User { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetUserBytes() { return __p.__vector_as_span<byte>(6, 1); }
@@ -51,7 +45,7 @@ public struct WriteMail : IFlatbufferObject
   public uint Host { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.WriteMail> CreateWriteMail(FlatBufferBuilder builder,
-      StringOffset senderOffset = default(StringOffset),
+      uint sender = 0,
       StringOffset userOffset = default(StringOffset),
       StringOffset titleOffset = default(StringOffset),
       StringOffset contentsOffset = default(StringOffset),
@@ -61,12 +55,12 @@ public struct WriteMail : IFlatbufferObject
     WriteMail.AddContents(builder, contentsOffset);
     WriteMail.AddTitle(builder, titleOffset);
     WriteMail.AddUser(builder, userOffset);
-    WriteMail.AddSender(builder, senderOffset);
+    WriteMail.AddSender(builder, sender);
     return WriteMail.EndWriteMail(builder);
   }
 
   public static void StartWriteMail(FlatBufferBuilder builder) { builder.StartTable(5); }
-  public static void AddSender(FlatBufferBuilder builder, StringOffset senderOffset) { builder.AddOffset(0, senderOffset.Value, 0); }
+  public static void AddSender(FlatBufferBuilder builder, uint sender) { builder.AddUint(0, sender, 0); }
   public static void AddUser(FlatBufferBuilder builder, StringOffset userOffset) { builder.AddOffset(1, userOffset.Value, 0); }
   public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(2, titleOffset.Value, 0); }
   public static void AddContents(FlatBufferBuilder builder, StringOffset contentsOffset) { builder.AddOffset(3, contentsOffset.Value, 0); }
@@ -85,7 +79,7 @@ static public class WriteMailVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Sender*/, false)
+      && verifier.VerifyField(tablePos, 4 /*Sender*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 6 /*User*/, false)
       && verifier.VerifyString(tablePos, 8 /*Title*/, false)
       && verifier.VerifyString(tablePos, 10 /*Contents*/, false)
