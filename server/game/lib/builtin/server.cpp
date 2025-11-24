@@ -459,17 +459,7 @@ int builtin::server::builtin_save(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    for (int i = 0; i < server->threads.size(); i++)
-    {
-        std::ignore = server->threads[i]->dispatch([server](auto& thread) -> async::task<void> {
-            auto params = thread.template data<thread_params>();
-            for (auto& [id, character] : params->characters)
-            {
-                std::ignore = server->save(*character);
-            }
-            co_return;
-        });
-    }
+    server->save();
     return 0;
 }
 

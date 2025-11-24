@@ -1,9 +1,14 @@
 @page "/servers"
+@using Fb.Model.EnumValue
 @using Http.Service
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Response = fb.protocol._internal.response
 @inject ServerStateService ServerStateService
 @inject CacheService CacheService
-@attribute [Authorize(Roles = "Admin,Operator")]
+@inject RabbitMqService RabbitMqService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>Server Status - Admin Tool</PageTitle>
 
@@ -90,14 +95,62 @@
 
         <div class="card mb-4">
             <div class="card-header">
+                <h5 class="mb-0">Server Controls</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    Send RabbitMQ notifications through <code>fb.system</code> to broadcast save or initiate shutdown across
+                    all game servers.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-warning"
+                            disabled="@(isSaveProcessing || !canSaveServers)"
+                            @onclick="RequestServerSave">
+                        @if (isSaveProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Broadcasting Save...</span>
+                        }
+                        else
+                        {
+                            <span>Force Save All Servers</span>
+                        }
+                    </button>
+                    <button class="btn btn-danger"
+                            disabled="@(isShutdownProcessing || !canShutdownServers)"
+                            @onclick="RequestServerShutdown">
+                        @if (isShutdownProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Sending Shutdown...</span>
+                        }
+                        else
+                        {
+                            <span>Shutdown All Servers</span>
+                        }
+                    </button>
+                </div>
+                @if (!canSaveServers || !canShutdownServers)
+                {
+                    <p class="text-muted mt-2 mb-0">
+                        <small>
+                            Saving requires at least Admin role. Shutdown is limited to Superadmin or higher accounts.
+                        </small>
+                    </p>
+                }
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
                 <h5 class="mb-0">User Session Management</h5>
             </div>
             <div class="card-body">
                 <p class="text-muted">
                     Clear all user sessions from Redis. This operation is only allowed when no servers are running.
                 </p>
-                <button class="btn btn-danger" @onclick="ClearSessions" disabled="@(isProcessing || servers.Any())">
-                    @if (isProcessing)
+                <button class="btn btn-danger" @onclick="ClearSessions" disabled="@(isSessionProcessing || servers.Any())">
+                    @if (isSessionProcessing)
                     {
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                         <span>Processing...</span>
@@ -121,13 +174,31 @@
 @code {
     private List<ServerStateService.ServerInfo>? servers;
     private bool isLoading = false;
-    private bool isProcessing = false;
+    private bool isSessionProcessing = false;
+    private bool isSaveProcessing = false;
+    private bool isShutdownProcessing = false;
+    private bool canSaveServers = false;
+    private bool canShutdownServers = false;
     private string? errorMessage;
     private string? successMessage;
 
     protected override async Task OnInitializedAsync()
     {
+        await InitializePermissions();
         await LoadServers();
+    }
+
+    private async Task InitializePermissions()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        canSaveServers = user.IsInRole(nameof(Role.Admin)) ||
+                         user.IsInRole(nameof(Role.Superadmin)) ||
+                         user.IsInRole(nameof(Role.Owner));
+
+        canShutdownServers = user.IsInRole(nameof(Role.Superadmin)) ||
+                             user.IsInRole(nameof(Role.Owner));
     }
 
     private async Task LoadServers()
@@ -152,7 +223,7 @@
 
     private async Task ClearSessions()
     {
-        isProcessing = true;
+        isSessionProcessing = true;
         errorMessage = null;
         successMessage = null;
 
@@ -175,8 +246,70 @@
         }
         finally
         {
-            isProcessing = false;
+            isSessionProcessing = false;
         }
+    }
+
+    private Task RequestServerSave()
+    {
+        if (!canSaveServers)
+        {
+            errorMessage = "You do not have permission to force saves.";
+            successMessage = null;
+            return Task.CompletedTask;
+        }
+
+        isSaveProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var packet = new Response.BroadcastSave();
+            RabbitMqService.Publish(packet, "amq.direct", "fb.system");
+            successMessage = "Save instruction broadcasted to all game servers.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to broadcast save: {ex.Message}";
+        }
+        finally
+        {
+            isSaveProcessing = false;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task RequestServerShutdown()
+    {
+        if (!canShutdownServers)
+        {
+            errorMessage = "You do not have permission to shutdown servers.";
+            successMessage = null;
+            return Task.CompletedTask;
+        }
+
+        isShutdownProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var packet = new Response.Shutdown();
+            RabbitMqService.Publish(packet, "amq.direct", "fb.system");
+            successMessage = "Shutdown instruction sent to all game servers.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to send shutdown instruction: {ex.Message}";
+        }
+        finally
+        {
+            isShutdownProcessing = false;
+        }
+
+        return Task.CompletedTask;
     }
 }
 

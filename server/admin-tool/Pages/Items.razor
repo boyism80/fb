@@ -1,6 +1,6 @@
 @page "/items"
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize(Roles = "Admin,Operator")]
+@attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>Item Management - Admin Tool</PageTitle>
 

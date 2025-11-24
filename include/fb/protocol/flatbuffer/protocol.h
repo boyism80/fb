@@ -105,6 +105,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.makecharacter_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.reservename_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.save_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.broadcastsave_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.setoption_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getgroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.entergroup_generated.h>
@@ -213,6 +214,7 @@ namespace fb::protocol::internal::response
     class MakeCharacter;
     class ReserveName;
     class Save;
+    class BroadcastSave;
     class SetOption;
     class GetGroup;
     class EnterGroup;
@@ -401,6 +403,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::Init> { ty
 template <> struct FlatBufferOffset<fb::protocol::internal::response::MakeCharacter> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::MakeCharacter> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::ReserveName> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::ReserveName> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Save> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Save> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::BroadcastSave> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastSave> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::SetOption> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::SetOption> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::GetGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::EnterGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::EnterGroup> type; };
@@ -583,6 +586,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::ReserveName> build<fb::protocol::internal::response::ReserveName>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ReserveName& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Save> build<fb::protocol::internal::response::Save>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Save& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastSave> build<fb::protocol::internal::response::BroadcastSave>(FlatBufferBuilder& builder, const fb::protocol::internal::response::BroadcastSave& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::SetOption> build<fb::protocol::internal::response::SetOption>(FlatBufferBuilder& builder, const fb::protocol::internal::response::SetOption& value);
 template <>
@@ -3014,6 +3019,7 @@ enum class FlatBufferProtocolType
     MakeCharacter,
     ReserveName,
     Save,
+    BroadcastSave,
     SetOption,
     GetGroup,
     EnterGroup,
@@ -3921,6 +3927,38 @@ public:
     {
         auto raw = fb::protocol::internal::response::raw::GetSave(bytes);
         return Save(*raw);
+    }
+};
+class BroadcastSave
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::BroadcastSave;
+
+
+public:
+    BroadcastSave() = default;
+
+    BroadcastSave(const BroadcastSave& x)
+    { }
+
+
+    BroadcastSave(const fb::protocol::internal::response::raw::BroadcastSave& raw)
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::BroadcastSave>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static BroadcastSave Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::raw::GetBroadcastSave(bytes);
+        return BroadcastSave(*raw);
     }
 };
 class SetOption
@@ -5522,6 +5560,11 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Save> build<fb::proto
 {
     return fb::protocol::internal::response::raw::CreateSave(builder,
             flatbuffers::build<bool>(builder, value.success));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastSave> build<fb::protocol::internal::response::BroadcastSave>(FlatBufferBuilder& builder, const fb::protocol::internal::response::BroadcastSave& value)
+{
+    return fb::protocol::internal::response::raw::CreateBroadcastSave(builder);
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::SetOption> build<fb::protocol::internal::response::SetOption>(FlatBufferBuilder& builder, const fb::protocol::internal::response::SetOption& value)

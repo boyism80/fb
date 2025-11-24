@@ -54,6 +54,7 @@
 #include <fb/game/handler/amqp/write_mail.h>
 #include <fb/game/handler/amqp/write_system_mail.h>
 #include <fb/game/handler/amqp/ban.h>
+#include <fb/game/handler/amqp/broadcast_save.h>
 
 #include <fb/game/handler/npc_interaction/appreciate.h>
 #include <fb/game/handler/npc_interaction/buy.h>

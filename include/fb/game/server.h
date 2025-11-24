@@ -165,6 +165,7 @@ public:
 public:
     async::task<void>               send(fb::game::object& object, const fb::protocol::header& header, fb::game::scope scope, bool exclude_self = false, bool encrypt = true);
     [[nodiscard]] async::task<void> save(fb::game::character& ch);
+    void                            save();
 
 public:
     virtual uint32_t                                        thread_id(const fb::socket<fb::game::character>& socket) const;

@@ -140,9 +140,12 @@ table ReserveName {
   success: bool;
 }
 
-
 table Save {
   success: bool;
+}
+
+table BroadcastSave {
+  
 }
 
 table SetOption {

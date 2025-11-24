@@ -8,7 +8,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject DbContext DbContext
 @inject RabbitMqService RabbitMqService
-@attribute [Authorize(Roles = "Admin,Operator")]
+@attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>System Mail - Admin Tool</PageTitle>
 
@@ -59,15 +59,6 @@
                             <label for="expireDate" class="form-label">Expire Date (Optional)</label>
                             <InputDate id="expireDate" class="form-control" @bind-Value="expireDateValue" />
                             <small class="form-text text-muted">Leave empty for no expiration</small>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <InputCheckbox id="sendImmediately" class="form-check-input"
-                                    @bind-Value="mailModel.SendImmediately" />
-                                <label class="form-check-label" for="sendImmediately">
-                                    Send immediately to all users
-                                </label>
-                            </div>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <button type="button" class="btn btn-secondary" @onclick="ResetForm"
@@ -170,7 +161,7 @@
                 Error = 0
             };
 
-            RabbitMqService.Publish(response, "amq.direct", "fb.system_mail");
+            RabbitMqService.Publish(response, "amq.direct", "fb.system");
 
             successMessage = $"System mail has been created successfully. Mail ID: {systemMail.Id}";
             ResetForm();
@@ -201,6 +192,5 @@
         [StringLength(256, ErrorMessage = "Contents must be 256 characters or less")]
         public string Contents { get; set; } = string.Empty;
 
-        public bool SendImmediately { get; set; } = true;
     }
 }

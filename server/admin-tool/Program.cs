@@ -1,3 +1,6 @@
+using AdminTool.Authorization;
+using AdminTool.Options;
+using AdminTool.Services;
 using Dapper;
 using Http.Extension;
 using Http.Service;
@@ -27,6 +30,11 @@ builder.Services.AddScoped<DbContext>();
 builder.Services.AddScoped<BanService>();
 builder.Services.AddScoped<CacheService>();
 builder.Services.AddSingleton<ServerStateService>();
+builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection("Security"));
+builder.Services.AddSingleton<SecurityService>();
+builder.Services.AddAuthorization();
+builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, MinimumRoleAuthorizationHandler>();
+builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider, MinimumRolePolicyProvider>();
 
 // Admin tool services
 builder.Services.AddScoped<AdminTool.Services.AuthService>();

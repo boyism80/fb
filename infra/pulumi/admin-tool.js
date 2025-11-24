@@ -23,6 +23,9 @@ module.exports = {
                     "Port": conf.rabbitmq[sectionConf.rabbitmq].port.amqp.cluster,
                     "Uid": "fb",
                     "Pwd": "admin"
+                },
+                "Security": {
+                    "ElevationSecret": ""
                 }
             }
 
@@ -35,6 +38,10 @@ module.exports = {
                     Host: "redis",
                     Port: conf.redis[sectionConf.redis][id].port.cluster
                 }
+            }
+
+            if (sectionConf.security && sectionConf.security.elevationSecret) {
+                config.Security.ElevationSecret = sectionConf.security.elevationSecret
             }
 
             const configMap = new k8s.core.v1.ConfigMap(`admin-tool-${section}`, {

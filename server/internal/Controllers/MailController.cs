@@ -282,7 +282,7 @@ namespace Internal.Controllers
                 };
 
                 // Publish notification to all game servers via RabbitMQ
-                _rabbitMqService.Publish(response, "amq.direct", "fb.system_mail");
+                _rabbitMqService.Publish(response, "amq.direct", "fb.system");
 
                 return response;
             }

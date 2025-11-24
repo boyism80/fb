@@ -2,7 +2,7 @@
 @using Http.Service
 @using Microsoft.AspNetCore.Authorization
 @inject CacheService CacheService
-@attribute [Authorize(Roles = "Admin,Operator")]
+@attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>Cache Management - Admin Tool</PageTitle>
 

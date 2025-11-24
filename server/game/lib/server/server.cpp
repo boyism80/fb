@@ -221,8 +221,9 @@ async::task<void> server::handle_start()
     this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(std::format("fb.game.{}", config<uint32_t>("id")));
     this->handler.amqp.bind<fb::game::handler::amqp::whisper>(std::format("fb.game.{}", config<uint32_t>("id")));
     this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.system");
-    this->handler.amqp.bind<fb::game::handler::amqp::write_system_mail>("fb.system_mail");
+    this->handler.amqp.bind<fb::game::handler::amqp::write_system_mail>("fb.system");
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast>("fb.global");
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>("fb.system");
     this->handler.amqp.bind<fb::game::handler::amqp::enter_group>("fb.group");
     this->handler.amqp.bind<fb::game::handler::amqp::leave_group>("fb.group");
     this->handler.amqp.bind<fb::game::handler::amqp::kick_group>("fb.group");
@@ -497,6 +498,21 @@ async::task<void> server::save(character& ch)
     ch.send(fb_resp::save());
 }
 
+void server::save()
+{
+    for (int i = 0; i < this->threads.size(); i++)
+    {
+        std::ignore = this->threads[i]->dispatch([this](auto& thread) -> async::task<void> {
+            auto params = thread.template data<thread_params>();
+            for (auto& [id, character] : params->characters)
+            {
+                std::ignore = this->save(*character);
+            }
+            co_return;
+        });
+    }
+}
+
 uint32_t server::thread_id(const fb::socket<character>& socket) const
 {
     auto character = socket.data();
@@ -527,7 +543,6 @@ const fb::model::datetime& server::time() const
 void server::handle_init_amqp(fb::amqp::socket& amqp)
 {
     this->handler.amqp.declare_queue("amq.direct", "fb.system");
-    this->handler.amqp.declare_queue("amq.direct", "fb.system_mail");
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
     this->handler.amqp.declare_queue("amq.direct", "fb.global");
     this->handler.amqp.declare_queue("amq.direct", "fb.group");

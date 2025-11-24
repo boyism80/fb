@@ -947,6 +947,14 @@ namespace fb.protocol._internal
             return fb.protocol._internal.response.raw.Save.CreateSave(builder,
                 builder.Build(value.Success));
         }
+        public static Offset<fb.protocol._internal.response.raw.BroadcastSave> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.BroadcastSave value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.response.raw.BroadcastSave.StartBroadcastSave(builder);
+            return fb.protocol._internal.response.raw.BroadcastSave.EndBroadcastSave(builder);
+        }
         public static Offset<fb.protocol._internal.response.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetOption value)
         {
             if (value == null)
@@ -2103,6 +2111,14 @@ namespace fb.protocol._internal.request
 
             return fb.protocol._internal.response.raw.Save.CreateSave(builder,
                 builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.response.raw.BroadcastSave> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.BroadcastSave value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.response.raw.BroadcastSave.StartBroadcastSave(builder);
+            return fb.protocol._internal.response.raw.BroadcastSave.EndBroadcastSave(builder);
         }
         public static Offset<fb.protocol._internal.response.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetOption value)
         {
@@ -3281,6 +3297,14 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.response.raw.Save.CreateSave(builder,
                 builder.Build(value.Success));
         }
+        public static Offset<fb.protocol._internal.response.raw.BroadcastSave> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.BroadcastSave value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.response.raw.BroadcastSave.StartBroadcastSave(builder);
+            return fb.protocol._internal.response.raw.BroadcastSave.EndBroadcastSave(builder);
+        }
         public static Offset<fb.protocol._internal.response.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetOption value)
         {
             if (value == null)
@@ -3589,6 +3613,7 @@ namespace fb.protocol._internal.response
         MakeCharacter,
         ReserveName,
         Save,
+        BroadcastSave,
         SetOption,
         GetGroup,
         EnterGroup,
@@ -6862,6 +6887,40 @@ namespace fb.protocol._internal.response
             return new Save(bytes);
         }
     }
+    public class BroadcastSave : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.BroadcastSave;
+
+        public BroadcastSave()
+        { }
+
+        public BroadcastSave(fb.protocol._internal.response.raw.BroadcastSave raw)
+        {
+        }
+
+        public BroadcastSave(byte[] bytes) : this(fb.protocol._internal.response.raw.BroadcastSave.GetRootAsBroadcastSave(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static BroadcastSave Deserialize(byte[] bytes)
+        {
+            return new BroadcastSave(bytes);
+        }
+    }
     public class SetOption : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SetOption;
@@ -7759,6 +7818,7 @@ namespace fb.protocol._internal.response
                 FlatBufferProtocolType.MakeCharacter => typeof(fb.protocol._internal.response.MakeCharacter),
                 FlatBufferProtocolType.ReserveName => typeof(fb.protocol._internal.response.ReserveName),
                 FlatBufferProtocolType.Save => typeof(fb.protocol._internal.response.Save),
+                FlatBufferProtocolType.BroadcastSave => typeof(fb.protocol._internal.response.BroadcastSave),
                 FlatBufferProtocolType.SetOption => typeof(fb.protocol._internal.response.SetOption),
                 FlatBufferProtocolType.GetGroup => typeof(fb.protocol._internal.response.GetGroup),
                 FlatBufferProtocolType.EnterGroup => typeof(fb.protocol._internal.response.EnterGroup),

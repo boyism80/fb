@@ -8,7 +8,7 @@
 @inject DbContext DbContext
 @inject UserService UserService
 @inject Model Model
-@attribute [Authorize(Roles = "Admin,Operator")]
+@attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>User Items - Admin Tool</PageTitle>
 

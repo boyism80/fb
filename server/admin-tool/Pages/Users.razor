@@ -10,13 +10,15 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Web
 @using System.ComponentModel.DataAnnotations
+@using System.Linq
 @using Response = fb.protocol._internal.response
 @inject UserService UserService
 @inject BanService BanService
 @inject DbContext DbContext
 @inject RabbitMqService RabbitMqService
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@attribute [Authorize(Roles = "Admin,Operator")]
+@inject SecurityService SecurityService
+@attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>Users - Admin Tool</PageTitle>
 
@@ -112,13 +114,12 @@
                             <td>
                                 <div class="btn-group" role="group">
                                     <a href="/users/@user.Id/items" class="btn btn-sm btn-outline-primary">Items</a>
-                                    @if (CanModifyUser(user))
-                                    {
-                                        <button class="btn btn-sm btn-outline-warning" @onclick="() => ShowChangeRoleModal(user)"
+                                    <button class="btn btn-sm btn-outline-warning"
+                                            title="@GetChangeRoleButtonTitle(user)"
+                                            @onclick="() => ShowChangeRoleModal(user)"
                                             disabled="@isProcessing">
-                                            Change Role
-                                        </button>
-                                    }
+                                        Change Role
+                                    </button>
                                     @if (user.IsBanned)
                                     {
                                         <button class="btn btn-sm btn-success" @onclick="() => ShowUnbanModal(user)"
@@ -281,6 +282,15 @@
                             </InputSelect>
                             <ValidationMessage For="@(() => roleModel.NewRoleString)" />
                         </div>
+                        @if (ShouldPromptForElevationSecret())
+                        {
+                            <div class="mb-3">
+                                <label for="elevationSecret" class="form-label">Elevation Secret</label>
+                                <InputText id="elevationSecret" type="password" class="form-control"
+                                           @bind-Value="roleModel.SecretKey" />
+                                <small class="text-muted">@GetElevationSecretMessage()</small>
+                            </div>
+                        }
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" @onclick="CloseChangeRoleModal">Cancel</button>
                             <button type="submit" class="btn btn-warning" disabled="@isProcessing">
@@ -315,6 +325,7 @@
     private BanModel banModel = new();
     private RoleModel roleModel = new();
     private Role currentUserRole = Role.User;
+    private uint currentUserId = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -328,6 +339,11 @@
         if (authState.User.Identity?.IsAuthenticated == true)
         {
             var roleClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Role);
+            var idClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (idClaim != null && uint.TryParse(idClaim.Value, out var uid))
+            {
+                currentUserId = uid;
+            }
             if (roleClaim != null && Enum.TryParse<Role>(roleClaim.Value, out var role))
             {
                 currentUserRole = role;
@@ -341,17 +357,58 @@
         return userRole < currentUserRole;
     }
 
+    private bool RequiresElevationForTarget(UserListItem user)
+    {
+        if (user.Id == currentUserId)
+            return false;
+
+        return !CanModifyUser(user);
+    }
+
+    private bool SelectedRoleExceedsCurrent()
+    {
+        if (!int.TryParse(roleModel?.NewRoleString, out var newRoleInt) || !Enum.IsDefined(typeof(Role), newRoleInt))
+            return false;
+
+        var newRole = (Role)newRoleInt;
+        return newRole > currentUserRole;
+    }
+
+    private bool ShouldPromptForElevationSecret()
+    {
+        if (selectedUser == null)
+            return false;
+
+        return RequiresElevationForTarget(selectedUser) || SelectedRoleExceedsCurrent();
+    }
+
+    private string GetElevationSecretMessage()
+    {
+        if (selectedUser == null)
+            return string.Empty;
+
+        if (RequiresElevationForTarget(selectedUser))
+            return "Target user has an equal or higher role. Provide the elevation secret to proceed.";
+
+        if (SelectedRoleExceedsCurrent())
+            return "Assigning a role higher than your own requires the elevation secret.";
+
+        return "Provide the elevation secret to continue.";
+    }
+
+    private string GetChangeRoleButtonTitle(UserListItem user)
+    {
+        if (user.Id == currentUserId)
+            return "Modify your own role. The elevation secret is required only for promotions.";
+
+        return RequiresElevationForTarget(user)
+            ? "Requires elevation secret to modify this user."
+            : "Change user role";
+    }
+
     private List<Role> GetAvailableRoles()
     {
-        var roles = new List<Role>();
-        foreach (Role role in Enum.GetValues(typeof(Role)))
-        {
-            if (role <= currentUserRole)
-            {
-                roles.Add(role);
-            }
-        }
-        return roles;
+        return Enum.GetValues<Role>().ToList();
     }
 
     private async Task LoadUsers()
@@ -434,7 +491,8 @@
         selectedUser = user;
         roleModel = new RoleModel
         {
-            NewRoleString = ((int)user.Role).ToString()
+            NewRoleString = ((int)user.Role).ToString(),
+            SecretKey = string.Empty
         };
         showChangeRoleModal = true;
     }
@@ -451,13 +509,8 @@
         if (selectedUser == null)
             return;
 
-        var userRole = (Role)selectedUser.Role;
-        if (userRole >= currentUserRole)
-        {
-            errorMessage = "You cannot modify users with equal or higher role than yours.";
-            CloseChangeRoleModal();
-            return;
-        }
+        var targetRole = (Role)selectedUser.Role;
+        var isSelf = selectedUser.Id == currentUserId;
 
         if (await UserService.IsOnline(selectedUser.Name))
         {
@@ -474,11 +527,22 @@
         }
 
         var newRole = (Role)newRoleInt;
-        if (newRole > currentUserRole)
+
+        var hasStandardPrivilege = (targetRole < currentUserRole || isSelf) && newRole <= currentUserRole;
+        if (!hasStandardPrivilege)
         {
-            errorMessage = "You cannot assign a role higher than your own role.";
-            CloseChangeRoleModal();
-            return;
+            var providedSecret = roleModel.SecretKey?.Trim();
+            if (string.IsNullOrWhiteSpace(providedSecret))
+            {
+                errorMessage = "Elevation secret is required for this operation.";
+                return;
+            }
+
+            if (!SecurityService.IsValidElevationSecret(providedSecret))
+            {
+                errorMessage = "Elevation secret is invalid.";
+                return;
+            }
         }
 
         isProcessing = true;
@@ -499,6 +563,21 @@
             character.UpdatedDate = DateTime.Now;
             DbContext.Character.Set(character);
             await DbContext.SaveChangesAsync();
+
+            if (isSelf)
+            {
+                if (AuthenticationStateProvider is CustomAuthenticationStateProvider customProvider)
+                {
+                    var authData = new AuthData
+                    {
+                        UserId = currentUserId,
+                        UserName = character.Name,
+                        Role = newRole.ToString()
+                    };
+                    await customProvider.MarkUserAsAuthenticated(authData);
+                }
+                currentUserRole = newRole;
+            }
 
             successMessage = $"User {selectedUser.Name}'s role has been changed to {newRole} successfully.";
             CloseChangeRoleModal();
@@ -606,5 +685,7 @@
     {
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Role is required")]
         public string NewRoleString { get; set; } = "0";
+
+        public string SecretKey { get; set; } = string.Empty;
     }
 }

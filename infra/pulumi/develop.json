@@ -292,7 +292,10 @@
             },
             "mysql": "section-1",
             "redis": "section-1",
-            "rabbitmq": "section-1"
+            "rabbitmq": "section-1",
+            "security": {
+                "elevationSecret": "admin-tool-dev-secret"
+            }
         }
     }
 }
