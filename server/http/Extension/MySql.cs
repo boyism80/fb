@@ -13,6 +13,7 @@ namespace Http.Extension
         /// <summary>
         /// Escapes an object value for safe inclusion in MySQL SQL queries.
         /// Handles null values, strings, booleans, DateTime objects, and other types appropriately.
+        /// Escapes special characters in strings including single quotes, backslashes, and control characters.
         /// </summary>
         /// <typeparam name="T">The type of the object to escape.</typeparam>
         /// <param name="obj">The object value to escape for SQL usage.</param>
@@ -24,11 +25,31 @@ namespace Http.Extension
 
             return obj switch
             {
-                string s => s == null ? "NULL" : $"'{s}'",
+                string s => s == null ? "NULL" : $"'{EscapeString(s)}'",
                 bool b => b ? "1" : "0",
                 DateTime dt => $"'{dt:yyyy-MM-dd HH:mm:ss.ffffff}'",
                 _ => obj.ToString(),
             };
+        }
+
+        /// <summary>
+        /// Escapes special characters in a string for safe MySQL query usage.
+        /// Replaces single quotes with doubled quotes, escapes backslashes, and handles control characters.
+        /// </summary>
+        /// <param name="value">The string value to escape.</param>
+        /// <returns>The escaped string safe for MySQL queries.</returns>
+        private static string EscapeString(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return value;
+
+            return value
+                .Replace("\\", "\\\\")  // Escape backslashes first
+                .Replace("'", "''")     // Escape single quotes
+                .Replace("\0", "\\0")   // Escape NULL character
+                .Replace("\n", "\\n")   // Escape newline
+                .Replace("\r", "\\r")   // Escape carriage return
+                .Replace("\x1a", "\\x1a"); // Escape Ctrl+Z
         }
     }
 

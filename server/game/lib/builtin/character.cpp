@@ -310,8 +310,8 @@ int builtin::character::builtin_item(lua_State* L)
     if (lua->is_userdata<fb::game::object>(2))
     {
         auto obj = lua->touserdata<fb::game::object>(2);
-        model    = &obj->based<fb::model::object>();
         oid      = obj->oid();
+        model    = &obj->based();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -2822,8 +2822,9 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     auto model = static_cast<const fb::model::object*>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
-        obj = lua->touserdata<fb::game::object>(2);
-        oid = obj->oid();
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -2872,8 +2873,9 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     auto portrait = static_cast<fb::game::character_portrait*>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
-        obj = lua->touserdata<fb::game::object>(2);
-        oid = obj->oid();
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -2973,8 +2975,9 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
     auto obj   = std::shared_ptr<fb::game::object>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
-        obj = lua->touserdata<fb::game::object>(2);
-        oid = obj->oid();
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -3039,8 +3042,9 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
     auto obj   = std::shared_ptr<fb::game::object>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
-        obj = lua->touserdata<fb::game::object>(2);
-        oid = obj->oid();
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -3094,8 +3098,9 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
     auto obj   = std::shared_ptr<fb::game::object>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
-        obj = lua->touserdata<fb::game::object>(2);
-        oid = obj->oid();
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -3174,12 +3179,11 @@ int fb::game::builtin::character::builtin_quest(lua_State* L)
         return 1;
     }
 
-    auto id    = lua->tointeger(2);
-    auto quest = ch->quests[id];
-    if (quest == nullptr)
+    auto id = lua->tointeger(2);
+    if (ch->quests.contains(id) == false)
         lua->pushnil();
     else
-        lua->pushobject(quest);
+        lua->pushobject(ch->quests[id]);
 
     return 1;
 }
@@ -3208,11 +3212,10 @@ int fb::game::builtin::character::builtin_start_quest(lua_State* L)
         return 1;
     }
 
-    auto quest = ch->quests[id];
-    if (quest == nullptr)
+    if (ch->quests.contains(id) == false)
         lua->pushnil();
     else
-        lua->pushobject(quest);
+        lua->pushobject(ch->quests[id]);
 
     return 1;
 }

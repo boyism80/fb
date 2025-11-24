@@ -18,7 +18,7 @@ namespace Internal.Service
         /// <summary>
         /// The time interval between batch processing cycles.
         /// </summary>
-        private static readonly TimeSpan _processingInterval = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan _processingInterval = TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// The maximum number of requests to process per section in each batch.
@@ -149,8 +149,9 @@ namespace Internal.Service
 
                         _logger.LogInformation($"Processed {requests.Count} bulletin writes for section {section} (IDs: {startId}-{startId + requests.Count - 1})");
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        _logger.LogError(e, $"Error during write transaction for section {section}");
                         await transaction.RollbackAsync(cancellationToken);
                         throw;
                     }
@@ -192,15 +193,25 @@ namespace Internal.Service
 
                     // Build bulk UPDATE query
                     var sql = BuildBulkDeleteQuery(requests);
-                    await conn.ExecuteAsync(sql);
+                    var affectedRows = await conn.ExecuteAsync(sql);
 
-                    // Notify success
-                    // Note: Bulk UPDATE does not return individual results, so we treat all as successful
-                    // In practice, individual result verification would require separate queries,
-                    // but we simplify for batch processing benefits
-                    foreach (var request in requests)
+                    // Check if all requests were processed successfully
+                    // If affectedRows < requests.Count, some requests targeted non-existent data
+                    if (affectedRows < requests.Count)
                     {
-                        request.CompletionSource.SetResult(1);
+                        // Some requests failed (non-existent data), mark all as failed
+                        foreach (var request in requests)
+                        {
+                            request.CompletionSource.SetResult(-1);
+                        }
+                    }
+                    else
+                    {
+                        // All requests succeeded
+                        foreach (var request in requests)
+                        {
+                            request.CompletionSource.SetResult(1);
+                        }
                     }
 
                     _logger.LogInformation($"Processed {requests.Count} bulletin deletes for section {section}");
@@ -264,7 +275,7 @@ namespace Internal.Service
             var conditions = string.Join(" OR ", requests.Select(r =>
                 $"(id = {r.Id} AND `user` = {r.User})"));
 
-            return $"UPDATE bulletin SET deleted = 1, updated_date = NOW() WHERE {conditions}";
+            return $"UPDATE bulletin SET deleted = 1, updated_date = NOW() WHERE deleted = 0 AND ({conditions})";
         }
     }
 }

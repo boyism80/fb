@@ -1092,7 +1092,7 @@ function NPC_RENAME_WEAPON_DIALOG(me, npc)
 end
 
 function NPC_BASIC_CLASS(me, npc, class, spells)
-::NPC_BASIC_CLASS.000::
+::NPC_BASIC_CLASS_000::
     local level = me:level()
     local class_name = class2name(class)
     if me:class() == class then
@@ -1114,7 +1114,7 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
                 if me:dialog(npc, '내가 알려줄 마법이 없구나..', false, true) == DIALOG_RESULT.QUIT then
                     return
                 end
-                goto NPC_BASIC_CLASS.000
+                goto NPC_BASIC_CLASS_000
             end
 
             table.sort(preview, function(a, b) return spells[a].level < spells[b].level end)
@@ -1143,7 +1143,7 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             if me:dialog(npc, string.format('%s 배우기 위해서는 %s를 바쳐야 하네', name_with(name), table.concat(material, ', ')), false, true) == DIALOG_RESULT.QUIT then
                 return
             end
-            goto NPC_BASIC_CLASS.000
+            goto NPC_BASIC_CLASS_000
         elseif selected == 1 then
             local learned_spells = {}
             for _, spell in pairs(me:spells()) do
@@ -1161,7 +1161,7 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
                 if me:dialog(npc, '내가 알려줄 마법이 없구나..', false, true) == DIALOG_RESULT.QUIT then
                     return
                 end
-                goto NPC_BASIC_CLASS.000
+                goto NPC_BASIC_CLASS_000
             end
 
             table.sort(preview, function(a, b) return spells[a].level < spells[b].level end)
@@ -1194,7 +1194,7 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
                 if me:dialog(npc, '이 모든 것은 네 탓이니, 다음에 이 곳에 올 때는 더 굳은 각오를 가지고 오도록 하거라.', false, true) == DIALOG_RESULT.QUIT then
                     return
                 end
-                goto NPC_BASIC_CLASS.000
+                goto NPC_BASIC_CLASS_000
             end
 
             local enough = true
@@ -1217,7 +1217,7 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
                 if me:dialog(npc, '필요한 것들을 구해보도록 하게. 자네라면 할 수 있겠지?', false, true) == DIALOG_RESULT.QUIT then
                     return
                 end
-                goto NPC_BASIC_CLASS.000
+                goto NPC_BASIC_CLASS_000
             end
 
             for _, m in pairs(spell.material) do
@@ -1231,7 +1231,7 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             if me:dialog(npc, '배움의 길은 끝이 없으니 더더욱 노력하는 자세를 갖도록 하거라', false, true) == DIALOG_RESULT.QUIT then
                 return
             end
-            goto NPC_BASIC_CLASS.000
+            goto NPC_BASIC_CLASS_000
         elseif selected == 2 then
             local learned_spells = {}
             for _, spell in pairs(me:spells()) do
@@ -1246,7 +1246,7 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             if me:dialog(npc, '배움의 길은 끝이 없으니 더더욱 노력하는 자세를 갖도록 하거라', false, true) == DIALOG_RESULT.QUIT then
                 return
             end
-            goto NPC_BASIC_CLASS.000
+            goto NPC_BASIC_CLASS_000
         elseif selected == 3 then
             local title = me:input(npc, '네 정성이 갸륵하니... 그래, 무슨 칭호를 받고 싶으냐?', '받고싶은 칭호는', '입니다.', 10, true)
             if title == DIALOG_RESULT.QUIT then
@@ -1262,7 +1262,7 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
                 if me:dialog(npc, '예끼 이놈! 감히 돈도 없으면서 날 찾아와?', false, true) == DIALOG_RESULT.QUIT then
                     return
                 end
-                goto NPC_BASIC_CLASS.000
+                goto NPC_BASIC_CLASS_000
             end
 
             if me:dialog(npc, '그럼, 너의 소원을 들어주겠노라', false, true) == DIALOG_RESULT.QUIT then
@@ -1273,7 +1273,7 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             if me:dialog(npc, '칭호를 받았으니, 자신감을 가 지고 다니게나...', false, true) == DIALOG_RESULT.QUIT then
                 return
             end
-            goto NPC_BASIC_CLASS.000
+            goto NPC_BASIC_CLASS_000
         end
     else
         local button = me:menu(npc, '험난한 길을 걷는 수행자여, 무슨 일로 저를 찾으셨소?', {class_name .. '직업가지기'})
@@ -1286,59 +1286,59 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             if level < 5 then
                 me:dialog(npc, '아직 너의 정성이 부족하니 다음에 이 곳에 올 때에는 보다 큰 각오를 갖고 나를 찾아오도록 하여라.')
             end
-::NPC_BASIC_CLASS.001::
+::NPC_BASIC_CLASS_001::
             button = me:dialog(npc, class_name .. '의 길을 가려면, 몇 가지 맹세를 해야하느니.', false, true)
             if button == DIALOG_RESULT.QUIT then
                 return
             end
 
-::NPC_BASIC_CLASS.002::
+::NPC_BASIC_CLASS_002::
             local selected, button = me:list(npc, '첫째로, 하늘에서 굽어보고 계신 천제(天帝) 앞에 복종을 맹세하겠느냐?', {'예', '아니오'}, true)
             if selected ~= 0 then
-                goto NPC_BASIC_CLASS.STOP
+                goto NPC_BASIC_CLASS_STOP
             end
             if button == DIALOG_RESULT.QUIT then
                 return
             end
             if button == DIALOG_RESULT.PREV then
-                goto NPC_BASIC_CLASS.001
+                goto NPC_BASIC_CLASS_001
             end
-::NPC_BASIC_CLASS.003::
+::NPC_BASIC_CLASS_003::
             selected, button = me:list(npc, '둘째로, 험난한 ' .. class_name .. '수련의 길에 너의 평생을 바칠 것을 맹세하겠느냐?', {'예', '아니오'}, true)
             if selected ~= 0 then
-                goto NPC_BASIC_CLASS.STOP
+                goto NPC_BASIC_CLASS_STOP
             end
             if button == DIALOG_RESULT.QUIT then
                 return
             end
             if button == DIALOG_RESULT.PREV then
-                goto NPC_BASIC_CLASS.002
+                goto NPC_BASIC_CLASS_002
             end
-::NPC_BASIC_CLASS.004::
+::NPC_BASIC_CLASS_004::
             selected, button = me:list(npc, '셋째로, 불의를 보고 그냥 지나치지 않을 것을 맹세하겠느냐?', {'예', '아니오'}, true)
             if selected ~= 0 then
-                goto NPC_BASIC_CLASS.STOP
+                goto NPC_BASIC_CLASS_STOP
             end
             if button == DIALOG_RESULT.QUIT then
                 return
             end
             if button == DIALOG_RESULT.PREV then
-                goto NPC_BASIC_CLASS.003
+                goto NPC_BASIC_CLASS_003
             end
-::NPC_BASIC_CLASS.005::
+::NPC_BASIC_CLASS_005::
             selected, button = me:list(npc, '훌륭하군. 그렇다면, 지금까지의 맹세를 증명하기 위해 도토리를 10개 바치거라.', {'예', '아니오'}, true)
             if selected ~= 0 then
-                goto NPC_BASIC_CLASS.STOP
+                goto NPC_BASIC_CLASS_STOP
             elseif button == DIALOG_RESULT.QUIT then
                 return
             elseif button == DIALOG_RESULT.PREV then
-                goto NPC_BASIC_CLASS.004
+                goto NPC_BASIC_CLASS_004
             else
                 local item = me:item('도토리')
                 if item == nil then
-                    goto NPC_BASIC_CLASS.STOP
+                    goto NPC_BASIC_CLASS_STOP
                 elseif item:count() < 10 then
-                    goto NPC_BASIC_CLASS.STOP
+                    goto NPC_BASIC_CLASS_STOP
                 else
                     me:rmitem('도토리', 10)
                     me:class(class)
@@ -1349,11 +1349,11 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
                     if me:dialog(npc, '그 길은 멀고도 험난할 테니, 마음을 굳건히 하거라.', false, true) == DIALOG_RESULT.QUIT then
                         return
                     end
-                    goto NPC_BASIC_CLASS.000
+                    goto NPC_BASIC_CLASS_000
                 end
             end
 
-::NPC_BASIC_CLASS.STOP::
+::NPC_BASIC_CLASS_STOP::
             me:dialog(npc, '아직 너의 정성이 부족하니 다음에 이 곳에 올 때에는 보다 큰 각오를 갖고 나를 찾아오도록 하여라.')
         end
     end
