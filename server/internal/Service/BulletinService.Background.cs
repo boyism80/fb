@@ -1,8 +1,7 @@
-using System.Data;
 using Dapper;
 using Http.Extension;
 using Http.Service;
-using Microsoft.Extensions.DependencyInjection;
+using System.Data;
 
 namespace Internal.Service
 {
@@ -110,6 +109,7 @@ namespace Internal.Service
 
                         // Cache articles in Redis after successful DB insert
                         var cacheItems = new Dictionary<(uint section, uint id), Http.Model.Bulletin>();
+                        var names = await dbContext.Character.GetName(requests.Select(r => r.User));
                         for (int i = 0; i < requests.Count; i++)
                         {
                             var articleId = startId + (uint)i;
@@ -120,6 +120,7 @@ namespace Internal.Service
                                 Id = articleId,
                                 Section = section,
                                 User = request.User,
+                                UserName = names.GetValueOrDefault(request.User, string.Empty),
                                 Title = request.Title,
                                 Contents = request.Contents,
                                 CreatedDate = DateTime.Now,

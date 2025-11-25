@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Http.Model;
 using Http.Service;
 
@@ -14,7 +11,7 @@ namespace Internal.Service
         {
         }
 
-        protected override TimeSpan DefaultTtl => TimeSpan.FromHours(1);
+        protected override TimeSpan DefaultTtl => TimeSpan.FromMinutes(5);
 
         protected override string GenerateCacheKey(params object[] parameters)
         {
