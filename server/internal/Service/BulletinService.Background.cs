@@ -5,48 +5,29 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Internal.Service
 {
-    /// <summary>
-    /// Provides a background service that processes bulletin article write and delete operations in batches.
-    /// Periodically dequeues accumulated requests from memory queues and executes them against the appropriate database shards.
-    /// </summary>
-    public class BulletinOperationBackgroundService : BackgroundService
+    public class BulletinBackgroundService : BackgroundService
     {
-        private readonly BulletinOperationService _operationService;
+        private readonly BulletinService _operationService;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ILogger<BulletinOperationBackgroundService> _logger;
+        private readonly ILogger<BulletinBackgroundService> _logger;
+        private readonly BulletinCacheService _cacheService;
 
-        /// <summary>
-        /// The time interval between batch processing cycles.
-        /// </summary>
         private static readonly TimeSpan _processingInterval = TimeSpan.FromSeconds(1);
 
-        /// <summary>
-        /// The maximum number of requests to process per section in each batch.
-        /// </summary>
         private static readonly int _maxBatchSize = 100;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BulletinOperationBackgroundService"/> class.
-        /// </summary>
-        /// <param name="operationService">The bulletin operation service for queue management.</param>
-        /// <param name="scopeFactory">The service scope factory for creating scoped service instances.</param>
-        /// <param name="logger">The logger for recording batch processing operations and errors.</param>
-        public BulletinOperationBackgroundService(
-            BulletinOperationService operationService,
+        public BulletinBackgroundService(
+            BulletinService operationService,
             IServiceScopeFactory scopeFactory,
-            ILogger<BulletinOperationBackgroundService> logger)
+            ILogger<BulletinBackgroundService> logger,
+            BulletinCacheService cacheService)
         {
             _operationService = operationService;
             _scopeFactory = scopeFactory;
             _logger = logger;
+            _cacheService = cacheService;
         }
 
-        /// <summary>
-        /// Executes the background service that processes bulletin operations in batches.
-        /// Continuously processes accumulated write and delete requests at regular intervals.
-        /// </summary>
-        /// <param name="stoppingToken">The cancellation token for stopping the service.</param>
-        /// <returns>A task representing the asynchronous execution of the background service.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -64,11 +45,6 @@ namespace Internal.Service
             }
         }
 
-        /// <summary>
-        /// Processes a batch of write and delete requests from the operation service queues.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token for stopping the operation.</param>
-        /// <returns>A task representing the asynchronous batch processing.</returns>
         private async Task ProcessBatchAsync(CancellationToken cancellationToken)
         {
             var (writes, deletes) = _operationService.DequeueBatch(_maxBatchSize);
@@ -80,13 +56,6 @@ namespace Internal.Service
             await ProcessDeletesAsync(deletes, cancellationToken);
         }
 
-        /// <summary>
-        /// Processes write requests grouped by section.
-        /// Executes bulk INSERT operations with section-specific sequence management.
-        /// </summary>
-        /// <param name="writes">Dictionary mapping section IDs to their write request batches.</param>
-        /// <param name="cancellationToken">The cancellation token for stopping the operation.</param>
-        /// <returns>A task representing the asynchronous write processing.</returns>
         private async Task ProcessWritesAsync(Dictionary<uint, List<BulletinWriteRequest>> writes, CancellationToken cancellationToken)
         {
             // Group by section and process
@@ -141,6 +110,31 @@ namespace Internal.Service
                         // Commit transaction
                         await transaction.CommitAsync(cancellationToken);
 
+                        // Cache articles in Redis after successful DB insert
+                        var cacheItems = new Dictionary<(uint section, uint id), Http.Model.Bulletin>();
+                        for (int i = 0; i < requests.Count; i++)
+                        {
+                            var articleId = startId + (uint)i;
+                            var request = requests[i];
+
+                            var article = new Http.Model.Bulletin
+                            {
+                                Id = articleId,
+                                Section = section,
+                                User = request.User,
+                                Title = request.Title,
+                                Contents = request.Contents,
+                                CreatedDate = DateTime.Now,
+                                UpdatedDate = DateTime.Now,
+                                Deleted = false
+                            };
+
+                            cacheItems[(section, articleId)] = article;
+                        }
+
+                        // Batch cache insert
+                        await _cacheService.SetArticlesBatchAsync(cacheItems);
+
                         // Notify success
                         foreach (var request in requests)
                         {
@@ -169,13 +163,6 @@ namespace Internal.Service
             }
         }
 
-        /// <summary>
-        /// Processes delete requests grouped by section.
-        /// Executes bulk UPDATE operations against the appropriate database shards.
-        /// </summary>
-        /// <param name="deletes">Dictionary mapping section IDs to their delete request batches.</param>
-        /// <param name="cancellationToken">The cancellation token for stopping the operation.</param>
-        /// <returns>A task representing the asynchronous delete processing.</returns>
         private async Task ProcessDeletesAsync(Dictionary<uint, List<BulletinDeleteRequest>> deletes, CancellationToken cancellationToken)
         {
             // Group by section and process (same approach as writes)
@@ -194,6 +181,10 @@ namespace Internal.Service
                     // Build bulk UPDATE query
                     var sql = BuildBulkDeleteQuery(requests);
                     var affectedRows = await conn.ExecuteAsync(sql);
+
+                    // Delete from Redis cache
+                    var articleKeys = requests.Select(r => (section, r.Id)).ToList();
+                    await _cacheService.DeleteArticlesBatchAsync(articleKeys);
 
                     // Check if all requests were processed successfully
                     // If affectedRows < requests.Count, some requests targeted non-existent data
@@ -229,12 +220,6 @@ namespace Internal.Service
             }
         }
 
-        /// <summary>
-        /// Determines the database shard index for a given section using modular sharding.
-        /// </summary>
-        /// <param name="section">The section identifier to determine the shard for.</param>
-        /// <param name="dbContext">The database context to get SharedDbSize from.</param>
-        /// <returns>The database index to use for the section. Returns -1 if SharedDbSize is zero (common DB).</returns>
         private int GetDbIndexForSection(uint section, DbContext dbContext)
         {
             // Modular sharding: section % SharedDbSize
@@ -245,14 +230,6 @@ namespace Internal.Service
             return (int)(section % dbContext.SharedDbSize);
         }
 
-        /// <summary>
-        /// Builds a bulk INSERT SQL query for multiple write requests with assigned IDs.
-        /// Uses MySql.Escape to prevent SQL injection.
-        /// </summary>
-        /// <param name="requests">The list of write requests to include in the bulk insert.</param>
-        /// <param name="section">The section identifier for all requests.</param>
-        /// <param name="startId">The starting ID to assign to the first request.</param>
-        /// <returns>A SQL INSERT statement with multiple value rows including assigned IDs.</returns>
         private string BuildBulkInsertQuery(List<BulletinWriteRequest> requests, uint section, uint startId)
         {
             // Use MySql.Escape for SQL injection prevention
@@ -263,12 +240,6 @@ namespace Internal.Service
             return $"INSERT INTO bulletin (`id`, `section`, `user`, title, contents) VALUES {values}";
         }
 
-        /// <summary>
-        /// Builds a bulk UPDATE SQL query for multiple delete requests.
-        /// Uses (id, user) combinations to create WHERE conditions.
-        /// </summary>
-        /// <param name="requests">The list of delete requests to include in the bulk update.</param>
-        /// <returns>A SQL UPDATE statement with multiple WHERE conditions.</returns>
         private string BuildBulkDeleteQuery(List<BulletinDeleteRequest> requests)
         {
             // Create WHERE conditions using (id, user) combinations

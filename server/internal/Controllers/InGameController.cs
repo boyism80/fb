@@ -16,10 +16,6 @@ using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
 {
-    /// <summary>
-    /// Provides in-game operations and session management for the internal API.
-    /// Handles player login/logout, server transfers, whisper messaging, and broadcasting.
-    /// </summary>
     [ApiController]
     [Route("in-game")]
     public class InGameController : ControllerBase
@@ -32,18 +28,6 @@ namespace Internal.Controllers
         private readonly DbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly RedisDistributedLockService _distributedLock;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InGameController"/> class.
-        /// </summary>
-        /// <param name="logger">The logger for recording in-game operations.</param>
-        /// <param name="redisService">The Redis service for session and cache management.</param>
-        /// <param name="dataSet">The game data model containing configuration data.</param>
-        /// <param name="rabbitMqService">The RabbitMQ service for inter-server messaging.</param>
-        /// <param name="sessionService">The session service for managing user sessions.</param>
-        /// <param name="dbContext">The database context for data operations.</param>
-        /// <param name="mapper">The AutoMapper instance for object mapping.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
         public InGameController(ILogger<InGameController> logger,
             RedisService redisService,
             Fb.Model.Model dataSet,
@@ -62,13 +46,6 @@ namespace Internal.Controllers
             _mapper = mapper;
             _distributedLock = distributedLock;
         }
-
-        /// <summary>
-        /// Handles player login requests and manages session creation.
-        /// Validates server availability, manages session conflicts, and returns connection information.
-        /// </summary>
-        /// <param name="request">The login request containing player credentials and target host.</param>
-        /// <returns>A login response with connection details or error information.</returns>
         [HttpPost("login")]
         public async Task<Response.Login> Login(Request.Login request)
         {
@@ -151,13 +128,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Handles player logout requests and cleans up session data.
-        /// Removes the player's session from Redis storage.
-        /// </summary>
-        /// <param name="request">The logout request containing the player's name.</param>
-        /// <returns>A logout response indicating success.</returns>
         [HttpPost("logout")]
         public async Task<Response.Logout> Logout(Request.Logout request)
         {
@@ -169,13 +139,6 @@ namespace Internal.Controllers
                 Success = true
             };
         }
-
-        /// <summary>
-        /// Handles server transfer requests for moving players between game servers.
-        /// Validates target server availability and handles forced disconnections if needed.
-        /// </summary>
-        /// <param name="request">The transfer request containing target service and player information.</param>
-        /// <returns>A transfer response with target server connection details or error information.</returns>
         [HttpPost("transfer")]
         public async Task<Response.Transfer> Transfer(Request.Transfer request)
         {
@@ -254,13 +217,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Handles whisper message requests between players.
-        /// Validates both sender and recipient sessions, checks whisper permissions, and routes the message.
-        /// </summary>
-        /// <param name="request">The whisper request containing sender, recipient, and message information.</param>
-        /// <returns>A whisper response with routing information or error details.</returns>
         [HttpPost("whisper")]
         public async Task<Response.Whisper> Whisper(Request.Whisper request)
         {
@@ -312,13 +268,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Handles global broadcast message requests.
-        /// Publishes messages to all connected game servers via RabbitMQ.
-        /// </summary>
-        /// <param name="request">The broadcast request containing message content and type.</param>
-        /// <returns>A broadcast response confirming the message was sent.</returns>
         [HttpPost("broadcast")]
         public Task<Response.Broadcast> Broadcast(Request.Broadcast request)
         {
@@ -344,13 +293,6 @@ namespace Internal.Controllers
 
             return Task.FromResult(response);
         }
-
-        /// <summary>
-        /// Loads game initialization data for a character entering the game.
-        /// Retrieves character data, items, spells, achievements, quests, options, clan, group, and mail.
-        /// </summary>
-        /// <param name="uid">The unique identifier of the character.</param>
-        /// <returns>An initialization response containing all character game data.</returns>
         [HttpGet("init/{uid}")]
         public async Task<Response.Init> Init(uint uid)
         {
@@ -390,15 +332,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Merges request data with existing data, marking deleted items.
-        /// Used for synchronizing game data between client and server.
-        /// </summary>
-        /// <typeparam name="T">The model type that implements IModel and IRedisHashKey.</typeparam>
-        /// <param name="request">The request data from the client.</param>
-        /// <param name="exists">The existing data from the database.</param>
-        /// <returns>An array of merged data with deleted items marked.</returns>
         private T[] Override<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey
         {
             var src = request.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
@@ -422,13 +355,6 @@ namespace Internal.Controllers
 
             return dst.Values.ToArray();
         }
-
-        /// <summary>
-        /// Saves character game data including character stats, items, spells, achievements, and quests.
-        /// Merges the request data with existing data and persists changes to the database.
-        /// </summary>
-        /// <param name="request">The save request containing character and game data.</param>
-        /// <returns>A save response indicating success or failure.</returns>
         [HttpPost("save")]
         public async Task<Response.Save> Save(Request.Save request)
         {
@@ -472,13 +398,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Updates a user's game option settings.
-        /// Modifies specific option flags such as whisper, group, roar, and visual/audio effects.
-        /// </summary>
-        /// <param name="request">The option update request containing the option type and enabled state.</param>
-        /// <returns>An option response indicating success or failure.</returns>
         [HttpPost("option")]
         public async Task<Response.SetOption> Option(Request.SetOption request)
         {

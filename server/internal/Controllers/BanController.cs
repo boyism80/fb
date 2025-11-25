@@ -7,10 +7,6 @@ using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
 {
-    /// <summary>
-    /// Provides ban management operations for the internal API.
-    /// Handles user banning and unbanning operations.
-    /// </summary>
     [ApiController]
     [Route("ban")]
     public class BanController : ControllerBase
@@ -19,14 +15,6 @@ namespace Internal.Controllers
         private readonly RabbitMqService _rabbitMqService;
         private readonly DbContext _dbContext;
         private readonly ILogger<BanController> _logger;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BanController"/> class.
-        /// </summary>
-        /// <param name="banService">The ban service for ban management operations.</param>
-        /// <param name="rabbitMqService">The RabbitMQ service for ban notifications.</param>
-        /// <param name="dbContext">The database context for saving changes.</param>
-        /// <param name="logger">The logger for recording operations and errors.</param>
         public BanController(BanService banService, RabbitMqService rabbitMqService, DbContext dbContext, ILogger<BanController> logger)
         {
             _banService = banService;
@@ -34,13 +22,6 @@ namespace Internal.Controllers
             _dbContext = dbContext;
             _logger = logger;
         }
-
-        /// <summary>
-        /// Bans a user with the specified reason and duration.
-        /// If days is null, the ban is permanent.
-        /// </summary>
-        /// <param name="request">The ban request containing user name, reason, and optional days.</param>
-        /// <returns>A response indicating success or error details.</returns>
         [HttpPost("add")]
         public async Task<Response.Ban> Add(Request.Ban request)
         {
@@ -82,12 +63,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Removes a ban from a user.
-        /// </summary>
-        /// <param name="request">The unban request containing user name.</param>
-        /// <returns>A response indicating success or error details.</returns>
         [HttpPost("remove")]
         public async Task<Response.Unban> Remove(Request.Unban request)
         {

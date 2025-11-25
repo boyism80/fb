@@ -16,11 +16,6 @@ using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
 {
-    /// <summary>
-    /// Provides account management operations for the internal API.
-    /// Handles user authentication, character creation, and password management.
-    /// Used by the login server for account-related operations.
-    /// </summary>
     [ApiController]
     [Route("account")]
     public class AccountController : ControllerBase
@@ -33,14 +28,6 @@ namespace Internal.Controllers
         // Object pool for SHA256 instances to reduce GC pressure
         // Limit pool size to 64 instances (reasonable for most scenarios)
         private static readonly ObjectPool<SHA256> _sha256Pool = new DefaultObjectPool<SHA256>(new Sha256PooledObjectPolicy(), 64);
-
-        /// <summary>
-        /// Computes a SHA256 hash of the input string.
-        /// Used for password hashing and security operations.
-        /// Thread-safe implementation using object pooling to reduce GC pressure.
-        /// </summary>
-        /// <param name="value">The string value to hash.</param>
-        /// <returns>A hexadecimal string representation of the SHA256 hash.</returns>
         private static string SHA256Hash(string value)
         {
             var sha256 = _sha256Pool.Get();
@@ -77,11 +64,6 @@ namespace Internal.Controllers
                 _sha256Pool.Return(sha256);
             }
         }
-
-        /// <summary>
-        /// Object pool policy for SHA256 instances.
-        /// Handles creation and reset of SHA256 objects for reuse.
-        /// </summary>
         private class Sha256PooledObjectPolicy : PooledObjectPolicy<SHA256>
         {
             public override SHA256 Create()
@@ -110,15 +92,6 @@ namespace Internal.Controllers
                 }
             }
         }
-
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AccountController"/> class.
-        /// </summary>
-        /// <param name="mapper">The AutoMapper instance for object mapping.</param>
-        /// <param name="dbContext">The database context for data operations.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="logger">The logger for recording account operations.</param>
         public AccountController(IMapper mapper,
             DbContext dbContext,
             RedisService redisService,
@@ -129,12 +102,6 @@ namespace Internal.Controllers
             _redisService = redisService;
             _logger = logger;
         }
-
-        /// <summary>
-        /// Retrieves the unique identifier for a character by name.
-        /// </summary>
-        /// <param name="name">The character name to look up.</param>
-        /// <returns>A response containing the character's UID if found.</returns>
         [HttpGet("uid/{name}")]
         public async Task<Response.GetUid> Uid(string name)
         {
@@ -157,13 +124,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Authenticates a user with their credentials.
-        /// Verifies the user ID and password hash against stored values.
-        /// </summary>
-        /// <param name="request">The authentication request containing user credentials.</param>
-        /// <returns>An authentication response with error code and map information.</returns>
         [HttpPost("authenticate")]
         public async Task<Response.Authenticate> Authenticate(Request.Authenticate request)
         {
@@ -190,13 +150,6 @@ namespace Internal.Controllers
                 Map = ch.Map
             };
         }
-
-        /// <summary>
-        /// Reserves a character name for a new user.
-        /// Uses a stored procedure to atomically check and reserve the name.
-        /// </summary>
-        /// <param name="request">The name reservation request.</param>
-        /// <returns>A response indicating success and the assigned UID.</returns>
         [HttpPost("reserve")]
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
@@ -212,13 +165,6 @@ namespace Internal.Controllers
                 Success = result.Result
             };
         }
-
-        /// <summary>
-        /// Initializes a new character with basic attributes.
-        /// Creates the character record with initial stats and position.
-        /// </summary>
-        /// <param name="request">The character initialization request.</param>
-        /// <returns>A response indicating the success of character creation.</returns>
         [HttpPost("init")]
         public async Task<Response.InitCharacter> InitCharacter(Request.InitCharacter request)
         {
@@ -246,13 +192,6 @@ namespace Internal.Controllers
                 Success = true
             };
         }
-
-        /// <summary>
-        /// Completes character creation by setting appearance attributes.
-        /// Updates the character with visual characteristics like hair, sex, nation, and creature type.
-        /// </summary>
-        /// <param name="request">The character creation request with appearance data.</param>
-        /// <returns>A response indicating the success of character completion.</returns>
         [HttpPost("make")]
         public async Task<Response.MakeCharacter> MakeCharacter(Request.MakeCharacter request)
         {
@@ -289,13 +228,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Changes a user's password after verifying current credentials and birthday.
-        /// Validates the current password and birthday before updating to the new password.
-        /// </summary>
-        /// <param name="request">The password change request with verification data.</param>
-        /// <returns>A response with error code indicating the result of the password change.</returns>
         [HttpPost("change-pw")]
         public async Task<Response.ChangePw> ChangePassword(Request.ChangePw request)
         {

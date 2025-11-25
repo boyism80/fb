@@ -11,10 +11,6 @@ using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
 {
-    /// <summary>
-    /// Provides bulletin operations for the internal API.
-    /// Handles article retrieval, writing, and deletion for the in-game bulletin system.
-    /// </summary>
     [ApiController]
     [Route("bulletin")]
     public class BulletinController : ControllerBase
@@ -22,38 +18,26 @@ namespace Internal.Controllers
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
-        private readonly BulletinOperationService _bulletinService;
+        private readonly BulletinService _bulletinService;
+        private readonly BulletinCacheService _cacheService;
         private readonly ILogger<BulletinController> _logger;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BulletinController"/> class.
-        /// </summary>
-        /// <param name="configuration">The application configuration.</param>
-        /// <param name="mapper">The AutoMapper instance for object mapping.</param>
-        /// <param name="dbContext">The database context for data operations.</param>
-        /// <param name="bulletinOperationService">The bulletin operation service for batch processing.</param>
-        /// <param name="logger">The logger for recording operations and errors.</param>
         public BulletinController(
             IConfiguration configuration,
             IMapper mapper,
             DbContext dbContext,
-            BulletinOperationService bulletinOperationService,
+            BulletinService bulletinService,
+            BulletinCacheService cacheService,
             ILogger<BulletinController> logger)
         {
             _configuration = configuration;
             _mapper = mapper;
             _dbContext = dbContext;
-            _bulletinService = bulletinOperationService;
+            _bulletinService = bulletinService;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
-        /// <summary>
-        /// Retrieves a paginated list of articles from a specific bulletin section.
-        /// Returns article summaries using a stored procedure for efficient pagination.
-        /// </summary>
-        /// <param name="section">The bulletin section ID to retrieve articles from.</param>
-        /// <param name="offset">The starting position for pagination.</param>
-        /// <returns>A response containing the article summary list.</returns>
         [HttpGet("{section}")]
         public async Task<Response.GetArticleList> GetArticleList(uint section, [FromQuery(Name = "offset")] ushort offset)
         {
@@ -69,7 +53,7 @@ namespace Internal.Controllers
                 // Get user names from global DB
                 var userIds = articleList.Select(a => a.User).Distinct().ToList();
                 var userNames = await _dbContext.Character.GetName(userIds);
-                
+
                 // Set user names
                 foreach (var article in articleList)
                 {
@@ -84,30 +68,48 @@ namespace Internal.Controllers
             };
         }
 
-        /// <summary>
-        /// Retrieves a specific article by section and article ID.
-        /// Returns the full article content and navigation information.
-        /// </summary>
-        /// <param name="section">The bulletin section ID containing the article.</param>
-        /// <param name="id">The unique identifier of the article.</param>
-        /// <returns>A response containing the article content and navigation information, or error details.</returns>
         [HttpGet("{section}/{id}")]
         public async Task<Response.GetArticle> GetArticle(uint section, ushort id)
         {
             try
             {
+                // Try to get from cache first, fallback to DB if not found
+                var article = await _cacheService.GetArticleAsync(
+                    section,
+                    id,
+                    async () =>
+                    {
+                        // Database query function
+                        await using var conn = _dbContext.Connection(section);
+                        var dynamicParams = new DynamicParameters();
+                        dynamicParams.Add("section", section);
+                        dynamicParams.Add("article", id);
+                        await using var reader = await conn.QueryMultipleAsync($"USP_BULLETIN_GET", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
+                        var dbArticle = await reader.ReadFirstOrDefaultAsync<Http.Model.Bulletin>();
+
+                        if (dbArticle == null)
+                            return null;
+
+                        // Get user name from global DB
+                        dbArticle.UserName = await _dbContext.Character.GetName(dbArticle.User) ?? string.Empty;
+
+                        return dbArticle;
+                    });
+
+                if (article == null)
+                {
+                    throw new LogicException(Fb.Model.EnumValue.ErrorCode.ArticleNotExists);
+                }
+
+                // Get next article flag from DB (this is a separate query that doesn't need caching)
                 await using var conn = _dbContext.Connection(section);
                 var dynamicParams = new DynamicParameters();
                 dynamicParams.Add("section", section);
                 dynamicParams.Add("article", id);
                 await using var reader = await conn.QueryMultipleAsync($"USP_BULLETIN_GET", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
-                var article = await reader.ReadFirstOrDefaultAsync<Http.Model.Bulletin>() ??
-                    throw new LogicException(Fb.Model.EnumValue.ErrorCode.ArticleNotExists);
-
-                // Get user name from global DB
-                article.UserName = await _dbContext.Character.GetName(article.User) ?? string.Empty;
-
+                await reader.ReadFirstOrDefaultAsync<Http.Model.Bulletin>(); // Skip first result
                 var next = await reader.ReadFirstAsync<bool>();
+
                 return new Response.GetArticle
                 {
                     Article = _mapper.Map<fb.protocol._internal.Article>(article),
@@ -124,12 +126,6 @@ namespace Internal.Controllers
             }
         }
 
-        /// <summary>
-        /// Handles article writing requests to create new bulletin posts.
-        /// Enqueues the write request for batch processing instead of executing immediately.
-        /// </summary>
-        /// <param name="request">The article writing request containing section, user, title, and content.</param>
-        /// <returns>A response indicating the success of article creation.</returns>
         [HttpPost("write")]
         public async Task<Response.WriteArticle> Write(Request.WriteArticle request)
         {
@@ -157,12 +153,6 @@ namespace Internal.Controllers
             }
         }
 
-        /// <summary>
-        /// Handles article deletion requests for removing bulletin posts.
-        /// Enqueues the delete request for batch processing instead of executing immediately.
-        /// </summary>
-        /// <param name="request">The article deletion request containing section, article ID, and user ID.</param>
-        /// <returns>A response with the deletion result code.</returns>
         [HttpPost("delete")]
         public async Task<Response.DeleteArticle> Delete(Request.DeleteArticle request)
         {

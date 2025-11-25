@@ -6,18 +6,8 @@ using Http.Service;
 using Http.Worker;
 
 namespace Http;
-
-/// <summary>
-/// The main entry point class for the internal HTTP API service.
-/// Configures AutoMapper mappings, dependency injection, and starts the web application.
-/// </summary>
 public class Program
 {
-    /// <summary>
-    /// The main entry point for the internal HTTP API service application.
-    /// Sets up AutoMapper configurations, dependency injection, middleware pipeline, and starts the web server.
-    /// </summary>
-    /// <param name="args">Command line arguments passed to the application.</param>
     public static void Main(string[] args)
     {
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -118,8 +108,9 @@ public class Program
         builder.Services.AddScoped<BanService>();
         builder.Services.AddScoped<CacheService>();
         builder.Services.AddSingleton<WriteBackService>();
-        builder.Services.AddSingleton<Internal.Service.BulletinOperationService>();
-        builder.Services.AddHostedService<Internal.Service.BulletinOperationBackgroundService>();
+        builder.Services.AddSingleton<Internal.Service.BulletinService>();
+        builder.Services.AddSingleton<Internal.Service.BulletinCacheService>();
+        builder.Services.AddHostedService<Internal.Service.BulletinBackgroundService>();
         builder.Services.AddHostedService<ShutdownListenerService>();
         builder.Services.AddHealthChecks();
 

@@ -12,10 +12,6 @@ using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
 {
-    /// <summary>
-    /// Provides clan management operations for the internal API.
-    /// Handles clan creation, destruction, member management, title setting, and clan broadcasting.
-    /// </summary>
     [ApiController]
     [Route("clan")]
     public class ClanController : ControllerBase
@@ -26,16 +22,6 @@ namespace Internal.Controllers
         private readonly RabbitMqService _rabbitMqService;
         private readonly IMapper _mapper;
         private readonly RedisDistributedLockService _distributedLock;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ClanController"/> class.
-        /// </summary>
-        /// <param name="configuration">The application configuration.</param>
-        /// <param name="dbContext">The database context for data operations.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="rabbitMqService">The RabbitMQ service for inter-server messaging.</param>
-        /// <param name="mapper">The AutoMapper instance for object mapping.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
         public ClanController(IConfiguration configuration,
             DbContext dbContext,
             RedisService redisService,
@@ -50,13 +36,6 @@ namespace Internal.Controllers
             _mapper = mapper;
             _distributedLock = distributedLock;
         }
-
-        /// <summary>
-        /// Retrieves clan member information for response formatting.
-        /// Helper method that fetches clan members and their names from the database.
-        /// </summary>
-        /// <param name="id">The clan ID to retrieve members for.</param>
-        /// <returns>A list of clan member protocol objects with names and positions.</returns>
         private async Task<List<Protocol.ClanMember>> GetClanMemberResponse(uint id)
         {
             var members = await _dbContext.ClanMember.Get(id);
@@ -74,13 +53,6 @@ namespace Internal.Controllers
                 };
             }).ToList();
         }
-
-        /// <summary>
-        /// Retrieves clan information by clan ID.
-        /// Returns the clan details including member information and positions.
-        /// </summary>
-        /// <param name="id">The unique identifier of the clan to retrieve.</param>
-        /// <returns>A response containing the clan information and member list or error details.</returns>
         [HttpGet("{id}")]
         public async Task<Response.GetClan> Get(uint id)
         {
@@ -120,13 +92,6 @@ namespace Internal.Controllers
             finally
             { }
         }
-
-        /// <summary>
-        /// Handles clan creation requests with name validation and master assignment.
-        /// Creates a new clan with unique name validation and assigns the creator as master.
-        /// </summary>
-        /// <param name="request">The clan creation request containing master ID and clan name.</param>
-        /// <returns>A response with the created clan information or error details.</returns>
         [HttpPost("create")]
         public async Task<Response.CreateClan> Create(Request.CreateClan request)
         {
@@ -212,13 +177,6 @@ namespace Internal.Controllers
                 await db.CloseAsync();
             }
         }
-
-        /// <summary>
-        /// Handles clan destruction requests by the clan master.
-        /// Validates master privileges and removes the clan if no other members exist.
-        /// </summary>
-        /// <param name="request">The clan destruction request containing the master's ID.</param>
-        /// <returns>A response indicating success or error details.</returns>
         [HttpPost("destroy")]
         public async Task<Response.DestroyClan> Destroy(Request.DestroyClan request)
         {
@@ -298,14 +256,6 @@ namespace Internal.Controllers
                 await db.CloseAsync();
             }
         }
-
-        /// <summary>
-        /// Handles clan title setting requests.
-        /// Allows updating the clan's title with validation for length and uniqueness.
-        /// The changer must have Master role or higher privileges to modify the clan title.
-        /// </summary>
-        /// <param name="request">The title setting request containing changer UID and new title.</param>
-        /// <returns>A response confirming the title change or error details.</returns>
         [HttpPost("title")]
         public async Task<Response.SetClanTitle> SetTitle(Request.SetClanTitle request)
         {
@@ -375,14 +325,6 @@ namespace Internal.Controllers
             finally
             { }
         }
-
-        /// <summary>
-        /// Handles clan join requests for new members.
-        /// Adds a character to an existing clan with appropriate member position.
-        /// Validates that the inviter has sufficient privileges to invite members.
-        /// </summary>
-        /// <param name="request">The join request containing inviter and invitee user IDs.</param>
-        /// <returns>A response with the new member information or error details.</returns>
         [HttpPost("join")]
         public async Task<Response.JoinClan> Join(Request.JoinClan request)
         {
@@ -484,13 +426,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Handles voluntary clan leave requests for members.
-        /// Allows members to leave the clan on their own initiative.
-        /// </summary>
-        /// <param name="request">The leave request containing member name and clan ID.</param>
-        /// <returns>A response confirming the member removal or error details.</returns>
         [HttpPost("leave")]
         public async Task<Response.LeaveClan> Leave(Request.LeaveClan request)
         {
@@ -562,15 +497,6 @@ namespace Internal.Controllers
             finally
             { }
         }
-
-
-
-        /// <summary>
-        /// Handles clan member expulsion by authorized members.
-        /// Allows clan members with sufficient privileges to forcefully remove another member.
-        /// </summary>
-        /// <param name="request">The kick clan request containing host, clan, kicker and target information.</param>
-        /// <returns>A response with the updated clan information and action taken.</returns>
         [HttpPost("kick")]
         public async Task<Response.KickClan> Kick(Request.KickClan request)
         {
@@ -681,13 +607,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Handles clan broadcast message requests.
-        /// Sends messages to all members of a specific clan via RabbitMQ.
-        /// </summary>
-        /// <param name="request">The clan broadcast request containing clan ID and message information.</param>
-        /// <returns>A response confirming the broadcast was sent or error details.</returns>
         [HttpPost("broadcast")]
         public async Task<Response.BroadcastClan> Broadcast(Request.BroadcastClan request)
         {
@@ -726,13 +645,6 @@ namespace Internal.Controllers
             finally
             { }
         }
-
-        /// <summary>
-        /// Handles clan member position change requests.
-        /// Allows authorized clan members to change the position of other members within the clan hierarchy.
-        /// </summary>
-        /// <param name="request">The position change request containing changer ID, target name, clan ID, and new position.</param>
-        /// <returns>A response confirming the position change or error details.</returns>
         [HttpPost("change-role")]
         public async Task<Response.ChangeClanRole> ChangeRole(Request.ChangeClanRole request)
         {
