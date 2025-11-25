@@ -7,25 +7,25 @@ namespace Internal.Service
 {
     public class BulletinBackgroundService : BackgroundService
     {
-        private readonly BulletinService _operationService;
+        private readonly BulletinService _bulletinService;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<BulletinBackgroundService> _logger;
-        private readonly BulletinCacheService _cacheService;
+        private readonly BulletinCacheService _bulletinCacheService;
 
         private static readonly TimeSpan _processingInterval = TimeSpan.FromSeconds(1);
 
         private static readonly int _maxBatchSize = 100;
 
         public BulletinBackgroundService(
-            BulletinService operationService,
+            BulletinService bulletinService,
             IServiceScopeFactory scopeFactory,
             ILogger<BulletinBackgroundService> logger,
-            BulletinCacheService cacheService)
+            BulletinCacheService bulletinCacheService)
         {
-            _operationService = operationService;
+            _bulletinService = bulletinService;
             _scopeFactory = scopeFactory;
             _logger = logger;
-            _cacheService = cacheService;
+            _bulletinCacheService = bulletinCacheService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -47,7 +47,7 @@ namespace Internal.Service
 
         private async Task ProcessBatchAsync(CancellationToken cancellationToken)
         {
-            var (writes, deletes) = _operationService.DequeueBatch(_maxBatchSize);
+            var (writes, deletes) = _bulletinService.DequeueBatch(_maxBatchSize);
 
             // Process write requests
             await ProcessWritesAsync(writes, cancellationToken);
@@ -133,7 +133,7 @@ namespace Internal.Service
                         }
 
                         // Batch cache insert
-                        await _cacheService.SetArticlesBatchAsync(cacheItems);
+                        await _bulletinCacheService.SetArticlesBatchAsync(cacheItems);
 
                         // Notify success
                         foreach (var request in requests)
@@ -184,7 +184,7 @@ namespace Internal.Service
 
                     // Delete from Redis cache
                     var articleKeys = requests.Select(r => (section, r.Id)).ToList();
-                    await _cacheService.DeleteArticlesBatchAsync(articleKeys);
+                    await _bulletinCacheService.DeleteArticlesBatchAsync(articleKeys);
 
                     // Check if all requests were processed successfully
                     // If affectedRows < requests.Count, some requests targeted non-existent data

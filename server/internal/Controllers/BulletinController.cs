@@ -19,7 +19,6 @@ namespace Internal.Controllers
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
         private readonly BulletinService _bulletinService;
-        private readonly BulletinCacheService _cacheService;
         private readonly ILogger<BulletinController> _logger;
 
         public BulletinController(
@@ -27,14 +26,12 @@ namespace Internal.Controllers
             IMapper mapper,
             DbContext dbContext,
             BulletinService bulletinService,
-            BulletinCacheService cacheService,
             ILogger<BulletinController> logger)
         {
             _configuration = configuration;
             _mapper = mapper;
             _dbContext = dbContext;
             _bulletinService = bulletinService;
-            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -73,42 +70,12 @@ namespace Internal.Controllers
         {
             try
             {
-                // Try to get from cache first, fallback to DB if not found
-                var article = await _cacheService.GetArticleAsync(
-                    section,
-                    id,
-                    async () =>
-                    {
-                        // Database query function
-                        await using var conn = _dbContext.Connection(section);
-                        var dynamicParams = new DynamicParameters();
-                        dynamicParams.Add("section", section);
-                        dynamicParams.Add("article", id);
-                        await using var reader = await conn.QueryMultipleAsync($"USP_BULLETIN_GET", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
-                        var dbArticle = await reader.ReadFirstOrDefaultAsync<Http.Model.Bulletin>();
-
-                        if (dbArticle == null)
-                            return null;
-
-                        // Get user name from global DB
-                        dbArticle.UserName = await _dbContext.Character.GetName(dbArticle.User) ?? string.Empty;
-
-                        return dbArticle;
-                    });
+                var (article, next) = await _bulletinService.GetArticleAsync(section, id);
 
                 if (article == null)
                 {
                     throw new LogicException(Fb.Model.EnumValue.ErrorCode.ArticleNotExists);
                 }
-
-                // Get next article flag from DB (this is a separate query that doesn't need caching)
-                await using var conn = _dbContext.Connection(section);
-                var dynamicParams = new DynamicParameters();
-                dynamicParams.Add("section", section);
-                dynamicParams.Add("article", id);
-                await using var reader = await conn.QueryMultipleAsync($"USP_BULLETIN_GET", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
-                await reader.ReadFirstOrDefaultAsync<Http.Model.Bulletin>(); // Skip first result
-                var next = await reader.ReadFirstAsync<bool>();
 
                 return new Response.GetArticle
                 {
