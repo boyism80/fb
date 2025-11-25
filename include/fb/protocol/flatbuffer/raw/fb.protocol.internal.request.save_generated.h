@@ -18,6 +18,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 #include "fb.protocol.internal.item_generated.h"
 #include "fb.protocol.internal.quest_generated.h"
 #include "fb.protocol.internal.spell_generated.h"
+#include "fb.protocol.internal.systemmailuser_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -35,7 +36,8 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ITEMS = 6,
     VT_SPELLS = 8,
     VT_ACHIEVEMENTS = 10,
-    VT_QUESTS = 12
+    VT_QUESTS = 12,
+    VT_RECEIVED_SYSTEM_MAILS = 14
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -51,6 +53,9 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *>(VT_QUESTS);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *received_system_mails() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *>(VT_RECEIVED_SYSTEM_MAILS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -68,6 +73,9 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_QUESTS) &&
            verifier.VerifyVector(quests()) &&
            verifier.VerifyVectorOfTables(quests()) &&
+           VerifyOffset(verifier, VT_RECEIVED_SYSTEM_MAILS) &&
+           verifier.VerifyVector(received_system_mails()) &&
+           verifier.VerifyVectorOfTables(received_system_mails()) &&
            verifier.EndTable();
   }
 };
@@ -91,6 +99,9 @@ struct SaveBuilder {
   void add_quests(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests) {
     fbb_.AddOffset(Save::VT_QUESTS, quests);
   }
+  void add_received_system_mails(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>>> received_system_mails) {
+    fbb_.AddOffset(Save::VT_RECEIVED_SYSTEM_MAILS, received_system_mails);
+  }
   explicit SaveBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -108,8 +119,10 @@ inline ::flatbuffers::Offset<Save> CreateSave(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>>> received_system_mails = 0) {
   SaveBuilder builder_(_fbb);
+  builder_.add_received_system_mails(received_system_mails);
   builder_.add_quests(quests);
   builder_.add_achievements(achievements);
   builder_.add_spells(spells);
@@ -124,18 +137,21 @@ inline ::flatbuffers::Offset<Save> CreateSaveDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *received_system_mails = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto achievements__ = achievements ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>(*achievements) : 0;
   auto quests__ = quests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>(*quests) : 0;
+  auto received_system_mails__ = received_system_mails ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>>(*received_system_mails) : 0;
   return fb::protocol::internal::request::raw::CreateSave(
       _fbb,
       character,
       items__,
       spells__,
       achievements__,
-      quests__);
+      quests__,
+      received_system_mails__);
 }
 
 inline const fb::protocol::internal::request::raw::Save *GetSave(const void *buf) {

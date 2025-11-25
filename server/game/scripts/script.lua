@@ -17,14 +17,14 @@ function group_lock(me, group)
 end
 
 function sample_message()
-    broadcast('message NOTIFY', MESSAGE_TYPE_NOTIFY)
-    broadcast('message BLUE', MESSAGE_TYPE_BLUE)
-    broadcast('message STATE', MESSAGE_TYPE_STATE)
-    broadcast('message SHOUT', MESSAGE_TYPE_SHOUT)
-    broadcast('message WORLD', MESSAGE_TYPE_WORLD)
-    broadcast('message POPUP', MESSAGE_TYPE_POPUP)
-    broadcast('message YELLOW', MESSAGE_TYPE_YELLOW)
-    broadcast('message BROWN', MESSAGE_TYPE_BROWN)
+    broadcast('message NOTIFY', MESSAGE_TYPE.NOTIFY)
+    broadcast('message BLUE', MESSAGE_TYPE.BLUE)
+    broadcast('message STATE', MESSAGE_TYPE.STATE)
+    broadcast('message SHOUT', MESSAGE_TYPE.SHOUT)
+    broadcast('message WORLD', MESSAGE_TYPE.WORLD)
+    broadcast('message POPUP', MESSAGE_TYPE.POPUP)
+    broadcast('message YELLOW', MESSAGE_TYPE.YELLOW)
+    broadcast('message BROWN', MESSAGE_TYPE.BROWN)
 end
 
 function func(me, val1, val2, val3)

@@ -93,6 +93,7 @@ table Save {
   spells: [fb.protocol.internal.Spell];
   achievements: [fb.protocol.internal.Achievement];
   quests: [fb.protocol.internal.Quest];
+  received_system_mails: [fb.protocol.internal.SystemMailUser];
 }
 
 
@@ -106,6 +107,7 @@ table WriteArticle {
 
 table DeleteArticle {
   id: uint;
+  section: uint;
   user: uint;
 }
 
@@ -208,4 +210,25 @@ table Broadcast {
 table UpdateFriends {
   user: uint;
   names: [string];
+}
+
+table GetSystemMails {
+  
+}
+
+table WriteSystemMail {
+  sender: uint;
+  title: string;
+  contents: string;
+  expire_date: string?;
+}
+
+table Ban {
+  name: string;
+  reason: string;
+  days: uint?;
+}
+
+table Unban {
+  name: string;
 }

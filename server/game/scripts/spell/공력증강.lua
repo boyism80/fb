@@ -4,7 +4,7 @@ function ON_CAST_4002(me, spell)
     local effect = 11
     local sound = 65
 
-    local error = me:assert(STATE_GHOST, STATE_RIDING)
+    local error = me:assert(STATE.GHOST, STATE.RIDING)
     if error ~= nil then
         return me:message(error)
     end
@@ -26,6 +26,6 @@ function ON_CAST_4002(me, spell)
     me:effect(effect)
     me:sound(sound)
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
-    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+    me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     return true
 end

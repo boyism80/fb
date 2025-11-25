@@ -11,10 +11,6 @@ using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
 {
-    /// <summary>
-    /// Provides group management operations for the internal API.
-    /// Handles group creation, member management, leaving groups, and group broadcasting.
-    /// </summary>
     [ApiController]
     [Route("group")]
     public class GroupController : ControllerBase
@@ -27,18 +23,6 @@ namespace Internal.Controllers
         private readonly SessionService _sessionService;
         private readonly RedisService _redisService;
         private readonly RedisDistributedLockService _distributedLock;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupController"/> class.
-        /// </summary>
-        /// <param name="configuration">The application configuration.</param>
-        /// <param name="mapper">The AutoMapper instance for object mapping.</param>
-        /// <param name="dbContext">The database context for data operations.</param>
-        /// <param name="rabbitMqService">The RabbitMQ service for inter-server messaging.</param>
-        /// <param name="model">The game data model containing configuration data.</param>
-        /// <param name="sessionService">The session service for managing user sessions.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
         public GroupController(IConfiguration configuration,
             IMapper mapper,
             DbContext dbContext,
@@ -57,13 +41,6 @@ namespace Internal.Controllers
             _redisService = redisService;
             _distributedLock = distributedLock;
         }
-
-        /// <summary>
-        /// Retrieves group information by group ID.
-        /// Returns the group details including master and member information.
-        /// </summary>
-        /// <param name="id">The unique identifier of the group to retrieve.</param>
-        /// <returns>A response containing the group information or error details.</returns>
         [HttpGet("{id}")]
         public async Task<Response.GetGroup> Get(uint id)
         {
@@ -113,13 +90,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Handles group creation and member management requests.
-        /// Creates new groups, adds/removes members, and manages group permissions.
-        /// </summary>
-        /// <param name="request">The group entry request containing master and member information.</param>
-        /// <returns>A response with the updated group information and action taken.</returns>
         [HttpPost("create")]
         public async Task<Response.EnterGroup> Create(Request.EnterGroup request)
         {
@@ -257,13 +227,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Handles voluntary group leave requests for members.
-        /// Allows members to leave the group on their own initiative.
-        /// </summary>
-        /// <param name="request">The leave group request containing the member's name.</param>
-        /// <returns>A response with the updated group information and action taken.</returns>
         [HttpPost("leave")]
         public async Task<Response.LeaveGroup> Leave(Request.LeaveGroup request)
         {
@@ -387,15 +350,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-
-
-        /// <summary>
-        /// Handles group member expulsion by the group master.
-        /// Allows the group master to forcefully remove a member from the group.
-        /// </summary>
-        /// <param name="request">The kick group request containing kicker and target information.</param>
-        /// <returns>A response with the updated group information and action taken.</returns>
         [HttpPost("kick")]
         public async Task<Response.KickGroup> Kick(Request.KickGroup request)
         {
@@ -504,13 +458,6 @@ namespace Internal.Controllers
                 };
             }
         }
-
-        /// <summary>
-        /// Handles group broadcast message requests.
-        /// Sends messages to all members of a specific group via RabbitMQ.
-        /// </summary>
-        /// <param name="request">The group broadcast request containing group ID and message information.</param>
-        /// <returns>A response confirming the broadcast was sent or error details.</returns>
         [HttpPost("group")]
         public async Task<Response.BroadcastGroup> Broadcast(Request.BroadcastGroup request)
         {

@@ -5,6 +5,7 @@
 #include <fb/game/ai/no_move.h>
 #include <fb/game/ai/none.h>
 #include <fb/game/character.h>
+#include <fb/game/life.h>
 #include <fb/game/map.h>
 
 using namespace fb::game;

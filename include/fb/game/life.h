@@ -3,6 +3,7 @@
 
 #include <fb/game/object.h>
 #include <fb/game/stat.h>
+#include <fb/game/crowd_control.h>
 
 namespace fb::game {
 
@@ -16,18 +17,18 @@ public:
     struct initial_params;
 
 protected:
-    uint32_t      _damage_rate       = 1000;
-    uint32_t      _skill_damage_rate = 1000;
-    uint32_t      _damage_derate     = 1000;
-    CROWD_CONTROL _crowd_control     = CROWD_CONTROL::NONE;
-    bool          _paralysis         = false;
-    bool          _invincible        = false;
-    bool          _cover             = false;
+    uint32_t _damage_rate       = 1000;
+    uint32_t _skill_damage_rate = 1000;
+    uint32_t _damage_derate     = 1000;
+    bool     _paralysis         = false;
+    bool     _invincible        = false;
+    bool     _cover             = false;
 
 public:
     listener_t&      listener;
     fb::game::spells spells;
     fb::game::stat&  stat;
+    crowd_control    cc = crowd_control(*this);
 
 protected:
     life(fb::game::server& server, const fb::model::life& model, fb::game::stat& stat, const initial_params& params);
@@ -39,14 +40,9 @@ public:
 public:
     virtual async::task<void> attack(DURATION duration = DURATION::ATTACK);
     virtual uint32_t          exp() const;
-    virtual void              update(STATE_LEVEL value = STATE_LEVEL::LEVEL_MIN);
+    virtual void              update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
     void                      update_hp(uint32_t diff, bool critical);
     virtual void              kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-    CROWD_CONTROL             crowd_control() const;
-    void                      crowd_control(CROWD_CONTROL value);
-    CROWD_CONTROL             add_cc(CROWD_CONTROL value);
-    CROWD_CONTROL             remove_cc(CROWD_CONTROL value);
-    bool                      contains_cc(CROWD_CONTROL value) const;
     virtual bool              alive() const;
     bool                      active(fb::game::spell& spell);
     bool                      active(fb::game::spell& spell, uint32_t fd);

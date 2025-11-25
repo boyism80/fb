@@ -53,8 +53,16 @@ namespace WriteBack.Service
             var section = _configuration.GetSection("ConnectionStrings:MySql");
             var threads = section.GetChildren().Select(x => new Thread(() =>
             {
-                var task = OnWork(int.Parse(x.Key), stoppingToken);
-                task.Wait(stoppingToken);
+                var dbId = int.Parse(x.Key);
+                var task = OnWork(dbId, stoppingToken);
+                try
+                {
+                    task.Wait(stoppingToken);
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    _logger.LogInformation("Write-back worker for DB {DbId} cancelled.", dbId);
+                }
             })).ToArray();
 
             foreach (var thread in threads)

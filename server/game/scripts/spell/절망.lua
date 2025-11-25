@@ -11,13 +11,13 @@ end
 
 -- 절망 버프 효과
 function ON_BUFF_3053(me, spell)
-    me:add_cc(CROWD_CONTROL_SIGHT)
+    me:add_cc(CROWD_CONTROL.SIGHT)
 end
 
 -- 절망 버프 해제 효과
 function ON_UNBUFF_3053(me, spell)
 
-    me:remove_cc(CROWD_CONTROL_SIGHT)
+    me:remove_cc(CROWD_CONTROL.SIGHT)
 end
 
 -- 절망 지속 효과

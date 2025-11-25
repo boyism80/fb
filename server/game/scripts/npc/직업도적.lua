@@ -167,5 +167,5 @@ function NPC_20(me, npc)
 		}
 	}
 
-	NPC_BASIC_CLASS(me, npc, CLASS_ROGUE, spells)
+	NPC_BASIC_CLASS(me, npc, CLASS.ROGUE, spells)
 end

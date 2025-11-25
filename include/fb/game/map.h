@@ -1,8 +1,8 @@
 #ifndef __MAP_H__
 #define __MAP_H__
 
-#include <fb/game/door/container.h>
-#include <fb/game/object/container.h>
+#include <fb/game/door.h>
+#include <fb/game/object.h>
 #include <fb/game/sector.h>
 
 namespace fb::game {
@@ -34,8 +34,8 @@ private:
 public:
     const fb::game::server& server;
     const fb::model::map&   model;
-    object_container        objects = object_container(*this);
-    door_container          doors;
+    object::container       objects = object::container(*this);
+    door::container         doors   = door::container(*this);
     const bool              active;
 
 public:

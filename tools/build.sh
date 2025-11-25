@@ -45,6 +45,11 @@ if [ $? -ne 0 ]; then
     echo "build fb/write-back failed"
     exit $?
 fi
+sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/admin-tool:latest --build-arg BUILD_TYPE=$BUILD_TYPE --build-arg SERVICE=admin-tool -f server/http/Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/admin-tool failed"
+    exit $?
+fi
 pushd infra/pulumi
 pulumi config set --secret host "$EXTERNAL_IP"
 pulumi down -y && pulumi up -y

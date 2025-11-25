@@ -18,6 +18,8 @@ table Login {
   logon: bool;
   ip: string;
   port: ushort;
+  ban_reason: string;
+  ban_expire_date: string?;
 }
 
 
@@ -32,6 +34,8 @@ table Transfer {
   error: uint;
   ip: string;
   port: ushort;
+  ban_reason: string;
+  ban_expire_date: string?;
 }
 
 
@@ -121,6 +125,7 @@ table Init {
   option: fb.protocol.internal.Option;
   achievements: [fb.protocol.internal.Achievement];
   quests: [fb.protocol.internal.Quest];
+  received_system_mails: [fb.protocol.internal.SystemMailUser];
   mail: uint;
 }
 
@@ -135,9 +140,12 @@ table ReserveName {
   success: bool;
 }
 
-
 table Save {
   success: bool;
+}
+
+table BroadcastSave {
+  
 }
 
 table SetOption {
@@ -256,5 +264,27 @@ table Broadcast {
 
 table UpdateFriends
 {
+  error: uint;
+}
+
+table GetSystemMails {
+  mails: [fb.protocol.internal.SystemMail];
+  error: uint;
+}
+
+table WriteSystemMail {
+  mail: fb.protocol.internal.SystemMail;
+  error: uint;
+}
+
+table Ban {
+  name: string;
+  reason: string;
+  expire_date: string?;
+  error: uint;
+}
+
+table Unban {
+  name: string;
   error: uint;
 }

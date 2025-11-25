@@ -18,7 +18,7 @@ void life::on_init()
     this->spells.owner(this->shared_from_this_as<life>());
 }
 
-void life::update(STATE_LEVEL value)
+void life::update(UPDATE_STATE_LEVEL value)
 { }
 
 void life::update_hp(uint32_t diff, bool critical)
@@ -189,38 +189,6 @@ uint32_t life::exp() const
 {
     this->assert_thread();
     return static_cast<const fb::model::life&>(this->_model).exp;
-}
-
-CROWD_CONTROL life::crowd_control() const
-{
-    this->assert_thread();
-    return this->_crowd_control;
-}
-
-void life::crowd_control(CROWD_CONTROL value)
-{
-    this->_crowd_control = value;
-    this->update(STATE_LEVEL::CROWD_CONTROL);
-}
-
-CROWD_CONTROL life::add_cc(CROWD_CONTROL value)
-{
-    this->assert_thread();
-    this->crowd_control(CROWD_CONTROL(this->_crowd_control | value));
-    return this->_crowd_control;
-}
-
-CROWD_CONTROL life::remove_cc(CROWD_CONTROL value)
-{
-    this->assert_thread();
-    this->crowd_control(CROWD_CONTROL(this->_crowd_control & ~value));
-    return this->_crowd_control;
-}
-
-bool life::contains_cc(CROWD_CONTROL value) const
-{
-    this->assert_thread();
-    return uint32_t(this->_crowd_control) & uint32_t(value);
 }
 
 bool life::alive() const

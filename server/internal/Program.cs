@@ -6,18 +6,8 @@ using Http.Service;
 using Http.Worker;
 
 namespace Http;
-
-/// <summary>
-/// The main entry point class for the internal HTTP API service.
-/// Configures AutoMapper mappings, dependency injection, and starts the web application.
-/// </summary>
 public class Program
 {
-    /// <summary>
-    /// The main entry point for the internal HTTP API service application.
-    /// Sets up AutoMapper configurations, dependency injection, middleware pipeline, and starts the web server.
-    /// </summary>
-    /// <param name="args">Command line arguments passed to the application.</param>
     public static void Main(string[] args)
     {
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -29,6 +19,7 @@ public class Program
             cfg.CreateMap<Http.Model.Character, Character>()
             .ForMember(x => x.ClassType, x => x.MapFrom(u => u.Class))
             .ForMember(x => x.Buffs, x => x.MapFrom(u => u.Buffs))
+            .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
             .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => u.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
             .ForMember(x => x.Position, x => x.MapFrom(u => new Position { X = u.PositionX, Y = u.PositionY }))
             .ForMember(x => x.Role, x => x.MapFrom(u => (byte)u.Role));
@@ -79,6 +70,16 @@ public class Program
             .ForMember(x => x.Uid, x => x.MapFrom(u => u.User))
             .ForMember(x => x.Qid, x => x.MapFrom(u => u.Id))
             .ReverseMap();
+
+            cfg.CreateMap<fb.protocol._internal.SystemMailUser, Http.Model.SystemMailUser>()
+            .ForMember(x => x.User, x => x.MapFrom(u => u.User))
+            .ForMember(x => x.MailId, x => x.MapFrom(u => u.MailId))
+            .ForMember(x => x.Read, x => x.MapFrom(u => u.Read))
+            .ForMember(x => x.ExpireDate, x => x.MapFrom(u => !string.IsNullOrEmpty(u.ExpireDate) ? (DateTime?)DateTime.Parse(u.ExpireDate) : null))
+            .ForMember(x => x.Deleted, x => x.Ignore()) // Deleted is managed by Override logic
+            .ForMember(x => x.CreatedDate, x => x.Ignore()) // CreatedDate is managed by DB
+            .ReverseMap()
+            .ForMember(x => x.ExpireDate, x => x.MapFrom(u => u.ExpireDate.HasValue ? u.ExpireDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : (string?)null));
         });
 
         var builder = WebApplication.CreateBuilder(args);
@@ -102,8 +103,14 @@ public class Program
         builder.Services.AddSingleton<IMapper>(_ => new Mapper(config));
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<SessionService>();
+        builder.Services.AddSingleton<ServerStateService>();
         builder.Services.AddScoped<DbContext>();
+        builder.Services.AddScoped<BanService>();
+        builder.Services.AddScoped<CacheService>();
         builder.Services.AddSingleton<WriteBackService>();
+        builder.Services.AddSingleton<Internal.Service.BulletinService>();
+        builder.Services.AddSingleton<Internal.Service.BulletinCacheService>();
+        builder.Services.AddHostedService<Internal.Service.BulletinBackgroundService>();
         builder.Services.AddHostedService<ShutdownListenerService>();
         builder.Services.AddHealthChecks();
 

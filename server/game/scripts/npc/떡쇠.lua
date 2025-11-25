@@ -6,23 +6,23 @@ function NPC_9(me, npc)
     end
 
     if selected == 0 then
-        if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
             goto NPC_9_000
         end
     elseif selected == 1 then
-        if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
             goto NPC_9_000
         end
     elseif selected == 2 then
-        if NPC_REPAIR_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_REPAIR_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
             goto NPC_9_000
         end
     elseif selected == 3 then
-        if NPC_REPAIR_ALL_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_REPAIR_ALL_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
             goto NPC_9_000
         end
     elseif selected == 4 then
-    	if NPC_RENAME_WEAPON_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
+    	if NPC_RENAME_WEAPON_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
            goto NPC_9_000 
         end
     else

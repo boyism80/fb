@@ -44,7 +44,7 @@ function sample_group(me, npc)
             return
         end
 
-        group:messagee(message, MESSAGE_TYPE_NOTIFY)
+        group:messagee(message, MESSAGE_TYPE.NOTIFY)
     else
         me:chat('invalid selected')
     end
@@ -102,7 +102,7 @@ function sample_clan(me, npc)
             end
 
             local name = me:input(npc, '상대 이름 입력')
-            local nears = map:nears({me:position()}, OBJECT_TYPE_CHARACTER)
+            local nears = map:nears({me:position()}, OBJECT_TYPE.CHARACTER)
             local found = nil
             for _, ch in pairs(nears) do
                 if ch:name() == name then
@@ -233,15 +233,15 @@ function sample_cc(me, npc)
     end
 
     local current = me:cc()
-    local cc = CROWD_CONTROL_NONE
+    local cc = CROWD_CONTROL.NONE
     if selected == 0 then
-        cc = CROWD_CONTROL_DIRECTION
+        cc = CROWD_CONTROL.DIRECTION
     elseif selected == 1 then
-        cc = CROWD_CONTROL_SIGHT
+        cc = CROWD_CONTROL.SIGHT
     elseif selected == 2 then
-        cc = CROWD_CONTROL_CHAT
+        cc = CROWD_CONTROL.CHAT
     elseif selected == 3 then
-        cc = CROWD_CONTROL_HEAR
+        cc = CROWD_CONTROL.HEAR
     end
 
     if (current & cc) == cc then

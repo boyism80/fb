@@ -7,19 +7,19 @@ character::container::container(fb::game::server& server) :
     _server(server)
 { }
 
-void character::container::insert(std::shared_ptr<character> ch)
+void character::container::insert(character_ptr_t ch)
 {
     this->_from_uid[ch->id()]    = ch;
     this->_from_name[ch->name()] = ch;
 }
 
-void character::container::remove(std::shared_ptr<character> ch)
+void character::container::remove(character_ptr_t ch)
 {
     this->_from_uid.erase(ch->id());
     this->_from_name.erase(ch->name());
 }
 
-std::shared_ptr<character> character::container::find(uint32_t uid) const
+character::container::character_ptr_t character::container::find(uint32_t uid) const
 {
     auto it = this->_from_uid.find(uid);
     return it != this->_from_uid.end() ? it->second : nullptr;
@@ -35,7 +35,7 @@ bool character::container::contains(uint32_t uid) const
     return this->_from_uid.contains(uid);
 }
 
-std::shared_ptr<character> character::container::find(const std::string& name) const
+character::container::character_ptr_t character::container::find(const std::string& name) const
 {
     auto it = this->_from_name.find(name);
     return it != this->_from_name.end() ? it->second : nullptr;
@@ -168,4 +168,22 @@ async::task<void> character::container::invoke_async(const std::string& name, ch
     co_await fn(ch);
     if (before != nullptr)
         co_await before->switching();
+}
+
+character::container::character_ptr_t character::container::operator[] (uint32_t uid)
+{
+    auto ch = this->find(uid);
+    if (ch == nullptr)
+        throw std::out_of_range("out of range exception");
+
+    return ch;
+}
+
+character::container::character_ptr_t character::container::operator[] (const std::string& name)
+{
+    auto ch = this->find(name);
+    if (ch == nullptr)
+        throw std::out_of_range("out of range exception");
+
+    return ch;
 }

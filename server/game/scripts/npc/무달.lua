@@ -40,16 +40,16 @@ function NPC_157(me, npc)
 
 ::ROUTINE_CHANGE_ARMOR_COLOR_1::
         me:money(money - price)
-        if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), false, true) == DIALOG_RESULT_QUIT then
+        if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), false, true) == DIALOG_RESULT.QUIT then
             return
         end
 
         button = me:dialog(npc, '그럼 언제나 행운이 함께 하시기를 빌겠습니다.', true, true)
-        if button == DIALOG_RESULT_QUIT then
+        if button == DIALOG_RESULT.QUIT then
             return
         end
 
-        if button == DIALOG_RESULT_PREV then
+        if button == DIALOG_RESULT.PREV then
             goto ROUTINE_CHANGE_ARMOR_COLOR_1
         end
 
@@ -67,7 +67,7 @@ function NPC_157(me, npc)
 
     	me:armor_color(nil)
     	button = me:dialog(npc, '일반 복장으로 바꿔드렸습니다.', false, true)
-    	if button == DIALOG_RESULT_QUIT then
+    	if button == DIALOG_RESULT.QUIT then
     		return
     	end
     	

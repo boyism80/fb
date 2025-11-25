@@ -1,0 +1,273 @@
+@page "/users/{userId:int}/items"
+@using AdminTool.Services
+@using Fb.Model
+@using Fb.Model.EnumValue
+@using Http.Model
+@using Http.Service
+@using Microsoft.AspNetCore.Authorization
+@inject DbContext DbContext
+@inject UserService UserService
+@inject Model Model
+@attribute [AuthorizeRole(Role.Admin)]
+
+<PageTitle>User Items - Admin Tool</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h2>User Items</h2>
+            @if (userDetail != null)
+            {
+                <p class="text-muted">Items for: <strong>@userDetail.Name</strong> (ID: @userDetail.Id)</p>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (userDetail != null)
+    {
+        <!-- Equipped Items -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Equipped Items</h5>
+            </div>
+            <div class="card-body">
+                @if (equippedItems.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Parts</th>
+                                    <th>Item Name</th>
+                                    <th>Count</th>
+                                    <th>Durability</th>
+                                    <th>Custom Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in equippedItems)
+                                {
+                                    <tr>
+                                        <td>@GetPartsName(item.Parts)</td>
+                                        <td>@GetItemName(item.Model)</td>
+                                        <td>@item.Count</td>
+                                        <td>@(item.Durability?.ToString() ?? "N/A")</td>
+                                        <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No equipped items.</p>
+                }
+            </div>
+        </div>
+
+        <!-- Inventory Items -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Inventory Items</h5>
+            </div>
+            <div class="card-body">
+                @if (inventoryItems.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Index</th>
+                                    <th>Item Name</th>
+                                    <th>Count</th>
+                                    <th>Durability</th>
+                                    <th>Custom Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in inventoryItems.OrderBy(i => i.Index))
+                                {
+                                    <tr>
+                                        <td>@item.Index</td>
+                                        <td>@GetItemName(item.Model)</td>
+                                        <td>@item.Count</td>
+                                        <td>@(item.Durability?.ToString() ?? "N/A")</td>
+                                        <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No inventory items.</p>
+                }
+            </div>
+        </div>
+
+        <!-- Stored Items -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Stored Items (Bank/Storage)</h5>
+            </div>
+            <div class="card-body">
+                @if (storedItems.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Index</th>
+                                    <th>Item Name</th>
+                                    <th>Count</th>
+                                    <th>Durability</th>
+                                    <th>Custom Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in storedItems.OrderBy(i => i.Index))
+                                {
+                                    <tr>
+                                        <td>@item.Index</td>
+                                        <td>@GetItemName(item.Model)</td>
+                                        <td>@item.Count</td>
+                                        <td>@(item.Durability?.ToString() ?? "N/A")</td>
+                                        <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No stored items.</p>
+                }
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <a href="/users" class="btn btn-secondary">Back to Users</a>
+        </div>
+    }
+    else if (!isLoading)
+    {
+        <div class="alert alert-warning">
+            User not found.
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int UserId { get; set; }
+
+    private UserDetail? userDetail;
+    private List<Http.Model.Item> equippedItems = new();
+    private List<Http.Model.Item> inventoryItems = new();
+    private List<Http.Model.Item> storedItems = new();
+    private bool isLoading = false;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserItems();
+    }
+
+    private async Task LoadUserItems()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            // Get user detail
+            var character = await DbContext.Character.Get((uint)UserId);
+            if (character == null)
+            {
+                errorMessage = "User not found.";
+                isLoading = false;
+                return;
+            }
+
+            userDetail = await UserService.GetUserByName(character.Name);
+            if (userDetail == null)
+            {
+                errorMessage = "User not found.";
+                isLoading = false;
+                return;
+            }
+
+            // Get all items for the user
+            var allItems = (await DbContext.Item.Get((uint)UserId)).ToList();
+
+            // Categorize items
+            // Equipped: stored == -1 and parts != 0
+            equippedItems = allItems.Where(i => i.Stored == -1 && i.Parts != 0).ToList();
+
+            // Inventory: stored == -1 and parts == 0
+            inventoryItems = allItems.Where(i => i.Stored == -1 && i.Parts == 0).ToList();
+
+            // Stored: stored != -1
+            storedItems = allItems.Where(i => i.Stored != -1).ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading user items: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetPartsName(short parts)
+    {
+        var equipmentParts = (EquipmentParts)parts;
+        return equipmentParts switch
+        {
+            EquipmentParts.Weapon => "Weapon",
+            EquipmentParts.Armor => "Armor",
+            EquipmentParts.Shield => "Shield",
+            EquipmentParts.Helmet => "Helmet",
+            EquipmentParts.LeftHand => "Ring (Left)",
+            EquipmentParts.RightHand => "Ring (Right)",
+            EquipmentParts.LeftAux => "Auxiliary (Left)",
+            EquipmentParts.RightAux => "Auxiliary (Right)",
+            EquipmentParts.Unknown => "Unknown",
+            _ => $"Unknown ({parts})"
+        };
+    }
+
+    private string GetItemName(uint modelId)
+    {
+        try
+        {
+            var item = Model.Item[modelId];
+            return item?.Name ?? $"Unknown (ID: {modelId})";
+        }
+        catch
+        {
+            return $"Unknown (ID: {modelId})";
+        }
+    }
+}
+

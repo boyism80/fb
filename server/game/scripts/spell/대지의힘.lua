@@ -1,6 +1,6 @@
 -- 대지의힘 캐스팅
 function ON_CAST_3001(me, you, spell)
-    if not you:is(OBJECT_TYPE_CHARACTER) then
+    if not you:is(OBJECT_TYPE.CHARACTER) then
         return me:message('걸리지 않습니다.')
     end
 

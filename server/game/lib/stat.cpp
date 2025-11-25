@@ -169,7 +169,7 @@ void fb::game::stat::hp(uint32_t value)
 {
     this->owner.assert_thread();
     this->_hp = value;
-    this->owner.update(STATE_LEVEL::HP_MP);
+    this->owner.update(UPDATE_STATE_LEVEL::HP_MP);
 }
 
 uint32_t fb::game::stat::heal(uint32_t value, fb::game::object* from)
@@ -215,7 +215,7 @@ void fb::game::stat::mp(uint32_t value)
 {
     this->owner.assert_thread();
     this->_mp = value;
-    this->owner.update(STATE_LEVEL::HP_MP);
+    this->owner.update(UPDATE_STATE_LEVEL::HP_MP);
 }
 
 uint32_t fb::game::stat::mp_up(uint32_t value, fb::game::object* from)
@@ -357,36 +357,42 @@ void character_stat::base_hp(uint32_t value)
 {
     this->owner.assert_thread();
     this->_max_hp = value;
+    this->owner.update(UPDATE_STATE_LEVEL::BASED);
 }
 
 void character_stat::base_mp(uint32_t value)
 {
     this->owner.assert_thread();
     this->_max_mp = value;
+    this->owner.update(UPDATE_STATE_LEVEL::BASED);
 }
 
 void character_stat::base_str(uint8_t value)
 {
     this->owner.assert_thread();
     this->_str = value;
+    this->owner.update(UPDATE_STATE_LEVEL::BASED);
 }
 
 void character_stat::base_dex(uint8_t value)
 {
     this->owner.assert_thread();
     this->_dex = value;
+    this->owner.update(UPDATE_STATE_LEVEL::BASED);
 }
 
 void character_stat::base_int(uint8_t value)
 {
     this->owner.assert_thread();
     this->_int = value;
+    this->owner.update(UPDATE_STATE_LEVEL::BASED);
 }
 
 void character_stat::base_phydef(int8_t value)
 {
     this->owner.assert_thread();
     this->_phydef = value;
+    this->owner.update(UPDATE_STATE_LEVEL::BASED);
 }
 
 void character_stat::base_magdef(int8_t value)

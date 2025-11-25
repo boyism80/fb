@@ -30,6 +30,8 @@ public:
     struct listener_t;
     struct initial_params;
 
+    class container;
+
 public:
     LUA_PROTOTYPE
 
@@ -161,6 +163,50 @@ public:
     const fb::model::point16_t position  = fb::model::point16_t();
     DIRECTION                  direction = DIRECTION::BOTTOM;
     map_ptr                    map       = nullptr;
+};
+
+class object::container
+{
+public:
+    using ptrs                  = std::unordered_map<uint32_t, std::shared_ptr<object>>;
+    using iterator              = ptrs::iterator;
+    using const_iterator        = ptrs::const_iterator;
+    using handle_predicate_type = std::function<bool(object&)>;
+
+private:
+    ptrs                 _ptrs;
+    uint32_t             _oid = 1;
+    std::queue<uint32_t> _available_seq;
+
+public:
+    fb::game::map& owner;
+
+public:
+    container(fb::game::map& map);
+    ~container() = default;
+
+private:
+    uint32_t allocate_seq();
+
+public:
+    iterator                begin();
+    iterator                end();
+    const_iterator          begin() const;
+    const_iterator          end() const;
+    uint32_t                size() const;
+    std::shared_ptr<object> at(uint32_t i);
+    void                    push(object& obj);
+    object&                 pop(uint32_t fd);
+    object&                 pop(object& obj);
+    object*                 try_pop(uint32_t fd);
+    object*                 try_pop(object& obj);
+
+    void foreach (OBJECT_TYPE type, const handle_predicate_type& fn);
+    bool contains(const std::shared_ptr<object>& obj) const;
+    bool contains(uint32_t fd) const;
+
+public:
+    object* operator[] (uint32_t fd);
 };
 
 } // namespace fb::game

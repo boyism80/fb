@@ -38,8 +38,8 @@ globs: ["wiki/**/*.md"]
 
 ### Parameter Analysis
 - **SOURCE CODE FIRST**: ALL parameter information must be extracted from actual C++ source code in `/game` and `/include/fb/game`
-- **Enum types**: Never infer enum values. Reference `model.h` for globally registered enum values via `lua_setglobal`
-- **Enum format**: Use underscore format `OBJECT_TYPE_CHARACTER` instead of dot format `OBJECT_TYPE.CHARACTER`
+- **Enum types**: Never infer enum values. Reference `model.h` and the generated Lua enum tables (see `fb::model::lua::map_enum`) to confirm which enums are exposed.
+- **Enum format**: Use table-dot format `OBJECT_TYPE.CHARACTER` (e.g., `ACTION.ATTACK`). The legacy underscore globals such as `OBJECT_TYPE_CHARACTER` are deprecated in docs and must not appear in new content.
 - **Parameter diversity**: Recognize that same position parameters can accept different types - verify from actual function overloads
 - **Self parameter**: Exclude `self` from parameter descriptions, only show usage in examples like `me:position()`, `item:name()`
 - **Default values**: Check for default values and document them. Mark optional parameters with brackets `[parameter]` in function signatures

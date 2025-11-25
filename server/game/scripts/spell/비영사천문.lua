@@ -5,7 +5,7 @@ function ON_CAST_1(me, spell, message)
         return
     end
 
-    local error = me:assert(STATE_GHOST, STATE_RIDING)
+    local error = me:assert(STATE.GHOST, STATE.RIDING)
     if error ~= nil then
         me:message(error)
         return
@@ -13,13 +13,13 @@ function ON_CAST_1(me, spell, message)
 
     local input = nil
     if message == '동' or message == '1' then
-        input = CARDINAL_DIRECTION_EAST
+        input = CARDINAL_DIRECTION.EAST
     elseif message == '서' or message == '2' then
-        input = CARDINAL_DIRECTION_WEST
+        input = CARDINAL_DIRECTION.WEST
     elseif message == '남' or message == '3' then
-        input = CARDINAL_DIRECTION_SOUTH
+        input = CARDINAL_DIRECTION.SOUTH
     elseif message == '북' or message == '4' then
-        input = CARDINAL_DIRECTION_NORTH
+        input = CARDINAL_DIRECTION.NORTH
     else
         return
     end
@@ -39,6 +39,6 @@ function ON_CAST_1(me, spell, message)
         local x = math.random(left, right)
         local y = math.random(top, bottom)
         me:map(dest:name(), x, y)
-        me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+        me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     end
 end

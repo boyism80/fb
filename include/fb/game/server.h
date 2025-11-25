@@ -15,6 +15,9 @@
 #include <fb/shard_container.h>
 #include <fb/game/clan.h>
 #include <fb/game/npc_interaction_handler.h>
+#include <fb/game/system_mail.h>
+#include <fb/locker.h>
+#include <vector>
 
 using namespace fb::protocol::internal;
 using namespace fb::protocol::internal::request;
@@ -48,6 +51,10 @@ REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::intern
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
 REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanRole, fb::protocol::internal::response::ChangeClanRole)
 REGISTER_RESPONSE(fb::protocol::internal::request::UpdateFriends, fb::protocol::internal::response::UpdateFriends)
+REGISTER_RESPONSE(fb::protocol::internal::request::GetSystemMails, fb::protocol::internal::response::GetSystemMails)
+REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol::internal::response::WriteSystemMail)
+REGISTER_RESPONSE(fb::protocol::internal::request::Ban, fb::protocol::internal::response::Ban)
+REGISTER_RESPONSE(fb::protocol::internal::request::Unban, fb::protocol::internal::response::Unban)
 
 namespace fb::game {
 
@@ -73,9 +80,10 @@ public:
     using npc_interaction_handler_list = std::vector<npc_interaction_handler_ptr>;
 
 private:
-    fb::model::datetime          _time;
-    npc_interaction_handler_list _npc_interaction_handlers;
-    fb::redis                    _redis;
+    fb::model::datetime                  _time;
+    npc_interaction_handler_list         _npc_interaction_handlers;
+    fb::redis                            _redis;
+    fb::locker<std::vector<system_mail>> _system_mails;
 
 public:
     fb::game::listener_impl listener;
@@ -157,6 +165,7 @@ public:
 public:
     async::task<void>               send(fb::game::object& object, const fb::protocol::header& header, fb::game::scope scope, bool exclude_self = false, bool encrypt = true);
     [[nodiscard]] async::task<void> save(fb::game::character& ch);
+    void                            save();
 
 public:
     virtual uint32_t                                        thread_id(const fb::socket<fb::game::character>& socket) const;
@@ -183,6 +192,10 @@ public:
     [[nodiscard]] async::task<void>                         write_bulletin(character& ch, uint16_t section, const std::string& title, const std::string& contents);
     [[nodiscard]] async::task<void>                         delete_bulletin(character& ch, uint16_t section, uint16_t id);
     [[nodiscard]] async::task<void>                         whisper(character& sender, std::string receiver_name, std::string message);
+    [[nodiscard]] async::task<void>                         fetch_system_mails();
+    std::vector<system_mail>                                get_system_mails() const;
+    [[nodiscard]] async::task<internal_resp::Ban>           ban(const std::string& name, const std::string& reason, const std::optional<uint32_t>& days);
+    [[nodiscard]] async::task<internal_resp::Unban>         unban(const std::string& name);
 
 protected:
     bool                                 decrypt_policy(uint8_t cmd) const override final;

@@ -1,6 +1,6 @@
 -- 망각 캐스팅
 function ON_CAST_2009(me, you, spell)
-    if not you:is(OBJECT_TYPE_MOB) then
+    if not you:is(OBJECT_TYPE.MOB) then
         return me:message('걸리지 않습니다.')
     end
 

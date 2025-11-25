@@ -1,0 +1,691 @@
+@page "/users"
+@using AdminTool.Services
+@using AdminTool.Authentication
+@using Http.Service
+@using Http.Model
+@using Fb.Model.EnumValue
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using System.ComponentModel.DataAnnotations
+@using System.Linq
+@using Response = fb.protocol._internal.response
+@inject UserService UserService
+@inject BanService BanService
+@inject DbContext DbContext
+@inject RabbitMqService RabbitMqService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject SecurityService SecurityService
+@attribute [AuthorizeRole(Role.Admin)]
+
+<PageTitle>Users - Admin Tool</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <h2>User Management</h2>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search by name..." @bind="searchTerm"
+                    @bind:event="oninput" @onkeypress="HandleKeyPress" />
+                <button class="btn btn-outline-secondary" type="button" @onclick="SearchUsers" disabled="@isLoading">
+                    <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Search
+                </button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch" disabled="@isLoading">
+                    Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @successMessage
+            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (userList?.Users != null && userList.Users.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Level</th>
+                        <th>Money</th>
+                        <th>Ban Status</th>
+                        <th>Created Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in userList.Users)
+                    {
+                        <tr>
+                            <td>@user.Id</td>
+                            <td>@user.Name</td>
+                            <td>@((Role)user.Role)</td>
+                            <td>@user.Level</td>
+                            <td>@user.Money.ToString("N0")</td>
+                            <td>
+                                @if (user.IsBanned)
+                                {
+                                    <span class="badge bg-danger">
+                                        Banned
+                                        @if (user.BanExpireDate.HasValue)
+                                        {
+                                            <span>(Until @user.BanExpireDate.Value.ToString("yyyy-MM-dd"))</span>
+                                        }
+                                        else
+                                        {
+                                            <span>(Permanent)</span>
+                                        }
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                            </td>
+                            <td>@user.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="/users/@user.Id/items" class="btn btn-sm btn-outline-primary">Items</a>
+                                    <button class="btn btn-sm btn-outline-warning"
+                                            title="@GetChangeRoleButtonTitle(user)"
+                                            @onclick="() => ShowChangeRoleModal(user)"
+                                            disabled="@isProcessing">
+                                        Change Role
+                                    </button>
+                                    @if (user.IsBanned)
+                                    {
+                                        <button class="btn btn-sm btn-success" @onclick="() => ShowUnbanModal(user)"
+                                            disabled="@isProcessing">
+                                            Unban
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-danger" @onclick="() => ShowBanModal(user)"
+                                            disabled="@isProcessing">
+                                            Ban
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (userList.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                        <a class="page-link" href="#" @onclick="() => ChangePage(currentPage - 1)"
+                            @onclick:preventDefault>Previous</a>
+                    </li>
+                    @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(userList.TotalPages, currentPage + 2); i++)
+                    {
+                        var pageNum = i;
+                        <li class="page-item @(currentPage == pageNum ? "active" : "")">
+                            <a class="page-link" href="#" @onclick="() => ChangePage(pageNum)" @onclick:preventDefault>@pageNum</a>
+                        </li>
+                    }
+                    <li class="page-item @(currentPage >= userList.TotalPages ? "disabled" : "")">
+                        <a class="page-link" href="#" @onclick="() => ChangePage(currentPage + 1)"
+                            @onclick:preventDefault>Next</a>
+                    </li>
+                </ul>
+            </nav>
+        }
+
+        <div class="text-center text-muted">
+            Showing @((currentPage - 1) * pageSize + 1) to @(Math.Min(currentPage * pageSize, userList.TotalCount)) of
+            @userList.TotalCount users
+        </div>
+    }
+    else if (!isLoading)
+    {
+        <div class="alert alert-info">
+            No users found.
+        </div>
+    }
+</div>
+
+<!-- Ban Modal -->
+@if (showBanModal)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ban User: @selectedUser?.Name</h5>
+                    <button type="button" class="btn-close" @onclick="CloseBanModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@banModel" OnValidSubmit="@HandleBan">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label for="banReason" class="form-label">Reason</label>
+                            <InputTextArea id="banReason" class="form-control" rows="3" @bind-Value="banModel.Reason" />
+                            <ValidationMessage For="@(() => banModel.Reason)" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="banDays" class="form-label">Ban Duration</label>
+                            <InputSelect id="banDays" class="form-select" @bind-Value="banModel.Days">
+                                <option value="">Permanent</option>
+                                <option value="7">7 Days</option>
+                                <option value="15">15 Days</option>
+                                <option value="30">30 Days</option>
+                            </InputSelect>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="CloseBanModal">Cancel</button>
+                            <button type="submit" class="btn btn-danger" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                Ban User
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Unban Modal -->
+@if (showUnbanModal)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Unban User: @selectedUser?.Name</h5>
+                    <button type="button" class="btn-close" @onclick="CloseUnbanModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to unban this user?</p>
+                    @if (selectedUser != null && !string.IsNullOrEmpty(selectedUser.BanReason))
+                    {
+                        <p><strong>Current ban reason:</strong> @selectedUser.BanReason</p>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseUnbanModal">Cancel</button>
+                    <button type="button" class="btn btn-success" @onclick="HandleUnban" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        Unban User
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Change Role Modal -->
+@if (showChangeRoleModal)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Role: @selectedUser?.Name</h5>
+                    <button type="button" class="btn-close" @onclick="CloseChangeRoleModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@roleModel" OnValidSubmit="@HandleChangeRole">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label for="currentRole" class="form-label">Current Role</label>
+                            <input type="text" class="form-control" id="currentRole"
+                                value="@((Role)(selectedUser?.Role ?? (byte)Role.User))" readonly />
+                        </div>
+                        <div class="mb-3">
+                            <label for="newRole" class="form-label">New Role</label>
+                            <InputSelect id="newRole" class="form-select" @bind-Value="roleModel.NewRoleString">
+                                @foreach (var role in GetAvailableRoles())
+                                {
+                                    <option value="@((int)role)">@role</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => roleModel.NewRoleString)" />
+                        </div>
+                        @if (ShouldPromptForElevationSecret())
+                        {
+                            <div class="mb-3">
+                                <label for="elevationSecret" class="form-label">Elevation Secret</label>
+                                <InputText id="elevationSecret" type="password" class="form-control"
+                                           @bind-Value="roleModel.SecretKey" />
+                                <small class="text-muted">@GetElevationSecretMessage()</small>
+                            </div>
+                        }
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="CloseChangeRoleModal">Cancel</button>
+                            <button type="submit" class="btn btn-warning" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                Change Role
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private UserListResult? userList;
+    private string searchTerm = string.Empty;
+    private int currentPage = 1;
+    private const int pageSize = 20;
+    private bool isLoading = false;
+    private bool isProcessing = false;
+    private string? errorMessage;
+    private string? successMessage;
+
+    private bool showBanModal = false;
+    private bool showUnbanModal = false;
+    private bool showChangeRoleModal = false;
+    private UserListItem? selectedUser;
+    private BanModel banModel = new();
+    private RoleModel roleModel = new();
+    private Role currentUserRole = Role.User;
+    private uint currentUserId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUserRole();
+        await LoadUsers();
+    }
+
+    private async Task LoadCurrentUserRole()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            var roleClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Role);
+            var idClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (idClaim != null && uint.TryParse(idClaim.Value, out var uid))
+            {
+                currentUserId = uid;
+            }
+            if (roleClaim != null && Enum.TryParse<Role>(roleClaim.Value, out var role))
+            {
+                currentUserRole = role;
+            }
+        }
+    }
+
+    private bool CanModifyUser(UserListItem user)
+    {
+        var userRole = (Role)user.Role;
+        return userRole < currentUserRole;
+    }
+
+    private bool RequiresElevationForTarget(UserListItem user)
+    {
+        if (user.Id == currentUserId)
+            return false;
+
+        return !CanModifyUser(user);
+    }
+
+    private bool SelectedRoleExceedsCurrent()
+    {
+        if (!int.TryParse(roleModel?.NewRoleString, out var newRoleInt) || !Enum.IsDefined(typeof(Role), newRoleInt))
+            return false;
+
+        var newRole = (Role)newRoleInt;
+        return newRole > currentUserRole;
+    }
+
+    private bool ShouldPromptForElevationSecret()
+    {
+        if (selectedUser == null)
+            return false;
+
+        return RequiresElevationForTarget(selectedUser) || SelectedRoleExceedsCurrent();
+    }
+
+    private string GetElevationSecretMessage()
+    {
+        if (selectedUser == null)
+            return string.Empty;
+
+        if (RequiresElevationForTarget(selectedUser))
+            return "Target user has an equal or higher role. Provide the elevation secret to proceed.";
+
+        if (SelectedRoleExceedsCurrent())
+            return "Assigning a role higher than your own requires the elevation secret.";
+
+        return "Provide the elevation secret to continue.";
+    }
+
+    private string GetChangeRoleButtonTitle(UserListItem user)
+    {
+        if (user.Id == currentUserId)
+            return "Modify your own role. The elevation secret is required only for promotions.";
+
+        return RequiresElevationForTarget(user)
+            ? "Requires elevation secret to modify this user."
+            : "Change user role";
+    }
+
+    private List<Role> GetAvailableRoles()
+    {
+        return Enum.GetValues<Role>().ToList();
+    }
+
+    private async Task LoadUsers()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            userList = await UserService.GetUsers(currentPage, pageSize, string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading users: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SearchUsers()
+    {
+        currentPage = 1;
+        await LoadUsers();
+    }
+
+    private async Task ClearSearch()
+    {
+        searchTerm = string.Empty;
+        currentPage = 1;
+        await LoadUsers();
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchUsers();
+        }
+    }
+
+    private async Task ChangePage(int page)
+    {
+        if (page >= 1 && page <= (userList?.TotalPages ?? 1))
+        {
+            currentPage = page;
+            await LoadUsers();
+        }
+    }
+
+    private void ShowBanModal(UserListItem user)
+    {
+        selectedUser = user;
+        banModel = new BanModel();
+        showBanModal = true;
+    }
+
+    private void CloseBanModal()
+    {
+        showBanModal = false;
+        selectedUser = null;
+        banModel = new BanModel();
+    }
+
+    private void ShowUnbanModal(UserListItem user)
+    {
+        selectedUser = user;
+        showUnbanModal = true;
+    }
+
+    private void CloseUnbanModal()
+    {
+        showUnbanModal = false;
+        selectedUser = null;
+    }
+
+    private void ShowChangeRoleModal(UserListItem user)
+    {
+        selectedUser = user;
+        roleModel = new RoleModel
+        {
+            NewRoleString = ((int)user.Role).ToString(),
+            SecretKey = string.Empty
+        };
+        showChangeRoleModal = true;
+    }
+
+    private void CloseChangeRoleModal()
+    {
+        showChangeRoleModal = false;
+        selectedUser = null;
+        roleModel = new RoleModel();
+    }
+
+    private async Task HandleChangeRole()
+    {
+        if (selectedUser == null)
+            return;
+
+        var targetRole = (Role)selectedUser.Role;
+        var isSelf = selectedUser.Id == currentUserId;
+
+        if (await UserService.IsOnline(selectedUser.Name))
+        {
+            errorMessage = "Cannot change role while the user is online. Please try again after they log out.";
+            CloseChangeRoleModal();
+            return;
+        }
+
+        if (!int.TryParse(roleModel.NewRoleString, out var newRoleInt) || !Enum.IsDefined(typeof(Role), newRoleInt))
+        {
+            errorMessage = "Invalid role selected.";
+            CloseChangeRoleModal();
+            return;
+        }
+
+        var newRole = (Role)newRoleInt;
+
+        var hasStandardPrivilege = (targetRole < currentUserRole || isSelf) && newRole <= currentUserRole;
+        if (!hasStandardPrivilege)
+        {
+            var providedSecret = roleModel.SecretKey?.Trim();
+            if (string.IsNullOrWhiteSpace(providedSecret))
+            {
+                errorMessage = "Elevation secret is required for this operation.";
+                return;
+            }
+
+            if (!SecurityService.IsValidElevationSecret(providedSecret))
+            {
+                errorMessage = "Elevation secret is invalid.";
+                return;
+            }
+        }
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var character = await DbContext.Character.Get(selectedUser.Id);
+            if (character == null)
+            {
+                errorMessage = "Character not found.";
+                CloseChangeRoleModal();
+                return;
+            }
+
+            character.Role = newRole;
+            character.UpdatedDate = DateTime.Now;
+            DbContext.Character.Set(character);
+            await DbContext.SaveChangesAsync();
+
+            if (isSelf)
+            {
+                if (AuthenticationStateProvider is CustomAuthenticationStateProvider customProvider)
+                {
+                    var authData = new AuthData
+                    {
+                        UserId = currentUserId,
+                        UserName = character.Name,
+                        Role = newRole.ToString()
+                    };
+                    await customProvider.MarkUserAsAuthenticated(authData);
+                }
+                currentUserRole = newRole;
+            }
+
+            successMessage = $"User {selectedUser.Name}'s role has been changed to {newRole} successfully.";
+            CloseChangeRoleModal();
+            await LoadUsers();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error changing role: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task HandleBan()
+    {
+        if (selectedUser == null)
+            return;
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            uint? days = null;
+            if (!string.IsNullOrWhiteSpace(banModel.Days) && uint.TryParse(banModel.Days, out var parsedDays))
+            {
+                days = parsedDays;
+            }
+
+            var result = await BanService.BanUser(selectedUser.Name, banModel.Reason, days);
+            await DbContext.SaveChangesAsync();
+
+            // Publish notification via RabbitMQ
+            var response = new Response.Ban
+            {
+                Name = selectedUser.Name,
+                Reason = banModel.Reason,
+                ExpireDate = result.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
+                Error = (uint)result.Error
+            };
+            RabbitMqService.Publish(response, "amq.direct", "fb.ban");
+
+            successMessage = $"User {selectedUser.Name} has been banned successfully.";
+            CloseBanModal();
+            await LoadUsers();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error banning user: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task HandleUnban()
+    {
+        if (selectedUser == null)
+            return;
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var result = await BanService.UnbanUser(selectedUser.Name);
+            await DbContext.SaveChangesAsync();
+
+            // Publish notification via RabbitMQ
+            var response = new Response.Unban
+            {
+                Name = selectedUser.Name,
+                Error = (uint)result.Error
+            };
+            RabbitMqService.Publish(response, "amq.direct", "fb.unban");
+
+            successMessage = $"User {selectedUser.Name} has been unbanned successfully.";
+            CloseUnbanModal();
+            await LoadUsers();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error unbanning user: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private class BanModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Ban reason is required")]
+        public string Reason { get; set; } = string.Empty;
+
+        public string? Days { get; set; }
+    }
+
+    private class RoleModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Role is required")]
+        public string NewRoleString { get; set; } = "0";
+
+        public string SecretKey { get; set; } = string.Empty;
+    }
+}

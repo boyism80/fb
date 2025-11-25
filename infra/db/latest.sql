@@ -54,7 +54,7 @@ DROP TABLE IF EXISTS `bulletin`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `bulletin` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `id` int unsigned NOT NULL,
   `section` int unsigned NOT NULL,
   `user` int unsigned NOT NULL,
   `title` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
@@ -62,10 +62,23 @@ CREATE TABLE `bulletin` (
   `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `fk.bulletin.owner_idx` (`user`),
-  CONSTRAINT `fk.bulletin.user` FOREIGN KEY (`user`) REFERENCES `name` (`id`)
+  PRIMARY KEY (`id`,`section`),
+  KEY `fk.bulletin.owner_idx` (`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `bulletin_sequence`
+--
+
+DROP TABLE IF EXISTS `bulletin_sequence`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `bulletin_sequence` (
+  `section` int unsigned NOT NULL,
+  `id` int unsigned NOT NULL,
+  PRIMARY KEY (`section`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -189,9 +202,9 @@ DROP TABLE IF EXISTS `mail`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mail` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `id` int unsigned NOT NULL,
   `user` int unsigned NOT NULL,
-  `sender` int NOT NULL,
+  `sender` int unsigned NOT NULL,
   `title` varchar(64) NOT NULL,
   `contents` varchar(256) NOT NULL,
   `read` tinyint NOT NULL DEFAULT '0',
@@ -231,6 +244,26 @@ CREATE TABLE `name` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ban`
+--
+
+DROP TABLE IF EXISTS `ban`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ban` (
+  `user` int unsigned NOT NULL,
+  `reason` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `expire_date` datetime DEFAULT NULL,
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user`),
+  KEY `fk.ban.user_idx` (`user`),
+  CONSTRAINT `fk.ban.user` FOREIGN KEY (`user`) REFERENCES `name` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -305,6 +338,45 @@ CREATE TABLE `spell` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `system_mail`
+--
+
+DROP TABLE IF EXISTS `system_mail`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `system_mail` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `sender` int unsigned NOT NULL,
+  `title` varchar(64) NOT NULL,
+  `contents` varchar(256) NOT NULL,
+  `expire_date` datetime DEFAULT NULL,
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=euckr;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `system_mail_user`
+--
+
+DROP TABLE IF EXISTS `system_mail_user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `system_mail_user` (
+  `mail_id` int unsigned NOT NULL,
+  `user` int unsigned NOT NULL,
+  `read` tinyint NOT NULL DEFAULT '0',
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`mail_id`,`user`),
+  KEY `IX_USER` (`user`),
+  KEY `IX_MAIL_ID` (`mail_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `user`
 --
 
@@ -375,8 +447,35 @@ CREATE TABLE `user` (
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BULLETIN_ADD`(section INT, uid INT, title NVARCHAR(64), contents NVARCHAR(256))
 BEGIN
-	INSERT INTO bulletin (`section`, `user`, `title`, `contents`)
-    VALUES (section, uid, title, contents);
+    DECLARE new_id INT UNSIGNED;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 0 AS RESULT;
+    END;
+
+    START TRANSACTION;
+
+    SELECT id INTO new_id 
+    FROM bulletin_sequence 
+    WHERE bulletin_sequence.`section` = section FOR UPDATE;
+
+    IF new_id IS NULL THEN
+        SET new_id = 1;
+        INSERT INTO bulletin_sequence (`section`, `id`) VALUES (section, new_id);
+    ELSE
+        SET new_id = new_id + 1;
+        UPDATE bulletin_sequence SET id = new_id WHERE bulletin_sequence.`section` = section;
+    END IF;
+
+    INSERT INTO bulletin (`id`, `section`, `user`, `title`, `contents`)
+    VALUES (new_id, section, uid, title, contents);
+
+    COMMIT;
+
+    SELECT 1 AS RESULT;
+    SELECT * FROM bulletin WHERE bulletin.`id` = new_id AND bulletin.`section` = section;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -393,27 +492,30 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BULLETIN_DELETE`(IN id INT, IN user INT)
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BULLETIN_DELETE`(IN id INT, IN user INT, IN ignore_owner TINYINT)
 BEGIN
     DECLARE _deleted TINYINT;
+    DECLARE _owner INT;
 
-    SELECT `deleted`
-    INTO _deleted
+    SELECT bulletin.deleted, bulletin.user
+    INTO _deleted, _owner
     FROM bulletin
-    WHERE `bulletin`.`id` = id AND `bulletin`.`user` = user
+    WHERE bulletin.id = id
     LIMIT 1;
 
     IF _deleted IS NULL THEN
         SELECT -1 AS result;
     ELSEIF _deleted = 1 THEN
         SELECT -2 AS result;
+    ELSEIF _owner != user AND ignore_owner = 0 THEN
+        SELECT -3 AS result;
     ELSE
-        UPDATE bulletin SET deleted = 1 WHERE id = id AND user = user;
-        IF ROW_COUNT() > 0 THEN
-            SELECT 1 AS result;
+        IF ignore_owner = 1 THEN
+            UPDATE bulletin SET deleted = 1, updated_date = NOW() WHERE bulletin.id = id;
         ELSE
-            SELECT -4 AS result;
+            UPDATE bulletin SET deleted = 1, updated_date = NOW() WHERE bulletin.id = id AND bulletin.user = user;
         END IF;
+        SELECT 1 AS result;
     END IF;
 END ;;
 DELIMITER ;
@@ -434,13 +536,11 @@ DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BULLETIN_GET`(IN section INT, IN article INT)
 BEGIN
     SELECT A.`id`,
-           N.`id` AS `user`,
-           N.`name` AS `user_name`,
+           A.`user`,
            A.`title`,
            A.`contents`,
            A.`created_date` 
     FROM `bulletin` AS A
-    LEFT JOIN `name` AS N ON A.`user` = N.id
     WHERE A.`id` = article AND A.`section` = section AND `deleted` = 0;
     
     SELECT EXISTS(SELECT * FROM `bulletin`
@@ -468,13 +568,10 @@ CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BULLETIN_GET_LIST`(IN section INT, IN pos
 BEGIN
     SELECT A.`id`,
            A.`section`,
-           N.`id` AS `user`,
-           N.`name` AS `user_name`,
+           A.`user`,
            A.`title`,
            A.`created_date`
     FROM bulletin AS A
-    LEFT JOIN `name` AS N
-    ON A.user = N.id
     WHERE A.`section` = section AND A.`deleted` = 0 AND position >= A.`id`
     ORDER BY A.`id` DESC
     LIMIT 0, 20;
@@ -522,8 +619,6 @@ BEGIN
            mail.`read`,
            mail.`created_date`
     FROM mail
-    LEFT JOIN `name` AS N
-    ON mail.sender = N.id
     WHERE mail.`user` = user AND mail.`deleted` = 0 AND position >= mail.`id`
     ORDER BY mail.`id` DESC
     LIMIT 0, count;
@@ -556,7 +651,7 @@ BEGIN
 	SELECT * FROM `mail`
     WHERE mail.`id` = id AND
           mail.`user` = user AND
-          `deleted` = 0;
+          mail.`deleted` = 0;
           
 	COMMIT;
 END ;;
@@ -594,14 +689,14 @@ BEGIN
 
     SELECT id INTO new_id 
     FROM mail_sequence 
-    WHERE user = user FOR UPDATE;
+    WHERE mail_sequence.`user` = user FOR UPDATE;
 
     IF new_id IS NULL THEN
         SET new_id = 1;
         INSERT INTO mail_sequence (`user`, `id`) VALUES (user, new_id);
     ELSE
         SET new_id = new_id + 1;
-        UPDATE mail_sequence SET id = new_id WHERE user = user;
+        UPDATE mail_sequence SET id = new_id WHERE mail_sequence.`user` = user;
     END IF;
 
     INSERT INTO mail (`id`, `user`, `sender`, `title`, `contents`)
@@ -686,4 +781,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-06 11:41:39
+-- Dump completed on 2025-11-23 17:53:02

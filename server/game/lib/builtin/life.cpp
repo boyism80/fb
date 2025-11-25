@@ -456,7 +456,7 @@ int builtin::life::builtin_cc(lua_State* L)
     {
         auto weak = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto cc_value = static_cast<uint32_t>(obj->crowd_control());
+            auto cc_value = static_cast<uint32_t>(obj->cc);
 
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(cc_value);
@@ -469,7 +469,7 @@ int builtin::life::builtin_cc(lua_State* L)
         auto cc   = static_cast<CROWD_CONTROL>(lua->tointeger(2));
         auto weak = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            obj->crowd_control(cc);
+            obj->cc.set(cc);
 
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
@@ -494,7 +494,7 @@ int builtin::life::builtin_add_cc(lua_State* L)
     {
         auto weak = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto cc_value = static_cast<uint32_t>(obj->crowd_control());
+            auto cc_value = static_cast<uint32_t>(obj->cc);
 
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushinteger(cc_value);
@@ -507,7 +507,7 @@ int builtin::life::builtin_add_cc(lua_State* L)
         auto cc   = static_cast<CROWD_CONTROL>(lua->tointeger(2));
         auto weak = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            obj->add_cc(cc);
+            obj->cc.add(cc);
 
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
@@ -531,7 +531,7 @@ int builtin::life::builtin_remove_cc(lua_State* L)
     auto cc   = static_cast<CROWD_CONTROL>(lua->tointeger(2));
     auto weak = obj->weak_from_this();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        obj->remove_cc(cc);
+        obj->cc.remove(cc);
         return lua->ensure_resume(*server, weak, [=]() {
             return 0;
         });

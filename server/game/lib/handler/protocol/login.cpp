@@ -1,5 +1,6 @@
 #include <fb/game/handler/protocol/login.h>
 #include <fb/game/server.h>
+#include <fb/game/handler/amqp/ban.h>
 
 using namespace fb::game::handler::protocol;
 
@@ -16,6 +17,7 @@ login::init_ch(const internal::Character& response, character& ch, std::optional
     ch.name(response.name);
     ch.pw(response.pw);
     ch.birthday(response.birth);
+    ch.created_date(fb::model::datetime(response.created_date));
     ch.updated_date(fb::model::datetime(response.updated_date));
     ch.role(static_cast<ROLE>(response.role));
     ch.cls(static_cast<CLASS>(response.class_type));
@@ -160,6 +162,18 @@ void login::init_achievements(const std::vector<fb::protocol::internal::Achievem
     }
 }
 
+void login::init_system_mail_users(const std::vector<fb::protocol::internal::SystemMailUser>& response, fb::game::character& ch)
+{
+    for (auto& smu : response)
+    {
+        ch.mail_box.add_system_mail_user(smu.mail_id, smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value()) : std::nullopt);
+        if (smu.read)
+        {
+            ch.mail_box.update_system_mail_user_read(smu.mail_id, true);
+        }
+    }
+}
+
 std::string login::elapsed_message(const std::string& dt)
 {
     auto elapsed = fb::model::datetime() - fb::model::datetime(dt);
@@ -199,10 +213,23 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     co_await this->server.sleep(std::chrono::seconds(delay));
 
     auto&& login_resp = co_await this->server.http.post("internal", "/in-game/login", Login{request.id, request.name, fb::config<uint8_t>("id")});
-    if (login_resp.error != (uint32_t)ERROR_CODE::NONE)
+    if (weak.expired())
         co_return false;
 
-    auto&& response = co_await this->server.http.get<internal_resp::Init>("internal", std::format("/user/init/{}", request.id));
+    co_await this->server.threads.switching(weak);
+    switch (static_cast<ERROR_CODE>(login_resp.error))
+    {
+    case ERROR_CODE::NONE:
+        break;
+    case ERROR_CODE::BANNED:
+        ch->message(fb::game::handler::amqp::ban::build_ban_message(login_resp.ban_reason, login_resp.ban_expire_date), MESSAGE_TYPE::NOTIFY);
+        co_return false;
+    default:
+        fb::logger::fatal("Unknown error: {}", login_resp.error);
+        co_return false;
+    }
+
+    auto&& response = co_await this->server.http.get<internal_resp::Init>("internal", std::format("/in-game/init/{}", request.id));
     auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
     if (weak.expired())
         co_return false;
@@ -214,12 +241,13 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
         co_return false;
     co_await this->server.threads.switching(weak);
 
-    ch->unread_mail(response.mail);
+    ch->mail_box.unread_count(response.mail);
 
     this->init_items(response.items, *ch);
     this->init_spells(response.spells, *ch);
     this->init_achievements(response.achievements, *ch);
     this->init_quests(response.quests, *ch);
+    this->init_system_mail_users(response.received_system_mails, *ch);
     this->init_option(response.option, *ch);
     ch->init();
     ch->update_time(this->server.time().hours());
@@ -241,8 +269,9 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
         }
     }
 
-    ch->update(STATE_LEVEL::LEVEL_MAX);
+    ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();
     this->server.characters.insert(ch->shared_from_this_as<character>());
+    co_await ch->process_system_mails();
     co_return true;
 }

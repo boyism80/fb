@@ -1,4 +1,5 @@
 #include <fb/game/server.h>
+#include <fb/game/handler/amqp/ban.h>
 
 using namespace fb::game;
 
@@ -112,7 +113,7 @@ void listener_impl::on_level_up(character& me)
     std::ignore = this->server.send(me, fb_resp::effect(me, 0x02), scope::PIVOT);
 }
 
-void listener_impl::on_update(character& me, STATE_LEVEL level)
+void listener_impl::on_update(character& me, UPDATE_STATE_LEVEL level)
 {
     me.send(fb_resp::update_internal(me, level));
 }
@@ -136,6 +137,11 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
 
         case ERROR_CODE::SERVER_NOT_READY:
             throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+
+        case ERROR_CODE::BANNED:
+        {
+            throw std::runtime_error(fb::game::handler::amqp::ban::build_ban_message(response.ban_reason, response.ban_expire_date));
+        }
 
         default:
             throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), response.error));
@@ -248,19 +254,25 @@ void listener_impl::on_show_bulletin(character& ch, const bulletin::article& art
     ch.send(fb_resp::bulletin_article(article, flag));
 }
 
-void listener_impl::on_show_mail_box(character& ch, const std::vector<MailSummary>& mails, MAIL_BUTTON_ENABLE flag)
+void listener_impl::on_show_mail_box(character& ch, const std::vector<mail_box::summary>& mails, MAIL_BUTTON_ENABLE flag)
 {
-    ch.send(fb_resp::bulletin_mails(mails, flag));
+    auto dto = std::vector<MailSummary>();
+    for (auto& summary : mails)
+    {
+        dto.push_back(MailSummary{summary.id, summary.user, summary.sender, summary.read, summary.title, summary.created_date});
+    }
+    ch.send(fb_resp::bulletin_mails(dto, flag));
 }
 
-void listener_impl::on_show_mail_box(character& ch, const Mail& mail, MAIL_BUTTON_ENABLE flag)
+void listener_impl::on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag)
 {
-    ch.send(fb_resp::bulletin_mail(mail, flag));
+    auto dto = Mail{mail.id, mail.user, mail.sender, mail.title, mail.contents, mail.read, mail.created_date};
+    ch.send(fb_resp::bulletin_mail(dto, flag));
 }
 
-void listener_impl::on_show_bulletin_message(character& ch, const std::string& message, bool success, bool mail)
+void listener_impl::on_show_bulletin_message(character& ch, const std::string& message, bool success, bool unknown)
 {
-    ch.send(fb_resp::bulletin_message(message, success, mail));
+    ch.send(fb_resp::bulletin_message(message, success, unknown));
 }
 
 void listener_impl::on_show_world_map(character& ch, uint32_t id, uint16_t index)

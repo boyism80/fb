@@ -13,8 +13,10 @@
 #include <fb/game/trade.h>
 #include <fb/game/achievement.h>
 #include <fb/game/bulletin.h>
+#include <fb/game/mail_box.h>
 #include <fb/game/stat.h>
 #include <fb/game/quest.h>
+#include <set>
 
 namespace fb::game {
 
@@ -24,6 +26,7 @@ class character : public life
 {
     friend class group;
     friend class character_stat;
+    friend class server;
 
 public:
     using object::map;
@@ -49,13 +52,12 @@ private:
     ROLE                    _role;
     std::string             _pw;
     std::optional<uint32_t> _birthday;
+    fb::model::datetime     _created_date;
     fb::model::datetime     _updated_date;
-    fb::model::datetime     _last_spell_cast;
     uint16_t                _look              = 0;
     uint8_t                 _color             = 0;
     std::optional<uint8_t>  _armor_color       = 0;
     uint32_t                _experience        = 0;
-    uint8_t                 _regenerative      = 0;
     NATION                  _nation            = NATION::GOGURYEO;
     CREATURE                _creature          = CREATURE::DRAGON;
     SEX                     _sex               = SEX::MAN;
@@ -68,24 +70,24 @@ private:
     std::string             _title             = "";
     std::optional<uint32_t> _group_id          = std::nullopt;
     std::optional<uint32_t> _clan_id           = std::nullopt;
-    uint16_t                _unread_mail       = 0;
     uint16_t                _weapon_damage     = 0;
     bool                    _detect            = false;
     mob_vector_t            _spawned_mobs      = {};
     bool                    _super_hide        = false;
-    uint8_t                 _spell_cast_count  = 0;
     bool                    _options[0x0B + 1] = {
         1,
     };
 
 public:
-    fb::game::trade   trade;
-    fb::game::items   items;
-    fb::game::quests  quests;
-    fb::lua::context* dialog = nullptr;
-    achievement_map_t achievements; // order required
-    listener_t&       listener;
-    character_stat    stat;
+    fb::game::trade    trade;
+    fb::game::items    items;
+    fb::game::quests   quests;
+    fb::game::bulletin bulletin = fb::game::bulletin(*this);
+    fb::game::mail_box mail_box = fb::game::mail_box(*this);
+    fb::lua::context*  dialog   = nullptr;
+    achievement_map_t  achievements;
+    listener_t&        listener;
+    character_stat     stat;
 
 private:
     using object::based;
@@ -114,7 +116,6 @@ public:
     void                                               id(uint32_t id);
     ROLE                                               role() const;
     void                                               role(ROLE value);
-    bool                                               transferring() const;
     async::task<void>                                  attack(DURATION duration = DURATION::ATTACK) override final;
     uint32_t                                           auto_attack_damage(MOB_SIZE size) const override final;
     void                                               action(ACTION action, DURATION duration, uint8_t sound = 0x00) override final;
@@ -123,6 +124,8 @@ public:
     void                                               pw(const std::string& value);
     const std::optional<uint32_t>&                     birthday() const;
     void                                               birthday(const std::optional<uint32_t>& value);
+    const fb::model::datetime&                         created_date() const;
+    void                                               created_date(const fb::model::datetime& value);
     const fb::model::datetime&                         updated_date() const;
     void                                               updated_date(const fb::model::datetime& value);
     uint16_t                                           look() const override final;
@@ -194,21 +197,14 @@ public:
     bool                                               alive() const;
     bool                                               condition(const std::vector<fb::model::dsl>& conditions) const override final;
     void                                               message(const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
+    async::task<void>                                  process_system_mails();
     fb::thread*                                        thread() const override final;
     void                                               thread(fb::thread* value);
     void                                               assert_thread() const override final;
-    void                                               update(STATE_LEVEL value = STATE_LEVEL::LEVEL_MIN) override final;
-    uint16_t                                           unread_mail() const;
-    void                                               unread_mail(uint16_t value);
+    void                                               update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) override final;
     void                                               browse_ch(const character& ch);
     void                                               item_tooltip(const item& iteem, uint16_t position);
     void                                               show_user_list();
-    void                                               show_bulletin();
-    void                                               show_bulletin(const fb::model::bulletin& section, const std::list<bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag);
-    void                                               show_bulletin(const bulletin::article& article, BULLETIN_BUTTON_ENABLE flag);
-    void                                               show_mail_box(const std::vector<fb::protocol::internal::MailSummary>& mails, MAIL_BUTTON_ENABLE flag);
-    void                                               show_mail_box(const fb::protocol::internal::Mail& mail, MAIL_BUTTON_ENABLE flag);
-    void                                               show_bulletin_message(const std::string& message, bool success, bool mail);
     void                                               show_world_map(uint32_t id, uint16_t index);
     void                                               timer(uint32_t time, TIMER_TYPE type);
     void                                               weather(WEATHER_TYPE weather);
@@ -254,9 +250,9 @@ public:
     void            insert(character_ptr_t ch);
     void            remove(character_ptr_t ch);
     character_ptr_t find(uint32_t uid) const;
+    character_ptr_t find(const std::string& name) const;
     bool            contains(const std::string& name) const;
     bool            contains(uint32_t uid) const;
-    character_ptr_t find(const std::string& name) const;
     async::task<void> foreach (character_function_t&& fn, character_predicate_t predicate = nullptr);
     async::task<void> foreach (character_function_t&& fn, const std::vector<character_ptr_t>& characters);
     async::task<void> foreach_async(character_async_function_t&& fn, character_predicate_t predict = nullptr);
@@ -267,8 +263,8 @@ public:
     async::task<void> invoke_async(const std::string& name, character_async_function_t&& fn, character_function_t_miss miss = nullptr);
 
 public:
-    character_ptr_t& operator[] (uint32_t uid);
-    character_ptr_t& operator[] (const std::string& name);
+    character_ptr_t operator[] (uint32_t uid);
+    character_ptr_t operator[] (const std::string& name);
 };
 
 struct character::listener_t : public virtual life::listener_t, public virtual dialog::listener_t, public virtual trade::listener_t, public virtual equipment::listener_t
@@ -289,8 +285,8 @@ public:
     virtual void              on_show_bulletin(character& ch)                                                                                                                = 0;
     virtual void              on_show_bulletin(character& ch, const fb::model::bulletin& section, const std::list<bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag) = 0;
     virtual void              on_show_bulletin(character& ch, const bulletin::article& value, BULLETIN_BUTTON_ENABLE flag)                                                   = 0;
-    virtual void              on_show_mail_box(character& ch, const std::vector<fb::protocol::internal::MailSummary>& mails, MAIL_BUTTON_ENABLE flag)                        = 0;
-    virtual void              on_show_mail_box(character& ch, const fb::protocol::internal::Mail& mail, MAIL_BUTTON_ENABLE flag)                                             = 0;
+    virtual void              on_show_mail_box(character& ch, const std::vector<mail_box::summary>& mails, MAIL_BUTTON_ENABLE flag)                                          = 0;
+    virtual void              on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag)                                                           = 0;
     virtual void              on_show_bulletin_message(character& ch, const std::string& message, bool success, bool mail)                                                   = 0;
     virtual void              on_show_world_map(character& ch, uint32_t id, uint16_t index)                                                                                  = 0;
     virtual void              on_timer(character& ch, uint32_t time, TIMER_TYPE type)                                                                                        = 0;
@@ -300,7 +296,7 @@ public:
     virtual void              on_character_init(character& ch)                                                                                                               = 0;
     virtual void              on_update_position(character& ch)                                                                                                              = 0;
     virtual void              on_level_up(character& me)                                                                                                                     = 0;
-    virtual void              on_update(character& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN)                                                                           = 0;
+    virtual void              on_update(character& me, UPDATE_STATE_LEVEL level = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL)                         = 0;
     virtual async::task<bool> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position)                                                           = 0;
 };
 

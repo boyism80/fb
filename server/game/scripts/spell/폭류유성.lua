@@ -6,7 +6,7 @@ function ON_CAST_3046(me, spell)
     local sound = 500
     local effect = 161
 
-    if not spell_damage_area(me, me:nears(OBJECT_TYPE_LIFE, 6, 5), spell, {damage=damage, hp=hp, mp=mp, sound=sound, effect={me=effect}}) then
+    if not spell_damage_area(me, me:nears(OBJECT_TYPE.LIFE, 6, 5), spell, {damage=damage, hp=hp, mp=mp, sound=sound, effect={me=effect}}) then
     	return
     end
     

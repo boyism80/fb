@@ -1,0 +1,105 @@
+@page "/cache"
+@using Http.Service
+@using Microsoft.AspNetCore.Authorization
+@inject CacheService CacheService
+@attribute [AuthorizeRole(Role.Admin)]
+
+<PageTitle>Cache Management - Admin Tool</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h2>Cache Management</h2>
+            <p class="text-muted">Clear Redis cache data across all shards</p>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @successMessage
+            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Clear All Cache</h5>
+        </div>
+        <div class="card-body">
+            <p>
+                This operation will clear all cache data from Redis across all shards, including:
+            </p>
+            <ul>
+                <li>Cache entries (<code>cache:*</code>)</li>
+                <li>Reference counts</li>
+                <li>Buffer keys</li>
+            </ul>
+            <p class="text-warning">
+                <strong>Warning:</strong> This operation cannot be undone. All cached data will be removed.
+            </p>
+            <button class="btn btn-danger" @onclick="HandleClearCache" disabled="@isProcessing">
+                @if (isProcessing)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                }
+                Clear All Cache
+            </button>
+        </div>
+    </div>
+
+    @if (lastClearResult.HasValue)
+    {
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Last Clear Result</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">
+                    <strong>Keys deleted:</strong> @lastClearResult.Value.ToString("N0")
+                </p>
+                <small class="text-muted">Cleared at: @lastClearTime.ToString("yyyy-MM-dd HH:mm:ss")</small>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool isProcessing = false;
+    private string? errorMessage;
+    private string? successMessage;
+    private int? lastClearResult;
+    private DateTime lastClearTime;
+
+    private async Task HandleClearCache()
+    {
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var count = await CacheService.ClearCache();
+            lastClearResult = count;
+            lastClearTime = DateTime.Now;
+            successMessage = $"Cache cleared successfully. {count:N0} keys deleted.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error clearing cache: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}
+

@@ -3,7 +3,7 @@ function ON_CAST_4012(me, you, spell)
     local mp = 500
     local sound = 85
     local effect = 10
-    local error = me:assert(STATE_GHOST, STATE_RIDING)
+    local error = me:assert(STATE.GHOST, STATE.RIDING)
     if error ~= nil then
         return me:message(error)
     end
@@ -22,8 +22,8 @@ function ON_CAST_4012(me, you, spell)
     you:effect(effect)
     you:sound(sound)
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
-    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
-    if me ~= you and you:is(OBJECT_TYPE_CHARACTER) then
+    me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
+    if me ~= you and you:is(OBJECT_TYPE.CHARACTER) then
         you:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
     end
     for _, buff in pairs(you:buffs()) do

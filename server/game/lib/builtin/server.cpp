@@ -459,17 +459,7 @@ int builtin::server::builtin_save(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    for (int i = 0; i < server->threads.size(); i++)
-    {
-        std::ignore = server->threads[i]->dispatch([server](auto& thread) -> async::task<void> {
-            auto params = thread.template data<thread_params>();
-            for (auto& [id, character] : params->characters)
-            {
-                std::ignore = server->save(*character);
-            }
-            co_return;
-        });
-    }
+    server->save();
     return 0;
 }
 
@@ -649,4 +639,101 @@ int builtin::server::builtin_assert_alive(lua_State* L)
 
     lua->pushboolean(obj != nullptr);
     return 1;
+}
+
+int builtin::server::builtin_ban(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+    {
+        lua->pushboolean(false);
+        lua->pushstring("Invalid character context");
+        return 2;
+    }
+
+    auto name   = lua->tostring(2);
+    auto reason = lua->tostring(3);
+    auto days   = std::optional<uint32_t>{std::nullopt};
+    if (argc >= 4 && lua->is_nil(4) == false && lua->is_number(4))
+        days = static_cast<uint32_t>(lua->tointeger(4));
+
+    static auto fn =
+        [](fb::game::server* server, fb::lua::context* lua, const std::string& name, const std::string& reason, const std::optional<uint32_t>& days) -> async::task<void> {
+        auto   success = false;
+        auto   error   = std::string{};
+        auto&& resp    = co_await server->ban(name, reason, days);
+        if (resp.error == 0)
+        {
+            success = true;
+        }
+        else
+        {
+            error = std::format("Ban failed with error code: {}", resp.error);
+        }
+
+        co_await lua->switching();
+        lua->pushboolean(success);
+        if (!success)
+            lua->pushstring(error);
+        lua->resume(success ? 1 : 2);
+    };
+
+    async::awaitable_then(fn(server, lua, name, reason, days), [lua](auto result) {
+        result();
+    });
+
+    return lua->yield(1);
+}
+
+int builtin::server::builtin_unban(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+    {
+        lua->pushboolean(false);
+        lua->pushstring("Invalid character context");
+        return 2;
+    }
+
+    auto name = lua->tostring(2);
+
+    static auto fn = [](fb::game::server* server, fb::lua::context* lua, const std::string& name) -> async::task<void> {
+        auto   success = false;
+        auto   error   = std::string{};
+        auto&& resp    = co_await server->unban(name);
+        if (resp.error == 0)
+        {
+            success = true;
+        }
+        else
+        {
+            error = std::format("Unban failed with error code: {}", resp.error);
+        }
+
+        co_await lua->switching();
+        lua->pushboolean(success);
+        if (!success)
+            lua->pushstring(error);
+        lua->resume(success ? 1 : 2);
+    };
+
+    async::awaitable_then(fn(server, lua, name), [lua](auto result) {
+        result();
+    });
+
+    return lua->yield(1);
 }

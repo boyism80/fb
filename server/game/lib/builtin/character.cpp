@@ -24,6 +24,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"promotion",           builtin::character::builtin_promotion},
 {"level",               builtin::character::builtin_level},
 {"assert",              builtin::character::builtin_assert},
+{"role",                builtin::character::builtin_role},
 {"deposited_money",     builtin::character::builtin_deposited_money},
 {"stored_item",         builtin::character::builtin_stored_item},
 {"store_item",          builtin::character::builtin_store_item},
@@ -76,6 +77,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"start_quest",         builtin::character::builtin_start_quest},
 {"remove_quest",        builtin::character::builtin_remove_quest},
 {"can_start_quest",     builtin::character::builtin_can_start_quest},
+{"send_system_mail",    builtin::character::builtin_send_system_mail},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::character::builtin_look(lua_State* L)
@@ -308,8 +310,8 @@ int builtin::character::builtin_item(lua_State* L)
     if (lua->is_userdata<fb::game::object>(2))
     {
         auto obj = lua->touserdata<fb::game::object>(2);
-        model    = &obj->based<fb::model::object>();
         oid      = obj->oid();
+        model    = &obj->based();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -2820,8 +2822,9 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     auto model = static_cast<const fb::model::object*>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
-        obj = lua->touserdata<fb::game::object>(2);
-        oid = obj->oid();
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -2870,8 +2873,9 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     auto portrait = static_cast<fb::game::character_portrait*>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
-        obj = lua->touserdata<fb::game::object>(2);
-        oid = obj->oid();
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -2971,8 +2975,9 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
     auto obj   = std::shared_ptr<fb::game::object>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
-        obj = lua->touserdata<fb::game::object>(2);
-        oid = obj->oid();
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -3037,8 +3042,9 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
     auto obj   = std::shared_ptr<fb::game::object>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
-        obj = lua->touserdata<fb::game::object>(2);
-        oid = obj->oid();
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -3092,8 +3098,9 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
     auto obj   = std::shared_ptr<fb::game::object>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
-        obj = lua->touserdata<fb::game::object>(2);
-        oid = obj->oid();
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -3172,12 +3179,11 @@ int fb::game::builtin::character::builtin_quest(lua_State* L)
         return 1;
     }
 
-    auto id    = lua->tointeger(2);
-    auto quest = ch->quests[id];
-    if (quest == nullptr)
+    auto id = lua->tointeger(2);
+    if (ch->quests.contains(id) == false)
         lua->pushnil();
     else
-        lua->pushobject(quest);
+        lua->pushobject(ch->quests[id]);
 
     return 1;
 }
@@ -3206,11 +3212,10 @@ int fb::game::builtin::character::builtin_start_quest(lua_State* L)
         return 1;
     }
 
-    auto quest = ch->quests[id];
-    if (quest == nullptr)
+    if (ch->quests.contains(id) == false)
         lua->pushnil();
     else
-        lua->pushobject(quest);
+        lua->pushobject(ch->quests[id]);
 
     return 1;
 }
@@ -3278,4 +3283,54 @@ int fb::game::builtin::character::builtin_can_start_quest(lua_State* L)
     auto& attr = server->model.quest_attribute[id];
     lua->pushboolean(ch->condition(attr.condition));
     return 1;
+}
+
+int builtin::character::builtin_send_system_mail(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto title = lua->tostring(2);
+    if (title.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto contents = lua->tostring(3);
+    if (contents.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto expire_date = std::optional<std::string>{std::nullopt};
+    if (argc >= 3 && lua->is_nil(3) == false && lua->is_string(3))
+        expire_date = lua->tostring(3);
+
+    static auto fn =
+        [](fb::game::server* server, fb::lua::context* lua, uint32_t sender, const std::string& title, const std::string& contents, const std::optional<std::string>& expire_date)
+        -> async::task<void> {
+        auto   success = false;
+        auto&& resp =
+            co_await server->http.post("internal", "/mail/system/write", WriteSystemMail{sender, title, contents, expire_date.has_value() ? expire_date.value() : std::string{}});
+        success = resp.error == 0;
+
+        co_await lua->switching();
+        lua->pushboolean(success);
+        lua->resume(1);
+    };
+
+    async::awaitable_then(fn(server, lua, ch->id(), title, contents, expire_date), [lua](auto result) {
+        result();
+    });
+
+    return lua->yield(1);
 }

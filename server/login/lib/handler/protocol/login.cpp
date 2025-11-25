@@ -1,4 +1,5 @@
 #include <fb/login/handler/protocol/login.h>
+#include <format>
 
 using namespace fb::login::handler::protocol;
 
@@ -19,15 +20,14 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
     {
         this->server.assert_account(name, pw);
 
-        auto&& response =
-            co_await this->server.http.get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
+        auto&& response = co_await this->server.http.get<internal::response::GetUid>("internal", std::format("/account/uid/{}", name));
         co_await this->server.threads.switching(weak);
 
         if (response.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
         auto   uid       = response.uid;
-        auto&& response2 = co_await this->server.http.post("internal", "/user/authenticate", Authenticate{uid, pw});
+        auto&& response2 = co_await this->server.http.post("internal", "/account/authenticate", Authenticate{uid, pw});
         co_await this->server.threads.switching(weak);
 
         switch (response2.error_code)
@@ -39,11 +39,9 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_PASSWORD));
         }
 
-        auto   map       = response2.map;
-        auto&& response3 = co_await this->server.http.post(
-            "internal",
-            "/in-game/transfer",
-            Transfer{fb::protocol::internal::Service ::Game, this->server.model.map[map].host, name, true});
+        auto   map = response2.map;
+        auto&& response3 =
+            co_await this->server.http.post("internal", "/in-game/transfer", Transfer{fb::protocol::internal::Service ::Game, this->server.model.map[map].host, name, true});
         co_await this->server.threads.switching(weak);
 
         switch (static_cast<ERROR_CODE>(response3.error))
@@ -56,6 +54,9 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
 
         case ERROR_CODE::ALREADY_LOGIN:
             throw id_exception("이미 접속중입니다.");
+
+        case ERROR_CODE::BANNED:
+            throw id_exception(build_ban_message(response3.ban_reason, response3.ban_expire_date));
 
         default:
             throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), response3.error));
@@ -87,4 +88,22 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
     }
 
     co_return true;
+}
+
+std::string login::build_ban_message(const std::string& reason, const std::optional<std::string>& expire_date)
+{
+    auto ban_message = std::string("계정이 정지되었습니다.");
+    if (!reason.empty())
+    {
+        ban_message += std::format("\n사유: {}", reason);
+    }
+    if (expire_date.has_value())
+    {
+        ban_message += std::format("\n만료일: {}", expire_date.value());
+    }
+    else
+    {
+        ban_message += "\n만료일: 영구정지";
+    }
+    return ban_message;
 }

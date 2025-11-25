@@ -110,10 +110,7 @@ uint32_t character::auto_attack_damage(MOB_SIZE size) const
 
     auto weapon = this->items.weapon();
     auto model  = weapon != nullptr ? &weapon->based<fb::model::weapon>() : nullptr;
-
-    // TODO: 이거 크리터졌을때가 아니라 때리는 몹 타입으로 small, large 써야함
-
-    if (weapon == nullptr) // no weapon
+    if (weapon == nullptr)
     {
         return 1 + std::rand() % 5;
     }
@@ -225,6 +222,18 @@ void fb::game::character::birthday(const std::optional<uint32_t>& value)
     this->_birthday = value;
 }
 
+const fb::model::datetime& character::created_date() const
+{
+    this->assert_thread();
+    return this->_created_date;
+}
+
+void character::created_date(const fb::model::datetime& value)
+{
+    this->assert_thread();
+    this->_created_date = value;
+}
+
 const fb::model::datetime& character::updated_date() const
 {
     this->assert_thread();
@@ -307,7 +316,7 @@ void character::undisguise()
     if (this->state() == STATE::DISGUISE)
         this->state(STATE::NORMAL);
 
-    this->update(STATE_LEVEL::LEVEL_MAX);
+    this->update(UPDATE_STATE_LEVEL::ALL);
 }
 
 NATION character::nation() const
@@ -358,7 +367,7 @@ void character::level(uint8_t value)
     this->assert_thread();
 
     this->_level = value;
-    this->update(STATE_LEVEL::LEVEL_MAX);
+    this->update(UPDATE_STATE_LEVEL::ALL);
 }
 
 bool character::level_up()
@@ -471,7 +480,7 @@ void character::cls(CLASS value)
 
     this->_class = value;
     this->update_id();
-    this->update(STATE_LEVEL::LEVEL_MAX);
+    this->update(UPDATE_STATE_LEVEL::ALL);
 }
 
 uint8_t character::promotion() const
@@ -486,7 +495,7 @@ void character::promotion(uint8_t value)
 
     this->_promotion = value;
     this->update_id();
-    this->update(STATE_LEVEL::LEVEL_MAX);
+    this->update(UPDATE_STATE_LEVEL::ALL);
 }
 
 uint32_t character::exp() const
@@ -504,7 +513,7 @@ void character::exp(uint32_t value)
         return;
 
     this->_experience = value;
-    this->update(STATE_LEVEL::EXP_MONEY);
+    this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 }
 
 uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
@@ -584,13 +593,13 @@ uint32_t character::reduce_exp(uint32_t value)
     {
         uint32_t lack     = value - this->_experience;
         this->_experience = 0;
-        this->update(STATE_LEVEL::EXP_MONEY);
+        this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
         return lack;
     }
     else
     {
         this->_experience -= value;
-        this->update(STATE_LEVEL::EXP_MONEY);
+        this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
         return 0;
     }
 }
@@ -646,7 +655,7 @@ void character::money(uint32_t value)
     this->assert_thread();
 
     this->_money = value;
-    this->update(STATE_LEVEL::EXP_MONEY);
+    this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 }
 
 uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
@@ -728,7 +737,7 @@ void character::option(OPTION key, bool value, bool notify)
     if (this->_options[opt] == value)
         return;
 
-    this->update(STATE_LEVEL::LEVEL_MIN);
+    this->update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
     this->_options[opt] = value;
     this->update_option();
 
@@ -969,9 +978,7 @@ void character::unride()
             throw std::runtime_error(_TEXT(MESSAGE_RIDE_UNRIDE));
 
         auto& model = this->server.model.mob[fb::model::const_value::mob::horse];
-        // Use smart pointer for horse creation
-        auto horse_shared = this->server.make<mob>(model, mob::initial_params{.alive = true});
-        auto horse        = horse_shared.get(); // For compatibility with existing code
+        auto  horse = this->server.make<mob>(model, mob::initial_params{.alive = true});
         horse->map(this->_map, this->front_position());
 
         this->state(STATE::NORMAL);
@@ -1075,6 +1082,92 @@ void character::message(const std::string& message, MESSAGE_TYPE type)
     this->listener.on_message(*this, message, type);
 }
 
+async::task<void> character::process_system_mails()
+{
+    this->assert_thread();
+
+    auto system_mails = this->server.get_system_mails();
+    if (system_mails.empty())
+        co_return;
+
+    auto now          = fb::model::datetime();
+    auto created_date = this->created_date();
+
+    const auto& system_mail_users = this->mail_box.get_system_mail_users();
+    auto        user_mail_ids     = std::set<uint32_t>();
+    for (const auto& [mail_id, smu] : system_mail_users)
+    {
+        user_mail_ids.insert(mail_id);
+    }
+
+    for (const auto& mail : system_mails)
+    {
+        if (mail.expire_date.has_value() && mail.expire_date.value() < now)
+            continue;
+
+        if (mail.created_date < created_date)
+            continue;
+
+        if (user_mail_ids.find(mail.id) == user_mail_ids.end())
+        {
+            this->mail_box.add_system_mail_user(mail.id, mail.expire_date.has_value() ? std::make_optional(mail.expire_date.value().to_string()) : std::nullopt);
+        }
+    }
+
+    for (const auto& [mail_id, smu] : system_mail_users)
+    {
+        if (smu.read)
+            continue;
+
+        bool               mail_exists = false;
+        const system_mail* mail_ptr    = nullptr;
+        for (const auto& mail : system_mails)
+        {
+            if (mail.id == mail_id)
+            {
+                if (mail.expire_date.has_value() && mail.expire_date.value() < now)
+                    break;
+
+                if (mail.created_date < created_date)
+                    break;
+
+                mail_exists = true;
+                mail_ptr    = &mail;
+                break;
+            }
+        }
+
+        if (!mail_exists)
+            continue;
+
+        try
+        {
+            if (!this->mail_box.try_mark_system_mail_user_as_sent(mail_id))
+                continue;
+
+            if (mail_ptr == nullptr)
+            {
+                this->mail_box.update_system_mail_user_read(mail_id, false);
+                continue;
+            }
+
+            const auto& mail = *mail_ptr;
+            auto&& resp = co_await this->server.http.post("internal", "/mail/write", WriteMail{mail.sender, this->name(), mail.title, mail.contents, fb::config<uint32_t>("id")});
+
+            if (resp.error != 0)
+                this->mail_box.update_system_mail_user_read(mail_id, false);
+            else
+                this->server.on_write_mail(resp);
+        }
+        catch (...)
+        {
+            this->mail_box.update_system_mail_user_read(mail_id, false);
+        }
+    }
+
+    co_return;
+}
+
 fb::thread* character::thread() const
 {
     if (this->_thread != nullptr)
@@ -1093,7 +1186,7 @@ void character::assert_thread() const
     object::assert_thread();
 }
 
-void character::update(STATE_LEVEL value)
+void character::update(UPDATE_STATE_LEVEL value)
 {
     this->assert_thread();
     this->listener.on_update(*this, value);
@@ -1108,6 +1201,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.name             = this->_name;
     dto.pw               = this->_pw;
     dto.birth            = this->_birthday;
+    dto.created_date     = this->_created_date.to_string();
     dto.updated_date     = fb::model::datetime().to_string();
     dto.role             = static_cast<uint8_t>(this->_role);
     dto.look             = this->_look;
@@ -1150,24 +1244,6 @@ fb::protocol::internal::Character character::to_protocol() const
     return dto;
 }
 
-uint16_t character::unread_mail() const
-{
-    this->assert_thread();
-
-    return this->_unread_mail;
-}
-
-void character::unread_mail(uint16_t value)
-{
-    this->assert_thread();
-
-    if (this->_unread_mail != value)
-    {
-        this->_unread_mail = value;
-        this->update(STATE_LEVEL::LEVEL_MIN);
-    }
-}
-
 void character::browse_ch(const character& ch)
 {
     this->listener.on_browse_character(*this, ch);
@@ -1181,36 +1257,6 @@ void character::item_tooltip(const item& item, uint16_t position)
 void character::show_user_list()
 {
     this->listener.on_show_user_list(*this);
-}
-
-void character::show_bulletin()
-{
-    this->listener.on_show_bulletin(*this);
-}
-
-void character::show_bulletin(const fb::model::bulletin& section, const std::list<fb::game::bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag)
-{
-    this->listener.on_show_bulletin(*this, section, articles, flag);
-}
-
-void character::show_bulletin(const fb::game::bulletin::article& article, BULLETIN_BUTTON_ENABLE flag)
-{
-    this->listener.on_show_bulletin(*this, article, flag);
-}
-
-void character::show_mail_box(const std::vector<MailSummary>& mails, MAIL_BUTTON_ENABLE flag)
-{
-    this->listener.on_show_mail_box(*this, mails, flag);
-}
-
-void character::show_mail_box(const Mail& mail, MAIL_BUTTON_ENABLE flag)
-{
-    this->listener.on_show_mail_box(*this, mail, flag);
-}
-
-void character::show_bulletin_message(const std::string& message, bool success, bool mail)
-{
-    this->listener.on_show_bulletin_message(*this, message, success, mail);
 }
 
 void character::show_world_map(uint32_t id, uint16_t index)

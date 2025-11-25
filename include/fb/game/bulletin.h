@@ -5,71 +5,46 @@
 #include <stdint.h>
 #include <optional>
 #include <string>
+#include <fb/model/model.h>
 
-namespace fb::game::bulletin {
+using namespace fb::model::enum_value;
 
-class section
+namespace fb::game {
+
+class character;
+
+class bulletin
 {
 public:
-    const uint32_t               id;
-    const std::string            title;
-    const std::optional<uint8_t> min_level;
-    const std::optional<uint8_t> max_level;
-    const bool                   admin;
+    struct article;
 
 public:
-    section(uint32_t                      id,
-            const std::string&            title,
-            const std::optional<uint8_t>& min_level = std::nullopt,
-            const std::optional<uint8_t>& max_level = std::nullopt,
-            bool                          admin     = false) :
-        id(id),
-        title(title),
-        min_level(min_level),
-        max_level(max_level),
-        admin(admin)
-    { }
-    ~section() = default;
+    character& owner;
 
 public:
-    bool writable(uint8_t level, bool admin) const;
+    bulletin(character& owner);
+    ~bulletin() = default;
+
+public:
+    void show();
+    void show(const fb::model::bulletin& model, const std::list<article>& articles, BULLETIN_BUTTON_ENABLE flag);
+    void show(const article& article, BULLETIN_BUTTON_ENABLE flag);
+    void message(const std::string& message, bool success, bool unknown = false);
 };
 
-class article
+struct bulletin::article
 {
-public:
-    const uint32_t    id;
-    const uint32_t    section;
-    const uint32_t    user;
-    const uint8_t     month, day;
-    const std::string uname;
-    const std::string title;
-    const std::string contents;
-    const bool        next;
-
-public:
-    article(uint32_t           id,
-            uint32_t           section,
-            uint32_t           user,
-            const std::string& uname,
-            const std::string& title,
-            uint8_t            month,
-            uint8_t            day,
-            const std::string& contents = "",
-            bool               next     = false) :
-        id(id),
-        section(section),
-        user(user),
-        uname(uname),
-        title(title),
-        month(month),
-        day(day),
-        contents(contents),
-        next(next)
-    { }
-    ~article() = default;
+    uint32_t    id       = 0;
+    uint32_t    section  = 0;
+    uint32_t    user     = 0;
+    uint8_t     month    = 0;
+    uint8_t     day      = 0;
+    std::string uname    = "";
+    std::string title    = "";
+    std::string contents = "";
+    bool        next     = false;
 };
 
-} // namespace fb::game::bulletin
+} // namespace fb::game
 
 #endif // !__BULLETIN_H__
