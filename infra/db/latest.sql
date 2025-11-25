@@ -492,27 +492,30 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BULLETIN_DELETE`(IN id INT, IN user INT)
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BULLETIN_DELETE`(IN id INT, IN user INT, IN ignore_owner TINYINT)
 BEGIN
     DECLARE _deleted TINYINT;
+    DECLARE _owner INT;
 
-    SELECT `deleted`
-    INTO _deleted
+    SELECT bulletin.deleted, bulletin.user
+    INTO _deleted, _owner
     FROM bulletin
-    WHERE `bulletin`.`id` = id AND `bulletin`.`user` = user
+    WHERE bulletin.id = id
     LIMIT 1;
 
     IF _deleted IS NULL THEN
         SELECT -1 AS result;
     ELSEIF _deleted = 1 THEN
         SELECT -2 AS result;
+    ELSEIF _owner != user AND ignore_owner = 0 THEN
+        SELECT -3 AS result;
     ELSE
-        UPDATE bulletin SET deleted = 1 WHERE id = id AND user = user;
-        IF ROW_COUNT() > 0 THEN
-            SELECT 1 AS result;
+        IF ignore_owner = 1 THEN
+            UPDATE bulletin SET deleted = 1, updated_date = NOW() WHERE bulletin.id = id;
         ELSE
-            SELECT -4 AS result;
+            UPDATE bulletin SET deleted = 1, updated_date = NOW() WHERE bulletin.id = id AND bulletin.user = user;
         END IF;
+        SELECT 1 AS result;
     END IF;
 END ;;
 DELIMITER ;

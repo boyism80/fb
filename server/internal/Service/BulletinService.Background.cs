@@ -1,3 +1,4 @@
+using System.Data;
 using Dapper;
 using Http.Extension;
 using Http.Service;
@@ -47,13 +48,10 @@ namespace Internal.Service
 
         private async Task ProcessBatchAsync(CancellationToken cancellationToken)
         {
-            var (writes, deletes) = _bulletinService.DequeueBatch(_maxBatchSize);
+            var writes = _bulletinService.DequeueBatch(_maxBatchSize);
 
             // Process write requests
             await ProcessWritesAsync(writes, cancellationToken);
-
-            // Process delete requests
-            await ProcessDeletesAsync(deletes, cancellationToken);
         }
 
         private async Task ProcessWritesAsync(Dictionary<uint, List<BulletinWriteRequest>> writes, CancellationToken cancellationToken)
@@ -163,63 +161,6 @@ namespace Internal.Service
             }
         }
 
-        private async Task ProcessDeletesAsync(Dictionary<uint, List<BulletinDeleteRequest>> deletes, CancellationToken cancellationToken)
-        {
-            // Group by section and process (same approach as writes)
-            foreach (var (section, requests) in deletes)
-            {
-                using var scope = _scopeFactory.CreateScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
-
-                try
-                {
-                    // Modular sharding: section % SharedDbSize
-                    var dbIndex = GetDbIndexForSection(section, dbContext);
-
-                    await using var conn = dbContext.Connection(dbIndex);
-
-                    // Build bulk UPDATE query
-                    var sql = BuildBulkDeleteQuery(requests);
-                    var affectedRows = await conn.ExecuteAsync(sql);
-
-                    // Delete from Redis cache
-                    var articleKeys = requests.Select(r => (section, r.Id)).ToList();
-                    await _bulletinCacheService.DeleteArticlesBatchAsync(articleKeys);
-
-                    // Check if all requests were processed successfully
-                    // If affectedRows < requests.Count, some requests targeted non-existent data
-                    if (affectedRows < requests.Count)
-                    {
-                        // Some requests failed (non-existent data), mark all as failed
-                        foreach (var request in requests)
-                        {
-                            request.CompletionSource.SetResult(-1);
-                        }
-                    }
-                    else
-                    {
-                        // All requests succeeded
-                        foreach (var request in requests)
-                        {
-                            request.CompletionSource.SetResult(1);
-                        }
-                    }
-
-                    _logger.LogInformation($"Processed {requests.Count} bulletin deletes for section {section}");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Error processing delete batch for section {section}");
-
-                    // Notify failure
-                    foreach (var request in requests)
-                    {
-                        request.CompletionSource.SetResult(-4);
-                    }
-                }
-            }
-        }
-
         private int GetDbIndexForSection(uint section, DbContext dbContext)
         {
             // Modular sharding: section % SharedDbSize
@@ -240,14 +181,6 @@ namespace Internal.Service
             return $"INSERT INTO bulletin (`id`, `section`, `user`, title, contents) VALUES {values}";
         }
 
-        private string BuildBulkDeleteQuery(List<BulletinDeleteRequest> requests)
-        {
-            // Create WHERE conditions using (id, user) combinations
-            var conditions = string.Join(" OR ", requests.Select(r =>
-                $"(id = {r.Id} AND `user` = {r.User})"));
-
-            return $"UPDATE bulletin SET deleted = 1, updated_date = NOW() WHERE deleted = 0 AND ({conditions})";
-        }
     }
 }
 
