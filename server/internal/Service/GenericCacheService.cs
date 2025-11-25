@@ -28,7 +28,7 @@ namespace Internal.Service
             return null;
         }
 
-        public async Task<T?> GetAsync(Func<Task<T?>> dbQueryFunc, TimeSpan? ttl = null, params object[] parameters)
+        public async Task<T> GetAsync(Func<Task<T>> dbQueryFunc, TimeSpan? ttl = null, params object[] parameters)
         {
             var cacheKey = GenerateCacheKey(parameters);
             var hashForSharding = GetHashForSharding(cacheKey, parameters);

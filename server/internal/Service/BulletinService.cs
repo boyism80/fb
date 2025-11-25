@@ -70,7 +70,7 @@ namespace Internal.Service
 
                 return result;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Log error and return failure code
                 return -4;
@@ -149,7 +149,7 @@ namespace Internal.Service
             return writes;
         }
 
-        public async Task<(Bulletin? Article, bool Next)> GetArticleAsync(uint section, uint id)
+        public async Task<(Bulletin Article, bool Next)> GetArticleAsync(uint section, uint id)
         {
             bool? nextFlagFromLoader = null;
 
@@ -170,7 +170,7 @@ namespace Internal.Service
             return (article, nextFlag);
         }
 
-        private async Task<(Bulletin? Article, bool Next)> LoadArticleFromDatabase(uint section, uint id)
+        private async Task<(Bulletin Article, bool Next)> LoadArticleFromDatabase(uint section, uint id)
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();

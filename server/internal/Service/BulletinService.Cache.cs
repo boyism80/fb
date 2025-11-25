@@ -35,10 +35,10 @@ namespace Internal.Service
             return Convert.ToUInt32(parameters[0]);
         }
 
-        public Task<Bulletin?> GetArticleAsync(
+        public Task<Bulletin> GetArticleAsync(
             uint section,
             uint id,
-            Func<Task<Bulletin?>> dbQueryFunc,
+            Func<Task<Bulletin>> dbQueryFunc,
             TimeSpan? ttl = null)
         {
             return GetAsync(dbQueryFunc, ttl, section, id);

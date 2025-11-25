@@ -12,7 +12,7 @@ namespace Http.Service
     {
         private readonly RedisService _redisService;
         private readonly ILogger<CacheService> _logger;
-        private readonly ServerStateService? _serverStateService;
+        private readonly ServerStateService _serverStateService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CacheService"/> class.
@@ -20,7 +20,7 @@ namespace Http.Service
         /// <param name="redisService">The Redis service for cache operations.</param>
         /// <param name="logger">The logger for recording cache operations.</param>
         /// <param name="serverStateService">The server state service for checking running servers (optional).</param>
-        public CacheService(RedisService redisService, ILogger<CacheService> logger, ServerStateService? serverStateService = null)
+        public CacheService(RedisService redisService, ILogger<CacheService> logger, ServerStateService serverStateService = null)
         {
             _redisService = redisService;
             _logger = logger;
