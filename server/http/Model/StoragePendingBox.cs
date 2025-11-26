@@ -15,7 +15,7 @@ namespace Http.Model
         /// <summary>
         /// Gets or sets the unique identifier of the pending reward entry.
         /// </summary>
-        /// <value>The auto-incremented id generated per shard.</value>
+        /// <value>The auto-incremented id generated globally.</value>
         public ulong Id { get; set; }
 
         /// <summary>

@@ -48,7 +48,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `storage_reward_mark`
-                WHERE `user` = {key.User} AND `pending_id` = {key.PendingId}
+                WHERE `pending_id` = {key.PendingId}
                 LIMIT 1;
                 """;
         }

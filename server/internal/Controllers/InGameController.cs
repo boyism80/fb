@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using AutoMapper;
+﻿using AutoMapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
@@ -7,7 +6,6 @@ using Http.Model.Redis;
 using Http.Redis;
 using Http.Redis.Key;
 using Http.Service;
-using Internal.Service;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using StackExchange.Redis;

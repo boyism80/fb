@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
@@ -48,10 +44,9 @@ namespace Http.Reepository
         /// <inheritdoc/>
         protected override string OnSelect(StoragePendingBoxKey key)
         {
-            var userPredicate = BuildUserPredicate(key.User);
             return $"""
                 SELECT * FROM `storage_pending_box`
-                WHERE {userPredicate} AND `id` = {key.Id}
+                WHERE `id` = {key.Id}
                 LIMIT 1;
                 """;
         }
@@ -64,6 +59,11 @@ namespace Http.Reepository
                 SELECT * FROM `storage_pending_box`
                 WHERE {userPredicate};
                 """;
+        }
+
+        private static string BuildUserPredicate(uint? user)
+        {
+            return user.HasValue ? $"`user` = {user.Value}" : "`user` IS NULL";
         }
 
         /// <inheritdoc/>
@@ -90,7 +90,6 @@ namespace Http.Reepository
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE
-                    `user`=VALUES(`user`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),
                     `expired_date`=VALUES(`expired_date`),
@@ -129,18 +128,12 @@ namespace Http.Reepository
                     `updated_date`)
                 VALUES {string.Join(',', args)}
                 ON DUPLICATE KEY UPDATE
-                    `user`=VALUES(`user`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),
                     `expired_date`=VALUES(`expired_date`),
                     `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
-        }
-
-        private static string BuildUserPredicate(uint? user)
-        {
-            return user.HasValue ? $"`user` = {user.Value}" : "`user` IS NULL";
         }
     }
 }

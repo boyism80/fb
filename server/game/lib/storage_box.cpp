@@ -47,9 +47,10 @@ void storage_box::apply_pending(const std::vector<pending_box>& pending)
 
         this->_entries[e.id] = e;
         reward_mark mark{};
-        mark.pending_id                      = box.id;
-        mark.expire_date                     = box.expire_date;
-        this->_reward_marks[mark.pending_id] = mark;
+        mark.user                   = this->_owner.id();
+        mark.pending_id             = box.id;
+        mark.expire_date            = box.expire_date;
+        this->_reward_marks[box.id] = mark;
     }
 }
 

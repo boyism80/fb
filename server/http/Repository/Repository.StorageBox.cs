@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Http.Extension;
 using Http.Model;
 using Http.Service;

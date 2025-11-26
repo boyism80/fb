@@ -11,7 +11,7 @@ namespace Http.Model
         /// <summary>
         /// Gets or sets the user identifier that processed the pending reward.
         /// </summary>
-        /// <value>The target user id that owns the mark row.</value>
+        /// <value>The target user id that owns the mark row (always has value, cannot be null).</value>
         public required uint User { get; set; }
 
         /// <summary>

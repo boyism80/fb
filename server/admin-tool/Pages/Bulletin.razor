@@ -135,30 +135,25 @@
                                                            @onchange="() => ToggleArticleSelection(article.Id)" />
                                                 </td>
                                                 <td>@article.Id</td>
-                                                <td>@article.Title</td>
+                                                <td>
+                                                    <a href="#" class="text-decoration-none text-primary" 
+                                                       @onclick="() => ShowViewModal(article)" 
+                                                       @onclick:preventDefault 
+                                                       style="cursor: pointer;">
+                                                        @article.Title
+                                                    </a>
+                                                </td>
                                                 <td>@article.UserName</td>
                                                 <td>@article.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                                 <td>
-                                                    <div class="btn-group" role="group">
-                                                        <button class="btn btn-sm btn-outline-info"
-                                                            @onclick="() => ShowViewModal(article)" disabled="@isProcessing">
-                                                            View
-                                                        </button>
-                                                        <button class="btn btn-sm btn-outline-warning"
-                                                            @onclick="() => ShowEditModal(article)" disabled="@isProcessing">
-                                                            Edit
-                                                        </button>
-                                                        <button class="btn btn-sm btn-outline-danger"
-                                                            @onclick="() => ShowDeleteModal(article, false)"
-                                                            disabled="@isProcessing">
-                                                            Delete
-                                                        </button>
-                                                        <button class="btn btn-sm btn-danger"
-                                                            @onclick="() => ShowDeleteModal(article, true)" disabled="@isProcessing"
-                                                            title="Force delete (ignore owner)">
-                                                            Force Delete
-                                                        </button>
-                                                    </div>
+                                                    <button class="btn btn-sm btn-outline-secondary me-2"
+                                                        @onclick="() => ShowEditModal(article)" disabled="@isProcessing">
+                                                        Edit
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary"
+                                                        @onclick="() => ShowDeleteModal(article)" disabled="@isProcessing">
+                                                        Delete
+                                                    </button>
                                                 </td>
                                             </tr>
                                         }
@@ -166,7 +161,7 @@
                                 </table>
                             </div>
 
-                            @if (totalPages > 1)
+                            @if (currentPage > 1 || (articles != null && articles.Count == pageSize))
                             {
                                 <nav>
                                     <ul class="pagination justify-content-center">
@@ -174,15 +169,10 @@
                                             <a class="page-link" href="#" @onclick="() => ChangePage(currentPage - 1)"
                                                 @onclick:preventDefault>Previous</a>
                                         </li>
-                                        @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
-                                        {
-                                            var pageNum = i;
-                                            <li class="page-item @(currentPage == pageNum ? "active" : "")">
-                                                <a class="page-link" href="#" @onclick="() => ChangePage(pageNum)"
-                                                    @onclick:preventDefault>@pageNum</a>
-                                            </li>
-                                        }
-                                        <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                                        <li class="page-item active">
+                                            <span class="page-link">Page @currentPage</span>
+                                        </li>
+                                        <li class="page-item @(articles == null || articles.Count < pageSize ? "disabled" : "")">
                                             <a class="page-link" href="#" @onclick="() => ChangePage(currentPage + 1)"
                                                 @onclick:preventDefault>Next</a>
                                         </li>
@@ -191,7 +181,7 @@
                             }
 
                             <div class="text-center text-muted">
-                                Page @currentPage of @totalPages
+                                Page @currentPage@(articles != null && articles.Count == pageSize ? " (more available)" : "")
                             </div>
                         }
                         else if (!isLoading)
@@ -280,14 +270,6 @@
                                 @bind-Value="editModel.Contents" />
                             <ValidationMessage For="@(() => editModel.Contents)" />
                         </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="editIgnoreOwner" @bind="editModel.IgnoreOwner" />
-                                <label class="form-check-label" for="editIgnoreOwner">
-                                    Ignore owner (force edit)
-                                </label>
-                            </div>
-                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" @onclick="CloseEditModal">Cancel</button>
                             <button type="submit" class="btn btn-warning" disabled="@isProcessing">
@@ -340,11 +322,11 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">@(forceDelete ? "Force Delete" : "Delete") Article</h5>
+                    <h5 class="modal-title">Delete Article</h5>
                     <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to @(forceDelete ? "force delete" : "delete") this article?</p>
+                    <p>Are you sure you want to delete this article?</p>
                     <div class="card">
                         <div class="card-body">
                             <strong>Title:</strong> @selectedArticle.Title<br />
@@ -352,12 +334,6 @@
                             <strong>ID:</strong> @selectedArticle.Id
                         </div>
                     </div>
-                    @if (forceDelete)
-                    {
-                        <div class="alert alert-warning mt-3">
-                            <strong>Warning:</strong> Force delete will remove the article regardless of ownership.
-                        </div>
-                    }
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="CloseDeleteModal">Cancel</button>
@@ -366,7 +342,7 @@
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                         }
-                        @(forceDelete ? "Force Delete" : "Delete")
+                        Delete
                     </button>
                 </div>
             </div>
@@ -386,18 +362,6 @@
                 </div>
                 <div class="modal-body">
                     <p>Are you sure you want to delete @selectedArticleIds.Count selected article(s)?</p>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="bulkDeleteIgnoreOwner" @bind="bulkDeleteIgnoreOwner" />
-                        <label class="form-check-label" for="bulkDeleteIgnoreOwner">
-                            Ignore owner (force delete)
-                        </label>
-                    </div>
-                    @if (bulkDeleteIgnoreOwner)
-                    {
-                        <div class="alert alert-warning mt-3">
-                            <strong>Warning:</strong> Force delete will remove the articles regardless of ownership.
-                        </div>
-                    }
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="CloseBulkDeleteModal">Cancel</button>
@@ -433,12 +397,13 @@
     private bool showDeleteModal = false;
     private bool showBulkDeleteModal = false;
     private Http.Model.Bulletin? selectedArticle;
-    private bool forceDelete = false;
-    private bool bulkDeleteIgnoreOwner = false;
     private WriteModel writeModel = new();
     private EditModel editModel = new();
     private HashSet<uint> selectedArticleIds = new();
     private uint currentUserId = 0;
+    private ushort? currentPosition = null;
+    private string? lastSearchQuery = null;
+    private uint? lastSelectedSection = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -482,6 +447,9 @@
         currentPage = 1;
         searchQuery = string.Empty;
         selectedArticleIds.Clear();
+        currentPosition = null;
+        lastSearchQuery = null;
+        lastSelectedSection = null;
         await LoadArticles();
     }
 
@@ -490,18 +458,61 @@
         if (!selectedSection.HasValue)
             return;
 
+        // Reset position if section or search query changed
+        if (lastSelectedSection != selectedSection.Value || lastSearchQuery != searchQuery)
+        {
+            currentPosition = null;
+            lastSelectedSection = selectedSection.Value;
+            lastSearchQuery = searchQuery;
+        }
+
         isLoading = true;
         errorMessage = null;
 
         try
         {
+            ushort position;
+
+            if (currentPage == 1)
+            {
+                // First page starts at 0xFFFF (65535)
+                position = 0xFFFF;
+            }
+            else if (articles != null && articles.Any())
+            {
+                // Calculate position from current articles' last article ID
+                // This works for going to next page (last article ID - 1)
+                // For going back to previous page, we need to reload previous page
+                // by loading pages sequentially from the beginning
+                var lastArticleId = articles.Last().Id;
+                position = (ushort)(lastArticleId > 0 ? lastArticleId - 1 : 0);
+            }
+            else
+            {
+                // No articles or first load: start from beginning
+                position = 0xFFFF;
+            }
+
             articles = await BulletinService.GetArticleListAsync(
                 selectedSection.Value,
-                (ushort)((currentPage - 1) * pageSize),
+                position,
                 string.IsNullOrWhiteSpace(searchQuery) ? null : searchQuery);
 
+            // Store position for next page calculation (last article ID - 1)
+            if (articles != null && articles.Any())
+            {
+                var lastArticleId = articles.Last().Id;
+                currentPosition = (ushort)(lastArticleId > 0 ? lastArticleId - 1 : 0);
+            }
+            else
+            {
+                currentPosition = 0;
+            }
+
             // Estimate total pages (assuming 20 items per page from stored procedure)
-            totalPages = Math.Max(1, (articles.Count + pageSize - 1) / pageSize);
+            // For cursor-based pagination, we can't know total pages accurately
+            // So we'll show "next" button if we got a full page
+            totalPages = articles != null && articles.Count == pageSize ? currentPage + 1 : currentPage;
         }
         catch (Exception ex)
         {
@@ -517,6 +528,8 @@
     {
         currentPage = 1;
         selectedArticleIds.Clear();
+        currentPosition = null;
+        lastSearchQuery = null;
         await LoadArticles();
     }
 
@@ -525,6 +538,8 @@
         searchQuery = string.Empty;
         currentPage = 1;
         selectedArticleIds.Clear();
+        currentPosition = null;
+        lastSearchQuery = null;
         await LoadArticles();
     }
 
@@ -637,16 +652,42 @@
         }
     }
 
-    private void ShowEditModal(Http.Model.Bulletin article)
+    private async Task ShowEditModal(Http.Model.Bulletin article)
     {
-        selectedArticle = article;
-        editModel = new EditModel
+        if (!selectedSection.HasValue)
+            return;
+
+        isProcessing = true;
+        errorMessage = null;
+
+        try
         {
-            Title = article.Title,
-            Contents = article.Contents ?? string.Empty,
-            IgnoreOwner = false
-        };
-        showEditModal = true;
+            // Get full article data including contents
+            var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedSection.Value, article.Id);
+            
+            if (fullArticle == null)
+            {
+                errorMessage = "Article not found.";
+                return;
+            }
+
+            selectedArticle = fullArticle;
+            editModel = new EditModel
+            {
+                Title = fullArticle.Title,
+                Contents = fullArticle.Contents ?? string.Empty,
+                IgnoreOwner = true
+            };
+            showEditModal = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading article: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
     }
 
     private void CloseEditModal()
@@ -676,11 +717,11 @@
                 currentUserId,
                 editModel.Title,
                 editModel.Contents,
-                editModel.IgnoreOwner);
+                true);
 
             if (result == 1)
             {
-                successMessage = $"Article has been {(editModel.IgnoreOwner ? "force " : "")}updated successfully.";
+                successMessage = "Article has been updated successfully.";
                 CloseEditModal();
                 await LoadArticles();
             }
@@ -699,10 +740,36 @@
         }
     }
 
-    private void ShowViewModal(Http.Model.Bulletin article)
+    private async Task ShowViewModal(Http.Model.Bulletin article)
     {
-        selectedArticle = article;
-        showViewModal = true;
+        if (!selectedSection.HasValue)
+            return;
+
+        isProcessing = true;
+        errorMessage = null;
+
+        try
+        {
+            // Get full article data including contents
+            var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedSection.Value, article.Id);
+            
+            if (fullArticle == null)
+            {
+                errorMessage = "Article not found.";
+                return;
+            }
+
+            selectedArticle = fullArticle;
+            showViewModal = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading article: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
     }
 
     private void CloseViewModal()
@@ -711,10 +778,9 @@
         selectedArticle = null;
     }
 
-    private void ShowDeleteModal(Http.Model.Bulletin article, bool force)
+    private void ShowDeleteModal(Http.Model.Bulletin article)
     {
         selectedArticle = article;
-        forceDelete = force;
         showDeleteModal = true;
     }
 
@@ -722,7 +788,6 @@
     {
         showDeleteModal = false;
         selectedArticle = null;
-        forceDelete = false;
     }
 
     private async Task HandleDelete()
@@ -743,11 +808,11 @@
                 selectedSection.Value,
                 selectedArticle.Id,
                 currentUserId,
-                forceDelete);
+                true);
 
             if (result == 1)
             {
-                successMessage = $"Article has been {(forceDelete ? "force " : "")}deleted successfully.";
+                successMessage = "Article has been deleted successfully.";
                 CloseDeleteModal();
                 await LoadArticles();
             }
@@ -768,14 +833,12 @@
 
     private void ShowBulkDeleteModal()
     {
-        bulkDeleteIgnoreOwner = false;
         showBulkDeleteModal = true;
     }
 
     private void CloseBulkDeleteModal()
     {
         showBulkDeleteModal = false;
-        bulkDeleteIgnoreOwner = false;
     }
 
     private async Task HandleBulkDelete()
@@ -797,11 +860,11 @@
                 selectedSection.Value,
                 ids,
                 currentUserId,
-                bulkDeleteIgnoreOwner);
+                true);
 
             if (result > 0)
             {
-                successMessage = $"{result} article(s) have been {(bulkDeleteIgnoreOwner ? "force " : "")}deleted successfully.";
+                successMessage = $"{result} article(s) have been deleted successfully.";
                 CloseBulkDeleteModal();
                 selectedArticleIds.Clear();
                 await LoadArticles();

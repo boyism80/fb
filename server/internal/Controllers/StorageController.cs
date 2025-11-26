@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using AutoMapper;
 using Fb.Model.EnumValue;
 using Http.Model;

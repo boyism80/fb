@@ -201,6 +201,7 @@ public:
     [[nodiscard]] async::task<void>                         read_system_mails_async(std::function<async::task<void>(const std::vector<system_mail>&)> fn);
     void                                                    read_storage_pending(std::function<void(const std::vector<fb::game::storage_box::pending_box>&)> fn);
     [[nodiscard]] async::task<void>                         read_storage_pending_async(std::function<async::task<void>(const std::vector<fb::game::storage_box::pending_box>&)> fn);
+    void                                                    write_storage_pending(std::function<void(std::vector<fb::game::storage_box::pending_box>&)> fn);
     [[nodiscard]] async::task<internal_resp::Ban>           ban(const std::string& name, const std::string& reason, const std::optional<uint32_t>& days);
     [[nodiscard]] async::task<internal_resp::Unban>         unban(const std::string& name);
 

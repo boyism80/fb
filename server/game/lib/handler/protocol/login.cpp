@@ -271,6 +271,7 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     for (const auto& dto : response.storage_reward_marks)
     {
         fb::game::storage_box::reward_mark mark{};
+        mark.user       = dto.user;
         mark.pending_id = dto.pending_id;
         if (dto.expired_date.has_value())
             mark.expire_date = fb::model::datetime(dto.expired_date.value());

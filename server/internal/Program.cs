@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using AutoMapper;
 using Dapper;
 using fb.protocol._internal;
@@ -7,7 +6,6 @@ using Http.Service;
 using Http.Worker;
 using Newtonsoft.Json;
 using Protocol = fb.protocol._internal;
-using Http.Service;
 
 namespace Http;
 public class Program
@@ -122,6 +120,17 @@ public class Program
             .AfterMap((src, dest) =>
             {
                 dest.Attachments = JsonConvert.SerializeObject(src.Attachments ?? new List<Fb.Model.Dsl>());
+            });
+
+            cfg.CreateMap<Protocol.StoragePendingBox, Http.Model.StoragePendingBox>()
+            .ForMember(x => x.Attachments, x => x.Ignore())
+            .ForMember(x => x.ExpiredDate, x => x.Ignore())
+            .AfterMap((src, dest) =>
+            {
+                dest.Attachments = string.IsNullOrWhiteSpace(src.Attachments)
+                    ? new List<Fb.Model.Dsl>()
+                    : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl>>(src.Attachments) ?? new List<Fb.Model.Dsl>());
+                dest.ExpiredDate = string.IsNullOrEmpty(src.ExpiredDate) ? null : DateTime.Parse(src.ExpiredDate);
             });
         });
 

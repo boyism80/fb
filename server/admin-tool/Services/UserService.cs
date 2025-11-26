@@ -1,9 +1,6 @@
 using Dapper;
-using Http;
-using Http.Model;
 using Http.Redis.Key;
 using Http.Service;
-using MySqlConnector;
 using StackExchange.Redis;
 
 namespace AdminTool.Services

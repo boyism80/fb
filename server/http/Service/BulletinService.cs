@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Data;
-using System.Threading.Tasks;
 using Dapper;
 using Http.Model;
-using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Concurrent;
+using System.Data;
 
 namespace Http.Service
 {
@@ -204,21 +200,40 @@ namespace Http.Service
             else
             {
                 // Search by title, contents, or author name
+                // Note: character table JOIN is not allowed as they may be in different databases
+                // For user name search, we first look up the user ID, then search by user ID
                 var searchPattern = $"%{searchQuery}%";
+                uint? userId = null;
+
+                // Try to find user ID by name if search query might be a user name
+                var foundUserId = await dbContext.Character.GetCharacterId(searchQuery);
+                if (foundUserId.HasValue)
+                {
+                    userId = foundUserId.Value;
+                }
+
                 var sql = @"
                     SELECT b.id, b.section, b.user, b.title, b.contents, b.created_date, b.updated_date, b.deleted
                     FROM bulletin b
-                    LEFT JOIN character c ON b.user = c.id
                     WHERE b.section = @section 
                       AND b.deleted = 0
-                      AND (b.title LIKE @search OR b.contents LIKE @search OR c.name LIKE @search)
-                    ORDER BY b.id DESC
-                    LIMIT 20 OFFSET @offset";
+                      AND @position >= b.id
+                      AND (b.title LIKE @search OR b.contents LIKE @search";
 
                 var dynamicParams = new DynamicParameters();
                 dynamicParams.Add("section", section);
                 dynamicParams.Add("search", searchPattern);
-                dynamicParams.Add("offset", offset);
+                dynamicParams.Add("position", offset);
+
+                if (userId.HasValue)
+                {
+                    sql += " OR b.user = @userId";
+                    dynamicParams.Add("userId", userId.Value);
+                }
+
+                sql += @")
+                    ORDER BY b.id DESC
+                    LIMIT 20";
 
                 var articles = await conn.QueryAsync<Bulletin>(sql, dynamicParams);
                 articleList = articles.ToList();

@@ -521,7 +521,10 @@ async::task<void> server::save(character& ch)
     storage_reward_marks.reserve(reward_marks.size());
     for (const auto& [pending_id, mark] : reward_marks)
     {
-        storage_reward_marks.emplace_back(ch.id(), pending_id, mark.expire_date.has_value() ? std::make_optional(mark.expire_date->to_string()) : std::nullopt);
+        auto expired_date_str = std::optional<std::string>();
+        if (mark.expire_date.has_value())
+            expired_date_str = std::make_optional(mark.expire_date->to_string());
+        storage_reward_marks.emplace_back(mark.user, pending_id, expired_date_str);
     }
 
     std::ignore = co_await this->http.post("internal",

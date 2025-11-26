@@ -49,3 +49,8 @@ async::task<void> server::read_storage_pending_async(std::function<async::task<v
 {
     co_await this->_storage_pending.async_read(fn);
 }
+
+void server::write_storage_pending(std::function<void(std::vector<fb::game::storage_box::pending_box>&)> fn)
+{
+    this->_storage_pending.write(fn);
+}
