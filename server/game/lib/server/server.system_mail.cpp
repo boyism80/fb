@@ -33,9 +33,12 @@ async::task<void> server::fetch_system_mails()
     co_return;
 }
 
-std::vector<system_mail> server::get_system_mails() const
+void server::read_system_mails(std::function<void(const std::vector<system_mail>&)> fn)
 {
-    return this->_system_mails.read([](const std::vector<system_mail>& mails) {
-        return mails;
-    });
+    this->_system_mails.read(fn);
+}
+
+async::task<void> server::read_system_mails_async(std::function<async::task<void>(const std::vector<system_mail>&)> fn)
+{
+    co_await this->_system_mails.async_read(fn);
 }

@@ -16,6 +16,7 @@
 #include <fb/game/clan.h>
 #include <fb/game/npc_interaction_handler.h>
 #include <fb/game/system_mail.h>
+#include <fb/game/storage.h>
 #include <fb/locker.h>
 #include <vector>
 
@@ -51,6 +52,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::intern
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
 REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanRole, fb::protocol::internal::response::ChangeClanRole)
 REGISTER_RESPONSE(fb::protocol::internal::request::UpdateFriends, fb::protocol::internal::response::UpdateFriends)
+REGISTER_RESPONSE(fb::protocol::internal::request::GetStoragePending, fb::protocol::internal::response::GetStoragePending)
 REGISTER_RESPONSE(fb::protocol::internal::request::GetSystemMails, fb::protocol::internal::response::GetSystemMails)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol::internal::response::WriteSystemMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Ban, fb::protocol::internal::response::Ban)
@@ -80,10 +82,11 @@ public:
     using npc_interaction_handler_list = std::vector<npc_interaction_handler_ptr>;
 
 private:
-    fb::model::datetime                  _time;
-    npc_interaction_handler_list         _npc_interaction_handlers;
-    fb::redis                            _redis;
-    fb::locker<std::vector<system_mail>> _system_mails;
+    fb::model::datetime                                         _time;
+    npc_interaction_handler_list                                _npc_interaction_handlers;
+    fb::redis                                                   _redis;
+    fb::locker<std::vector<system_mail>>                        _system_mails;
+    fb::locker<std::vector<fb::game::storage_box::pending_box>> _storage_pending;
 
 public:
     fb::game::listener_impl listener;
@@ -193,7 +196,11 @@ public:
     [[nodiscard]] async::task<void>                         delete_bulletin(character& ch, uint16_t section, uint16_t id);
     [[nodiscard]] async::task<void>                         whisper(character& sender, std::string receiver_name, std::string message);
     [[nodiscard]] async::task<void>                         fetch_system_mails();
-    std::vector<system_mail>                                get_system_mails() const;
+    [[nodiscard]] async::task<void>                         fetch_storage_pending();
+    void                                                    read_system_mails(std::function<void(const std::vector<system_mail>&)> fn);
+    [[nodiscard]] async::task<void>                         read_system_mails_async(std::function<async::task<void>(const std::vector<system_mail>&)> fn);
+    void                                                    read_storage_pending(std::function<void(const std::vector<fb::game::storage_box::pending_box>&)> fn);
+    [[nodiscard]] async::task<void>                         read_storage_pending_async(std::function<async::task<void>(const std::vector<fb::game::storage_box::pending_box>&)> fn);
     [[nodiscard]] async::task<internal_resp::Ban>           ban(const std::string& name, const std::string& reason, const std::optional<uint32_t>& days);
     [[nodiscard]] async::task<internal_resp::Unban>         unban(const std::string& name);
 

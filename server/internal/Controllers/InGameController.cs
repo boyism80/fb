@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Collections.Generic;
+using AutoMapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
@@ -6,6 +7,7 @@ using Http.Model.Redis;
 using Http.Redis;
 using Http.Redis.Key;
 using Http.Service;
+using Internal.Service;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using StackExchange.Redis;
@@ -28,6 +30,7 @@ namespace Internal.Controllers
         private readonly DbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly RedisDistributedLockService _distributedLock;
+        private readonly StorageService _storageService;
         public InGameController(ILogger<InGameController> logger,
             RedisService redisService,
             Fb.Model.Model dataSet,
@@ -35,7 +38,8 @@ namespace Internal.Controllers
             SessionService sessionService,
             DbContext dbContext,
             IMapper mapper,
-            RedisDistributedLockService distributedLock)
+            RedisDistributedLockService distributedLock,
+            StorageService storageService)
         {
             _logger = logger;
             _redisService = redisService;
@@ -45,6 +49,7 @@ namespace Internal.Controllers
             _dbContext = dbContext;
             _mapper = mapper;
             _distributedLock = distributedLock;
+            _storageService = storageService;
         }
         [HttpPost("login")]
         public async Task<Response.Login> Login(Request.Login request)
@@ -301,11 +306,14 @@ namespace Internal.Controllers
             var spells = await _dbContext.Spell.Get(uid);
             var achievements = await _dbContext.Achievement.Get(uid);
             var quests = await _dbContext.Quest.Get(uid);
+            var storageBoxes = await _dbContext.StorageBox.Get(uid);
+            var storageRewardMarks = await _dbContext.StorageRewardMark.Get(uid);
             var option = await _dbContext.Option.Get(uid) ??
                 _dbContext.Option.Set(new Option
                 {
                     Uid = uid,
                 });
+            var storagePending = await _storageService.GetPendingForUserAsync(uid);
 
             await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(uid)))
             {
@@ -316,6 +324,7 @@ namespace Internal.Controllers
                     });
 
                 await _dbContext.SaveChangesAsync();
+                var now = DateTime.Now;
                 var receivedSystemMails = await _dbContext.SystemMailUser.Get(uid);
                 return new Response.Init
                 {
@@ -325,6 +334,17 @@ namespace Internal.Controllers
                     Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
                     Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
                     ReceivedSystemMails = receivedSystemMails.Where(smu => !smu.Deleted).Select(_mapper.Map<Protocol.SystemMailUser>).ToList(),
+                    StorageBoxes = storageBoxes
+                        .Where(box => box.ExpiredDate == null || box.ExpiredDate > now)
+                        .Select(_mapper.Map<Protocol.StorageBox>)
+                        .ToList(),
+                    StorageRewardMarks = storageRewardMarks
+                        .Where(mark => !mark.Deleted)
+                        .Select(_mapper.Map<Protocol.StorageRewardMark>)
+                        .ToList(),
+                    StoragePending = storagePending
+                        .Select(_mapper.Map<Protocol.StoragePendingBox>)
+                        .ToList(),
                     Option = _mapper.Map<Protocol.Option>(option),
                     Clan = sync.Clan,
                     Group = sync.Group,
@@ -383,6 +403,26 @@ namespace Internal.Controllers
 
                 var receivedSystemMails = Override(_mapper.Map<Protocol.SystemMailUser[], SystemMailUser[]>(request.ReceivedSystemMails.ToArray()), await _dbContext.SystemMailUser.Get(request.Character.Id));
                 _dbContext.SystemMailUser.Set(receivedSystemMails.ToArray());
+
+                var storageBoxes = Override(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(request.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), await _dbContext.StorageBox.Get(request.Character.Id));
+                _dbContext.StorageBox.Set(storageBoxes);
+
+                var storageRewardMarks = Override(_mapper.Map<Protocol.StorageRewardMark[], StorageRewardMark[]>(request.StorageRewardMarks?.ToArray() ?? Array.Empty<Protocol.StorageRewardMark>()), await _dbContext.StorageRewardMark.Get(request.Character.Id));
+                _dbContext.StorageRewardMark.Set(storageRewardMarks.ToArray());
+
+                var personalPendingIds = request.StorageRewardMarks?.Select(mark => mark.PendingId).ToHashSet() ?? new HashSet<ulong>();
+                if (personalPendingIds.Count > 0)
+                {
+                    var pendingBoxes = (await _dbContext.StoragePendingBox.Get(request.Character.Id)).Where(x => personalPendingIds.Contains(x.Id)).ToArray();
+                    if (pendingBoxes.Length > 0)
+                    {
+                        foreach (var pendingBox in pendingBoxes)
+                        {
+                            pendingBox.Deleted = true;
+                        }
+                        _dbContext.StoragePendingBox.Set(pendingBoxes);
+                    }
+                }
 
                 await _dbContext.SaveChangesAsync();
                 return new Response.Save

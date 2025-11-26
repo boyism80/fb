@@ -94,6 +94,8 @@ table Save {
   achievements: [fb.protocol.internal.Achievement];
   quests: [fb.protocol.internal.Quest];
   received_system_mails: [fb.protocol.internal.SystemMailUser];
+  storage_boxes: [fb.protocol.internal.StorageBox];
+  storage_reward_marks: [fb.protocol.internal.StorageRewardMark];
 }
 
 
@@ -210,6 +212,10 @@ table Broadcast {
 table UpdateFriends {
   user: uint;
   names: [string];
+}
+
+table GetStoragePending {
+  user: uint;
 }
 
 table GetSystemMails {

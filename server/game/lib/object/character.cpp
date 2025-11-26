@@ -6,6 +6,7 @@ using namespace fb::game;
 
 character::character(fb::game::server& server, fb::socket<character>& socket) :
     stat(*this),
+    storage_box(*this),
     life(server,
          server.model.life[0],
          stat,
@@ -1086,84 +1087,86 @@ async::task<void> character::process_system_mails()
 {
     this->assert_thread();
 
-    auto system_mails = this->server.get_system_mails();
-    if (system_mails.empty())
-        co_return;
+    co_await this->server.read_system_mails_async([&](const std::vector<fb::game::system_mail>& system_mails) -> async::task<void> {
+        if (system_mails.empty())
+            co_return;
 
-    auto now          = fb::model::datetime();
-    auto created_date = this->created_date();
+        auto now          = fb::model::datetime();
+        auto created_date = this->created_date();
 
-    const auto& system_mail_users = this->mail_box.get_system_mail_users();
-    auto        user_mail_ids     = std::set<uint32_t>();
-    for (const auto& [mail_id, smu] : system_mail_users)
-    {
-        user_mail_ids.insert(mail_id);
-    }
-
-    for (const auto& mail : system_mails)
-    {
-        if (mail.expire_date.has_value() && mail.expire_date.value() < now)
-            continue;
-
-        if (mail.created_date < created_date)
-            continue;
-
-        if (user_mail_ids.find(mail.id) == user_mail_ids.end())
+        const auto& system_mail_users = this->mail_box.get_system_mail_users();
+        auto        user_mail_ids     = std::set<uint32_t>();
+        for (const auto& [mail_id, smu] : system_mail_users)
         {
-            this->mail_box.add_system_mail_user(mail.id, mail.expire_date.has_value() ? std::make_optional(mail.expire_date.value().to_string()) : std::nullopt);
+            user_mail_ids.insert(mail_id);
         }
-    }
 
-    for (const auto& [mail_id, smu] : system_mail_users)
-    {
-        if (smu.read)
-            continue;
-
-        bool               mail_exists = false;
-        const system_mail* mail_ptr    = nullptr;
         for (const auto& mail : system_mails)
         {
-            if (mail.id == mail_id)
+            if (mail.expire_date.has_value() && mail.expire_date.value() < now)
+                continue;
+
+            if (mail.created_date < created_date)
+                continue;
+
+            if (user_mail_ids.find(mail.id) == user_mail_ids.end())
             {
-                if (mail.expire_date.has_value() && mail.expire_date.value() < now)
-                    break;
-
-                if (mail.created_date < created_date)
-                    break;
-
-                mail_exists = true;
-                mail_ptr    = &mail;
-                break;
+                this->mail_box.add_system_mail_user(mail.id, mail.expire_date.has_value() ? std::make_optional(mail.expire_date.value().to_string()) : std::nullopt);
             }
         }
 
-        if (!mail_exists)
-            continue;
-
-        try
+        for (const auto& [mail_id, smu] : system_mail_users)
         {
-            if (!this->mail_box.try_mark_system_mail_user_as_sent(mail_id))
+            if (smu.read)
                 continue;
 
-            if (mail_ptr == nullptr)
+            bool               mail_exists = false;
+            const system_mail* mail_ptr    = nullptr;
+            for (const auto& mail : system_mails)
             {
-                this->mail_box.update_system_mail_user_read(mail_id, false);
-                continue;
+                if (mail.id == mail_id)
+                {
+                    if (mail.expire_date.has_value() && mail.expire_date.value() < now)
+                        break;
+
+                    if (mail.created_date < created_date)
+                        break;
+
+                    mail_exists = true;
+                    mail_ptr    = &mail;
+                    break;
+                }
             }
 
-            const auto& mail = *mail_ptr;
-            auto&& resp = co_await this->server.http.post("internal", "/mail/write", WriteMail{mail.sender, this->name(), mail.title, mail.contents, fb::config<uint32_t>("id")});
+            if (!mail_exists)
+                continue;
 
-            if (resp.error != 0)
+            try
+            {
+                if (!this->mail_box.try_mark_system_mail_user_as_sent(mail_id))
+                    continue;
+
+                if (mail_ptr == nullptr)
+                {
+                    this->mail_box.update_system_mail_user_read(mail_id, false);
+                    continue;
+                }
+
+                const auto& mail = *mail_ptr;
+                auto&&      resp =
+                    co_await this->server.http.post("internal", "/mail/write", WriteMail{mail.sender, this->name(), mail.title, mail.contents, fb::config<uint32_t>("id")});
+
+                if (resp.error != 0)
+                    this->mail_box.update_system_mail_user_read(mail_id, false);
+                else
+                    this->server.on_write_mail(resp);
+            }
+            catch (...)
+            {
                 this->mail_box.update_system_mail_user_read(mail_id, false);
-            else
-                this->server.on_write_mail(resp);
+            }
         }
-        catch (...)
-        {
-            this->mail_box.update_system_mail_user_read(mail_id, false);
-        }
-    }
+    });
 
     co_return;
 }
