@@ -1,4 +1,4 @@
-namespace Internal.Service
+namespace Http.Service
 {
     public class BulletinWriteRequest
     {

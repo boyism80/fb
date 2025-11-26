@@ -5,10 +5,9 @@ using System.Data;
 using System.Threading.Tasks;
 using Dapper;
 using Http.Model;
-using Http.Service;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Internal.Service
+namespace Http.Service
 {
     public class BulletinService
     {
@@ -46,10 +45,7 @@ namespace Internal.Service
 
             try
             {
-                // Modular sharding: section % SharedDbSize
-                var dbIndex = GetDbIndexForSection(section, dbContext);
-
-                await using var conn = dbContext.Connection(dbIndex);
+                await using var conn = dbContext.Connection(section);
                 await conn.OpenAsync();
 
                 var dynamicParams = new DynamicParameters();
@@ -77,6 +73,52 @@ namespace Internal.Service
             }
         }
 
+        public async Task<int> DeleteBatch(uint section, List<uint> ids, uint user, bool ignoreOwner = false)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
+            try
+            {
+                await using var conn = dbContext.Connection(section);
+                await conn.OpenAsync();
+
+                var deletedIds = new List<(uint section, uint id)>();
+                var successCount = 0;
+
+                foreach (var id in ids)
+                {
+                    var dynamicParams = new DynamicParameters();
+                    dynamicParams.Add("id", id);
+                    dynamicParams.Add("user", user);
+                    dynamicParams.Add("ignore_owner", ignoreOwner ? 1 : 0);
+
+                    var result = await conn.QueryFirstOrDefaultAsync<int>(
+                        "USP_BULLETIN_DELETE",
+                        dynamicParams,
+                        commandType: CommandType.StoredProcedure);
+
+                    if (result == 1)
+                    {
+                        deletedIds.Add((section, id));
+                        successCount++;
+                    }
+                }
+
+                // Delete from Redis cache for all successfully deleted articles
+                if (deletedIds.Any())
+                {
+                    await _cacheService.DeleteArticlesBatchAsync(deletedIds);
+                }
+
+                return successCount;
+            }
+            catch (Exception)
+            {
+                return -4;
+            }
+        }
+
         public async Task<int> Update(uint section, uint id, uint user, string title, string contents, bool ignoreOwner = false)
         {
             using var scope = _scopeFactory.CreateScope();
@@ -84,9 +126,7 @@ namespace Internal.Service
 
             try
             {
-                var dbIndex = GetDbIndexForSection(section, dbContext);
-
-                await using var conn = dbContext.Connection(dbIndex);
+                await using var conn = dbContext.Connection(section);
                 await conn.OpenAsync();
 
                 var dynamicParams = new DynamicParameters();
@@ -122,16 +162,6 @@ namespace Internal.Service
             }
         }
 
-        private int GetDbIndexForSection(uint section, DbContext dbContext)
-        {
-            // Modular sharding: section % SharedDbSize
-            // If SharedDbSize is 0, use -1 (common DB)
-            if (dbContext.SharedDbSize == 0)
-                return -1;
-
-            return (int)(section % dbContext.SharedDbSize);
-        }
-
         public Dictionary<uint, List<BulletinWriteRequest>> DequeueBatch(int maxBatchSize)
         {
             var writes = new Dictionary<uint, List<BulletinWriteRequest>>();
@@ -147,6 +177,65 @@ namespace Internal.Service
             }
 
             return writes;
+        }
+
+        public async Task<List<Bulletin>> GetArticleListAsync(uint section, ushort offset, string? searchQuery = null)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
+            await using var conn = dbContext.Connection(section);
+
+            List<Bulletin> articleList;
+
+            if (string.IsNullOrWhiteSpace(searchQuery))
+            {
+                var dynamicParams = new DynamicParameters();
+                dynamicParams.Add("section", section);
+                dynamicParams.Add("position", offset);
+
+                var articles = await conn.QueryAsync<Bulletin>(
+                    "USP_BULLETIN_GET_LIST",
+                    dynamicParams,
+                    commandType: CommandType.StoredProcedure);
+
+                articleList = articles.ToList();
+            }
+            else
+            {
+                // Search by title, contents, or author name
+                var searchPattern = $"%{searchQuery}%";
+                var sql = @"
+                    SELECT b.id, b.section, b.user, b.title, b.contents, b.created_date, b.updated_date, b.deleted
+                    FROM bulletin b
+                    LEFT JOIN character c ON b.user = c.id
+                    WHERE b.section = @section 
+                      AND b.deleted = 0
+                      AND (b.title LIKE @search OR b.contents LIKE @search OR c.name LIKE @search)
+                    ORDER BY b.id DESC
+                    LIMIT 20 OFFSET @offset";
+
+                var dynamicParams = new DynamicParameters();
+                dynamicParams.Add("section", section);
+                dynamicParams.Add("search", searchPattern);
+                dynamicParams.Add("offset", offset);
+
+                var articles = await conn.QueryAsync<Bulletin>(sql, dynamicParams);
+                articleList = articles.ToList();
+            }
+
+            if (articleList.Any())
+            {
+                var userIds = articleList.Select(a => a.User).Distinct().ToList();
+                var userNames = await dbContext.Character.GetName(userIds);
+
+                foreach (var article in articleList)
+                {
+                    article.UserName = userNames.TryGetValue(article.User, out var name) ? name : string.Empty;
+                }
+            }
+
+            return articleList;
         }
 
         public async Task<(Bulletin Article, bool Next)> GetArticleAsync(uint section, uint id)
@@ -213,3 +302,4 @@ namespace Internal.Service
         }
     }
 }
+

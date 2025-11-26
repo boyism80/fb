@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using Dapper;
 using fb.protocol._internal;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Service;
-using Internal.Service;
 using Microsoft.AspNetCore.Mvc;
 using Request = fb.protocol._internal.request;
 using Response = fb.protocol._internal.response;
@@ -38,25 +36,7 @@ namespace Internal.Controllers
         [HttpGet("{section}")]
         public async Task<Response.GetArticleList> GetArticleList(uint section, [FromQuery(Name = "offset")] ushort offset)
         {
-            await using var conn = _dbContext.Connection(section);
-            var dynamicParams = new DynamicParameters();
-            dynamicParams.Add("section", section);
-            dynamicParams.Add("position", offset);
-            var articles = await conn.QueryAsync<Http.Model.Bulletin>($"USP_BULLETIN_GET_LIST", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
-
-            var articleList = articles.ToList();
-            if (articleList.Any())
-            {
-                // Get user names from global DB
-                var userIds = articleList.Select(a => a.User).Distinct().ToList();
-                var userNames = await _dbContext.Character.GetName(userIds);
-
-                // Set user names
-                foreach (var article in articleList)
-                {
-                    article.UserName = userNames.TryGetValue(article.User, out var name) ? name : string.Empty;
-                }
-            }
+            var articleList = await _bulletinService.GetArticleListAsync(section, offset);
 
             var summaryList = _mapper.Map<List<Http.Model.Bulletin>, List<ArticleSummary>>(articleList);
             return new Response.GetArticleList

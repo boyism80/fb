@@ -1,9 +1,8 @@
 using Http.Redis;
-using Http.Service;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
-namespace Internal.Service
+namespace Http.Service
 {
     public abstract class GenericCacheService<T> where T : class
     {

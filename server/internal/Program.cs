@@ -108,9 +108,9 @@ public class Program
         builder.Services.AddScoped<BanService>();
         builder.Services.AddScoped<CacheService>();
         builder.Services.AddSingleton<WriteBackService>();
-        builder.Services.AddSingleton<Internal.Service.BulletinService>();
-        builder.Services.AddSingleton<Internal.Service.BulletinCacheService>();
-        builder.Services.AddHostedService<Internal.Service.BulletinBackgroundService>();
+        builder.Services.AddSingleton<Http.Service.BulletinService>();
+        builder.Services.AddSingleton<Http.Service.BulletinCacheService>();
+        builder.Services.AddHostedService<Http.Service.BulletinBackgroundService>();
         builder.Services.AddHostedService<ShutdownListenerService>();
         builder.Services.AddHealthChecks();
 
