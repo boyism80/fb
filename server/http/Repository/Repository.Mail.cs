@@ -2,7 +2,6 @@ using Dapper;
 using Fb.Model.EnumValue;
 using Http.Model;
 using Http.Service;
-using System.Data;
 
 namespace Http.Reepository
 {

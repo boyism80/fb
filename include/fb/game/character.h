@@ -16,7 +16,9 @@
 #include <fb/game/mail_box.h>
 #include <fb/game/stat.h>
 #include <fb/game/quest.h>
+#include <fb/game/storage.h>
 #include <set>
+#include <unordered_map>
 
 namespace fb::game {
 
@@ -79,15 +81,16 @@ private:
     };
 
 public:
-    fb::game::trade    trade;
-    fb::game::items    items;
-    fb::game::quests   quests;
-    fb::game::bulletin bulletin = fb::game::bulletin(*this);
-    fb::game::mail_box mail_box = fb::game::mail_box(*this);
-    fb::lua::context*  dialog   = nullptr;
-    achievement_map_t  achievements;
-    listener_t&        listener;
-    character_stat     stat;
+    fb::game::trade       trade;
+    fb::game::items       items;
+    fb::game::quests      quests;
+    fb::game::bulletin    bulletin = fb::game::bulletin(*this);
+    fb::game::mail_box    mail_box = fb::game::mail_box(*this);
+    fb::game::storage_box storage_box;
+    fb::lua::context*     dialog = nullptr;
+    achievement_map_t     achievements;
+    listener_t&           listener;
+    character_stat        stat;
 
 private:
     using object::based;

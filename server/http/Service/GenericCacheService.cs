@@ -1,6 +1,4 @@
 using Http.Redis;
-using Newtonsoft.Json;
-using StackExchange.Redis;
 
 namespace Http.Service
 {

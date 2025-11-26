@@ -2,8 +2,6 @@ using Dapper;
 using Http.Model;
 using Http.Redis;
 using Http.Service;
-using Medallion.Threading;
-using Medallion.Threading.Redis;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 

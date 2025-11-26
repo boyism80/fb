@@ -1,6 +1,10 @@
 #include <fb/game/server.h>
 #include <fb/game/handler.h>
 #include <fb/game/builtin/server.h>
+#include <fb/game/handler/timer/storage_pending_timer.h>
+#include <fb/game/handler/timer/storage_pending_distribution_timer.h>
+#include <fb/game/handler/amqp/storage_pending_personal.h>
+#include <fb/game/handler/amqp/storage_pending_fetch.h>
 using namespace fb::game;
 using namespace std::chrono_literals;
 
@@ -191,6 +195,7 @@ async::task<void> server::handle_start()
     this->bind_timer<fb::game::handler::timer::update_time>(1s);
     this->bind_timer<fb::game::handler::timer::announce>(std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
     this->bind_timer<fb::game::handler::timer::system_mail_timer>(30s);
+    this->bind_timer<fb::game::handler::timer::storage_pending_timer>(15s);
 
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
     this->bind_thread_timer<fb::game::handler::timer::mob_respawn_timer>(1s);
@@ -199,6 +204,7 @@ async::task<void> server::handle_start()
     this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
     this->bind_thread_timer<fb::game::handler::timer::system_mail_distribution_timer>(5s);
+    this->bind_thread_timer<fb::game::handler::timer::storage_pending_distribution_timer>(5s);
 
     this->bind_npc_interaction<fb::game::handler::npc_interaction::sell>();
     this->bind_npc_interaction<fb::game::handler::npc_interaction::buy>();
@@ -218,11 +224,14 @@ async::task<void> server::handle_start()
     this->bind_npc_interaction<fb::game::handler::npc_interaction::revive>();
     this->bind_npc_interaction<fb::game::handler::npc_interaction::appreciate>();
 
-    this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(std::format("fb.game.{}", config<uint32_t>("id")));
-    this->handler.amqp.bind<fb::game::handler::amqp::whisper>(std::format("fb.game.{}", config<uint32_t>("id")));
+    auto host_name = std::format("fb.game.{}", config<uint32_t>("id"));
+    this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(host_name);
+    this->handler.amqp.bind<fb::game::handler::amqp::whisper>(host_name);
+    this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_personal>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.system");
     this->handler.amqp.bind<fb::game::handler::amqp::write_system_mail>("fb.system");
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast>("fb.global");
+    this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_fetch>("fb.global");
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>("fb.system");
     this->handler.amqp.bind<fb::game::handler::amqp::enter_group>("fb.group");
     this->handler.amqp.bind<fb::game::handler::amqp::leave_group>("fb.group");
@@ -491,8 +500,36 @@ async::task<void> server::save(character& ch)
         received_system_mails.push_back(
             internal::SystemMailUser{ch.id(), mail_id, smu.read, smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value().to_string()) : std::nullopt});
     }
+    auto        storage_boxes   = std::vector<internal::StorageBox>();
+    const auto& character_boxes = ch.storage_box.entries();
+    storage_boxes.reserve(character_boxes.size());
+    for (const auto& [id, box] : character_boxes)
+    {
+        if (box.expire_date.has_value() && box.expire_date.value() < now)
+            continue;
 
-    std::ignore = co_await this->http.post("internal", "/in-game/save", Save{ch.to_protocol(), items, spells, achievements, quests, received_system_mails});
+        storage_boxes.emplace_back(ch.id(),
+                                   box.id,
+                                   box.message,
+                                   box.attachments,
+                                   box.received,
+                                   box.expire_date.has_value() ? std::make_optional(box.expire_date->to_string()) : std::nullopt);
+    }
+
+    auto        storage_reward_marks = std::vector<internal::StorageRewardMark>();
+    const auto& reward_marks         = ch.storage_box.reward_marks();
+    storage_reward_marks.reserve(reward_marks.size());
+    for (const auto& [pending_id, mark] : reward_marks)
+    {
+        auto expired_date_str = std::optional<std::string>();
+        if (mark.expire_date.has_value())
+            expired_date_str = std::make_optional(mark.expire_date->to_string());
+        storage_reward_marks.emplace_back(mark.user, pending_id, expired_date_str);
+    }
+
+    std::ignore = co_await this->http.post("internal",
+                                           "/in-game/save",
+                                           Save{ch.to_protocol(), items, spells, achievements, quests, received_system_mails, storage_boxes, storage_reward_marks});
 
     co_await this->threads.switching(weak);
     ch.send(fb_resp::save());

@@ -126,6 +126,9 @@ table Init {
   achievements: [fb.protocol.internal.Achievement];
   quests: [fb.protocol.internal.Quest];
   received_system_mails: [fb.protocol.internal.SystemMailUser];
+  storage_boxes: [fb.protocol.internal.StorageBox];
+  storage_reward_marks: [fb.protocol.internal.StorageRewardMark];
+  storage_pending: [fb.protocol.internal.StoragePendingBox];
   mail: uint;
 }
 
@@ -264,6 +267,12 @@ table Broadcast {
 
 table UpdateFriends
 {
+  error: uint;
+}
+
+table GetStoragePending {
+  user: uint?;
+  pending: [fb.protocol.internal.StoragePendingBox];
   error: uint;
 }
 

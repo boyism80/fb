@@ -1,6 +1,5 @@
 using AdminTool.Authorization;
 using AdminTool.Options;
-using AdminTool.Services;
 using Dapper;
 using Http.Extension;
 using Http.Service;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
 SqlMapper.AddTypeHandler(typeof(List<Http.Model.Buff>), new JsonTypeHandler());
+SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), new JsonTypeHandler());
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +25,7 @@ builder.Services.AddSingleton<RedisService>();
 builder.Services.AddSingleton<RedisDistributedLockService>();
 builder.Services.AddSingleton<Fb.Model.Model>();
 builder.Services.AddSingleton<RabbitMqService>();
+builder.Services.AddSingleton<SessionService>();
 builder.Services.AddSingleton<WriteBackService>();
 builder.Services.AddScoped<DbContext>();
 builder.Services.AddScoped<BanService>();
@@ -34,7 +35,8 @@ builder.Services.AddSingleton<Http.Service.BulletinService>();
 builder.Services.AddSingleton<Http.Service.BulletinCacheService>();
 builder.Services.AddHostedService<Http.Service.BulletinBackgroundService>();
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection("Security"));
-builder.Services.AddSingleton<SecurityService>();
+builder.Services.AddSingleton<AdminTool.Services.SecurityService>();
+builder.Services.AddScoped<StorageService>();
 builder.Services.AddAuthorization();
 builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, MinimumRoleAuthorizationHandler>();
 builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider, MinimumRolePolicyProvider>();

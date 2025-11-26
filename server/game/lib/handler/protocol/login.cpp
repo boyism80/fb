@@ -1,6 +1,9 @@
 #include <fb/game/handler/protocol/login.h>
 #include <fb/game/server.h>
 #include <fb/game/handler/amqp/ban.h>
+#include <fb/game/storage.h>
+#include <fb/logger.h>
+#include <fb/model/datetime.h>
 
 using namespace fb::game::handler::protocol;
 
@@ -248,6 +251,54 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     this->init_achievements(response.achievements, *ch);
     this->init_quests(response.quests, *ch);
     this->init_system_mail_users(response.received_system_mails, *ch);
+
+    auto storage_boxes = std::vector<fb::game::storage_box::entry>();
+    storage_boxes.reserve(response.storage_boxes.size());
+    for (const auto& dto : response.storage_boxes)
+    {
+        fb::game::storage_box::entry box{};
+        box.id          = dto.id;
+        box.message     = dto.message;
+        box.attachments = dto.attachments;
+        box.received    = dto.received;
+        if (dto.expired_date.has_value())
+            box.expire_date = fb::model::datetime(dto.expired_date.value());
+        storage_boxes.push_back(std::move(box));
+    }
+
+    auto storage_reward_marks = std::vector<fb::game::storage_box::reward_mark>();
+    storage_reward_marks.reserve(response.storage_reward_marks.size());
+    for (const auto& dto : response.storage_reward_marks)
+    {
+        fb::game::storage_box::reward_mark mark{};
+        mark.user       = dto.user;
+        mark.pending_id = dto.pending_id;
+        if (dto.expired_date.has_value())
+            mark.expire_date = fb::model::datetime(dto.expired_date.value());
+        storage_reward_marks.push_back(std::move(mark));
+    }
+
+    ch->storage_box.init(storage_boxes, storage_reward_marks);
+
+    if (response.storage_pending.empty() == false)
+    {
+        auto pending_models = std::vector<fb::game::storage_box::pending_box>();
+        pending_models.reserve(response.storage_pending.size());
+        for (const auto& dto : response.storage_pending)
+        {
+            fb::game::storage_box::pending_box pending_box{};
+            pending_box.id          = dto.id;
+            pending_box.user        = dto.user;
+            pending_box.message     = dto.message;
+            pending_box.attachments = dto.attachments;
+            if (dto.expired_date.has_value())
+                pending_box.expire_date = fb::model::datetime(dto.expired_date.value());
+            pending_models.push_back(std::move(pending_box));
+        }
+
+        ch->storage_box.apply_pending(pending_models);
+    }
+
     this->init_option(response.option, *ch);
     ch->init();
     ch->update_time(this->server.time().hours());

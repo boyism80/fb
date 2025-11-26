@@ -3,7 +3,6 @@ using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
 using Http.Service;
-using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using Protocol = fb.protocol._internal;
 using Request = fb.protocol._internal.request;
