@@ -3351,10 +3351,13 @@ int builtin::character::builtin_storage_entries(lua_State* L)
     auto weak = ch->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         auto buffer = std::vector<fb::game::storage_box::entry>();
+        buffer.reserve(ch->storage_box.entries().size());
         for (const auto& [id, entry] : ch->storage_box.entries())
-        {
             buffer.push_back(entry);
-        }
+
+        std::sort(buffer.begin(), buffer.end(), [](const auto& lhs, const auto& rhs) {
+            return lhs.id > rhs.id;
+        });
 
         return lua->ensure_resume(*server, weak, [=]() {
             lua->new_table();

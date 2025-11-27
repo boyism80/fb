@@ -59,6 +59,16 @@ void storage_box::apply_pending(const std::vector<pending_box>& pending)
         mark.pending_id             = box.id;
         mark.expire_date            = box.expire_date;
         this->_reward_marks[box.id] = mark;
+
+        // Notify player about new storage box entry
+        if (!box.title.empty())
+        {
+            this->_owner.message(std::format("통합보관함에 '{}' 보상이 추가되었습니다.", box.title), MESSAGE_TYPE::STATE);
+        }
+        else
+        {
+            this->_owner.message("통합보관함에 보상이 추가되었습니다.", MESSAGE_TYPE::STATE);
+        }
     }
 }
 

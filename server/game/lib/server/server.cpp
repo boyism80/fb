@@ -66,6 +66,12 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("name2npc", builtin::server::builtin_name2npc);
     lua::build("name2map", builtin::server::builtin_name2map);
     lua::build("name2ch", builtin::server::builtin_name2ch);
+    lua::build("id2mob", builtin::server::builtin_id2mob);
+    lua::build("id2spell", builtin::server::builtin_id2spell);
+    lua::build("id2item", builtin::server::builtin_id2item);
+    lua::build("id2npc", builtin::server::builtin_id2npc);
+    lua::build("id2map", builtin::server::builtin_id2map);
+    lua::build("id2ch", builtin::server::builtin_id2ch);
     lua::build("broadcast", builtin::server::builtin_broadcast);
     lua::build("assert_alive", builtin::server::builtin_assert_alive);
     lua::build("pursuit_sell", builtin::server::builtin_pursuit_sell);

@@ -3,25 +3,44 @@ function ON_F1_EVENT(me)
     local entries = nil
     local current_entry = nil
 
+    local function has_attachments(entry)
+        return entry.attachments ~= nil and #entry.attachments > 0
+    end
+
     local function build_reward_text(entry)
-        local reward_info = {}
-        if entry.attachments then
+        local lines = {}
+        if has_attachments(entry) then
             for _, attachment in ipairs(entry.attachments) do
-                local params = attachment.Parameters
-                if attachment.Type == 'item' and params and #params >= 2 then
-                    table.insert(reward_info, string.format('아이템 ID:%d x%d', params[1], params[2]))
-                elseif attachment.Type == 'money' and params and #params >= 1 then
-                    table.insert(reward_info, string.format('금전 %d전', params[1]))
-                elseif attachment.Type == 'exp' and params and #params >= 1 then
-                    table.insert(reward_info, string.format('경험치 %d', params[1]))
+                local params = attachment.Params
+                if attachment.Header == 'item' and params and #params >= 2 then
+                    local id = params[1]
+                    local count = params[2]
+                    local model = id2item(id)
+                    local name = nil
+                    if model ~= nil then
+                        name = model:name()
+                    else
+                        name = string.format('아이템 ID:%d', id)
+                    end
+
+                    if count ~= nil and count >= 2 then
+                        table.insert(lines, string.format(' - %s x%d', name, count))
+                    else
+                        table.insert(lines, string.format(' - %s', name))
+                    end
+                elseif attachment.Header == 'money' and params and #params >= 1 then
+                    table.insert(lines, string.format(' - 금전 %d전', params[1]))
+                elseif attachment.Header == 'exp' and params and #params >= 1 then
+                    table.insert(lines, string.format(' - 경험치 %d', params[1]))
                 end
             end
         end
 
-        if #reward_info == 0 then
-            return '\n보상: 없음'
+        if #lines == 0 then
+            return '\n\n보상: 없음'
         end
-        return '\n보상: ' .. table.concat(reward_info, ', ')
+
+        return '\n\n보상:\n' .. table.concat(lines, '\n')
     end
 
     local function build_detail_message(entry)
@@ -30,8 +49,17 @@ function ON_F1_EVENT(me)
             expire_text = '\n만료일: ' .. entry.expired_date
         end
 
-        local received_text = entry.received and '수령 완료' or '수령 가능'
-        return string.format('%s%s%s\n상태: %s', entry.message, expire_text, build_reward_text(entry), received_text)
+        local reward_text = ''
+        local status_text = ''
+        
+        -- 보상이 있는 경우에만 보상과 상태 표시
+        if has_attachments(entry) then
+            reward_text = build_reward_text(entry)
+            local received_text = entry.received and '수령 완료' or '수령 가능'
+            status_text = '\n\n상태: ' .. received_text
+        end
+        
+        return string.format('%s%s%s%s', entry.message, expire_text, reward_text, status_text)
     end
 
 ::MAIN_MENU::
@@ -76,7 +104,18 @@ function ON_F1_EVENT(me)
 
 ::ENTRY_DETAIL::
     local detail_header = current_entry.title ~= nil and current_entry.title ~= '' and current_entry.title or '보관함 보상'
-    local detail_button = me:dialog(npc, detail_header .. '\n' .. build_detail_message(current_entry), true, true)
+    local detail_message = build_detail_message(current_entry)
+    
+    -- 보상이 없는 경우 상세 정보를 보여주고 바로 리스트로 돌아감
+    if not has_attachments(current_entry) then
+        local detail_button = me:dialog(npc, detail_header .. '\n' .. detail_message, true, true)
+        if detail_button == DIALOG_RESULT.QUIT then
+            return
+        end
+        goto STORAGE_LIST
+    end
+
+    local detail_button = me:dialog(npc, detail_header .. '\n' .. detail_message, true, true)
     if detail_button == DIALOG_RESULT.QUIT then
         return
     end
@@ -88,9 +127,6 @@ function ON_F1_EVENT(me)
     end
 
     if current_entry.received then
-        if me:dialog(npc, '이미 수령한 보상입니다.', true, false) == DIALOG_RESULT.QUIT then
-            return
-        end
         goto STORAGE_LIST
     end
 
@@ -112,7 +148,7 @@ function ON_F1_EVENT(me)
 
     local success = me:receive_storage_reward(current_entry.id)
     if success then
-        if me:dialog(npc, '보상이 지급되었습니다.', true, false) == DIALOG_RESULT.QUIT then
+        if me:dialog(npc, '보상이 지급되었습니다.', true, true) == DIALOG_RESULT.QUIT then
             return
         end
     else

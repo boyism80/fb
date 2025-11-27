@@ -78,4 +78,3 @@ void storage_pending_channel::write(std::function<void(std::vector<storage_box::
 {
     this->_data.write(fn);
 }
-

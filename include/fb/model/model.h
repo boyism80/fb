@@ -3949,7 +3949,7 @@ public:
     Json::Value to_json() const;
     dsl(fb::model::enum_value::DSL header, const std::vector<std::any>& params) : header(header), params(params)
     { }
-    dsl(const Json::Value& json) : header(build<fb::model::enum_value::DSL>(json["Type"])), params(parse_params(json))
+    dsl(const Json::Value& json) : header(build<fb::model::enum_value::DSL>(json["Header"])), params(parse_params(json))
     { }
     dsl(const dsl& other) : header(other.header), params(other.params)
     { }
@@ -3996,13 +3996,13 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::area);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::area);
         auto params = Json::Value{Json::arrayValue};
         params.append(left);
         params.append(top);
         params.append(right);
         params.append(bottom);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4033,10 +4033,10 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::class_t);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::class_t);
         auto params = Json::Value{Json::arrayValue};
         params.append(fb::model::enum_value::enum_tostring<fb::model::enum_value::CLASS>(value));
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4067,10 +4067,10 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::dexterity);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::dexterity);
         auto params = Json::Value{Json::arrayValue};
         params.append(value);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4101,10 +4101,10 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::exp);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::exp);
         auto params = Json::Value{Json::arrayValue};
         params.append(value);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4135,10 +4135,10 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::intelligence);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::intelligence);
         auto params = Json::Value{Json::arrayValue};
         params.append(value);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4177,12 +4177,12 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::item);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::item);
         auto params = Json::Value{Json::arrayValue};
         params.append(id);
         params.append(count);
         params.append(percent);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4217,11 +4217,11 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::level);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::level);
         auto params = Json::Value{Json::arrayValue};
         params.append(min.has_value() ? min.value() : Json::nullValue);
         params.append(max.has_value() ? max.value() : Json::nullValue);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4268,14 +4268,14 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::map);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::map);
         auto params = Json::Value{Json::arrayValue};
         params.append(id);
         params.append(x);
         params.append(y);
         params.append(right);
         params.append(bottom);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4306,10 +4306,10 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::money);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::money);
         auto params = Json::Value{Json::arrayValue};
         params.append(value);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4344,11 +4344,11 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::point);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::point);
         auto params = Json::Value{Json::arrayValue};
         params.append(x);
         params.append(y);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4379,10 +4379,10 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::promotion);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::promotion);
         auto params = Json::Value{Json::arrayValue};
         params.append(value);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4413,10 +4413,10 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::role);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::role);
         auto params = Json::Value{Json::arrayValue};
         params.append(fb::model::enum_value::enum_tostring<fb::model::enum_value::ROLE>(value));
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4451,11 +4451,11 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::script);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::script);
         auto params = Json::Value{Json::arrayValue};
         params.append(path);
         params.append(function);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4486,10 +4486,10 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::sex);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::sex);
         auto params = Json::Value{Json::arrayValue};
         params.append(fb::model::enum_value::enum_tostring<fb::model::enum_value::SEX>(value));
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4520,10 +4520,10 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::strength);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::strength);
         auto params = Json::Value{Json::arrayValue};
         params.append(value);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4558,11 +4558,11 @@ public:
     Json::Value to_json() const
     {
         auto json = Json::Value{};
-        json["Type"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::world);
+        json["Header"] = fb::model::enum_value::enum_tostring<fb::model::enum_value::DSL>(fb::model::enum_value::DSL::world);
         auto params = Json::Value{Json::arrayValue};
         params.append(id);
         params.append(index);
-        json["Parameters"] = params;
+        json["Params"] = params;
         return json;
     }
 };
@@ -4590,12 +4590,12 @@ inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& jso
         { fb::model::enum_value::DSL::world, [](const Json::Value& json) { return fb::model::dsl::world(json).to_dsl().params; }}
     };
 
-    auto header = build<fb::model::enum_value::DSL>(json["Type"]);
+    auto header = build<fb::model::enum_value::DSL>(json["Header"]);
     auto i = data.find(header);
     if(i == data.end())
         throw std::runtime_error("invalid dsl header");
 
-    return i->second(json["Parameters"]);
+    return i->second(json["Params"]);
 }
 
 inline Json::Value fb::model::dsl::to_json() const

@@ -41,7 +41,7 @@ namespace Http.Service
 
             return (await personalTask)
                 .Where(box => !box.Deleted)
-                .Where(box => box.ExpiredDate == null || box.ExpiredDate <= now)
+                .Where(box => box.ExpiredDate == null || box.ExpiredDate >= now)
                 .Where(box => !processedIds.Contains(box.Id))
                 .ToList();
         }
@@ -53,7 +53,7 @@ namespace Http.Service
 
             return pending
                 .Where(box => !box.Deleted)
-                .Where(box => box.ExpiredDate == null || box.ExpiredDate <= now)
+                .Where(box => box.ExpiredDate == null || box.ExpiredDate >= now)
                 .ToList();
         }
 
