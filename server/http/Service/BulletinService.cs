@@ -175,7 +175,7 @@ namespace Http.Service
             return writes;
         }
 
-        public async Task<List<Bulletin>> GetArticleListAsync(uint section, ushort offset, string? searchQuery = null)
+        public async Task<List<Bulletin>> GetArticleListAsync(uint section, ushort offset, string searchQuery = null)
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();

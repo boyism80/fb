@@ -1087,7 +1087,7 @@ async::task<void> character::process_system_mails()
 {
     this->assert_thread();
 
-    co_await this->server.read_system_mails_async([&](const std::vector<fb::game::system_mail>& system_mails) -> async::task<void> {
+    co_await this->server.poll.system_mail.read_async([&](const std::vector<fb::game::system_mail>& system_mails) -> async::task<void> {
         if (system_mails.empty())
             co_return;
 

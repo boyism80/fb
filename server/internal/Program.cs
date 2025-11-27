@@ -82,7 +82,7 @@ public class Program
             .ForMember(x => x.Deleted, x => x.Ignore()) // Deleted is managed by Override logic
             .ForMember(x => x.CreatedDate, x => x.Ignore()) // CreatedDate is managed by DB
             .ReverseMap()
-            .ForMember(x => x.ExpireDate, x => x.MapFrom(u => u.ExpireDate.HasValue ? u.ExpireDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : (string?)null));
+            .ForMember(x => x.ExpireDate, x => x.MapFrom(u => u.ExpireDate.HasValue ? u.ExpireDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null));
 
             cfg.CreateMap<Http.Model.StorageBox, Protocol.StorageBox>()
             .ForMember(x => x.Attachments, x => x.Ignore())

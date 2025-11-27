@@ -55,6 +55,8 @@
 #include <fb/game/handler/amqp/write_system_mail.h>
 #include <fb/game/handler/amqp/ban.h>
 #include <fb/game/handler/amqp/broadcast_save.h>
+#include <fb/game/handler/amqp/storage_pending_personal.h>
+#include <fb/game/handler/amqp/storage_pending_fetch.h>
 
 #include <fb/game/handler/npc_interaction/appreciate.h>
 #include <fb/game/handler/npc_interaction/buy.h>
@@ -85,5 +87,7 @@
 #include <fb/game/handler/timer/mob_respawn_timer.h>
 #include <fb/game/handler/timer/soliloquy_timer.h>
 #include <fb/game/handler/timer/save_timer.h>
+#include <fb/game/handler/timer/storage_pending_timer.h>
+#include <fb/game/handler/timer/storage_pending_distribution_timer.h>
 
 #endif // FB_GAME_HANDLER_H

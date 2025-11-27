@@ -1,30 +1,35 @@
+#include <fb/game/polling/storage_pending_channel.h>
 #include <fb/game/server.h>
 #include <fb/game/storage.h>
-#include <fb/model/model.h>
 #include <fb/logger.h>
 #include <json/json.h>
 #include <sstream>
+#include <utility>
 
 using namespace fb::game;
 
-async::task<void> server::fetch_storage_pending()
+storage_pending_channel::storage_pending_channel(server& owner) :
+    _owner(owner)
+{ }
+
+async::task<void> storage_pending_channel::fetch()
 {
     try
     {
-        auto&& resp = co_await this->http.get<internal_resp::GetStoragePending>("internal", "/storage/pending");
+        auto&& resp = co_await this->_owner.http.get<fb::protocol::internal::response::GetStoragePending>("internal", "/storage/pending");
         if (resp.error != 0)
             co_return;
 
-        auto pending = std::vector<fb::game::storage_box::pending_box>();
+        auto pending = std::vector<storage_box::pending_box>();
         pending.reserve(resp.pending.size());
 
         for (const auto& dto : resp.pending)
         {
-        fb::game::storage_box::pending_box entry{};
-        entry.id      = dto.id;
-        entry.user    = dto.user;
-        entry.title   = dto.title;
-        entry.message = dto.message;
+            storage_box::pending_box entry{};
+            entry.id      = dto.id;
+            entry.user    = dto.user;
+            entry.title   = dto.title;
+            entry.message = dto.message;
 
             if (!dto.attachments.empty())
             {
@@ -47,7 +52,7 @@ async::task<void> server::fetch_storage_pending()
             pending.push_back(std::move(entry));
         }
 
-        this->_storage_pending.write([&pending](auto& buffer) {
+        this->_data.write([&pending](auto& buffer) {
             buffer = std::move(pending);
         });
     }
@@ -59,17 +64,18 @@ async::task<void> server::fetch_storage_pending()
     co_return;
 }
 
-void server::read_storage_pending(std::function<void(const std::vector<fb::game::storage_box::pending_box>&)> fn)
+void storage_pending_channel::read(std::function<void(const std::vector<storage_box::pending_box>&)> fn)
 {
-    this->_storage_pending.read(fn);
+    this->_data.read(fn);
 }
 
-async::task<void> server::read_storage_pending_async(std::function<async::task<void>(const std::vector<fb::game::storage_box::pending_box>&)> fn)
+async::task<void> storage_pending_channel::read_async(std::function<async::task<void>(const std::vector<storage_box::pending_box>&)> fn)
 {
-    co_await this->_storage_pending.async_read(fn);
+    co_await this->_data.async_read(fn);
 }
 
-void server::write_storage_pending(std::function<void(std::vector<fb::game::storage_box::pending_box>&)> fn)
+void storage_pending_channel::write(std::function<void(std::vector<storage_box::pending_box>&)> fn)
 {
-    this->_storage_pending.write(fn);
+    this->_data.write(fn);
 }
+

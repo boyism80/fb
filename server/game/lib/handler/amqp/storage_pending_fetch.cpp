@@ -59,7 +59,7 @@ async::task<void> storage_pending_fetch::handle(const internal_resp::GetStorageP
     if (dao.empty())
         co_return;
 
-    this->server.write_storage_pending([&dao](auto& buffer) {
+    this->server.poll.storage_pending.write([&dao](auto& buffer) {
         buffer.reserve(buffer.size() + dao.size());
         buffer.insert(buffer.end(), dao.begin(), dao.end());
     });

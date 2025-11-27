@@ -746,14 +746,6 @@ namespace fb.protocol._internal
             return fb.protocol._internal.request.raw.GetStoragePending.CreateGetStoragePending(builder,
                 builder.Build(value.User));
         }
-        public static Offset<fb.protocol._internal.request.raw.GetSystemMails> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetSystemMails value)
-        {
-            if (value == null)
-                return default;
-
-            fb.protocol._internal.request.raw.GetSystemMails.StartGetSystemMails(builder);
-            return fb.protocol._internal.request.raw.GetSystemMails.EndGetSystemMails(builder);
-        }
         public static Offset<fb.protocol._internal.request.raw.WriteSystemMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteSystemMail value)
         {
             if (value == null)
@@ -1986,14 +1978,6 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.request.raw.GetStoragePending.CreateGetStoragePending(builder,
                 builder.Build(value.User));
         }
-        public static Offset<fb.protocol._internal.request.raw.GetSystemMails> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetSystemMails value)
-        {
-            if (value == null)
-                return default;
-
-            fb.protocol._internal.request.raw.GetSystemMails.StartGetSystemMails(builder);
-            return fb.protocol._internal.request.raw.GetSystemMails.EndGetSystemMails(builder);
-        }
         public static Offset<fb.protocol._internal.request.raw.WriteSystemMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteSystemMail value)
         {
             if (value == null)
@@ -2587,7 +2571,6 @@ namespace fb.protocol._internal.request
         Broadcast,
         UpdateFriends,
         GetStoragePending,
-        GetSystemMails,
         WriteSystemMail,
         Ban,
         Unban
@@ -3243,14 +3226,6 @@ namespace fb.protocol._internal.response
 
             return fb.protocol._internal.request.raw.GetStoragePending.CreateGetStoragePending(builder,
                 builder.Build(value.User));
-        }
-        public static Offset<fb.protocol._internal.request.raw.GetSystemMails> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetSystemMails value)
-        {
-            if (value == null)
-                return default;
-
-            fb.protocol._internal.request.raw.GetSystemMails.StartGetSystemMails(builder);
-            return fb.protocol._internal.request.raw.GetSystemMails.EndGetSystemMails(builder);
         }
         public static Offset<fb.protocol._internal.request.raw.WriteSystemMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteSystemMail value)
         {
@@ -6221,40 +6196,6 @@ namespace fb.protocol._internal.request
             return new GetStoragePending(bytes);
         }
     }
-    public class GetSystemMails : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.GetSystemMails;
-
-        public GetSystemMails()
-        { }
-
-        public GetSystemMails(fb.protocol._internal.request.raw.GetSystemMails raw)
-        {
-        }
-
-        public GetSystemMails(byte[] bytes) : this(fb.protocol._internal.request.raw.GetSystemMails.GetRootAsGetSystemMails(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = FlatBufferBuilderPool.Get();
-            try
-            {
-                var offset = builder.Build(this);
-                builder.Finish(offset.Value);
-                return builder.SizedByteArray();
-            }
-            finally
-            {
-                FlatBufferBuilderPool.Return(builder);
-            }
-        }
-
-        public static GetSystemMails Deserialize(byte[] bytes)
-        {
-            return new GetSystemMails(bytes);
-        }
-    }
     public class WriteSystemMail : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.WriteSystemMail;
@@ -6414,7 +6355,6 @@ namespace fb.protocol._internal.request
                 FlatBufferProtocolType.Broadcast => typeof(fb.protocol._internal.request.Broadcast),
                 FlatBufferProtocolType.UpdateFriends => typeof(fb.protocol._internal.request.UpdateFriends),
                 FlatBufferProtocolType.GetStoragePending => typeof(fb.protocol._internal.request.GetStoragePending),
-                FlatBufferProtocolType.GetSystemMails => typeof(fb.protocol._internal.request.GetSystemMails),
                 FlatBufferProtocolType.WriteSystemMail => typeof(fb.protocol._internal.request.WriteSystemMail),
                 FlatBufferProtocolType.Ban => typeof(fb.protocol._internal.request.Ban),
                 FlatBufferProtocolType.Unban => typeof(fb.protocol._internal.request.Unban),

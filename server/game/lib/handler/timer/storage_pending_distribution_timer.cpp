@@ -8,7 +8,7 @@ storage_pending_distribution_timer::storage_pending_distribution_timer(fb::game:
 
 async::task<void> storage_pending_distribution_timer::handle(const fb::model::datetime&, std::thread::id id)
 {
-    this->server.read_storage_pending([this, id](const std::vector<fb::game::storage_box::pending_box>& pending) {
+    this->server.poll.storage_pending.read([this, id](const std::vector<fb::game::storage_box::pending_box>& pending) {
         if (pending.empty())
             return;
 

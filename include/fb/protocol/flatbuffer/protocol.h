@@ -83,7 +83,6 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.broadcast_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.updatefriends_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.getstoragepending_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.getsystemmails_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.writesystemmail_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.ban_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.unban_generated.h>
@@ -194,7 +193,6 @@ namespace fb::protocol::internal::request
     class Broadcast;
     class UpdateFriends;
     class GetStoragePending;
-    class GetSystemMails;
     class WriteSystemMail;
     class Ban;
     class Unban;
@@ -391,7 +389,6 @@ template <> struct FlatBufferOffset<fb::protocol::internal::request::ChangeClanR
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Broadcast> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Broadcast> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::UpdateFriends> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::UpdateFriends> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::GetStoragePending> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::GetStoragePending> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::GetSystemMails> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::GetSystemMails> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::WriteSystemMail> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::WriteSystemMail> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Ban> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Ban> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Unban> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Unban> type; };
@@ -557,8 +554,6 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::UpdateFriends> build<fb::protocol::internal::request::UpdateFriends>(FlatBufferBuilder& builder, const fb::protocol::internal::request::UpdateFriends& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::GetStoragePending> build<fb::protocol::internal::request::GetStoragePending>(FlatBufferBuilder& builder, const fb::protocol::internal::request::GetStoragePending& value);
-template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::GetSystemMails> build<fb::protocol::internal::request::GetSystemMails>(FlatBufferBuilder& builder, const fb::protocol::internal::request::GetSystemMails& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::WriteSystemMail> build<fb::protocol::internal::request::WriteSystemMail>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteSystemMail& value);
 template <>
@@ -1644,7 +1639,6 @@ enum class FlatBufferProtocolType
     Broadcast,
     UpdateFriends,
     GetStoragePending,
-    GetSystemMails,
     WriteSystemMail,
     Ban,
     Unban,
@@ -3034,38 +3028,6 @@ public:
     {
         auto raw = fb::protocol::internal::request::raw::GetGetStoragePending(bytes);
         return GetStoragePending(*raw);
-    }
-};
-class GetSystemMails
-{
-public:
-    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::GetSystemMails;
-
-
-public:
-    GetSystemMails() = default;
-
-    GetSystemMails(const GetSystemMails& x)
-    { }
-
-
-    GetSystemMails(const fb::protocol::internal::request::raw::GetSystemMails& raw)
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::request::GetSystemMails>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static GetSystemMails Deserialize(const uint8_t* bytes)
-    {
-        auto raw = fb::protocol::internal::request::raw::GetGetSystemMails(bytes);
-        return GetSystemMails(*raw);
     }
 };
 class WriteSystemMail
@@ -5650,11 +5612,6 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::GetStoragePending> bui
 {
     return fb::protocol::internal::request::raw::CreateGetStoragePending(builder,
             flatbuffers::build<uint32_t>(builder, value.user));
-}
-template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::GetSystemMails> build<fb::protocol::internal::request::GetSystemMails>(FlatBufferBuilder& builder, const fb::protocol::internal::request::GetSystemMails& value)
-{
-    return fb::protocol::internal::request::raw::CreateGetSystemMails(builder);
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::WriteSystemMail> build<fb::protocol::internal::request::WriteSystemMail>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteSystemMail& value)

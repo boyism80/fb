@@ -218,10 +218,6 @@ table GetStoragePending {
   user: uint;
 }
 
-table GetSystemMails {
-  
-}
-
 table WriteSystemMail {
   sender: uint;
   title: string;

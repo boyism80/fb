@@ -3322,7 +3322,7 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
         -> async::task<void> {
         auto   success = false;
         auto&& resp =
-            co_await server->http.post("internal", "/mail/system/write", WriteSystemMail{sender, title, contents, expire_date.has_value() ? expire_date.value() : std::string{}});
+            co_await server->http.post("internal", "/mail/system", WriteSystemMail{sender, title, contents, expire_date.has_value() ? expire_date.value() : std::string{}});
         success = resp.error == 0;
 
         co_await lua->switching();

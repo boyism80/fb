@@ -8,7 +8,7 @@ system_mail_timer::system_mail_timer(fb::game::server& server) :
 
 async::task<void> system_mail_timer::handle()
 {
-    co_await this->server.fetch_system_mails();
+    co_await this->server.poll.system_mail.fetch();
     co_return;
 }
 

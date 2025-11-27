@@ -82,7 +82,7 @@ namespace Http.Service
         /// <param name="expiredDate">Optional expiration date for the reward.</param>
         /// <param name="attachments">Optional list of DSL attachments (items, money, exp).</param>
         /// <returns>The created storage pending box.</returns>
-        public async Task<StoragePendingBox> CreatePendingAsync(string title, string message, string? userName, DateTime? expiredDate, List<Dsl>? attachments = null)
+        public async Task<StoragePendingBox> CreatePendingAsync(string title, string message, string userName = null, DateTime? expiredDate = null, List<Dsl> attachments = null)
         {
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Title is required", nameof(title));
