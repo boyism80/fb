@@ -1,6 +1,9 @@
 #include <fb/game/handler/amqp/storage_pending_personal.h>
 #include <fb/game/storage.h>
 #include <fb/game/server.h>
+#include <fb/model/model.h>
+#include <json/json.h>
+#include <sstream>
 #include <unordered_map>
 #include <memory>
 #include <vector>
@@ -30,11 +33,26 @@ async::task<void> storage_pending_personal::handle(const internal_resp::GetStora
         if (!dto.user.has_value())
             continue;
 
-        auto pending        = fb::game::storage_box::pending_box{};
-        pending.id          = dto.id;
-        pending.user        = dto.user;
-        pending.message     = dto.message;
-        pending.attachments = dto.attachments;
+        auto pending    = fb::game::storage_box::pending_box{};
+        pending.id      = dto.id;
+        pending.user    = dto.user;
+        pending.message = dto.message;
+
+        if (!dto.attachments.empty())
+        {
+            Json::Value        json;
+            Json::Reader       reader;
+            std::istringstream stream(dto.attachments);
+            if (reader.parse(stream, json) && json.isArray())
+            {
+                pending.attachments.reserve(json.size());
+                for (const auto& item : json)
+                {
+                    pending.attachments.emplace_back(item);
+                }
+            }
+        }
+
         if (dto.expired_date.has_value())
             pending.expire_date = fb::model::datetime(dto.expired_date.value());
 

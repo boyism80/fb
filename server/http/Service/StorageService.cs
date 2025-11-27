@@ -73,7 +73,15 @@ namespace Http.Service
             return (ulong)result.id;
         }
 
-        public async Task<StoragePendingBox> CreatePendingAsync(string message, string? userName, DateTime? expiredDate)
+        /// <summary>
+        /// Creates a new storage pending reward with optional attachments.
+        /// </summary>
+        /// <param name="message">The message to display with the reward.</param>
+        /// <param name="userName">The user name for personal rewards, or null for global rewards.</param>
+        /// <param name="expiredDate">Optional expiration date for the reward.</param>
+        /// <param name="attachments">Optional list of DSL attachments (items, money, exp).</param>
+        /// <returns>The created storage pending box.</returns>
+        public async Task<StoragePendingBox> CreatePendingAsync(string message, string? userName, DateTime? expiredDate, List<Dsl>? attachments = null)
         {
             if (string.IsNullOrWhiteSpace(message))
                 throw new ArgumentException("Message is required", nameof(message));
@@ -91,8 +99,8 @@ namespace Http.Service
             // Get ID from global sequence
             var pendingId = await GetNextPendingIdAsync();
 
-            var attachments = new List<Dsl>();
-            var attachmentsJson = JsonConvert.SerializeObject(attachments);
+            var attachmentsList = attachments ?? new List<Dsl>();
+            var attachmentsJson = JsonConvert.SerializeObject(attachmentsList);
 
             // Determine shard: use -1 for global (userId is null), otherwise use user ID
             await using var conn = userId != null ? _dbContext.Connection(userId.Value) : _dbContext.Connection(-1);
@@ -120,7 +128,7 @@ namespace Http.Service
 
             // Set metadata
             pending.Deleted = false;
-            pending.Attachments = attachments;
+            pending.Attachments = attachmentsList;
 
             // Cache and notify
             _dbContext.StoragePendingBox.Set(pending);

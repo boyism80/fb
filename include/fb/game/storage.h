@@ -2,6 +2,7 @@
 #define FB_GAME_STORAGE_H
 
 #include <fb/model/datetime.h>
+#include <fb/model/model.h>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -18,7 +19,7 @@ public:
     {
         uint32_t                           id = 0;
         std::string                        message;
-        std::string                        attachments;
+        std::vector<fb::model::dsl>        attachments;
         bool                               received    = false;
         std::optional<fb::model::datetime> expire_date = std::nullopt;
     };
@@ -35,7 +36,7 @@ public:
         uint64_t                           id   = 0;
         std::optional<uint32_t>            user = std::nullopt;
         std::string                        message;
-        std::string                        attachments;
+        std::vector<fb::model::dsl>        attachments;
         std::optional<fb::model::datetime> expire_date = std::nullopt;
     };
 

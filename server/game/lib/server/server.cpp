@@ -5,6 +5,7 @@
 #include <fb/game/handler/timer/storage_pending_distribution_timer.h>
 #include <fb/game/handler/amqp/storage_pending_personal.h>
 #include <fb/game/handler/amqp/storage_pending_fetch.h>
+#include <json/json.h>
 using namespace fb::game;
 using namespace std::chrono_literals;
 
@@ -508,10 +509,31 @@ async::task<void> server::save(character& ch)
         if (box.expire_date.has_value() && box.expire_date.value() < now)
             continue;
 
+        std::string attachments_json;
+        if (box.attachments.empty())
+        {
+            attachments_json = "[]";
+        }
+        else
+        {
+            auto json_array = Json::Value{Json::arrayValue};
+            for (const auto& dsl : box.attachments)
+            {
+                json_array.append(dsl.to_json());
+            }
+            Json::FastWriter writer;
+            attachments_json = writer.write(json_array);
+            // Remove trailing newline from FastWriter
+            if (!attachments_json.empty() && attachments_json.back() == '\n')
+            {
+                attachments_json.pop_back();
+            }
+        }
+
         storage_boxes.emplace_back(ch.id(),
                                    box.id,
                                    box.message,
-                                   box.attachments,
+                                   attachments_json,
                                    box.received,
                                    box.expire_date.has_value() ? std::make_optional(box.expire_date->to_string()) : std::nullopt);
     }

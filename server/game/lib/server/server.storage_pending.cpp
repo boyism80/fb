@@ -1,6 +1,9 @@
 #include <fb/game/server.h>
 #include <fb/game/storage.h>
+#include <fb/model/model.h>
 #include <fb/logger.h>
+#include <json/json.h>
+#include <sstream>
 
 using namespace fb::game;
 
@@ -18,10 +21,25 @@ async::task<void> server::fetch_storage_pending()
         for (const auto& dto : resp.pending)
         {
             fb::game::storage_box::pending_box entry{};
-            entry.id          = dto.id;
-            entry.user        = dto.user;
-            entry.message     = dto.message;
-            entry.attachments = dto.attachments;
+            entry.id      = dto.id;
+            entry.user    = dto.user;
+            entry.message = dto.message;
+
+            if (!dto.attachments.empty())
+            {
+                auto json   = Json::Value{};
+                auto reader = Json::Reader{};
+                auto stream = std::istringstream(dto.attachments);
+                if (reader.parse(stream, json) && json.isArray())
+                {
+                    entry.attachments.reserve(json.size());
+                    for (const auto& item : json)
+                    {
+                        entry.attachments.emplace_back(item);
+                    }
+                }
+            }
+
             if (dto.expired_date.has_value())
                 entry.expire_date = fb::model::datetime(dto.expired_date.value());
 

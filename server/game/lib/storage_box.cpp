@@ -1,5 +1,6 @@
 #include <fb/game/storage.h>
 #include <fb/game/character.h>
+#include <fb/model/model.h>
 #include <algorithm>
 
 namespace fb::game {
@@ -18,7 +19,7 @@ void storage_box::init(const std::vector<entry>& entries, const std::vector<rewa
 
     for (const auto& e : entries)
     {
-        this->_entries[e.id] = e;
+        this->_entries.emplace(e.id, e);
         if (e.id >= this->_sequence)
             this->_sequence = e.id + 1;
     }
@@ -38,14 +39,19 @@ void storage_box::apply_pending(const std::vector<pending_box>& pending)
         if (this->_reward_marks.find(box.id) != this->_reward_marks.end())
             continue;
 
+        auto  id = this->_sequence++;
         entry e{};
-        e.id          = this->_sequence++;
-        e.message     = box.message;
-        e.attachments = box.attachments;
+        e.id      = id;
+        e.message = box.message;
+        e.attachments.reserve(box.attachments.size());
+        for (const auto& attachment : box.attachments)
+        {
+            e.attachments.emplace_back(attachment);
+        }
         e.received    = false;
         e.expire_date = box.expire_date;
 
-        this->_entries[e.id] = e;
+        this->_entries.emplace(id, e);
         reward_mark mark{};
         mark.user                   = this->_owner.id();
         mark.pending_id             = box.id;

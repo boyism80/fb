@@ -2,8 +2,11 @@
 #include <fb/game/server.h>
 #include <fb/game/handler/amqp/ban.h>
 #include <fb/game/storage.h>
+#include <fb/model/model.h>
 #include <fb/logger.h>
 #include <fb/model/datetime.h>
+#include <json/json.h>
+#include <sstream>
 
 using namespace fb::game::handler::protocol;
 
@@ -257,10 +260,25 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     for (const auto& dto : response.storage_boxes)
     {
         fb::game::storage_box::entry box{};
-        box.id          = dto.id;
-        box.message     = dto.message;
-        box.attachments = dto.attachments;
-        box.received    = dto.received;
+        box.id      = dto.id;
+        box.message = dto.message;
+
+        if (!dto.attachments.empty())
+        {
+            Json::Value        json;
+            Json::Reader       reader;
+            std::istringstream stream(dto.attachments);
+            if (reader.parse(stream, json) && json.isArray())
+            {
+                box.attachments.reserve(json.size());
+                for (const auto& item : json)
+                {
+                    box.attachments.emplace_back(item);
+                }
+            }
+        }
+
+        box.received = dto.received;
         if (dto.expired_date.has_value())
             box.expire_date = fb::model::datetime(dto.expired_date.value());
         storage_boxes.push_back(std::move(box));
@@ -287,10 +305,25 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
         for (const auto& dto : response.storage_pending)
         {
             fb::game::storage_box::pending_box pending_box{};
-            pending_box.id          = dto.id;
-            pending_box.user        = dto.user;
-            pending_box.message     = dto.message;
-            pending_box.attachments = dto.attachments;
+            pending_box.id      = dto.id;
+            pending_box.user    = dto.user;
+            pending_box.message = dto.message;
+
+            if (!dto.attachments.empty())
+            {
+                Json::Value        json;
+                Json::Reader       reader;
+                std::istringstream stream(dto.attachments);
+                if (reader.parse(stream, json) && json.isArray())
+                {
+                    pending_box.attachments.reserve(json.size());
+                    for (const auto& item : json)
+                    {
+                        pending_box.attachments.emplace_back(item);
+                    }
+                }
+            }
+
             if (dto.expired_date.has_value())
                 pending_box.expire_date = fb::model::datetime(dto.expired_date.value());
             pending_models.push_back(std::move(pending_box));
