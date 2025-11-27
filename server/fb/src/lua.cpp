@@ -90,6 +90,57 @@ context& context::pushboolean(bool value)
     return *this;
 }
 
+context& context::pushjson(const Json::Value& json)
+{
+    if (json.isNull())
+    {
+        this->pushnil();
+    }
+    else if (json.isBool())
+    {
+        this->pushboolean(json.asBool());
+    }
+    else if (json.isInt() || json.isUInt() || json.isInt64() || json.isUInt64())
+    {
+        this->pushinteger(json.asInt64());
+    }
+    else if (json.isDouble() || json.isNumeric())
+    {
+        this->pushnumber(json.asDouble());
+    }
+    else if (json.isString())
+    {
+        this->pushstring(json.asString());
+    }
+    else if (json.isArray())
+    {
+        this->new_table();
+        auto i = 0;
+        for (const auto& item : json)
+        {
+            this->pushinteger(i + 1);
+            this->pushjson(item);
+            lua_settable(*this, -3);
+            i++;
+        }
+    }
+    else if (json.isObject())
+    {
+        this->new_table();
+        for (auto it = json.begin(); it != json.end(); ++it)
+        {
+            this->pushstring(it.key().asString());
+            this->pushjson(*it);
+            lua_settable(*this, -3);
+        }
+    }
+    else
+    {
+        this->pushnil();
+    }
+    return *this;
+}
+
 context& context::push(const void* value)
 {
     lua_pushlightuserdata(this->_ctx, const_cast<void*>(value));

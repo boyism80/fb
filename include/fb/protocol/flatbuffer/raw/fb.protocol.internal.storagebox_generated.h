@@ -26,16 +26,20 @@ struct StorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_USER = 4,
     VT_ID = 6,
-    VT_MESSAGE = 8,
-    VT_ATTACHMENTS = 10,
-    VT_RECEIVED = 12,
-    VT_EXPIRED_DATE = 14
+    VT_TITLE = 8,
+    VT_MESSAGE = 10,
+    VT_ATTACHMENTS = 12,
+    VT_RECEIVED = 14,
+    VT_EXPIRED_DATE = 16
   };
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
+  }
+  const ::flatbuffers::String *title() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
   }
   const ::flatbuffers::String *message() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MESSAGE);
@@ -53,6 +57,8 @@ struct StorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyOffset(verifier, VT_TITLE) &&
+           verifier.VerifyString(title()) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
            verifier.VerifyString(message()) &&
            VerifyOffset(verifier, VT_ATTACHMENTS) &&
@@ -73,6 +79,9 @@ struct StorageBoxBuilder {
   }
   void add_id(uint32_t id) {
     fbb_.AddElement<uint32_t>(StorageBox::VT_ID, id, 0);
+  }
+  void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
+    fbb_.AddOffset(StorageBox::VT_TITLE, title);
   }
   void add_message(::flatbuffers::Offset<::flatbuffers::String> message) {
     fbb_.AddOffset(StorageBox::VT_MESSAGE, message);
@@ -101,6 +110,7 @@ inline ::flatbuffers::Offset<StorageBox> CreateStorageBox(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
     uint32_t id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     ::flatbuffers::Offset<::flatbuffers::String> attachments = 0,
     bool received = false,
@@ -109,6 +119,7 @@ inline ::flatbuffers::Offset<StorageBox> CreateStorageBox(
   builder_.add_expired_date(expired_date);
   builder_.add_attachments(attachments);
   builder_.add_message(message);
+  builder_.add_title(title);
   builder_.add_id(id);
   builder_.add_user(user);
   builder_.add_received(received);
@@ -119,10 +130,12 @@ inline ::flatbuffers::Offset<StorageBox> CreateStorageBoxDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
     uint32_t id = 0,
+    const char *title = nullptr,
     const char *message = nullptr,
     const char *attachments = nullptr,
     bool received = false,
     const char *expired_date = nullptr) {
+  auto title__ = title ? _fbb.CreateString(title) : 0;
   auto message__ = message ? _fbb.CreateString(message) : 0;
   auto attachments__ = attachments ? _fbb.CreateString(attachments) : 0;
   auto expired_date__ = expired_date ? _fbb.CreateString(expired_date) : 0;
@@ -130,6 +143,7 @@ inline ::flatbuffers::Offset<StorageBox> CreateStorageBoxDirect(
       _fbb,
       user,
       id,
+      title__,
       message__,
       attachments__,
       received,

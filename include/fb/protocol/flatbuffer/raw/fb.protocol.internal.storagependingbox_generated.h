@@ -28,15 +28,19 @@ struct StoragePendingBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ID = 4,
     VT_USER = 6,
-    VT_MESSAGE = 8,
-    VT_ATTACHMENTS = 10,
-    VT_EXPIRED_DATE = 12
+    VT_TITLE = 8,
+    VT_MESSAGE = 10,
+    VT_ATTACHMENTS = 12,
+    VT_EXPIRED_DATE = 14
   };
   uint64_t id() const {
     return GetField<uint64_t>(VT_ID, 0);
   }
   const nullable::nullable_uint *user() const {
     return GetPointer<const nullable::nullable_uint *>(VT_USER);
+  }
+  const ::flatbuffers::String *title() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
   }
   const ::flatbuffers::String *message() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MESSAGE);
@@ -52,6 +56,8 @@ struct StoragePendingBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
            VerifyField<uint64_t>(verifier, VT_ID, 8) &&
            VerifyOffset(verifier, VT_USER) &&
            verifier.VerifyTable(user()) &&
+           VerifyOffset(verifier, VT_TITLE) &&
+           verifier.VerifyString(title()) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
            verifier.VerifyString(message()) &&
            VerifyOffset(verifier, VT_ATTACHMENTS) &&
@@ -71,6 +77,9 @@ struct StoragePendingBoxBuilder {
   }
   void add_user(::flatbuffers::Offset<nullable::nullable_uint> user) {
     fbb_.AddOffset(StoragePendingBox::VT_USER, user);
+  }
+  void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
+    fbb_.AddOffset(StoragePendingBox::VT_TITLE, title);
   }
   void add_message(::flatbuffers::Offset<::flatbuffers::String> message) {
     fbb_.AddOffset(StoragePendingBox::VT_MESSAGE, message);
@@ -96,6 +105,7 @@ inline ::flatbuffers::Offset<StoragePendingBox> CreateStoragePendingBox(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t id = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> user = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     ::flatbuffers::Offset<::flatbuffers::String> attachments = 0,
     ::flatbuffers::Offset<::flatbuffers::String> expired_date = 0) {
@@ -104,6 +114,7 @@ inline ::flatbuffers::Offset<StoragePendingBox> CreateStoragePendingBox(
   builder_.add_expired_date(expired_date);
   builder_.add_attachments(attachments);
   builder_.add_message(message);
+  builder_.add_title(title);
   builder_.add_user(user);
   return builder_.Finish();
 }
@@ -112,9 +123,11 @@ inline ::flatbuffers::Offset<StoragePendingBox> CreateStoragePendingBoxDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t id = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> user = 0,
+    const char *title = nullptr,
     const char *message = nullptr,
     const char *attachments = nullptr,
     const char *expired_date = nullptr) {
+  auto title__ = title ? _fbb.CreateString(title) : 0;
   auto message__ = message ? _fbb.CreateString(message) : 0;
   auto attachments__ = attachments ? _fbb.CreateString(attachments) : 0;
   auto expired_date__ = expired_date ? _fbb.CreateString(expired_date) : 0;
@@ -122,6 +135,7 @@ inline ::flatbuffers::Offset<StoragePendingBox> CreateStoragePendingBoxDirect(
       _fbb,
       id,
       user,
+      title__,
       message__,
       attachments__,
       expired_date__);

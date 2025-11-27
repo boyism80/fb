@@ -532,6 +532,7 @@ async::task<void> server::save(character& ch)
 
         storage_boxes.emplace_back(ch.id(),
                                    box.id,
+                                   box.title,
                                    box.message,
                                    attachments_json,
                                    box.received,

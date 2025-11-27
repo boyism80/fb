@@ -74,6 +74,7 @@ namespace Http.Reepository
                 INSERT INTO `storage_pending_box` (
                     `id`,
                     `user`,
+                    `title`,
                     `message`,
                     `attachments`,
                     `expired_date`,
@@ -83,6 +84,7 @@ namespace Http.Reepository
                 VALUES (
                     {value.Id.Escape()},
                     {(value.User.HasValue ? value.User.Value.Escape() : "NULL")},
+                    {value.Title.Escape()},
                     {value.Message.Escape()},
                     {attachmentsJson.Escape()},
                     {value.ExpiredDate.Escape()},
@@ -90,6 +92,7 @@ namespace Http.Reepository
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE
+                    `title`=VALUES(`title`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),
                     `expired_date`=VALUES(`expired_date`),
@@ -107,6 +110,7 @@ namespace Http.Reepository
                 return $"""
                         ({value.Id.Escape()},
                          {(value.User.HasValue ? value.User.Value.Escape() : "NULL")},
+                         {value.Title.Escape()},
                          {value.Message.Escape()},
                          {attachmentsJson.Escape()},
                          {value.ExpiredDate.Escape()},
@@ -120,6 +124,7 @@ namespace Http.Reepository
                 INSERT INTO `storage_pending_box` (
                     `id`,
                     `user`,
+                    `title`,
                     `message`,
                     `attachments`,
                     `expired_date`,
@@ -128,6 +133,7 @@ namespace Http.Reepository
                     `updated_date`)
                 VALUES {string.Join(',', args)}
                 ON DUPLICATE KEY UPDATE
+                    `title`=VALUES(`title`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),
                     `expired_date`=VALUES(`expired_date`),

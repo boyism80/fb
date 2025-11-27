@@ -76,15 +76,22 @@ namespace Http.Service
         /// <summary>
         /// Creates a new storage pending reward with optional attachments.
         /// </summary>
-        /// <param name="message">The message to display with the reward.</param>
+        /// <param name="title">Short title used by clients when listing rewards.</param>
+        /// <param name="message">Detailed message displayed with the reward.</param>
         /// <param name="userName">The user name for personal rewards, or null for global rewards.</param>
         /// <param name="expiredDate">Optional expiration date for the reward.</param>
         /// <param name="attachments">Optional list of DSL attachments (items, money, exp).</param>
         /// <returns>The created storage pending box.</returns>
-        public async Task<StoragePendingBox> CreatePendingAsync(string message, string? userName, DateTime? expiredDate, List<Dsl>? attachments = null)
+        public async Task<StoragePendingBox> CreatePendingAsync(string title, string message, string? userName, DateTime? expiredDate, List<Dsl>? attachments = null)
         {
+            if (string.IsNullOrWhiteSpace(title))
+                throw new ArgumentException("Title is required", nameof(title));
+
             if (string.IsNullOrWhiteSpace(message))
                 throw new ArgumentException("Message is required", nameof(message));
+
+            var normalizedTitle = title.Trim();
+            var normalizedMessage = message.Trim();
 
             uint? userId = null;
             if (string.IsNullOrWhiteSpace(userName) == false)
@@ -109,7 +116,8 @@ namespace Http.Service
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("p_id", pendingId);
             dynamicParams.Add("p_user", userId);
-            dynamicParams.Add("p_message", message.Trim());
+            dynamicParams.Add("p_title", normalizedTitle);
+            dynamicParams.Add("p_message", normalizedMessage);
             dynamicParams.Add("p_attachments", attachmentsJson);
             dynamicParams.Add("p_expired_date", expiredDate);
 
@@ -128,6 +136,8 @@ namespace Http.Service
 
             // Set metadata
             pending.Deleted = false;
+            pending.Title = normalizedTitle;
+            pending.Message = normalizedMessage;
             pending.Attachments = attachmentsList;
 
             // Cache and notify
@@ -144,6 +154,11 @@ namespace Http.Service
 
         public async Task<StoragePendingBox> AddPendingAsync(StoragePendingBox pending)
         {
+            if (pending == null)
+                throw new ArgumentNullException(nameof(pending));
+
+            pending.Title = (pending.Title ?? string.Empty).Trim();
+
             // Get ID from global sequence
             var pendingId = await GetNextPendingIdAsync();
 
@@ -156,6 +171,7 @@ namespace Http.Service
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("p_id", pendingId);
             dynamicParams.Add("p_user", pending.User);
+            dynamicParams.Add("p_title", pending.Title);
             dynamicParams.Add("p_message", pending.Message);
             dynamicParams.Add("p_attachments", attachmentsJson);
             dynamicParams.Add("p_expired_date", pending.ExpiredDate);
@@ -175,6 +191,7 @@ namespace Http.Service
 
             // Set metadata
             created.Deleted = false;
+            created.Title = pending.Title ?? string.Empty;
             created.Attachments = pending.Attachments ?? new List<Dsl>();
 
             // Cache and notify
@@ -233,6 +250,7 @@ namespace Http.Service
             {
                 Id = box.Id,
                 User = box.User,
+                Title = box.Title ?? string.Empty,
                 Message = box.Message ?? string.Empty,
                 Attachments = JsonConvert.SerializeObject(box.Attachments ?? new List<Dsl>()),
                 ExpiredDate = box.ExpiredDate?.ToString("yyyy-MM-dd HH:mm:ss")

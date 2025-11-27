@@ -20,10 +20,11 @@ async::task<void> server::fetch_storage_pending()
 
         for (const auto& dto : resp.pending)
         {
-            fb::game::storage_box::pending_box entry{};
-            entry.id      = dto.id;
-            entry.user    = dto.user;
-            entry.message = dto.message;
+        fb::game::storage_box::pending_box entry{};
+        entry.id      = dto.id;
+        entry.user    = dto.user;
+        entry.title   = dto.title;
+        entry.message = dto.message;
 
             if (!dto.attachments.empty())
             {

@@ -386,6 +386,7 @@ DROP TABLE IF EXISTS `storage_box`;
 CREATE TABLE `storage_box` (
   `user` int unsigned NOT NULL,
   `id` int unsigned NOT NULL,
+  `title` varchar(128) NOT NULL DEFAULT '',
   `message` varchar(256) NOT NULL,
   `attachments` json NOT NULL,
   `received` tinyint NOT NULL DEFAULT '0',
@@ -409,6 +410,7 @@ DROP TABLE IF EXISTS `storage_pending_box`;
 CREATE TABLE `storage_pending_box` (
   `id` bigint unsigned NOT NULL,
   `user` int unsigned DEFAULT NULL,
+  `title` varchar(128) NOT NULL DEFAULT '',
   `message` varchar(256) NOT NULL,
   `attachments` json NOT NULL,
   `expired_date` datetime DEFAULT NULL,
@@ -863,6 +865,7 @@ DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_STORAGE_PENDING_ADD`(
     IN p_id BIGINT UNSIGNED,
     IN p_user INT UNSIGNED,
+    IN p_title NVARCHAR(128),
     IN p_message NVARCHAR(256),
     IN p_attachments JSON,
     IN p_expired_date DATETIME
@@ -882,8 +885,8 @@ BEGIN
 
     START TRANSACTION;
 
-    INSERT INTO storage_pending_box (`id`, `user`, `message`, `attachments`, `expired_date`)
-    VALUES (p_id, p_user, p_message, p_attachments, p_expired_date);
+    INSERT INTO storage_pending_box (`id`, `user`, `title`, `message`, `attachments`, `expired_date`)
+    VALUES (p_id, p_user, p_title, p_message, p_attachments, p_expired_date);
 
     IF v_error_code != 0 THEN
         SELECT 0 AS RESULT, NULL AS id, v_error_code AS error_code, v_error_message AS error_message;

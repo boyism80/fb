@@ -18,6 +18,7 @@ public:
     struct entry
     {
         uint32_t                           id = 0;
+        std::string                        title;
         std::string                        message;
         std::vector<fb::model::dsl>        attachments;
         bool                               received    = false;
@@ -35,6 +36,7 @@ public:
     {
         uint64_t                           id   = 0;
         std::optional<uint32_t>            user = std::nullopt;
+        std::string                        title;
         std::string                        message;
         std::vector<fb::model::dsl>        attachments;
         std::optional<fb::model::datetime> expire_date = std::nullopt;
@@ -49,9 +51,9 @@ private:
 public:
     explicit storage_box(character& owner);
 
-    void init(const std::vector<entry>& entries, const std::vector<reward_mark>& marks);
-    void apply_pending(const std::vector<pending_box>& pending);
-
+    void                                             init(const std::vector<entry>& entries, const std::vector<reward_mark>& marks);
+    void                                             apply_pending(const std::vector<pending_box>& pending);
+    bool                                             receive_reward(uint32_t entry_id);
     const std::map<uint32_t, entry>&                 entries() const;
     const std::unordered_map<uint64_t, reward_mark>& reward_marks() const;
     uint32_t                                         next_sequence() const;

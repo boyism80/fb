@@ -1,5 +1,6 @@
 #include <fb/game/storage.h>
 #include <fb/game/character.h>
+#include <fb/model/datetime.h>
 #include <fb/model/model.h>
 #include <algorithm>
 
@@ -42,6 +43,7 @@ void storage_box::apply_pending(const std::vector<pending_box>& pending)
         auto  id = this->_sequence++;
         entry e{};
         e.id      = id;
+        e.title   = box.title;
         e.message = box.message;
         e.attachments.reserve(box.attachments.size());
         for (const auto& attachment : box.attachments)
@@ -58,6 +60,28 @@ void storage_box::apply_pending(const std::vector<pending_box>& pending)
         mark.expire_date            = box.expire_date;
         this->_reward_marks[box.id] = mark;
     }
+}
+
+bool storage_box::receive_reward(uint32_t entry_id)
+{
+    this->_owner.assert_thread();
+
+    auto it = this->_entries.find(entry_id);
+    if (it == this->_entries.end())
+        return false;
+
+    if (it->second.received)
+        return false;
+
+    auto now = fb::model::datetime();
+    if (it->second.expire_date.has_value() && it->second.expire_date.value() < now)
+        return false;
+
+    if (this->_owner.reward(it->second.attachments) == false)
+        return false;
+
+    it->second.received = true;
+    return true;
 }
 
 const std::map<uint32_t, storage_box::entry>& storage_box::entries() const

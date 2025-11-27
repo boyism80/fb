@@ -24,6 +24,7 @@ extern "C"
 #include <async/task.h>
 #include <async/task_completion_source.h>
 #include <shared_mutex>
+#include <json/json.h>
 
 #define LUA_PROTOTYPE                                \
     static const struct luaL_Reg LUA_METHODS[];      \
@@ -281,6 +282,7 @@ public:
     context&                          pushnumber(lua_Number value);
     context&                          pushnil();
     context&                          pushboolean(bool value);
+    context&                          pushjson(const Json::Value& json);
 
     template <typename T>
     context& pushobject(const T& value)

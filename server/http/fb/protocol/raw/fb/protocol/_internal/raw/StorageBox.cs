@@ -22,53 +22,63 @@ public struct StorageBox : IFlatbufferObject
 
   public uint User { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Id { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Message { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string Title { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(8, 1); }
 #else
-  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
-  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(8); }
-  public string Attachments { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(8); }
+  public string Message { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetAttachmentsBytes() { return __p.__vector_as_span<byte>(10, 1); }
+  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(10, 1); }
 #else
-  public ArraySegment<byte>? GetAttachmentsBytes() { return __p.__vector_as_arraysegment(10); }
+  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(10); }
 #endif
-  public byte[] GetAttachmentsArray() { return __p.__vector_as_array<byte>(10); }
-  public bool Received { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-  public string ExpiredDate { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(10); }
+  public string Attachments { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetExpiredDateBytes() { return __p.__vector_as_span<byte>(14, 1); }
+  public Span<byte> GetAttachmentsBytes() { return __p.__vector_as_span<byte>(12, 1); }
 #else
-  public ArraySegment<byte>? GetExpiredDateBytes() { return __p.__vector_as_arraysegment(14); }
+  public ArraySegment<byte>? GetAttachmentsBytes() { return __p.__vector_as_arraysegment(12); }
 #endif
-  public byte[] GetExpiredDateArray() { return __p.__vector_as_array<byte>(14); }
+  public byte[] GetAttachmentsArray() { return __p.__vector_as_array<byte>(12); }
+  public bool Received { get { int o = __p.__offset(14); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public string ExpiredDate { get { int o = __p.__offset(16); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetExpiredDateBytes() { return __p.__vector_as_span<byte>(16, 1); }
+#else
+  public ArraySegment<byte>? GetExpiredDateBytes() { return __p.__vector_as_arraysegment(16); }
+#endif
+  public byte[] GetExpiredDateArray() { return __p.__vector_as_array<byte>(16); }
 
   public static Offset<fb.protocol._internal.raw.StorageBox> CreateStorageBox(FlatBufferBuilder builder,
       uint user = 0,
       uint id = 0,
+      StringOffset titleOffset = default(StringOffset),
       StringOffset messageOffset = default(StringOffset),
       StringOffset attachmentsOffset = default(StringOffset),
       bool received = false,
       StringOffset expired_dateOffset = default(StringOffset)) {
-    builder.StartTable(6);
+    builder.StartTable(7);
     StorageBox.AddExpiredDate(builder, expired_dateOffset);
     StorageBox.AddAttachments(builder, attachmentsOffset);
     StorageBox.AddMessage(builder, messageOffset);
+    StorageBox.AddTitle(builder, titleOffset);
     StorageBox.AddId(builder, id);
     StorageBox.AddUser(builder, user);
     StorageBox.AddReceived(builder, received);
     return StorageBox.EndStorageBox(builder);
   }
 
-  public static void StartStorageBox(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartStorageBox(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(1, id, 0); }
-  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(2, messageOffset.Value, 0); }
-  public static void AddAttachments(FlatBufferBuilder builder, StringOffset attachmentsOffset) { builder.AddOffset(3, attachmentsOffset.Value, 0); }
-  public static void AddReceived(FlatBufferBuilder builder, bool received) { builder.AddBool(4, received, false); }
-  public static void AddExpiredDate(FlatBufferBuilder builder, StringOffset expiredDateOffset) { builder.AddOffset(5, expiredDateOffset.Value, 0); }
+  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(2, titleOffset.Value, 0); }
+  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(3, messageOffset.Value, 0); }
+  public static void AddAttachments(FlatBufferBuilder builder, StringOffset attachmentsOffset) { builder.AddOffset(4, attachmentsOffset.Value, 0); }
+  public static void AddReceived(FlatBufferBuilder builder, bool received) { builder.AddBool(5, received, false); }
+  public static void AddExpiredDate(FlatBufferBuilder builder, StringOffset expiredDateOffset) { builder.AddOffset(6, expiredDateOffset.Value, 0); }
   public static Offset<fb.protocol._internal.raw.StorageBox> EndStorageBox(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.StorageBox>(o);
@@ -85,10 +95,11 @@ static public class StorageBoxVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Id*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*Message*/, false)
-      && verifier.VerifyString(tablePos, 10 /*Attachments*/, false)
-      && verifier.VerifyField(tablePos, 12 /*Received*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyString(tablePos, 14 /*ExpiredDate*/, false)
+      && verifier.VerifyString(tablePos, 8 /*Title*/, false)
+      && verifier.VerifyString(tablePos, 10 /*Message*/, false)
+      && verifier.VerifyString(tablePos, 12 /*Attachments*/, false)
+      && verifier.VerifyField(tablePos, 14 /*Received*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyString(tablePos, 16 /*ExpiredDate*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

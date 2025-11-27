@@ -32,6 +32,7 @@ async::task<void> storage_pending_fetch::handle(const internal_resp::GetStorageP
         auto pending        = fb::game::storage_box::pending_box{};
         pending.id          = dto.id;
         pending.user        = dto.user;
+        pending.title       = dto.title;
         pending.message     = dto.message;
         
         if (!dto.attachments.empty())

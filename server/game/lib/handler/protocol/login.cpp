@@ -260,7 +260,8 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     for (const auto& dto : response.storage_boxes)
     {
         fb::game::storage_box::entry box{};
-        box.id      = dto.id;
+        box.id    = dto.id;
+        box.title = dto.title;
         box.message = dto.message;
 
         if (!dto.attachments.empty())
@@ -307,6 +308,7 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
             fb::game::storage_box::pending_box pending_box{};
             pending_box.id      = dto.id;
             pending_box.user    = dto.user;
+            pending_box.title   = dto.title;
             pending_box.message = dto.message;
 
             if (!dto.attachments.empty())

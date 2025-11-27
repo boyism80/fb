@@ -56,6 +56,11 @@
                     </div>
                 }
                 <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <InputText id="title" class="form-control" @bind-Value="model.Title" />
+                    <ValidationMessage For="@(() => model.Title)" />
+                </div>
+                <div class="mb-3">
                     <label for="message" class="form-label">Message</label>
                     <InputTextArea id="message" class="form-control" rows="3" @bind-Value="model.Message" />
                     <ValidationMessage For="@(() => model.Message)" />
@@ -423,6 +428,7 @@
         try
         {
             var result = await StorageService.CreatePendingAsync(
+                model.Title.Trim(),
                 model.Message.Trim(),
                 model.IsGlobal ? null : model.UserName?.Trim(),
                 model.ExpiredDate,
@@ -452,6 +458,10 @@
 
     private class StoragePendingForm
     {
+        [Required]
+        [StringLength(128, ErrorMessage = "Title must be 128 characters or less.")]
+        public string Title { get; set; } = string.Empty;
+
         [Required]
         [StringLength(256, ErrorMessage = "Message must be 256 characters or less.")]
         public string Message { get; set; } = string.Empty;

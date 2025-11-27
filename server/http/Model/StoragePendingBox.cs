@@ -43,6 +43,12 @@ namespace Http.Model
     public class StoragePendingBox : StoragePendingBoxKey, IModel
     {
         /// <summary>
+        /// Gets or sets the title that will be displayed in the user's storage box.
+        /// </summary>
+        /// <value>A concise summary of the reward.</value>
+        public string Title { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the message that will be displayed in the user's storage box.
         /// </summary>
         /// <value>A localized text describing the pending reward.</value>

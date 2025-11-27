@@ -76,6 +76,7 @@ namespace Http.Reepository
                 INSERT INTO `storage_box` (
                     `user`,
                     `id`,
+                    `title`,
                     `message`,
                     `attachments`,
                     `received`,
@@ -86,6 +87,7 @@ namespace Http.Reepository
                 VALUES (
                     {value.User.Escape()},
                     {value.Id.Escape()},
+                    {value.Title.Escape()},
                     {value.Message.Escape()},
                     {attachmentsJson.Escape()},
                     {value.Received.Escape()},
@@ -94,6 +96,7 @@ namespace Http.Reepository
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE
+                    `title`=VALUES(`title`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),
                     `received`=VALUES(`received`),
@@ -112,6 +115,7 @@ namespace Http.Reepository
                 return $"""
                         ({value.User.Escape()},
                          {value.Id.Escape()},
+                         {value.Title.Escape()},
                          {value.Message.Escape()},
                          {attachmentsJson.Escape()},
                          {value.Received.Escape()},
@@ -126,6 +130,7 @@ namespace Http.Reepository
                 INSERT INTO `storage_box` (
                     `user`,
                     `id`,
+                    `title`,
                     `message`,
                     `attachments`,
                     `received`,
@@ -135,6 +140,7 @@ namespace Http.Reepository
                     `updated_date`)
                 VALUES {string.Join(',', args)}
                 ON DUPLICATE KEY UPDATE
+                    `title`=VALUES(`title`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),
                     `received`=VALUES(`received`),

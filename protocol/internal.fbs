@@ -190,6 +190,7 @@ table SystemMailUser {
 table StorageBox {
     user: uint;
     id: uint;
+    title: string;
     message: string;
     attachments: string;
     received: bool;
@@ -199,6 +200,7 @@ table StorageBox {
 table StoragePendingBox {
     id: ulong;
     user: uint?;
+    title: string;
     message: string;
     attachments: string;
     expired_date: string?;

@@ -86,6 +86,7 @@ public class Program
 
             cfg.CreateMap<Http.Model.StorageBox, Protocol.StorageBox>()
             .ForMember(x => x.Attachments, x => x.Ignore())
+            .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
             .ForMember(x => x.ExpiredDate, x => x.MapFrom(u => u.ExpiredDate.HasValue ? u.ExpiredDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
             .AfterMap((src, dest) =>
             {
@@ -95,6 +96,7 @@ public class Program
             cfg.CreateMap<Protocol.StorageBox, Http.Model.StorageBox>()
             .ForMember(x => x.Attachments, x => x.Ignore())
             .ForMember(x => x.ExpiredDate, x => x.Ignore())
+            .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
             .ForMember(x => x.Message, x => x.MapFrom(u => u.Message ?? string.Empty))
             .AfterMap((src, dest) =>
             {
@@ -116,6 +118,7 @@ public class Program
 
             cfg.CreateMap<Http.Model.StoragePendingBox, Protocol.StoragePendingBox>()
             .ForMember(x => x.Attachments, x => x.Ignore())
+            .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
             .ForMember(x => x.ExpiredDate, x => x.MapFrom(u => u.ExpiredDate.HasValue ? u.ExpiredDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
             .AfterMap((src, dest) =>
             {
@@ -125,6 +128,7 @@ public class Program
             cfg.CreateMap<Protocol.StoragePendingBox, Http.Model.StoragePendingBox>()
             .ForMember(x => x.Attachments, x => x.Ignore())
             .ForMember(x => x.ExpiredDate, x => x.Ignore())
+            .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
             .AfterMap((src, dest) =>
             {
                 dest.Attachments = string.IsNullOrWhiteSpace(src.Attachments)

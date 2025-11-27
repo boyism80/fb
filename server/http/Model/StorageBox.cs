@@ -39,6 +39,12 @@ namespace Http.Model
     public class StorageBox : StorageBoxKey, IModel
     {
         /// <summary>
+        /// Gets or sets the title describing the storage entry.
+        /// </summary>
+        /// <value>A short title shown in the UI.</value>
+        public string Title { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the message describing the storage content.
         /// </summary>
         /// <value>A short text shown to the client alongside the attachments.</value>
