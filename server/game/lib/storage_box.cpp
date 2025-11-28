@@ -100,7 +100,7 @@ const std::map<uint32_t, storage_box::entry>& storage_box::entries() const
     return this->_entries;
 }
 
-const std::unordered_map<uint64_t, storage_box::reward_mark>& storage_box::reward_marks() const
+const std::unordered_map<std::string, storage_box::reward_mark>& storage_box::reward_marks() const
 {
     this->_owner.assert_thread();
     return this->_reward_marks;

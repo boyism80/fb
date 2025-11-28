@@ -51,13 +51,13 @@ private:
 public:
     explicit storage_box(character& owner);
 
-    void                                             init(const std::vector<entry>& entries, const std::vector<reward_mark>& marks);
-    void                                             apply_pending(const std::vector<pending_box>& pending);
-    bool                                             receive_reward(uint32_t entry_id);
-    const std::map<uint32_t, entry>&                 entries() const;
-    const std::unordered_map<uint64_t, reward_mark>& reward_marks() const;
-    uint32_t                                         next_sequence() const;
-    void                                             set_sequence(uint32_t value);
+    void                                                init(const std::vector<entry>& entries, const std::vector<reward_mark>& marks);
+    void                                                apply_pending(const std::vector<pending_box>& pending);
+    bool                                                receive_reward(uint32_t entry_id);
+    const std::map<uint32_t, entry>&                    entries() const;
+    const std::unordered_map<std::string, reward_mark>& reward_marks() const;
+    uint32_t                                            next_sequence() const;
+    void                                                set_sequence(uint32_t value);
 };
 
 } // namespace fb::game
