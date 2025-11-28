@@ -440,6 +440,12 @@
             return;
         }
 
+        if (model.Attachments == null || model.Attachments.Count == 0)
+        {
+            errorMessage = "At least one attachment is required (item, money, or exp).";
+            return;
+        }
+
         isProcessing = true;
         try
         {

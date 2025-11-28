@@ -73,15 +73,6 @@ namespace Http.Service
             return (ulong)result.id;
         }
 
-        /// <summary>
-        /// Creates a new storage pending reward with optional attachments.
-        /// </summary>
-        /// <param name="title">Short title used by clients when listing rewards.</param>
-        /// <param name="message">Detailed message displayed with the reward.</param>
-        /// <param name="userName">The user name for personal rewards, or null for global rewards.</param>
-        /// <param name="expiredDate">Optional expiration date for the reward.</param>
-        /// <param name="attachments">Optional list of DSL attachments (items, money, exp).</param>
-        /// <returns>The created storage pending box.</returns>
         public async Task<StoragePendingBox> CreatePendingAsync(string title, string message, string userName = null, DateTime? expiredDate = null, List<Dsl> attachments = null)
         {
             if (string.IsNullOrWhiteSpace(title))
@@ -89,6 +80,10 @@ namespace Http.Service
 
             if (string.IsNullOrWhiteSpace(message))
                 throw new ArgumentException("Message is required", nameof(message));
+
+            var attachmentsList = attachments ?? new List<Dsl>();
+            if (attachmentsList.Count == 0)
+                throw new ArgumentException("At least one attachment is required (item, money, or exp)", nameof(attachments));
 
             var normalizedTitle = title.Trim();
             var normalizedMessage = message.Trim();
@@ -106,7 +101,6 @@ namespace Http.Service
             // Get ID from global sequence
             var pendingId = await GetNextPendingIdAsync();
 
-            var attachmentsList = attachments ?? new List<Dsl>();
             var attachmentsJson = JsonConvert.SerializeObject(attachmentsList);
 
             // Determine shard: use -1 for global (userId is null), otherwise use user ID
@@ -150,60 +144,6 @@ namespace Http.Service
                 await NotifyGlobalPendingAsync();
 
             return pending;
-        }
-
-        public async Task<StoragePendingBox> AddPendingAsync(StoragePendingBox pending)
-        {
-            if (pending == null)
-                throw new ArgumentNullException(nameof(pending));
-
-            pending.Title = (pending.Title ?? string.Empty).Trim();
-
-            // Get ID from global sequence
-            var pendingId = await GetNextPendingIdAsync();
-
-            var attachmentsJson = JsonConvert.SerializeObject(pending.Attachments ?? new List<Dsl>());
-
-            // Determine shard: use -1 for global (user is null), otherwise use user ID
-            await using var conn = pending.User != null ? _dbContext.Connection(pending.User.Value) : _dbContext.Connection(-1);
-            await conn.OpenAsync();
-
-            var dynamicParams = new DynamicParameters();
-            dynamicParams.Add("p_id", pendingId);
-            dynamicParams.Add("p_user", pending.User);
-            dynamicParams.Add("p_title", pending.Title);
-            dynamicParams.Add("p_message", pending.Message);
-            dynamicParams.Add("p_attachments", attachmentsJson);
-            dynamicParams.Add("p_expired_date", pending.ExpiredDate);
-
-            await using var reader = await conn.QueryMultipleAsync(
-                "USP_STORAGE_PENDING_ADD",
-                dynamicParams,
-                commandType: CommandType.StoredProcedure);
-
-            var result = await reader.ReadFirstOrDefaultAsync<dynamic>();
-            if (result == null || result.RESULT != 1 || result.id == null)
-                throw new Exception("Failed to add pending storage box");
-
-            var created = await reader.ReadFirstOrDefaultAsync<StoragePendingBox>();
-            if (created == null)
-                throw new Exception("Failed to retrieve created pending storage box");
-
-            // Set metadata
-            created.Deleted = false;
-            created.Title = pending.Title ?? string.Empty;
-            created.Attachments = pending.Attachments ?? new List<Dsl>();
-
-            // Cache and notify
-            _dbContext.StoragePendingBox.Set(created);
-            await _dbContext.SaveChangesAsync();
-
-            if (created.User.HasValue)
-                await NotifyPersonalPendingAsync(created.User.Value);
-            else
-                await NotifyGlobalPendingAsync();
-
-            return created;
         }
 
         private async Task NotifyPersonalPendingAsync(uint user)

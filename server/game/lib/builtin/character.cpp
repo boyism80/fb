@@ -3352,8 +3352,18 @@ int builtin::character::builtin_storage_entries(lua_State* L)
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         auto buffer = std::vector<fb::game::storage_box::entry>();
         buffer.reserve(ch->storage_box.entries().size());
+        auto now = fb::model::datetime();
         for (const auto& [id, entry] : ch->storage_box.entries())
+        {
+            // Exclude entries with no rewards, already received, or expired
+            if (entry.attachments.empty())
+                continue;
+            if (entry.received)
+                continue;
+            if (entry.expire_date.has_value() && entry.expire_date.value() < now)
+                continue;
             buffer.push_back(entry);
+        }
 
         std::sort(buffer.begin(), buffer.end(), [](const auto& lhs, const auto& rhs) {
             return lhs.id > rhs.id;
