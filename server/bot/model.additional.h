@@ -23,7 +23,8 @@ public:                                 \
 #define DECLARE_ITEM_CONTAINER_EXTENSION \
                                          \
 public:                                  \
-    fb::model::item* name2item(const std::string& name) const;
+    fb::model::item* name2item(const std::string& name) const; \
+    std::vector<fb::model::item*> name2item_prefix(const std::string& prefix) const;
 
 #define DECLARE_MAP_CONTAINER_EXTENSION \
                                         \
