@@ -48,8 +48,7 @@ public:
 
 public:
 #ifndef BOT
-    dialog_item(fb::model::model&                   model,
-                const fb::model::object&            obj,
+    dialog_item(const fb::model::object&            obj,
                 const fb::game::dialog::item_pairs& items,
                 const std::string&                  message,
                 uint32_t                            oid         = 0xFFFFFFFD,

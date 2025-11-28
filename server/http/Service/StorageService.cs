@@ -1,8 +1,6 @@
-using Dapper;
 using Fb.Model;
 using Http.Model;
 using Newtonsoft.Json;
-using System.Data;
 using Protocol = fb.protocol._internal;
 using Response = fb.protocol._internal.response;
 
@@ -82,43 +80,24 @@ namespace Http.Service
                 userId = id.Value;
             }
 
-            // Generate UUID for pending ID
+            // Generate UUID for pending ID (as string, MySql.Escape() will convert to BINARY(16))
             var pendingId = Guid.NewGuid().ToString();
 
-            var attachmentsJson = JsonConvert.SerializeObject(attachmentsList);
+            // Create pending box entity
+            var pending = new StoragePendingBox
+            {
+                Id = pendingId,
+                User = userId,
+                Title = normalizedTitle,
+                Message = normalizedMessage,
+                Attachments = attachmentsList,
+                ExpiredDate = expiredDate,
+                Deleted = false,
+                CreatedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now
+            };
 
-            // Determine shard: use -1 for global (userId is null), otherwise use user ID
-            await using var conn = userId != null ? _dbContext.Connection(userId.Value) : _dbContext.Connection(-1);
-            await conn.OpenAsync();
-
-            var dynamicParams = new DynamicParameters();
-            dynamicParams.Add("p_id", pendingId);
-            dynamicParams.Add("p_user", userId);
-            dynamicParams.Add("p_title", normalizedTitle);
-            dynamicParams.Add("p_message", normalizedMessage);
-            dynamicParams.Add("p_attachments", attachmentsJson);
-            dynamicParams.Add("p_expired_date", expiredDate);
-
-            await using var reader = await conn.QueryMultipleAsync(
-                "USP_STORAGE_PENDING_ADD",
-                dynamicParams,
-                commandType: CommandType.StoredProcedure);
-
-            var result = await reader.ReadFirstOrDefaultAsync<dynamic>();
-            if (result == null || result.RESULT != 1 || result.id == null)
-                throw new Exception("Failed to create pending storage box");
-
-            var pending = await reader.ReadFirstOrDefaultAsync<StoragePendingBox>();
-            if (pending == null)
-                throw new Exception("Failed to retrieve created pending storage box");
-
-            // Set metadata
-            pending.Deleted = false;
-            pending.Title = normalizedTitle;
-            pending.Message = normalizedMessage;
-            pending.Attachments = attachmentsList;
-
-            // Cache and notify
+            // Save using Repository (handles Redis caching and DB write-back automatically)
             _dbContext.StoragePendingBox.Set(pending);
             await _dbContext.SaveChangesAsync();
 

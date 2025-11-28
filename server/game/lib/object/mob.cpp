@@ -6,6 +6,7 @@
 #include <fb/game/ai.h>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 rezen::rezen(server& server, const fb::model::mob_spawn& model) :
     _server(server),
@@ -54,7 +55,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     for (int i = 0; i < spawn_count; i++)
     {
         // Use smart pointer for mob creation
-        auto mob = this->_server.make<fb::game::mob>(this->_server.model.mob[this->model.mob], mob::initial_params{.alive = true, .rezen = this});
+        auto mob = this->_server.make<fb::game::mob>(table::mob[this->model.mob], mob::initial_params{.alive = true, .rezen = this});
 
         mob->direction(DIRECTION(std::rand() % 4));
         mob->stat.heal(mob->stat.base_hp());
@@ -414,7 +415,7 @@ async::task<void> mob::drop_items()
     auto owner = this->owner.lock();
     if (owner == nullptr && !model.drop.empty())
     {
-        auto& drop = this->server.model.drop[model.drop];
+        auto& drop = table::drop[model.drop];
         for (auto& dsl : drop.dsl)
         {
             switch (dsl.header)
@@ -426,7 +427,7 @@ async::task<void> mob::drop_items()
                 if (random > (int)params.percent)
                     continue;
 
-                auto item   = this->server.model.item[params.id].make(this->server);
+                auto item   = table::item[params.id].make(this->server);
                 std::ignore = co_await item->map(map, position, DESTROY_TYPE::DEFAULT, false);
                 oids.push_back(item->oid());
             }

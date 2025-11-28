@@ -3,6 +3,7 @@
 #include <fb/game/builtin/model.h>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
@@ -53,13 +54,13 @@ int builtin::model::map::builtin_root(lua_State* L)
     if (map == nullptr)
         return 0;
 
-    if (server->model.map.contains(map->root) == false)
+    if (table::map.contains(map->root) == false)
     {
         lua->pushnil();
         return 1;
     }
 
-    auto& root = server->model.map[map->root];
+    auto& root = table::map[map->root];
     lua->pushobject(root);
     return 1;
 }
@@ -97,7 +98,7 @@ int builtin::model::map::builtin_cardinal(lua_State* L)
     }
 
     auto params = fb::model::dsl::map(dsl.params);
-    if (server->model.map.contains(params.id) == false)
+    if (table::map.contains(params.id) == false)
     {
         lua->pushnil();
         return 1;
@@ -106,7 +107,7 @@ int builtin::model::map::builtin_cardinal(lua_State* L)
     lua->new_table();
     {
         lua->pushinteger(1);
-        lua->pushobject(server->model.map[params.id]);
+        lua->pushobject(table::map[params.id]);
         lua_settable(L, -3);
 
         lua->pushinteger(2);
@@ -149,7 +150,7 @@ int builtin::model::map::builtin_revive(lua_State* L)
     for (auto& [direction, x] : map->revive)
     {
         lua->pushinteger(direction);
-        lua->pushobject(server->model.map[x]);
+        lua->pushobject(table::map[x]);
         lua_settable(L, -3);
     }
 

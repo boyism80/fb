@@ -2,6 +2,7 @@
 #include <fb/game/server.h>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 listener_impl::listener_impl(fb::game::server& server) :
     server(server)
@@ -94,7 +95,7 @@ void listener_impl::on_update_external(object& me, bool detailed)
         auto& model = npc.based<fb::model::npc>();
         if (model.preset.has_value())
         {
-            auto& preset = this->server.model.preset[model.preset.value()];
+            auto& preset = table::preset[model.preset.value()];
             this->send_update_preset(npc, preset);
         }
         else
@@ -110,7 +111,7 @@ void listener_impl::on_update_external(object& me, bool detailed)
         auto& model = mob.based<fb::model::mob>();
         if (model.preset.has_value())
         {
-            auto& preset = this->server.model.preset[model.preset.value()];
+            auto& preset = table::preset[model.preset.value()];
             this->send_update_preset(mob, preset);
         }
         else
@@ -150,7 +151,7 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
         auto& model = npc.based<fb::model::npc>();
         if (model.preset.has_value())
         {
-            auto& preset = this->server.model.preset[model.preset.value()];
+            auto& preset = table::preset[model.preset.value()];
             this->send_update_preset(npc, preset);
         }
         else
@@ -166,7 +167,7 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
         auto& model = mob.based<fb::model::mob>();
         if (model.preset.has_value())
         {
-            auto& preset = this->server.model.preset[model.preset.value()];
+            auto& preset = table::preset[model.preset.value()];
             this->send_update_preset(mob, preset);
         }
         else

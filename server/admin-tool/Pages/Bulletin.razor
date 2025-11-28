@@ -9,7 +9,6 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject DbContext DbContext
 @inject BulletinService BulletinService
-@inject Fb.Model.Model Model
 @attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>Bulletin - Admin Tool</PageTitle>
@@ -428,7 +427,7 @@
     {
         try
         {
-            sections = Model.Bulletin?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            sections = Table.Bulletin?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             if (sections != null && sections.Any() && !selectedSection.HasValue)
             {
                 selectedSection = sections.Keys.First();

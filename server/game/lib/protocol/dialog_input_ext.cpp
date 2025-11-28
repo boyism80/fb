@@ -3,8 +3,7 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-dialog_input_ext::dialog_input_ext(fb::model::model&             model,
-                                   const fb::model::object&      obj,
+dialog_input_ext::dialog_input_ext(const fb::model::object&      obj,
                                    const std::string&            message,
                                    const std::string&            top,
                                    const std::string&            bottom,
@@ -12,7 +11,7 @@ dialog_input_ext::dialog_input_ext(fb::model::model&             model,
                                    bool                          button_prev,
                                    uint32_t                      oid,
                                    fb::game::dialog::interaction interaction) :
-    portrait(fb::game::portrait_factory::create(model, obj)),
+    portrait(fb::game::portrait_factory::create(obj)),
     message(message),
     top(top),
     bottom(bottom),

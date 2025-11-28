@@ -22,7 +22,6 @@ namespace Internal.Controllers
     {
         private readonly ILogger<InGameController> _logger;
         private readonly RedisService _redisService;
-        private readonly Fb.Model.Model _dataSet;
         private readonly RabbitMqService _rabbitMqService;
         private readonly SessionService _sessionService;
         private readonly DbContext _dbContext;
@@ -31,7 +30,6 @@ namespace Internal.Controllers
         private readonly StorageService _storageService;
         public InGameController(ILogger<InGameController> logger,
             RedisService redisService,
-            Fb.Model.Model dataSet,
             RabbitMqService rabbitMqService,
             SessionService sessionService,
             DbContext dbContext,
@@ -41,7 +39,6 @@ namespace Internal.Controllers
         {
             _logger = logger;
             _redisService = redisService;
-            _dataSet = dataSet;
             _rabbitMqService = rabbitMqService;
             _sessionService = sessionService;
             _dbContext = dbContext;

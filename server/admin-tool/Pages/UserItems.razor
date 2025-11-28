@@ -7,7 +7,6 @@
 @using Microsoft.AspNetCore.Authorization
 @inject DbContext DbContext
 @inject UserService UserService
-@inject Model Model
 @attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>User Items - Admin Tool</PageTitle>
@@ -261,7 +260,7 @@
     {
         try
         {
-            var item = Model.Item[modelId];
+            var item = Table.Item[modelId];
             return item?.Name ?? $"Unknown (ID: {modelId})";
         }
         catch

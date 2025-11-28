@@ -1,11 +1,11 @@
 #include <fb/game/protocol/trade/trade_dialog.h>
 
-namespace fb::protocol::game::response {
+using table = fb::model::table;
+using namespace fb::protocol::game::response;
 
 #ifndef BOT
-trade_dialog::trade_dialog(const fb::game::character& me, const fb::model::model& model) :
-    me(me),
-    model(model)
+trade_dialog::trade_dialog(const fb::game::character& me) :
+    me(me)
 { }
 #endif
 
@@ -13,7 +13,7 @@ trade_dialog::trade_dialog(const fb::game::character& me, const fb::model::model
 async::task<void> trade_dialog::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    const auto& cname = model.promotion[me.cls()][me.promotion()].name;
+    const auto& cname = table::promotion[me.cls()][me.promotion()].name;
 
     std::stringstream sstream;
     sstream << this->me.name() << '(' << cname.c_str() << ')';
@@ -34,5 +34,3 @@ async::task<void> trade_dialog::deserialize(fb::stream_reader<big_endian>& reade
     reader.read<uint8_t>(); // 0x00
 }
 #endif
-
-} // namespace fb::protocol::game::response

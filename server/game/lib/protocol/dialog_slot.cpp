@@ -3,13 +3,8 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-dialog_slot::dialog_slot(fb::model::model&             model,
-                         const fb::model::object&      obj,
-                         const std::vector<uint8_t>&   slots,
-                         const std::string&            message,
-                         uint32_t                      oid,
-                         fb::game::dialog::interaction interaction) :
-    portrait(fb::game::portrait_factory::create(model, obj)),
+dialog_slot::dialog_slot(const fb::model::object& obj, const std::vector<uint8_t>& slots, const std::string& message, uint32_t oid, fb::game::dialog::interaction interaction) :
+    portrait(fb::game::portrait_factory::create(obj)),
     slots(slots),
     message(message),
     oid(oid),

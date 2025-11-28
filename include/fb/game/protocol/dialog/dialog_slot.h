@@ -37,8 +37,7 @@ public:
 
 public:
 #ifndef BOT
-    dialog_slot(fb::model::model&             model,
-                const fb::model::object&      obj,
+    dialog_slot(const fb::model::object&      obj,
                 const std::vector<uint8_t>&   slots,
                 const std::string&            message,
                 uint32_t                      oid         = 0xFFFFFFFD,

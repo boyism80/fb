@@ -17,14 +17,13 @@ dialog_list::dialog_list(const fb::game::object&         object,
     interaction(interaction)
 { }
 
-dialog_list::dialog_list(fb::model::model&               model,
-                         const fb::model::object&        object,
+dialog_list::dialog_list(const fb::model::object&        object,
                          const std::vector<std::string>& lists,
                          const std::string&              message,
                          bool                            button_prev,
                          uint32_t                        oid,
                          fb::game::dialog::interaction   interaction) :
-    portrait(fb::game::portrait_factory::create(model, object)),
+    portrait(fb::game::portrait_factory::create(object)),
     lists(lists),
     message(message),
     button_prev(button_prev),

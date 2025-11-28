@@ -156,7 +156,6 @@ public class Program
         builder.Services.AddSwaggerGen();
         builder.Services.AddSingleton<RedisService>();
         builder.Services.AddSingleton<RedisDistributedLockService>();
-        builder.Services.AddSingleton<Fb.Model.Model>();
         builder.Services.AddSingleton<IMapper>(_ => new Mapper(config));
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<SessionService>();
@@ -174,7 +173,8 @@ public class Program
 
         var app = builder.Build();
         app.MapHealthChecks("/health");
-        var dataTableLoader = ActivatorUtilities.CreateInstance(app.Services.CreateScope().ServiceProvider, typeof(DataTableLoader)) as DataTableLoader;
+        var logger = app.Services.GetRequiredService<ILogger<DataTableLoader>>();
+        var dataTableLoader = new DataTableLoader(logger);
         dataTableLoader.Run();
 
         // Configure the HTTP request pipeline.

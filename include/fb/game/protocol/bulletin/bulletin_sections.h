@@ -19,15 +19,13 @@ public:
 public:
 #ifdef BOT
     std::vector<fb::bot::bulletin> bulletins;
-#else
-    const fb::model::model& model;
 #endif
 
 public:
 #ifdef BOT
     bulletin_sections() = default;
 #else
-    bulletin_sections(const fb::model::model& model);
+    bulletin_sections();
 #endif
 
 public:

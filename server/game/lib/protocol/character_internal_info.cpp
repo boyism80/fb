@@ -4,7 +4,8 @@
 #include <fb/game/server.h>
 #endif
 
-namespace fb::protocol::game::response {
+using table = fb::model::table;
+using namespace fb::protocol::game::response;
 
 #ifndef BOT
 async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer) const
@@ -51,7 +52,7 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     uint32_t remained_exp = this->ch.experience_remained();
     writer.write<uint32_t>(remained_exp);
 
-    auto& class_name = model.promotion[this->ch.cls()][this->ch.promotion()].name;
+    auto& class_name = table::promotion[this->ch.cls()][this->ch.promotion()].name;
     writer.write<std::string>(class_name);
 
     auto equipments = std::array<std::shared_ptr<fb::game::equipment>, 5>{this->ch.items.helmet(),
@@ -130,5 +131,3 @@ async::task<void> internal_info::deserialize(fb::stream_reader<big_endian>& read
     reader.read<uint8_t>(); // Final 0x00
 }
 #endif
-
-} // namespace fb::protocol::game::response
