@@ -4,15 +4,8 @@ using Http.Service;
 
 namespace Http.Reepository
 {
-    /// <summary>
-    /// Provides repository functionality for storage reward mark tracking.
-    /// Ensures pending rewards are processed only once per user.
-    /// </summary>
     public class StorageRewardMarkRepository : RedisHashRepository<StorageRewardMark, StorageRewardMarkKey>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StorageRewardMarkRepository"/> class.
-        /// </summary>
         public StorageRewardMarkRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -20,9 +13,6 @@ namespace Http.Reepository
         {
         }
 
-        /// <summary>
-        /// Retrieves all reward marks for a user.
-        /// </summary>
         public Task<IEnumerable<StorageRewardMark>> Get(uint user)
         {
             return base.GetAll(new StorageRewardMarkKey
@@ -31,10 +21,7 @@ namespace Http.Reepository
             });
         }
 
-        /// <summary>
-        /// Retrieves a specific reward mark.
-        /// </summary>
-        public Task<StorageRewardMark> Get(uint user, ulong pendingId)
+        public Task<StorageRewardMark> Get(uint user, string pendingId)
         {
             return base.Get(new StorageRewardMarkKey
             {
@@ -43,17 +30,15 @@ namespace Http.Reepository
             });
         }
 
-        /// <inheritdoc/>
         protected override string OnSelect(StorageRewardMarkKey key)
         {
             return $"""
                 SELECT * FROM `storage_reward_mark`
-                WHERE `pending_id` = {key.PendingId}
+                WHERE `pending_id` = {key.PendingId.Escape()}
                 LIMIT 1;
                 """;
         }
 
-        /// <inheritdoc/>
         protected override string OnSelectBulk(StorageRewardMarkKey key)
         {
             return $"""
@@ -62,7 +47,6 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <inheritdoc/>
         protected override string OnUpsert(StorageRewardMark value)
         {
             return $"""
@@ -87,7 +71,6 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <inheritdoc/>
         protected override string OnUpsert(StorageRewardMark[] values)
         {
             var args = values.Select(value =>

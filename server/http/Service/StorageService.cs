@@ -57,22 +57,6 @@ namespace Http.Service
                 .ToList();
         }
 
-        private async Task<ulong> GetNextPendingIdAsync()
-        {
-            // Sequence is stored in global DB (single global sequence)
-            await using var globalConn = _dbContext.Connection(-1);
-            await globalConn.OpenAsync();
-
-            var result = await globalConn.QueryFirstOrDefaultAsync<dynamic>(
-                "USP_STORAGE_PENDING_GET_NEXT_ID",
-                commandType: CommandType.StoredProcedure);
-
-            if (result == null || result.RESULT != 1 || result.id == null)
-                throw new Exception("Failed to get next pending ID from sequence");
-
-            return (ulong)result.id;
-        }
-
         public async Task<StoragePendingBox> CreatePendingAsync(string title, string message, string userName = null, DateTime? expiredDate = null, List<Dsl> attachments = null)
         {
             if (string.IsNullOrWhiteSpace(title))
@@ -98,8 +82,8 @@ namespace Http.Service
                 userId = id.Value;
             }
 
-            // Get ID from global sequence
-            var pendingId = await GetNextPendingIdAsync();
+            // Generate UUID for pending ID
+            var pendingId = Guid.NewGuid().ToString();
 
             var attachmentsJson = JsonConvert.SerializeObject(attachmentsList);
 

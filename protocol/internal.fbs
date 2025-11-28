@@ -198,7 +198,7 @@ table StorageBox {
 }
 
 table StoragePendingBox {
-    id: ulong;
+    id: string;
     user: uint?;
     title: string;
     message: string;
@@ -208,6 +208,6 @@ table StoragePendingBox {
 
 table StorageRewardMark {
     user: uint;
-    pending_id: ulong;
+    pending_id: string;
     expired_date: string?;
 }

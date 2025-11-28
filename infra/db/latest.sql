@@ -408,7 +408,7 @@ DROP TABLE IF EXISTS `storage_pending_box`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `storage_pending_box` (
-  `id` bigint unsigned NOT NULL,
+  `id` binary(16) NOT NULL,
   `user` int unsigned DEFAULT NULL,
   `title` varchar(128) NOT NULL DEFAULT '',
   `message` varchar(256) NOT NULL,
@@ -423,18 +423,6 @@ CREATE TABLE `storage_pending_box` (
 ) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `storage_pending_sequence`
---
-
-DROP TABLE IF EXISTS `storage_pending_sequence`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `storage_pending_sequence` (
-  `id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=euckr;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `storage_reward_mark`
@@ -445,7 +433,7 @@ DROP TABLE IF EXISTS `storage_reward_mark`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `storage_reward_mark` (
   `user` int unsigned NOT NULL,
-  `pending_id` bigint unsigned NOT NULL,
+  `pending_id` binary(16) NOT NULL,
   `expired_date` datetime DEFAULT NULL,
   `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -863,7 +851,7 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_STORAGE_PENDING_ADD`(
-    IN p_id BIGINT UNSIGNED,
+    IN p_id BINARY(16),
     IN p_user INT UNSIGNED,
     IN p_title NVARCHAR(128),
     IN p_message NVARCHAR(256),
@@ -894,66 +882,6 @@ BEGIN
         COMMIT;
         SELECT 1 AS RESULT, p_id AS id;
         SELECT * FROM storage_pending_box WHERE storage_pending_box.`id` = p_id;
-    END IF;
-END ;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `USP_STORAGE_PENDING_GET_NEXT_ID` */;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_STORAGE_PENDING_GET_NEXT_ID`()
-BEGIN
-    DECLARE new_id BIGINT UNSIGNED;
-    DECLARE v_error_code INT DEFAULT 0;
-    DECLARE v_error_message VARCHAR(255) DEFAULT '';
-
-    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
-    BEGIN
-        GET DIAGNOSTICS CONDITION 1
-            v_error_code = MYSQL_ERRNO,
-            v_error_message = MESSAGE_TEXT;
-        ROLLBACK;
-        SELECT 0 AS RESULT, NULL AS id, v_error_code AS error_code, v_error_message AS error_message;
-    END;
-
-    START TRANSACTION;
-
-    -- Get current sequence value (single global sequence)
-    SELECT id INTO new_id 
-    FROM storage_pending_sequence 
-    LIMIT 1 FOR UPDATE;
-
-    IF new_id IS NULL THEN
-        -- Initialize sequence: get max id from entire table (id is globally unique), or 1 if no records exist
-        SELECT COALESCE(MAX(id), 0) + 1 INTO new_id
-        FROM storage_pending_box;
-        
-        -- Ensure new_id is at least 1
-        IF new_id IS NULL OR new_id = 0 THEN
-            SET new_id = 1;
-        END IF;
-        
-        INSERT INTO storage_pending_sequence (`id`) VALUES (new_id);
-    ELSE
-        SET new_id = new_id + 1;
-        UPDATE storage_pending_sequence SET id = new_id;
-    END IF;
-
-    IF v_error_code != 0 THEN
-        SELECT 0 AS RESULT, NULL AS id, v_error_code AS error_code, v_error_message AS error_message;
-    ELSE
-        COMMIT;
-        SELECT 1 AS RESULT, new_id AS id;
     END IF;
 END ;;
 DELIMITER ;

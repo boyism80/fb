@@ -21,7 +21,13 @@ public struct StorageRewardMark : IFlatbufferObject
   public StorageRewardMark __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint User { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public ulong PendingId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public string PendingId { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetPendingIdBytes() { return __p.__vector_as_span<byte>(6, 1); }
+#else
+  public ArraySegment<byte>? GetPendingIdBytes() { return __p.__vector_as_arraysegment(6); }
+#endif
+  public byte[] GetPendingIdArray() { return __p.__vector_as_array<byte>(6); }
   public string ExpiredDate { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetExpiredDateBytes() { return __p.__vector_as_span<byte>(8, 1); }
@@ -32,18 +38,18 @@ public struct StorageRewardMark : IFlatbufferObject
 
   public static Offset<fb.protocol._internal.raw.StorageRewardMark> CreateStorageRewardMark(FlatBufferBuilder builder,
       uint user = 0,
-      ulong pending_id = 0,
+      StringOffset pending_idOffset = default(StringOffset),
       StringOffset expired_dateOffset = default(StringOffset)) {
     builder.StartTable(3);
-    StorageRewardMark.AddPendingId(builder, pending_id);
     StorageRewardMark.AddExpiredDate(builder, expired_dateOffset);
+    StorageRewardMark.AddPendingId(builder, pending_idOffset);
     StorageRewardMark.AddUser(builder, user);
     return StorageRewardMark.EndStorageRewardMark(builder);
   }
 
   public static void StartStorageRewardMark(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
-  public static void AddPendingId(FlatBufferBuilder builder, ulong pendingId) { builder.AddUlong(1, pendingId, 0); }
+  public static void AddPendingId(FlatBufferBuilder builder, StringOffset pendingIdOffset) { builder.AddOffset(1, pendingIdOffset.Value, 0); }
   public static void AddExpiredDate(FlatBufferBuilder builder, StringOffset expiredDateOffset) { builder.AddOffset(2, expiredDateOffset.Value, 0); }
   public static Offset<fb.protocol._internal.raw.StorageRewardMark> EndStorageRewardMark(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -60,7 +66,7 @@ static public class StorageRewardMarkVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*PendingId*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyString(tablePos, 6 /*PendingId*/, false)
       && verifier.VerifyString(tablePos, 8 /*ExpiredDate*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }

@@ -31,8 +31,8 @@ struct StorageRewardMark FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
-  uint64_t pending_id() const {
-    return GetField<uint64_t>(VT_PENDING_ID, 0);
+  const ::flatbuffers::String *pending_id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_PENDING_ID);
   }
   const ::flatbuffers::String *expired_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_EXPIRED_DATE);
@@ -40,7 +40,8 @@ struct StorageRewardMark FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
-           VerifyField<uint64_t>(verifier, VT_PENDING_ID, 8) &&
+           VerifyOffset(verifier, VT_PENDING_ID) &&
+           verifier.VerifyString(pending_id()) &&
            VerifyOffset(verifier, VT_EXPIRED_DATE) &&
            verifier.VerifyString(expired_date()) &&
            verifier.EndTable();
@@ -54,8 +55,8 @@ struct StorageRewardMarkBuilder {
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(StorageRewardMark::VT_USER, user, 0);
   }
-  void add_pending_id(uint64_t pending_id) {
-    fbb_.AddElement<uint64_t>(StorageRewardMark::VT_PENDING_ID, pending_id, 0);
+  void add_pending_id(::flatbuffers::Offset<::flatbuffers::String> pending_id) {
+    fbb_.AddOffset(StorageRewardMark::VT_PENDING_ID, pending_id);
   }
   void add_expired_date(::flatbuffers::Offset<::flatbuffers::String> expired_date) {
     fbb_.AddOffset(StorageRewardMark::VT_EXPIRED_DATE, expired_date);
@@ -74,11 +75,11 @@ struct StorageRewardMarkBuilder {
 inline ::flatbuffers::Offset<StorageRewardMark> CreateStorageRewardMark(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
-    uint64_t pending_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> pending_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> expired_date = 0) {
   StorageRewardMarkBuilder builder_(_fbb);
-  builder_.add_pending_id(pending_id);
   builder_.add_expired_date(expired_date);
+  builder_.add_pending_id(pending_id);
   builder_.add_user(user);
   return builder_.Finish();
 }
@@ -86,13 +87,14 @@ inline ::flatbuffers::Offset<StorageRewardMark> CreateStorageRewardMark(
 inline ::flatbuffers::Offset<StorageRewardMark> CreateStorageRewardMarkDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
-    uint64_t pending_id = 0,
+    const char *pending_id = nullptr,
     const char *expired_date = nullptr) {
+  auto pending_id__ = pending_id ? _fbb.CreateString(pending_id) : 0;
   auto expired_date__ = expired_date ? _fbb.CreateString(expired_date) : 0;
   return fb::protocol::internal::raw::CreateStorageRewardMark(
       _fbb,
       user,
-      pending_id,
+      pending_id__,
       expired_date__);
 }
 

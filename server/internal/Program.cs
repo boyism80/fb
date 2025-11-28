@@ -16,6 +16,7 @@ public class Program
         SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Model.Buff>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(string), new UuidStringTypeHandler());
 
         var config = new MapperConfiguration(cfg =>
         {

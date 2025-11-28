@@ -33,8 +33,8 @@ struct StoragePendingBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
     VT_ATTACHMENTS = 12,
     VT_EXPIRED_DATE = 14
   };
-  uint64_t id() const {
-    return GetField<uint64_t>(VT_ID, 0);
+  const ::flatbuffers::String *id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ID);
   }
   const nullable::nullable_uint *user() const {
     return GetPointer<const nullable::nullable_uint *>(VT_USER);
@@ -53,7 +53,8 @@ struct StoragePendingBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint64_t>(verifier, VT_ID, 8) &&
+           VerifyOffset(verifier, VT_ID) &&
+           verifier.VerifyString(id()) &&
            VerifyOffset(verifier, VT_USER) &&
            verifier.VerifyTable(user()) &&
            VerifyOffset(verifier, VT_TITLE) &&
@@ -72,8 +73,8 @@ struct StoragePendingBoxBuilder {
   typedef StoragePendingBox Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(uint64_t id) {
-    fbb_.AddElement<uint64_t>(StoragePendingBox::VT_ID, id, 0);
+  void add_id(::flatbuffers::Offset<::flatbuffers::String> id) {
+    fbb_.AddOffset(StoragePendingBox::VT_ID, id);
   }
   void add_user(::flatbuffers::Offset<nullable::nullable_uint> user) {
     fbb_.AddOffset(StoragePendingBox::VT_USER, user);
@@ -103,37 +104,38 @@ struct StoragePendingBoxBuilder {
 
 inline ::flatbuffers::Offset<StoragePendingBox> CreateStoragePendingBox(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint64_t id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> id = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> user = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     ::flatbuffers::Offset<::flatbuffers::String> attachments = 0,
     ::flatbuffers::Offset<::flatbuffers::String> expired_date = 0) {
   StoragePendingBoxBuilder builder_(_fbb);
-  builder_.add_id(id);
   builder_.add_expired_date(expired_date);
   builder_.add_attachments(attachments);
   builder_.add_message(message);
   builder_.add_title(title);
   builder_.add_user(user);
+  builder_.add_id(id);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<StoragePendingBox> CreateStoragePendingBoxDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint64_t id = 0,
+    const char *id = nullptr,
     ::flatbuffers::Offset<nullable::nullable_uint> user = 0,
     const char *title = nullptr,
     const char *message = nullptr,
     const char *attachments = nullptr,
     const char *expired_date = nullptr) {
+  auto id__ = id ? _fbb.CreateString(id) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto message__ = message ? _fbb.CreateString(message) : 0;
   auto attachments__ = attachments ? _fbb.CreateString(attachments) : 0;
   auto expired_date__ = expired_date ? _fbb.CreateString(expired_date) : 0;
   return fb::protocol::internal::raw::CreateStoragePendingBox(
       _fbb,
-      id,
+      id__,
       user,
       title__,
       message__,

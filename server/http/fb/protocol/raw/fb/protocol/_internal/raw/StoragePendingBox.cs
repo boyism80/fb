@@ -20,7 +20,13 @@ public struct StoragePendingBox : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public StoragePendingBox __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public ulong Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public string Id { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetIdBytes() { return __p.__vector_as_span<byte>(4, 1); }
+#else
+  public ArraySegment<byte>? GetIdBytes() { return __p.__vector_as_arraysegment(4); }
+#endif
+  public byte[] GetIdArray() { return __p.__vector_as_array<byte>(4); }
   public nullable.nullable_uint? User { get { int o = __p.__offset(6); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public string Title { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
@@ -52,24 +58,24 @@ public struct StoragePendingBox : IFlatbufferObject
   public byte[] GetExpiredDateArray() { return __p.__vector_as_array<byte>(14); }
 
   public static Offset<fb.protocol._internal.raw.StoragePendingBox> CreateStoragePendingBox(FlatBufferBuilder builder,
-      ulong id = 0,
+      StringOffset idOffset = default(StringOffset),
       Offset<nullable.nullable_uint> userOffset = default(Offset<nullable.nullable_uint>),
       StringOffset titleOffset = default(StringOffset),
       StringOffset messageOffset = default(StringOffset),
       StringOffset attachmentsOffset = default(StringOffset),
       StringOffset expired_dateOffset = default(StringOffset)) {
     builder.StartTable(6);
-    StoragePendingBox.AddId(builder, id);
     StoragePendingBox.AddExpiredDate(builder, expired_dateOffset);
     StoragePendingBox.AddAttachments(builder, attachmentsOffset);
     StoragePendingBox.AddMessage(builder, messageOffset);
     StoragePendingBox.AddTitle(builder, titleOffset);
     StoragePendingBox.AddUser(builder, userOffset);
+    StoragePendingBox.AddId(builder, idOffset);
     return StoragePendingBox.EndStoragePendingBox(builder);
   }
 
   public static void StartStoragePendingBox(FlatBufferBuilder builder) { builder.StartTable(6); }
-  public static void AddId(FlatBufferBuilder builder, ulong id) { builder.AddUlong(0, id, 0); }
+  public static void AddId(FlatBufferBuilder builder, StringOffset idOffset) { builder.AddOffset(0, idOffset.Value, 0); }
   public static void AddUser(FlatBufferBuilder builder, Offset<nullable.nullable_uint> userOffset) { builder.AddOffset(1, userOffset.Value, 0); }
   public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(2, titleOffset.Value, 0); }
   public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(3, messageOffset.Value, 0); }
@@ -89,7 +95,7 @@ static public class StoragePendingBoxVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Id*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyString(tablePos, 4 /*Id*/, false)
       && verifier.VerifyTable(tablePos, 6 /*User*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyString(tablePos, 8 /*Title*/, false)
       && verifier.VerifyString(tablePos, 10 /*Message*/, false)

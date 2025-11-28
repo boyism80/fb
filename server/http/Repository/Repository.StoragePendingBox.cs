@@ -46,7 +46,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `storage_pending_box`
-                WHERE `id` = {key.Id}
+                WHERE `id` = {key.Id.Escape()}
                 LIMIT 1;
                 """;
         }

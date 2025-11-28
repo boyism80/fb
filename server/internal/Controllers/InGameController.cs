@@ -408,7 +408,7 @@ namespace Internal.Controllers
                 var storageRewardMarks = Override(_mapper.Map<Protocol.StorageRewardMark[], StorageRewardMark[]>(request.StorageRewardMarks?.ToArray() ?? Array.Empty<Protocol.StorageRewardMark>()), await _dbContext.StorageRewardMark.Get(request.Character.Id));
                 _dbContext.StorageRewardMark.Set(storageRewardMarks.ToArray());
 
-                var personalPendingIds = request.StorageRewardMarks?.Select(mark => mark.PendingId).ToHashSet() ?? new HashSet<ulong>();
+                var personalPendingIds = request.StorageRewardMarks?.Select(mark => mark.PendingId).ToHashSet() ?? new HashSet<string>();
                 if (personalPendingIds.Count > 0)
                 {
                     var pendingBoxes = (await _dbContext.StoragePendingBox.Get(request.Character.Id)).Where(x => personalPendingIds.Contains(x.Id)).ToArray();
