@@ -55,20 +55,80 @@
     },
     "redis": {
         "section-1": {
-            "-1": { "port": { "cluster": 6379, "node": 30110 } },
-            "0": { "port": { "cluster": 6380, "node": 30111 } },
-            "1": { "port": { "cluster": 6381, "node": 30112 } },
-            "2": { "port": { "cluster": 6382, "node": 30113 } },
-            "3": { "port": { "cluster": 6383, "node": 30114 } },
-            "4": { "port": { "cluster": 6384, "node": 30115 } },
-            "5": { "port": { "cluster": 6385, "node": 30116 } },
-            "6": { "port": { "cluster": 6386, "node": 30117 } },
-            "7": { "port": { "cluster": 6387, "node": 30118 } },
-            "8": { "port": { "cluster": 6388, "node": 30119 } },
-            "9": { "port": { "cluster": 6389, "node": 30120 } }
+            "-1": {
+                "port": {
+                    "cluster": 6379,
+                    "node": 30110
+                }
+            },
+            "0": {
+                "port": {
+                    "cluster": 6380,
+                    "node": 30111
+                }
+            },
+            "1": {
+                "port": {
+                    "cluster": 6381,
+                    "node": 30112
+                }
+            },
+            "2": {
+                "port": {
+                    "cluster": 6382,
+                    "node": 30113
+                }
+            },
+            "3": {
+                "port": {
+                    "cluster": 6383,
+                    "node": 30114
+                }
+            },
+            "4": {
+                "port": {
+                    "cluster": 6384,
+                    "node": 30115
+                }
+            },
+            "5": {
+                "port": {
+                    "cluster": 6385,
+                    "node": 30116
+                }
+            },
+            "6": {
+                "port": {
+                    "cluster": 6386,
+                    "node": 30117
+                }
+            },
+            "7": {
+                "port": {
+                    "cluster": 6387,
+                    "node": 30118
+                }
+            },
+            "8": {
+                "port": {
+                    "cluster": 6388,
+                    "node": 30119
+                }
+            },
+            "9": {
+                "port": {
+                    "cluster": 6389,
+                    "node": 30120
+                }
+            }
         },
         "section-2": {
-            "-1": { "port": { "cluster": 6390, "node": 30121 } }
+            "-1": {
+                "port": {
+                    "cluster": 6390,
+                    "node": 30121
+                }
+            }
         }
     },
     "rabbitmq": {
@@ -82,19 +142,8 @@
                     "cluster": 15672,
                     "node": 30301
                 }
-            }
-        },
-        "section-2": {
-            "port": {
-                "amqp": {
-                    "cluster": 5673,
-                    "node": 30310
-                },
-                "management": {
-                    "cluster": 15673,
-                    "node": 30311
-                }
-            }
+            },
+            "replicas": 4
         }
     },
     "gateway": {
@@ -104,7 +153,7 @@
     "login": {
         "section-1": {
             "name": "연",
-            "desc": "1996년 4월 서비스 시작", 
+            "desc": "1996년 4월 서비스 시작",
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
@@ -113,7 +162,7 @@
         },
         "section-2": {
             "name": "무휼",
-            "desc": "2000년 2월 서비스 시작", 
+            "desc": "2000년 2월 서비스 시작",
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
@@ -122,7 +171,7 @@
         },
         "section-3": {
             "name": "세류",
-            "desc": "2000년 7월 서비스 시작", 
+            "desc": "2000년 7월 서비스 시작",
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
@@ -131,7 +180,7 @@
         },
         "section-4": {
             "name": "유리",
-            "desc": "2000년 7월 서비스 시작", 
+            "desc": "2000년 7월 서비스 시작",
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
@@ -140,7 +189,7 @@
         },
         "section-5": {
             "name": "해명",
-            "desc": "2000년 12월 서비스 시작", 
+            "desc": "2000년 12월 서비스 시작",
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
@@ -149,7 +198,7 @@
         },
         "section-6": {
             "name": "배극",
-            "desc": "2000년 12월 서비스 시작(PK서버)", 
+            "desc": "2000년 12월 서비스 시작(PK서버)",
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
@@ -158,7 +207,7 @@
         },
         "section-7": {
             "name": "하자",
-            "desc": "10대들을 위한 전용 서버", 
+            "desc": "10대들을 위한 전용 서버",
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
@@ -167,7 +216,7 @@
         },
         "section-8": {
             "name": "호동",
-            "desc": "2001년 2월 서비스 시작", 
+            "desc": "2001년 2월 서비스 시작",
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
@@ -176,7 +225,7 @@
         },
         "section-9": {
             "name": "주몽",
-            "desc": "2002년 2월 서비스 시작", 
+            "desc": "2002년 2월 서비스 시작",
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
@@ -185,7 +234,7 @@
         },
         "section-10": {
             "name": "낙랑",
-            "desc": "2002년 8월 서비스 시작", 
+            "desc": "2002년 8월 서비스 시작",
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
@@ -194,7 +243,7 @@
         },
         "section-11": {
             "name": "괴유",
-            "desc": "2002년 2월 서비스 시작(무료테스트 서버)", 
+            "desc": "2002년 2월 서비스 시작(무료테스트 서버)",
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
@@ -204,38 +253,90 @@
     },
     "game": {
         "section-1": {
-            "internal" :"section-1",
+            "internal": "section-1",
             "login": "section-1",
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
             "containers": {
-                "0": {"port": 30030},
-                "1": {"port": 30031},
-                "2": {"port": 30032},
-                "3": {"port": 30033},
-                "4": {"port": 30034},
-                "5": {"port": 30035},
-                "6": {"port": 30036},
-                "7": {"port": 30037},
-                "8": {"port": 30038},
-                "9": {"port": 30039},
-                "10": {"port": 30040},
-                "11": {"port": 30041},
-                "12": {"port": 30042},
-                "13": {"port": 30043},
-                "14": {"port": 30044},
-                "15": {"port": 30045},
-                "16": {"port": 30046},
-                "17": {"port": 30047},
-                "18": {"port": 30048},
-                "19": {"port": 30049},
-                "20": {"port": 30050},
-                "21": {"port": 30051},
-                "22": {"port": 30052},
-                "23": {"port": 30053},
-                "24": {"port": 30054},
-                "25": {"port": 30055}
+                "0": {
+                    "port": 30030
+                },
+                "1": {
+                    "port": 30031
+                },
+                "2": {
+                    "port": 30032
+                },
+                "3": {
+                    "port": 30033
+                },
+                "4": {
+                    "port": 30034
+                },
+                "5": {
+                    "port": 30035
+                },
+                "6": {
+                    "port": 30036
+                },
+                "7": {
+                    "port": 30037
+                },
+                "8": {
+                    "port": 30038
+                },
+                "9": {
+                    "port": 30039
+                },
+                "10": {
+                    "port": 30040
+                },
+                "11": {
+                    "port": 30041
+                },
+                "12": {
+                    "port": 30042
+                },
+                "13": {
+                    "port": 30043
+                },
+                "14": {
+                    "port": 30044
+                },
+                "15": {
+                    "port": 30045
+                },
+                "16": {
+                    "port": 30046
+                },
+                "17": {
+                    "port": 30047
+                },
+                "18": {
+                    "port": 30048
+                },
+                "19": {
+                    "port": 30049
+                },
+                "20": {
+                    "port": 30050
+                },
+                "21": {
+                    "port": 30051
+                },
+                "22": {
+                    "port": 30052
+                },
+                "23": {
+                    "port": 30053
+                },
+                "24": {
+                    "port": 30054
+                },
+                "25": {
+                    "port": 30055
+                }
             }
         }
     },
