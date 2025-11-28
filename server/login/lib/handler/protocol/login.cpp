@@ -2,6 +2,7 @@
 #include <format>
 
 using namespace fb::login::handler::protocol;
+using table = fb::model::table;
 
 login::login(fb::login::server& server) :
     fb::handler::protocol<fb::login::server, fb::protocol::login::request::login>(server)
