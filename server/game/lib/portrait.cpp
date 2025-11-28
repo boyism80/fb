@@ -79,7 +79,7 @@ void object_portrait::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(this->color);
 }
 
-std::unique_ptr<portrait> portrait_factory::create(fb::model::model& model, const fb::model::object& obj)
+std::unique_ptr<portrait> portrait_factory::create(const fb::model::object& obj)
 {
     switch (obj.what())
     {
@@ -88,7 +88,7 @@ std::unique_ptr<portrait> portrait_factory::create(fb::model::model& model, cons
         auto& npc_model = static_cast<const fb::model::npc&>(obj);
         if (npc_model.preset.has_value())
         {
-            auto& preset      = model.preset[npc_model.preset.value()];
+            auto& preset      = fb::model::table::preset[npc_model.preset.value()];
             auto  ptr         = new character_portrait();
             ptr->sex          = preset.sex;
             ptr->state        = preset.state;
@@ -156,7 +156,7 @@ std::unique_ptr<portrait> portrait_factory::create(const fb::game::object& obj)
     }
     default:
     {
-        return create(obj.server.model, obj.based<fb::model::object>());
+        return create(obj.based<fb::model::object>());
     }
     }
 }

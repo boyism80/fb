@@ -18,14 +18,14 @@ npc::~npc()
 void fb::game::npc::soliloquy()
 {
     auto& model = this->based<fb::model::npc>();
-    if (this->server.model.soliloquy.contains(model.id) == false)
+    if (fb::model::table::soliloquy.contains(model.id) == false)
         return;
 
     this->_soliloquy_time--;
     if (this->_soliloquy_time > 0)
         return;
 
-    auto& soliloquy = this->server.model.soliloquy[model.id];
+    auto& soliloquy = fb::model::table::soliloquy[model.id];
     auto  i         = random<uint16_t>(0, soliloquy.size() - 1);
     this->chat(soliloquy[i].message);
     this->_soliloquy_time = random<uint16_t>(60, 120);

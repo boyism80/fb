@@ -7,7 +7,7 @@ fb::game::map_loader::map_loader(fb::game::server& server) :
 
 fb::generator<fb::game::map_loader::input_type> fb::game::map_loader::on_ready()
 {
-    for (auto& [k, v] : this->_server.model.map)
+    for (auto& [k, v] : fb::model::table::map)
     {
         co_yield v;
     }

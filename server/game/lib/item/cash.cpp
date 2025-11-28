@@ -17,21 +17,21 @@ const fb::model::cash& cash::match_model(fb::game::server& server, uint32_t valu
         throw std::runtime_error("money cannot be zero");
 
     if (value == 1)
-        return static_cast<const fb::model::cash&>(server.model.item[fb::model::const_value::item::BRONZE]);
+        return static_cast<const fb::model::cash&>(fb::model::table::item[fb::model::const_value::item::BRONZE]);
 
     if (value < 50)
-        return static_cast<const fb::model::cash&>(server.model.item[fb::model::const_value::item::BRONZE_BUNDLE]);
+        return static_cast<const fb::model::cash&>(fb::model::table::item[fb::model::const_value::item::BRONZE_BUNDLE]);
 
     if (value == 50)
-        return static_cast<const fb::model::cash&>(server.model.item[fb::model::const_value::item::SILVER]);
+        return static_cast<const fb::model::cash&>(fb::model::table::item[fb::model::const_value::item::SILVER]);
 
     if (value == 100)
-        return static_cast<const fb::model::cash&>(server.model.item[fb::model::const_value::item::GOLD]);
+        return static_cast<const fb::model::cash&>(fb::model::table::item[fb::model::const_value::item::GOLD]);
 
     if (value < 1000)
-        return static_cast<const fb::model::cash&>(server.model.item[fb::model::const_value::item::SILVER_BUNDLE]);
+        return static_cast<const fb::model::cash&>(fb::model::table::item[fb::model::const_value::item::SILVER_BUNDLE]);
 
-    return static_cast<const fb::model::cash&>(server.model.item[fb::model::const_value::item::GOLD_BUNDLE]);
+    return static_cast<const fb::model::cash&>(fb::model::table::item[fb::model::const_value::item::GOLD_BUNDLE]);
 }
 
 std::string cash::inven_name() const

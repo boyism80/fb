@@ -25,7 +25,7 @@ bool door::toggle()
             return false;
 
         auto  index = this->model.pairs[i];
-        auto& model = this->map.server.model.door_pair[index];
+        auto& model = fb::model::table::door_pair[index];
         if (this->_opened)
             tile->object = model.close;
         else

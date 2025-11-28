@@ -137,9 +137,9 @@ async::task<void> server::handle_start()
             for (auto map : maps)
             {
                 params->maps.insert({map->model.id, map});
-                if (this->model.mob_spawn.contains(map->model.id))
+                if (fb::model::table::mob_spawn.contains(map->model.id))
                 {
-                    for (auto& spawn : this->model.mob_spawn[map->model.id])
+                    for (auto& spawn : fb::model::table::mob_spawn[map->model.id])
                     {
                         params->rezens.push_back(fb::game::rezen(*this, spawn));
                     }

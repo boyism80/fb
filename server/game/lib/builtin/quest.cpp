@@ -35,7 +35,7 @@ int builtin::quest::builtin_model(lua_State* L)
     auto weak = owner->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         auto  step  = quest->step();
-        auto& model = server->model.quest[quest->id][step];
+        auto& model = fb::model::table::quest[quest->id][step];
         return lua->ensure_resume(*server, weak, [=, &model]() {
             lua->pushobject(model);
             return 1;
@@ -288,7 +288,7 @@ int builtin::quest::builtin_completed_progress(lua_State* L)
 
     auto weak = owner->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto& attr   = server->model.quest[quest->id];
+        auto& attr   = fb::model::table::quest[quest->id];
         auto& model  = attr[quest->step()];
         auto  result = (model.progress == quest->progress());
         return lua->ensure_resume(*server, weak, [=]() {
@@ -315,7 +315,7 @@ int builtin::quest::builtin_completed_step(lua_State* L)
 
     auto weak = owner->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto result = (server->model.quest[quest->id].size() == quest->step());
+        auto result = (fb::model::table::quest[quest->id].size() == quest->step());
         return lua->ensure_resume(*server, weak, [=]() {
             lua->pushboolean(result);
             return 1;

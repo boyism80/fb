@@ -90,8 +90,6 @@ public:
     fb::game::polling       poll = polling(*this);
     fb::game::listener_impl listener;
 
-public:
-    fb::model::model                                        model;
     fb::game::map_container                                 maps;
     fb::game::character::container                          characters;
     fb::sharded_container<clan_ptr, 16>                     clans;

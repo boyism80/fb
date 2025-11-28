@@ -53,13 +53,13 @@ int builtin::model::map::builtin_root(lua_State* L)
     if (map == nullptr)
         return 0;
 
-    if (server->model.map.contains(map->root) == false)
+    if (fb::model::table::map.contains(map->root) == false)
     {
         lua->pushnil();
         return 1;
     }
 
-    auto& root = server->model.map[map->root];
+    auto& root = fb::model::table::map[map->root];
     lua->pushobject(root);
     return 1;
 }
@@ -97,7 +97,7 @@ int builtin::model::map::builtin_cardinal(lua_State* L)
     }
 
     auto params = fb::model::dsl::map(dsl.params);
-    if (server->model.map.contains(params.id) == false)
+    if (fb::model::table::map.contains(params.id) == false)
     {
         lua->pushnil();
         return 1;
@@ -106,7 +106,7 @@ int builtin::model::map::builtin_cardinal(lua_State* L)
     lua->new_table();
     {
         lua->pushinteger(1);
-        lua->pushobject(server->model.map[params.id]);
+        lua->pushobject(fb::model::table::map[params.id]);
         lua_settable(L, -3);
 
         lua->pushinteger(2);
@@ -149,7 +149,7 @@ int builtin::model::map::builtin_revive(lua_State* L)
     for (auto& [direction, x] : map->revive)
     {
         lua->pushinteger(direction);
-        lua->pushobject(server->model.map[x]);
+        lua->pushobject(fb::model::table::map[x]);
         lua_settable(L, -3);
     }
 

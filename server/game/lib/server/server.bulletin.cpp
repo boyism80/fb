@@ -4,11 +4,11 @@ using namespace fb::game;
 
 async::task<std::list<bulletin::article>> server::bulletin_list(uint16_t section, uint16_t offset)
 {
-    if (this->model.bulletin.contains(section) == false)
+    if (fb::model::table::bulletin.contains(section) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_SECTION_NOT_EXIST));
 
     auto&& resp     = co_await this->http.get<internal_resp::GetArticleList>("internal", std::format("/bulletin/{}?offset={}", section, offset));
-    auto&  model    = this->model.bulletin[section];
+    auto&  model    = fb::model::table::bulletin[section];
     auto   articles = std::list<bulletin::article>();
     for (auto& summary : resp.summary_list)
     {
@@ -27,7 +27,7 @@ async::task<std::list<bulletin::article>> server::bulletin_list(uint16_t section
 
 async::task<bulletin::article> server::read_bulletin(uint16_t section, uint16_t id)
 {
-    if (this->model.bulletin.contains(section) == false)
+    if (fb::model::table::bulletin.contains(section) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_SECTION_NOT_EXIST));
 
     auto&& resp = co_await this->http.get<internal_resp::GetArticle>("internal", std::format("/bulletin/{}/{}", section, id));
@@ -48,10 +48,10 @@ async::task<bulletin::article> server::read_bulletin(uint16_t section, uint16_t 
 
 async::task<void> server::write_bulletin(character& ch, uint16_t section, const std::string& title, const std::string& contents)
 {
-    if (this->model.bulletin.contains(section) == false)
+    if (fb::model::table::bulletin.contains(section) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_SECTION_NOT_EXIST));
 
-    if (ch.condition(this->model.bulletin[section].condition) == false)
+    if (ch.condition(fb::model::table::bulletin[section].condition) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_NOT_AUTH));
 
     if (title.length() > 64)
@@ -68,10 +68,10 @@ async::task<void> server::write_bulletin(character& ch, uint16_t section, const 
 
 async::task<void> server::delete_bulletin(character& ch, uint16_t section, uint16_t id)
 {
-    if (this->model.bulletin.contains(section) == false)
+    if (fb::model::table::bulletin.contains(section) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_SECTION_NOT_EXIST));
 
-    if (ch.condition(this->model.bulletin[section].condition) == false)
+    if (ch.condition(fb::model::table::bulletin[section].condition) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_NOT_AUTH));
 
     auto&& resp = co_await this->http.post("internal", "/bulletin/delete", DeleteArticle{id, section, ch.id()});

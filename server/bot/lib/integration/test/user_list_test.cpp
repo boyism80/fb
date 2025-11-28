@@ -44,7 +44,7 @@ async::task<bool> user_list_test::test_scenario_1()
 
         auto bot_index = 0;
         auto counts    = std::unordered_map<CLASS, int>();
-        for (auto& [cls, promotions] : this->controller.container.model.promotion)
+        for (auto& [cls, promotions] : fb::model::table::promotion)
         {
             counts[cls] = 0;
             for (auto& [_, promotion] : promotions)

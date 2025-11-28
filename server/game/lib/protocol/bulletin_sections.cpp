@@ -3,8 +3,7 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-bulletin_sections::bulletin_sections(const fb::model::model& model) :
-    model(model)
+bulletin_sections::bulletin_sections()
 { }
 #endif
 
@@ -12,13 +11,13 @@ bulletin_sections::bulletin_sections(const fb::model::model& model) :
 async::task<void> bulletin_sections::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    auto size = this->model.bulletin.size();
+    auto size = fb::model::table::bulletin.size();
 
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(0x01);
     writer.write<uint16_t>(size);
 
-    for (const auto& [k, v] : this->model.bulletin)
+    for (const auto& [k, v] : fb::model::table::bulletin)
     {
         writer.write<uint16_t>(k);
         writer.write<std::string>(v.name);

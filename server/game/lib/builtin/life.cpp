@@ -409,7 +409,7 @@ int builtin::life::builtin_cast(lua_State* L)
         return 0;
 
     auto name  = lua->tostring(offset++);
-    auto spell = server->model.spell.name2spell(name);
+    auto spell = fb::model::table::spell.name2spell(name);
     if (spell == nullptr)
         return 0;
 

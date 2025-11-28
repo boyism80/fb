@@ -47,12 +47,12 @@ int builtin::model::npc::builtin_sell_price(lua_State* L)
     auto name = lua->tostring(2);
     for (auto sell : npc->sell)
     {
-        if (server->model.sell.contains(sell) == false)
+        if (fb::model::table::sell.contains(sell) == false)
             continue;
 
-        for (auto& x : server->model.sell[sell])
+        for (auto& x : fb::model::table::sell[sell])
         {
-            auto& item = server->model.item[x.item];
+            auto& item = fb::model::table::item[x.item];
             if (item.name != name)
                 continue;
 
@@ -79,12 +79,12 @@ int builtin::model::npc::builtin_buy_price(lua_State* L)
     if (npc->buy.has_value() == false)
         return 0;
 
-    if (server->model.buy.contains(npc->buy.value()) == false)
+    if (fb::model::table::buy.contains(npc->buy.value()) == false)
         return 0;
 
-    for (auto& [_, x] : server->model.buy[npc->buy.value()])
+    for (auto& [_, x] : fb::model::table::buy[npc->buy.value()])
     {
-        auto& item = server->model.item[x.item];
+        auto& item = fb::model::table::item[x.item];
         if (item.name != name)
             continue;
 

@@ -53,7 +53,7 @@ login::init_ch(const internal::Character& response, character& ch, std::optional
 
     for (auto& buff : response.buffs)
     {
-        auto& model = this->server.model.spell[buff.model];
+        auto& model = fb::model::table::spell[buff.model];
         ch.buffs.push_back(model, buff.time);
     }
 
@@ -112,7 +112,7 @@ void login::init_items(const std::vector<internal::Item>& response, character& c
 {
     for (auto& x : response)
     {
-        auto item = this->server.model.item[x.model].make(this->server);
+        auto item = fb::model::table::item[x.model].make(this->server);
         item->count(x.count);
 
         if (x.durability.has_value())
@@ -134,10 +134,10 @@ void login::init_spells(const std::vector<internal::Spell>& response, character&
 {
     for (auto& x : response)
     {
-        if (this->server.model.spell.contains(x.model) == false)
+        if (fb::model::table::spell.contains(x.model) == false)
             continue;
 
-        auto& model = this->server.model.spell[x.model];
+        auto& model = fb::model::table::spell[x.model];
         auto  delay = fb::model::datetime(x.next) - fb::model::datetime();
         auto  sec   = delay.seconds();
         if (sec >= 0)
@@ -160,10 +160,10 @@ void login::init_achievements(const std::vector<fb::protocol::internal::Achievem
 {
     for (auto& achievement : response)
     {
-        if (this->server.model.achievement.contains(achievement.model) == false)
+        if (fb::model::table::achievement.contains(achievement.model) == false)
             continue;
 
-        auto ptr = std::make_unique<fb::game::achievement>(this->server.model.achievement[achievement.model], achievement.text, achievement.icon, achievement.color);
+        auto ptr = std::make_unique<fb::game::achievement>(fb::model::table::achievement[achievement.model], achievement.text, achievement.icon, achievement.color);
         ch.achievements.insert({achievement.model, std::move(ptr)});
     }
 }
@@ -260,8 +260,8 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     for (const auto& dto : response.storage_boxes)
     {
         fb::game::storage_box::entry box{};
-        box.id    = dto.id;
-        box.title = dto.title;
+        box.id      = dto.id;
+        box.title   = dto.title;
         box.message = dto.message;
 
         if (!dto.attachments.empty())

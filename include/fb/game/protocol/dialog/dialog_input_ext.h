@@ -43,8 +43,7 @@ public:
 
 public:
 #ifndef BOT
-    dialog_input_ext(fb::model::model&             model,
-                     const fb::model::object&      obj,
+    dialog_input_ext(const fb::model::object&      obj,
                      const std::string&            message,
                      const std::string&            top,
                      const std::string&            bottom,

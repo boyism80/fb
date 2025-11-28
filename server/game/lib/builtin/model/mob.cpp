@@ -67,11 +67,11 @@ int builtin::model::mob::builtin_drop(lua_State* L)
         return 0;
 
     lua->new_table();
-    if (server->model.drop.contains(model->drop))
+    if (fb::model::table::drop.contains(model->drop))
     {
         auto  i     = 0;
         auto  visit = std::unordered_set<uint32_t>();
-        auto& drop  = server->model.drop[model->drop];
+        auto& drop  = fb::model::table::drop[model->drop];
         for (auto& dsl : drop.dsl)
         {
             switch (dsl.header)
@@ -83,7 +83,7 @@ int builtin::model::mob::builtin_drop(lua_State* L)
 
                 visit.insert(params.id);
                 lua->pushinteger(i + 1);
-                lua->pushobject(server->model.item[params.id]);
+                lua->pushobject(fb::model::table::item[params.id]);
                 lua_settable(L, -3);
                 i++;
                 break;

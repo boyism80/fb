@@ -64,7 +64,7 @@ int main(int argc, char** argv)
         signals.async_wait([&server](const boost::system::error_code& ec, int signal_number) {
             server->exit();
         });
-        fb::model::loader(server->model).run();
+        fb::model::loader().run();
 
         fb::console::set_mode(fb::console::mode::plain);
         server->run();

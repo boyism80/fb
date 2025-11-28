@@ -52,7 +52,7 @@ void map::update_door()
         {
             auto found  = false;
             auto opened = false;
-            for (auto& [id, door] : this->server.model.door)
+            for (auto& [id, door] : fb::model::table::door)
             {
                 if (door.matched(*this, pivot, &opened))
                 {
@@ -223,7 +223,7 @@ bool map::movable_forward(const object& object, uint16_t step) const
 
 const fb::model::warp* map::warpable(const fb::model::point16_t& position) const
 {
-    auto& warps = this->server.model.warp;
+    auto& warps = fb::model::table::warp;
     if (warps.contains(this->model.id) == false)
         return nullptr;
 

@@ -45,7 +45,7 @@ async::task<bool> clan_test::test_clan_creation()
     auto& bot  = bots[0];
 
     fb::logger::debug("Looking for NPC 낙랑 for clan creation");
-    auto npc = this->controller.container.model.npc.name2npc("낙랑");
+    auto npc = fb::model::table::npc.name2npc("낙랑");
     if (npc == nullptr)
     {
         fb::logger::fatal("Clan test failed: NPC not found");
@@ -126,7 +126,7 @@ async::task<bool> clan_test::test_clan_title()
     auto& bot  = bots[0];
 
     fb::logger::debug("Looking for NPC 낙랑 for clan title change");
-    auto npc = this->controller.container.model.npc.name2npc("낙랑");
+    auto npc = fb::model::table::npc.name2npc("낙랑");
     if (npc == nullptr)
     {
         fb::logger::fatal("Clan test failed: NPC not found");
@@ -262,7 +262,7 @@ async::task<bool> clan_test::test_clan_role()
     fb::logger::debug("Role permission test passed: {} correctly denied invite permission", bots[1]->name());
 
     fb::logger::debug("Looking for NPC 낙랑 for role change test");
-    auto npc = this->controller.container.model.npc.name2npc("낙랑");
+    auto npc = fb::model::table::npc.name2npc("낙랑");
     if (npc == nullptr)
     {
         fb::logger::fatal("Clan test failed: NPC not found");

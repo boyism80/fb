@@ -41,7 +41,7 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
 
         auto   map = response2.map;
         auto&& response3 =
-            co_await this->server.http.post("internal", "/in-game/transfer", Transfer{fb::protocol::internal::Service ::Game, this->server.model.map[map].host, name, true});
+            co_await this->server.http.post("internal", "/in-game/transfer", Transfer{fb::protocol::internal::Service ::Game, fb::model::table::map[map].host, name, true});
         co_await this->server.threads.switching(weak);
 
         switch (static_cast<ERROR_CODE>(response3.error))

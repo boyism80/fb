@@ -1068,7 +1068,7 @@ bool fb::game::items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>
     auto required_size = 0;
     for (auto& [id, count] : items)
     {
-        auto& model = owner->server.model.item[id];
+        auto& model = fb::model::table::item[id];
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
             required_size += count;
         else

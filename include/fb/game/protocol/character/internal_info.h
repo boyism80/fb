@@ -15,8 +15,7 @@ public:
 
 public:
 #ifndef BOT
-    fb::game::character&    ch;
-    const fb::model::model& model;
+    fb::game::character& ch;
 #else
     struct equipment_data
     {
@@ -49,9 +48,8 @@ public:
 
 public:
 #ifndef BOT
-    internal_info(fb::game::character& ch, const fb::model::model& model) :
-        ch(ch),
-        model(model)
+    internal_info(fb::game::character& ch) :
+        ch(ch)
     { }
 #else
     internal_info() = default;

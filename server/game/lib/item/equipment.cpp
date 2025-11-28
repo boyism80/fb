@@ -274,7 +274,7 @@ std::string fb::game::equipment::tip_message() const
         break;
 
     default:
-        sstream << this->server.model.promotion[cls][0].name << "용";
+        sstream << fb::model::table::promotion[cls][0].name << "용";
         break;
     }
 

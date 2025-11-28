@@ -39,8 +39,7 @@ public:
 
 public:
 #ifndef BOT
-    dialog(fb::model::model&             model,
-           const fb::model::object&      object,
+    dialog(const fb::model::object&      object,
            const std::string&            message,
            bool                          button_prev,
            bool                          button_next,

@@ -3,8 +3,7 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-map_worlds::map_worlds(const fb::model::model& model, uint32_t id, uint16_t index) :
-    model(model),
+map_worlds::map_worlds(uint32_t id, uint16_t index) :
     id(id),
     index(index)
 { }
@@ -16,8 +15,8 @@ async::task<void> map_worlds::serialize(fb::stream_writer<big_endian>& writer) c
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
 
-    auto& attr   = this->model.world_attribute[this->id];
-    auto& points = this->model.world[this->id];
+    auto& attr   = fb::model::table::world_attribute[this->id];
+    auto& points = fb::model::table::world[this->id];
     auto  g      = std::unordered_map<uint32_t, std::vector<uint16_t>>();
     for (auto& [id, point] : points)
     {
@@ -28,12 +27,12 @@ async::task<void> map_worlds::serialize(fb::stream_writer<big_endian>& writer) c
     }
 
     writer.write<std::string, uint8_t>(attr.key);
-    writer.write<uint8_t>(this->model.world[this->id].size());
+    writer.write<uint8_t>(fb::model::table::world[this->id].size());
     writer.write<uint8_t>(this->index);
 
     for (int i = 0; i < points.size(); i++)
     {
-        auto& point = this->model.world[this->id][i];
+        auto& point = fb::model::table::world[this->id][i];
         writer.write<uint16_t>(point.offset.x);
         writer.write<uint16_t>(point.offset.y);
         writer.write<std::string, uint8_t>(point.name);

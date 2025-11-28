@@ -38,7 +38,7 @@ async::task<bool> worldmap_test::worldmap_scenario()
     fb::logger::debug("Worldmap test: Bot {} navigating to worldmap", bot->name());
     bot = co_await bot->transfer(fb::protocol::game::request::map_world(0, 1, 0), DEFAULT_TIMEOUT);
 
-    auto& after = this->controller.container.model.world[0][0];
+    auto& after = fb::model::table::world[0][0];
     if (bot->map() != after.map)
     {
         fb::logger::fatal("Bot is not in the map : {}", after.map);

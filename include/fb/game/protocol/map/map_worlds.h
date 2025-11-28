@@ -31,9 +31,8 @@ public:
 
 public:
 #ifndef BOT
-    const fb::model::model& model;
-    const uint32_t          id;
-    const uint16_t          index;
+    const uint32_t id;
+    const uint16_t index;
 #else
     std::string              key;
     uint8_t                  world_count;
@@ -43,7 +42,7 @@ public:
 
 public:
 #ifndef BOT
-    map_worlds(const fb::model::model& model, uint32_t id, uint16_t index);
+    map_worlds(uint32_t id, uint16_t index);
 #else
     map_worlds() = default;
 #endif

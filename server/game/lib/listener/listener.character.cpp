@@ -214,7 +214,7 @@ void listener_impl::on_update_position(character& ch)
 
 void listener_impl::on_browse_character(character& ch, const character& target)
 {
-    ch.send(fb_resp::external_info(target, this->server.model));
+    ch.send(fb_resp::external_info(target));
 }
 
 void listener_impl::on_item_tooltip(character& ch, const item& item, uint16_t position)
@@ -241,7 +241,7 @@ void listener_impl::on_show_user_list(character& ch)
 
 void listener_impl::on_show_bulletin(character& ch)
 {
-    ch.send(fb_resp::bulletin_sections(this->server.model));
+    ch.send(fb_resp::bulletin_sections());
 }
 
 void listener_impl::on_show_bulletin(character& ch, const fb::model::bulletin& section, const std::list<bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag)
@@ -277,7 +277,7 @@ void listener_impl::on_show_bulletin_message(character& ch, const std::string& m
 
 void listener_impl::on_show_world_map(character& ch, uint32_t id, uint16_t index)
 {
-    ch.send(fb_resp::map_worlds(this->server.model, id, index));
+    ch.send(fb_resp::map_worlds(id, index));
 }
 
 void listener_impl::on_timer(character& ch, uint32_t time, TIMER_TYPE type)

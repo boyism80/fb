@@ -6,9 +6,8 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-external_info::external_info(const fb::game::character& ch, const fb::model::model& model) :
-    ch(ch),
-    model(model)
+external_info::external_info(const fb::game::character& ch) :
+    ch(ch)
 { }
 #endif
 
@@ -34,7 +33,7 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
     }
 
     // 클래스 이름
-    const auto& class_name = model.promotion[this->ch.cls()][this->ch.promotion()].name;
+    const auto& class_name = fb::model::table::promotion[this->ch.cls()][this->ch.promotion()].name;
     writer.write<std::string>(class_name);      // 직업
     writer.write<std::string>(this->ch.name()); // 이름
 

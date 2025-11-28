@@ -8,7 +8,7 @@ character::character(fb::game::server& server, fb::socket<character>& socket) :
     stat(*this),
     storage_box(*this),
     life(server,
-         server.model.life[0],
+         fb::model::table::life[0],
          stat,
          fb::game::life::initial_params{
              {
@@ -100,7 +100,7 @@ uint32_t character::limited_exp(uint32_t exp) const
     if (this->max_level())
         return exp;
 
-    auto range = this->server.model.ability[this->_class][this->_level].exp;
+    auto range = fb::model::table::ability[this->_class][this->_level].exp;
     return std::min(uint32_t(range / 100.0f * 3.3f + 1), exp);
 #endif
 }
@@ -378,7 +378,7 @@ bool character::level_up()
     if (this->max_level())
         return false;
 
-    auto& ability = this->server.model.ability[this->_class][this->_level];
+    auto& ability = fb::model::table::ability[this->_class][this->_level];
     this->stat.base_str(this->stat.base_str() + ability.strength);
     this->stat.base_int(this->stat.base_int() + ability.intelligence);
     this->stat.base_dex(this->stat.base_dex() + ability.dexterity);
@@ -399,7 +399,7 @@ bool character::max_level() const
 {
     this->assert_thread();
 
-    return this->server.model.ability[this->_class].contains(this->_level + 1) == false;
+    return fb::model::table::ability[this->_class].contains(this->_level + 1) == false;
 }
 
 SEX character::sex() const
@@ -532,7 +532,7 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
         // 직업이 없는 경우 정확히 5레벨을 찍을 경험치만 얻도록 제한
         if (this->_class == CLASS::NONE)
         {
-            auto require = this->server.model.ability[CLASS::NONE][5].stacked_exp;
+            auto require = fb::model::table::ability[CLASS::NONE][5].stacked_exp;
             if (this->_experience > require)
                 value = 0;
 
@@ -556,7 +556,7 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
                 this->message(std::format("경험치가 {}({}%) 올랐습니다.", value, int(this->experience_percent())));
         }
 
-        if (this->server.model.ability.contains(this->_class) == false)
+        if (fb::model::table::ability.contains(this->_class) == false)
             throw std::runtime_error("what?");
 
         while (true)
@@ -564,7 +564,7 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
             if (this->max_level())
                 break;
 
-            auto& next = this->server.model.ability[this->_class][this->_level];
+            auto& next = fb::model::table::ability[this->_class][this->_level];
             if (next.exp == 0)
                 break;
 
@@ -612,13 +612,13 @@ uint32_t character::experience_remained() const
     if (this->max_level())
         return 0;
 
-    if (this->server.model.ability.contains(this->_class) == false)
+    if (fb::model::table::ability.contains(this->_class) == false)
         return 0;
 
-    if (this->server.model.ability[this->_class].contains(this->_level) == false)
+    if (fb::model::table::ability[this->_class].contains(this->_level) == false)
         return 0;
 
-    return this->server.model.ability[this->_class][this->_level].stacked_exp - this->exp();
+    return fb::model::table::ability[this->_class][this->_level].stacked_exp - this->exp();
 }
 
 float character::experience_percent() const
@@ -632,13 +632,13 @@ float character::experience_percent() const
     else
     {
         auto level    = this->level();
-        auto required = this->server.model.ability[this->_class][level].exp;
+        auto required = fb::model::table::ability[this->_class][level].exp;
 
         auto prev_stack_exp = uint32_t{0};
-        if (this->server.model.ability[this->_class].contains(level - 1))
-            prev_stack_exp = this->server.model.ability[this->_class][level - 1].stacked_exp;
-        else if (this->server.model.ability[CLASS::NONE].contains(level - 1))
-            prev_stack_exp = this->server.model.ability[CLASS::NONE][level - 1].stacked_exp;
+        if (fb::model::table::ability[this->_class].contains(level - 1))
+            prev_stack_exp = fb::model::table::ability[this->_class][level - 1].stacked_exp;
+        else if (fb::model::table::ability[CLASS::NONE].contains(level - 1))
+            prev_stack_exp = fb::model::table::ability[CLASS::NONE][level - 1].stacked_exp;
 
         return std::min(100.0f, ((this->_experience - prev_stack_exp) / float(required)) * 100.0f);
     }
@@ -931,7 +931,7 @@ void character::ride(mob& horse)
         if (this->state() == STATE::RIDING)
             throw std::runtime_error(_TEXT(MESSAGE_RIDE_ALREADY_RIDE));
 
-        if (horse.based<fb::model::mob>() != this->server.model.mob[fb::model::const_value::mob::horse])
+        if (horse.based<fb::model::mob>() != fb::model::table::mob[fb::model::const_value::mob::horse])
             throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_NO_CONVEYANCE));
 
         if (horse.map() != this->_map)
@@ -978,7 +978,7 @@ void character::unride()
         if (this->state() != STATE::RIDING)
             throw std::runtime_error(_TEXT(MESSAGE_RIDE_UNRIDE));
 
-        auto& model = this->server.model.mob[fb::model::const_value::mob::horse];
+        auto& model = fb::model::table::mob[fb::model::const_value::mob::horse];
         auto  horse = this->server.make<mob>(model, mob::initial_params{.alive = true});
         horse->map(this->_map, this->front_position());
 
@@ -1489,10 +1489,10 @@ async::task<void> character::death_penalty()
 
     auto cls   = this->cls();
     auto level = this->level();
-    if (this->server.model.ability.contains(cls) && this->server.model.ability[cls].contains(level) && this->server.model.ability[cls].contains(level - 1))
+    if (fb::model::table::ability.contains(cls) && fb::model::table::ability[cls].contains(level) && fb::model::table::ability[cls].contains(level - 1))
     {
-        auto penalty = uint32_t(this->server.model.ability[cls][level].exp * fb::model::const_value::death_penalty::exp);
-        auto gained  = this->exp() - this->server.model.ability[cls][level - 1].stacked_exp;
+        auto penalty = uint32_t(fb::model::table::ability[cls][level].exp * fb::model::const_value::death_penalty::exp);
+        auto gained  = this->exp() - fb::model::table::ability[cls][level - 1].stacked_exp;
 
         penalty = std::min(gained, penalty);
         if (penalty > 0)
@@ -1517,7 +1517,7 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
         case fb::model::enum_value::DSL::item:
         {
             auto  params = fb::model::dsl::item(item.params);
-            auto& model  = this->server.model.item[params.id];
+            auto& model  = fb::model::table::item[params.id];
             auto  item   = model.make(this->server, params.count);
             this->items.add(item);
             break;

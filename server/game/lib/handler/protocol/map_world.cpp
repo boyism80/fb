@@ -13,7 +13,7 @@ async::task<bool> map_world::handle(fb::socket<character>& session, fb::protocol
     if (ch->inited() == false)
         co_return true;
 
-    auto& world  = this->server.model.world[request.value];
+    auto& world  = fb::model::table::world[request.value];
     auto& before = world[request.before];
     auto& after  = world[request.after];
 

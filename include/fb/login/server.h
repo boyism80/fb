@@ -96,8 +96,6 @@ private:
 
     bool is_forbidden_impl(const std::string& str) const;
 
-public:
-    fb::model::model model;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);

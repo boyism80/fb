@@ -28,7 +28,7 @@ async::task<bool> item_test::test_equipment(uint32_t index)
     auto  bots   = this->get_test_bots();
     auto& bot    = bots[index];
     auto  passed = true;
-    for (auto& [_, item] : this->controller.container.model.item)
+    for (auto& [_, item] : fb::model::table::item)
     {
         if (!equipment_types.contains(item.type))
             continue;
