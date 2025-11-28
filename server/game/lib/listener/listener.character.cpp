@@ -105,7 +105,7 @@ void listener_impl::on_update_buff(character& ch, const buffs& buffs)
 
 void listener_impl::on_update_internal(character& ch)
 {
-    ch.send(fb_resp::internal_info(ch, this->server.model));
+    ch.send(fb_resp::internal_info(ch));
 }
 
 void listener_impl::on_level_up(character& me)

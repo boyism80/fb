@@ -9,6 +9,7 @@
 #include <sstream>
 
 using namespace fb::game::handler::protocol;
+using table = fb::model::table;
 
 login::login(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::login>(server)
@@ -53,7 +54,7 @@ login::init_ch(const internal::Character& response, character& ch, std::optional
 
     for (auto& buff : response.buffs)
     {
-        auto& model = fb::model::table::spell[buff.model];
+        auto& model = table::spell[buff.model];
         ch.buffs.push_back(model, buff.time);
     }
 
@@ -112,7 +113,7 @@ void login::init_items(const std::vector<internal::Item>& response, character& c
 {
     for (auto& x : response)
     {
-        auto item = fb::model::table::item[x.model].make(this->server);
+        auto item = table::item[x.model].make(this->server);
         item->count(x.count);
 
         if (x.durability.has_value())
@@ -134,10 +135,10 @@ void login::init_spells(const std::vector<internal::Spell>& response, character&
 {
     for (auto& x : response)
     {
-        if (fb::model::table::spell.contains(x.model) == false)
+        if (table::spell.contains(x.model) == false)
             continue;
 
-        auto& model = fb::model::table::spell[x.model];
+        auto& model = table::spell[x.model];
         auto  delay = fb::model::datetime(x.next) - fb::model::datetime();
         auto  sec   = delay.seconds();
         if (sec >= 0)
@@ -160,10 +161,10 @@ void login::init_achievements(const std::vector<fb::protocol::internal::Achievem
 {
     for (auto& achievement : response)
     {
-        if (fb::model::table::achievement.contains(achievement.model) == false)
+        if (table::achievement.contains(achievement.model) == false)
             continue;
 
-        auto ptr = std::make_unique<fb::game::achievement>(fb::model::table::achievement[achievement.model], achievement.text, achievement.icon, achievement.color);
+        auto ptr = std::make_unique<fb::game::achievement>(table::achievement[achievement.model], achievement.text, achievement.icon, achievement.color);
         ch.achievements.insert({achievement.model, std::move(ptr)});
     }
 }

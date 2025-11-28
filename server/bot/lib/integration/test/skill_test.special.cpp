@@ -14,13 +14,10 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
 
     struct special_spell_test
     {
-        std::string name; // Spell name
-        std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&)>
-            pre_condition_check; // Called before spell cast to setup conditions
-        std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&, uint8_t slot)>
-            spell_cast_function; // Custom spell casting logic
-        std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&)>
-            post_condition_check; // Called after spell cast to verify effects
+        std::string                                                                         name;                 // Spell name
+        std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&)>               pre_condition_check;  // Called before spell cast to setup conditions
+        std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&, uint8_t slot)> spell_cast_function;  // Custom spell casting logic
+        std::function<async::task<bool>(std::shared_ptr<fb::bot::game_bot>&)>               post_condition_check; // Called after spell cast to verify effects
     };
 
     auto local          = fb::config<std::string>("ip") == "127.0.0.1";
@@ -78,15 +75,14 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              }
              else
              {
-                 caster = co_await caster->transfer(
-                     fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, slot, "", 0, {0, 0}));
+                 caster = co_await caster->transfer(fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, slot, "", 0, {0, 0}));
                  co_return true;
              }
          }, [this, local](auto& caster) -> async::task<bool> {
              // Post-condition: Verify teleportation to hometown
              fb::logger::debug("Post-condition: Verifying 귀환 teleportation");
 
-             auto& map_model = fb::model::table::map[caster->map()];
+             auto& map_model = table::map[caster->map()];
              if (map_model.name != "낙랑의방")
                  caster = co_await caster->transfer(fb::protocol::game::request::chat(false, "/맵이동 낙랑의방 6 6"));
              co_return true;
@@ -263,7 +259,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
          }, [this](auto& caster, uint8_t slot) -> async::task<bool> {
              // Spell cast: Use spell_cast with monster type message
              auto mob       = "평웅";
-             auto mob_model = fb::model::table::mob.name2mob(mob);
+             auto mob_model = table::mob.name2mob(mob);
              if (mob_model == nullptr)
              {
                  fb::logger::fatal("Could not find monster model for {}", mob);
@@ -305,11 +301,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
 
              std::ignore = co_await caster->set_current_hp_mp(50, 100000, DEFAULT_TIMEOUT);
              std::ignore = co_await caster->template request<fb::protocol::game::response::update_external<true>>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET,
-                                                         slot,
-                                                         "",
-                                                         caster->oid(),
-                                                         caster->position()),
+                 fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, slot, "", caster->oid(), caster->position()),
                  [oid = caster->oid()](auto& resp) {
                      if (resp.oid != oid)
                          return false;
@@ -328,19 +320,19 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
          }, [this](auto& caster, uint8_t slot) -> async::task<bool> {
              // Spell cast: Use spell_cast with direction message
 
-             auto& map_model  = fb::model::table::map[caster->map()];
-             auto& root_model = fb::model::table::map[map_model.root];
+             auto& map_model  = table::map[caster->map()];
+             auto& root_model = table::map[map_model.root];
              if (root_model.revive.size() == 0)
              {
                  fb::logger::warn("Revive is not enabled, skipping test");
                  co_return true;
              }
 
-             auto&& resp = co_await caster->template request<fb::protocol::game::response::map_config>(
-                 fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, slot, "좌", 0, {0, 0}),
-                 DEFAULT_TIMEOUT);
+             auto&& resp =
+                 co_await caster->template request<fb::protocol::game::response::map_config>(fb::protocol::game::request::spell_cast(SPELL_TYPE::INPUT, slot, "좌", 0, {0, 0}),
+                                                                                             DEFAULT_TIMEOUT);
 
-             auto& next_map_model = fb::model::table::map[caster->map()];
+             auto& next_map_model = table::map[caster->map()];
              if (next_map_model.id != root_model.revive.at(CARDINAL_DIRECTION::WEST))
              {
                  fb::logger::fatal("This map must have revive enabled");
@@ -352,7 +344,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
              // Post-condition: Verify ghost teleportation
              fb::logger::debug("Post-condition: Verifying 성황령 ghost teleportation");
 
-             auto& map_model = fb::model::table::map[caster->map()];
+             auto& map_model = table::map[caster->map()];
              if (map_model.name != "낙랑의방")
                  caster = co_await caster->transfer(fb::protocol::game::request::chat(false, "/맵이동 낙랑의방 6 6"));
 

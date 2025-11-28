@@ -1,5 +1,7 @@
 #include <fb/game/protocol/bulletin/bulletin_sections.h>
 
+using table = fb::model::table;
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT
@@ -11,13 +13,13 @@ bulletin_sections::bulletin_sections()
 async::task<void> bulletin_sections::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    auto size = fb::model::table::bulletin.size();
+    auto size = table::bulletin.size();
 
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(0x01);
     writer.write<uint16_t>(size);
 
-    for (const auto& [k, v] : fb::model::table::bulletin)
+    for (const auto& [k, v] : table::bulletin)
     {
         writer.write<uint16_t>(k);
         writer.write<std::string>(v.name);

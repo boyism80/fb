@@ -2,6 +2,7 @@
 #include <fb/game/map.h>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 map::map(fb::game::server& server, const fb::model::map& model, bool active, const void* data, size_t size) :
     server(server),
@@ -52,7 +53,7 @@ void map::update_door()
         {
             auto found  = false;
             auto opened = false;
-            for (auto& [id, door] : fb::model::table::door)
+            for (auto& [id, door] : table::door)
             {
                 if (door.matched(*this, pivot, &opened))
                 {
@@ -223,7 +224,7 @@ bool map::movable_forward(const object& object, uint16_t step) const
 
 const fb::model::warp* map::warpable(const fb::model::point16_t& position) const
 {
-    auto& warps = fb::model::table::warp;
+    auto& warps = table::warp;
     if (warps.contains(this->model.id) == false)
         return nullptr;
 

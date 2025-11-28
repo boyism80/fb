@@ -9,21 +9,18 @@ namespace Http.Worker
     /// </summary>
     public class DataTableLoader : ParallelWorker<Fb.Model.Container>
     {
-        private readonly Fb.Model.Model _model;
         private readonly ILogger<DataTableLoader> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataTableLoader"/> class.
         /// Sets up the item type factory for proper deserialization of different item types.
         /// </summary>
-        /// <param name="model">The game model containing data containers to load.</param>
         /// <param name="logger">The logger instance for tracking load progress and errors.</param>
-        public DataTableLoader(Fb.Model.Model model, ILogger<DataTableLoader> logger) : base(logger)
+        public DataTableLoader(ILogger<DataTableLoader> logger) : base(logger)
         {
-            _model = model;
             _logger = logger;
 
-            _model.Item.Hook.Build = token =>
+            Table.Item.Hook.Build = token =>
             {
                 var type = token["type"].ToObject<ItemType>();
                 switch (type)
@@ -70,7 +67,7 @@ namespace Http.Worker
         /// <returns>An enumerable collection of all data containers in the model.</returns>
         protected override IEnumerable<Container> OnReady()
         {
-            foreach (var container in _model.Containers)
+            foreach (var container in Table.Containers)
             {
                 yield return container;
             }

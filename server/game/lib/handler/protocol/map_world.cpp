@@ -2,6 +2,7 @@
 #include <fb/game/server.h>
 
 using namespace fb::game::handler::protocol;
+using table = fb::model::table;
 
 map_world::map_world(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::map_world>(server)
@@ -13,7 +14,7 @@ async::task<bool> map_world::handle(fb::socket<character>& session, fb::protocol
     if (ch->inited() == false)
         co_return true;
 
-    auto& world  = fb::model::table::world[request.value];
+    auto& world  = table::world[request.value];
     auto& before = world[request.before];
     auto& after  = world[request.after];
 

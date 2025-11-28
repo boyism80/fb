@@ -5,7 +5,6 @@
 @using System.ComponentModel.DataAnnotations
 @attribute [AuthorizeRole(Role.Admin)]
 @inject StorageService StorageService
-@inject Model Model
 
 <PageTitle>Storage Pending - Admin Tool</PageTitle>
 
@@ -174,7 +173,7 @@
                                                 {
                                                     var itemId = (uint)attachment.Params[0];
                                                     var count = (uint)attachment.Params[1];
-                                                    var item = Model.Item[itemId];
+                                                    var item = Table.Item[itemId];
                                                     <text>Item: @(item?.Name ?? $"ID:{itemId}") x @count</text>
                                                 }
                                                 else if (attachment.Header == Fb.Model.EnumValue.Dsl.Money)
@@ -237,7 +236,7 @@
 
     protected override void OnInitialized()
     {
-        allItems = Model.Item.Values.ToList();
+        allItems = Table.Item.Values.ToList();
         
         // Set default expired date to today + 30 days (date only, no time)
         model.ExpiredDate = DateTime.Today.AddDays(30);

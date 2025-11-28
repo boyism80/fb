@@ -24,7 +24,6 @@ builder.Services.AddScoped<AuthenticationStateProvider, AdminTool.Authentication
 // HTTP project services
 builder.Services.AddSingleton<RedisService>();
 builder.Services.AddSingleton<RedisDistributedLockService>();
-builder.Services.AddSingleton<Fb.Model.Model>();
 builder.Services.AddSingleton<RabbitMqService>();
 builder.Services.AddSingleton<SessionService>();
 builder.Services.AddSingleton<WriteBackService>();
@@ -49,11 +48,9 @@ builder.Services.AddScoped<AdminTool.Services.UserService>();
 var app = builder.Build();
 
 // Load model data
-var dataTableLoader = ActivatorUtilities.CreateInstance(app.Services.CreateScope().ServiceProvider, typeof(DataTableLoader)) as DataTableLoader;
-if (dataTableLoader != null)
-{
-    dataTableLoader.Run();
-}
+var logger = app.Services.GetRequiredService<ILogger<DataTableLoader>>();
+var dataTableLoader = new DataTableLoader(logger);
+dataTableLoader.Run();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

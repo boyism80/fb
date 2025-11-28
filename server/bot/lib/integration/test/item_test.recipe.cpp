@@ -9,7 +9,7 @@ async::task<bool> item_test::test_item_combine(uint32_t index)
 {
     fb::logger::debug("Starting scenario 3-1: Item combine");
 
-    auto& recipes = fb::model::table::recipe;
+    auto& recipes = table::recipe;
     auto  bots    = this->get_test_bots();
     auto& bot     = bots[index];
     auto  passed  = true;
@@ -29,24 +29,22 @@ async::task<bool> item_test::test_item_combine(uint32_t index)
         for (auto& dsl : recipe.success)
         {
             auto params = dsl::item(dsl.params);
-            expected_success_items.push_back(fb::model::table::item[params.id].name);
+            expected_success_items.push_back(table::item[params.id].name);
         }
 
         for (auto& dsl : recipe.failed)
         {
             auto params = dsl::item(dsl.params);
-            expected_failed_items.push_back(fb::model::table::item[params.id].name);
+            expected_failed_items.push_back(table::item[params.id].name);
         }
 
-        bot->chat(std::format("Scenario 3-1: Expected items: {} or {}",
-                              boost::algorithm::join(expected_success_items, ", "),
-                              boost::algorithm::join(expected_failed_items, ", ")));
+        bot->chat(std::format("Scenario 3-1: Expected items: {} or {}", boost::algorithm::join(expected_success_items, ", "), boost::algorithm::join(expected_failed_items, ", ")));
 
         auto slot = 0;
         for (auto& source : recipe.source)
         {
             auto  params = dsl::item(source.params);
-            auto& item   = fb::model::table::item[params.id];
+            auto& item   = table::item[params.id];
             auto  remain = params.count;
 
             while (remain > 0)
@@ -83,7 +81,7 @@ async::task<bool> item_test::test_item_combine(uint32_t index)
             for (auto& dsl : recipe.success)
             {
                 auto  params = dsl::item(dsl.params);
-                auto& item   = fb::model::table::item[params.id];
+                auto& item   = table::item[params.id];
                 auto  count  = params.count;
 
                 if (bot->has_item_by_name(item.name) == false)
@@ -94,9 +92,7 @@ async::task<bool> item_test::test_item_combine(uint32_t index)
 
                 if (bot->get_item_count_by_name(item.name) != count)
                 {
-                    fb::logger::fatal("Scenario 3-1: Item count mismatch: {} != {}",
-                                      bot->get_item_count_by_name(item.name),
-                                      count);
+                    fb::logger::fatal("Scenario 3-1: Item count mismatch: {} != {}", bot->get_item_count_by_name(item.name), count);
                     passed = false;
                 }
             }
@@ -106,7 +102,7 @@ async::task<bool> item_test::test_item_combine(uint32_t index)
             for (auto& dsl : recipe.failed)
             {
                 auto  params = dsl::item(dsl.params);
-                auto& item   = fb::model::table::item[params.id];
+                auto& item   = table::item[params.id];
                 auto  count  = params.count;
 
                 if (bot->has_item_by_name(item.name) == false)

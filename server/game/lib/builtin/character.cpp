@@ -3,6 +3,7 @@
 #include <fb/game/server.h>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
@@ -340,7 +341,7 @@ int builtin::character::builtin_item(lua_State* L)
                 lua_gettable(L, -2);
                 if (lua->is_string(-1))
                 {
-                    item = fb::model::table::item.name2item(lua->tostring(-1));
+                    item = table::item.name2item(lua->tostring(-1));
                 }
                 else if (lua->is_userdata<fb::model::item>(-1))
                 {
@@ -500,7 +501,7 @@ int builtin::character::builtin_mkitem(lua_State* L)
 
     auto weak = ch->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto model = fb::model::table::item.name2item(name);
+        auto model = table::item.name2item(name);
         auto item  = static_cast<fb::game::item*>(nullptr);
         auto slot  = static_cast<uint8_t>(0xFF);
 
@@ -613,7 +614,7 @@ int builtin::character::builtin_rmitem(lua_State* L)
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
             try
             {
-                auto model = fb::model::table::item.name2item(name);
+                auto model = table::item.name2item(name);
                 if (model == nullptr)
                     return lua->ensure_resume(*server, weak, [=]() {
                         return 0;
@@ -1576,10 +1577,10 @@ int builtin::character::builtin_push_achievement(lua_State* L)
     if (lua->is_number(2))
     {
         auto id = lua->tointeger(2);
-        if (!fb::model::table::achievement.contains(id))
+        if (!table::achievement.contains(id))
             return 0;
 
-        model = &fb::model::table::achievement[id];
+        model = &table::achievement[id];
     }
     else if (lua->is_userdata<fb::game::achievement>(2))
     {
@@ -1926,7 +1927,7 @@ int builtin::character::builtin_spawn_mob(lua_State* L)
 
     auto name  = lua->tostring(2);
     auto owned = true;
-    auto model = fb::model::table::mob.name2mob(name);
+    auto model = table::mob.name2mob(name);
     if (model == nullptr)
     {
         lua->pushnil();
@@ -2330,7 +2331,7 @@ int builtin::character::builtin_mkspell(lua_State* L)
         return 0;
 
     auto name  = lua->tostring(2);
-    auto model = fb::model::table::spell.name2spell(name);
+    auto model = table::spell.name2spell(name);
     if (model == nullptr)
         return 0;
 
@@ -2435,7 +2436,7 @@ int builtin::character::builtin_world(lua_State* L)
         return 0;
 
     auto name = lua->tostring(2);
-    for (auto& [id, world] : fb::model::table::world)
+    for (auto& [id, world] : table::world)
     {
         for (auto& [index, point] : world)
         {
@@ -2580,7 +2581,7 @@ int builtin::character::builtin_delay(lua_State* L)
     }
     else if (lua->is_string(2))
     {
-        model = fb::model::table::spell.name2spell(lua->tostring(2));
+        model = table::spell.name2spell(lua->tostring(2));
     }
 
     if (model == nullptr)
@@ -3202,7 +3203,7 @@ int fb::game::builtin::character::builtin_start_quest(lua_State* L)
         return 0;
 
     auto id = lua->tointeger(2);
-    if (fb::model::table::quest.contains(id) == false)
+    if (table::quest.contains(id) == false)
     {
         lua->pushboolean(false);
         return 1;
@@ -3276,13 +3277,13 @@ int fb::game::builtin::character::builtin_can_start_quest(lua_State* L)
     }
 
     auto id = lua->tointeger(2);
-    if (fb::model::table::quest.contains(id) == false)
+    if (table::quest.contains(id) == false)
     {
         lua->pushboolean(false);
         return 1;
     }
 
-    auto& attr = fb::model::table::quest_attribute[id];
+    auto& attr = table::quest_attribute[id];
     lua->pushboolean(ch->condition(attr.condition));
     return 1;
 }

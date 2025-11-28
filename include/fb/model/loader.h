@@ -23,7 +23,7 @@ protected:
     fb::generator<input_type> on_ready()
     {
         auto buffer = std::vector<std::reference_wrapper<fb::model::container>>();
-        fb::model::table::foreach ([&, this](auto& container) {
+        table::foreach ([&, this](auto& container) {
             buffer.push_back(container);
         });
 

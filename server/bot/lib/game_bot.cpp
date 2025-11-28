@@ -519,7 +519,7 @@ async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model:
 async::task<void> game_bot::map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/맵이동 {} {} {}", map_name, x, y);
-    auto map     = fb::model::table::map.name2map(map_name);
+    auto map     = table::map.name2map(map_name);
     if (map == nullptr)
     {
         co_return;
@@ -897,7 +897,7 @@ async::task<void> game_bot::create_item(const std::string& item_name, uint32_t c
 async::task<game_bot::simple_npc> game_bot::create_npc(const std::string& npc_name, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/엔피씨생성 {}", npc_name);
-    auto model   = fb::model::table::npc.name2npc(npc_name);
+    auto model   = table::npc.name2npc(npc_name);
     if (!model)
         throw std::runtime_error(std::format("Failed to find NPC model for {}", npc_name));
 
@@ -978,7 +978,7 @@ async::task<bool> game_bot::equip(uint8_t slot, std::chrono::milliseconds timeou
         }
 
         auto& item       = this->_items.at(slot);
-        auto  item_model = fb::model::table::item.name2item(item.name);
+        auto  item_model = table::item.name2item(item.name);
         if (!item_model)
         {
             fb::logger::fatal("Failed to find item model for {}", item.name);
@@ -1055,7 +1055,7 @@ async::task<spawned_monster_info> game_bot::spawn_monster_with_validator(std::sh
 
 async::task<spawned_monster_info> game_bot::spawn_monster(const std::string& monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
 {
-    auto expected_look = fb::model::table::mob.name2mob(monster_name)->look;
+    auto expected_look = table::mob.name2mob(monster_name)->look;
 
     auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
         fb::protocol::game::request::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
@@ -1084,7 +1084,7 @@ async::task<spawned_monster_info> game_bot::spawn_monster(const std::string& mon
 
 async::task<void> game_bot::spawn_monsters_bulk(const std::string& monster_name, uint8_t range, std::chrono::milliseconds timeout)
 {
-    auto expected_look = fb::model::table::mob.name2mob(monster_name)->look;
+    auto expected_look = table::mob.name2mob(monster_name)->look;
 
     std::ignore = co_await this->request<fb::protocol::game::response::update>(
         fb::protocol::game::request::chat{false, std::format("/몬스터범위생성 {} {}", monster_name, range)},
@@ -1139,7 +1139,7 @@ async::task<std::vector<spawned_monster_info>> game_bot::spawn_monsters_relative
                                                                                  const std::vector<std::pair<int, int>>& relative_positions,
                                                                                  std::chrono::milliseconds               timeout)
 {
-    auto expected_look = fb::model::table::mob.name2mob(monster_name)->look;
+    auto expected_look = table::mob.name2mob(monster_name)->look;
 
     auto                              caster_pos = this->position();
     std::vector<spawned_monster_info> spawned_monsters;
@@ -1186,7 +1186,7 @@ async::task<std::vector<spawned_monster_info>> game_bot::spawn_monsters_relative
 
 async::task<spawned_monster_info> game_bot::spawn_monster_relative(const std::string& monster_name, int relative_x, int relative_y, std::chrono::milliseconds timeout)
 {
-    auto expected_look = fb::model::table::mob.name2mob(monster_name)->look;
+    auto expected_look = table::mob.name2mob(monster_name)->look;
 
     auto caster_pos = this->position();
     auto monster_x  = caster_pos.x + relative_x;
@@ -1582,7 +1582,7 @@ async::task<bool> game_bot::kick_group(std::shared_ptr<game_bot> target, std::ch
 async::task<bool> game_bot::change_clan_role(std::shared_ptr<game_bot> target, CLAN_ROLE role, std::chrono::milliseconds timeout)
 {
     // Find NPC 낙랑 for clan management
-    auto npc = fb::model::table::npc.name2npc("낙랑");
+    auto npc = table::npc.name2npc("낙랑");
     if (npc == nullptr)
     {
         co_return false;
@@ -1659,7 +1659,7 @@ async::task<bool> game_bot::change_clan_role(std::shared_ptr<game_bot> target, C
 async::task<bool> game_bot::invite_to_clan(std::shared_ptr<game_bot> invitee, std::chrono::milliseconds timeout)
 {
     // Find NPC 낙랑 for clan management
-    auto npc = fb::model::table::npc.name2npc("낙랑");
+    auto npc = table::npc.name2npc("낙랑");
     if (npc == nullptr)
     {
         co_return false;
@@ -1811,7 +1811,7 @@ async::task<bool> game_bot::invite_to_clan(std::shared_ptr<game_bot> invitee, st
 async::task<bool> game_bot::kick_from_clan(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout)
 {
     // Find NPC 낙랑 for clan management
-    auto npc = fb::model::table::npc.name2npc("낙랑");
+    auto npc = table::npc.name2npc("낙랑");
     if (npc == nullptr)
     {
         co_return false;
@@ -1901,7 +1901,7 @@ async::task<bool> game_bot::kick_from_clan(std::shared_ptr<game_bot> target, std
 async::task<bool> game_bot::leave_clan(std::chrono::milliseconds timeout)
 {
     // Find NPC 낙랑 for clan management
-    auto npc = fb::model::table::npc.name2npc("낙랑");
+    auto npc = table::npc.name2npc("낙랑");
     if (npc == nullptr)
     {
         co_return false;
@@ -1972,7 +1972,7 @@ async::task<bool> game_bot::leave_clan(std::chrono::milliseconds timeout)
 async::task<bool> game_bot::destroy_clan(std::chrono::milliseconds timeout)
 {
     // Find NPC 낙랑 for clan management
-    auto npc = fb::model::table::npc.name2npc("낙랑");
+    auto npc = table::npc.name2npc("낙랑");
     if (npc == nullptr)
     {
         co_return false;
@@ -2043,7 +2043,7 @@ async::task<bool> game_bot::destroy_clan(std::chrono::milliseconds timeout)
 async::task<bool> game_bot::change_clan_title(const std::string& title, std::chrono::milliseconds timeout)
 {
     // Find NPC 낙랑 for clan management
-    auto npc = fb::model::table::npc.name2npc("낙랑");
+    auto npc = table::npc.name2npc("낙랑");
     if (npc == nullptr)
     {
         co_return false;
@@ -2140,7 +2140,7 @@ bool game_bot::simple_item::is_equipment(const game_bot_controller& controller) 
 
     try
     {
-        auto item_model = fb::model::table::item.name2item(name);
+        auto item_model = table::item.name2item(name);
         if (!item_model)
         {
             return false;
@@ -2158,7 +2158,7 @@ std::string game_bot::simple_item::get_equipment_info(const game_bot_controller&
 {
     try
     {
-        auto item_model = fb::model::table::item.name2item(name);
+        auto item_model = table::item.name2item(name);
         if (!item_model)
         {
             return "";
@@ -2237,7 +2237,7 @@ std::string game_bot::simple_item::get_equipment_info(const game_bot_controller&
             break;
 
         default:
-            sstream << fb::model::table::promotion[cls][0].name << "용";
+            sstream << table::promotion[cls][0].name << "용";
             break;
         }
 
@@ -2259,7 +2259,7 @@ uint32_t game_bot::simple_item::get_price(const game_bot_controller& controller)
 {
     try
     {
-        auto item_model = fb::model::table::item.name2item(name);
+        auto item_model = table::item.name2item(name);
         if (!item_model)
         {
             return 0xFFFFFFFF;

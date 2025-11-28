@@ -44,7 +44,7 @@ async::task<bool> user_list_test::test_scenario_1()
 
         auto bot_index = 0;
         auto counts    = std::unordered_map<CLASS, int>();
-        for (auto& [cls, promotions] : fb::model::table::promotion)
+        for (auto& [cls, promotions] : table::promotion)
         {
             counts[cls] = 0;
             for (auto& [_, promotion] : promotions)
@@ -56,15 +56,11 @@ async::task<bool> user_list_test::test_scenario_1()
             }
         }
 
-        auto&& resp =
-            co_await bot->request<fb::protocol::game::response::user_list>(fb::protocol::game::request::user_list(),
-                                                                           DEFAULT_TIMEOUT);
+        auto&& resp = co_await bot->request<fb::protocol::game::response::user_list>(fb::protocol::game::request::user_list(), DEFAULT_TIMEOUT);
 
         if (resp.users.size() < bots.size())
         {
-            throw std::runtime_error(std::format("User list scenario 1 failed: user count mismatch: {} < {}",
-                                                 resp.users.size(),
-                                                 bots.size()));
+            throw std::runtime_error(std::format("User list scenario 1 failed: user count mismatch: {} < {}", resp.users.size(), bots.size()));
         }
 
         for (auto& user : resp.users)

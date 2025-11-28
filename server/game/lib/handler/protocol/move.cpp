@@ -2,6 +2,7 @@
 #include <fb/game/server.h>
 
 using namespace fb::game::handler::protocol;
+using namespace fb::model;
 
 move::move(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::move>(server)
@@ -47,7 +48,7 @@ async::task<bool> move::handle(fb::socket<character>& session, DIRECTION directi
         case DSL::world:
         {
             auto  params = fb::model::dsl::world(warp->dest.params);
-            auto& world  = fb::model::table::world[params.id][params.index];
+            auto& world  = table::world[params.id][params.index];
             ch->show_world_map(params.id, params.index);
         }
         break;

@@ -4,11 +4,7 @@
 using namespace fb::game;
 using namespace fb::model;
 
-clan::clan(server&                                             server,
-           uint32_t                                            id,
-           const std::string&                                  name,
-           const std::optional<std::string>&                   title,
-           const std::unordered_map<std::string, clan_member>& members) :
+clan::clan(server& server, uint32_t id, const std::string& name, const std::optional<std::string>& title, const std::unordered_map<std::string, clan_member>& members) :
     _server(server),
     _id(id),
     _name(name),
@@ -24,9 +20,7 @@ clan::clan(clan&& r) :
     _members(std::move(r._members))
 { }
 
-void clan::update(const std::string&                name,
-                  const std::optional<std::string>& title,
-                  const std::vector<clan_member>&   members)
+void clan::update(const std::string& name, const std::optional<std::string>& title, const std::vector<clan_member>& members)
 {
     this->_name  = name;
     this->_title = title;

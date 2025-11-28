@@ -1,34 +1,37 @@
 #include <fb/game/server.h>
 #include <fb/game/worker.h>
 
-fb::game::map_loader::map_loader(fb::game::server& server) :
+using namespace fb::game;
+using table = fb::model::table;
+
+map_loader::map_loader(server& server) :
     _server(server)
 { }
 
-fb::generator<fb::game::map_loader::input_type> fb::game::map_loader::on_ready()
+fb::generator<map_loader::input_type> map_loader::on_ready()
 {
-    for (auto& [k, v] : fb::model::table::map)
+    for (auto& [k, v] : table::map)
     {
         co_yield v;
     }
 }
 
-void fb::game::map_loader::on_work(const fb::game::map_loader::input_type& value)
+void map_loader::on_work(const map_loader::input_type& value)
 {
     this->_server.maps.load(value.get());
 }
 
-void fb::game::map_loader::on_worked(const fb::game::map_loader::input_type& input, double percent)
+void map_loader::on_worked(const map_loader::input_type& input, double percent)
 {
     fb::console::progress("Loading map files", percent);
 }
 
-void fb::game::map_loader::on_error(const fb::game::map_loader::input_type& input, std::exception& e)
+void map_loader::on_error(const map_loader::input_type& input, std::exception& e)
 {
     fb::console::comment("    - {}", e.what());
 }
 
-void fb::game::map_loader::on_finish()
+void map_loader::on_finish()
 {
     fb::console::newline();
 }

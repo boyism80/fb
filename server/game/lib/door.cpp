@@ -4,6 +4,7 @@
 #include <fb/game/map.h>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 door::door(const fb::game::map& map, const fb::model::door& model, const fb::model::point16_t& pivot, bool opened) :
     map(map),
@@ -25,7 +26,7 @@ bool door::toggle()
             return false;
 
         auto  index = this->model.pairs[i];
-        auto& model = fb::model::table::door_pair[index];
+        auto& model = table::door_pair[index];
         if (this->_opened)
             tile->object = model.close;
         else

@@ -3,7 +3,8 @@
 #include <fb/game/server.h>
 #endif
 
-namespace fb::protocol::game::response {
+using table = fb::model::table;
+using namespace fb::protocol::game::response;
 
 #ifndef BOT
 external_info::external_info(const fb::game::character& ch) :
@@ -33,7 +34,7 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
     }
 
     // 클래스 이름
-    const auto& class_name = fb::model::table::promotion[this->ch.cls()][this->ch.promotion()].name;
+    const auto& class_name = table::promotion[this->ch.cls()][this->ch.promotion()].name;
     writer.write<std::string>(class_name);      // 직업
     writer.write<std::string>(this->ch.name()); // 이름
 
@@ -189,4 +190,3 @@ async::task<void> external_info::deserialize(fb::stream_reader<big_endian>& read
     reader.read<uint8_t>(); // Final 0x00
 }
 #endif
-} // namespace fb::protocol::game::response

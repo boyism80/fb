@@ -3,6 +3,7 @@
 #include <fb/game/character.h>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
@@ -326,7 +327,7 @@ int builtin::object::builtin_buff(lua_State* L)
     }
     else if (lua->is_string(2))
     {
-        model = fb::model::table::spell.name2spell(lua->tostring(2));
+        model = table::spell.name2spell(lua->tostring(2));
     }
     else
     {
@@ -364,7 +365,7 @@ int builtin::object::builtin_unbuff(lua_State* L)
     if (lua->is_string(2))
     {
         auto name  = lua->tostring(2);
-        auto model = fb::model::table::spell.name2spell(name);
+        auto model = table::spell.name2spell(name);
         if (model == nullptr)
             lua->pushboolean(false);
         else
@@ -413,7 +414,7 @@ int builtin::object::builtin_isbuff(lua_State* L)
         if (lua->is_string(i + 1))
         {
             auto name  = lua->tostring(i + 1);
-            auto model = fb::model::table::spell.name2spell(name);
+            auto model = table::spell.name2spell(name);
             if (model == nullptr)
                 continue;
 
@@ -607,7 +608,7 @@ int builtin::object::builtin_mkitem(lua_State* L)
     obj->assert_thread();
 
     auto name  = lua->tostring(2);
-    auto model = fb::model::table::item.name2item(name);
+    auto model = table::item.name2item(name);
     if (model == nullptr)
     {
         lua->pushnil();

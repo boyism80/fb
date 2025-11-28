@@ -13,6 +13,7 @@
 
 using namespace fb;
 using namespace fb::model::enum_value;
+using table = fb::model::table;
 
 int main(int argc, char* argv[])
 {
@@ -64,7 +65,7 @@ int main(int argc, char* argv[])
             server->exit();
         });
 
-        fb::model::table::item.hook.build = [](const Json::Value& json) -> fb::model::item* {
+        table::item.hook.build = [](const Json::Value& json) -> fb::model::item* {
             auto type = fb::model::build<ITEM_TYPE>(json["type"]);
             switch (type)
             {

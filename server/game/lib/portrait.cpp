@@ -2,6 +2,7 @@
 #include <fb/game/server.h>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 character_portrait::character_portrait(SEX                     sex,
                                        STATE                   state,
@@ -88,7 +89,7 @@ std::unique_ptr<portrait> portrait_factory::create(const fb::model::object& obj)
         auto& npc_model = static_cast<const fb::model::npc&>(obj);
         if (npc_model.preset.has_value())
         {
-            auto& preset      = fb::model::table::preset[npc_model.preset.value()];
+            auto& preset      = table::preset[npc_model.preset.value()];
             auto  ptr         = new character_portrait();
             ptr->sex          = preset.sex;
             ptr->state        = preset.state;

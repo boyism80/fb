@@ -2,8 +2,10 @@
 #include <fb/game/handler.h>
 #include <fb/game/builtin/server.h>
 #include <json/json.h>
+
 using namespace fb::game;
 using namespace std::chrono_literals;
+using table = fb::model::table;
 
 server::server(boost::asio::io_context& io_context, uint16_t port) :
     fb::acceptor<character>(io_context, "GAME", port),
@@ -137,9 +139,9 @@ async::task<void> server::handle_start()
             for (auto map : maps)
             {
                 params->maps.insert({map->model.id, map});
-                if (fb::model::table::mob_spawn.contains(map->model.id))
+                if (table::mob_spawn.contains(map->model.id))
                 {
-                    for (auto& spawn : fb::model::table::mob_spawn[map->model.id])
+                    for (auto& spawn : table::mob_spawn[map->model.id])
                     {
                         params->rezens.push_back(fb::game::rezen(*this, spawn));
                     }

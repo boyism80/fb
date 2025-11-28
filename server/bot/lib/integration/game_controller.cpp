@@ -42,7 +42,7 @@ game_bot_controller::game_bot_controller(bot_container& container) :
 
 void game_bot_controller::initialize()
 {
-    fb::model::table::item.hook.build = [](const Json::Value& json) -> fb::model::item* {
+    table::item.hook.build = [](const Json::Value& json) -> fb::model::item* {
         auto type = fb::model::build<ITEM_TYPE>(json["type"]);
         switch (type)
         {

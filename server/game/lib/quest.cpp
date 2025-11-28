@@ -3,6 +3,7 @@
 #include <fb/game/character.h>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 quest::quest(uint32_t id, std::weak_ptr<fb::game::character> owner) :
     id(id),
@@ -55,7 +56,7 @@ bool quest::inc_progress(uint32_t value)
         return false;
 
     auto& server = owner->server;
-    auto& model  = fb::model::table::quest[this->id][this->_step];
+    auto& model  = table::quest[this->id][this->_step];
 
     this->_progress = std::min(this->_progress + value, model.progress);
     return true;
@@ -71,14 +72,14 @@ bool quest::inc_step(uint32_t value)
         return false;
 
     auto& server   = owner->server;
-    auto  max_step = fb::model::table::quest[this->id].size();
+    auto  max_step = table::quest[this->id].size();
 
     for (int i = 0, remains = std::min(value, max_step - this->_step); i < remains; i++)
     {
-        auto& model = fb::model::table::quest[this->id][this->_step + i];
+        auto& model = table::quest[this->id][this->_step + i];
         if (model.step_reward.empty() == false)
         {
-            auto& reward = fb::model::table::reward[model.step_reward];
+            auto& reward = table::reward[model.step_reward];
             if (owner->reward(reward.dsl) == false)
                 return false;
         }
@@ -100,10 +101,10 @@ bool quest::complete()
         return false;
 
     auto& server = owner->server;
-    auto& attr   = fb::model::table::quest_attribute[this->id];
-    if (!attr.reward.empty() && fb::model::table::reward.contains(attr.reward))
+    auto& attr   = table::quest_attribute[this->id];
+    if (!attr.reward.empty() && table::reward.contains(attr.reward))
     {
-        auto& reward = fb::model::table::reward[attr.reward];
+        auto& reward = table::reward[attr.reward];
         if (owner->reward(reward.dsl) == false)
             return false;
     }
@@ -133,10 +134,10 @@ bool quests::start(uint32_t id)
     if (owner == nullptr)
         return false;
 
-    if (fb::model::table::quest.contains(id) == false)
+    if (table::quest.contains(id) == false)
         return false;
 
-    auto& attr = fb::model::table::quest_attribute[id];
+    auto& attr = table::quest_attribute[id];
     if (owner->condition(attr.condition) == false)
         return false;
 

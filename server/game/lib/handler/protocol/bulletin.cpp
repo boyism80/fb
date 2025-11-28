@@ -1,6 +1,8 @@
 #include <fb/game/handler/protocol/bulletin.h>
 #include <fb/game/server.h>
 
+using namespace fb::model;
+
 fb::game::handler::protocol::bulletin::bulletin(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::bulletin>(server)
 { }
@@ -48,7 +50,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 auto&& articles = co_await this->server.bulletin_list(request.section, request.offset);
                 co_await this->server.threads.switching(weak);
 
-                auto& model = fb::model::table::bulletin[section];
+                auto& model = table::bulletin[section];
                 auto  flag  = BULLETIN_BUTTON_ENABLE::UP;
                 if (ch->condition(model.condition))
                     flag |= BULLETIN_BUTTON_ENABLE::WRITE;
@@ -94,7 +96,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 if (article.next)
                     flag |= BULLETIN_BUTTON_ENABLE::NEXT;
 
-                if (ch->condition(fb::model::table::bulletin[article.section].condition))
+                if (ch->condition(table::bulletin[article.section].condition))
                     flag |= BULLETIN_BUTTON_ENABLE::WRITE;
 
                 ch->bulletin.show(article, flag);

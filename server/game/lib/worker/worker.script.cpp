@@ -1,6 +1,8 @@
 #include <fb/game/server.h>
 #include <fb/game/worker.h>
 
+using table = fb::model::table;
+
 fb::game::script_loader::script_loader(fb::game::server& server) :
     _server(server)
 { }
@@ -16,7 +18,7 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
     scripts.insert(fb::model::const_value::script::F1_EVENT_SCRIPT);
     scripts.insert(fb::model::const_value::script::F2_EVENT_SCRIPT);
 
-    for (auto& [k, v] : fb::model::table::spell)
+    for (auto& [k, v] : table::spell)
     {
         if (v.script.empty())
             continue;
@@ -24,7 +26,7 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
         scripts.insert(v.script);
     }
 
-    for (auto& [k, v] : fb::model::table::item)
+    for (auto& [k, v] : table::item)
     {
         if (v.script.empty())
             continue;
@@ -32,7 +34,7 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
         scripts.insert(v.script);
     }
 
-    for (auto& [k, v] : fb::model::table::npc)
+    for (auto& [k, v] : table::npc)
     {
         if (v.script.empty())
             continue;
@@ -41,9 +43,9 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
     }
 
     auto host = fb::config<uint8_t>("id");
-    for (auto& [k, v] : fb::model::table::warp)
+    for (auto& [k, v] : table::warp)
     {
-        auto& map = fb::model::table::map[k];
+        auto& map = table::map[k];
         if (map.host != host)
             continue;
 
@@ -57,7 +59,7 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
         }
     }
 
-    for (auto& [k, v] : fb::model::table::mob)
+    for (auto& [k, v] : table::mob)
     {
         if (v.script.empty())
             continue;
