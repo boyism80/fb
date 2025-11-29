@@ -4,8 +4,7 @@ const k8s = require("@pulumi/kubernetes")
 module.exports = {
     setup: function (namespace, conf, dependsOn) {
 
-        let index = 0
-        const ports = []
+        const deployments = []
         const appLabels = { app: "write-back" }
         for(const [section, sectionConf] of Object.entries(conf['write-back'])) {
             const config = {
@@ -20,20 +19,20 @@ module.exports = {
                 },
                 "Redis": {},
                 "RabbitMQ": {
-                    "Host": "rabbitmq",
-                    "Port": conf.rabbitmq[sectionConf.redis].port.amqp.cluster,
+                    "Host": `rabbitmq-${sectionConf.rabbitmq}`,
+                    "Port": conf.rabbitmq[sectionConf.rabbitmq].port.amqp.cluster,
                     "Uid": "fb",
                     "Pwd": "admin"
                 }
             }
 
             for(const [id, mysqlConfig] of Object.entries(conf.mysql[sectionConf.mysql])) {
-                config.ConnectionStrings.MySql[id] = `Server=mysql;Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
+                config.ConnectionStrings.MySql[id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
             }
 
             for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
                 config.Redis[id] = {
-                    Host: "redis",
+                    Host: `redis-${sectionConf.redis}`,
                     Port: conf.redis[sectionConf.redis][id].port.cluster
                 }
             }
@@ -45,7 +44,7 @@ module.exports = {
                 },
             })
 
-            return new k8s.apps.v1.Deployment(`write-back-${section}`, {
+            const deployment = new k8s.apps.v1.Deployment(`write-back-${section}`, {
                 metadata: { name: `write-back-${section}`, namespace: namespace.metadata.name },
                 spec: {
                     selector: { matchLabels: appLabels },
@@ -81,6 +80,10 @@ module.exports = {
                     },
                 },
             }, { dependsOn: dependsOn })
+            
+            deployments.push(deployment)
         }
+        
+        return deployments
     }
 }

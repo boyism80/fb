@@ -25,32 +25,6 @@
                     "node": 30103
                 }
             }
-        },
-        "section-2": {
-            "-1": {
-                "port": {
-                    "cluster": 3310,
-                    "node": 30104
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 3311,
-                    "node": 30105
-                }
-            },
-            "1": {
-                "port": {
-                    "cluster": 3312,
-                    "node": 30106
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 3313,
-                    "node": 30107
-                }
-            }
         }
     },
     "redis": {
@@ -119,14 +93,6 @@
                 "port": {
                     "cluster": 6389,
                     "node": 30120
-                }
-            }
-        },
-        "section-2": {
-            "-1": {
-                "port": {
-                    "cluster": 6390,
-                    "node": 30121
                 }
             }
         }
@@ -350,26 +316,13 @@
             "mysql": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1"
-        },
-        "section-2": {
-            "replicas": 1,
-            "port": {
-                "cluster": 81,
-                "node": 30201
-            },
-            "mysql": "section-2",
-            "redis": "section-2",
-            "rabbitmq": "section-2"
         }
     },
     "write-back": {
         "section-1": {
             "mysql": "section-1",
-            "redis": "section-1"
-        },
-        "section-2": {
-            "mysql": "section-2",
-            "redis": "section-2"
+            "redis": "section-1",
+            "rabbitmq": "section-1"
         }
     },
     "bot": {
