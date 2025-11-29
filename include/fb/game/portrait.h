@@ -76,7 +76,7 @@ public:
 class portrait_factory
 {
 public:
-    static std::unique_ptr<portrait> create(fb::model::model& model, const fb::model::object& obj);
+    static std::unique_ptr<portrait> create(const fb::model::object& obj);
     static std::unique_ptr<portrait> create(const fb::game::object& obj);
 
 private:

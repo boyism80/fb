@@ -13,6 +13,7 @@
 
 using namespace fb;
 using namespace fb::model::enum_value;
+using table = fb::model::table;
 
 int main(int argc, char* argv[])
 {
@@ -21,9 +22,7 @@ int main(int argc, char* argv[])
     try
     {
         po::options_description desc("Game Server Options");
-        desc.add_options()("help,h", "Show help message")("config,c",
-                                                          po::value<std::string>()->default_value("config.json"),
-                                                          "Configuration file path");
+        desc.add_options()("help,h", "Show help message")("config,c", po::value<std::string>()->default_value("config.json"), "Configuration file path");
 
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -66,7 +65,7 @@ int main(int argc, char* argv[])
             server->exit();
         });
 
-        server->model.item.hook.build = [](const Json::Value& json) -> fb::model::item* {
+        table::item.hook.build = [](const Json::Value& json) -> fb::model::item* {
             auto type = fb::model::build<ITEM_TYPE>(json["type"]);
             switch (type)
             {
@@ -94,7 +93,7 @@ int main(int argc, char* argv[])
                 return nullptr;
             }
         };
-        fb::model::loader(server->model).run();
+        fb::model::loader().run();
         fb::game::map_loader(*server).run();
         fb::game::script_loader(*server).run();
         fb::game::npc_spawner(*server).run();

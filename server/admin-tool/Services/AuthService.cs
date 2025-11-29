@@ -1,8 +1,5 @@
 using Fb.Model.EnumValue;
-using Http;
-using Http.Model;
 using Http.Service;
-using Http.Util;
 using Microsoft.Extensions.ObjectPool;
 using System.Buffers;
 using System.Security.Cryptography;

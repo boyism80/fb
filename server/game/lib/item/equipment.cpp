@@ -2,6 +2,8 @@
 #include <fb/game/server.h>
 #include <fb/game/item.h>
 
+using table = fb::model::table;
+
 fb::game::equipment::equipment(fb::game::server& server, const fb::model::equipment& model) :
     item(server, model)
 {
@@ -274,7 +276,7 @@ std::string fb::game::equipment::tip_message() const
         break;
 
     default:
-        sstream << this->server.model.promotion[cls][0].name << "용";
+        sstream << table::promotion[cls][0].name << "용";
         break;
     }
 

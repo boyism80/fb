@@ -1,9 +1,9 @@
 using AutoMapper;
+using Fb.Model;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
 using Http.Service;
-using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using Protocol = fb.protocol._internal;
 using Request = fb.protocol._internal.request;
@@ -19,7 +19,6 @@ namespace Internal.Controllers
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
         private readonly RabbitMqService _rabbitMqService;
-        private readonly Fb.Model.Model _model;
         private readonly SessionService _sessionService;
         private readonly RedisService _redisService;
         private readonly RedisDistributedLockService _distributedLock;
@@ -27,7 +26,6 @@ namespace Internal.Controllers
             IMapper mapper,
             DbContext dbContext,
             RabbitMqService rabbitMqService,
-            Fb.Model.Model model,
             SessionService sessionService,
             RedisService redisService,
             RedisDistributedLockService distributedLock)
@@ -36,7 +34,6 @@ namespace Internal.Controllers
             _mapper = mapper;
             _dbContext = dbContext;
             _rabbitMqService = rabbitMqService;
-            _model = model;
             _sessionService = sessionService;
             _redisService = redisService;
             _distributedLock = distributedLock;
@@ -104,7 +101,7 @@ namespace Internal.Controllers
                 if (await _sessionService.Get(actor.Name) == null)
                     throw new Exception($"user {request.Master} is offline");
 
-                if (_model.Map.TryGetValue(actor.Map, out var map) == false)
+                if (Table.Map.TryGetValue(actor.Map, out var map) == false)
                     throw new Exception("invalid map");
 
                 var targetSession = await _sessionService.Get(request.Member) ??
@@ -243,7 +240,7 @@ namespace Internal.Controllers
                     var sync = await _dbContext.CharacterSync.Get(character.Id) ??
                         throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                    if (_model.Map.TryGetValue(character.Map, out var map) == false)
+                    if (Table.Map.TryGetValue(character.Map, out var map) == false)
                         throw new LogicException(ErrorCode.NotFoundMap);
 
                     var groupId = sync.Group ??
@@ -430,7 +427,7 @@ namespace Internal.Controllers
                                 },
                                 Member = target.Name,
                                 Action = Protocol.GroupAction.Kick,
-                                Host = _model.Map[kicker.Map].Host,
+                                Host = Table.Map[kicker.Map].Host,
                                 Error = 0
                             };
 

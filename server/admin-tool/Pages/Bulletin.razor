@@ -1,0 +1,913 @@
+@page "/bulletin"
+@using AdminTool.Authentication
+@using Http.Service
+@using Http.Model
+@using Fb.Model
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.ComponentModel.DataAnnotations
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject DbContext DbContext
+@inject BulletinService BulletinService
+@attribute [AuthorizeRole(Role.Admin)]
+
+<PageTitle>Bulletin - Admin Tool</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h2>Bulletin Management</h2>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @successMessage
+            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Sections</h5>
+                </div>
+                <div class="card-body">
+                    @if (sections != null && sections.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var sectionItem in sections)
+                            {
+                                <button type="button"
+                                    class="list-group-item list-group-item-action @(selectedSection == sectionItem.Key ? "active" : "")"
+                                    @onclick="() => SelectSection(sectionItem.Key)">
+                                    @sectionItem.Value.Name
+                                </button>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No sections available</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            @if (selectedSection.HasValue)
+            {
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Articles - @GetSectionName(selectedSection.Value)</h5>
+                        <button class="btn btn-primary btn-sm" @onclick="ShowWriteModal" disabled="@isProcessing">
+                            <span class="oi oi-plus" aria-hidden="true"></span> Write Article
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Search by title, contents, or author name..." 
+                                           @bind="searchQuery" @bind:event="oninput" @onkeypress="HandleSearchKeyPress" />
+                                    <button class="btn btn-outline-secondary" type="button" @onclick="SearchArticles" disabled="@isLoading">
+                                        <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Search
+                                    </button>
+                                    @if (!string.IsNullOrWhiteSpace(searchQuery))
+                                    {
+                                        <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch" disabled="@isLoading">
+                                            Clear
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                @if (selectedArticleIds.Any())
+                                {
+                                    <button class="btn btn-danger btn-sm" @onclick="ShowBulkDeleteModal" disabled="@isProcessing">
+                                        <span class="oi oi-trash" aria-hidden="true"></span> Delete Selected (@selectedArticleIds.Count)
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        @if (isLoading)
+                        {
+                            <div class="text-center">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        }
+                        else if (articles != null && articles.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40px;">
+                                                <input type="checkbox" @onchange="ToggleSelectAll" checked="@IsAllSelected" />
+                                            </th>
+                                            <th>ID</th>
+                                            <th>Title</th>
+                                            <th>Author</th>
+                                            <th>Created Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var article in articles)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <input type="checkbox" checked="@selectedArticleIds.Contains(article.Id)" 
+                                                           @onchange="() => ToggleArticleSelection(article.Id)" />
+                                                </td>
+                                                <td>@article.Id</td>
+                                                <td>
+                                                    <a href="#" class="text-decoration-none text-primary" 
+                                                       @onclick="() => ShowViewModal(article)" 
+                                                       @onclick:preventDefault 
+                                                       style="cursor: pointer;">
+                                                        @article.Title
+                                                    </a>
+                                                </td>
+                                                <td>@article.UserName</td>
+                                                <td>@article.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-secondary me-2"
+                                                        @onclick="() => ShowEditModal(article)" disabled="@isProcessing">
+                                                        Edit
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary"
+                                                        @onclick="() => ShowDeleteModal(article)" disabled="@isProcessing">
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if (currentPage > 1 || (articles != null && articles.Count == pageSize))
+                            {
+                                <nav>
+                                    <ul class="pagination justify-content-center">
+                                        <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                                            <a class="page-link" href="#" @onclick="() => ChangePage(currentPage - 1)"
+                                                @onclick:preventDefault>Previous</a>
+                                        </li>
+                                        <li class="page-item active">
+                                            <span class="page-link">Page @currentPage</span>
+                                        </li>
+                                        <li class="page-item @(articles == null || articles.Count < pageSize ? "disabled" : "")">
+                                            <a class="page-link" href="#" @onclick="() => ChangePage(currentPage + 1)"
+                                                @onclick:preventDefault>Next</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            }
+
+                            <div class="text-center text-muted">
+                                Page @currentPage@(articles != null && articles.Count == pageSize ? " (more available)" : "")
+                            </div>
+                        }
+                        else if (!isLoading)
+                        {
+                            <div class="alert alert-info">
+                                @(string.IsNullOrWhiteSpace(searchQuery) ? "No articles found in this section." : "No articles found matching your search.")
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card">
+                    <div class="card-body">
+                        <p class="text-muted">Please select a section to view articles.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Write Article Modal -->
+@if (showWriteModal)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Write Article - @GetSectionName(selectedSection!.Value)</h5>
+                    <button type="button" class="btn-close" @onclick="CloseWriteModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@writeModel" OnValidSubmit="@HandleWrite">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label for="writeTitle" class="form-label">Title</label>
+                            <InputText id="writeTitle" class="form-control" @bind-Value="writeModel.Title" />
+                            <ValidationMessage For="@(() => writeModel.Title)" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="writeContents" class="form-label">Contents</label>
+                            <InputTextArea id="writeContents" class="form-control" rows="10"
+                                @bind-Value="writeModel.Contents" />
+                            <ValidationMessage For="@(() => writeModel.Contents)" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="CloseWriteModal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                Write Article
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Edit Article Modal -->
+@if (showEditModal && selectedArticle != null)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Article - @selectedArticle.Title</h5>
+                    <button type="button" class="btn-close" @onclick="CloseEditModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@editModel" OnValidSubmit="@HandleEdit">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label for="editTitle" class="form-label">Title</label>
+                            <InputText id="editTitle" class="form-control" @bind-Value="editModel.Title" />
+                            <ValidationMessage For="@(() => editModel.Title)" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="editContents" class="form-label">Contents</label>
+                            <InputTextArea id="editContents" class="form-control" rows="10"
+                                @bind-Value="editModel.Contents" />
+                            <ValidationMessage For="@(() => editModel.Contents)" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="CloseEditModal">Cancel</button>
+                            <button type="submit" class="btn btn-warning" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                Update Article
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- View Article Modal -->
+@if (showViewModal && selectedArticle != null)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@selectedArticle.Title</h5>
+                    <button type="button" class="btn-close" @onclick="CloseViewModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <strong>Author:</strong> @selectedArticle.UserName<br />
+                        <strong>Created:</strong> @selectedArticle.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                    </div>
+                    <hr />
+                    <div class="article-contents">
+                        @((MarkupString)(selectedArticle.Contents?.Replace("\n", "<br />") ?? ""))
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseViewModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Delete Article Modal -->
+@if (showDeleteModal && selectedArticle != null)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Article</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this article?</p>
+                    <div class="card">
+                        <div class="card-body">
+                            <strong>Title:</strong> @selectedArticle.Title<br />
+                            <strong>Author:</strong> @selectedArticle.UserName<br />
+                            <strong>ID:</strong> @selectedArticle.Id
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseDeleteModal">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="HandleDelete" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Bulk Delete Modal -->
+@if (showBulkDeleteModal)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Selected Articles</h5>
+                    <button type="button" class="btn-close" @onclick="CloseBulkDeleteModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete @selectedArticleIds.Count selected article(s)?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseBulkDeleteModal">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="HandleBulkDelete" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        Delete @selectedArticleIds.Count Article(s)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private Dictionary<uint, Fb.Model.Bulletin>? sections;
+    private uint? selectedSection;
+    private List<Http.Model.Bulletin>? articles;
+    private int currentPage = 1;
+    private const int pageSize = 20;
+    private int totalPages = 1;
+    private bool isLoading = false;
+    private bool isProcessing = false;
+    private string? errorMessage;
+    private string? successMessage;
+    private string searchQuery = string.Empty;
+
+    private bool showWriteModal = false;
+    private bool showEditModal = false;
+    private bool showViewModal = false;
+    private bool showDeleteModal = false;
+    private bool showBulkDeleteModal = false;
+    private Http.Model.Bulletin? selectedArticle;
+    private WriteModel writeModel = new();
+    private EditModel editModel = new();
+    private HashSet<uint> selectedArticleIds = new();
+    private uint currentUserId = 0;
+    private ushort? currentPosition = null;
+    private string? lastSearchQuery = null;
+    private uint? lastSelectedSection = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUserId();
+        await LoadSections();
+    }
+
+    private async Task LoadCurrentUserId()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            var idClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (idClaim != null && uint.TryParse(idClaim.Value, out var uid))
+            {
+                currentUserId = uid;
+            }
+        }
+    }
+
+    private async Task LoadSections()
+    {
+        try
+        {
+            sections = Table.Bulletin?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            if (sections != null && sections.Any() && !selectedSection.HasValue)
+            {
+                selectedSection = sections.Keys.First();
+                await LoadArticles();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading sections: {ex.Message}";
+        }
+    }
+
+    private async Task SelectSection(uint section)
+    {
+        selectedSection = section;
+        currentPage = 1;
+        searchQuery = string.Empty;
+        selectedArticleIds.Clear();
+        currentPosition = null;
+        lastSearchQuery = null;
+        lastSelectedSection = null;
+        await LoadArticles();
+    }
+
+    private async Task LoadArticles()
+    {
+        if (!selectedSection.HasValue)
+            return;
+
+        // Reset position if section or search query changed
+        if (lastSelectedSection != selectedSection.Value || lastSearchQuery != searchQuery)
+        {
+            currentPosition = null;
+            lastSelectedSection = selectedSection.Value;
+            lastSearchQuery = searchQuery;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            ushort position;
+
+            if (currentPage == 1)
+            {
+                // First page starts at 0xFFFF (65535)
+                position = 0xFFFF;
+            }
+            else if (articles != null && articles.Any())
+            {
+                // Calculate position from current articles' last article ID
+                // This works for going to next page (last article ID - 1)
+                // For going back to previous page, we need to reload previous page
+                // by loading pages sequentially from the beginning
+                var lastArticleId = articles.Last().Id;
+                position = (ushort)(lastArticleId > 0 ? lastArticleId - 1 : 0);
+            }
+            else
+            {
+                // No articles or first load: start from beginning
+                position = 0xFFFF;
+            }
+
+            articles = await BulletinService.GetArticleListAsync(
+                selectedSection.Value,
+                position,
+                string.IsNullOrWhiteSpace(searchQuery) ? null : searchQuery);
+
+            // Store position for next page calculation (last article ID - 1)
+            if (articles != null && articles.Any())
+            {
+                var lastArticleId = articles.Last().Id;
+                currentPosition = (ushort)(lastArticleId > 0 ? lastArticleId - 1 : 0);
+            }
+            else
+            {
+                currentPosition = 0;
+            }
+
+            // Estimate total pages (assuming 20 items per page from stored procedure)
+            // For cursor-based pagination, we can't know total pages accurately
+            // So we'll show "next" button if we got a full page
+            totalPages = articles != null && articles.Count == pageSize ? currentPage + 1 : currentPage;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading articles: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SearchArticles()
+    {
+        currentPage = 1;
+        selectedArticleIds.Clear();
+        currentPosition = null;
+        lastSearchQuery = null;
+        await LoadArticles();
+    }
+
+    private async Task ClearSearch()
+    {
+        searchQuery = string.Empty;
+        currentPage = 1;
+        selectedArticleIds.Clear();
+        currentPosition = null;
+        lastSearchQuery = null;
+        await LoadArticles();
+    }
+
+    private async Task HandleSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchArticles();
+        }
+    }
+
+    private async Task ChangePage(int page)
+    {
+        if (page >= 1 && page <= totalPages)
+        {
+            currentPage = page;
+            selectedArticleIds.Clear();
+            await LoadArticles();
+        }
+    }
+
+    private string GetSectionName(uint sectionId)
+    {
+        if (sections != null && sections.TryGetValue(sectionId, out var section))
+        {
+            return section.Name;
+        }
+        return $"Section {sectionId}";
+    }
+
+    private void ToggleArticleSelection(uint articleId)
+    {
+        if (selectedArticleIds.Contains(articleId))
+            selectedArticleIds.Remove(articleId);
+        else
+            selectedArticleIds.Add(articleId);
+    }
+
+    private void ToggleSelectAll(ChangeEventArgs e)
+    {
+        if (articles == null)
+            return;
+
+        var isChecked = (bool)(e.Value ?? false);
+        if (isChecked)
+        {
+            foreach (var article in articles)
+            {
+                selectedArticleIds.Add(article.Id);
+            }
+        }
+        else
+        {
+            selectedArticleIds.Clear();
+        }
+    }
+
+    private bool IsAllSelected => articles != null && articles.Any() && articles.All(a => selectedArticleIds.Contains(a.Id));
+
+    private void ShowWriteModal()
+    {
+        writeModel = new WriteModel();
+        showWriteModal = true;
+    }
+
+    private void CloseWriteModal()
+    {
+        showWriteModal = false;
+        writeModel = new WriteModel();
+    }
+
+    private async Task HandleWrite()
+    {
+        if (!selectedSection.HasValue || currentUserId == 0)
+        {
+            errorMessage = "Invalid section or user ID.";
+            return;
+        }
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var success = await BulletinService.Write(
+                selectedSection.Value,
+                currentUserId,
+                writeModel.Title,
+                writeModel.Contents);
+
+            if (success)
+            {
+                successMessage = "Article has been written successfully.";
+                CloseWriteModal();
+                await LoadArticles();
+            }
+            else
+            {
+                errorMessage = "Failed to write article.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error writing article: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task ShowEditModal(Http.Model.Bulletin article)
+    {
+        if (!selectedSection.HasValue)
+            return;
+
+        isProcessing = true;
+        errorMessage = null;
+
+        try
+        {
+            // Get full article data including contents
+            var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedSection.Value, article.Id);
+            
+            if (fullArticle == null)
+            {
+                errorMessage = "Article not found.";
+                return;
+            }
+
+            selectedArticle = fullArticle;
+            editModel = new EditModel
+            {
+                Title = fullArticle.Title,
+                Contents = fullArticle.Contents ?? string.Empty,
+                IgnoreOwner = true
+            };
+            showEditModal = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading article: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private void CloseEditModal()
+    {
+        showEditModal = false;
+        selectedArticle = null;
+        editModel = new EditModel();
+    }
+
+    private async Task HandleEdit()
+    {
+        if (selectedArticle == null || !selectedSection.HasValue || currentUserId == 0)
+        {
+            errorMessage = "Invalid article or user ID.";
+            return;
+        }
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var result = await BulletinService.Update(
+                selectedSection.Value,
+                selectedArticle.Id,
+                currentUserId,
+                editModel.Title,
+                editModel.Contents,
+                true);
+
+            if (result == 1)
+            {
+                successMessage = "Article has been updated successfully.";
+                CloseEditModal();
+                await LoadArticles();
+            }
+            else
+            {
+                errorMessage = $"Failed to update article. Result code: {result}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating article: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task ShowViewModal(Http.Model.Bulletin article)
+    {
+        if (!selectedSection.HasValue)
+            return;
+
+        isProcessing = true;
+        errorMessage = null;
+
+        try
+        {
+            // Get full article data including contents
+            var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedSection.Value, article.Id);
+            
+            if (fullArticle == null)
+            {
+                errorMessage = "Article not found.";
+                return;
+            }
+
+            selectedArticle = fullArticle;
+            showViewModal = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading article: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private void CloseViewModal()
+    {
+        showViewModal = false;
+        selectedArticle = null;
+    }
+
+    private void ShowDeleteModal(Http.Model.Bulletin article)
+    {
+        selectedArticle = article;
+        showDeleteModal = true;
+    }
+
+    private void CloseDeleteModal()
+    {
+        showDeleteModal = false;
+        selectedArticle = null;
+    }
+
+    private async Task HandleDelete()
+    {
+        if (selectedArticle == null || !selectedSection.HasValue || currentUserId == 0)
+        {
+            errorMessage = "Invalid article or user ID.";
+            return;
+        }
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var result = await BulletinService.Delete(
+                selectedSection.Value,
+                selectedArticle.Id,
+                currentUserId,
+                true);
+
+            if (result == 1)
+            {
+                successMessage = "Article has been deleted successfully.";
+                CloseDeleteModal();
+                await LoadArticles();
+            }
+            else
+            {
+                errorMessage = $"Failed to delete article. Result code: {result}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting article: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private void ShowBulkDeleteModal()
+    {
+        showBulkDeleteModal = true;
+    }
+
+    private void CloseBulkDeleteModal()
+    {
+        showBulkDeleteModal = false;
+    }
+
+    private async Task HandleBulkDelete()
+    {
+        if (!selectedArticleIds.Any() || !selectedSection.HasValue || currentUserId == 0)
+        {
+            errorMessage = "No articles selected or invalid section/user ID.";
+            return;
+        }
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var ids = selectedArticleIds.ToList();
+            var result = await BulletinService.DeleteBatch(
+                selectedSection.Value,
+                ids,
+                currentUserId,
+                true);
+
+            if (result > 0)
+            {
+                successMessage = $"{result} article(s) have been deleted successfully.";
+                CloseBulkDeleteModal();
+                selectedArticleIds.Clear();
+                await LoadArticles();
+            }
+            else if (result == -4)
+            {
+                errorMessage = "Error occurred while deleting articles.";
+            }
+            else
+            {
+                errorMessage = $"Failed to delete articles. Result code: {result}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting articles: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private class WriteModel
+    {
+        [Required(ErrorMessage = "Title is required")]
+        [StringLength(64, ErrorMessage = "Title must be 64 characters or less")]
+        public string Title { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Contents is required")]
+        [StringLength(1000, ErrorMessage = "Contents must be 1000 characters or less")]
+        public string Contents { get; set; } = string.Empty;
+    }
+
+    private class EditModel
+    {
+        [Required(ErrorMessage = "Title is required")]
+        [StringLength(64, ErrorMessage = "Title must be 64 characters or less")]
+        public string Title { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Contents is required")]
+        [StringLength(1000, ErrorMessage = "Contents must be 1000 characters or less")]
+        public string Contents { get; set; } = string.Empty;
+
+        public bool IgnoreOwner { get; set; } = false;
+    }
+}

@@ -3,81 +3,84 @@
 #include <fb/game/server.h>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
-{"__eq",                builtin::object::builtin_eq},
-{"look",                builtin::character::builtin_look},
-{"color",               builtin::character::builtin_color},
-{"sex",                 builtin::character::builtin_sex},
-{"money",               builtin::character::builtin_money},
-{"exp",                 builtin::character::builtin_exp},
-{"item",                builtin::character::builtin_item},
-{"items",               builtin::character::builtin_items},
-{"equipments",          builtin::character::builtin_equipments},
-{"dropitem",            builtin::character::builtin_item_drop},
-{"mkitem",              builtin::character::builtin_mkitem},
-{"rmitem",              builtin::character::builtin_rmitem},
-{"state",               builtin::character::builtin_state},
-{"disguise",            builtin::character::builtin_disguise},
-{"class",               builtin::character::builtin_class},
-{"promotion",           builtin::character::builtin_promotion},
-{"level",               builtin::character::builtin_level},
-{"assert",              builtin::character::builtin_assert},
-{"role",                builtin::character::builtin_role},
-{"deposited_money",     builtin::character::builtin_deposited_money},
-{"stored_item",         builtin::character::builtin_stored_item},
-{"store_item",          builtin::character::builtin_store_item},
-{"retrieve_item",       builtin::character::builtin_retrieve_item},
-{"group",               builtin::character::builtin_group},
-{"create_group",        builtin::character::builtin_create_group},
-{"clan",                builtin::character::builtin_clan},
-{"create_clan",         builtin::character::builtin_create_clan},
-{"destroy_clan",        builtin::character::builtin_destroy_clan},
-{"achievements",        builtin::character::builtin_achievements},
-{"achievement",         builtin::character::builtin_achievement},
-{"push_achievement",    builtin::character::builtin_push_achievement},
-{"erase_achievement",   builtin::character::builtin_erase_achievement},
-{"whisper",             builtin::character::builtin_whisper},
-{"send_mail",           builtin::character::builtin_send_mail},
-{"nation",              builtin::character::builtin_nation},
-{"weapon",              builtin::character::builtin_weapon},
-{"title",               builtin::character::builtin_title},
-{"gain",                builtin::character::builtin_gain},
-{"weapon_damage",       builtin::character::builtin_weapon_damage},
-{"detect",              builtin::character::builtin_detect},
-{"spawn_mob",           builtin::character::builtin_spawn_mob},
-{"spawned_mobs",        builtin::character::builtin_spawned_mobs},
-{"base_hp",             builtin::character::builtin_base_hp},
-{"base_mp",             builtin::character::builtin_base_mp},
-{"base_str",            builtin::character::builtin_base_str},
-{"base_dex",            builtin::character::builtin_base_dex},
-{"base_int",            builtin::character::builtin_base_int},
-{"base_dam",            builtin::character::builtin_base_dam},
-{"base_hit",            builtin::character::builtin_base_hit},
-{"armor_color",         builtin::character::builtin_armor_color},
-{"mkspell",             builtin::character::builtin_mkspell},
-{"rmspell",             builtin::character::builtin_rmspell},
-{"world",               builtin::character::builtin_world},
-{"script",              builtin::character::builtin_script},
-{"ad",                  builtin::character::builtin_ad},
-{"web",                 builtin::character::builtin_web},
-{"birthday",            builtin::character::builtin_birthday},
-{"active",              builtin::character::builtin_active},
-{"super_hide",          builtin::character::builtin_super_hide},
-{"creature",            builtin::character::builtin_creature},
-{"teleport",            builtin::character::builtin_teleport},
-{"dialog",              builtin::character::builtin_dialog},
-{"list",                builtin::character::builtin_list},
-{"input",               builtin::character::builtin_input},
-{"menu",                builtin::character::builtin_menu},
-{"slot",                builtin::character::builtin_slot},
-{"rezen_force",         builtin::character::builtin_rezen_force},
-{"quest",               builtin::character::builtin_quest},
-{"start_quest",         builtin::character::builtin_start_quest},
-{"remove_quest",        builtin::character::builtin_remove_quest},
-{"can_start_quest",     builtin::character::builtin_can_start_quest},
-{"send_system_mail",    builtin::character::builtin_send_system_mail},
+{"__eq",                   builtin::object::builtin_eq},
+{"look",                   builtin::character::builtin_look},
+{"color",                  builtin::character::builtin_color},
+{"sex",                    builtin::character::builtin_sex},
+{"money",                  builtin::character::builtin_money},
+{"exp",                    builtin::character::builtin_exp},
+{"item",                   builtin::character::builtin_item},
+{"items",                  builtin::character::builtin_items},
+{"equipments",             builtin::character::builtin_equipments},
+{"dropitem",               builtin::character::builtin_item_drop},
+{"mkitem",                 builtin::character::builtin_mkitem},
+{"rmitem",                 builtin::character::builtin_rmitem},
+{"state",                  builtin::character::builtin_state},
+{"disguise",               builtin::character::builtin_disguise},
+{"class",                  builtin::character::builtin_class},
+{"promotion",              builtin::character::builtin_promotion},
+{"level",                  builtin::character::builtin_level},
+{"assert",                 builtin::character::builtin_assert},
+{"role",                   builtin::character::builtin_role},
+{"deposited_money",        builtin::character::builtin_deposited_money},
+{"stored_item",            builtin::character::builtin_stored_item},
+{"store_item",             builtin::character::builtin_store_item},
+{"retrieve_item",          builtin::character::builtin_retrieve_item},
+{"group",                  builtin::character::builtin_group},
+{"create_group",           builtin::character::builtin_create_group},
+{"clan",                   builtin::character::builtin_clan},
+{"create_clan",            builtin::character::builtin_create_clan},
+{"destroy_clan",           builtin::character::builtin_destroy_clan},
+{"achievements",           builtin::character::builtin_achievements},
+{"achievement",            builtin::character::builtin_achievement},
+{"push_achievement",       builtin::character::builtin_push_achievement},
+{"erase_achievement",      builtin::character::builtin_erase_achievement},
+{"whisper",                builtin::character::builtin_whisper},
+{"send_mail",              builtin::character::builtin_send_mail},
+{"nation",                 builtin::character::builtin_nation},
+{"weapon",                 builtin::character::builtin_weapon},
+{"title",                  builtin::character::builtin_title},
+{"gain",                   builtin::character::builtin_gain},
+{"weapon_damage",          builtin::character::builtin_weapon_damage},
+{"detect",                 builtin::character::builtin_detect},
+{"spawn_mob",              builtin::character::builtin_spawn_mob},
+{"spawned_mobs",           builtin::character::builtin_spawned_mobs},
+{"base_hp",                builtin::character::builtin_base_hp},
+{"base_mp",                builtin::character::builtin_base_mp},
+{"base_str",               builtin::character::builtin_base_str},
+{"base_dex",               builtin::character::builtin_base_dex},
+{"base_int",               builtin::character::builtin_base_int},
+{"base_dam",               builtin::character::builtin_base_dam},
+{"base_hit",               builtin::character::builtin_base_hit},
+{"armor_color",            builtin::character::builtin_armor_color},
+{"mkspell",                builtin::character::builtin_mkspell},
+{"rmspell",                builtin::character::builtin_rmspell},
+{"world",                  builtin::character::builtin_world},
+{"script",                 builtin::character::builtin_script},
+{"ad",                     builtin::character::builtin_ad},
+{"web",                    builtin::character::builtin_web},
+{"birthday",               builtin::character::builtin_birthday},
+{"active",                 builtin::character::builtin_active},
+{"super_hide",             builtin::character::builtin_super_hide},
+{"creature",               builtin::character::builtin_creature},
+{"teleport",               builtin::character::builtin_teleport},
+{"dialog",                 builtin::character::builtin_dialog},
+{"list",                   builtin::character::builtin_list},
+{"input",                  builtin::character::builtin_input},
+{"menu",                   builtin::character::builtin_menu},
+{"slot",                   builtin::character::builtin_slot},
+{"rezen_force",            builtin::character::builtin_rezen_force},
+{"quest",                  builtin::character::builtin_quest},
+{"start_quest",            builtin::character::builtin_start_quest},
+{"remove_quest",           builtin::character::builtin_remove_quest},
+{"can_start_quest",        builtin::character::builtin_can_start_quest},
+{"send_system_mail",       builtin::character::builtin_send_system_mail},
+{"storage_entries",        builtin::character::builtin_storage_entries},
+{"receive_storage_reward", builtin::character::builtin_receive_storage_reward},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::character::builtin_look(lua_State* L)
@@ -338,7 +341,7 @@ int builtin::character::builtin_item(lua_State* L)
                 lua_gettable(L, -2);
                 if (lua->is_string(-1))
                 {
-                    item = server->model.item.name2item(lua->tostring(-1));
+                    item = table::item.name2item(lua->tostring(-1));
                 }
                 else if (lua->is_userdata<fb::model::item>(-1))
                 {
@@ -498,7 +501,7 @@ int builtin::character::builtin_mkitem(lua_State* L)
 
     auto weak = ch->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto model = server->model.item.name2item(name);
+        auto model = table::item.name2item(name);
         auto item  = static_cast<fb::game::item*>(nullptr);
         auto slot  = static_cast<uint8_t>(0xFF);
 
@@ -611,7 +614,7 @@ int builtin::character::builtin_rmitem(lua_State* L)
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
             try
             {
-                auto model = server->model.item.name2item(name);
+                auto model = table::item.name2item(name);
                 if (model == nullptr)
                     return lua->ensure_resume(*server, weak, [=]() {
                         return 0;
@@ -1574,10 +1577,10 @@ int builtin::character::builtin_push_achievement(lua_State* L)
     if (lua->is_number(2))
     {
         auto id = lua->tointeger(2);
-        if (!server->model.achievement.contains(id))
+        if (!table::achievement.contains(id))
             return 0;
 
-        model = &server->model.achievement[id];
+        model = &table::achievement[id];
     }
     else if (lua->is_userdata<fb::game::achievement>(2))
     {
@@ -1924,7 +1927,7 @@ int builtin::character::builtin_spawn_mob(lua_State* L)
 
     auto name  = lua->tostring(2);
     auto owned = true;
-    auto model = server->model.mob.name2mob(name);
+    auto model = table::mob.name2mob(name);
     if (model == nullptr)
     {
         lua->pushnil();
@@ -2328,7 +2331,7 @@ int builtin::character::builtin_mkspell(lua_State* L)
         return 0;
 
     auto name  = lua->tostring(2);
-    auto model = server->model.spell.name2spell(name);
+    auto model = table::spell.name2spell(name);
     if (model == nullptr)
         return 0;
 
@@ -2433,7 +2436,7 @@ int builtin::character::builtin_world(lua_State* L)
         return 0;
 
     auto name = lua->tostring(2);
-    for (auto& [id, world] : server->model.world)
+    for (auto& [id, world] : table::world)
     {
         for (auto& [index, point] : world)
         {
@@ -2578,7 +2581,7 @@ int builtin::character::builtin_delay(lua_State* L)
     }
     else if (lua->is_string(2))
     {
-        model = server->model.spell.name2spell(lua->tostring(2));
+        model = table::spell.name2spell(lua->tostring(2));
     }
 
     if (model == nullptr)
@@ -3200,7 +3203,7 @@ int fb::game::builtin::character::builtin_start_quest(lua_State* L)
         return 0;
 
     auto id = lua->tointeger(2);
-    if (server->model.quest.contains(id) == false)
+    if (table::quest.contains(id) == false)
     {
         lua->pushboolean(false);
         return 1;
@@ -3274,13 +3277,13 @@ int fb::game::builtin::character::builtin_can_start_quest(lua_State* L)
     }
 
     auto id = lua->tointeger(2);
-    if (server->model.quest.contains(id) == false)
+    if (table::quest.contains(id) == false)
     {
         lua->pushboolean(false);
         return 1;
     }
 
-    auto& attr = server->model.quest_attribute[id];
+    auto& attr = table::quest_attribute[id];
     lua->pushboolean(ch->condition(attr.condition));
     return 1;
 }
@@ -3320,7 +3323,7 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
         -> async::task<void> {
         auto   success = false;
         auto&& resp =
-            co_await server->http.post("internal", "/mail/system/write", WriteSystemMail{sender, title, contents, expire_date.has_value() ? expire_date.value() : std::string{}});
+            co_await server->http.post("internal", "/mail/system", WriteSystemMail{sender, title, contents, expire_date.has_value() ? expire_date.value() : std::string{}});
         success = resp.error == 0;
 
         co_await lua->switching();
@@ -3333,4 +3336,121 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
     });
 
     return lua->yield(1);
+}
+
+int builtin::character::builtin_storage_entries(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto buffer = std::vector<fb::game::storage_box::entry>();
+        buffer.reserve(ch->storage_box.entries().size());
+        auto now = fb::model::datetime();
+        for (const auto& [id, entry] : ch->storage_box.entries())
+        {
+            // Exclude entries with no rewards, already received, or expired
+            if (entry.attachments.empty())
+                continue;
+            if (entry.received)
+                continue;
+            if (entry.expire_date.has_value() && entry.expire_date.value() < now)
+                continue;
+            buffer.push_back(entry);
+        }
+
+        std::sort(buffer.begin(), buffer.end(), [](const auto& lhs, const auto& rhs) {
+            return lhs.id > rhs.id;
+        });
+
+        return lua->ensure_resume(*server, weak, [=]() {
+            lua->new_table();
+            auto i = 0;
+            for (const auto& entry : buffer)
+            {
+                lua->pushinteger(i + 1);
+                lua->new_table();
+
+                lua->pushstring("id");
+                lua->pushinteger(entry.id);
+                lua_settable(L, -3);
+
+                lua->pushstring("title");
+                lua->pushstring(entry.title);
+                lua_settable(L, -3);
+
+                lua->pushstring("message");
+                lua->pushstring(entry.message);
+                lua_settable(L, -3);
+
+                lua->pushstring("received");
+                lua->pushboolean(entry.received);
+                lua_settable(L, -3);
+
+                lua->pushstring("expired_date");
+                if (entry.expire_date.has_value())
+                {
+                    lua->pushstring(entry.expire_date.value().to_string());
+                }
+                else
+                {
+                    lua->pushnil();
+                }
+                lua_settable(L, -3);
+
+                lua->pushstring("attachments");
+                lua->new_table();
+                auto j = 0;
+                for (const auto& attachment : entry.attachments)
+                {
+                    lua->pushinteger(j + 1);
+                    auto json = attachment.to_json();
+                    lua->pushjson(json);
+                    lua_settable(L, -3);
+                    j++;
+                }
+                lua_settable(L, -3);
+
+                lua_settable(L, -3);
+                i++;
+            }
+            return 1;
+        });
+    });
+}
+
+int builtin::character::builtin_receive_storage_reward(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto entry_id = static_cast<uint32_t>(lua->tointeger(2));
+    if (entry_id == 0)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto success = ch->storage_box.receive_reward(entry_id);
+
+        return lua->ensure_resume(*server, weak, [=]() {
+            lua->pushboolean(success);
+            return 1;
+        });
+    });
 }

@@ -1,9 +1,8 @@
 using Dapper;
 using Http.Extension;
-using Http.Service;
 using System.Data;
 
-namespace Internal.Service
+namespace Http.Service
 {
     public class BulletinBackgroundService : BackgroundService
     {
@@ -34,7 +33,8 @@ namespace Internal.Service
             {
                 try
                 {
-                    await ProcessBatchAsync(stoppingToken);
+                    var writes = _bulletinService.DequeueBatch(_maxBatchSize);
+                    await ProcessWritesAsync(writes, stoppingToken);
                     await Task.Delay(_processingInterval, stoppingToken);
                 }
                 catch (Exception ex)
@@ -43,14 +43,6 @@ namespace Internal.Service
                     await Task.Delay(_processingInterval, stoppingToken);
                 }
             }
-        }
-
-        private async Task ProcessBatchAsync(CancellationToken cancellationToken)
-        {
-            var writes = _bulletinService.DequeueBatch(_maxBatchSize);
-
-            // Process write requests
-            await ProcessWritesAsync(writes, cancellationToken);
         }
 
         private async Task ProcessWritesAsync(Dictionary<uint, List<BulletinWriteRequest>> writes, CancellationToken cancellationToken)
@@ -63,10 +55,7 @@ namespace Internal.Service
 
                 try
                 {
-                    // Modular sharding: section % SharedDbSize
-                    var dbIndex = GetDbIndexForSection(section, dbContext);
-
-                    await using var conn = dbContext.Connection(dbIndex);
+                    await using var conn = dbContext.Connection(section);
                     await conn.OpenAsync(cancellationToken);
 
                     // Start transaction for sequence management
@@ -160,16 +149,6 @@ namespace Internal.Service
                     }
                 }
             }
-        }
-
-        private int GetDbIndexForSection(uint section, DbContext dbContext)
-        {
-            // Modular sharding: section % SharedDbSize
-            // If SharedDbSize is 0, use -1 (common DB)
-            if (dbContext.SharedDbSize == 0)
-                return -1;
-
-            return (int)(section % dbContext.SharedDbSize);
         }
 
         private string BuildBulkInsertQuery(List<BulletinWriteRequest> requests, uint section, uint startId)

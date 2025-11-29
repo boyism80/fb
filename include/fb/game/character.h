@@ -16,7 +16,9 @@
 #include <fb/game/mail_box.h>
 #include <fb/game/stat.h>
 #include <fb/game/quest.h>
+#include <fb/game/storage.h>
 #include <set>
+#include <unordered_map>
 
 namespace fb::game {
 
@@ -79,15 +81,16 @@ private:
     };
 
 public:
-    fb::game::trade    trade;
-    fb::game::items    items;
-    fb::game::quests   quests;
-    fb::game::bulletin bulletin = fb::game::bulletin(*this);
-    fb::game::mail_box mail_box = fb::game::mail_box(*this);
-    fb::lua::context*  dialog   = nullptr;
-    achievement_map_t  achievements;
-    listener_t&        listener;
-    character_stat     stat;
+    fb::game::trade       trade;
+    fb::game::items       items;
+    fb::game::quests      quests;
+    fb::game::bulletin    bulletin = fb::game::bulletin(*this);
+    fb::game::mail_box    mail_box = fb::game::mail_box(*this);
+    fb::game::storage_box storage_box;
+    fb::lua::context*     dialog = nullptr;
+    achievement_map_t     achievements;
+    listener_t&           listener;
+    character_stat        stat;
 
 private:
     using object::based;
@@ -259,8 +262,8 @@ public:
     async::task<void> foreach_async(character_async_function_t&& fn, const std::vector<character_ptr_t>& characters);
     async::task<void> foreach (const std::vector<std::string>& names, character_function_t && fn, character_function_t_miss miss = nullptr);
     async::task<void> foreach_async(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss = nullptr);
-    async::task<void> invoke(const std::string& name, character_function_t&& fn, character_function_t_miss miss = nullptr);
-    async::task<void> invoke_async(const std::string& name, character_async_function_t&& fn, character_function_t_miss miss = nullptr);
+    async::task<void> invoke(const std::string& name, character_function_t fn, character_function_t_miss miss = nullptr);
+    async::task<void> invoke_async(const std::string& name, character_async_function_t fn, character_function_t_miss miss = nullptr);
 
 public:
     character_ptr_t operator[] (uint32_t uid);

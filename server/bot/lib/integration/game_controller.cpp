@@ -42,7 +42,7 @@ game_bot_controller::game_bot_controller(bot_container& container) :
 
 void game_bot_controller::initialize()
 {
-    this->container.model.item.hook.build = [](const Json::Value& json) -> fb::model::item* {
+    table::item.hook.build = [](const Json::Value& json) -> fb::model::item* {
         auto type = fb::model::build<ITEM_TYPE>(json["type"]);
         switch (type)
         {
@@ -71,7 +71,7 @@ void game_bot_controller::initialize()
         }
     };
 
-    fb::model::loader(this->container.model).run();
+    fb::model::loader().run();
 
     // Set up integration test timer with different interval (slower for detailed testing)
     this->bind_timer(&game_bot_controller::handle_timer, 1000ms);

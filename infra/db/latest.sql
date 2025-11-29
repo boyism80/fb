@@ -377,6 +377,73 @@ CREATE TABLE `system_mail_user` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `storage_box`
+--
+
+DROP TABLE IF EXISTS `storage_box`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `storage_box` (
+  `user` int unsigned NOT NULL,
+  `id` int unsigned NOT NULL,
+  `title` varchar(128) NOT NULL DEFAULT '',
+  `message` varchar(256) NOT NULL,
+  `attachments` json NOT NULL,
+  `received` tinyint NOT NULL DEFAULT '0',
+  `expired_date` datetime DEFAULT NULL,
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user`,`id`),
+  KEY `idx_storage_box_expired` (`user`,`expired_date`),
+  KEY `idx_storage_box_received` (`user`,`received`,`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `storage_pending_box`
+--
+
+DROP TABLE IF EXISTS `storage_pending_box`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `storage_pending_box` (
+  `id` binary(16) NOT NULL,
+  `user` int unsigned DEFAULT NULL,
+  `title` varchar(128) NOT NULL DEFAULT '',
+  `message` varchar(256) NOT NULL,
+  `attachments` json NOT NULL,
+  `expired_date` datetime DEFAULT NULL,
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_storage_pending_user` (`user`,`deleted`,`expired_date`),
+  KEY `idx_storage_pending_expired` (`deleted`,`expired_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
+--
+-- Table structure for table `storage_reward_mark`
+--
+
+DROP TABLE IF EXISTS `storage_reward_mark`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `storage_reward_mark` (
+  `user` int unsigned NOT NULL,
+  `pending_id` binary(16) NOT NULL,
+  `expired_date` datetime DEFAULT NULL,
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`pending_id`),
+  KEY `idx_storage_reward_mark_user` (`user`,`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `user`
 --
 
@@ -516,6 +583,66 @@ BEGIN
             UPDATE bulletin SET deleted = 1, updated_date = NOW() WHERE bulletin.id = id AND bulletin.user = user;
         END IF;
         SELECT 1 AS result;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_BULLETIN_UPDATE` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BULLETIN_UPDATE`(
+    IN p_id INT,
+    IN p_user INT,
+    IN p_title NVARCHAR(64),
+    IN p_contents NVARCHAR(256),
+    IN p_ignore_owner TINYINT
+)
+BEGIN
+    DECLARE _deleted TINYINT;
+    DECLARE _owner INT;
+
+    SELECT bulletin.deleted, bulletin.user
+    INTO _deleted, _owner
+    FROM bulletin
+    WHERE bulletin.id = p_id
+    LIMIT 1;
+
+    IF _deleted IS NULL THEN
+        SELECT -1 AS result;
+    ELSEIF _deleted = 1 THEN
+        SELECT -2 AS result;
+    ELSEIF _owner != p_user AND p_ignore_owner = 0 THEN
+        SELECT -3 AS result;
+    ELSE
+        IF p_ignore_owner = 1 THEN
+            UPDATE bulletin
+            SET title = p_title,
+                contents = p_contents,
+                updated_date = NOW()
+            WHERE bulletin.id = p_id;
+        ELSE
+            UPDATE bulletin
+            SET title = p_title,
+                contents = p_contents,
+                updated_date = NOW()
+            WHERE bulletin.id = p_id AND bulletin.user = p_user;
+        END IF;
+
+        IF ROW_COUNT() = 0 THEN
+            SELECT -4 AS result;
+        ELSE
+            SELECT 1 AS result;
+        END IF;
     END IF;
 END ;;
 DELIMITER ;

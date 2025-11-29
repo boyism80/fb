@@ -1,8 +1,15 @@
 #include <fb/game/handler/protocol/login.h>
 #include <fb/game/server.h>
 #include <fb/game/handler/amqp/ban.h>
+#include <fb/game/storage.h>
+#include <fb/model/model.h>
+#include <fb/logger.h>
+#include <fb/model/datetime.h>
+#include <json/json.h>
+#include <sstream>
 
 using namespace fb::game::handler::protocol;
+using table = fb::model::table;
 
 login::login(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::login>(server)
@@ -47,7 +54,7 @@ login::init_ch(const internal::Character& response, character& ch, std::optional
 
     for (auto& buff : response.buffs)
     {
-        auto& model = this->server.model.spell[buff.model];
+        auto& model = table::spell[buff.model];
         ch.buffs.push_back(model, buff.time);
     }
 
@@ -106,7 +113,7 @@ void login::init_items(const std::vector<internal::Item>& response, character& c
 {
     for (auto& x : response)
     {
-        auto item = this->server.model.item[x.model].make(this->server);
+        auto item = table::item[x.model].make(this->server);
         item->count(x.count);
 
         if (x.durability.has_value())
@@ -128,10 +135,10 @@ void login::init_spells(const std::vector<internal::Spell>& response, character&
 {
     for (auto& x : response)
     {
-        if (this->server.model.spell.contains(x.model) == false)
+        if (table::spell.contains(x.model) == false)
             continue;
 
-        auto& model = this->server.model.spell[x.model];
+        auto& model = table::spell[x.model];
         auto  delay = fb::model::datetime(x.next) - fb::model::datetime();
         auto  sec   = delay.seconds();
         if (sec >= 0)
@@ -154,10 +161,10 @@ void login::init_achievements(const std::vector<fb::protocol::internal::Achievem
 {
     for (auto& achievement : response)
     {
-        if (this->server.model.achievement.contains(achievement.model) == false)
+        if (table::achievement.contains(achievement.model) == false)
             continue;
 
-        auto ptr = std::make_unique<fb::game::achievement>(this->server.model.achievement[achievement.model], achievement.text, achievement.icon, achievement.color);
+        auto ptr = std::make_unique<fb::game::achievement>(table::achievement[achievement.model], achievement.text, achievement.icon, achievement.color);
         ch.achievements.insert({achievement.model, std::move(ptr)});
     }
 }
@@ -248,6 +255,86 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     this->init_achievements(response.achievements, *ch);
     this->init_quests(response.quests, *ch);
     this->init_system_mail_users(response.received_system_mails, *ch);
+
+    auto storage_boxes = std::vector<fb::game::storage_box::entry>();
+    storage_boxes.reserve(response.storage_boxes.size());
+    for (const auto& dto : response.storage_boxes)
+    {
+        fb::game::storage_box::entry box{};
+        box.id      = dto.id;
+        box.title   = dto.title;
+        box.message = dto.message;
+
+        if (!dto.attachments.empty())
+        {
+            Json::Value        json;
+            Json::Reader       reader;
+            std::istringstream stream(dto.attachments);
+            if (reader.parse(stream, json) && json.isArray())
+            {
+                box.attachments.reserve(json.size());
+                for (const auto& item : json)
+                {
+                    box.attachments.emplace_back(item);
+                }
+            }
+        }
+
+        box.received = dto.received;
+        if (dto.expired_date.has_value())
+            box.expire_date = fb::model::datetime(dto.expired_date.value());
+        storage_boxes.push_back(std::move(box));
+    }
+
+    auto storage_reward_marks = std::vector<fb::game::storage_box::reward_mark>();
+    storage_reward_marks.reserve(response.storage_reward_marks.size());
+    for (const auto& dto : response.storage_reward_marks)
+    {
+        fb::game::storage_box::reward_mark mark{};
+        mark.user       = dto.user;
+        mark.pending_id = dto.pending_id;
+        if (dto.expired_date.has_value())
+            mark.expire_date = fb::model::datetime(dto.expired_date.value());
+        storage_reward_marks.push_back(std::move(mark));
+    }
+
+    ch->storage_box.init(storage_boxes, storage_reward_marks);
+
+    if (response.storage_pending.empty() == false)
+    {
+        auto pending_models = std::vector<fb::game::storage_box::pending_box>();
+        pending_models.reserve(response.storage_pending.size());
+        for (const auto& dto : response.storage_pending)
+        {
+            fb::game::storage_box::pending_box pending_box{};
+            pending_box.id      = dto.id;
+            pending_box.user    = dto.user;
+            pending_box.title   = dto.title;
+            pending_box.message = dto.message;
+
+            if (!dto.attachments.empty())
+            {
+                Json::Value        json;
+                Json::Reader       reader;
+                std::istringstream stream(dto.attachments);
+                if (reader.parse(stream, json) && json.isArray())
+                {
+                    pending_box.attachments.reserve(json.size());
+                    for (const auto& item : json)
+                    {
+                        pending_box.attachments.emplace_back(item);
+                    }
+                }
+            }
+
+            if (dto.expired_date.has_value())
+                pending_box.expire_date = fb::model::datetime(dto.expired_date.value());
+            pending_models.push_back(std::move(pending_box));
+        }
+
+        ch->storage_box.apply_pending(pending_models);
+    }
+
     this->init_option(response.option, *ch);
     ch->init();
     ch->update_time(this->server.time().hours());

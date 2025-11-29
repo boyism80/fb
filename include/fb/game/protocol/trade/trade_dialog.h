@@ -19,7 +19,6 @@ public:
 public:
 #ifndef BOT
     const fb::game::character& me;
-    const fb::model::model&    model;
 #else
     uint32_t    oid;
     std::string name;
@@ -27,7 +26,7 @@ public:
 
 public:
 #ifndef BOT
-    trade_dialog(const fb::game::character& me, const fb::model::model& model);
+    trade_dialog(const fb::game::character& me);
 #else
     trade_dialog() = default;
 #endif

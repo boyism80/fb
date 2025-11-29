@@ -1,7 +1,6 @@
 using Http.Model;
-using Http.Service;
 
-namespace Internal.Service
+namespace Http.Service
 {
     public sealed class BulletinCacheService : GenericCacheService<Bulletin>
     {

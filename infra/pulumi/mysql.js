@@ -30,27 +30,63 @@ module.exports = function () {
                 }
             })
 
-            let index = 0
-            const ports = []
+            const services = []
+            let globalIndex = 0
             for(const [section, sectionConfs] of Object.entries(conf.mysql)) {
+                const serviceName = `mysql-${section}`
+                const clusterPorts = []
+                const nodePorts = []
+                
+                // Collect all ports first with unique containerPort names using global index
                 for(const [id, sectionConf] of Object.entries(sectionConfs)) {
+                    const containerPortName = `m${globalIndex}`
+                    clusterPorts.push({
+                        name: `mysql-${section}-${id}`,
+                        port: sectionConf.port.cluster,
+                        targetPort: containerPortName,
+                    })
+                    nodePorts.push({
+                        name: `mysql-${section}-${id}`,
+                        port: sectionConf.port.cluster,
+                        targetPort: containerPortName,
+                        nodePort: sectionConf.port.node,
+                    })
+                    globalIndex++
+                }
+                
+                // Create ClusterIP service for internal access with all ports
+                const clusterIPService = new k8s.core.v1.Service(`mysql-${section}`, {
+                    metadata: { name: serviceName, namespace: namespace.metadata.name },
+                    spec: {
+                        type: "ClusterIP",
+                        selector: { app: "mysql", section: section },
+                        ports: clusterPorts,
+                    },
+                });
+                
+                globalIndex = globalIndex - Object.keys(sectionConfs).length
+                for(const [id, sectionConf] of Object.entries(sectionConfs)) {
+                    const containerPortName = `m${globalIndex}`
+                    globalIndex++
                     const statefulSet = new k8s.apps.v1.StatefulSet(`mysql-${section}-${id}`, {
                         metadata: {
                             name: `mysql-${section}-${id}`,
                             namespace: namespace.metadata.name,
                         },
                         spec: {
-                            serviceName: "mysql",
+                            serviceName: serviceName,
                             replicas: 1,
                             selector: {
                                 matchLabels: {
                                     app: "mysql",
+                                    section: section,
                                 },
                             },
                             template: {
                                 metadata: {
                                     labels: {
                                         app: "mysql",
+                                        section: section,
                                     },
                                 },
                                 spec: {
@@ -65,7 +101,7 @@ module.exports = function () {
                                                 "--mysql-native-password=ON"
                                             ],
                                             ports: [
-                                                { containerPort: 3306, name: `mysql-${index}` },
+                                                { containerPort: 3306, name: containerPortName, protocol: "TCP" },
                                             ],
                                             env: [
                                                 {
@@ -108,32 +144,24 @@ module.exports = function () {
                                 },
                             }
                         },
-                    }, { dependsOn: [secret] });
-
-                    ports.push({
-                        name: `mysql-${section}-${id}`,
-                        port: sectionConf.port.cluster,
-                        targetPort: `mysql-${index}`,
-                        nodePort: sectionConf.port.node, 
-                    })
-
-                    index++
+                    }, { dependsOn: [secret, clusterIPService] });
                 }
+                
+                // Create NodePort service for external access
+                const nodeportService = new k8s.core.v1.Service(`mysql-${section}-nodeport`, {
+                    metadata: { name: `${serviceName}-nodeport`, namespace: namespace.metadata.name },
+                    spec: {
+                        type: "NodePort",
+                        selector: { app: "mysql", section: section },
+                        ports: nodePorts,
+                    },
+                }, { dependsOn: [clusterIPService] });
+                
+                services.push(clusterIPService)
+                services.push(nodeportService)
             }
 
-            return new k8s.core.v1.Service('mysql', {
-                metadata: {
-                    name: 'mysql',
-                    namespace: namespace.metadata.name,
-                },
-                spec: {
-                    type: "NodePort",
-                    ports: ports,
-                    selector: {
-                        app: "mysql",
-                    },
-                },
-            })
+            return services
         }
     }
 }()

@@ -21,7 +21,7 @@ module.exports = function () {
                             io: 12
                         },
                         redis: {
-                            ip: 'redis',
+                            ip: `redis-${sectionConf.redis}`,
                             port: conf.redis[sectionConf.redis]['-1'].port.cluster,
                             pool: 1
                         },
@@ -32,7 +32,7 @@ module.exports = function () {
                         },
                         login: { ip: conf.host, port: conf.login[sectionConf.login].port },
                         amqp: {
-                            ip: "rabbitmq",
+                            ip: `rabbitmq-${sectionConf.rabbitmq}`,
                             port: conf.rabbitmq[sectionConf.rabbitmq].port.amqp.cluster,
                             uid: "fb",
                             pwd: "admin"

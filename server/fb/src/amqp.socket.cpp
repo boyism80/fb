@@ -21,22 +21,51 @@ bool socket::connect(const std::string& hostname,
                      const std::string& pw,
                      const std::string& vhost)
 {
+    // Clean up any existing connection before creating a new one
+    if (this->_conn != nullptr)
+    {
+        amqp_destroy_connection(this->_conn);
+        this->_conn = nullptr;
+        this->_socket = nullptr;
+    }
+
     this->_conn   = amqp_new_connection();
     this->_socket = amqp_tcp_socket_new(this->_conn);
     if (!this->_socket)
+    {
+        amqp_destroy_connection(this->_conn);
+        this->_conn = nullptr;
         return false;
+    }
 
     auto status = amqp_socket_open(this->_socket, hostname.c_str(), port);
     if (status)
+    {
+        amqp_destroy_connection(this->_conn);
+        this->_conn = nullptr;
+        this->_socket = nullptr;
         return false;
+    }
 
     if (amqp_login(this->_conn, vhost.c_str(), 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, id.c_str(), pw.c_str())
             .reply_type != AMQP_RESPONSE_NORMAL)
+    {
+        amqp_connection_close(this->_conn, AMQP_REPLY_SUCCESS);
+        amqp_destroy_connection(this->_conn);
+        this->_conn = nullptr;
+        this->_socket = nullptr;
         return false;
+    }
 
     amqp_channel_open(this->_conn, 1);
     if (amqp_get_rpc_reply(this->_conn).reply_type != AMQP_RESPONSE_NORMAL)
+    {
+        amqp_connection_close(this->_conn, AMQP_REPLY_SUCCESS);
+        amqp_destroy_connection(this->_conn);
+        this->_conn = nullptr;
+        this->_socket = nullptr;
         return false;
+    }
 
     return true;
 }

@@ -31,7 +31,6 @@ private:
     bool                     _exit = false;
 
 public:
-    fb::model::model                        model;
     std::shared_ptr<gateway_bot_controller> gateway;
     std::shared_ptr<login_bot_controller>   login;
     std::shared_ptr<game_bot_controller>    game;

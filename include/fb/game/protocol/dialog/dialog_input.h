@@ -36,8 +36,7 @@ public:
 
 public:
 #ifndef BOT
-    dialog_input(fb::model::model&             model,
-                 const fb::model::object&      obj,
+    dialog_input(const fb::model::object&      obj,
                  const std::string&            message,
                  uint32_t                      oid         = 0xFFFFFFFD,
                  fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT);

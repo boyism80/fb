@@ -19,7 +19,7 @@ module.exports = {
                 },
                 "Redis": {},
                 "RabbitMQ": {
-                    "Host": "rabbitmq",
+                    "Host": `rabbitmq-${sectionConf.rabbitmq}`,
                     "Port": conf.rabbitmq[sectionConf.rabbitmq].port.amqp.cluster,
                     "Uid": "fb",
                     "Pwd": "admin"
@@ -30,12 +30,12 @@ module.exports = {
             }
 
             for(const [id, mysqlConf] of Object.entries(conf.mysql[sectionConf.mysql])) {
-                config.ConnectionStrings.MySql[id] = `Server=mysql;Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                config.ConnectionStrings.MySql[id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
             }
 
             for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
                 config.Redis[id] = {
-                    Host: "redis",
+                    Host: `redis-${sectionConf.redis}`,
                     Port: conf.redis[sectionConf.redis][id].port.cluster
                 }
             }

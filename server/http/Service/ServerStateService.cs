@@ -1,7 +1,5 @@
 using Http.Redis;
-using Http.Redis.Key;
 using Newtonsoft.Json;
-using StackExchange.Redis;
 
 namespace Http.Service
 {

@@ -79,6 +79,8 @@ struct character
     static int builtin_remove_quest(lua_State* L);
     static int builtin_can_start_quest(lua_State* L);
     static int builtin_send_system_mail(lua_State* L);
+    static int builtin_storage_entries(lua_State* L);
+    static int builtin_receive_storage_reward(lua_State* L);
 };
 
 } // namespace fb::game::builtin

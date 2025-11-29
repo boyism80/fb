@@ -4,9 +4,10 @@
 #include <fb/game/map.h>
 
 using namespace fb::game;
+using namespace fb::model;
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(life, "fb.game.life")
+IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"__eq",                builtin::object::builtin_eq},
 {"message",             builtin::life::builtin_message},
 {"hp",                  builtin::life::builtin_hp},
@@ -409,7 +410,7 @@ int builtin::life::builtin_cast(lua_State* L)
         return 0;
 
     auto name  = lua->tostring(offset++);
-    auto spell = server->model.spell.name2spell(name);
+    auto spell = table::spell.name2spell(name);
     if (spell == nullptr)
         return 0;
 

@@ -4,6 +4,8 @@ using fb.protocol._internal;
 using Http.Extension;
 using Http.Service;
 using Http.Worker;
+using Newtonsoft.Json;
+using Protocol = fb.protocol._internal;
 
 namespace Http;
 public class Program
@@ -13,6 +15,8 @@ public class Program
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
         SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Model.Buff>), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(string), new UuidStringTypeHandler());
 
         var config = new MapperConfiguration(cfg =>
         {
@@ -79,7 +83,60 @@ public class Program
             .ForMember(x => x.Deleted, x => x.Ignore()) // Deleted is managed by Override logic
             .ForMember(x => x.CreatedDate, x => x.Ignore()) // CreatedDate is managed by DB
             .ReverseMap()
-            .ForMember(x => x.ExpireDate, x => x.MapFrom(u => u.ExpireDate.HasValue ? u.ExpireDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : (string?)null));
+            .ForMember(x => x.ExpireDate, x => x.MapFrom(u => u.ExpireDate.HasValue ? u.ExpireDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null));
+
+            cfg.CreateMap<Http.Model.StorageBox, Protocol.StorageBox>()
+            .ForMember(x => x.Attachments, x => x.Ignore())
+            .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
+            .ForMember(x => x.ExpiredDate, x => x.MapFrom(u => u.ExpiredDate.HasValue ? u.ExpiredDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
+            .AfterMap((src, dest) =>
+            {
+                dest.Attachments = JsonConvert.SerializeObject(src.Attachments ?? new List<Fb.Model.Dsl>());
+            });
+
+            cfg.CreateMap<Protocol.StorageBox, Http.Model.StorageBox>()
+            .ForMember(x => x.Attachments, x => x.Ignore())
+            .ForMember(x => x.ExpiredDate, x => x.Ignore())
+            .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
+            .ForMember(x => x.Message, x => x.MapFrom(u => u.Message ?? string.Empty))
+            .AfterMap((src, dest) =>
+            {
+                dest.Attachments = string.IsNullOrWhiteSpace(src.Attachments)
+                    ? new List<Fb.Model.Dsl>()
+                    : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl>>(src.Attachments) ?? new List<Fb.Model.Dsl>());
+                dest.ExpiredDate = string.IsNullOrEmpty(src.ExpiredDate) ? null : DateTime.Parse(src.ExpiredDate);
+            });
+
+            cfg.CreateMap<Http.Model.StorageRewardMark, Protocol.StorageRewardMark>()
+            .ForMember(x => x.ExpiredDate, x => x.MapFrom(u => u.ExpiredDate.HasValue ? u.ExpiredDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null));
+
+            cfg.CreateMap<Protocol.StorageRewardMark, Http.Model.StorageRewardMark>()
+            .ForMember(x => x.ExpiredDate, x => x.Ignore())
+            .AfterMap((src, dest) =>
+            {
+                dest.ExpiredDate = string.IsNullOrEmpty(src.ExpiredDate) ? null : DateTime.Parse(src.ExpiredDate);
+            });
+
+            cfg.CreateMap<Http.Model.StoragePendingBox, Protocol.StoragePendingBox>()
+            .ForMember(x => x.Attachments, x => x.Ignore())
+            .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
+            .ForMember(x => x.ExpiredDate, x => x.MapFrom(u => u.ExpiredDate.HasValue ? u.ExpiredDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
+            .AfterMap((src, dest) =>
+            {
+                dest.Attachments = JsonConvert.SerializeObject(src.Attachments ?? new List<Fb.Model.Dsl>());
+            });
+
+            cfg.CreateMap<Protocol.StoragePendingBox, Http.Model.StoragePendingBox>()
+            .ForMember(x => x.Attachments, x => x.Ignore())
+            .ForMember(x => x.ExpiredDate, x => x.Ignore())
+            .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
+            .AfterMap((src, dest) =>
+            {
+                dest.Attachments = string.IsNullOrWhiteSpace(src.Attachments)
+                    ? new List<Fb.Model.Dsl>()
+                    : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl>>(src.Attachments) ?? new List<Fb.Model.Dsl>());
+                dest.ExpiredDate = string.IsNullOrEmpty(src.ExpiredDate) ? null : DateTime.Parse(src.ExpiredDate);
+            });
         });
 
         var builder = WebApplication.CreateBuilder(args);
@@ -99,7 +156,6 @@ public class Program
         builder.Services.AddSwaggerGen();
         builder.Services.AddSingleton<RedisService>();
         builder.Services.AddSingleton<RedisDistributedLockService>();
-        builder.Services.AddSingleton<Fb.Model.Model>();
         builder.Services.AddSingleton<IMapper>(_ => new Mapper(config));
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<SessionService>();
@@ -108,15 +164,17 @@ public class Program
         builder.Services.AddScoped<BanService>();
         builder.Services.AddScoped<CacheService>();
         builder.Services.AddSingleton<WriteBackService>();
-        builder.Services.AddSingleton<Internal.Service.BulletinService>();
-        builder.Services.AddSingleton<Internal.Service.BulletinCacheService>();
-        builder.Services.AddHostedService<Internal.Service.BulletinBackgroundService>();
+        builder.Services.AddSingleton<Http.Service.BulletinService>();
+        builder.Services.AddSingleton<Http.Service.BulletinCacheService>();
+        builder.Services.AddHostedService<Http.Service.BulletinBackgroundService>();
         builder.Services.AddHostedService<ShutdownListenerService>();
         builder.Services.AddHealthChecks();
+        builder.Services.AddScoped<StorageService>();
 
         var app = builder.Build();
         app.MapHealthChecks("/health");
-        var dataTableLoader = ActivatorUtilities.CreateInstance(app.Services.CreateScope().ServiceProvider, typeof(DataTableLoader)) as DataTableLoader;
+        var logger = app.Services.GetRequiredService<ILogger<DataTableLoader>>();
+        var dataTableLoader = new DataTableLoader(logger);
         dataTableLoader.Run();
 
         // Configure the HTTP request pipeline.

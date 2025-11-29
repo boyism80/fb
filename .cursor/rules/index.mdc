@@ -102,6 +102,29 @@ Types:
   - Update wiki sorter script
   ```
 
+### Pre-Commit Verification
+**MANDATORY**: Before executing any commit command, ALWAYS verify all changes:
+- **Check git status**: Use `git --no-pager status` to see all modified, added, and deleted files
+- **Review all changes**: Use `git --no-pager diff HEAD` to review ALL code changes before committing
+- **Verify staged changes**: Use `git --no-pager diff --staged` to review what will be committed
+- **Comprehensive review**: Ensure all changes are intentional and correctly categorized
+- **No exceptions**: This verification step is mandatory for every commit, regardless of scope
+
+**Example workflow**:
+```powershell
+# 1. Check status
+git --no-pager status
+
+# 2. Review all changes
+git --no-pager diff HEAD
+
+# 3. If staging specific files, review staged changes
+git --no-pager diff --staged
+
+# 4. Only then proceed with commit
+git commit -m "..." -m "..."
+```
+
 ### Commit Approval Policy
 **CRITICAL**: Do NOT commit any changes unless explicitly requested by the user:
 - **Wait for explicit user approval** before executing any git commit commands

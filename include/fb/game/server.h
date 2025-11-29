@@ -16,6 +16,8 @@
 #include <fb/game/clan.h>
 #include <fb/game/npc_interaction_handler.h>
 #include <fb/game/system_mail.h>
+#include <fb/game/storage.h>
+#include <fb/game/polling/polling.h>
 #include <fb/locker.h>
 #include <vector>
 
@@ -51,7 +53,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::intern
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
 REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanRole, fb::protocol::internal::response::ChangeClanRole)
 REGISTER_RESPONSE(fb::protocol::internal::request::UpdateFriends, fb::protocol::internal::response::UpdateFriends)
-REGISTER_RESPONSE(fb::protocol::internal::request::GetSystemMails, fb::protocol::internal::response::GetSystemMails)
+REGISTER_RESPONSE(fb::protocol::internal::request::GetStoragePending, fb::protocol::internal::response::GetStoragePending)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol::internal::response::WriteSystemMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Ban, fb::protocol::internal::response::Ban)
 REGISTER_RESPONSE(fb::protocol::internal::request::Unban, fb::protocol::internal::response::Unban)
@@ -80,16 +82,14 @@ public:
     using npc_interaction_handler_list = std::vector<npc_interaction_handler_ptr>;
 
 private:
-    fb::model::datetime                  _time;
-    npc_interaction_handler_list         _npc_interaction_handlers;
-    fb::redis                            _redis;
-    fb::locker<std::vector<system_mail>> _system_mails;
+    fb::model::datetime          _time;
+    npc_interaction_handler_list _npc_interaction_handlers;
+    fb::redis                    _redis;
 
 public:
+    fb::game::polling       poll = polling(*this);
     fb::game::listener_impl listener;
 
-public:
-    fb::model::model                                        model;
     fb::game::map_container                                 maps;
     fb::game::character::container                          characters;
     fb::sharded_container<clan_ptr, 16>                     clans;
@@ -192,8 +192,6 @@ public:
     [[nodiscard]] async::task<void>                         write_bulletin(character& ch, uint16_t section, const std::string& title, const std::string& contents);
     [[nodiscard]] async::task<void>                         delete_bulletin(character& ch, uint16_t section, uint16_t id);
     [[nodiscard]] async::task<void>                         whisper(character& sender, std::string receiver_name, std::string message);
-    [[nodiscard]] async::task<void>                         fetch_system_mails();
-    std::vector<system_mail>                                get_system_mails() const;
     [[nodiscard]] async::task<internal_resp::Ban>           ban(const std::string& name, const std::string& reason, const std::optional<uint32_t>& days);
     [[nodiscard]] async::task<internal_resp::Unban>         unban(const std::string& name);
 

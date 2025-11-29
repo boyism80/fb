@@ -37,8 +37,7 @@ public:
 
 public:
 #ifndef BOT
-    dialog_menu(fb::model::model&               model,
-                const fb::model::object&        obj,
+    dialog_menu(const fb::model::object&        obj,
                 const std::vector<std::string>& menus,
                 const std::string&              message,
                 uint32_t                        oid         = 0xFFFFFFFD,

@@ -79,6 +79,21 @@ namespace Http.Service
         public SystemMailUserRepository SystemMailUser => Bind<SystemMailUserRepository>();
 
         /// <summary>
+        /// Gets the storage box repository instance.
+        /// </summary>
+        public StorageBoxRepository StorageBox => Bind<StorageBoxRepository>();
+
+        /// <summary>
+        /// Gets the storage pending box repository instance.
+        /// </summary>
+        public StoragePendingBoxRepository StoragePendingBox => Bind<StoragePendingBoxRepository>();
+
+        /// <summary>
+        /// Gets the storage reward mark repository instance.
+        /// </summary>
+        public StorageRewardMarkRepository StorageRewardMark => Bind<StorageRewardMarkRepository>();
+
+        /// <summary>
         /// Gets the ban repository instance.
         /// </summary>
         public BanRepository Ban => Bind<BanRepository>();

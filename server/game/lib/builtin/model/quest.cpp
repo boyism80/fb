@@ -3,6 +3,7 @@
 #include <fb/game/builtin/model.h>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::model::quest, "fb.model.quest")
@@ -22,7 +23,7 @@ int builtin::model::quest::builtin_step(lua_State* L)
     if (model == nullptr)
         return 0;
 
-    lua->pushinteger(server->model.quest[model->parent].size());
+    lua->pushinteger(table::quest[model->parent].size());
     return 1;
 }
 
@@ -51,6 +52,6 @@ int builtin::model::quest::builtin_reward(lua_State* L)
     if (model == nullptr)
         return 0;
 
-    lua->pushstring(server->model.quest_attribute[model->parent].reward);
+    lua->pushstring(table::quest_attribute[model->parent].reward);
     return 1;
 }

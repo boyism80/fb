@@ -4,7 +4,7 @@ using namespace fb::game;
 
 void listener_impl::on_trade_begin(character& me, character& you)
 {
-    me.send(fb_resp::trade_dialog(you, this->server.model));
+    me.send(fb_resp::trade_dialog(you));
 }
 
 void listener_impl::on_trade_bundle(character& me)

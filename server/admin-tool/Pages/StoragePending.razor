@@ -1,0 +1,500 @@
+@page "/storage-pending"
+@using Http.Service
+@using Fb.Model
+@using Fb.Model.EnumValue
+@using System.ComponentModel.DataAnnotations
+@attribute [AuthorizeRole(Role.Admin)]
+@inject StorageService StorageService
+
+<PageTitle>Storage Pending - Admin Tool</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h2>Storage Pending Rewards</h2>
+            <p class="text-muted mb-0">
+                Create storage pending rewards for all players or a specific user with attachments (items, money, exp).
+            </p>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @successMessage
+            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Create Pending Reward</h5>
+        </div>
+        <div class="card-body">
+            <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+                <DataAnnotationsValidator />
+                <div class="mb-3 form-check form-switch">
+                    <InputCheckbox id="isGlobal" class="form-check-input" @bind-Value="model.IsGlobal" />
+                    <label class="form-check-label" for="isGlobal">Global reward (all users)</label>
+                </div>
+                @if (!model.IsGlobal)
+                {
+                    <div class="mb-3">
+                        <label for="userName" class="form-label">User Name</label>
+                        <InputText id="userName" class="form-control" @bind-Value="model.UserName" />
+                        <ValidationMessage For="@(() => model.UserName)" />
+                        <small class="form-text text-muted">Enter the exact in-game character name.</small>
+                    </div>
+                }
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <InputText id="title" class="form-control" @bind-Value="model.Title" />
+                    <ValidationMessage For="@(() => model.Title)" />
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label">Message</label>
+                    <InputTextArea id="message" class="form-control" rows="3" @bind-Value="model.Message" />
+                    <ValidationMessage For="@(() => model.Message)" />
+                </div>
+                <div class="mb-3">
+                    <label for="expiredDate" class="form-label">Available Until (optional)</label>
+                    <InputDate id="expiredDate" class="form-control" @bind-Value="model.ExpiredDate" />
+                    <small class="form-text text-muted">Empty value will keep the reward available indefinitely.</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Attachments</label>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="row g-2">
+                                    <div class="col-md-5">
+                                        <label class="form-label small">Item Name</label>
+                                        <div class="position-relative">
+                                            <input type="text" class="form-control" 
+                                                   @bind="itemSearchText" 
+                                                   @bind:event="oninput"
+                                                   @bind:after="HandleItemSearchInput"
+                                                   @onkeydown="HandleItemSearchKeyDown" 
+                                                   @onfocus="() => showItemSuggestions = !string.IsNullOrWhiteSpace(itemSearchText) && filteredItems.Any()"
+                                                   @onblur="() => Task.Delay(200).ContinueWith(_ => InvokeAsync(() => { showItemSuggestions = false; StateHasChanged(); }))"
+                                                   placeholder="Search item name..." />
+                                            @if (showItemSuggestions && filteredItems.Any())
+                                            {
+                                                <div class="list-group position-absolute w-100" style="z-index: 1000; max-height: 200px; overflow-y: auto;">
+                                                    @foreach (var item in filteredItems.Take(10))
+                                                    {
+                                                        <button type="button" class="list-group-item list-group-item-action" 
+                                                                @onclick="() => SelectItem(item)">
+                                                            @item.Name (ID: @item.Id)
+                                                        </button>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Quantity</label>
+                                        <InputNumber class="form-control" @bind-Value="itemQuantity" min="1" max="@(selectedItem?.Capacity ?? 1)" disabled="@(!canEditQuantity)" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">&nbsp;</label>
+                                        <div>
+                                            <button type="button" class="btn btn-sm btn-primary w-100" @onclick="AddItem" disabled="@(!canAddItem)">
+                                                Add Item
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                @if (selectedItem != null)
+                                {
+                                    <small class="form-text text-muted">
+                                        Selected: @selectedItem.Name
+                                        @if (selectedItem.Capacity > 1)
+                                        {
+                                            <span>(Bundle, Capacity: @selectedItem.Capacity)</span>
+                                        }
+                                    </small>
+                                }
+                            </div>
+                            <div class="mb-3">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small">Money</label>
+                                        <InputNumber class="form-control" @bind-Value="moneyValue" min="0" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small">&nbsp;</label>
+                                        <div>
+                                            <button type="button" class="btn btn-sm btn-primary w-100" @onclick="AddMoney" disabled="@(moneyValue == null || moneyValue <= 0)">
+                                                Add Money
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small">Experience</label>
+                                        <InputNumber class="form-control" @bind-Value="expValue" min="0" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small">&nbsp;</label>
+                                        <div>
+                                            <button type="button" class="btn btn-sm btn-primary w-100" @onclick="AddExp" disabled="@(expValue == null || expValue <= 0)">
+                                                Add Exp
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    Items: @itemCount / 52 | Total: @totalAttachmentCount / 54
+                                </small>
+                            </div>
+                            @if (model.Attachments.Any())
+                            {
+                                <div class="border rounded p-2" style="max-height: 300px; overflow-y: auto;">
+                                    <h6 class="small mb-2">Current Attachments:</h6>
+                                    @foreach (var (attachment, index) in model.Attachments.Select((a, i) => (a, i)))
+                                    {
+                                        <div class="d-flex justify-content-between align-items-center mb-1 p-1 bg-light rounded">
+                                            <span class="small">
+                                                @if (attachment.Header == Fb.Model.EnumValue.Dsl.Item)
+                                                {
+                                                    var itemId = (uint)attachment.Params[0];
+                                                    var count = (uint)attachment.Params[1];
+                                                    var item = Table.Item[itemId];
+                                                    <text>Item: @(item?.Name ?? $"ID:{itemId}") x @count</text>
+                                                }
+                                                else if (attachment.Header == Fb.Model.EnumValue.Dsl.Money)
+                                                {
+                                                    var value = (uint)attachment.Params[0];
+                                                    <text>Money: @value</text>
+                                                }
+                                                else if (attachment.Header == Fb.Model.EnumValue.Dsl.Exp)
+                                                {
+                                                    var value = (uint)attachment.Params[0];
+                                                    <text>Exp: @value</text>
+                                                }
+                                                else
+                                                {
+                                                    <text>@attachment.Header</text>
+                                                }
+                                            </span>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => RemoveAttachment(index)">
+                                                Remove
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" @onclick="ResetForm"
+                        disabled="@isProcessing">Reset</button>
+                    <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        }
+                        Create Pending Reward
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private StoragePendingForm model = new();
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isProcessing;
+
+    // Item search and selection
+    private string itemSearchText = string.Empty;
+    private bool showItemSuggestions = false;
+    private Fb.Model.Item? selectedItem = null;
+    private int? itemQuantity = 1;
+    private List<Fb.Model.Item> allItems = new();
+
+    // Money and Exp
+    private long? moneyValue = null;
+    private long? expValue = null;
+
+    protected override void OnInitialized()
+    {
+        allItems = Table.Item.Values.ToList();
+        
+        // Set default expired date to today + 30 days (date only, no time)
+        model.ExpiredDate = DateTime.Today.AddDays(30);
+    }
+
+    private IEnumerable<Fb.Model.Item> filteredItems
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(itemSearchText))
+                return Enumerable.Empty<Fb.Model.Item>();
+
+            var searchLower = itemSearchText.ToLowerInvariant();
+            return allItems.Where(item => 
+                item.Name.ToLowerInvariant().Contains(searchLower))
+                .OrderBy(item => item.Name)
+                .Take(20);
+        }
+    }
+
+    private bool canEditQuantity => selectedItem != null && selectedItem.Capacity > 1;
+
+    private bool canAddItem => selectedItem != null && 
+                               (!IsBundleItem(selectedItem) || !HasBundleItemInAttachments(selectedItem)) &&
+                               itemCount < 52;
+
+    private int itemCount => model.Attachments.Count(a => a.Header == Fb.Model.EnumValue.Dsl.Item);
+
+    private int totalAttachmentCount => model.Attachments.Count;
+
+    private void HandleItemSearchInput()
+    {
+        showItemSuggestions = !string.IsNullOrWhiteSpace(itemSearchText) && filteredItems.Any();
+        if (string.IsNullOrWhiteSpace(itemSearchText))
+        {
+            selectedItem = null;
+        }
+    }
+
+    private void HandleItemSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            showItemSuggestions = false;
+        }
+        else if (!string.IsNullOrWhiteSpace(itemSearchText))
+        {
+            showItemSuggestions = true;
+        }
+    }
+
+    private void SelectItem(Fb.Model.Item item)
+    {
+        selectedItem = item;
+        itemSearchText = item.Name;
+        showItemSuggestions = false;
+        itemQuantity = 1;
+    }
+
+    private void AddItem()
+    {
+        if (selectedItem == null)
+            return;
+
+        if (IsBundleItem(selectedItem) && HasBundleItemInAttachments(selectedItem))
+        {
+            errorMessage = "Bundle items can only be added once.";
+            return;
+        }
+
+        if (itemCount >= 52)
+        {
+            errorMessage = "Maximum 52 items allowed.";
+            return;
+        }
+
+        var quantity = IsBundleItem(selectedItem) ? (uint)(itemQuantity ?? 1) : 1u;
+        if (quantity < 1 || (IsBundleItem(selectedItem) && quantity > selectedItem.Capacity))
+        {
+            errorMessage = $"Quantity must be between 1 and {selectedItem.Capacity}.";
+            return;
+        }
+
+        var dslItem = new Fb.Model.Dsl.Item
+        {
+            Id = selectedItem.Id,
+            Count = quantity,
+            Percent = 100.0
+        };
+
+        model.Attachments.Add(dslItem.ToDSL());
+        ClearItemSelection();
+        errorMessage = null;
+    }
+
+    private void AddMoney()
+    {
+        if (moneyValue == null || moneyValue <= 0)
+            return;
+
+        if (moneyValue > uint.MaxValue)
+        {
+            errorMessage = $"Money value must be between 1 and {uint.MaxValue}.";
+            return;
+        }
+
+        if (totalAttachmentCount >= 54)
+        {
+            errorMessage = "Maximum 54 total attachments allowed (52 items + money + exp).";
+            return;
+        }
+
+        var dslMoney = new Fb.Model.Dsl.Money
+        {
+            Value = (uint)moneyValue.Value
+        };
+
+        model.Attachments.Add(dslMoney.ToDSL());
+        moneyValue = null;
+        errorMessage = null;
+    }
+
+    private void AddExp()
+    {
+        if (expValue == null || expValue <= 0)
+            return;
+
+        if (expValue > uint.MaxValue)
+        {
+            errorMessage = $"Experience value must be between 1 and {uint.MaxValue}.";
+            return;
+        }
+
+        if (totalAttachmentCount >= 54)
+        {
+            errorMessage = "Maximum 54 total attachments allowed (52 items + money + exp).";
+            return;
+        }
+
+        var dslExp = new Fb.Model.Dsl.Exp
+        {
+            Value = (uint)expValue.Value
+        };
+
+        model.Attachments.Add(dslExp.ToDSL());
+        expValue = null;
+        errorMessage = null;
+    }
+
+    private void RemoveAttachment(int index)
+    {
+        if (index >= 0 && index < model.Attachments.Count)
+        {
+            model.Attachments.RemoveAt(index);
+        }
+    }
+
+    private void ClearItemSelection()
+    {
+        selectedItem = null;
+        itemSearchText = string.Empty;
+        itemQuantity = 1;
+        showItemSuggestions = false;
+    }
+
+    private bool IsBundleItem(Fb.Model.Item item)
+    {
+        return item.Capacity > 1;
+    }
+
+    private bool HasBundleItemInAttachments(Fb.Model.Item item)
+    {
+        return model.Attachments.Any(a => 
+            a.Header == Fb.Model.EnumValue.Dsl.Item && 
+            a.Params != null && 
+            a.Params.Length > 0 && 
+            (uint)a.Params[0] == item.Id);
+    }
+
+    private async Task HandleSubmit()
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        if (!model.IsGlobal && string.IsNullOrWhiteSpace(model.UserName))
+        {
+            errorMessage = "User name is required for personal rewards.";
+            return;
+        }
+
+        if (itemCount > 52)
+        {
+            errorMessage = "Maximum 52 items allowed.";
+            return;
+        }
+
+        if (totalAttachmentCount > 54)
+        {
+            errorMessage = "Maximum 54 total attachments allowed (52 items + money + exp).";
+            return;
+        }
+
+        if (model.Attachments == null || model.Attachments.Count == 0)
+        {
+            errorMessage = "At least one attachment is required (item, money, or exp).";
+            return;
+        }
+
+        isProcessing = true;
+        try
+        {
+            var result = await StorageService.CreatePendingAsync(
+                model.Title.Trim(),
+                model.Message.Trim(),
+                model.IsGlobal ? null : model.UserName?.Trim(),
+                model.ExpiredDate,
+                model.Attachments);
+            successMessage = result.User.HasValue
+                ? $"Pending reward #{result.Id} created for user {result.User.Value}."
+                : $"Global pending reward #{result.Id} created successfully.";
+            ResetForm();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to create pending reward: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        model = new StoragePendingForm();
+        model.ExpiredDate = DateTime.Today.AddDays(30);
+        ClearItemSelection();
+        moneyValue = null;
+        expValue = null;
+    }
+
+    private class StoragePendingForm
+    {
+        [Required]
+        [StringLength(128, ErrorMessage = "Title must be 128 characters or less.")]
+        public string Title { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(256, ErrorMessage = "Message must be 256 characters or less.")]
+        public string Message { get; set; } = string.Empty;
+
+        public bool IsGlobal { get; set; } = true;
+
+        [StringLength(32, ErrorMessage = "User name must be 32 characters or less.")]
+        public string? UserName { get; set; }
+
+        public DateTime? ExpiredDate { get; set; }
+
+        public List<Fb.Model.Dsl> Attachments { get; set; } = new();
+    }
+}

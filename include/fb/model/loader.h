@@ -15,21 +15,15 @@ class loader : public fb::parallel_worker<std::reference_wrapper<fb::model::cont
 public:
     using input_type = std::reference_wrapper<fb::model::container>;
 
-private:
-    fb::model::model& _model;
-
 public:
-    loader(fb::model::model& data) :
-        _model(data)
-    { }
-
+    loader()  = default;
     ~loader() = default;
 
 protected:
     fb::generator<input_type> on_ready()
     {
         auto buffer = std::vector<std::reference_wrapper<fb::model::container>>();
-        this->_model.foreach ([&, this](auto& container) {
+        table::foreach ([&, this](auto& container) {
             buffer.push_back(container);
         });
 

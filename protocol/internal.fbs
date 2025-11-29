@@ -186,3 +186,28 @@ table SystemMailUser {
     read: bool;
     expire_date: string?;
 }
+
+table StorageBox {
+    user: uint;
+    id: uint;
+    title: string;
+    message: string;
+    attachments: string;
+    received: bool;
+    expired_date: string?;
+}
+
+table StoragePendingBox {
+    id: string;
+    user: uint?;
+    title: string;
+    message: string;
+    attachments: string;
+    expired_date: string?;
+}
+
+table StorageRewardMark {
+    user: uint;
+    pending_id: string;
+    expired_date: string?;
+}

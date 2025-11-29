@@ -1,6 +1,12 @@
 #include <fb/game/server.h>
 #include <fb/game/item.h>
 #include <fb/model/model.h>
+#include <unordered_map>
+#include <map>
+#include <vector>
+#include <algorithm>
+#include <shared_mutex>
+#include <mutex>
 
 ITEM_ATTRIBUTE fb::model::item::attr() const
 {
@@ -17,13 +23,73 @@ bool fb::model::item::attr(ITEM_ATTRIBUTE flag) const
 
 fb::model::item* fb::model::__item::name2item(const std::string& name) const
 {
+    static auto cache       = std::unordered_map<std::string, fb::model::item*>{};
+    static auto cache_mutex = std::shared_mutex{};
+
+    {
+        auto lock = std::shared_lock(cache_mutex);
+        auto it   = cache.find(name);
+        if (it != cache.end())
+            return it->second;
+    }
+
     for (auto& [k, v] : *this)
     {
         if (v.name == name)
+        {
+            auto lock   = std::lock_guard(cache_mutex);
+            cache[name] = &v;
             return &v;
+        }
     }
 
     return nullptr;
+}
+
+std::vector<fb::model::item*> fb::model::__item::name2item_prefix(const std::string& prefix) const
+{
+    static auto sorted_items = std::map<std::string, fb::model::item*>{};
+    static auto once_flag    = std::once_flag{};
+    static auto read_mutex   = std::shared_mutex{};
+
+    std::call_once(once_flag, [this]() {
+        for (auto& [k, v] : *this)
+        {
+            sorted_items[v.name] = &v;
+        }
+    });
+
+    auto result = std::vector<fb::model::item*>{};
+
+    {
+        auto lock = std::shared_lock(read_mutex);
+        if (prefix.empty())
+        {
+            for (auto& [name, item] : sorted_items)
+            {
+                result.push_back(item);
+            }
+            return result;
+        }
+
+        auto it = sorted_items.lower_bound(prefix);
+        while (it != sorted_items.end())
+        {
+            if (it->first.size() < prefix.size())
+            {
+                ++it;
+                continue;
+            }
+
+            if (it->first.substr(0, prefix.size()) != prefix)
+                break;
+
+            result.push_back(it->second);
+            ++it;
+        }
+    }
+
+    return result;
 }
 
 std::shared_ptr<fb::game::item> fb::model::item::make(fb::game::server& server, uint16_t count) const
