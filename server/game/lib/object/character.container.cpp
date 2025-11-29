@@ -136,7 +136,7 @@ async::task<void> character::container::foreach_async(const std::vector<std::str
     co_await this->foreach_async(std::move(fn), std::move(targets));
 }
 
-async::task<void> character::container::invoke(const std::string& name, character_function_t&& fn, character_function_t_miss miss)
+async::task<void> character::container::invoke(const std::string& name, character_function_t fn, character_function_t_miss miss)
 {
     auto ch = this->find(name);
     if (ch == nullptr)
@@ -153,7 +153,7 @@ async::task<void> character::container::invoke(const std::string& name, characte
         co_await before->switching();
 }
 
-async::task<void> character::container::invoke_async(const std::string& name, character_async_function_t&& fn, character_function_t_miss miss)
+async::task<void> character::container::invoke_async(const std::string& name, character_async_function_t fn, character_function_t_miss miss)
 {
     auto ch = this->find(name);
     if (ch == nullptr)

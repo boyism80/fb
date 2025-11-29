@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 #include <utility>
+#include <iterator>
 
 using namespace fb::game::handler::amqp;
 
@@ -29,16 +30,16 @@ async::task<void> storage_pending_fetch::handle(const internal_resp::GetStorageP
         if (dto.user.has_value())
             continue;
 
-        auto pending        = fb::game::storage_box::pending_box{};
-        pending.id          = dto.id;
-        pending.user        = dto.user;
-        pending.title       = dto.title;
-        pending.message     = dto.message;
-        
+        auto pending    = fb::game::storage_box::pending_box{};
+        pending.id      = dto.id;
+        pending.user    = dto.user;
+        pending.title   = dto.title;
+        pending.message = dto.message;
+
         if (!dto.attachments.empty())
         {
-            Json::Value json;
-            Json::Reader reader;
+            Json::Value        json;
+            Json::Reader       reader;
             std::istringstream stream(dto.attachments);
             if (reader.parse(stream, json) && json.isArray())
             {
@@ -49,7 +50,7 @@ async::task<void> storage_pending_fetch::handle(const internal_resp::GetStorageP
                 }
             }
         }
-        
+
         if (dto.expired_date.has_value())
             pending.expire_date = fb::model::datetime(dto.expired_date.value());
 
@@ -61,7 +62,7 @@ async::task<void> storage_pending_fetch::handle(const internal_resp::GetStorageP
 
     this->server.poll.storage_pending.write([&dao](auto& buffer) {
         buffer.reserve(buffer.size() + dao.size());
-        buffer.insert(buffer.end(), dao.begin(), dao.end());
+        buffer.insert(buffer.end(), std::make_move_iterator(dao.begin()), std::make_move_iterator(dao.end()));
     });
 
     co_return;

@@ -50,11 +50,22 @@ public:
             {
                 // Create new AMQP connection
                 this->_amqp = std::make_unique<fb::amqp::socket>();
-                this->_amqp->connect(fb::config<std::string>("amqp:ip"),
-                                     fb::config<uint16_t>("amqp:port"),
-                                     fb::config<std::string>("amqp:uid"),
-                                     fb::config<std::string>("amqp:pwd"),
-                                     "/");
+
+                // Attempt to connect
+                auto connected = this->_amqp->connect(fb::config<std::string>("amqp:ip"),
+                                                      fb::config<uint16_t>("amqp:port"),
+                                                      fb::config<std::string>("amqp:uid"),
+                                                      fb::config<std::string>("amqp:pwd"),
+                                                      "/");
+
+                if (connected == false)
+                {
+                    fb::logger::warn("Failed to connect to RabbitMQ at {}:{}", fb::config<std::string>("amqp:ip"), fb::config<uint16_t>("amqp:port"));
+                    // Clean up failed connection before retry
+                    this->_amqp.reset();
+                    std::this_thread::sleep_for(1s); // Wait before retry
+                    continue;
+                }
 
                 // Call initialization handler if set
                 if (this->on_initialize)
@@ -62,7 +73,9 @@ public:
             }
             catch (std::exception& e)
             {
-                fb::logger::fatal(e.what());
+                fb::logger::fatal("AMQP connection error: {}", e.what());
+                // Clean up failed connection before retry
+                this->_amqp.reset();
                 std::this_thread::sleep_for(1s); // Wait before retry
                 continue;
             }
