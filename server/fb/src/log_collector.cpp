@@ -48,17 +48,17 @@ async::task<void> log_collector::flush()
     {
         std::vector<Json::Value> logs_to_send;
 
-        auto result = co_await this->_log_buffer.async_write([this](auto& buffer) -> async::task<std::vector<Json::Value>> {
+        auto result = this->_log_buffer.write([this](auto& buffer) -> std::vector<Json::Value> {
             if (buffer.empty())
-                co_return std::vector<Json::Value>{};
+                return std::vector<Json::Value>{};
 
             // Take up to flush_batch_size logs
-            auto                     batch_size = std::min(this->_flush_batch_size, buffer.size());
-            std::vector<Json::Value> extracted;
+            auto batch_size = std::min(this->_flush_batch_size, buffer.size());
+            auto extracted  = std::vector<Json::Value>{};
             extracted.reserve(batch_size);
             std::move(buffer.begin(), buffer.begin() + batch_size, std::back_inserter(extracted));
             buffer.erase(buffer.begin(), buffer.begin() + batch_size);
-            co_return extracted;
+            return extracted;
         });
 
         if (result.empty())
@@ -70,9 +70,8 @@ async::task<void> log_collector::flush()
         {
             auto compressed_data = this->serialize_and_compress(logs_to_send);
 
-            // TODO: Send compressed data to log server via HTTP POST
-            // For now, just a placeholder
-            // co_await this->_http.post_raw(_log_server_url, "/log/ingest", compressed_data);
+            // Send compressed data to log server via HTTP POST
+            co_await this->_http.post(this->_log_server_url, "/log/ingest", compressed_data);
         }
         catch (const std::exception& e)
         {
@@ -111,6 +110,6 @@ fb::stream log_collector::serialize_and_compress(const std::vector<Json::Value>&
     // Convert UTF-8 string to stream
     fb::stream utf8_stream(reinterpret_cast<const uint8_t*>(json_string.data()), json_string.size());
 
-    // Compress using zlib
+    // Compress using deflate (raw deflate format, RFC 1951)
     return utf8_stream.compress();
 }

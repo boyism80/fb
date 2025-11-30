@@ -5,9 +5,8 @@ module.exports = {
     setup: function (namespace, conf, dependsOn) {
 
         const resources = []
-        const ports = []
-        for(const [section, sectionConf] of Object.entries(conf["admin-tool"])) {
-            const appLabels = { app: `admin-tool-${section}` }
+        for(const [section, sectionConf] of Object.entries(conf.log)) {
+            const appLabels = { app: `log-${section}` }
             const config = {
                 "Logging": {
                     "LogLevel": {
@@ -15,62 +14,62 @@ module.exports = {
                         "Microsoft.AspNetCore": "Warning"
                     }
                 },
+                "AllowedHosts": "*",
                 "ConnectionStrings": {
                     "MySql": {}
                 },
                 "Redis": {},
-                "RabbitMQ": {
-                    "Host": `rabbitmq-${sectionConf.rabbitmq}`,
-                    "Port": conf.rabbitmq[sectionConf.rabbitmq].port.amqp.cluster,
-                    "Uid": "fb",
-                    "Pwd": "admin"
-                },
-                "Security": {
-                    "ElevationSecret": ""
-                }
+                "Urls": `http://0.0.0.0:${sectionConf.port.cluster}`
             }
 
-            for(const [id, mysqlConf] of Object.entries(conf.mysql[sectionConf.mysql].data)) {
-                config.ConnectionStrings.MySql[id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+            // Use log MySQL instances
+            if (conf.mysql[section] && conf.mysql[section].log && Array.isArray(conf.mysql[section].log)) {
+                conf.mysql[section].log.forEach((logConf, index) => {
+                    config.ConnectionStrings.MySql[index.toString()] = `Server=mysql-${section}-log;Port=${logConf.port.cluster};User ID=fb; Password=admin; Database=fb_log_${index}`
+                })
             }
 
-            for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis].data)) {
-                config.Redis[id] = {
-                    Host: `redis-${sectionConf.redis}`,
-                    Port: conf.redis[sectionConf.redis].data[id].port.cluster
-                }
+            // Use log Redis instances
+            if (conf.redis[section] && conf.redis[section].log && Array.isArray(conf.redis[section].log)) {
+                conf.redis[section].log.forEach((logConf, index) => {
+                    config.Redis[index.toString()] = {
+                        Host: `redis-${section}-log`,
+                        Port: logConf.port.cluster
+                    }
+                })
             }
 
-            if (sectionConf.security && sectionConf.security.elevationSecret) {
-                config.Security.ElevationSecret = sectionConf.security.elevationSecret
-            }
-
-            const configMap = new k8s.core.v1.ConfigMap(`admin-tool-${section}`, {
-                metadata: { name: `admin-tool-${section}`, namespace: namespace.metadata.name },
+            const configMap = new k8s.core.v1.ConfigMap(`log-${section}`, {
+                metadata: { name: `log-${section}`, namespace: namespace.metadata.name },
                 data: {
                     "appsettings.k8s.json": JSON.stringify(config),
                 },
             })
 
-            const deployment = new k8s.apps.v1.Deployment(`admin-tool-${section}`, {
-                metadata: { name: `admin-tool-${section}`, namespace: namespace.metadata.name },
+            const deployment = new k8s.apps.v1.Deployment(`log-${section}`, {
+                metadata: { name: `log-${section}`, namespace: namespace.metadata.name },
                 spec: {
                     selector: { matchLabels: appLabels },
-                    replicas: sectionConf.replicas,
+                    replicas: 1,
                     template: {
                         metadata: { labels: appLabels },
                         spec: {
+                            nodeSelector: {
+                                cpu: "epyc"
+                            },
                             containers: [{
-                                nodeSelector: {
-                                    cpu: "epyc"
-                                },
-                                name: "admin-tool",
-                                image: "ghcr.io/boyism80/fb/admin-tool:latest",
+                                name: "log",
+                                image: "ghcr.io/boyism80/fb/log:latest",
                                 imagePullPolicy: "Always",
-                                ports: [{ containerPort: 80, name: `admin-tool` }],
+                                securityContext: {
+                                    capabilities: {
+                                        add: ["SYS_PTRACE"]
+                                    }
+                                },
+                                ports: [{ containerPort: 80, name: `log` }],
                                 startupProbe: {
                                     httpGet: {
-                                        path: "/",
+                                        path: "/health",
                                         port: 80,
                                     },
                                     initialDelaySeconds: 10,
@@ -108,14 +107,14 @@ module.exports = {
                 },
             }, { dependsOn: dependsOn })
 
-            const service = new k8s.core.v1.Service(`admin-tool-${section}`, {
-                metadata: { name: `admin-tool-${section}`, namespace: namespace.metadata.name },
+            const service = new k8s.core.v1.Service(`log-${section}`, {
+                metadata: { name: `log-${section}`, namespace: namespace.metadata.name },
                 spec: {
                     type: "NodePort",
                     ports: [{ 
-                        name: `admin-tool-${section}`,
+                        name: `log-${section}`,
                         port: sectionConf.port.cluster,
-                        targetPort: `admin-tool`,
+                        targetPort: `log`,
                         protocol: "TCP",
                         nodePort: sectionConf.port.node 
                     }],

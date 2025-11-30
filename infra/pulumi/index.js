@@ -10,6 +10,7 @@ const login = require('./login')
 const game = require('./game')
 const bot = require('./bot')
 const adminTool = require('./admin-tool')
+const log = require('./log')
 const fs = require('fs');
 const path = require('path')
 
@@ -33,10 +34,11 @@ const rabbitmqResources = rabbitmq.setup(namespace, conf)
 // Flatten all resources for dependsOn
 const allInfraResources = [].concat(mysqlResources || [], redisResources || [], rabbitmqResources || [])
 
-// Setup internal, write-back, admin-tool after mysql, redis, rabbitmq are ready
+// Setup internal, write-back, admin-tool, log after mysql, redis, rabbitmq are ready
 const internalResources = internal.setup(namespace, conf, allInfraResources)
 const writeBackResources = wb.setup(namespace, conf, [].concat(redisResources || []))
 const adminToolResources = adminTool.setup(namespace, conf, allInfraResources)
+const logResources = log.setup(namespace, conf, allInfraResources)
 
 // Setup login, gateway, game after internal is ready
 const gatewayResources = gateway.setup(namespace, conf, internalResources || [])
