@@ -14,6 +14,7 @@
 #include <fb/stream_reader.h>
 #include <fb/stream_writer.h>
 #include <fb/config.h>
+#include <fb/async_executor.h>
 
 #define REGISTER_RESPONSE(Request, Response) \
     template <> struct response_of<Request>  \
