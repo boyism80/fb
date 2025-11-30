@@ -10,7 +10,6 @@ using table = fb::model::table;
 server::server(boost::asio::io_context& io_context, uint16_t port) :
     fb::acceptor<character>(io_context, "GAME", port),
     maps(*this, fb::config<uint32_t>("id")),
-    _redis(config<std::string>("redis:ip").c_str(), config<uint16_t>("redis:port"), config<uint32_t>("redis:pool")),
     listener(*this),
     characters(*this),
     clans([](const std::shared_ptr<clan>& clan) -> uint32_t {
@@ -671,17 +670,18 @@ void server::rezen_force(const fb::game::map& map)
     });
 }
 
-void server::update_status()
+async::task<void> server::update_status()
 {
-    auto root    = Json::Value{};
-    root["Name"] = this->name();
-    root["IP"]   = fb::config<std::string>("ip");
-    root["Port"] = fb::config<uint16_t>("port");
-    auto writer  = Json::FastWriter{};
-    auto output  = writer.write(root);
-
-    this->_redis.command<void>(std::format("SET heart-beat:Game:{} {}", this->id(), output));
-    this->_redis.command<void>(std::format("EXPIRE heart-beat:Game:{} 5", this->id()));
+    try
+    {
+        co_await this->http.post("internal",
+                                 "/server/heartbeat",
+                                 request::Heartbeat{internal::Service::Game, this->id(), this->name(), fb::config<std::string>("ip"), fb::config<uint16_t>("port")});
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("Failed to send heartbeat: {}", e.what());
+    }
 }
 
 void server::update_time()

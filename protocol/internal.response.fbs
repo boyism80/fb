@@ -297,3 +297,7 @@ table Unban {
   name: string;
   error: uint;
 }
+
+table Heartbeat {
+  success: bool;
+}

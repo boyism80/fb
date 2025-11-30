@@ -168,6 +168,7 @@ public class Program
         builder.Services.AddSingleton<Http.Service.BulletinCacheService>();
         builder.Services.AddHostedService<Http.Service.BulletinBackgroundService>();
         builder.Services.AddHostedService<ShutdownListenerService>();
+        builder.Services.AddHostedService<Http.Service.SessionTtlRefreshService>();
         builder.Services.AddHealthChecks();
         builder.Services.AddScoped<StorageService>();
 

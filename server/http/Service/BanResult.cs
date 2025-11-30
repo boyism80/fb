@@ -48,5 +48,26 @@ namespace Http.Service
         /// </summary>
         public uint? UserId { get; set; }
     }
+
+    /// <summary>
+    /// Represents the result of a ban check operation.
+    /// </summary>
+    public class BanCheckResult
+    {
+        /// <summary>
+        /// Gets or sets a value indicating whether the user is currently banned.
+        /// </summary>
+        public bool IsBanned { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ban reason if the user is banned.
+        /// </summary>
+        public string Reason { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ban expiration date. Null for permanent bans.
+        /// </summary>
+        public DateTime? ExpireDate { get; set; }
+    }
 }
 

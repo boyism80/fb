@@ -21,11 +21,6 @@ module.exports = function () {
                             logic: 32,
                             io: 12
                         },
-                        redis: {
-                            ip: `redis-${sectionConf.redis}`,
-                            port: conf.redis[sectionConf.redis]['-1'].port.cluster,
-                            pool: 1
-                        },
                         save: 600,
                         internal: {
                             ip: `internal-${sectionConf.internal}`, 

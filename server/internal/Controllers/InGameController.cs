@@ -8,7 +8,6 @@ using Http.Redis.Key;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using StackExchange.Redis;
 using Option = Http.Model.Option;
 using Protocol = fb.protocol._internal;
 using Request = fb.protocol._internal.request;
@@ -21,30 +20,33 @@ namespace Internal.Controllers
     public class InGameController : ControllerBase
     {
         private readonly ILogger<InGameController> _logger;
-        private readonly RedisService _redisService;
         private readonly RabbitMqService _rabbitMqService;
         private readonly SessionService _sessionService;
         private readonly DbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly RedisDistributedLockService _distributedLock;
         private readonly StorageService _storageService;
+        private readonly BanService _banService;
+        private readonly ServerStateService _serverStateService;
         public InGameController(ILogger<InGameController> logger,
-            RedisService redisService,
             RabbitMqService rabbitMqService,
             SessionService sessionService,
             DbContext dbContext,
             IMapper mapper,
             RedisDistributedLockService distributedLock,
-            StorageService storageService)
+            StorageService storageService,
+            BanService banService,
+            ServerStateService serverStateService)
         {
             _logger = logger;
-            _redisService = redisService;
             _rabbitMqService = rabbitMqService;
             _sessionService = sessionService;
             _dbContext = dbContext;
             _mapper = mapper;
             _distributedLock = distributedLock;
             _storageService = storageService;
+            _banService = banService;
+            _serverStateService = serverStateService;
         }
         [HttpPost("login")]
         public async Task<Response.Login> Login(Request.Login request)
@@ -52,56 +54,29 @@ namespace Internal.Controllers
             try
             {
                 // Check if user is banned
-                var userId = await _dbContext.Character.GetCharacterId(request.Name);
-                if (userId.HasValue)
+                var banCheck = await _banService.IsBanned(request.Name);
+                if (banCheck != null && banCheck.IsBanned)
                 {
-                    var ban = await _dbContext.Ban.Get(userId.Value);
-                    if (ban != null)
+                    return new Response.Login
                     {
-                        // Check if ban is expired
-                        if (ban.ExpireDate.HasValue && ban.ExpireDate.Value <= DateTime.Now)
-                        {
-                            // Ban expired, remove it
-                            await _dbContext.Ban.Delete(userId.Value);
-                        }
-                        else
-                        {
-                            // User is still banned - return ban info in response
-                            return new Response.Login
-                            {
-                                Error = (uint)ErrorCode.Banned,
-                                BanReason = ban.Reason,
-                                BanExpireDate = ban.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss")
-                            };
-                        }
-                    }
+                        Error = (uint)ErrorCode.Banned,
+                        BanReason = banCheck.Reason,
+                        BanExpireDate = banCheck.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss")
+                    };
                 }
 
-                var redis = _redisService.Redis(-1);
-                var conf = await redis.Connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol._internal.Service.Game, Id = request.Host }.Key);
+                var conf = await _serverStateService.GetHostConfig(fb.protocol._internal.Service.Game, request.Host);
                 if (conf == null)
                     throw new LogicException(ErrorCode.ServerNotReady);
 
-                var redisResult = await redis.ScriptEvaluateAsync("login.lua", new
+                var success = await _sessionService.Login(request.Name, new Session
                 {
-                    key = new RedisKey(new SessionKey { }.Key),
-                    name = request.Name,
-                    session = JsonConvert.SerializeObject(new Session
-                    {
-                        Uid = request.Uid,
-                        Host = request.Host
-                    }),
+                    Uid = request.Uid,
+                    Host = request.Host
                 });
 
-                var success = (bool)redisResult[0];
-                if (success == false)
+                if (!success)
                 {
-                    var session = JsonConvert.DeserializeObject<Session>(redisResult[1].ToString());
-                    _rabbitMqService.Publish(new Response.KickOut
-                    {
-                        Uid = session.Uid,
-                        Name = request.Name
-                    }, "amq.direct", $"fb.game.{session.Host}");
                     throw new LogicException(ErrorCode.AlreadyLogin);
                 }
 
@@ -131,8 +106,7 @@ namespace Internal.Controllers
         [HttpPost("logout")]
         public async Task<Response.Logout> Logout(Request.Logout request)
         {
-            var conn = _redisService.Redis(-1).Connection;
-            await conn.HashDeleteAsync(new SessionKey { }.Key, request.Name);
+            await _sessionService.Delete(request.Name);
 
             return new Response.Logout
             {
@@ -147,44 +121,28 @@ namespace Internal.Controllers
                 // Check if user is banned (only if name is provided)
                 if (!string.IsNullOrEmpty(request.Name))
                 {
-                    var userId = await _dbContext.Character.GetCharacterId(request.Name);
-                    if (userId.HasValue)
+                    var banCheck = await _banService.IsBanned(request.Name);
+                    if (banCheck != null && banCheck.IsBanned)
                     {
-                        var ban = await _dbContext.Ban.Get(userId.Value);
-                        if (ban != null)
+                        return new Response.Transfer
                         {
-                            // Check if ban is expired
-                            if (ban.ExpireDate.HasValue && ban.ExpireDate.Value <= DateTime.Now)
-                            {
-                                // Ban expired, remove it
-                                await _dbContext.Ban.Delete(userId.Value);
-                            }
-                            else
-                            {
-                                // User is still banned - return ban info in response
-                                return new Response.Transfer
-                                {
-                                    Error = (uint)ErrorCode.Banned,
-                                    BanReason = ban.Reason,
-                                    BanExpireDate = ban.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss")
-                                };
-                            }
-                        }
+                            Error = (uint)ErrorCode.Banned,
+                            BanReason = banCheck.Reason,
+                            BanExpireDate = banCheck.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss")
+                        };
                     }
                 }
 
-                var conn = _redisService.Redis(-1).Connection;
-                var gameConf = await conn.StringGetAsync(new HeartBeatKey { Service = request.Service, Id = request.Id }.Key);
-                if (gameConf.IsNull)
+                var config = await _serverStateService.GetHostConfig(request.Service, request.Id);
+                if (config == null)
                     throw new LogicException(ErrorCode.ServerNotReady);
 
                 if (request.ForceShutdown && string.IsNullOrEmpty(request.Name) == false)
                 {
-                    // TODO: 루아스크립트
-                    var session = await conn.JsonHashGetAsync<Session>(new SessionKey().Key, new RedisValue(request.Name));
+                    var session = await _sessionService.Get(request.Name);
                     if (session != null)
                     {
-                        await conn.HashDeleteAsync(new SessionKey().Key, new RedisValue(request.Name));
+                        await _sessionService.Delete(request.Name);
                         _rabbitMqService.Publish(new Response.KickOut
                         {
                             Uid = session.Uid,
@@ -193,8 +151,6 @@ namespace Internal.Controllers
                         throw new LogicException(ErrorCode.AlreadyLogin);
                     }
                 }
-
-                var config = JsonConvert.DeserializeObject<HostConfig>(gameConf.ToString());
                 return new Response.Transfer
                 {
                     Ip = config.IP,

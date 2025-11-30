@@ -6,8 +6,7 @@
 using namespace fb::login;
 
 server::server(boost::asio::io_context& io_context, uint16_t port) :
-    fb::acceptor<session>(io_context, "LOGIN", port),
-    _redis(config<std::string>("redis:ip").c_str(), config<uint16_t>("redis:port"), config<uint32_t>("redis:pool"))
+    fb::acceptor<session>(io_context, "LOGIN", port)
 {
     for (auto& x : fb::config<>("forbidden"))
         this->_forbiddens.push_back(x.asString());
@@ -43,17 +42,18 @@ async::task<void> server::handle_start()
     this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.system");
 }
 
-void server::update_status()
+async::task<void> server::update_status()
 {
-    auto root    = Json::Value{};
-    root["Name"] = this->name();
-    root["IP"]   = fb::config<std::string>("ip");
-    root["Port"] = fb::config<uint16_t>("port");
-    auto writer  = Json::FastWriter{};
-    auto output  = writer.write(root);
-
-    this->_redis.command<void>(std::format("SET heart-beat:Login:{} {}", this->id(), output));
-    this->_redis.command<void>(std::format("EXPIRE heart-beat:Login:{} 5", this->id()));
+    try
+    {
+        co_await this->http.post("internal",
+                                 "/server/heartbeat",
+                                 Heartbeat{internal::Service::Login, this->id(), this->name(), fb::config<std::string>("ip"), fb::config<uint16_t>("port")});
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("Failed to send heartbeat: {}", e.what());
+    }
 }
 
 const fb::protocol::login::response::agreement& server::agreement() const

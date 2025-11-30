@@ -18,6 +18,10 @@ module.exports = function () {
                 },
                 log: ["info", "warn", "fatal"],
                 entrypoints: [],
+                internal: {
+                    ip: `internal-${sectionConf.internal}`, 
+                    port: conf.internal[sectionConf.internal].port.cluster
+                },
                 amqp: {
                     ip: "rabbitmq",
                     port: conf.rabbitmq['section-1'].port.amqp.cluster,

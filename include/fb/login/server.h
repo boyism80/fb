@@ -28,6 +28,7 @@ namespace internal      = fb::protocol::internal;
 namespace internal_resp = fb::protocol::internal::response;
 
 REGISTER_RESPONSE(fb::protocol::internal::request::ReserveName, fb::protocol::internal::response::ReserveName)
+REGISTER_RESPONSE(fb::protocol::internal::request::Heartbeat, fb::protocol::internal::response::Heartbeat)
 REGISTER_RESPONSE(fb::protocol::internal::request::InitCharacter, fb::protocol::internal::response::InitCharacter)
 REGISTER_RESPONSE(fb::protocol::internal::request::MakeCharacter, fb::protocol::internal::response::MakeCharacter)
 REGISTER_RESPONSE(fb::protocol::internal::request::Authenticate, fb::protocol::internal::response::Authenticate)
@@ -92,10 +93,8 @@ private:
     fb::protocol::login::response::agreement _agreement = CP949(fb::config<std::string>("agreement"), PLATFORM::BOTH);
     std::vector<std::string>                 _forbiddens;
     std::vector<boost::asio::deadline_timer> _timers;
-    fb::redis                                _redis;
 
     bool is_forbidden_impl(const std::string& str) const;
-
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);
@@ -120,7 +119,7 @@ protected:
     };
 
 public:
-    void update_status();
+    async::task<void> update_status();
 };
 
 } // namespace fb::login

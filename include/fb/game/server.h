@@ -29,6 +29,7 @@ namespace internal      = fb::protocol::internal;
 namespace internal_resp = fb::protocol::internal::response;
 
 REGISTER_RESPONSE(fb::protocol::internal::request::Shutdown, fb::protocol::internal::response::Shutdown)
+REGISTER_RESPONSE(fb::protocol::internal::request::Heartbeat, fb::protocol::internal::response::Heartbeat)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteArticle, fb::protocol::internal::response::WriteArticle)
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteArticle, fb::protocol::internal::response::DeleteArticle)
 REGISTER_RESPONSE(fb::protocol::internal::request::CreateClan, fb::protocol::internal::response::CreateClan)
@@ -84,7 +85,6 @@ public:
 private:
     fb::model::datetime          _time;
     npc_interaction_handler_list _npc_interaction_handlers;
-    fb::redis                    _redis;
 
 public:
     fb::game::polling       poll = polling(*this);
@@ -209,7 +209,7 @@ protected:
     Service service() const override final;
 
 public:
-    void                            update_status();
+    async::task<void>               update_status();
     void                            update_time();
     async::task<bool>               npc_interaction(character& ch, const std::string& message, const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
     [[nodiscard]] async::task<void> leave_clan_member(const clan& clan, const std::string& name);

@@ -19,11 +19,6 @@
         "uid": "guest",
         "pwd": "guest"
     },
-    "redis": {
-        "ip": "127.0.0.1",
-        "port": 6379,
-        "pool": 2
-    },
     "internal": {
         "ip": "127.0.0.1",
         "port": 3000

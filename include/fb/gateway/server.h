@@ -4,9 +4,15 @@
 #include <fb/acceptor.h>
 #include <fb/gateway/session.h>
 #include <fb/gateway/util.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 
 using namespace fb::protocol::internal;
+using namespace fb::protocol::internal::request;
+
+namespace internal      = fb::protocol::internal;
 namespace internal_resp = fb::protocol::internal::response;
+
+REGISTER_RESPONSE(fb::protocol::internal::request::Heartbeat, fb::protocol::internal::response::Heartbeat)
 
 namespace fb::gateway {
 
@@ -49,6 +55,7 @@ protected:
     }
 
 public:
+    async::task<void> update_status();
 };
 
 } // namespace fb::gateway

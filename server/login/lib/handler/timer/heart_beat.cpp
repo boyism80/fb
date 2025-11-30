@@ -8,7 +8,7 @@ heart_beat::heart_beat(fb::login::server& server) :
 
 async::task<void> heart_beat::handle()
 {
-    this->server.update_status();
+    co_await this->server.update_status();
     co_return;
 }
 
