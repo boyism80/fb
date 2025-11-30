@@ -234,3 +234,11 @@ table Ban {
 table Unban {
   name: string;
 }
+
+table Heartbeat {
+  service: fb.protocol.internal.Service;
+  id: ubyte;
+  name: string;
+  ip: string;
+  port: ushort;
+}

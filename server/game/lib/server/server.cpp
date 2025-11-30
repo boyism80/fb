@@ -1,6 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/game/handler.h>
 #include <fb/game/builtin/server.h>
+#include <fb/log_collector.h>
 #include <json/json.h>
 
 using namespace fb::game;
@@ -10,7 +11,6 @@ using table = fb::model::table;
 server::server(boost::asio::io_context& io_context, uint16_t port) :
     fb::acceptor<character>(io_context, "GAME", port),
     maps(*this, fb::config<uint32_t>("id")),
-    _redis(config<std::string>("redis:ip").c_str(), config<uint16_t>("redis:port"), config<uint32_t>("redis:pool")),
     listener(*this),
     characters(*this),
     clans([](const std::shared_ptr<clan>& clan) -> uint32_t {
@@ -103,6 +103,19 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
             fb::model::lua::map_enum(*root);
             co_return;
         });
+    }
+
+    // Initialize log collector
+    try
+    {
+        auto log_server_url = std::format("http://{}:{}", fb::config<std::string>("log:ip"), fb::config<uint16_t>("log:port"));
+        auto server_id      = std::to_string(fb::config<uint32_t>("id"));
+        auto server_name    = fb::config<std::string>("name");
+        this->log           = std::make_unique<fb::log_collector>(this->http, server_id, server_name, log_server_url, 1000, 100);
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("Failed to initialize log collector: {}", e.what());
     }
 }
 
@@ -201,6 +214,7 @@ async::task<void> server::handle_start()
     this->bind_timer<fb::game::handler::timer::announce>(std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
     this->bind_timer<fb::game::handler::timer::system_mail_timer>(30s);
     this->bind_timer<fb::game::handler::timer::storage_pending_timer>(15s);
+    this->bind_timer<fb::game::handler::timer::log_flush>(5s);
 
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
     this->bind_thread_timer<fb::game::handler::timer::mob_respawn_timer>(1s);
@@ -671,17 +685,18 @@ void server::rezen_force(const fb::game::map& map)
     });
 }
 
-void server::update_status()
+async::task<void> server::update_status()
 {
-    auto root    = Json::Value{};
-    root["Name"] = this->name();
-    root["IP"]   = fb::config<std::string>("ip");
-    root["Port"] = fb::config<uint16_t>("port");
-    auto writer  = Json::FastWriter{};
-    auto output  = writer.write(root);
-
-    this->_redis.command<void>(std::format("SET heart-beat:Game:{} {}", this->id(), output));
-    this->_redis.command<void>(std::format("EXPIRE heart-beat:Game:{} 5", this->id()));
+    try
+    {
+        co_await this->http.post("internal",
+                                 "/server/heartbeat",
+                                 request::Heartbeat{internal::Service::Game, this->id(), this->name(), fb::config<std::string>("ip"), fb::config<uint16_t>("port")});
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("Failed to send heartbeat: {}", e.what());
+    }
 }
 
 void server::update_time()

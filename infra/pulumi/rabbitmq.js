@@ -9,27 +9,38 @@ module.exports = {
 set -e
 
 # Get pod name and namespace from environment variables
-MY_POD_NAME="$MY_POD_NAME"
-MY_POD_NAMESPACE="$MY_POD_NAMESPACE"
+RABBITMQ_POD_NAME="$RABBITMQ_POD_NAME"
+RABBITMQ_POD_NAMESPACE="$RABBITMQ_POD_NAMESPACE"
 FIRST_POD_NAME="$1"
 K8S_SERVICE_NAME="$K8S_SERVICE_NAME"
 
 # Construct current pod's node name
 # Use K8S_SERVICE_NAME if available, otherwise construct from pod name
 if [ -n "$K8S_SERVICE_NAME" ]; then
-    POD_NAME="rabbit@\${MY_POD_NAME}.\${K8S_SERVICE_NAME}.\${MY_POD_NAMESPACE}.svc.cluster.local"
+    POD_NAME="rabbit@\${RABBITMQ_POD_NAME}.\${K8S_SERVICE_NAME}.\${RABBITMQ_POD_NAMESPACE}.svc.cluster.local"
 else
     # Fallback: extract section from pod name (e.g., rabbitmq-section-1-0 -> rabbitmq-section-1-headless)
-    SECTION_NAME=$(echo "$MY_POD_NAME" | sed 's/-[0-9]*$//')
-    POD_NAME="rabbit@\${MY_POD_NAME}.\${SECTION_NAME}-headless.\${MY_POD_NAMESPACE}.svc.cluster.local"
+    SECTION_NAME=$(echo "$RABBITMQ_POD_NAME" | sed 's/-[0-9]*$//')
+    POD_NAME="rabbit@\${RABBITMQ_POD_NAME}.\${SECTION_NAME}-headless.\${RABBITMQ_POD_NAMESPACE}.svc.cluster.local"
 fi
 
 # Set RABBITMQ_NODENAME environment variable
 export RABBITMQ_NODENAME="$POD_NAME"
 echo "RABBITMQ_NODENAME set to: $RABBITMQ_NODENAME"
 
+# Always clean Mnesia data directory to start fresh
+MNESIA_DIR="/var/lib/rabbitmq/mnesia"
+if [ -d "$MNESIA_DIR" ]; then
+    echo "Cleaning Mnesia data directory for fresh start..."
+    rm -rf "$MNESIA_DIR"/*
+    rm -rf "$MNESIA_DIR"/.* 2>/dev/null || true
+    echo "Mnesia data cleaned. RabbitMQ will start with fresh data."
+else
+    echo "Mnesia directory does not exist. Will be created on first start."
+fi
+
 # Check if this is the first pod (ordinal 0)
-if [[ "$MY_POD_NAME" == *"-0" ]]; then
+if [[ "$RABBITMQ_POD_NAME" == *"-0" ]]; then
     IS_FIRST_POD="true"
 else
     IS_FIRST_POD="false"
@@ -215,7 +226,7 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
                                     { name: "K8S_SERVICE_NAME", value: headlessServiceName },
                                     { name: "RABBITMQ_USE_LONGNAME", value: "true" },
                                     { 
-                                        name: "MY_POD_NAME",
+                                        name: "RABBITMQ_POD_NAME",
                                         valueFrom: {
                                             fieldRef: {
                                                 fieldPath: "metadata.name"
@@ -223,7 +234,7 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
                                         }
                                     },
                                     { 
-                                        name: "MY_POD_NAMESPACE",
+                                        name: "RABBITMQ_POD_NAMESPACE",
                                         valueFrom: {
                                             fieldRef: {
                                                 fieldPath: "metadata.namespace"
@@ -256,7 +267,8 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
                                 volumeMounts: [
                                     { 
                                         name: "data-volume", 
-                                        mountPath: "/var/lib/rabbitmq" 
+                                        mountPath: "/var/lib/rabbitmq",
+                                        subPathExpr: "$(RABBITMQ_POD_NAME)"
                                     },
                                     {
                                         name: "entrypoint-script",
@@ -276,7 +288,7 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
                             {
                                 name: "data-volume",
                                 hostPath: {
-                                    path: `/mnt/fb/rabbitmq/${section}/${"$(MY_POD_NAME)"}`,
+                                    path: `/mnt/fb/rabbitmq/${section}`,
                                     type: "DirectoryOrCreate"
                                 }
                             }]

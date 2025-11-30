@@ -608,7 +608,7 @@
                 days = parsedDays;
             }
 
-            var result = await BanService.BanUser(selectedUser.Name, banModel.Reason, days);
+            var result = await BanService.Ban(selectedUser.Name, banModel.Reason, days);
             await DbContext.SaveChangesAsync();
 
             // Publish notification via RabbitMQ
@@ -646,7 +646,7 @@
 
         try
         {
-            var result = await BanService.UnbanUser(selectedUser.Name);
+            var result = await BanService.Unban(selectedUser.Name);
             await DbContext.SaveChangesAsync();
 
             // Publish notification via RabbitMQ

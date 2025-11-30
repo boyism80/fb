@@ -26,14 +26,14 @@ module.exports = {
                 }
             }
 
-            for(const [id, mysqlConfig] of Object.entries(conf.mysql[sectionConf.mysql])) {
+            for(const [id, mysqlConfig] of Object.entries(conf.mysql[sectionConf.mysql].data)) {
                 config.ConnectionStrings.MySql[id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
             }
 
-            for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
+            for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis].data)) {
                 config.Redis[id] = {
                     Host: `redis-${sectionConf.redis}`,
-                    Port: conf.redis[sectionConf.redis][id].port.cluster
+                    Port: conf.redis[sectionConf.redis].data[id].port.cluster
                 }
             }
 

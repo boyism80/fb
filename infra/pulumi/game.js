@@ -21,11 +21,6 @@ module.exports = function () {
                             logic: 32,
                             io: 12
                         },
-                        redis: {
-                            ip: `redis-${sectionConf.redis}`,
-                            port: conf.redis[sectionConf.redis]['-1'].port.cluster,
-                            pool: 1
-                        },
                         save: 600,
                         internal: {
                             ip: `internal-${sectionConf.internal}`, 
@@ -38,7 +33,11 @@ module.exports = function () {
                             uid: "fb",
                             pwd: "admin"
                         },
-                        log: ["info", "warn", "fatal"]
+                        log: {
+                            ip: `log-${sectionConf.log}`,
+                            port: conf.log[sectionConf.log].port.cluster,
+                            level: ["info", "warn", "fatal"]
+                        }
                     }
 
                     const configMap = new k8s.core.v1.ConfigMap(`game-${section}-${i}`, {

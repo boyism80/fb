@@ -1,8 +1,12 @@
 #include <fb/gateway/server.h>
 #include <fb/gateway/handler.h>
+#include <fb/log_collector.h>
+#include <format>
 
 using namespace fb::gateway;
 using namespace fb::protocol::gateway;
+using namespace std::chrono_literals;
+using namespace fb::protocol::internal::request;
 
 server::server(boost::asio::io_context& io_context, uint16_t port) :
     fb::acceptor<session>(io_context, "GATEWAY", port)
@@ -10,6 +14,19 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     // Register event handler
     this->handler.protocol.bind<fb::gateway::handler::protocol::check_version>();
     this->handler.protocol.bind<fb::gateway::handler::protocol::entry_list>();
+
+    // Initialize log collector
+    try
+    {
+        auto log_server_url = std::format("http://{}:{}", fb::config<std::string>("log:ip"), fb::config<uint16_t>("log:port"));
+        auto server_id      = std::to_string(this->id());
+        auto server_name    = this->name();
+        this->log           = std::make_unique<fb::log_collector>(this->http, server_id, server_name, log_server_url, 1000, 100);
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("Failed to initialize log collector: {}", e.what());
+    }
 }
 
 server::~server()
@@ -36,10 +53,7 @@ async::task<void> server::load_entries()
     auto& entrypoints = fb::config<>("entrypoints");
     for (auto i = entrypoints.begin(); i != entrypoints.end(); i++)
     {
-        this->_entrypoints.push_back(endpoint(cp949((*i)["name"].asCString()),
-                                              cp949((*i)["desc"].asCString()),
-                                              this->ipv4((*i)["ip"].asString()),
-                                              (*i)["port"].asInt()));
+        this->_entrypoints.push_back(endpoint(cp949((*i)["name"].asCString()), cp949((*i)["desc"].asCString()), this->ipv4((*i)["ip"].asString()), (*i)["port"].asInt()));
     }
 
     auto writer = fb::stream_writer<big_endian>(this->_endpoint_bytes);
@@ -78,6 +92,8 @@ async::task<void> server::handle_start()
 {
     static constexpr const char* message = "CONNECTED SERVER\n";
 
+    this->bind_timer<fb::gateway::handler::timer::heart_beat>(1s);
+    this->bind_timer<fb::gateway::handler::timer::log_flush>(5s);
     this->handler.amqp.bind<fb::gateway::handler::amqp::shutdown>("fb.system");
 
     auto writer = fb::stream_writer<big_endian>(this->_connection_cache);
@@ -107,4 +123,18 @@ async::task<bool> server::handle_disconnected(fb::socket<session>& socket)
 void server::handle_init_amqp(fb::amqp::socket& amqp)
 {
     this->handler.amqp.declare_queue("amq.direct", "fb.system");
+}
+
+async::task<void> server::update_status()
+{
+    try
+    {
+        co_await this->http.post("internal",
+                                 "/server/heartbeat",
+                                 Heartbeat{internal::Service::Gateway, this->id(), this->name(), fb::config<std::string>("ip"), fb::config<uint16_t>("port")});
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("Failed to send heartbeat: {}", e.what());
+    }
 }

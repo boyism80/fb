@@ -1,100 +1,144 @@
 {
     "mysql": {
         "section-1": {
-            "-1": {
-                "port": {
-                    "cluster": 3306,
-                    "node": 30100
+            "data": {
+                "-1": {
+                    "port": {
+                        "cluster": 3306,
+                        "node": 30100
+                    }
+                },
+                "0": {
+                    "port": {
+                        "cluster": 3307,
+                        "node": 30101
+                    }
+                },
+                "1": {
+                    "port": {
+                        "cluster": 3308,
+                        "node": 30102
+                    }
+                },
+                "2": {
+                    "port": {
+                        "cluster": 3309,
+                        "node": 30103
+                    }
                 }
             },
-            "0": {
-                "port": {
-                    "cluster": 3307,
-                    "node": 30101
+            "log": [
+                {
+                    "port": {
+                        "cluster": 3310,
+                        "node": 30104
+                    }
+                },
+                {
+                    "port": {
+                        "cluster": 3311,
+                        "node": 30105
+                    }
+                },
+                {
+                    "port": {
+                        "cluster": 3312,
+                        "node": 30106
+                    }
                 }
-            },
-            "1": {
-                "port": {
-                    "cluster": 3308,
-                    "node": 30102
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 3309,
-                    "node": 30103
-                }
-            }
+            ]
         }
     },
     "redis": {
         "section-1": {
-            "-1": {
-                "port": {
-                    "cluster": 6379,
-                    "node": 30110
+            "data": {
+                "-1": {
+                    "port": {
+                        "cluster": 6379,
+                        "node": 30110
+                    }
+                },
+                "0": {
+                    "port": {
+                        "cluster": 6380,
+                        "node": 30111
+                    }
+                },
+                "1": {
+                    "port": {
+                        "cluster": 6381,
+                        "node": 30112
+                    }
+                },
+                "2": {
+                    "port": {
+                        "cluster": 6382,
+                        "node": 30113
+                    }
+                },
+                "3": {
+                    "port": {
+                        "cluster": 6383,
+                        "node": 30114
+                    }
+                },
+                "4": {
+                    "port": {
+                        "cluster": 6384,
+                        "node": 30115
+                    }
+                },
+                "5": {
+                    "port": {
+                        "cluster": 6385,
+                        "node": 30116
+                    }
+                },
+                "6": {
+                    "port": {
+                        "cluster": 6386,
+                        "node": 30117
+                    }
+                },
+                "7": {
+                    "port": {
+                        "cluster": 6387,
+                        "node": 30118
+                    }
+                },
+                "8": {
+                    "port": {
+                        "cluster": 6388,
+                        "node": 30119
+                    }
+                },
+                "9": {
+                    "port": {
+                        "cluster": 6389,
+                        "node": 30120
+                    }
                 }
             },
-            "0": {
-                "port": {
-                    "cluster": 6380,
-                    "node": 30111
+            "log": [
+                {
+                    "port": {
+                        "cluster": 6390,
+                        "node": 30121
+                    }
+                },
+                {
+                    "port": {
+                        "cluster": 6391,
+                        "node": 30122
+                    }
+                },
+                {
+                    "port": {
+                        "cluster": 6392,
+                        "node": 30123
+                    }
                 }
-            },
-            "1": {
-                "port": {
-                    "cluster": 6381,
-                    "node": 30112
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 6382,
-                    "node": 30113
-                }
-            },
-            "3": {
-                "port": {
-                    "cluster": 6383,
-                    "node": 30114
-                }
-            },
-            "4": {
-                "port": {
-                    "cluster": 6384,
-                    "node": 30115
-                }
-            },
-            "5": {
-                "port": {
-                    "cluster": 6385,
-                    "node": 30116
-                }
-            },
-            "6": {
-                "port": {
-                    "cluster": 6386,
-                    "node": 30117
-                }
-            },
-            "7": {
-                "port": {
-                    "cluster": 6387,
-                    "node": 30118
-                }
-            },
-            "8": {
-                "port": {
-                    "cluster": 6388,
-                    "node": 30119
-                }
-            },
-            "9": {
-                "port": {
-                    "cluster": 6389,
-                    "node": 30120
-                }
-            }
+            ]
         }
     },
     "rabbitmq": {
@@ -112,9 +156,19 @@
             "replicas": 4
         }
     },
+    "log": {
+        "section-1": {
+            "port": {
+                "cluster": 80,
+                "node": 30400
+            }
+        }
+    },
     "gateway": {
         "port": 30000,
-        "replicas": 3
+        "replicas": 3,
+        "internal": "section-1",
+        "log": "section-1"
     },
     "login": {
         "section-1": {
@@ -124,6 +178,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30010
         },
         "section-2": {
@@ -133,6 +188,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30011
         },
         "section-3": {
@@ -142,6 +198,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30012
         },
         "section-4": {
@@ -151,6 +208,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30013
         },
         "section-5": {
@@ -160,6 +218,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30014
         },
         "section-6": {
@@ -169,6 +228,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30015
         },
         "section-7": {
@@ -178,6 +238,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30016
         },
         "section-8": {
@@ -187,6 +248,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30017
         },
         "section-9": {
@@ -196,6 +258,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30018
         },
         "section-10": {
@@ -205,6 +268,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30019
         },
         "section-11": {
@@ -214,6 +278,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30020
         }
     },
@@ -224,6 +289,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "containers": {
                 "0": {
                     "port": 30030

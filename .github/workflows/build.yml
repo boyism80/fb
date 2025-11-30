@@ -385,12 +385,60 @@ jobs:
           build-args: |
             SERVICE=admin-tool
 
+  log:
+    runs-on: [self-hosted, linux, build]
+    permissions:
+      contents: read
+      packages: write
+    needs: build-linux
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+         version: latest
+
+      - name: Login to ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/log
+          flavor: |
+            latest=true
+
+      - name: Build log server
+        uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+          DOCKER_BUILD_SUMMARY: false
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=log
+          cache-to: type=gha,scope=log,mode=max
+          file: server/http/Dockerfile
+          build-args: |
+            SERVICE=log
+
   deploy:
     runs-on: [self-hosted, linux, build]
     permissions:
       contents: read
       packages: write
-    needs: [internal, write-back, bot, gateway, login, game, admin-tool]
+    needs: [internal, write-back, bot, gateway, login, game, admin-tool, log]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -468,6 +516,9 @@ jobs:
       - name: Build admin-tool
         run: dotnet publish server/admin-tool/admin-tool.csproj -c Release -o build/admin-tool
 
+      - name: Build log
+        run: dotnet publish server/log/log.csproj -c Release -o build/log
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -479,6 +530,7 @@ jobs:
             build/internal
             build/write-back
             build/admin-tool
+            build/log
           retention-days: 7
 
       - name: Zip the downloaded artifact

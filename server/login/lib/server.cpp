@@ -1,13 +1,13 @@
 #include <boost/asio/high_resolution_timer.hpp>
 #include <fb/login/server.h>
 #include <fb/login/handler.h>
+#include <fb/log_collector.h>
 #include <format>
 
 using namespace fb::login;
 
 server::server(boost::asio::io_context& io_context, uint16_t port) :
-    fb::acceptor<session>(io_context, "LOGIN", port),
-    _redis(config<std::string>("redis:ip").c_str(), config<uint16_t>("redis:port"), config<uint32_t>("redis:pool"))
+    fb::acceptor<session>(io_context, "LOGIN", port)
 {
     for (auto& x : fb::config<>("forbidden"))
         this->_forbiddens.push_back(x.asString());
@@ -18,6 +18,19 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     this->handler.protocol.bind<fb::login::handler::protocol::create_account>();
     this->handler.protocol.bind<fb::login::handler::protocol::complete>();
     this->handler.protocol.bind<fb::login::handler::protocol::change_password>();
+
+    // Initialize log collector
+    try
+    {
+        auto log_server_url = std::format("http://{}:{}", fb::config<std::string>("log:ip"), fb::config<uint16_t>("log:port"));
+        auto server_id      = std::to_string(this->id());
+        auto server_name    = this->name();
+        this->log           = std::make_unique<fb::log_collector>(this->http, server_id, server_name, log_server_url, 1000, 100);
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("Failed to initialize log collector: {}", e.what());
+    }
 }
 
 server::~server()
@@ -40,20 +53,22 @@ async::task<void> server::handle_start()
     co_await fb::acceptor<session>::handle_start();
 
     this->bind_timer<fb::login::handler::timer::heart_beat>(1s);
+    this->bind_timer<fb::login::handler::timer::log_flush>(5s);
     this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.system");
 }
 
-void server::update_status()
+async::task<void> server::update_status()
 {
-    auto root    = Json::Value{};
-    root["Name"] = this->name();
-    root["IP"]   = fb::config<std::string>("ip");
-    root["Port"] = fb::config<uint16_t>("port");
-    auto writer  = Json::FastWriter{};
-    auto output  = writer.write(root);
-
-    this->_redis.command<void>(std::format("SET heart-beat:Login:{} {}", this->id(), output));
-    this->_redis.command<void>(std::format("EXPIRE heart-beat:Login:{} 5", this->id()));
+    try
+    {
+        co_await this->http.post("internal",
+                                 "/server/heartbeat",
+                                 Heartbeat{internal::Service::Login, this->id(), this->name(), fb::config<std::string>("ip"), fb::config<uint16_t>("port")});
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("Failed to send heartbeat: {}", e.what());
+    }
 }
 
 const fb::protocol::login::response::agreement& server::agreement() const

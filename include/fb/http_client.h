@@ -14,6 +14,7 @@
 #include <fb/stream_reader.h>
 #include <fb/stream_writer.h>
 #include <fb/config.h>
+#include <fb/async_executor.h>
 
 #define REGISTER_RESPONSE(Request, Response) \
     template <> struct response_of<Request>  \
@@ -245,6 +246,21 @@ public:
         co_return result;
     }
 
+    /// <summary>
+    /// Sends a POST request with binary data (fb::stream) to the specified URL.
+    /// </summary>
+    /// <param name="url">The full URL (e.g., "http://host:port").</param>
+    /// <param name="path">The path component of the URL.</param>
+    /// <param name="data">The binary data to send as request body.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    async::task<void> post(const std::string& url, const std::string& path, const fb::stream& data)
+    {
+        auto thread = this->_executor.threads.current();
+        co_await this->boost_post_binary_async(url, path, data);
+        if (thread != nullptr)
+            co_await thread->switching();
+    }
+
 private:
     template <typename Request> [[nodiscard]] async::task<typename response_of<Request>::type> boost_post_async(std::string const& host,
                                                                                                                 std::string const& path,
@@ -286,6 +302,33 @@ private:
                                       promise->set_exception(std::current_exception());
                                   }
                               });
+
+        return promise->task();
+    }
+
+private:
+    /// <summary>
+    /// Internal method to send POST request with binary data.
+    /// </summary>
+    [[nodiscard]] async::task<void> boost_post_binary_async(const std::string& url, const std::string& path, const fb::stream& data)
+    {
+        auto promise = std::make_shared<async::task_completion_source<void>>();
+        auto headers = std::map<std::string, std::string>{
+            {"Content-Type",     "application/octet-stream"},
+            {"Content-Encoding", "deflate"                 }
+        };
+
+        auto body = std::vector<uint8_t>(data.begin(), data.end());
+
+        auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
+        boost::asio::co_spawn(io_context, this->boost_post_async(url, path, headers, std::chrono::seconds{30}, body), [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+            if (ep)
+            {
+                promise->set_exception(ep);
+                return;
+            }
+            promise->set_value();
+        });
 
         return promise->task();
     }

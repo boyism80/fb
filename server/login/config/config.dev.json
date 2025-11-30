@@ -19,21 +19,20 @@
         "uid": "guest",
         "pwd": "guest"
     },
-    "redis": {
-        "ip": "127.0.0.1",
-        "port": 6379,
-        "pool": 2
-    },
     "internal": {
         "ip": "127.0.0.1",
         "port": 3000
     },
-    "log": [
-        "debug",
-        "info",
-        "warn",
-        "fatal"
-    ],
+    "log": {
+        "ip": "127.0.0.1",
+        "port": 3005,
+        "level": [
+            "debug",
+            "info",
+            "warn",
+            "fatal"
+        ]
+    },
     "init": {
         "map": 1,
         "position": [

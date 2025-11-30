@@ -18,8 +18,10 @@
 #include <fb/game/system_mail.h>
 #include <fb/game/storage.h>
 #include <fb/game/polling/polling.h>
+#include <fb/log_collector.h>
 #include <fb/locker.h>
 #include <vector>
+#include <memory>
 
 using namespace fb::protocol::internal;
 using namespace fb::protocol::internal::request;
@@ -29,6 +31,7 @@ namespace internal      = fb::protocol::internal;
 namespace internal_resp = fb::protocol::internal::response;
 
 REGISTER_RESPONSE(fb::protocol::internal::request::Shutdown, fb::protocol::internal::response::Shutdown)
+REGISTER_RESPONSE(fb::protocol::internal::request::Heartbeat, fb::protocol::internal::response::Heartbeat)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteArticle, fb::protocol::internal::response::WriteArticle)
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteArticle, fb::protocol::internal::response::DeleteArticle)
 REGISTER_RESPONSE(fb::protocol::internal::request::CreateClan, fb::protocol::internal::response::CreateClan)
@@ -84,11 +87,11 @@ public:
 private:
     fb::model::datetime          _time;
     npc_interaction_handler_list _npc_interaction_handlers;
-    fb::redis                    _redis;
 
 public:
-    fb::game::polling       poll = polling(*this);
-    fb::game::listener_impl listener;
+    std::unique_ptr<fb::log_collector> log;
+    fb::game::polling                  poll = polling(*this);
+    fb::game::listener_impl            listener;
 
     fb::game::map_container                                 maps;
     fb::game::character::container                          characters;
@@ -99,6 +102,7 @@ public:
 public:
     server(boost::asio::io_context& io_context, uint16_t port);
     server(const server&) = delete;
+    server(server&&)      = delete;
     ~server();
 
 public:
@@ -209,7 +213,7 @@ protected:
     Service service() const override final;
 
 public:
-    void                            update_status();
+    async::task<void>               update_status();
     void                            update_time();
     async::task<bool>               npc_interaction(character& ch, const std::string& message, const std::vector<std::shared_ptr<fb::game::npc>>& npcs);
     [[nodiscard]] async::task<void> leave_clan_member(const clan& clan, const std::string& name);

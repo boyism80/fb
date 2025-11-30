@@ -27,7 +27,7 @@ namespace Internal.Controllers
         {
             try
             {
-                var result = await _banService.BanUser(request.Name, request.Reason, request.Days);
+                var result = await _banService.Ban(request.Name, request.Reason, request.Days);
                 await _dbContext.SaveChangesAsync();
 
                 var response = new Response.Ban
@@ -68,7 +68,7 @@ namespace Internal.Controllers
         {
             try
             {
-                var result = await _banService.UnbanUser(request.Name);
+                var result = await _banService.Unban(request.Name);
                 await _dbContext.SaveChangesAsync();
 
                 var response = new Response.Unban

@@ -31,7 +31,7 @@ namespace Http.Service
         /// <param name="reason">The reason for the ban.</param>
         /// <param name="days">The number of days to ban the user. Null for permanent ban.</param>
         /// <returns>A result object containing the operation outcome and related data.</returns>
-        public async Task<BanResult> BanUser(string name, string reason, uint? days)
+        public async Task<BanResult> Ban(string name, string reason, uint? days)
         {
             // Get user ID from name
             var userId = await _dbContext.Character.GetCharacterId(name) ??
@@ -73,7 +73,7 @@ namespace Http.Service
         /// </summary>
         /// <param name="name">The character name to unban.</param>
         /// <returns>A result object containing the operation outcome and related data.</returns>
-        public async Task<UnbanResult> UnbanUser(string name)
+        public async Task<UnbanResult> Unban(string name)
         {
             // Get user ID from name
             var userId = await _dbContext.Character.GetCharacterId(name) ??
@@ -94,6 +94,39 @@ namespace Http.Service
                 Success = true,
                 Error = ErrorCode.None,
                 UserId = userId
+            };
+        }
+
+        /// <summary>
+        /// Checks if a user is banned and automatically removes expired bans.
+        /// </summary>
+        /// <param name="name">The character name to check.</param>
+        /// <returns>A result object containing the ban status. Returns null if the user does not exist or has no ban.</returns>
+        public async Task<BanCheckResult> IsBanned(string name)
+        {
+            var userId = await _dbContext.Character.GetCharacterId(name);
+            if (!userId.HasValue)
+                return null;
+
+            var ban = await _dbContext.Ban.Get(userId.Value);
+            if (ban == null)
+                return null;
+
+            // Check if ban is expired
+            if (ban.ExpireDate.HasValue && ban.ExpireDate.Value <= DateTime.Now)
+            {
+                // Ban expired, remove it
+                await _dbContext.Ban.Delete(userId.Value);
+                _logger.LogInformation("Expired ban removed for user {Name} (ID: {UserId})", name, userId.Value);
+                return null;
+            }
+
+            // User is still banned
+            return new BanCheckResult
+            {
+                IsBanned = true,
+                Reason = ban.Reason,
+                ExpireDate = ban.ExpireDate
             };
         }
     }
