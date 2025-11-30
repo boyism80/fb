@@ -7,6 +7,7 @@
 #include <fb/model/datetime.h>
 #include <json/json.h>
 #include <sstream>
+#include <chrono>
 
 using namespace fb::game::handler::protocol;
 using table = fb::model::table;
@@ -204,6 +205,30 @@ std::string login::elapsed_message(const std::string& dt)
     return sstream.str();
 }
 
+async::task<void> login::force_disconnect_and_wait(const std::string& name, const std::string& log_context)
+{
+    auto existing_ch = this->server.characters.find(name);
+    if (existing_ch == nullptr)
+        co_return;
+
+    fb::logger::warn("Character {} {} - forcing disconnect", name, log_context);
+    auto existing_socket = existing_ch->socket();
+    if (existing_socket != nullptr)
+        existing_socket->close();
+
+    // Wait for character to be completely removed (max 5 seconds)
+    auto timeout = std::chrono::steady_clock::now() + 5s;
+    while (this->server.characters.contains(name))
+    {
+        if (std::chrono::steady_clock::now() >= timeout)
+        {
+            fb::logger::warn("Timeout waiting for character {} to be removed ({})", name, log_context);
+            break;
+        }
+        co_await this->server.sleep(100ms);
+    }
+}
+
 async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::game::request::login& request)
 {
     auto ch = session.data();
@@ -219,6 +244,9 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     auto delay = fb::config<uint32_t>("delay");
     co_await this->server.sleep(std::chrono::seconds(delay));
 
+    // Check if character already exists in server before login API call
+    co_await this->force_disconnect_and_wait(request.name, "already exists in server before new login");
+
     auto&& login_resp = co_await this->server.http.post("internal", "/in-game/login", Login{request.id, request.name, fb::config<uint8_t>("id")});
     if (weak.expired())
         co_return false;
@@ -227,6 +255,8 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     switch (static_cast<ERROR_CODE>(login_resp.error))
     {
     case ERROR_CODE::NONE:
+        // Additional safety check: session is not in Redis but character exists in server (abnormal state)
+        co_await this->force_disconnect_and_wait(request.name, "exists in server but session not in Redis");
         break;
     case ERROR_CODE::BANNED:
         ch->message(fb::game::handler::amqp::ban::build_ban_message(login_resp.ban_reason, login_resp.ban_expire_date), MESSAGE_TYPE::NOTIFY);

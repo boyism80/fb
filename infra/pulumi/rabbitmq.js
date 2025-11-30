@@ -3,9 +3,6 @@ const k8s = require("@pulumi/kubernetes");
 
 module.exports = {
     setup: function (namespace, conf) {
-        let index = 0
-        const ports = []
-
         // Entrypoint script that enables sharding plugin and sets up clustering
         // First pod (ordinal 0) starts standalone, others join the first pod
         const entrypointScript = `#!/bin/bash
@@ -165,16 +162,13 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
             },
         })
 
-        const services = []
+        const resources = []
+        const sections = Object.entries(conf.rabbitmq)
         
-        for(const [section, sectionConf] of Object.entries(conf.rabbitmq)) {
-            const replicas = sectionConf.replicas || 1
+        // Create all headless services first (required for StatefulSet serviceName)
+        const headlessServices = {}
+        for(const [section, sectionConf] of sections) {
             const headlessServiceName = `rabbitmq-${section}-headless`
-            const serviceName = `rabbitmq-${section}`
-            const firstPodName = pulumi.interpolate`rabbit@rabbitmq-${section}-0.${headlessServiceName}.${namespace.metadata.name}.svc.cluster.local`
-            
-            // Create headless service for StatefulSet DNS resolution (for load balancing)
-            // Must be created before StatefulSet
             const headlessService = new k8s.core.v1.Service(`rabbitmq-${section}-headless`, {
                 metadata: { name: headlessServiceName, namespace: namespace.metadata.name },
                 spec: {
@@ -186,6 +180,16 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
                     ],
                 },
             }, { dependsOn: [entrypointConfigMap] });
+            headlessServices[section] = headlessService
+        }
+        
+        // Create all StatefulSets in parallel (each section is independent)
+        const statefulSets = {}
+        for(const [section, sectionConf] of sections) {
+            const replicas = sectionConf.replicas || 1
+            const headlessServiceName = `rabbitmq-${section}-headless`
+            const serviceName = `rabbitmq-${section}`
+            const firstPodName = pulumi.interpolate`rabbit@rabbitmq-${section}-0.${headlessServiceName}.${namespace.metadata.name}.svc.cluster.local`
             
             const statefulSet = new k8s.apps.v1.StatefulSet(`rabbitmq-${section}`, {
                 metadata: { name: `rabbitmq-${section}`, namespace: namespace.metadata.name, },
@@ -196,16 +200,13 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
                     template: {
                         metadata: { labels: { app: "rabbitmq", section: section } },
                         spec: {
-                            nodeSelector: {
-                                "kubernetes.io/hostname": "ubuntu-1"
-                            },
                             subdomain: headlessServiceName,
                             containers: [{
                                 name: "rabbitmq",
                                 image: "rabbitmq:management",
                                 ports: [
-                                    { name: `amqp-${index}`, containerPort: 5672 },
-                                    { name: `management-${index}`, containerPort: 15672 },
+                                    { name: `amqp`, containerPort: 5672 },
+                                    { name: `management`, containerPort: 15672 },
                                 ],
                                 env: [
                                     { name: "RABBITMQ_DEFAULT_USER", value: "fb" }, // Default user
@@ -232,6 +233,26 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
                                 ],
                                 command: ["/bin/bash"],
                                 args: firstPodName.apply(name => ["/scripts/entrypoint.sh", name]),
+                                readinessProbe: {
+                                    exec: {
+                                        command: ["/bin/sh", "-c", "rabbitmqctl status > /dev/null 2>&1"]
+                                    },
+                                    initialDelaySeconds: 15,
+                                    periodSeconds: 5,
+                                    timeoutSeconds: 5,
+                                    successThreshold: 1,
+                                    failureThreshold: 3
+                                },
+                                livenessProbe: {
+                                    exec: {
+                                        command: ["/bin/sh", "-c", "rabbitmqctl status > /dev/null 2>&1"]
+                                    },
+                                    initialDelaySeconds: 60,
+                                    periodSeconds: 30,
+                                    timeoutSeconds: 10,
+                                    successThreshold: 1,
+                                    failureThreshold: 3
+                                },
                                 volumeMounts: [
                                     { 
                                         name: "data-volume", 
@@ -255,15 +276,22 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
                             {
                                 name: "data-volume",
                                 hostPath: {
-                                    path: `/mnt/fb/rabbitmq/${section}`,
+                                    path: `/mnt/fb/rabbitmq/${section}/${"$(MY_POD_NAME)"}`,
                                     type: "DirectoryOrCreate"
                                 }
                             }]
                         },
                     }
                 },
-            }, { dependsOn: [entrypointConfigMap, headlessService] })
-
+            }, { dependsOn: [entrypointConfigMap, headlessServices[section]] })
+            statefulSets[section] = statefulSet
+        }
+        
+        // Create ClusterIP and NodePort services after StatefulSets (for each section)
+        for(const [section, sectionConf] of sections) {
+            const serviceName = `rabbitmq-${section}`
+            const statefulSet = statefulSets[section]
+            
             // Create ClusterIP service for internal access (load balances across all replicas)
             const clusterIPService = new k8s.core.v1.Service(`rabbitmq-${section}`, {
                 metadata: { name: serviceName, namespace: namespace.metadata.name },
@@ -283,7 +311,7 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
                         },
                     ],
                 },
-            }, { dependsOn: [headlessService] });
+            }, { dependsOn: [statefulSet] });
 
             // Create NodePort service for external access (load balances across all replicas)
             const nodeportService = new k8s.core.v1.Service(`rabbitmq-${section}-nodeport`, {
@@ -306,14 +334,15 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
                         },
                     ],
                 },
-            }, { dependsOn: [headlessService] });
+            }, { dependsOn: [statefulSet] });
 
-            services.push(clusterIPService)
-            services.push(nodeportService)
-
-            index++
+            // Return all resources (Services and StatefulSets)
+            resources.push(headlessServices[section])
+            resources.push(clusterIPService)
+            resources.push(nodeportService)
+            resources.push(statefulSet)
         }
 
-        return services
+        return resources
     }
 }

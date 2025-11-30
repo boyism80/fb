@@ -6,8 +6,7 @@ module.exports = function () {
     return {
         setup: function (namespace, conf, dependsOn) {
 
-            let index = 0
-            const ports = []
+            const resources = []
             for(const [section, sectionConf] of Object.entries(conf.bot)) {
                 const config = {
                     log: ["info", "warn", "fatal"],
@@ -81,7 +80,13 @@ module.exports = function () {
                         },
                     },
                 }, { dependsOn: dependsOn })
+                
+                // Collect all resources
+                resources.push(configMap)
+                resources.push(statefulSet)
             }
+            
+            return resources
         }
     }
 }()

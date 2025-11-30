@@ -6,6 +6,7 @@ module.exports = function () {
     return {
         setup: function (namespace, conf, dependsOn) {
 
+            const resources = []
             const config = {
                 id: 0,
                 name: `gateway`,
@@ -96,8 +97,12 @@ module.exports = function () {
                     },
                 },
             }, { dependsOn: dependsOn })
+            
+            // Collect all resources
+            resources.push(configMap)
+            resources.push(statefulSet)
 
-            return new k8s.core.v1.Service('gateway', {
+            const service = new k8s.core.v1.Service('gateway', {
                 metadata: {
                     name: 'gateway',
                     namespace: namespace.metadata.name,
@@ -114,6 +119,9 @@ module.exports = function () {
                     }
                 },
             }, { dependsOn: dependsOn })
+            
+            resources.push(service)
+            return resources
         }
     }
 }()

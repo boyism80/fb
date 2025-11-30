@@ -135,8 +135,9 @@ git commit -m "..." -m "..."
 ### Pull Request Guidelines
 - **NO EMOJIS** in PR titles or descriptions
 - Use clear, descriptive titles
-- **Always create PRs against `origin/release` branch**
+- **Always create PRs against `origin/release/latest` branch**
 - **MUST include ALL unreflected changes - verify comprehensively using git log comparison**
+- **Compare all changes between `develop` and `release/latest` branches when composing PR messages**
 
 ## Terminal and PowerShell Workflow
 
@@ -326,8 +327,9 @@ Types:
 ### Pull Request Guidelines
 - **NO EMOJIS** in PR titles or descriptions
 - Use clear, descriptive titles
-- **Always create PRs against `origin/release` branch**
+- **Always create PRs against `origin/release/latest` branch**
 - **MUST include ALL unreflected changes - verify comprehensively using git log comparison**
+- **Compare all changes between `develop` and `release/latest` branches when composing PR messages**
 
 ## Terminal and PowerShell Workflow
 

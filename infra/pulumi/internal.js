@@ -4,6 +4,7 @@ const k8s = require("@pulumi/kubernetes")
 module.exports = {
     setup: function (namespace, conf, dependsOn) {
 
+        const resources = []
         const ports = []
         for(const [section, sectionConf] of Object.entries(conf.internal)) {
             const appLabels = { app: `internal-${section}` }
@@ -144,6 +145,14 @@ module.exports = {
                     selector: appLabels,
                 },
             }, { dependsOn: dependsOn })
+            
+            // Collect all resources
+            resources.push(configMap)
+            resources.push(deployment)
+            resources.push(hpa)
+            resources.push(service)
         }
+        
+        return resources
     }
 }
