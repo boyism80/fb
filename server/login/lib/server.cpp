@@ -1,6 +1,7 @@
 #include <boost/asio/high_resolution_timer.hpp>
 #include <fb/login/server.h>
 #include <fb/login/handler.h>
+#include <fb/log_collector.h>
 #include <format>
 
 using namespace fb::login;
@@ -17,6 +18,19 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     this->handler.protocol.bind<fb::login::handler::protocol::create_account>();
     this->handler.protocol.bind<fb::login::handler::protocol::complete>();
     this->handler.protocol.bind<fb::login::handler::protocol::change_password>();
+
+    // Initialize log collector
+    try
+    {
+        auto log_server_url = std::format("http://{}:{}", fb::config<std::string>("log:ip"), fb::config<uint16_t>("log:port"));
+        auto server_id      = std::to_string(this->id());
+        auto server_name    = this->name();
+        this->log           = std::make_unique<fb::log_collector>(this->http, server_id, server_name, log_server_url, 1000, 100);
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("Failed to initialize log collector: {}", e.what());
+    }
 }
 
 server::~server()
@@ -39,6 +53,7 @@ async::task<void> server::handle_start()
     co_await fb::acceptor<session>::handle_start();
 
     this->bind_timer<fb::login::handler::timer::heart_beat>(1s);
+    this->bind_timer<fb::login::handler::timer::log_flush>(5s);
     this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.system");
 }
 

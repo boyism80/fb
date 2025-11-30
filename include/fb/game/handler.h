@@ -89,5 +89,6 @@
 #include <fb/game/handler/timer/save_timer.h>
 #include <fb/game/handler/timer/storage_pending_timer.h>
 #include <fb/game/handler/timer/storage_pending_distribution_timer.h>
+#include <fb/game/handler/timer/log_flush.h>
 
 #endif // FB_GAME_HANDLER_H

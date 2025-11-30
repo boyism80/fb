@@ -8,12 +8,16 @@
         "io": 12,
         "background": 8
     },
-    "log": [
-        "debug",
-        "info",
-        "warn",
-        "fatal"
-    ],
+    "log": {
+        "ip": "127.0.0.1",
+        "port": 3005,
+        "level": [
+            "debug",
+            "info",
+            "warn",
+            "fatal"
+        ]
+    },
     "entrypoints": [
         {
             "name": "로그인서버",
@@ -25,6 +29,10 @@
     "internal": {
         "ip": "127.0.0.1",
         "port": 3000
+    },
+    "log": {
+        "ip": "127.0.0.1",
+        "port": 3005
     },
     "amqp": {
         "ip": "127.0.0.1",

@@ -5,6 +5,8 @@
 #include <fb/gateway/session.h>
 #include <fb/gateway/util.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/log_collector.h>
+#include <memory>
 
 using namespace fb::protocol::internal;
 using namespace fb::protocol::internal::request;
@@ -27,7 +29,12 @@ private:
     fb::stream            _connection_cache;
 
 public:
+    std::unique_ptr<fb::log_collector> log;
+
+public:
     server(boost::asio::io_context& io_context, uint16_t port);
+    server(const server&) = delete;
+    server(server&&)      = delete;
     ~server();
     const std::vector<endpoint>& entrypoints() const;
     const fb::stream&            endpoint_bytes() const;

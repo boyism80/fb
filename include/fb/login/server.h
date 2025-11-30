@@ -17,6 +17,8 @@
 #include <fb/login/gateway.h>
 #include <fb/login/protocol.h>
 #include <fb/redis.h>
+#include <fb/log_collector.h>
+#include <memory>
 
 #define MAX_NXCLUB_SIZE 14
 
@@ -97,7 +99,12 @@ private:
     bool is_forbidden_impl(const std::string& str) const;
 
 public:
+    std::unique_ptr<fb::log_collector> log;
+
+public:
     server(boost::asio::io_context& io_context, uint16_t port);
+    server(const server&) = delete;
+    server(server&&)      = delete;
     ~server();
 
     const fb::protocol::login::response::agreement& agreement() const;

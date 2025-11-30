@@ -16,11 +16,15 @@ module.exports = function () {
                     logic: 12,
                     io: 12
                 },
-                log: ["info", "warn", "fatal"],
+                log: {
+                    ip: `log-${conf.gateway.log || 'section-1'}`,
+                    port: conf.log[conf.gateway.log || 'section-1'].port.cluster,
+                    level: ["info", "warn", "fatal"]
+                },
                 entrypoints: [],
                 internal: {
-                    ip: `internal-${sectionConf.internal}`, 
-                    port: conf.internal[sectionConf.internal].port.cluster
+                    ip: `internal-${conf.gateway.internal || 'section-1'}`, 
+                    port: conf.internal[conf.gateway.internal || 'section-1'].port.cluster
                 },
                 amqp: {
                     ip: "rabbitmq",

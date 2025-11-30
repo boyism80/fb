@@ -1,6 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/game/handler.h>
 #include <fb/game/builtin/server.h>
+#include <fb/log_collector.h>
 #include <json/json.h>
 
 using namespace fb::game;
@@ -103,6 +104,19 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
             co_return;
         });
     }
+
+    // Initialize log collector
+    try
+    {
+        auto log_server_url = std::format("http://{}:{}", fb::config<std::string>("log:ip"), fb::config<uint16_t>("log:port"));
+        auto server_id      = std::to_string(fb::config<uint32_t>("id"));
+        auto server_name    = fb::config<std::string>("name");
+        this->log           = std::make_unique<fb::log_collector>(this->http, server_id, server_name, log_server_url, 1000, 100);
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("Failed to initialize log collector: {}", e.what());
+    }
 }
 
 server::~server()
@@ -200,6 +214,7 @@ async::task<void> server::handle_start()
     this->bind_timer<fb::game::handler::timer::announce>(std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
     this->bind_timer<fb::game::handler::timer::system_mail_timer>(30s);
     this->bind_timer<fb::game::handler::timer::storage_pending_timer>(15s);
+    this->bind_timer<fb::game::handler::timer::log_flush>(5s);
 
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
     this->bind_thread_timer<fb::game::handler::timer::mob_respawn_timer>(1s);

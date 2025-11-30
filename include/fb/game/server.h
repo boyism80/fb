@@ -18,8 +18,10 @@
 #include <fb/game/system_mail.h>
 #include <fb/game/storage.h>
 #include <fb/game/polling/polling.h>
+#include <fb/log_collector.h>
 #include <fb/locker.h>
 #include <vector>
+#include <memory>
 
 using namespace fb::protocol::internal;
 using namespace fb::protocol::internal::request;
@@ -87,8 +89,9 @@ private:
     npc_interaction_handler_list _npc_interaction_handlers;
 
 public:
-    fb::game::polling       poll = polling(*this);
-    fb::game::listener_impl listener;
+    std::unique_ptr<fb::log_collector> log;
+    fb::game::polling                  poll = polling(*this);
+    fb::game::listener_impl            listener;
 
     fb::game::map_container                                 maps;
     fb::game::character::container                          characters;
@@ -99,6 +102,7 @@ public:
 public:
     server(boost::asio::io_context& io_context, uint16_t port);
     server(const server&) = delete;
+    server(server&&)      = delete;
     ~server();
 
 public:
