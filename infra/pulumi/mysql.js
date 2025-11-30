@@ -85,7 +85,6 @@ module.exports = function () {
                                         app: "mysql",
                                         section: section,
                                         type: "data",
-                                        id: id,
                                     },
                                 },
                                 template: {
@@ -94,7 +93,6 @@ module.exports = function () {
                                             app: "mysql",
                                             section: section,
                                             type: "data",
-                                            id: id,
                                         },
                                     },
                                     spec: {

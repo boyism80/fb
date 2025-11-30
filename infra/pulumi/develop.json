@@ -258,6 +258,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30018
         },
         "section-10": {
@@ -267,6 +268,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30019
         },
         "section-11": {
@@ -276,6 +278,7 @@
             "db": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1",
+            "log": "section-1",
             "port": 30020
         }
     },

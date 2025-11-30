@@ -60,7 +60,6 @@ module.exports = {
                                     app: "redis",
                                     section: section,
                                     type: "data",
-                                    id: id,
                                 },
                             },
                             template: {
@@ -69,7 +68,6 @@ module.exports = {
                                         app: "redis",
                                         section: section,
                                         type: "data",
-                                        id: id,
                                     },
                                 },
                                 spec: {
