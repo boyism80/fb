@@ -25,7 +25,7 @@ module.exports = {
             // Use log MySQL instances
             if (conf.mysql[section] && conf.mysql[section].log && Array.isArray(conf.mysql[section].log)) {
                 conf.mysql[section].log.forEach((logConf, index) => {
-                    config.ConnectionStrings.MySql[index.toString()] = `Server=mysql-${section}-log;Port=${logConf.port.cluster};User ID=fb; Password=admin; Database=fb_log_${index}`
+                    config.ConnectionStrings.MySql[index.toString()] = `Server=mysql-${section}-log;Port=${logConf.port.cluster};User ID=fb; Password=admin; Database=fb`
                 })
             }
 
