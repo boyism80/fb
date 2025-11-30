@@ -87,7 +87,7 @@ namespace Log.Repository
         /// </summary>
         /// <param name="log">The JSON log element to parse.</param>
         /// <returns>A LogEntry object, or null if parsing fails.</returns>
-        private LogEntry? ParseLogEntry(JsonElement log)
+        private LogEntry ParseLogEntry(JsonElement log)
         {
             try
             {

@@ -27,8 +27,12 @@ builder.Services.AddScoped<DbContext>();
 builder.Services.AddScoped<LogService>();
 builder.Services.AddScoped<LogRepository>();
 builder.Services.AddHostedService<LogWriterService>();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
+
+// Map health check endpoint before authorization to ensure it's accessible
+app.MapHealthChecks("/health");
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
