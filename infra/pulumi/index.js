@@ -25,15 +25,21 @@ const conf = JSON.parse(content)
 conf.host = new pulumi.Config().require('host')
 
 
-const mysqlService = mysql.setup(namespace, conf)
-const redisService = redis.setup(namespace, conf)
-const rabbitmqService = rabbitmq.setup(namespace, conf)
-// Flatten arrays for dependsOn (mysql, redis, rabbitmq now return arrays)
-const allServices = [].concat(mysqlService || [], redisService || [], rabbitmqService || [])
-const internalService = internal.setup(namespace, conf, allServices)
-const writeBackService = wb.setup(namespace, conf, [].concat(redisService || []))
-const gatewayService = gateway.setup(namespace, conf, [internalService])
-const loginService = login.setup(namespace, conf, [internalService])
-const gameService = game.setup(namespace, conf, [internalService])
-const adminToolService = adminTool.setup(namespace, conf, allServices)
-// bot.setup(namespace, conf, [gatewayService, loginService, gameService])
+// Setup mysql, redis, rabbitmq in parallel (no dependsOn between them)
+const mysqlResources = mysql.setup(namespace, conf)
+const redisResources = redis.setup(namespace, conf)
+const rabbitmqResources = rabbitmq.setup(namespace, conf)
+
+// Flatten all resources for dependsOn
+const allInfraResources = [].concat(mysqlResources || [], redisResources || [], rabbitmqResources || [])
+
+// Setup internal, write-back, admin-tool after mysql, redis, rabbitmq are ready
+const internalResources = internal.setup(namespace, conf, allInfraResources)
+const writeBackResources = wb.setup(namespace, conf, [].concat(redisResources || []))
+const adminToolResources = adminTool.setup(namespace, conf, allInfraResources)
+
+// Setup login, gateway, game after internal is ready
+const gatewayResources = gateway.setup(namespace, conf, internalResources || [])
+const loginResources = login.setup(namespace, conf, internalResources || [])
+const gameResources = game.setup(namespace, conf, internalResources || [])
+// bot.setup(namespace, conf, [].concat(gatewayResources || [], loginResources || [], gameResources || []))

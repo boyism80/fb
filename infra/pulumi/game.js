@@ -6,6 +6,7 @@ module.exports = function () {
     return {
         setup: function (namespace, conf, dependsOn) {
 
+            const resources = []
             let index = 0
             const ports = []
             for(const [section, sectionConf] of Object.entries(conf.game)) {
@@ -102,6 +103,10 @@ module.exports = function () {
                             },
                         },
                     }, { dependsOn: dependsOn })
+                    
+                    // Collect all resources
+                    resources.push(configMap)
+                    resources.push(statefulSet)
 
                     ports.push({
                         name: `game-${section}-${i}`,
@@ -114,7 +119,7 @@ module.exports = function () {
                 }
             }
 
-            return new k8s.core.v1.Service('game', {
+            const service = new k8s.core.v1.Service('game', {
                 metadata: {
                     name: 'game',
                     namespace: namespace.metadata.name,
@@ -127,6 +132,9 @@ module.exports = function () {
                     }
                 },
             }, { dependsOn: dependsOn })
+            
+            resources.push(service)
+            return resources
         }
     }
 }()

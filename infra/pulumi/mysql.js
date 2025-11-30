@@ -30,7 +30,7 @@ module.exports = function () {
                 }
             })
 
-            const services = []
+            const resources = []
             let globalIndex = 0
             for(const [section, sectionConfs] of Object.entries(conf.mysql)) {
                 const serviceName = `mysql-${section}`
@@ -64,6 +64,8 @@ module.exports = function () {
                     },
                 });
                 
+                // Create StatefulSets
+                const statefulSets = []
                 globalIndex = globalIndex - Object.keys(sectionConfs).length
                 for(const [id, sectionConf] of Object.entries(sectionConfs)) {
                     const containerPortName = `m${globalIndex}`
@@ -145,6 +147,7 @@ module.exports = function () {
                             }
                         },
                     }, { dependsOn: [secret, clusterIPService] });
+                    statefulSets.push(statefulSet)
                 }
                 
                 // Create NodePort service for external access
@@ -157,11 +160,13 @@ module.exports = function () {
                     },
                 }, { dependsOn: [clusterIPService] });
                 
-                services.push(clusterIPService)
-                services.push(nodeportService)
+                // Return all resources (Services and StatefulSets)
+                resources.push(clusterIPService)
+                resources.push(nodeportService)
+                resources.push(...statefulSets)
             }
 
-            return services
+            return resources
         }
     }
 }()

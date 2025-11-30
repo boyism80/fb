@@ -5,7 +5,7 @@ const k8s = require("@pulumi/kubernetes")
 module.exports = {
     setup: function (namespace, conf) {
 
-        const services = []
+        const resources = []
         let globalIndex = 0
         for(const [section, sectionConf] of Object.entries(conf.redis)) {
             const serviceName = `redis-${section}`
@@ -39,6 +39,8 @@ module.exports = {
                 },
             });
 
+            // Create StatefulSets
+            const statefulSets = []
             globalIndex = globalIndex - Object.keys(sectionConf).length
             for(const [id, redisConf] of Object.entries(sectionConf)) {
                 const containerPortName = `r${globalIndex}`
@@ -99,6 +101,7 @@ module.exports = {
                         }
                     }
                 }, { dependsOn: [clusterIPService] })
+                statefulSets.push(statefulSet)
             }
             
             // Create NodePort service for external access
@@ -111,10 +114,12 @@ module.exports = {
                 },
             }, { dependsOn: [clusterIPService] });
             
-            services.push(clusterIPService)
-            services.push(nodeportService)
+            // Return all resources (Services and StatefulSets)
+            resources.push(clusterIPService)
+            resources.push(nodeportService)
+            resources.push(...statefulSets)
         }
 
-        return services
+        return resources
     }
 }
