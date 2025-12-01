@@ -6,6 +6,7 @@
 #include <string>
 #include <async/task.h>
 #include <fb/amqp.h>
+#include <fb/logger.h>
 #include <chrono>
 #include <thread>
 
@@ -121,16 +122,26 @@ public:
 
     void declare_queue(const std::string& exchange, const std::string& key)
     {
-        auto& queue = this->_amqp->declare_queue();
-        queue.bind(exchange, key);
-
-        auto& route = queue.route();
-        if (this->_handlers.contains(route))
+        try
         {
-            for (auto& [cmd, fn] : this->_handlers.at(route))
+            // Declare queue with the routing key as queue name, as quorum queue for high availability
+            // In Direct exchange, queue name and routing key are the same
+            auto& queue = this->_amqp->declare_queue(key, true, false, false, true);
+            queue.bind(exchange, key);
+
+            auto& route = queue.route();
+            if (this->_handlers.contains(route))
             {
-                queue.handler(cmd, fn);
+                for (auto& [cmd, fn] : this->_handlers.at(route))
+                {
+                    queue.handler(cmd, fn);
+                }
             }
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::fatal("Failed to declare queue '{}' for exchange '{}': {}", key, exchange, e.what());
+            throw;
         }
     }
 

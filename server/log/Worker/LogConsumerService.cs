@@ -51,34 +51,43 @@ namespace Log.Worker
         /// <returns>A task representing the asynchronous operation.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            try
+            _logger.LogInformation("Log Consumer Service starting");
+
+            // Retry connection loop until successful or cancelled
+            while (!stoppingToken.IsCancellationRequested)
             {
-                await ConnectToRabbitMQAsync(stoppingToken);
-                _logger.LogInformation("Log Consumer Service started");
-
-                while (!stoppingToken.IsCancellationRequested)
+                try
                 {
-                    try
-                    {
-                        await ProcessLogsAsync(stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error processing logs");
-                    }
+                    await ConnectToRabbitMQAsync(stoppingToken);
+                    _logger.LogInformation("Log Consumer Service started");
 
-                    await Task.Delay(ProcessInterval, stoppingToken);
+                    // Main processing loop
+                    while (!stoppingToken.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            await ProcessLogsAsync(stoppingToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error processing logs");
+                        }
+
+                        await Task.Delay(ProcessInterval, stoppingToken);
+                    }
+                    break; // Exit retry loop if cancellation requested
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to connect to RabbitMQ, retrying in 5 seconds...");
+                    await DisconnectFromRabbitMQAsync(); // Clean up failed connection
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Fatal error in Log Consumer Service");
-            }
-            finally
-            {
-                await DisconnectFromRabbitMQAsync();
-                _logger.LogInformation("Log Consumer Service stopped");
-            }
+
+            // Clean shutdown
+            await DisconnectFromRabbitMQAsync();
+            _logger.LogInformation("Log Consumer Service stopped");
         }
 
         /// <summary>
@@ -89,15 +98,24 @@ namespace Log.Worker
         private async Task ConnectToRabbitMQAsync(CancellationToken cancellationToken)
         {
             var section = _configuration.GetSection("RabbitMQ");
+            var hostName = section.GetValue<string>("Host");
+            var port = section.GetValue<int>("Port");
+            var userName = section.GetValue<string>("Uid");
+            var password = section.GetValue<string>("Pwd");
+
+            _logger.LogInformation($"Attempting to connect to RabbitMQ at {hostName}:{port}");
+
             var factory = new ConnectionFactory
             {
-                HostName = section.GetValue<string>("Host"),
-                Port = section.GetValue<int>("Port"),
-                UserName = section.GetValue<string>("Uid"),
-                Password = section.GetValue<string>("Pwd")
+                HostName = hostName,
+                Port = port,
+                UserName = userName,
+                Password = password
             };
 
             _connection = factory.CreateConnection();
+            _logger.LogInformation("RabbitMQ connection established");
+
             _channel = _connection.CreateModel();
 
             // Declare exchange (should already exist, but ensure it's durable)
@@ -106,19 +124,48 @@ namespace Log.Worker
             // Get queue size from configuration
             var queueSize = _configuration.GetValue<int>("RabbitMQ:QueueSize", 128);
 
-            // Declare and bind all log queues
+            // Declare and bind all log queues as quorum queues for high availability
             // In Direct exchange, queue name and routing key are the same (e.g., "fb.log.0")
+            var queueArguments = new Dictionary<string, object>
+            {
+                { "x-queue-type", "quorum" }
+            };
+
             for (int i = 0; i < queueSize; i++)
             {
                 var queueName = $"{QueueNamePrefix}{i}";
                 var routingKey = queueName; // For Direct exchange, routing key equals queue name
                 _queueNames.Add(queueName);
 
-                // Declare queue as durable to persist messages
-                _channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+                try
+                {
+                    // Declare queue as quorum queue for high availability in cluster
+                    _channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: queueArguments);
 
-                // Bind queue to exchange with routing key (same as queue name for Direct exchange)
-                _channel.QueueBind(queueName, ExchangeName, routingKey);
+                    // Bind queue to exchange with routing key (same as queue name for Direct exchange)
+                    _channel.QueueBind(queueName, ExchangeName, routingKey);
+                }
+                catch (RabbitMQ.Client.Exceptions.OperationInterruptedException ex)
+                {
+                    // Check if it's a PRECONDITION_FAILED error (queue exists with different parameters)
+                    if (ex.ShutdownReason?.ReplyText?.Contains("PRECONDITION_FAILED") == true)
+                    {
+                        _logger.LogError(ex,
+                            "Failed to declare queue '{QueueName}': Queue already exists with different parameters. " +
+                            "If migrating from classic to quorum queue, delete the existing queue first.",
+                            queueName);
+                    }
+                    else
+                    {
+                        _logger.LogError(ex, "Failed to declare queue '{QueueName}'", queueName);
+                    }
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Unexpected error declaring queue '{QueueName}'", queueName);
+                    throw;
+                }
             }
 
             _logger.LogInformation($"Connected to RabbitMQ and subscribed to {queueSize} log queues");

@@ -28,17 +28,6 @@ fi
 export RABBITMQ_NODENAME="$POD_NAME"
 echo "RABBITMQ_NODENAME set to: $RABBITMQ_NODENAME"
 
-# Always clean Mnesia data directory to start fresh
-MNESIA_DIR="/var/lib/rabbitmq/mnesia"
-if [ -d "$MNESIA_DIR" ]; then
-    echo "Cleaning Mnesia data directory for fresh start..."
-    rm -rf "$MNESIA_DIR"/*
-    rm -rf "$MNESIA_DIR"/.* 2>/dev/null || true
-    echo "Mnesia data cleaned. RabbitMQ will start with fresh data."
-else
-    echo "Mnesia directory does not exist. Will be created on first start."
-fi
-
 # Check if this is the first pod (ordinal 0)
 if [[ "$RABBITMQ_POD_NAME" == *"-0" ]]; then
     IS_FIRST_POD="true"
