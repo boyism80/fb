@@ -178,181 +178,180 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
         
         // Create all headless services first (required for StatefulSet serviceName)
         const headlessServices = {}
-        for(const [section, sectionConf] of sections) {
-            const headlessServiceName = `rabbitmq-${section}-headless`
-            const headlessService = new k8s.core.v1.Service(`rabbitmq-${section}-headless`, {
-                metadata: { name: headlessServiceName, namespace: namespace.metadata.name },
-                spec: {
-                    clusterIP: "None",
-                    selector: { app: "rabbitmq", section: section },
-                    ports: [
-                        { name: "amqp", port: 5672, targetPort: 5672 },
-                        { name: "management", port: 15672, targetPort: 15672 },
-                    ],
-                },
-            }, { dependsOn: [entrypointConfigMap] });
-            headlessServices[section] = headlessService
-        }
-        
-        // Create all StatefulSets in parallel (each section is independent)
         const statefulSets = {}
+        
         for(const [section, sectionConf] of sections) {
-            const replicas = sectionConf.replicas || 1
-            const headlessServiceName = `rabbitmq-${section}-headless`
-            const serviceName = `rabbitmq-${section}`
-            const firstPodName = pulumi.interpolate`rabbit@rabbitmq-${section}-0.${headlessServiceName}.${namespace.metadata.name}.svc.cluster.local`
-            
-            const statefulSet = new k8s.apps.v1.StatefulSet(`rabbitmq-${section}`, {
-                metadata: { name: `rabbitmq-${section}`, namespace: namespace.metadata.name, },
-                spec: {
-                    serviceName: headlessServiceName,
-                    replicas: replicas,
-                    selector: { matchLabels: { app: "rabbitmq", section: section } },
-                    template: {
-                        metadata: { labels: { app: "rabbitmq", section: section } },
-                        spec: {
-                            subdomain: headlessServiceName,
-                            containers: [{
-                                name: "rabbitmq",
-                                image: "rabbitmq:management",
-                                ports: [
-                                    { name: `amqp`, containerPort: 5672 },
-                                    { name: `management`, containerPort: 15672 },
-                                ],
-                                env: [
-                                    { name: "RABBITMQ_DEFAULT_USER", value: "fb" }, // Default user
-                                    { name: "RABBITMQ_DEFAULT_PASS", value: "admin" }, // Default user password
-                                    { name: "RABBITMQ_ERLANG_COOKIE", value: "secret-cookie" },
-                                    { name: "K8S_SERVICE_NAME", value: headlessServiceName },
-                                    { name: "RABBITMQ_USE_LONGNAME", value: "true" },
-                                    { 
-                                        name: "RABBITMQ_POD_NAME",
-                                        valueFrom: {
-                                            fieldRef: {
-                                                fieldPath: "metadata.name"
+            // Process internal and log separately
+            for(const [type, typeConf] of Object.entries(sectionConf)) {
+                if (type !== "internal" && type !== "log") continue
+                
+                const resourceName = `rabbitmq-${section}-${type}`
+                const headlessServiceName = `${resourceName}-headless`
+                const replicas = typeConf.replicas || 1
+                const serviceName = resourceName
+                const firstPodName = pulumi.interpolate`rabbit@${resourceName}-0.${headlessServiceName}.${namespace.metadata.name}.svc.cluster.local`
+                
+                // Create headless service
+                const headlessService = new k8s.core.v1.Service(headlessServiceName, {
+                    metadata: { name: headlessServiceName, namespace: namespace.metadata.name },
+                    spec: {
+                        clusterIP: "None",
+                        selector: { app: "rabbitmq", section: section, type: type },
+                        ports: [
+                            { name: "amqp", port: typeConf.port.amqp.cluster, targetPort: 5672 },
+                            { name: "management", port: typeConf.port.management.cluster, targetPort: 15672 },
+                        ],
+                    },
+                }, { dependsOn: [entrypointConfigMap] });
+                headlessServices[resourceName] = headlessService
+                
+                // Create StatefulSet
+                const statefulSet = new k8s.apps.v1.StatefulSet(resourceName, {
+                    metadata: { name: resourceName, namespace: namespace.metadata.name, },
+                    spec: {
+                        serviceName: headlessServiceName,
+                        replicas: replicas,
+                        selector: { matchLabels: { app: "rabbitmq", section: section, type: type } },
+                        template: {
+                            metadata: { labels: { app: "rabbitmq", section: section, type: type } },
+                            spec: {
+                                subdomain: headlessServiceName,
+                                containers: [{
+                                    name: "rabbitmq",
+                                    image: "rabbitmq:management",
+                                    ports: [
+                                        { name: `amqp`, containerPort: 5672 },
+                                        { name: `management`, containerPort: 15672 },
+                                    ],
+                                    env: [
+                                        { name: "RABBITMQ_DEFAULT_USER", value: "fb" },
+                                        { name: "RABBITMQ_DEFAULT_PASS", value: "admin" },
+                                        { name: "RABBITMQ_ERLANG_COOKIE", value: "secret-cookie" },
+                                        { name: "K8S_SERVICE_NAME", value: headlessServiceName },
+                                        { name: "RABBITMQ_USE_LONGNAME", value: "true" },
+                                        { 
+                                            name: "RABBITMQ_POD_NAME",
+                                            valueFrom: {
+                                                fieldRef: {
+                                                    fieldPath: "metadata.name"
+                                                }
                                             }
-                                        }
-                                    },
-                                    { 
-                                        name: "RABBITMQ_POD_NAMESPACE",
-                                        valueFrom: {
-                                            fieldRef: {
-                                                fieldPath: "metadata.namespace"
+                                        },
+                                        { 
+                                            name: "RABBITMQ_POD_NAMESPACE",
+                                            valueFrom: {
+                                                fieldRef: {
+                                                    fieldPath: "metadata.namespace"
+                                                }
                                             }
+                                        },
+                                    ],
+                                    command: ["/bin/bash"],
+                                    args: firstPodName.apply(name => ["/scripts/entrypoint.sh", name]),
+                                    readinessProbe: {
+                                        exec: {
+                                            command: ["/bin/sh", "-c", "rabbitmqctl status > /dev/null 2>&1"]
+                                        },
+                                        initialDelaySeconds: 15,
+                                        periodSeconds: 5,
+                                        timeoutSeconds: 5,
+                                        successThreshold: 1,
+                                        failureThreshold: 3
+                                    },
+                                    livenessProbe: {
+                                        exec: {
+                                            command: ["/bin/sh", "-c", "rabbitmqctl status > /dev/null 2>&1"]
+                                        },
+                                        initialDelaySeconds: 60,
+                                        periodSeconds: 30,
+                                        timeoutSeconds: 10,
+                                        successThreshold: 1,
+                                        failureThreshold: 3
+                                    },
+                                    volumeMounts: [
+                                        { 
+                                            name: "data-volume", 
+                                            mountPath: "/var/lib/rabbitmq",
+                                            subPathExpr: "$(RABBITMQ_POD_NAME)"
+                                        },
+                                        {
+                                            name: "entrypoint-script",
+                                            mountPath: "/scripts/entrypoint.sh",
+                                            subPath: "entrypoint.sh"
                                         }
+                                    ],
+                                }],
+                                volumes: [
+                                {
+                                    name: "entrypoint-script",
+                                    configMap: {
+                                        name: entrypointConfigMap.metadata.name,
+                                        defaultMode: 0o755,
                                     },
-                                ],
-                                command: ["/bin/bash"],
-                                args: firstPodName.apply(name => ["/scripts/entrypoint.sh", name]),
-                                readinessProbe: {
-                                    exec: {
-                                        command: ["/bin/sh", "-c", "rabbitmqctl status > /dev/null 2>&1"]
-                                    },
-                                    initialDelaySeconds: 15,
-                                    periodSeconds: 5,
-                                    timeoutSeconds: 5,
-                                    successThreshold: 1,
-                                    failureThreshold: 3
                                 },
-                                livenessProbe: {
-                                    exec: {
-                                        command: ["/bin/sh", "-c", "rabbitmqctl status > /dev/null 2>&1"]
-                                    },
-                                    initialDelaySeconds: 60,
-                                    periodSeconds: 30,
-                                    timeoutSeconds: 10,
-                                    successThreshold: 1,
-                                    failureThreshold: 3
-                                },
-                                volumeMounts: [
-                                    { 
-                                        name: "data-volume", 
-                                        mountPath: "/var/lib/rabbitmq",
-                                        subPathExpr: "$(RABBITMQ_POD_NAME)"
-                                    },
-                                    {
-                                        name: "entrypoint-script",
-                                        mountPath: "/scripts/entrypoint.sh",
-                                        subPath: "entrypoint.sh"
+                                {
+                                    name: "data-volume",
+                                    hostPath: {
+                                        path: `/mnt/fb/rabbitmq/${section}-${type}`,
+                                        type: "DirectoryOrCreate"
                                     }
-                                ],
-                            }],
-                            volumes: [
+                                }]
+                            },
+                        }
+                    },
+                }, { dependsOn: [entrypointConfigMap, headlessService] })
+                statefulSets[resourceName] = statefulSet
+                
+                // Create ClusterIP service for internal access
+                const clusterIPService = new k8s.core.v1.Service(serviceName, {
+                    metadata: { name: serviceName, namespace: namespace.metadata.name },
+                    spec: {
+                        type: "ClusterIP",
+                        selector: { app: "rabbitmq", section: section, type: type },
+                        ports: [
                             {
-                                name: "entrypoint-script",
-                                configMap: {
-                                    name: entrypointConfigMap.metadata.name,
-                                    defaultMode: 0o755,
-                                },
+                                name: "amqp",
+                                port: typeConf.port.amqp.cluster,
+                                targetPort: 5672,
                             },
                             {
-                                name: "data-volume",
-                                hostPath: {
-                                    path: `/mnt/fb/rabbitmq/${section}`,
-                                    type: "DirectoryOrCreate"
-                                }
-                            }]
-                        },
-                    }
-                },
-            }, { dependsOn: [entrypointConfigMap, headlessServices[section]] })
-            statefulSets[section] = statefulSet
-        }
-        
-        // Create ClusterIP and NodePort services after StatefulSets (for each section)
-        for(const [section, sectionConf] of sections) {
-            const serviceName = `rabbitmq-${section}`
-            const statefulSet = statefulSets[section]
-            
-            // Create ClusterIP service for internal access (load balances across all replicas)
-            const clusterIPService = new k8s.core.v1.Service(`rabbitmq-${section}`, {
-                metadata: { name: serviceName, namespace: namespace.metadata.name },
-                spec: {
-                    type: "ClusterIP",
-                    selector: { app: "rabbitmq", section: section },
-                    ports: [
-                        {
-                            name: "amqp",
-                            port: 5672,
-                            targetPort: 5672,
-                        },
-                        {
-                            name: "management",
-                            port: 15672,
-                            targetPort: 15672,
-                        },
-                    ],
-                },
-            }, { dependsOn: [statefulSet] });
+                                name: "management",
+                                port: typeConf.port.management.cluster,
+                                targetPort: 15672,
+                            },
+                        ],
+                    },
+                }, { dependsOn: [statefulSet] });
 
-            // Create NodePort service for external access (load balances across all replicas)
-            const nodeportService = new k8s.core.v1.Service(`rabbitmq-${section}-nodeport`, {
-                metadata: { name: `${serviceName}-nodeport`, namespace: namespace.metadata.name },
-                spec: {
-                    type: "NodePort",
-                    selector: { app: "rabbitmq", section: section },
-                    ports: [
-                        {
-                            name: `amqp-${section}`,
-                            port: sectionConf.port.amqp.cluster,
-                            targetPort: 5672,
-                            nodePort: sectionConf.port.amqp.node,
-                        },
-                        {
-                            name: `management-${section}`,
-                            port: sectionConf.port.management.cluster,
-                            targetPort: 15672,
-                            nodePort: sectionConf.port.management.node,
-                        },
-                    ],
-                },
-            }, { dependsOn: [statefulSet] });
+                // Create NodePort service for external access
+                const nodeportService = new k8s.core.v1.Service(`${serviceName}-nodeport`, {
+                    metadata: { name: `${serviceName}-nodeport`, namespace: namespace.metadata.name },
+                    spec: {
+                        type: "NodePort",
+                        selector: { app: "rabbitmq", section: section, type: type },
+                        ports: [
+                            {
+                                name: `amqp-${section}-${type}`,
+                                port: typeConf.port.amqp.cluster,
+                                targetPort: 5672,
+                                nodePort: typeConf.port.amqp.node,
+                            },
+                            {
+                                name: `management-${section}-${type}`,
+                                port: typeConf.port.management.cluster,
+                                targetPort: 15672,
+                                nodePort: typeConf.port.management.node,
+                            },
+                        ],
+                    },
+                }, { dependsOn: [statefulSet] });
 
-            // Return all resources (Services and StatefulSets)
-            resources.push(headlessServices[section])
-            resources.push(clusterIPService)
-            resources.push(nodeportService)
-            resources.push(statefulSet)
+                // Collect all resources
+                resources.push(headlessService)
+                resources.push(clusterIPService)
+                resources.push(nodeportService)
+                resources.push(statefulSet)
+            }
         }
 
         return resources

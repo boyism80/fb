@@ -10,6 +10,5 @@
 #include <fb/login/handler/amqp/shutdown.h>
 
 #include <fb/login/handler/timer/heart_beat.h>
-#include <fb/login/handler/timer/log_flush.h>
 
 #endif // __FB_LOGIN_HANDLER_H__

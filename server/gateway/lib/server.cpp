@@ -15,13 +15,19 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     this->handler.protocol.bind<fb::gateway::handler::protocol::check_version>();
     this->handler.protocol.bind<fb::gateway::handler::protocol::entry_list>();
 
-    // Initialize log collector
+    // Initialize log collector with RabbitMQ
     try
     {
-        auto log_server_url = std::format("http://{}:{}", fb::config<std::string>("log:ip"), fb::config<uint16_t>("log:port"));
-        auto server_id      = std::to_string(this->id());
-        auto server_name    = this->name();
-        this->log           = std::make_unique<fb::log_collector>(this->http, server_id, server_name, log_server_url, 1000, 100);
+        auto server_id   = std::to_string(this->id());
+        auto server_name = this->name();
+        auto queue_size  = fb::config<size_t>("amqp:log:queue_size");
+        this->log        = std::make_unique<fb::log_collector>(fb::config<std::string>("amqp:log:ip"),
+                                                        fb::config<uint16_t>("amqp:log:port"),
+                                                        fb::config<std::string>("amqp:log:uid"),
+                                                        fb::config<std::string>("amqp:log:pwd"),
+                                                        server_id,
+                                                        server_name,
+                                                        queue_size);
     }
     catch (const std::exception& e)
     {
@@ -93,7 +99,6 @@ async::task<void> server::handle_start()
     static constexpr const char* message = "CONNECTED SERVER\n";
 
     this->bind_timer<fb::gateway::handler::timer::heart_beat>(1s);
-    this->bind_timer<fb::gateway::handler::timer::log_flush>(5s);
     this->handler.amqp.bind<fb::gateway::handler::amqp::shutdown>("fb.system");
 
     auto writer = fb::stream_writer<big_endian>(this->_connection_cache);

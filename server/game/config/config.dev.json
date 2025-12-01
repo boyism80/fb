@@ -29,9 +29,18 @@
         "port": 3002
     },
     "amqp": {
-        "ip": "127.0.0.1",
-        "port": 5672,
-        "uid": "guest",
-        "pwd": "guest"
+        "internal": {
+            "ip": "127.0.0.1",
+            "port": 5672,
+            "uid": "guest",
+            "pwd": "guest"
+        },
+        "log": {
+            "ip": "127.0.0.1",
+            "port": 5672,
+            "uid": "guest",
+            "pwd": "guest",
+            "queue_size": 128
+        }
     }
 }

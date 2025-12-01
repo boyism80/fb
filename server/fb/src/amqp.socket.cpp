@@ -86,6 +86,44 @@ queue& socket::declare_queue()
     return *ptr;
 }
 
+bool socket::publish(const std::string& exchange, const std::string& routing_key, const std::vector<uint8_t>& message, const amqp_basic_properties_t* properties)
+{
+    if (this->_conn == nullptr)
+        return false;
+
+    amqp_bytes_t exchange_bytes = amqp_cstring_bytes(exchange.c_str());
+    amqp_bytes_t routing_key_bytes = amqp_cstring_bytes(routing_key.c_str());
+    amqp_bytes_t message_bytes;
+    message_bytes.len = message.size();
+    message_bytes.bytes = const_cast<void*>(static_cast<const void*>(message.data()));
+
+    // Use default properties if not provided
+    amqp_basic_properties_t default_props;
+    if (properties == nullptr)
+    {
+        default_props._flags = AMQP_BASIC_DELIVERY_MODE_FLAG;
+        default_props.delivery_mode = 2; // Persistent message
+        default_props.content_type = amqp_cstring_bytes("application/json");
+        properties = &default_props;
+    }
+
+    int result = amqp_basic_publish(this->_conn,
+                                    1, // channel
+                                    exchange_bytes,
+                                    routing_key_bytes,
+                                    0, // mandatory
+                                    0, // immediate
+                                    properties,
+                                    message_bytes);
+
+    if (result != 0)
+        return false;
+
+    // Check for publish errors
+    amqp_rpc_reply_t reply = amqp_get_rpc_reply(this->_conn);
+    return reply.reply_type == AMQP_RESPONSE_NORMAL;
+}
+
 socket::operator amqp_connection_state_t ()
 {
     return this->_conn;

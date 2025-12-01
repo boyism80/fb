@@ -27,10 +27,19 @@ module.exports = function () {
                     port: conf.internal[conf.gateway.internal || 'section-1'].port.cluster
                 },
                 amqp: {
-                    ip: "rabbitmq",
-                    port: conf.rabbitmq['section-1'].port.amqp.cluster,
-                    uid: "fb",
-                    pwd: "admin"
+                    internal: {
+                        ip: "rabbitmq-section-1-internal",
+                        port: conf.rabbitmq['section-1'].internal.port.amqp.cluster,
+                        uid: "fb",
+                        pwd: "admin"
+                    },
+                    log: {
+                        ip: "rabbitmq-section-1-log",
+                        port: conf.rabbitmq['section-1'].log.port.amqp.cluster,
+                        uid: "fb",
+                        pwd: "admin",
+                        queue_size: 128
+                    }
                 },
             }
 

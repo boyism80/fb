@@ -20,8 +20,8 @@ module.exports = {
                 },
                 "Redis": {},
                 "RabbitMQ": {
-                    "Host": `rabbitmq-${sectionConf.rabbitmq}`,
-                    "Port": conf.rabbitmq[sectionConf.rabbitmq].port.amqp.cluster,
+                    "Host": `rabbitmq-${sectionConf.rabbitmq}-internal`,
+                    "Port": conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
                     "Uid": "fb",
                     "Pwd": "admin"
                 },

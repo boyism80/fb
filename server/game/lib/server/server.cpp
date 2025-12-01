@@ -105,13 +105,19 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         });
     }
 
-    // Initialize log collector
+    // Initialize log collector with RabbitMQ
     try
     {
-        auto log_server_url = std::format("http://{}:{}", fb::config<std::string>("log:ip"), fb::config<uint16_t>("log:port"));
-        auto server_id      = std::to_string(fb::config<uint32_t>("id"));
-        auto server_name    = fb::config<std::string>("name");
-        this->log           = std::make_unique<fb::log_collector>(this->http, server_id, server_name, log_server_url, 1000, 100);
+        auto server_id   = std::to_string(fb::config<uint32_t>("id"));
+        auto server_name = fb::config<std::string>("name");
+        auto queue_size  = fb::config<size_t>("amqp:log:queue_size");
+        this->log        = std::make_unique<fb::log_collector>(fb::config<std::string>("amqp:log:ip"),
+                                                        fb::config<uint16_t>("amqp:log:port"),
+                                                        fb::config<std::string>("amqp:log:uid"),
+                                                        fb::config<std::string>("amqp:log:pwd"),
+                                                        server_id,
+                                                        server_name,
+                                                        queue_size);
     }
     catch (const std::exception& e)
     {
@@ -214,7 +220,7 @@ async::task<void> server::handle_start()
     this->bind_timer<fb::game::handler::timer::announce>(std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
     this->bind_timer<fb::game::handler::timer::system_mail_timer>(30s);
     this->bind_timer<fb::game::handler::timer::storage_pending_timer>(15s);
-    this->bind_timer<fb::game::handler::timer::log_flush>(5s);
+    // log_flush timer removed - logs are now published immediately to RabbitMQ
 
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
     this->bind_thread_timer<fb::game::handler::timer::mob_respawn_timer>(1s);
