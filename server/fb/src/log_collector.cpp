@@ -19,13 +19,20 @@ log_collector::log_collector(const std::string& hostname,
     _server_name(server_name),
     _queue_size(queue_size)
 {
+    fb::logger::info("Initializing log collector: server_id={}, server_name={}, queue_size={}, hostname={}, port={}", server_id, server_name, queue_size, hostname, port);
+
     // Create and connect to RabbitMQ
-    this->_amqp    = std::make_unique<fb::amqp::socket>();
+    this->_amqp = std::make_unique<fb::amqp::socket>();
+    fb::logger::info("Attempting to connect to RabbitMQ for log collection: {}:{}", hostname, port);
     auto connected = this->_amqp->connect(hostname, port, uid, pwd, "/");
     if (!connected)
     {
         fb::logger::warn("Failed to connect to log RabbitMQ at {}:{}", hostname, port);
         this->_amqp.reset();
+    }
+    else
+    {
+        fb::logger::info("Successfully connected to RabbitMQ for log collection: {}:{}", hostname, port);
     }
 }
 
@@ -33,6 +40,8 @@ void log_collector::write(const std::string& event_type, const Json::Value& data
 {
     try
     {
+        fb::logger::debug("log_collector::write called: event_type={}, server_id={}, server_name={}", event_type, this->_server_id, this->_server_name);
+
         // Create log entry
         Json::Value log_entry;
         log_entry["timestamp"]   = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -43,28 +52,36 @@ void log_collector::write(const std::string& event_type, const Json::Value& data
 
         // Serialize to JSON string
         auto json_string = this->serialize_log_entry(log_entry);
+        fb::logger::debug("Serialized log entry: length={} bytes", json_string.length());
 
         // Convert to byte vector
         std::vector<uint8_t> message(json_string.begin(), json_string.end());
 
         // Select random routing key
         auto routing_key = this->select_random_routing_key();
+        fb::logger::debug("Selected routing key: {}", routing_key);
 
         // Publish to RabbitMQ (using amq.direct exchange with routing key)
         if (this->_amqp == nullptr)
         {
-            fb::logger::warn("AMQP connection not available, skipping log publish");
+            fb::logger::warn("AMQP connection not available, skipping log publish: event_type={}, server_id={}", event_type, this->_server_id);
             return;
         }
 
+        fb::logger::debug("Publishing log message to RabbitMQ: exchange=amq.direct, routing_key={}, message_size={} bytes", routing_key, message.size());
+
         if (!this->_amqp->publish("amq.direct", routing_key, message))
         {
-            fb::logger::warn("Failed to publish log with routing key: {}", routing_key);
+            fb::logger::warn("Failed to publish log with routing key: {}, event_type={}, server_id={}", routing_key, event_type, this->_server_id);
+        }
+        else
+        {
+            fb::logger::debug("Successfully published log message: event_type={}, routing_key={}, server_id={}", event_type, routing_key, this->_server_id);
         }
     }
     catch (const std::exception& e)
     {
-        fb::logger::warn("Failed to write log: {}", e.what());
+        fb::logger::warn("Failed to write log: event_type={}, server_id={}, error={}", event_type, this->_server_id, e.what());
     }
 }
 
