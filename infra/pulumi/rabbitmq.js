@@ -205,6 +205,9 @@ exec /usr/local/bin/docker-entrypoint.sh rabbitmq-server
                             metadata: { labels: { app: "rabbitmq", section: section, type: type } },
                             spec: {
                                 subdomain: headlessServiceName,
+                                nodeSelector: {
+                                    "kubernetes.io/hostname": "ubuntu-1"
+                                },
                                 containers: [{
                                     name: "rabbitmq",
                                     image: "rabbitmq:management",
