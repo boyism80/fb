@@ -124,9 +124,9 @@ public:
     {
         try
         {
-            // Declare queue with the routing key as queue name, as quorum queue for high availability
+            // Declare queue with the routing key as queue name
             // In Direct exchange, queue name and routing key are the same
-            auto& queue = this->_amqp->declare_queue(key, true, false, false, true);
+            auto& queue = this->_amqp->declare_queue(key, true, false, false, false);
             queue.bind(exchange, key);
 
             auto& route = queue.route();

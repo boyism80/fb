@@ -124,13 +124,8 @@ namespace Log.Worker
             // Get queue size from configuration
             var queueSize = _configuration.GetValue<int>("RabbitMQ:QueueSize", 128);
 
-            // Declare and bind all log queues as quorum queues for high availability
+            // Declare and bind all log queues
             // In Direct exchange, queue name and routing key are the same (e.g., "fb.log.0")
-            var queueArguments = new Dictionary<string, object>
-            {
-                { "x-queue-type", "quorum" }
-            };
-
             for (int i = 0; i < queueSize; i++)
             {
                 var queueName = $"{QueueNamePrefix}{i}";
@@ -139,8 +134,8 @@ namespace Log.Worker
 
                 try
                 {
-                    // Declare queue as quorum queue for high availability in cluster
-                    _channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: queueArguments);
+                    // Declare queue as durable to persist messages
+                    _channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
 
                     // Bind queue to exchange with routing key (same as queue name for Direct exchange)
                     _channel.QueueBind(queueName, ExchangeName, routingKey);
@@ -151,8 +146,7 @@ namespace Log.Worker
                     if (ex.ShutdownReason?.ReplyText?.Contains("PRECONDITION_FAILED") == true)
                     {
                         _logger.LogError(ex,
-                            "Failed to declare queue '{QueueName}': Queue already exists with different parameters. " +
-                            "If migrating from classic to quorum queue, delete the existing queue first.",
+                            "Failed to declare queue '{QueueName}': Queue already exists with different parameters.",
                             queueName);
                     }
                     else

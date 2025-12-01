@@ -49,16 +49,9 @@ namespace Http.Service
 
             _channel.ExchangeDeclare("amq.direct", ExchangeType.Direct, durable: true);
 
-            // Declare queue as quorum queue for high availability
-            // Note: Quorum queues must be durable, so we use durable: true
-            var queueArguments = new Dictionary<string, object>
-            {
-                { "x-queue-type", "quorum" }
-            };
-
             try
             {
-                _queueName = _channel.QueueDeclare(string.Empty, durable: true, exclusive: false, autoDelete: false, arguments: queueArguments);
+                _queueName = _channel.QueueDeclare(string.Empty, durable: false, exclusive: false, autoDelete: false, arguments: null);
                 _channel.QueueBind(_queueName, "amq.direct", "fb.system");
             }
             catch (RabbitMQ.Client.Exceptions.OperationInterruptedException ex)
@@ -67,8 +60,7 @@ namespace Http.Service
                 if (ex.ShutdownReason?.ReplyText?.Contains("PRECONDITION_FAILED") == true)
                 {
                     _logger.LogError(ex,
-                        "Failed to declare shutdown listener queue: Queue already exists with different parameters. " +
-                        "If migrating from classic to quorum queue, delete the existing queue first.");
+                        "Failed to declare shutdown listener queue: Queue already exists with different parameters.");
                 }
                 else
                 {

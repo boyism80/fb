@@ -107,8 +107,7 @@ queue& socket::declare_queue(const std::string& queue_name, bool durable, bool e
         std::string error_detail;
         if (reply.reply_type == AMQP_RESPONSE_SERVER_EXCEPTION)
         {
-            error_detail = "Queue already exists with different parameters (PRECONDITION_FAILED). "
-                           "If migrating from classic to quorum queue, delete the existing queue first.";
+            error_detail = "Queue already exists with different parameters (PRECONDITION_FAILED).";
         }
         else if (reply.reply_type == AMQP_RESPONSE_LIBRARY_EXCEPTION)
         {
