@@ -2,6 +2,7 @@ using System.Text.Json;
 using Dapper;
 using Http.Extension;
 using Http.Service;
+using Microsoft.Extensions.Logging;
 using MySqlConnector;
 
 namespace Log.Repository

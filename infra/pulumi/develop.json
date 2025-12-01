@@ -143,17 +143,32 @@
     },
     "rabbitmq": {
         "section-1": {
-            "port": {
-                "amqp": {
-                    "cluster": 5672,
-                    "node": 30300
+            "internal": {
+                "port": {
+                    "amqp": {
+                        "cluster": 5672,
+                        "node": 30300
+                    },
+                    "management": {
+                        "cluster": 15672,
+                        "node": 30301
+                    }
                 },
-                "management": {
-                    "cluster": 15672,
-                    "node": 30301
-                }
+                "replicas": 4
             },
-            "replicas": 4
+            "log": {
+                "port": {
+                    "amqp": {
+                        "cluster": 5673,
+                        "node": 30302
+                    },
+                    "management": {
+                        "cluster": 15673,
+                        "node": 30303
+                    }
+                },
+                "replicas": 4
+            }
         }
     },
     "log": {

@@ -36,6 +36,16 @@ public:
 
     bool select(const timeval* timeout = nullptr);
 
+    /// <summary>
+    /// Publishes a message to the specified exchange and routing key.
+    /// </summary>
+    /// <param name="exchange">Exchange name to publish to (empty string for default exchange).</param>
+    /// <param name="routing_key">Routing key for message routing (typically the queue name for default exchange).</param>
+    /// <param name="message">Message body to publish.</param>
+    /// <param name="properties">Optional AMQP properties (nullptr for default).</param>
+    /// <returns>True if publish was successful, false otherwise.</returns>
+    bool publish(const std::string& exchange, const std::string& routing_key, const std::vector<uint8_t>& message, const amqp_basic_properties_t* properties = nullptr);
+
 public:
     operator amqp_connection_state_t ();
 };

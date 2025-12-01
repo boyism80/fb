@@ -4,9 +4,9 @@ const k8s = require("@pulumi/kubernetes")
 module.exports = {
     setup: function (namespace, conf, dependsOn) {
 
-        const resources = []
+        const deployments = []
+        const appLabels = { app: "log" }
         for(const [section, sectionConf] of Object.entries(conf.log)) {
-            const appLabels = { app: `log-${section}` }
             const config = {
                 "Logging": {
                     "LogLevel": {
@@ -14,12 +14,16 @@ module.exports = {
                         "Microsoft.AspNetCore": "Warning"
                     }
                 },
-                "AllowedHosts": "*",
                 "ConnectionStrings": {
                     "MySql": {}
                 },
-                "Redis": {},
-                "Urls": `http://0.0.0.0:${sectionConf.port.cluster}`
+                "RabbitMQ": {
+                    "Host": `rabbitmq-${sectionConf.rabbitmq || "section-1"}-log`,
+                    "Port": conf.rabbitmq[sectionConf.rabbitmq || "section-1"].log.port.amqp.cluster,
+                    "Uid": "fb",
+                    "Pwd": "admin",
+                    "QueueSize": 128
+                }
             }
 
             // Use log MySQL instances
@@ -29,20 +33,10 @@ module.exports = {
                 })
             }
 
-            // Use log Redis instances
-            if (conf.redis[section] && conf.redis[section].log && Array.isArray(conf.redis[section].log)) {
-                conf.redis[section].log.forEach((logConf, index) => {
-                    config.Redis[index.toString()] = {
-                        Host: `redis-${section}-log`,
-                        Port: logConf.port.cluster
-                    }
-                })
-            }
-
             const configMap = new k8s.core.v1.ConfigMap(`log-${section}`, {
                 metadata: { name: `log-${section}`, namespace: namespace.metadata.name },
                 data: {
-                    "appsettings.k8s.json": JSON.stringify(config),
+                    "appsettings.json": JSON.stringify(config),
                 },
             })
 
@@ -66,34 +60,10 @@ module.exports = {
                                         add: ["SYS_PTRACE"]
                                     }
                                 },
-                                ports: [{ containerPort: 80, name: `log` }],
-                                startupProbe: {
-                                    httpGet: {
-                                        path: "/health",
-                                        port: 80,
-                                    },
-                                    initialDelaySeconds: 10,
-                                    periodSeconds: 5,
-                                    failureThreshold: 30
-                                },
-                                resources: {
-                                    requests: {
-                                        cpu: "500m"
-                                    }
-                                },
-                                env: [
-                                    {
-                                        name: 'ASPNETCORE_ENVIRONMENT',
-                                        value: 'k8s'
-                                    },
-                                    {
-                                        name: 'ASPNETCORE_HTTP_PORTS',
-                                        value: '80'
-                                    }],
                                 volumeMounts: [{
                                     name: "config-volume",
-                                    mountPath: "/app/appsettings.k8s.json",
-                                    subPath: "appsettings.k8s.json"
+                                    mountPath: "/app/appsettings.json",
+                                    subPath: "appsettings.json"
                                 }],
                             }],
                             volumes: [{
@@ -106,29 +76,11 @@ module.exports = {
                     },
                 },
             }, { dependsOn: dependsOn })
-
-            const service = new k8s.core.v1.Service(`log-${section}`, {
-                metadata: { name: `log-${section}`, namespace: namespace.metadata.name },
-                spec: {
-                    type: "NodePort",
-                    ports: [{ 
-                        name: `log-${section}`,
-                        port: sectionConf.port.cluster,
-                        targetPort: `log`,
-                        protocol: "TCP",
-                        nodePort: sectionConf.port.node 
-                    }],
-                    selector: appLabels,
-                },
-            }, { dependsOn: dependsOn })
             
-            // Collect all resources
-            resources.push(configMap)
-            resources.push(deployment)
-            resources.push(service)
+            deployments.push(deployment)
         }
         
-        return resources
+        return deployments
     }
 }
 

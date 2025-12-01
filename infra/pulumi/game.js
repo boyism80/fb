@@ -28,10 +28,19 @@ module.exports = function () {
                         },
                         login: { ip: conf.host, port: conf.login[sectionConf.login].port },
                         amqp: {
-                            ip: `rabbitmq-${sectionConf.rabbitmq}`,
-                            port: conf.rabbitmq[sectionConf.rabbitmq].port.amqp.cluster,
-                            uid: "fb",
-                            pwd: "admin"
+                            internal: {
+                                ip: `rabbitmq-${sectionConf.rabbitmq}-internal`,
+                                port: conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
+                                uid: "fb",
+                                pwd: "admin"
+                            },
+                            log: {
+                                ip: `rabbitmq-${sectionConf.rabbitmq}-log`,
+                                port: conf.rabbitmq[sectionConf.rabbitmq].log.port.amqp.cluster,
+                                uid: "fb",
+                                pwd: "admin",
+                                queue_size: 128
+                            }
                         },
                         log: {
                             ip: `log-${sectionConf.log}`,
