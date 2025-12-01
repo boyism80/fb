@@ -6,8 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
-
 namespace Log
 {
     /// <summary>
@@ -24,6 +22,7 @@ namespace Log
         /// <returns>A task representing the asynchronous execution of the application.</returns>
         static async Task Main(string[] args)
         {
+            Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
             var host = Host.CreateDefaultBuilder(args)
                 .ConfigureServices(services =>
                 {
