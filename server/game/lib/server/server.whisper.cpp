@@ -1,4 +1,6 @@
 #include <fb/game/server.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::game;
 
@@ -42,6 +44,15 @@ async::task<void> server::whisper(character& sender, std::string receiver_name, 
 
         co_await this->threads.switching(sender_weak);
         sender.message(std::format("{}< {}", target_name, message), MESSAGE_TYPE::NOTIFY);
+
+        // Log whisper event
+        auto log_data             = Json::Value();
+        log_data["sender_id"]     = static_cast<Json::Int64>(sender.id());
+        log_data["sender_name"]   = UTF8(sender_name, PLATFORM::WINDOWS);
+        log_data["receiver_id"]   = static_cast<Json::Int64>(receiver->id());
+        log_data["receiver_name"] = UTF8(target_name, PLATFORM::WINDOWS);
+        log_data["message"]       = UTF8(message, PLATFORM::WINDOWS);
+        this->log.write("whisper", log_data);
     }
     else
     {
@@ -50,13 +61,29 @@ async::task<void> server::whisper(character& sender, std::string receiver_name, 
 
         this->on_whisper(resp);
         sender.message(std::format("{}< {}", receiver_name, message), MESSAGE_TYPE::NOTIFY);
+
+        // Log whisper event (cross-server)
+        auto log_data             = Json::Value();
+        log_data["sender_id"]     = static_cast<Json::Int64>(sender.id());
+        log_data["sender_name"]   = UTF8(sender_name, PLATFORM::WINDOWS);
+        log_data["receiver_name"] = UTF8(receiver_name, PLATFORM::WINDOWS);
+        log_data["message"]       = UTF8(message, PLATFORM::WINDOWS);
+        this->log.write("whisper", log_data);
     }
 }
 
 void server::on_whisper(const internal_resp::Whisper& resp)
 {
     this->assert_whisper(resp);
-    this->characters.invoke(resp.to, [resp](auto& ch) {
+    this->characters.invoke(resp.to, [resp, this](auto& ch) {
         ch->message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
+
+        // Log whisper event (received)
+        auto log_data             = Json::Value();
+        log_data["sender_name"]   = UTF8(resp.from, PLATFORM::WINDOWS);
+        log_data["receiver_id"]   = static_cast<Json::Int64>(ch->id());
+        log_data["receiver_name"] = UTF8(resp.to, PLATFORM::WINDOWS);
+        log_data["message"]       = UTF8(resp.message, PLATFORM::WINDOWS);
+        this->log.write("whisper", log_data);
     });
 }

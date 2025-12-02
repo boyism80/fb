@@ -89,9 +89,9 @@ private:
     npc_interaction_handler_list _npc_interaction_handlers;
 
 public:
-    std::unique_ptr<fb::log_collector> log;
-    fb::game::polling                  poll = polling(*this);
-    fb::game::listener_impl            listener;
+    fb::log_collector       log;
+    fb::game::polling       poll = polling(*this);
+    fb::game::listener_impl listener;
 
     fb::game::map_container                                 maps;
     fb::game::character::container                          characters;

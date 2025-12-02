@@ -1,6 +1,9 @@
 #include <fb/game/server.h>
 #include <fb/game/life.h>
 #include <fb/game/spell.h>
+#include <fb/game/character.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::game;
 
@@ -102,7 +105,22 @@ uint8_t spells::add(std::shared_ptr<spell> element)
 
     auto index = super::add(element);
     if (index != 0xFF)
+    {
         owner->listener.on_spell_update(*owner, index);
+
+        // Log spell add event (only for characters)
+        if (owner->is(OBJECT_TYPE::CHARACTER))
+        {
+            auto& ch                   = static_cast<character&>(*owner);
+            auto  log_data             = Json::Value();
+            log_data["character_id"]   = static_cast<Json::Int64>(ch.id());
+            log_data["character_name"] = UTF8(ch.name(), PLATFORM::WINDOWS);
+            log_data["spell_id"]       = static_cast<Json::Int64>(element->model.id);
+            log_data["spell_name"]     = UTF8(element->model.name, PLATFORM::WINDOWS);
+            log_data["slot"]           = index;
+            ch.server.log.write("spell_add", log_data);
+        }
+    }
 
     return index;
 }
@@ -116,7 +134,22 @@ uint8_t spells::add(std::shared_ptr<spell> element, uint8_t index)
     owner->assert_thread();
 
     if (super::add(element, index) != 0xFF)
+    {
         owner->listener.on_spell_update(*owner, index);
+
+        // Log spell add event (only for characters)
+        if (owner->is(OBJECT_TYPE::CHARACTER))
+        {
+            auto& ch                   = static_cast<character&>(*owner);
+            auto  log_data             = Json::Value();
+            log_data["character_id"]   = static_cast<Json::Int64>(ch.id());
+            log_data["character_name"] = UTF8(ch.name(), PLATFORM::WINDOWS);
+            log_data["spell_id"]       = static_cast<Json::Int64>(element->model.id);
+            log_data["spell_name"]     = UTF8(element->model.name, PLATFORM::WINDOWS);
+            log_data["slot"]           = index;
+            ch.server.log.write("spell_add", log_data);
+        }
+    }
 
     return index;
 }
@@ -158,7 +191,23 @@ bool spells::remove(uint8_t index)
     auto success = super::remove(index);
 
     if (success)
+    {
         owner->listener.on_spell_remove(*owner, index);
+
+        // Log spell remove event (only for characters)
+        if (owner->is(OBJECT_TYPE::CHARACTER))
+        {
+            auto& ch = static_cast<character&>(*owner);
+            // Get spell info before removal (we need to get it from the element that was removed)
+            // Note: element is already removed, so we can't get model info here
+            // We'll log what we can
+            auto log_data              = Json::Value();
+            log_data["character_id"]   = static_cast<Json::Int64>(ch.id());
+            log_data["character_name"] = UTF8(ch.name(), PLATFORM::WINDOWS);
+            log_data["slot"]           = index;
+            ch.server.log.write("spell_remove", log_data);
+        }
+    }
 
     return success;
 }
@@ -266,9 +315,7 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     return true;
 }
 
-std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  model,
-                                       uint32_t                                 seconds,
-                                       const std::shared_ptr<fb::game::object>& caster)
+std::shared_ptr<buff> buffs::push_back(const fb::model::spell& model, uint32_t seconds, const std::shared_ptr<fb::game::object>& caster)
 {
     this->_owner.assert_thread();
 

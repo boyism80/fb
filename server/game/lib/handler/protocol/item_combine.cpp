@@ -1,5 +1,7 @@
 #include <fb/game/handler/protocol/item_combine.h>
 #include <fb/game/server.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::game::handler::protocol;
 using table = fb::model::table;
@@ -92,5 +94,33 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, fb::proto
 
     auto& message = success ? _TEXT(MESSAGE_MIX_SUCCESS) : _TEXT(MESSAGE_MIX_FAILED);
     ch->message(message);
+
+    // Log item combine event
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+    log_data["success"]        = success;
+    auto source_items          = Json::Value(Json::arrayValue);
+    for (auto& x : found->source)
+    {
+        auto params          = fb::model::dsl::item(x.params);
+        auto item_data       = Json::Value();
+        item_data["item_id"] = static_cast<Json::Int64>(params.id);
+        item_data["count"]   = static_cast<Json::Int64>(params.count);
+        source_items.append(item_data);
+    }
+    log_data["source_items"] = source_items;
+    auto result_items        = Json::Value(Json::arrayValue);
+    for (auto& dsl : result)
+    {
+        auto params          = fb::model::dsl::item(dsl.params);
+        auto item_data       = Json::Value();
+        item_data["item_id"] = static_cast<Json::Int64>(params.id);
+        item_data["count"]   = static_cast<Json::Int64>(params.count);
+        result_items.append(item_data);
+    }
+    log_data["result_items"] = result_items;
+    this->server.log.write("item_combine", log_data);
+
     co_return true;
 }

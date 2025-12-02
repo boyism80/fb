@@ -5,8 +5,7 @@ fb::game::handler::protocol::trade::trade(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::trade>(server)
 { }
 
-async::task<bool> fb::game::handler::protocol::trade::handle(fb::socket<character>&              session,
-                                                             fb::protocol::game::request::trade& request)
+async::task<bool> fb::game::handler::protocol::trade::handle(fb::socket<character>& session, fb::protocol::game::request::trade& request)
 {
     auto me = session.data();
     if (me->inited() == false)

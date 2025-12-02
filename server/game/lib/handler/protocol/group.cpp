@@ -5,8 +5,7 @@ fb::game::handler::protocol::group::group(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::group>(server)
 { }
 
-async::task<bool> fb::game::handler::protocol::group::handle(fb::socket<character>&              session,
-                                                             fb::protocol::game::request::group& request)
+async::task<bool> fb::game::handler::protocol::group::handle(fb::socket<character>& session, fb::protocol::game::request::group& request)
 {
     auto me = session.data();
     if (me->inited() == false)

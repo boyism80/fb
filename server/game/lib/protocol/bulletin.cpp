@@ -40,13 +40,7 @@ async::task<void> bulletin::deserialize(fb::stream_reader<big_endian>& reader)
     }
 }
 #else
-bulletin::bulletin(BULLETIN_ACTION    action,
-                   uint16_t           section,
-                   uint16_t           article,
-                   uint16_t           offset,
-                   const std::string& title,
-                   const std::string& contents,
-                   const std::string& user) :
+bulletin::bulletin(BULLETIN_ACTION action, uint16_t section, uint16_t article, uint16_t offset, const std::string& title, const std::string& contents, const std::string& user) :
     action(action),
     section(section),
     article(article),

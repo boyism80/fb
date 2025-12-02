@@ -1,5 +1,7 @@
 #include <fb/game/handler/protocol/chat.h>
 #include <fb/game/server.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::game::handler::protocol;
 
@@ -43,6 +45,22 @@ async::task<bool> chat::handle(fb::socket<character>& session, fb::protocol::gam
 
         stop = lua->toboolean(1);
         lua->release();
+
+        // Log command execution event (script executed via chat)
+        if (stop)
+        {
+            auto log_data              = Json::Value();
+            log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+            log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+            log_data["command"]        = UTF8(request.message, PLATFORM::WINDOWS);
+            auto map                   = ch->map();
+            if (map != nullptr)
+            {
+                log_data["map"] = map->model.id;
+            }
+            this->server.log.write("command_execute", log_data);
+            co_return true;
+        }
     }
     if (stop)
         co_return true;
@@ -50,6 +68,18 @@ async::task<bool> chat::handle(fb::socket<character>& session, fb::protocol::gam
     auto message = std::string{request.message};
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
     ch->chat(message, type, true);
+
+    // Log chat event
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+    log_data["message"]        = UTF8(message, PLATFORM::WINDOWS);
+    log_data["chat_type"]      = request.shout ? "shout" : "normal";
+    if (map != nullptr)
+    {
+        log_data["map"] = map->model.id;
+    }
+    this->server.log.write("chat", log_data);
 
     auto npcs = std::vector<std::shared_ptr<fb::game::npc>>();
     if (type == CHAT_TYPE::SHOUT)

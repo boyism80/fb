@@ -1,4 +1,6 @@
 #include <fb/game/server.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::game;
 
@@ -78,6 +80,15 @@ async::task<void> server::create_clan(character& me, std::string name)
 
         me->clan_id(id);
         clan->attach_character(weak);
+
+        // Log clan create event
+        auto log_data              = Json::Value();
+        log_data["character_id"]   = static_cast<Json::Int64>(me->id());
+        log_data["character_name"] = UTF8(me->name(), PLATFORM::WINDOWS);
+        log_data["clan_id"]        = static_cast<Json::Int64>(id);
+        log_data["clan_name"]      = UTF8(resp.clan.name, PLATFORM::WINDOWS);
+        this->log.write("clan_create", log_data);
+
         co_return;
     });
 }
@@ -169,8 +180,19 @@ async::task<void> server::on_clan_title_changed(const internal_resp::SetClanTitl
 {
     this->assert_clan(resp.error);
 
-    co_await this->upsert_clan_then(resp.clan, [&title = resp.title](auto& clan) -> async::task<void> {
-        clan->title(title);
+    co_await this->upsert_clan_then(resp.clan, [this, &resp](auto& clan) -> async::task<void> {
+        auto old_title = clan->title();
+        clan->title(resp.title);
+
+        // Log clan title change event
+        auto log_data         = Json::Value();
+        log_data["clan_id"]   = static_cast<Json::Int64>(clan->id());
+        log_data["clan_name"] = UTF8(clan->name(), PLATFORM::WINDOWS);
+        log_data["old_title"] = old_title.has_value() ? Json::Value(UTF8(old_title.value(), PLATFORM::WINDOWS)) : Json::Value::null;
+        log_data["new_title"] = resp.title.has_value() ? Json::Value(UTF8(resp.title.value(), PLATFORM::WINDOWS)) : Json::Value::null;
+        // log_data["changer_uid"] = static_cast<Json::Int64>(resp.changer_uid);
+        this->log.write("clan_title_change", log_data);
+
         co_return;
     });
 }
@@ -213,6 +235,14 @@ async::task<void> server::on_clan_join_member(const internal_resp::JoinClan& res
             ch->clan_id(clan->id());
             ch->update_external(false);
             ch->message(std::format("{} 문파에 가입되었습니다.", clan->name()), MESSAGE_TYPE::NOTIFY);
+
+            // Log clan join event
+            auto log_data              = Json::Value();
+            log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+            log_data["character_name"] = UTF8(resp.member.name, PLATFORM::WINDOWS);
+            log_data["clan_id"]        = static_cast<Json::Int64>(clan->id());
+            log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
+            this->log.write("clan_join", log_data);
         }
     });
 }
@@ -229,6 +259,14 @@ async::task<void> server::on_clan_leave_member(const internal_resp::LeaveClan& r
             ch->clan_reset();
             ch->update_external(false);
             ch->message("문파에서 탈퇴했습니다.", MESSAGE_TYPE::NOTIFY);
+
+            // Log clan leave event
+            auto log_data              = Json::Value();
+            log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+            log_data["character_name"] = UTF8(resp.uname, PLATFORM::WINDOWS);
+            log_data["clan_id"]        = static_cast<Json::Int64>(clan->id());
+            log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
+            this->log.write("clan_leave", log_data);
         }
 
         clan->leave(resp.uname);
@@ -266,6 +304,14 @@ async::task<void> server::on_clan_kick_member(const internal_resp::KickClan& res
             ch->clan_reset();
             ch->update_external(false);
             ch->message("문파에서 추방당했습니다.", MESSAGE_TYPE::NOTIFY);
+
+            // Log clan kick event
+            auto log_data              = Json::Value();
+            log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+            log_data["character_name"] = UTF8(resp.uname, PLATFORM::WINDOWS);
+            log_data["clan_id"]        = static_cast<Json::Int64>(clan->id());
+            log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
+            this->log.write("clan_kick", log_data);
         }
 
         clan->leave(resp.uname);

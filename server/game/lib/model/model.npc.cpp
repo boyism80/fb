@@ -19,7 +19,7 @@ fb::model::npc* fb::model::__npc::name2npc(const std::string& name) const
     {
         if (npc.second.name == name)
         {
-            auto lock = std::lock_guard(cache_mutex);
+            auto lock   = std::lock_guard(cache_mutex);
             cache[name] = &npc.second;
             return &npc.second;
         }

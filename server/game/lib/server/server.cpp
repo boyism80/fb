@@ -2,6 +2,7 @@
 #include <fb/game/handler.h>
 #include <fb/game/builtin/server.h>
 #include <fb/log_collector.h>
+#include <fb/encoding.h>
 #include <json/json.h>
 
 using namespace fb::game;
@@ -23,7 +24,14 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         [](const map::cache_bytes& cache_bytes) -> uint64_t {
             return cache_bytes.hash;
         },
-        1024)
+        1024),
+    log(fb::config<std::string>("amqp:log:ip"),
+        fb::config<uint16_t>("amqp:log:port"),
+        fb::config<std::string>("amqp:log:uid"),
+        fb::config<std::string>("amqp:log:pwd"),
+        std::to_string(fb::config<uint32_t>("id")),
+        fb::config<std::string>("name"),
+        fb::config<size_t>("amqp:log:queue_size"))
 {
     auto& ist = fb::lua::context_pool::ist();
     ist.setup(this->threads);
@@ -103,25 +111,6 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
             fb::model::lua::map_enum(*root);
             co_return;
         });
-    }
-
-    // Initialize log collector with RabbitMQ
-    try
-    {
-        auto server_id   = std::to_string(fb::config<uint32_t>("id"));
-        auto server_name = fb::config<std::string>("name");
-        auto queue_size  = fb::config<size_t>("amqp:log:queue_size");
-        this->log        = std::make_unique<fb::log_collector>(fb::config<std::string>("amqp:log:ip"),
-                                                        fb::config<uint16_t>("amqp:log:port"),
-                                                        fb::config<std::string>("amqp:log:uid"),
-                                                        fb::config<std::string>("amqp:log:pwd"),
-                                                        server_id,
-                                                        server_name,
-                                                        queue_size);
-    }
-    catch (const std::exception& e)
-    {
-        fb::logger::warn("Failed to initialize log collector: {}", e.what());
     }
 }
 
@@ -338,6 +327,20 @@ async::task<bool> server::handle_disconnected(fb::socket<character>& socket)
     auto ptr = weak.lock();
     if (ptr != nullptr)
     {
+        // Log logout event
+        auto log_data              = Json::Value();
+        log_data["character_id"]   = static_cast<Json::Int64>(ptr->id());
+        log_data["character_name"] = UTF8(ptr->name(), PLATFORM::WINDOWS);
+        log_data["level"]          = ptr->level();
+        auto map                   = ptr->map();
+        if (map != nullptr)
+        {
+            log_data["map"]        = map->model.id;
+            log_data["position_x"] = ptr->position().x;
+            log_data["position_y"] = ptr->position().y;
+        }
+        this->log.write("logout", log_data);
+
         auto& group_id = ptr->group_id();
         if (group_id.has_value())
         {

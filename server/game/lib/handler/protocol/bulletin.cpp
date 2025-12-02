@@ -1,5 +1,7 @@
 #include <fb/game/handler/protocol/bulletin.h>
 #include <fb/game/server.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::model;
 
@@ -81,6 +83,17 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
 
                 ch->mail_box.show(mail_box::mail{resp.mail.id, resp.mail.user, resp.mail.sender, resp.mail.title, resp.mail.contents, resp.mail.read, resp.mail.created_date},
                                   flag);
+
+                // Log mail read event (only if not read before)
+                if (!resp.mail.read)
+                {
+                    auto log_data              = Json::Value();
+                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+                    log_data["mail_id"]        = request.article;
+                    log_data["sender_name"]    = UTF8(resp.mail.sender, PLATFORM::WINDOWS);
+                    this->server.log.write("mail_read", log_data);
+                }
             }
             else
             {
@@ -118,6 +131,14 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             co_await this->server.threads.switching(weak);
 
             ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_WRITE), true, false);
+
+            // Log bulletin write event
+            auto log_data              = Json::Value();
+            log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+            log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+            log_data["section"]        = request.section;
+            log_data["title"]          = UTF8(request.title, PLATFORM::WINDOWS);
+            this->server.log.write("bulletin_write", log_data);
         }
         catch (std::exception& e)
         {
@@ -137,12 +158,27 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 auto&& resp = co_await this->server.delete_mail(*ch, request.article);
                 co_await this->server.threads.switching(weak);
                 ch->mail_box.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, false);
+
+                // Log mail delete event
+                auto log_data              = Json::Value();
+                log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+                log_data["mail_id"]        = request.article;
+                this->server.log.write("mail_delete", log_data);
             }
             else
             {
                 co_await this->server.delete_bulletin(*ch, request.section, request.article);
                 co_await this->server.threads.switching(weak);
                 ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, true);
+
+                // Log bulletin delete event
+                auto log_data              = Json::Value();
+                log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+                log_data["section"]        = request.section;
+                log_data["article_id"]     = request.article;
+                this->server.log.write("bulletin_delete", log_data);
             }
         }
         catch (std::exception& e)
@@ -193,6 +229,14 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             auto&& resp = co_await this->server.send_mail(*ch, request.user, request.title, request.contents);
             co_await this->server.threads.switching(weak);
             ch->mail_box.message("우편을 보냈습니다.", true, false);
+
+            // Log mail write event
+            auto log_data             = Json::Value();
+            log_data["sender_id"]     = static_cast<Json::Int64>(ch->id());
+            log_data["sender_name"]   = UTF8(ch->name(), PLATFORM::WINDOWS);
+            log_data["receiver_name"] = UTF8(request.user, PLATFORM::WINDOWS);
+            log_data["title"]         = UTF8(request.title, PLATFORM::WINDOWS);
+            this->server.log.write("mail_write", log_data);
         }
         catch (std::exception& e)
         {

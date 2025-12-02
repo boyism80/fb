@@ -21,9 +21,7 @@ int main(int argc, char** argv)
     try
     {
         po::options_description desc("Login Server Options");
-        desc.add_options()("help,h", "Show help message")("config,c",
-                                                          po::value<std::string>()->default_value("config.json"),
-                                                          "Configuration file path");
+        desc.add_options()("help,h", "Show help message")("config,c", po::value<std::string>()->default_value("config.json"), "Configuration file path");
 
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm);

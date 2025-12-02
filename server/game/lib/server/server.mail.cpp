@@ -1,4 +1,6 @@
 #include <fb/game/server.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::game;
 
@@ -29,8 +31,17 @@ void server::on_write_mail(const internal_resp::WriteMail& resp)
         return;
 
     auto weak = ch->weak_from_this_as<character>();
-    this->threads.enqueue(weak, [ch, unread = resp.unread](auto& thread) -> async::task<void> {
+    this->threads.enqueue(weak, [this, ch, unread = resp.unread, resp](auto& thread) -> async::task<void> {
         ch->mail_box.unread_count(unread);
+
+        // Log mail receive event
+        auto log_data            = Json::Value();
+        log_data["character_id"] = static_cast<Json::Int64>(ch->id());
+        log_data["sender_name"]  = UTF8(resp.mail.sender, PLATFORM::WINDOWS);
+        log_data["mail_id"]      = static_cast<Json::Int64>(resp.mail.id);
+        log_data["title"]        = UTF8(resp.mail.title, PLATFORM::WINDOWS);
+        this->log.write("mail_receive", log_data);
+
         co_return;
     });
 }

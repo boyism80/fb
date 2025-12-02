@@ -1,6 +1,8 @@
 #include <fb/game/server.h>
 #include <fb/game/group.h>
 #include <fb/game/character.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::game;
 
@@ -131,7 +133,7 @@ async::task<void> server::on_enter_group(const internal_resp::EnterGroup& resp)
             members.push_back(resp.member);
 
         // Process group action for all affected members
-        this->characters.foreach (members, [resp, group](auto& ch) {
+        this->characters.foreach (members, [this, resp, group](auto& ch) {
             switch (resp.action)
             {
             case GroupAction::Create:
@@ -140,6 +142,13 @@ async::task<void> server::on_enter_group(const internal_resp::EnterGroup& resp)
                 if (ch->name() == resp.member)
                 {
                     ch->message("그룹에 참여했습니다.");
+
+                    // Log group create event
+                    auto log_data              = Json::Value();
+                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+                    log_data["group_id"]       = static_cast<Json::Int64>(group->id());
+                    this->log.write("group_create", log_data);
                 }
                 else
                 {
@@ -194,9 +203,18 @@ async::task<void> server::on_leave_group(const internal_resp::LeaveGroup& resp)
 
             auto members = std::vector<std::string>{resp.member};
             members.push_back(resp.group.master);
-            this->characters.foreach (members, [member = resp.member](auto& ch) {
+            this->characters.foreach (members, [this, member = resp.member, gid](auto& ch) {
                 if (ch->name() == member)
+                {
                     ch->message("그룹 탈퇴", MESSAGE_TYPE::STATE);
+
+                    // Log group leave event
+                    auto log_data              = Json::Value();
+                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+                    log_data["group_id"]       = static_cast<Json::Int64>(gid);
+                    this->log.write("group_leave", log_data);
+                }
                 else
                     ch->message(std::format("{}님 그룹에서 탈퇴", member), MESSAGE_TYPE::STATE);
             });

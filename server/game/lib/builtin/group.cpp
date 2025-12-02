@@ -133,11 +133,7 @@ int builtin::group::builtin_kick(lua_State* L)
     auto kicker = lua->tostring(2);
     auto target = lua->tostring(3);
 
-    static auto fn = [](fb::game::server*  server,
-                        fb::lua::context*  lua,
-                        fb::game::group*   group,
-                        const std::string& kicker,
-                        const std::string& target) -> async::task<void> {
+    static auto fn = [](fb::game::server* server, fb::lua::context* lua, fb::game::group* group, const std::string& kicker, const std::string& target) -> async::task<void> {
         try
         {
             co_await server->kick_group_member(*group, kicker, target);

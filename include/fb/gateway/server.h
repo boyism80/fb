@@ -29,7 +29,7 @@ private:
     fb::stream            _connection_cache;
 
 public:
-    std::unique_ptr<fb::log_collector> log;
+    fb::log_collector log;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);
