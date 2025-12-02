@@ -150,153 +150,36 @@ cluster_partition_handling = autoheal
                                 nodeSelector: {
                                     "kubernetes.io/hostname": "ubuntu-1"
                                 },
-                                initContainers: [
-                                    {
-                                        name: "setup-data-dir",
-                                        image: "busybox:latest",
-                                        securityContext: {
-                                            runAsUser: 0,
-                                            runAsGroup: 0,
-                                            privileged: false
-                                        },
-                                        command: [
-                                            "sh", "-c",
-                                            `#!/bin/sh
-set -e
+                                initContainers: [{
+                                    name: "cleanup-and-setup",
+                                    image: "busybox:latest",
+                                    securityContext: {
+                                        runAsUser: 0,
+                                        runAsGroup: 0,
+                                        privileged: false
+                                    },
+                                    command: [
+                                        "sh", "-c",
+                                        `#!/bin/sh
+echo "Removing all RabbitMQ data for fresh start..."
+rm -rf /var/lib/rabbitmq/*
+echo "Data cleanup complete"
 
-# Create directories and set proper permissions
+echo "Creating directory structure..."
 mkdir -p /var/lib/rabbitmq/mnesia
 mkdir -p /var/lib/rabbitmq/log
 
-# Set ownership recursively (must be root to change ownership on hostPath)
 echo "Setting ownership to 999:999..."
-chown -R 999:999 /var/lib/rabbitmq || {
-    echo "Warning: chown failed, attempting to fix permissions..."
-    # If chown fails, try to at least make it writable
-    chmod -R 777 /var/lib/rabbitmq
-    exit 1
-}
+chown -R 999:999 /var/lib/rabbitmq
+chmod -R 755 /var/lib/rabbitmq
 
-# Set directory permissions
-find /var/lib/rabbitmq -type d -exec chmod 755 {} + || true
-
-# Set file permissions (excluding .erlang.cookie which needs 400)
-find /var/lib/rabbitmq -type f ! -name ".erlang.cookie" -exec chmod 644 {} + || true
-
-# Ensure .erlang.cookie has correct permissions (owner read-only, 400)
-if [ -f /var/lib/rabbitmq/.erlang.cookie ]; then
-    chmod 400 /var/lib/rabbitmq/.erlang.cookie || true
-    chown 999:999 /var/lib/rabbitmq/.erlang.cookie || true
-fi
-
-# Ensure mnesia directory is writable
-chmod 755 /var/lib/rabbitmq/mnesia || true
-
-# Verify ownership
-OWNER=$(stat -c '%U:%G' /var/lib/rabbitmq 2>/dev/null || stat -f '%Su:%Sg' /var/lib/rabbitmq 2>/dev/null || echo "unknown")
-echo "Data directory owner: $OWNER"
-echo "Data directory setup complete"
+echo "Setup complete - ready for fresh RabbitMQ start"
 `
-                                        ],
-                                        volumeMounts: [
-                                            { name: "data", mountPath: "/var/lib/rabbitmq" }
-                                        ]
-                                    },
-                                    {
-                                        name: "reset-cluster-metadata",
-                                        image: "busybox:latest",
-                                        securityContext: {
-                                            runAsUser: 0,
-                                            runAsGroup: 0,
-                                            privileged: false
-                                        },
-                                        command: [
-                                            "sh", "-c",
-                                            `#!/bin/sh
-set -e
-
-# Remove cluster metadata files while preserving queue data and messages
-# This allows fresh cluster formation on each deployment
-
-MNESIA_DIR="/var/lib/rabbitmq/mnesia"
-
-# Ensure permissions are correct before cleanup (must be root to change ownership on hostPath)
-echo "Ensuring correct permissions..."
-chown -R 999:999 /var/lib/rabbitmq || {
-    echo "Warning: chown failed, attempting to fix permissions..."
-    chmod -R 777 /var/lib/rabbitmq
-}
-find /var/lib/rabbitmq -type d -exec chmod 755 {} + || true
-# Set file permissions (excluding .erlang.cookie which needs 400)
-find /var/lib/rabbitmq -type f ! -name ".erlang.cookie" -exec chmod 644 {} + || true
-# Ensure .erlang.cookie has correct permissions (owner read-only, 400)
-if [ -f /var/lib/rabbitmq/.erlang.cookie ]; then
-    chmod 400 /var/lib/rabbitmq/.erlang.cookie || true
-    chown 999:999 /var/lib/rabbitmq/.erlang.cookie || true
-fi
-
-if [ -d "$MNESIA_DIR" ]; then
-    echo "Cleaning cluster metadata and corrupted files..."
-    
-    # Remove all coordination directories (they will be recreated)
-    find "$MNESIA_DIR" -type d -name "coordination" -exec rm -rf {} + 2>/dev/null || true
-    
-    # Find all node directories
-    NODE_DIRS=$(find $MNESIA_DIR -maxdepth 1 -type d -name "rabbit@*" 2>/dev/null || true)
-    
-    if [ -n "$NODE_DIRS" ]; then
-        echo "$NODE_DIRS" | while read NODE_DIR; do
-            if [ -n "$NODE_DIR" ] && [ -d "$NODE_DIR" ]; then
-                echo "Cleaning node directory: $NODE_DIR"
-                
-                # Remove cluster-related files (NOT queue data)
-                rm -f "$NODE_DIR/LATEST.LOG" 2>/dev/null || true
-                rm -f "$NODE_DIR/LATEST.LOG.previous" 2>/dev/null || true
-                rm -f "$NODE_DIR/cluster_nodes.config" 2>/dev/null || true
-                rm -rf "$NODE_DIR/coordination" 2>/dev/null || true
-                
-                # Remove schema files to force re-initialization
-                rm -f "$NODE_DIR/schema.DAT" 2>/dev/null || true
-                rm -f "$NODE_DIR/schema_version" 2>/dev/null || true
-                
-                # Remove crash dump files that might prevent startup
-                rm -f "$NODE_DIR/erl_crash.dump" 2>/dev/null || true
-                find "$NODE_DIR" -name "*.dets" -type f -delete 2>/dev/null || true
-                
-                # Remove lock files
-                find "$NODE_DIR" -name "*.lock" -type f -delete 2>/dev/null || true
-                
-                # Remove any corrupted dets files in subdirectories
-                find "$NODE_DIR" -name "meta.dets" -type f -delete 2>/dev/null || true
-                find "$NODE_DIR" -name "*.dets.*" -type f -delete 2>/dev/null || true
-            fi
-        done
-        
-        echo "Cluster metadata cleaned"
-    else
-        echo "No existing node directory found - fresh start"
-    fi
-else
-    echo "No mnesia directory - fresh start"
-fi
-
-# Final permission check
-chown -R 999:999 /var/lib/rabbitmq || true
-chmod 755 /var/lib/rabbitmq/mnesia || true
-# Ensure .erlang.cookie has correct permissions (owner read-only, 400)
-if [ -f /var/lib/rabbitmq/.erlang.cookie ]; then
-    chmod 400 /var/lib/rabbitmq/.erlang.cookie || true
-    chown 999:999 /var/lib/rabbitmq/.erlang.cookie || true
-fi
-
-echo "Reset complete"
-`
-                                        ],
-                                        volumeMounts: [
-                                            { name: "data", mountPath: "/var/lib/rabbitmq" }
-                                        ]
-                                    }
-                                ],
+                                    ],
+                                    volumeMounts: [
+                                        { name: "data", mountPath: "/var/lib/rabbitmq" }
+                                    ]
+                                }],
                                 containers: [{
                                     name: "rabbitmq",
                                     image: "rabbitmq:4.0.2-management",
