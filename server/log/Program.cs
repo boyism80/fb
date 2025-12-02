@@ -1,10 +1,11 @@
-using Dapper;
 using Http.Service;
 using Log.Repository;
 using Log.Worker;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Log
@@ -55,12 +56,12 @@ namespace Log
                 // Health check endpoints
                 app.MapGet("/health/ready", (Http.Service.HealthCheckService health) =>
                 {
-                    return health.IsReady ? Results.Ok("Ready") : Results.ServiceUnavailable();
+                    return health.IsReady ? Results.Ok("Ready") : Results.StatusCode(503);
                 });
 
                 app.MapGet("/health/live", (Http.Service.HealthCheckService health) =>
                 {
-                    return health.IsAlive ? Results.Ok("Alive") : Results.ServiceUnavailable();
+                    return health.IsAlive ? Results.Ok("Alive") : Results.StatusCode(503);
                 });
             }
 

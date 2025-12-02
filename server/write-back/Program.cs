@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Http.Service;
 
 namespace WriteBack
 {
@@ -21,13 +22,13 @@ namespace WriteBack
         static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            
+
             // Add services
             builder.Services.AddSingleton<Http.Service.RedisService>();
             builder.Services.AddSingleton<Http.Service.DbContext>();
             builder.Services.AddSingleton<Http.Service.HealthCheckService>();
             builder.Logging.AddConsole();
-            builder.Services.AddHostedService<WriteBackService>();
+            builder.Services.AddHostedService<WriteBack.Service.WriteBackService>();
             builder.Services.AddHostedService<Http.Service.ShutdownListenerService>();
 
             // Read HealthApi configuration
@@ -50,12 +51,12 @@ namespace WriteBack
                 // Health check endpoints
                 app.MapGet("/health/ready", (Http.Service.HealthCheckService health) =>
                 {
-                    return health.IsReady ? Results.Ok("Ready") : Results.ServiceUnavailable();
+                    return health.IsReady ? Results.Ok("Ready") : Results.StatusCode(503);
                 });
 
                 app.MapGet("/health/live", (Http.Service.HealthCheckService health) =>
                 {
-                    return health.IsAlive ? Results.Ok("Alive") : Results.ServiceUnavailable();
+                    return health.IsAlive ? Results.Ok("Alive") : Results.StatusCode(503);
                 });
             }
 
