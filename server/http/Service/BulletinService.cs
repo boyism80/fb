@@ -10,9 +10,9 @@ namespace Http.Service
         private readonly ConcurrentDictionary<uint, ConcurrentQueue<BulletinWriteRequest>> _writeQueues = new();
         private readonly BulletinCacheService _cacheService;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly LogService? _logService;
+        private readonly LogService _logService;
 
-        public BulletinService(BulletinCacheService cacheService, IServiceScopeFactory scopeFactory, LogService? logService = null)
+        public BulletinService(BulletinCacheService cacheService, IServiceScopeFactory scopeFactory, LogService logService = null)
         {
             _cacheService = cacheService;
             _scopeFactory = scopeFactory;

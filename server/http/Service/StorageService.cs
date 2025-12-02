@@ -14,12 +14,12 @@ namespace Http.Service
         private readonly DbContext _dbContext;
         private readonly RabbitMqService _rabbitMqService;
         private readonly SessionService _sessionService;
-        private readonly LogService? _logService;
+        private readonly LogService _logService;
 
         public StorageService(DbContext dbContext,
             RabbitMqService rabbitMqService,
             SessionService sessionService,
-            LogService? logService = null)
+            LogService logService = null)
         {
             _dbContext = dbContext;
             _rabbitMqService = rabbitMqService;

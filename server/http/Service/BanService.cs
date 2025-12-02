@@ -11,7 +11,7 @@ namespace Http.Service
     {
         private readonly DbContext _dbContext;
         private readonly ILogger<BanService> _logger;
-        private readonly LogService? _logService;
+        private readonly LogService _logService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BanService"/> class.
@@ -19,7 +19,7 @@ namespace Http.Service
         /// <param name="dbContext">The database context for data operations.</param>
         /// <param name="logger">The logger for recording operations and errors.</param>
         /// <param name="logService">The log service for recording ban operations (optional).</param>
-        public BanService(DbContext dbContext, ILogger<BanService> logger, LogService? logService = null)
+        public BanService(DbContext dbContext, ILogger<BanService> logger, LogService logService = null)
         {
             _dbContext = dbContext;
             _logger = logger;

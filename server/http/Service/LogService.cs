@@ -12,13 +12,13 @@ namespace Http.Service
     /// </summary>
     public class LogService
     {
-        private readonly IConnection? _connection;
-        private readonly IModel? _channel;
+        private readonly IConnection _connection = null;
+        private readonly IModel _channel = null;
         private readonly string _serverId;
         private readonly string _serverName;
         private readonly int _queueSize;
         private readonly Random _random;
-        private readonly ILogger<LogService>? _logger;
+        private readonly ILogger<LogService> _logger;
         private readonly bool _enabled;
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Http.Service
         /// </summary>
         /// <param name="configuration">The application configuration containing RabbitMQ and Log settings.</param>
         /// <param name="logger">The logger instance for error logging.</param>
-        public LogService(IConfiguration configuration, ILogger<LogService>? logger = null)
+        public LogService(IConfiguration configuration, ILogger<LogService> logger = null)
         {
             _logger = logger;
 

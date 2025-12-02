@@ -10,7 +10,7 @@ namespace Http.Service
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<BulletinBackgroundService> _logger;
         private readonly BulletinCacheService _bulletinCacheService;
-        private readonly LogService? _logService;
+        private readonly LogService _logService;
 
         private static readonly TimeSpan _processingInterval = TimeSpan.FromSeconds(1);
 
@@ -21,7 +21,7 @@ namespace Http.Service
             IServiceScopeFactory scopeFactory,
             ILogger<BulletinBackgroundService> logger,
             BulletinCacheService bulletinCacheService,
-            LogService? logService = null)
+            LogService logService = null)
         {
             _bulletinService = bulletinService;
             _scopeFactory = scopeFactory;
