@@ -232,6 +232,9 @@ namespace Http.Reepository
         /// <returns>A read-only dictionary mapping character IDs to their names.</returns>
         public async Task<IReadOnlyDictionary<uint, string>> GetName(IEnumerable<uint> ids)
         {
+            if (ids.Any() == false)
+                return new Dictionary<uint, string>();
+
             await using var conn = _dbContext.Connection(-1);
             var result = await conn.QueryAsync<CharacterName>($"SELECT id, name FROM name WHERE id IN ({string.Join(',', ids)})");
             return result.ToDictionary(x => x.Id, x => x.Name);

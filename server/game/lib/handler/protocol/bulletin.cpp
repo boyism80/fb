@@ -61,12 +61,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
         catch (std::exception& e)
         {
             if (weak.expired() == false)
-            {
-                if (mail)
-                    ch->mail_box.message(e.what(), false, true);
-                else
-                    ch->bulletin.message(e.what(), false, true);
-            }
+                ch->message(e.what());
         }
     }
     break;
@@ -186,7 +181,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
         catch (std::exception& e)
         {
             if (weak.expired() == false)
-                ch->mail_box.message(e.what(), false, true);
+                ch->message(e.what());
         }
     }
     break;

@@ -32,8 +32,7 @@ public:
 public:
     bool connect(const std::string& hostname, uint16_t port, const std::string& id, const std::string& pw, const std::string& vhost);
 
-    queue& declare_queue();
-    queue& declare_queue(const std::string& queue_name, bool durable = true, bool exclusive = false, bool auto_delete = false, bool quorum = false);
+    queue& declare_queue(bool durable = true, bool exclusive = false, bool auto_delete = false, bool quorum = false);
 
     bool select(const timeval* timeout = nullptr);
 

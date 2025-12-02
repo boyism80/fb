@@ -66,26 +66,9 @@ bool socket::connect(const std::string& hostname, uint16_t port, const std::stri
     return true;
 }
 
-queue& socket::declare_queue()
+queue& socket::declare_queue(bool durable, bool exclusive, bool auto_delete, bool quorum)
 {
-    auto r = amqp_queue_declare(this->_conn, 1, amqp_empty_bytes, 0, 0, 0, 1, amqp_empty_table);
-    if (amqp_get_rpc_reply(this->_conn).reply_type != AMQP_RESPONSE_NORMAL)
-        throw std::runtime_error("Declaring queue");
-
-    auto name = amqp_bytes_malloc_dup(r->queue);
-    if (name.bytes == nullptr)
-        throw std::runtime_error("Out of memory while copying queue name");
-
-    auto ptr = new queue(*this, name);
-    _queues.push_back(std::unique_ptr<queue>(ptr));
-
-    return *ptr;
-}
-
-queue& socket::declare_queue(const std::string& queue_name, bool durable, bool exclusive, bool auto_delete, bool quorum)
-{
-    amqp_bytes_t queue_name_bytes = amqp_cstring_bytes(queue_name.c_str());
-    amqp_table_t arguments        = amqp_empty_table;
+    amqp_table_t arguments = amqp_empty_table;
 
     // Set quorum queue type if requested
     // Use static storage for table entry to ensure it remains valid during amqp_queue_declare call
@@ -100,14 +83,15 @@ queue& socket::declare_queue(const std::string& queue_name, bool durable, bool e
         arguments.entries     = &quorum_entry;
     }
 
-    auto r     = amqp_queue_declare(this->_conn, 1, queue_name_bytes, 0, durable ? 1 : 0, exclusive ? 1 : 0, auto_delete ? 1 : 0, arguments);
+    // Use empty bytes for auto-generated queue name
+    auto r     = amqp_queue_declare(this->_conn, 1, amqp_empty_bytes, 0, durable ? 1 : 0, exclusive ? 1 : 0, auto_delete ? 1 : 0, arguments);
     auto reply = amqp_get_rpc_reply(this->_conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL)
     {
         std::string error_detail;
         if (reply.reply_type == AMQP_RESPONSE_SERVER_EXCEPTION)
         {
-            error_detail = "Queue already exists with different parameters (PRECONDITION_FAILED).";
+            error_detail = "Queue declaration failed (PRECONDITION_FAILED).";
         }
         else if (reply.reply_type == AMQP_RESPONSE_LIBRARY_EXCEPTION)
         {
@@ -118,8 +102,8 @@ queue& socket::declare_queue(const std::string& queue_name, bool durable, bool e
             error_detail = "Unexpected reply type during queue declaration.";
         }
 
-        fb::logger::warn("Failed to declare queue '{}': {} (reply_type: {})", queue_name, error_detail, static_cast<int>(reply.reply_type));
-        throw std::runtime_error("Declaring queue: " + error_detail);
+        fb::logger::warn("Failed to declare auto-generated queue: {} (reply_type: {})", error_detail, static_cast<int>(reply.reply_type));
+        throw std::runtime_error("Declaring auto-generated queue: " + error_detail);
     }
 
     auto name = amqp_bytes_malloc_dup(r->queue);
@@ -127,7 +111,7 @@ queue& socket::declare_queue(const std::string& queue_name, bool durable, bool e
         throw std::runtime_error("Out of memory while copying queue name");
 
     auto ptr = new queue(*this, name);
-    _queues.push_back(std::unique_ptr<queue>(ptr));
+    this->_queues.push_back(std::unique_ptr<queue>(ptr));
 
     return *ptr;
 }

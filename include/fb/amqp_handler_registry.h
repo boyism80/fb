@@ -120,14 +120,13 @@ public:
                                        }});
     }
 
-    void declare_queue(const std::string& exchange, const std::string& key)
+    void declare_queue(const std::string& exchange, const std::string& route_key)
     {
         try
         {
-            // Declare queue with the routing key as queue name
-            // In Direct exchange, queue name and routing key are the same
-            auto& queue = this->_amqp->declare_queue(key, true, false, false, false);
-            queue.bind(exchange, key);
+            // Declare queue with auto-generated name and bind with specified route key
+            auto& queue = this->_amqp->declare_queue(true, false, false, false);
+            queue.bind(exchange, route_key);
 
             auto& route = queue.route();
             if (this->_handlers.contains(route))
@@ -140,7 +139,7 @@ public:
         }
         catch (const std::exception& e)
         {
-            fb::logger::fatal("Failed to declare queue '{}' for exchange '{}': {}", key, exchange, e.what());
+            fb::logger::fatal("Failed to declare queue with route key '{}' for exchange '{}': {}", route_key, exchange, e.what());
             throw;
         }
     }
