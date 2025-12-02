@@ -99,7 +99,7 @@ private:
     bool is_forbidden_impl(const std::string& str) const;
 
 public:
-    std::unique_ptr<fb::log_collector> log;
+    fb::log_collector log;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);

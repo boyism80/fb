@@ -1,5 +1,8 @@
+#include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/game/trade.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::game;
 
@@ -473,6 +476,48 @@ bool trade::lock()
             // Update state after successful trade
             owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
             you->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+
+            // Log trade completion
+            auto log_data               = Json::Value();
+            log_data["character1_id"]   = static_cast<Json::Int64>(owner->id());
+            log_data["character1_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
+            log_data["character2_id"]   = static_cast<Json::Int64>(you->id());
+            log_data["character2_name"] = UTF8(you->name(), PLATFORM::WINDOWS);
+            log_data["money1"]          = static_cast<Json::Int64>(this->_money);
+            log_data["money2"]          = static_cast<Json::Int64>(you->trade._money);
+            auto items1                 = std::vector<Json::Value>();
+            for (auto& [index, order] : this->_items)
+            {
+                auto item = owner->items[index];
+                if (item != nullptr)
+                {
+                    Json::Value item_data;
+                    item_data["item_id"]   = static_cast<Json::Int64>(item->based<fb::model::item>().id);
+                    item_data["item_name"] = UTF8(item->name(), PLATFORM::WINDOWS);
+                    item_data["count"]     = static_cast<Json::Int64>(item->trade_count());
+                    items1.push_back(item_data);
+                }
+            }
+            log_data["items1"] = Json::Value(Json::arrayValue);
+            for (auto& item : items1)
+                log_data["items1"].append(item);
+            auto items2 = std::vector<Json::Value>();
+            for (auto& [index, order] : you->trade._items)
+            {
+                auto item = you->items[index];
+                if (item != nullptr)
+                {
+                    Json::Value item_data;
+                    item_data["item_id"]   = static_cast<Json::Int64>(item->based<fb::model::item>().id);
+                    item_data["item_name"] = UTF8(item->name(), PLATFORM::WINDOWS);
+                    item_data["count"]     = static_cast<Json::Int64>(item->trade_count());
+                    items2.push_back(item_data);
+                }
+            }
+            log_data["items2"] = Json::Value(Json::arrayValue);
+            for (auto& item : items2)
+                log_data["items2"].append(item);
+            owner->server.log.write("trade_complete", log_data);
 
             this->end();
             return true;

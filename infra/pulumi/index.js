@@ -36,7 +36,7 @@ const allInfraResources = [].concat(mysqlResources || [], redisResources || [], 
 
 // Setup internal, write-back, admin-tool, log after mysql, redis, rabbitmq are ready
 const internalResources = internal.setup(namespace, conf, allInfraResources)
-const writeBackResources = wb.setup(namespace, conf, [].concat(redisResources || []))
+const writeBackResources = wb.setup(namespace, conf, allInfraResources)
 const adminToolResources = adminTool.setup(namespace, conf, allInfraResources)
 const logResources = log.setup(namespace, conf, allInfraResources)
 

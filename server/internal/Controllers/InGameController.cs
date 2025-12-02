@@ -28,6 +28,7 @@ namespace Internal.Controllers
         private readonly StorageService _storageService;
         private readonly BanService _banService;
         private readonly ServerStateService _serverStateService;
+        private readonly LogService _logService;
         public InGameController(ILogger<InGameController> logger,
             RabbitMqService rabbitMqService,
             SessionService sessionService,
@@ -36,7 +37,8 @@ namespace Internal.Controllers
             RedisDistributedLockService distributedLock,
             StorageService storageService,
             BanService banService,
-            ServerStateService serverStateService)
+            ServerStateService serverStateService,
+            LogService logService)
         {
             _logger = logger;
             _rabbitMqService = rabbitMqService;
@@ -47,6 +49,7 @@ namespace Internal.Controllers
             _storageService = storageService;
             _banService = banService;
             _serverStateService = serverStateService;
+            _logService = logService;
         }
         [HttpPost("login")]
         public async Task<Response.Login> Login(Request.Login request)
@@ -151,6 +154,23 @@ namespace Internal.Controllers
                         throw new LogicException(ErrorCode.AlreadyLogin);
                     }
                 }
+
+                // Log game server entry event (only if name is provided)
+                if (!string.IsNullOrEmpty(request.Name))
+                {
+                    var uid = await _dbContext.Character.GetCharacterId(request.Name);
+                    if (uid.HasValue)
+                    {
+                        _logService.Write("game_server_entry", new
+                        {
+                            account_name = request.Name,
+                            uid = uid.Value,
+                            game_server_ip = config.IP,
+                            game_server_port = config.Port
+                        });
+                    }
+                }
+
                 return new Response.Transfer
                 {
                     Ip = config.IP,
@@ -376,6 +396,19 @@ namespace Internal.Controllers
                 }
 
                 await _dbContext.SaveChangesAsync();
+
+                // Log character save event
+                _logService.Write("character_save", new
+                {
+                    character_id = request.Character.Id,
+                    character_name = request.Character.Name,
+                    item_count = request.Items?.Count ?? 0,
+                    spell_count = request.Spells?.Count ?? 0,
+                    achievement_count = request.Achievements?.Count ?? 0,
+                    quest_count = request.Quests?.Count ?? 0,
+                    storage_box_count = request.StorageBoxes?.Count ?? 0
+                });
+
                 return new Response.Save
                 {
                     Success = true

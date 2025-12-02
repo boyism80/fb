@@ -1,6 +1,8 @@
 #include <fb/game/quest.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -110,6 +112,15 @@ bool quest::complete()
     }
 
     this->_completed = true;
+
+    // Log quest complete event
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(owner->id());
+    log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
+    log_data["quest_id"]       = static_cast<Json::Int64>(this->id);
+    log_data["step"]           = static_cast<Json::Int64>(this->_step);
+    owner->server.log.write("quest_complete", log_data);
+
     return true;
 }
 
@@ -142,6 +153,14 @@ bool quests::start(uint32_t id)
         return false;
 
     this->add(id, 0, 0, false, "");
+
+    // Log quest start event
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(owner->id());
+    log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
+    log_data["quest_id"]       = static_cast<Json::Int64>(id);
+    owner->server.log.write("quest_start", log_data);
+
     return true;
 }
 

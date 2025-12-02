@@ -5,8 +5,7 @@ fb::game::handler::protocol::door::door(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::door>(server)
 { }
 
-async::task<bool> fb::game::handler::protocol::door::handle(fb::socket<character>&             session,
-                                                            fb::protocol::game::request::door& request)
+async::task<bool> fb::game::handler::protocol::door::handle(fb::socket<character>& session, fb::protocol::game::request::door& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)

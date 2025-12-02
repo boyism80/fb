@@ -18,6 +18,7 @@
 @inject RabbitMqService RabbitMqService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject SecurityService SecurityService
+@inject LogService LogService
 @attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>Users - Admin Tool</PageTitle>
@@ -557,10 +558,22 @@
                 return;
             }
 
+            var oldRole = character.Role;
             character.Role = newRole;
             character.UpdatedDate = DateTime.Now;
             DbContext.Character.Set(character);
             await DbContext.SaveChangesAsync();
+
+            // Log role change event
+            LogService.Write("role_change", new
+            {
+                target_account_name = character.Name,
+                target_uid = character.Id,
+                old_role = oldRole.ToString(),
+                new_role = newRole.ToString(),
+                changer_uid = currentUserId,
+                is_self = isSelf
+            });
 
             if (isSelf)
             {

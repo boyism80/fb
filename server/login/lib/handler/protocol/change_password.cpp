@@ -1,4 +1,6 @@
 #include <fb/login/handler/protocol/change_password.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::login::handler::protocol;
 
@@ -60,6 +62,12 @@ async::task<bool> change_password::handle(fb::socket<fb::login::session>& sessio
         case ERROR_CODE::BIRTHDAY_NOT_MATCHED: // birthday wrong
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_BIRTHDAY));
         }
+
+        // Log password change event
+        auto log_data            = Json::Value();
+        log_data["account_name"] = UTF8(request.name, PLATFORM::WINDOWS);
+        log_data["uid"]          = static_cast<Json::Int64>(uid);
+        this->server.log.write("password_change", log_data);
 
         session.send(response::message((_TEXT(MESSAGE_ACCOUNT_SUCCESS_CHANGE_PASSWORD)), 0x00));
         co_return true;

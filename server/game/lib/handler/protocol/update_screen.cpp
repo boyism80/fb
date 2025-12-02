@@ -7,8 +7,7 @@ update_screen::update_screen(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::update_screen>(server)
 { }
 
-async::task<bool> update_screen::handle(fb::socket<character>&                      session,
-                                        fb::protocol::game::request::update_screen& request)
+async::task<bool> update_screen::handle(fb::socket<character>& session, fb::protocol::game::request::update_screen& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)

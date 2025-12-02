@@ -31,15 +31,17 @@ namespace Internal.Controllers
             {
                 var mails = await _dbContext.Mail.GetList(user, offset, count);
                 var summaryList = _mapper.Map<List<Http.Model.Mail>, List<Protocol.MailSummary>>(mails.ToList());
-
-                // Resolve sender names from UIDs (name table is in global DB, cannot JOIN)
-                var senderIds = mails.Select(m => m.Sender).Distinct().ToList();
-                var senderNames = await _dbContext.Character.GetName(senderIds);
-
-                // Fill sender names into protocol objects
-                for (int i = 0; i < summaryList.Count; i++)
+                if (summaryList.Count > 0)
                 {
-                    summaryList[i].Sender = senderNames.GetValueOrDefault(mails[i].Sender) ?? string.Empty;
+                    // Resolve sender names from UIDs (name table is in global DB, cannot JOIN)
+                    var senderIds = mails.Select(m => m.Sender).Distinct().ToList();
+                    var senderNames = await _dbContext.Character.GetName(senderIds);
+
+                    // Fill sender names into protocol objects
+                    for (int i = 0; i < summaryList.Count; i++)
+                    {
+                        summaryList[i].Sender = senderNames.GetValueOrDefault(mails[i].Sender) ?? string.Empty;
+                    }
                 }
 
                 return new Response.GetMailList

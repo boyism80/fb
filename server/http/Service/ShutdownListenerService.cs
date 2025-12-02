@@ -38,18 +38,41 @@ namespace Http.Service
 
             var factory = new ConnectionFactory
             {
-                HostName = config["RabbitMQ:Host"],
-                Port = int.Parse(config["RabbitMQ:Port"]),
-                UserName = config["RabbitMQ:Uid"],
-                Password = config["RabbitMQ:Pwd"]
+                HostName = config["RabbitMQ:Internal:Host"],
+                Port = int.Parse(config["RabbitMQ:Internal:Port"]),
+                UserName = config["RabbitMQ:Internal:Uid"],
+                Password = config["RabbitMQ:Internal:Pwd"]
             };
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
             _channel.ExchangeDeclare("amq.direct", ExchangeType.Direct, durable: true);
-            _queueName = _channel.QueueDeclare(string.Empty, durable: false, exclusive: false, autoDelete: false, arguments: null);
-            _channel.QueueBind(_queueName, "amq.direct", "fb.system");
+
+            try
+            {
+                _queueName = _channel.QueueDeclare(string.Empty, durable: false, exclusive: false, autoDelete: false, arguments: null);
+                _channel.QueueBind(_queueName, "amq.direct", "fb.system");
+            }
+            catch (RabbitMQ.Client.Exceptions.OperationInterruptedException ex)
+            {
+                // Check if it's a PRECONDITION_FAILED error (queue exists with different parameters)
+                if (ex.ShutdownReason?.ReplyText?.Contains("PRECONDITION_FAILED") == true)
+                {
+                    _logger.LogError(ex,
+                        "Failed to declare shutdown listener queue: Queue already exists with different parameters.");
+                }
+                else
+                {
+                    _logger.LogError(ex, "Failed to declare shutdown listener queue");
+                }
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error declaring shutdown listener queue");
+                throw;
+            }
         }
 
         /// <summary>

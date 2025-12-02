@@ -1,6 +1,8 @@
 #include <fb/game/server.h>
 #include <fb/game/life.h>
 #include <fb/game/map.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::game;
 
@@ -117,6 +119,26 @@ void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_typ
         auto& ch = static_cast<character&>(*this);
         ch.death_penalty();
         ch.state(STATE::GHOST);
+
+        // Log death event
+        auto log_data              = Json::Value();
+        log_data["character_id"]   = static_cast<Json::Int64>(ch.id());
+        log_data["character_name"] = UTF8(ch.name(), PLATFORM::WINDOWS);
+        log_data["level"]          = ch.level();
+        auto map                   = ch.map();
+        if (map != nullptr)
+        {
+            log_data["map"]        = map->model.id;
+            log_data["position_x"] = ch.position().x;
+            log_data["position_y"] = ch.position().y;
+        }
+        if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
+        {
+            auto& killer            = static_cast<character&>(*from);
+            log_data["killer_id"]   = static_cast<Json::Int64>(killer.id());
+            log_data["killer_name"] = UTF8(killer.name(), PLATFORM::WINDOWS);
+        }
+        ch.server.log.write("death", log_data);
     }
     break;
     }

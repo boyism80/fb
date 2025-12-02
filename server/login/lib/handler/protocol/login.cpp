@@ -1,4 +1,6 @@
 #include <fb/login/handler/protocol/login.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 #include <format>
 
 using namespace fb::login::handler::protocol;
@@ -61,6 +63,16 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
         default:
             throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), response3.error));
         }
+
+        // Log game server entry event
+        auto log_data              = Json::Value();
+        log_data["account_name"]   = UTF8(name, PLATFORM::WINDOWS);
+        log_data["uid"]            = static_cast<Json::Int64>(uid);
+        log_data["game_server_id"] = static_cast<Json::Int64>(table::map[map].host);
+        log_data["map"]            = static_cast<Json::Int64>(map);
+        log_data["ip"]             = response3.ip;
+        log_data["port"]           = static_cast<Json::Int64>(response3.port);
+        this->server.log.write("game_server_entry", log_data);
 
         session.send(response::message("", 0x00));
         auto parameter = fb::stream();

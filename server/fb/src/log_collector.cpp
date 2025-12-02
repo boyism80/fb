@@ -45,7 +45,7 @@ void log_collector::write(const std::string& event_type, const Json::Value& data
         auto json_string = this->serialize_log_entry(log_entry);
 
         // Convert to byte vector
-        std::vector<uint8_t> message(json_string.begin(), json_string.end());
+        auto message = std::vector<uint8_t>(json_string.begin(), json_string.end());
 
         // Select random routing key
         auto routing_key = this->select_random_routing_key();

@@ -7,4 +7,3 @@ polling::polling(server& owner) :
     system_mail(owner),
     storage_pending(owner)
 { }
-

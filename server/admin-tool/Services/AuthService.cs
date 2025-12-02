@@ -15,6 +15,7 @@ namespace AdminTool.Services
     {
         private readonly DbContext _dbContext;
         private readonly ILogger<AuthService> _logger;
+        private readonly LogService _logService;
 
         // Object pool for SHA256 instances to reduce GC pressure
         private static readonly ObjectPool<SHA256> _sha256Pool = new DefaultObjectPool<SHA256>(new Sha256PooledObjectPolicy(), 64);
@@ -24,10 +25,12 @@ namespace AdminTool.Services
         /// </summary>
         /// <param name="dbContext">The database context for data operations.</param>
         /// <param name="logger">The logger for recording authentication operations.</param>
-        public AuthService(DbContext dbContext, ILogger<AuthService> logger)
+        /// <param name="logService">The log service for recording admin login events.</param>
+        public AuthService(DbContext dbContext, ILogger<AuthService> logger, LogService logService)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _logService = logService;
         }
 
         /// <summary>
@@ -123,6 +126,14 @@ namespace AdminTool.Services
                     Error = "Insufficient privileges. Admin role or higher required."
                 };
             }
+
+            // Log admin login event
+            _logService.Write("admin_login", new
+            {
+                account_name = character.Name,
+                uid = userId.Value,
+                role = character.Role.ToString()
+            });
 
             return new AuthResult
             {

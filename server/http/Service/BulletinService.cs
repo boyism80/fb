@@ -10,11 +10,13 @@ namespace Http.Service
         private readonly ConcurrentDictionary<uint, ConcurrentQueue<BulletinWriteRequest>> _writeQueues = new();
         private readonly BulletinCacheService _cacheService;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly LogService _logService;
 
-        public BulletinService(BulletinCacheService cacheService, IServiceScopeFactory scopeFactory)
+        public BulletinService(BulletinCacheService cacheService, IServiceScopeFactory scopeFactory, LogService logService = null)
         {
             _cacheService = cacheService;
             _scopeFactory = scopeFactory;
+            _logService = logService;
         }
 
         public Task<bool> Write(uint section, uint user, string title, string contents)
@@ -58,6 +60,15 @@ namespace Http.Service
                 if (result == 1)
                 {
                     await _cacheService.DeleteArticlesBatchAsync(new List<(uint section, uint id)> { (section, id) });
+
+                    // Log bulletin delete event
+                    _logService?.Write("bulletin_delete", new
+                    {
+                        section = section,
+                        article_id = id,
+                        user_id = user,
+                        ignore_owner = ignoreOwner
+                    });
                 }
 
                 return result;
@@ -105,6 +116,16 @@ namespace Http.Service
                 if (deletedIds.Any())
                 {
                     await _cacheService.DeleteArticlesBatchAsync(deletedIds);
+
+                    // Log bulletin batch delete event
+                    _logService?.Write("bulletin_delete_batch", new
+                    {
+                        section = section,
+                        article_ids = deletedIds.Select(x => x.id).ToList(),
+                        user_id = user,
+                        ignore_owner = ignoreOwner,
+                        count = successCount
+                    });
                 }
 
                 return successCount;
@@ -148,6 +169,15 @@ namespace Http.Service
                     {
                         await _cacheService.DeleteArticlesBatchAsync(new List<(uint section, uint id)> { (section, id) });
                     }
+
+                    // Log bulletin update event
+                    _logService?.Write("bulletin_update", new
+                    {
+                        section = section,
+                        article_id = id,
+                        user_id = user,
+                        ignore_owner = ignoreOwner
+                    });
                 }
 
                 return result;

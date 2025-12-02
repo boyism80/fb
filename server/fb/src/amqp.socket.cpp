@@ -1,4 +1,5 @@
 #include <fb/amqp.h>
+#include <fb/logger.h>
 
 using namespace fb::amqp;
 
@@ -15,17 +16,13 @@ socket::~socket()
     }
 }
 
-bool socket::connect(const std::string& hostname,
-                     uint16_t           port,
-                     const std::string& id,
-                     const std::string& pw,
-                     const std::string& vhost)
+bool socket::connect(const std::string& hostname, uint16_t port, const std::string& id, const std::string& pw, const std::string& vhost)
 {
     // Clean up any existing connection before creating a new one
     if (this->_conn != nullptr)
     {
         amqp_destroy_connection(this->_conn);
-        this->_conn = nullptr;
+        this->_conn   = nullptr;
         this->_socket = nullptr;
     }
 
@@ -42,17 +39,16 @@ bool socket::connect(const std::string& hostname,
     if (status)
     {
         amqp_destroy_connection(this->_conn);
-        this->_conn = nullptr;
+        this->_conn   = nullptr;
         this->_socket = nullptr;
         return false;
     }
 
-    if (amqp_login(this->_conn, vhost.c_str(), 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, id.c_str(), pw.c_str())
-            .reply_type != AMQP_RESPONSE_NORMAL)
+    if (amqp_login(this->_conn, vhost.c_str(), 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, id.c_str(), pw.c_str()).reply_type != AMQP_RESPONSE_NORMAL)
     {
         amqp_connection_close(this->_conn, AMQP_REPLY_SUCCESS);
         amqp_destroy_connection(this->_conn);
-        this->_conn = nullptr;
+        this->_conn   = nullptr;
         this->_socket = nullptr;
         return false;
     }
@@ -62,7 +58,7 @@ bool socket::connect(const std::string& hostname,
     {
         amqp_connection_close(this->_conn, AMQP_REPLY_SUCCESS);
         amqp_destroy_connection(this->_conn);
-        this->_conn = nullptr;
+        this->_conn   = nullptr;
         this->_socket = nullptr;
         return false;
     }
@@ -70,18 +66,52 @@ bool socket::connect(const std::string& hostname,
     return true;
 }
 
-queue& socket::declare_queue()
+queue& socket::declare_queue(bool durable, bool exclusive, bool auto_delete, bool quorum)
 {
-    auto r = amqp_queue_declare(this->_conn, 1, amqp_empty_bytes, 0, 0, 0, 1, amqp_empty_table);
-    if (amqp_get_rpc_reply(this->_conn).reply_type != AMQP_RESPONSE_NORMAL)
-        throw std::runtime_error("Declaring queue");
+    amqp_table_t arguments = amqp_empty_table;
+
+    // Set quorum queue type if requested
+    // Use static storage for table entry to ensure it remains valid during amqp_queue_declare call
+    static amqp_table_entry_t quorum_entry;
+    if (quorum)
+    {
+        quorum_entry.key               = amqp_cstring_bytes("x-queue-type");
+        quorum_entry.value.kind        = AMQP_FIELD_KIND_UTF8;
+        quorum_entry.value.value.bytes = amqp_cstring_bytes("quorum");
+
+        arguments.num_entries = 1;
+        arguments.entries     = &quorum_entry;
+    }
+
+    // Use empty bytes for auto-generated queue name
+    auto r     = amqp_queue_declare(this->_conn, 1, amqp_empty_bytes, 0, durable ? 1 : 0, exclusive ? 1 : 0, auto_delete ? 1 : 0, arguments);
+    auto reply = amqp_get_rpc_reply(this->_conn);
+    if (reply.reply_type != AMQP_RESPONSE_NORMAL)
+    {
+        std::string error_detail;
+        if (reply.reply_type == AMQP_RESPONSE_SERVER_EXCEPTION)
+        {
+            error_detail = "Queue declaration failed (PRECONDITION_FAILED).";
+        }
+        else if (reply.reply_type == AMQP_RESPONSE_LIBRARY_EXCEPTION)
+        {
+            error_detail = "Library exception occurred during queue declaration.";
+        }
+        else
+        {
+            error_detail = "Unexpected reply type during queue declaration.";
+        }
+
+        fb::logger::warn("Failed to declare auto-generated queue: {} (reply_type: {})", error_detail, static_cast<int>(reply.reply_type));
+        throw std::runtime_error("Declaring auto-generated queue: " + error_detail);
+    }
 
     auto name = amqp_bytes_malloc_dup(r->queue);
     if (name.bytes == nullptr)
         throw std::runtime_error("Out of memory while copying queue name");
 
     auto ptr = new queue(*this, name);
-    _queues.push_back(std::unique_ptr<queue>(ptr));
+    this->_queues.push_back(std::unique_ptr<queue>(ptr));
 
     return *ptr;
 }
@@ -91,20 +121,20 @@ bool socket::publish(const std::string& exchange, const std::string& routing_key
     if (this->_conn == nullptr)
         return false;
 
-    amqp_bytes_t exchange_bytes = amqp_cstring_bytes(exchange.c_str());
+    amqp_bytes_t exchange_bytes    = amqp_cstring_bytes(exchange.c_str());
     amqp_bytes_t routing_key_bytes = amqp_cstring_bytes(routing_key.c_str());
     amqp_bytes_t message_bytes;
-    message_bytes.len = message.size();
+    message_bytes.len   = message.size();
     message_bytes.bytes = const_cast<void*>(static_cast<const void*>(message.data()));
 
     // Use default properties if not provided
     amqp_basic_properties_t default_props;
     if (properties == nullptr)
     {
-        default_props._flags = AMQP_BASIC_DELIVERY_MODE_FLAG;
+        default_props._flags        = AMQP_BASIC_DELIVERY_MODE_FLAG;
         default_props.delivery_mode = 2; // Persistent message
-        default_props.content_type = amqp_cstring_bytes("application/json");
-        properties = &default_props;
+        default_props.content_type  = amqp_cstring_bytes("application/json");
+        properties                  = &default_props;
     }
 
     int result = amqp_basic_publish(this->_conn,
@@ -137,14 +167,12 @@ bool socket::select(const timeval* timeout)
     auto            ret = amqp_consume_message(this->_conn, &envelope, timeout, 0);
     if (ret.reply_type == AMQP_RESPONSE_NORMAL)
     {
-        auto consumer_tag = std::string((const char*)envelope.consumer_tag.bytes,
-                                        (const char*)envelope.consumer_tag.bytes + envelope.consumer_tag.len);
+        auto consumer_tag = std::string((const char*)envelope.consumer_tag.bytes, (const char*)envelope.consumer_tag.bytes + envelope.consumer_tag.len);
         for (auto& queue : this->_queues)
         {
             if (queue->consumer_tag() == consumer_tag)
             {
-                auto message = std::vector<uint8_t>((uint8_t*)envelope.message.body.bytes,
-                                                    (uint8_t*)envelope.message.body.bytes + envelope.message.body.len);
+                auto message = std::vector<uint8_t>((uint8_t*)envelope.message.body.bytes, (uint8_t*)envelope.message.body.bytes + envelope.message.body.len);
                 async::awaitable_then(queue->invoke(message), [](async::awaitable_result<void> result) {
                     // work done
                 });

@@ -116,11 +116,7 @@ int builtin::clan::builtin_title(lua_State* L)
     }
     else if (argc == 3)
     {
-        static auto fn = [](fb::game::server* server,
-                            fb::lua::context* lua,
-                            fb::game::clan*   clan,
-                            uint32_t          changer_uid,
-                            std::string       title) -> async::task<void> {
+        static auto fn = [](fb::game::server* server, fb::lua::context* lua, fb::game::clan* clan, uint32_t changer_uid, std::string title) -> async::task<void> {
             try
             {
                 co_await server->set_clan_title(changer_uid, title);
@@ -183,10 +179,8 @@ int builtin::clan::builtin_join(lua_State* L)
         return 1;
     }
 
-    static auto fn = [](fb::game::server*                  server,
-                        fb::lua::context*                  lua,
-                        std::weak_ptr<fb::game::character> inviter_weak,
-                        std::weak_ptr<fb::game::character> invitee_weak) -> async::task<void> {
+    static auto fn =
+        [](fb::game::server* server, fb::lua::context* lua, std::weak_ptr<fb::game::character> inviter_weak, std::weak_ptr<fb::game::character> invitee_weak) -> async::task<void> {
         try
         {
             auto inviter_shared = inviter_weak.lock();
@@ -233,10 +227,7 @@ int builtin::clan::builtin_leave(lua_State* L)
 
     auto name = lua->tostring(2);
 
-    static auto fn = [](fb::game::server*  server,
-                        fb::lua::context*  lua,
-                        fb::game::clan*    clan,
-                        const std::string& name) -> async::task<void> {
+    static auto fn = [](fb::game::server* server, fb::lua::context* lua, fb::game::clan* clan, const std::string& name) -> async::task<void> {
         try
         {
             co_await server->leave_clan_member(*clan, name);
@@ -272,11 +263,7 @@ int builtin::clan::builtin_kick(lua_State* L)
     auto kicker = lua->tostring(2);
     auto target = lua->tostring(3);
 
-    static auto fn = [](fb::game::server*  server,
-                        fb::lua::context*  lua,
-                        fb::game::clan*    clan,
-                        const std::string& kicker,
-                        const std::string& target) -> async::task<void> {
+    static auto fn = [](fb::game::server* server, fb::lua::context* lua, fb::game::clan* clan, const std::string& kicker, const std::string& target) -> async::task<void> {
         try
         {
             co_await server->kick_clan_member(*clan, kicker, target);
@@ -322,12 +309,8 @@ int builtin::clan::builtin_change_role(lua_State* L)
     auto target = lua->tostring(3);
     auto role   = lua->toenum(4, CLAN_ROLE::MATE);
 
-    static auto fn = [](fb::game::server*  server,
-                        fb::lua::context*  lua,
-                        fb::game::clan*    clan,
-                        uint32_t           changer_uid,
-                        const std::string& target,
-                        CLAN_ROLE          role) -> async::task<void> {
+    static auto fn =
+        [](fb::game::server* server, fb::lua::context* lua, fb::game::clan* clan, uint32_t changer_uid, const std::string& target, CLAN_ROLE role) -> async::task<void> {
         try
         {
             co_await server->change_clan_member_role(*clan, changer_uid, target, role);
@@ -363,11 +346,7 @@ int builtin::clan::builtin_message(lua_State* L)
     auto message = lua->tostring(2);
     auto type    = lua->toenum(3, MESSAGE_TYPE::NOTIFY);
 
-    static auto fn = [](fb::game::server*  server,
-                        fb::lua::context*  lua,
-                        fb::game::clan*    clan,
-                        const std::string& message,
-                        MESSAGE_TYPE       type) -> async::task<void> {
+    static auto fn = [](fb::game::server* server, fb::lua::context* lua, fb::game::clan* clan, const std::string& message, MESSAGE_TYPE type) -> async::task<void> {
         try
         {
             co_await server->broadcast(*clan, message, type);

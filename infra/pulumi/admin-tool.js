@@ -20,10 +20,24 @@ module.exports = {
                 },
                 "Redis": {},
                 "RabbitMQ": {
-                    "Host": `rabbitmq-${sectionConf.rabbitmq}-internal`,
-                    "Port": conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
-                    "Uid": "fb",
-                    "Pwd": "admin"
+                    "Internal": {
+                        "Host": `rabbitmq-${sectionConf.rabbitmq}-internal`,
+                        "Port": conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
+                        "Uid": "fb",
+                        "Pwd": "admin"
+                    },
+                    "Log": {
+                        "Host": `rabbitmq-${sectionConf.rabbitmq}-log`,
+                        "Port": conf.rabbitmq[sectionConf.rabbitmq].log.port.amqp.cluster,
+                        "Uid": "fb",
+                        "Pwd": "admin",
+                        "QueueSize": 128
+                    }
+                },
+                "Log": {
+                    "Enabled": true,
+                    "ServerId": "0",
+                    "ServerName": "admin-tool"
                 },
                 "Security": {
                     "ElevationSecret": ""

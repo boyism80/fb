@@ -392,17 +392,14 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     co_await ch->process_system_mails();
 
     // Log login event
-    if (this->server.log != nullptr)
-    {
-        Json::Value log_data;
-        log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
-        log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
-        log_data["level"]          = ch->level();
-        log_data["map"]            = ch->map()->model.id;
-        log_data["position_x"]     = ch->position().x;
-        log_data["position_y"]     = ch->position().y;
-        this->server.log->write("login", log_data);
-    }
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+    log_data["level"]          = ch->level();
+    log_data["map"]            = ch->map()->model.id;
+    log_data["position_x"]     = ch->position().x;
+    log_data["position_y"]     = ch->position().y;
+    this->server.log.write("login", log_data);
 
     co_return true;
 }

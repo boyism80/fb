@@ -6,6 +6,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Response = fb.protocol._internal.response
 @inject RabbitMqService RabbitMqService
+@inject LogService LogService
 @attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>Broadcast - Admin Tool</PageTitle>
@@ -59,19 +60,19 @@
                         <div class="mb-3">
                             <label for="message" class="form-label">Message</label>
                             <InputTextArea id="message" class="form-control" rows="4"
-                                @bind-Value="broadcastModel.Message" />
+                                           @bind-Value="broadcastModel.Message" />
                             <ValidationMessage For="@(() => broadcastModel.Message)" />
                         </div>
                         <div class="d-flex justify-content-end gap-2">
                             <button type="button" class="btn btn-secondary" @onclick="ResetForm"
-                                disabled="@isProcessing">
+                                    disabled="@isProcessing">
                                 Reset
                             </button>
                             <button type="submit" class="btn btn-primary" disabled="@isProcessing">
                                 @if (isProcessing)
                                 {
                                     <span class="spinner-border spinner-border-sm me-2" role="status"
-                                        aria-hidden="true"></span>
+                                          aria-hidden="true"></span>
                                 }
                                 Send Broadcast
                             </button>
@@ -108,14 +109,23 @@
             else
             {
                 var message = new Response.Broadcast
-                {
-                    Message = trimmedMessage,
-                    Type = (byte)broadcastModel.Type,
-                    Host = BroadcastHost,
-                    Error = 0
-                };
+                    {
+                        Message = trimmedMessage,
+                        Type = (byte)broadcastModel.Type,
+                        Host = BroadcastHost,
+                        Error = 0
+                    };
 
                 RabbitMqService.Publish(message, "amq.direct", "fb.global");
+
+                // Log broadcast event
+                LogService.Write("broadcast", new
+                {
+                    message_type = broadcastModel.Type.ToString(),
+                    message = trimmedMessage,
+                    message_length = trimmedMessage.Length
+                });
+
                 successMessage = "Broadcast sent successfully.";
                 ResetForm();
             }

@@ -1,6 +1,8 @@
 #include <fb/game/character.h>
 #include <fb/game/server.h>
 #include <fb/game/regex.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::game;
 using namespace fb::model;
@@ -73,6 +75,9 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map> map, const fb::m
 
     this->assert_thread();
 
+    auto old_map      = this->_map;
+    auto old_position = this->_position;
+
     if (this->_map != map)
     {
         if (this->trade.trading())
@@ -82,12 +87,56 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map> map, const fb::m
     auto switch_process = (map != nullptr && map->active == false);
     if (switch_process)
     {
-        co_return co_await this->listener.on_transfer(*this, *map, position);
+        auto result = co_await this->listener.on_transfer(*this, *map, position);
+        if (result && old_map != map)
+        {
+            // Log map transfer event
+            auto log_data              = Json::Value();
+            log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+            log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+            log_data["level"]          = this->level();
+            if (old_map != nullptr)
+            {
+                log_data["old_map"]        = old_map->model.id;
+                log_data["old_position_x"] = old_position.x;
+                log_data["old_position_y"] = old_position.y;
+            }
+            if (map != nullptr)
+            {
+                log_data["new_map"]        = map->model.id;
+                log_data["new_position_x"] = position.x;
+                log_data["new_position_y"] = position.y;
+            }
+            this->server.log.write("map_transfer", log_data);
+        }
+        co_return result;
     }
     else
     {
         if (co_await object::map(map, position) == false)
             co_return false;
+
+        if (old_map != map)
+        {
+            // Log map transfer event
+            auto log_data              = Json::Value();
+            log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+            log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+            log_data["level"]          = this->level();
+            if (old_map != nullptr)
+            {
+                log_data["old_map"]        = old_map->model.id;
+                log_data["old_position_x"] = old_position.x;
+                log_data["old_position_y"] = old_position.y;
+            }
+            if (map != nullptr)
+            {
+                log_data["new_map"]        = map->model.id;
+                log_data["new_position_x"] = position.x;
+                log_data["new_position_y"] = position.y;
+            }
+            this->server.log.write("map_transfer", log_data);
+        }
 
         co_return true;
     }
@@ -161,7 +210,18 @@ void character::role(ROLE value)
 {
     this->assert_thread();
 
-    this->_role = value;
+    if (this->_role == value)
+        return;
+
+    auto old_role = this->_role;
+    this->_role   = value;
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_role"]       = static_cast<int>(old_role);
+    log_data["new_role"]       = static_cast<int>(value);
+    this->server.log.write("role_change", log_data);
 }
 
 async::task<void> character::attack(DURATION duration)
@@ -221,7 +281,20 @@ const std::optional<uint32_t>& fb::game::character::birthday() const
 
 void fb::game::character::birthday(const std::optional<uint32_t>& value)
 {
-    this->_birthday = value;
+    this->assert_thread();
+
+    if (this->_birthday == value)
+        return;
+
+    auto old_birthday = this->_birthday;
+    this->_birthday   = value;
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_birthday"]   = old_birthday.has_value() ? static_cast<Json::Int64>(old_birthday.value()) : Json::Value::null;
+    log_data["new_birthday"]   = value.has_value() ? static_cast<Json::Int64>(value.value()) : Json::Value::null;
+    this->server.log.write("birthday_change", log_data);
 }
 
 const fb::model::datetime& character::created_date() const
@@ -261,8 +334,19 @@ void character::look(uint16_t value)
 {
     this->assert_thread();
 
-    this->_look = value;
+    if (this->_look == value)
+        return;
+
+    auto old_look = this->_look;
+    this->_look   = value;
     this->update_external(true);
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_look"]       = old_look;
+    log_data["new_look"]       = value;
+    this->server.log.write("look_change", log_data);
 }
 
 uint8_t character::color() const
@@ -368,8 +452,19 @@ void character::level(uint8_t value)
 {
     this->assert_thread();
 
-    this->_level = value;
+    if (this->_level == value)
+        return;
+
+    auto old_level = this->_level;
+    this->_level   = value;
     this->update(UPDATE_STATE_LEVEL::ALL);
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_level"]      = old_level;
+    log_data["new_level"]      = value;
+    this->server.log.write("level_change", log_data);
 }
 
 bool character::level_up()
@@ -389,8 +484,19 @@ bool character::level_up()
     this->stat.hp(this->stat.base_hp());
     this->stat.mp(this->stat.base_mp());
 
+    auto old_level = this->_level;
     this->level(this->_level + 1);
     this->message(_TEXT(MESSAGE_LEVEL_UP));
+
+    // Log level up event
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_level"]      = old_level;
+    log_data["new_level"]      = this->_level;
+    log_data["base_hp"]        = static_cast<Json::Int64>(this->stat.base_hp());
+    log_data["base_mp"]        = static_cast<Json::Int64>(this->stat.base_mp());
+    this->server.log.write("level_up", log_data);
 
     this->listener.on_level_up(*this);
     return true;
@@ -414,8 +520,19 @@ void character::sex(SEX value)
 {
     this->assert_thread();
 
-    this->_sex = value;
+    if (this->_sex == value)
+        return;
+
+    auto old_sex = this->_sex;
+    this->_sex   = value;
     this->update_external(true);
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_sex"]        = static_cast<int>(old_sex);
+    log_data["new_sex"]        = static_cast<int>(value);
+    this->server.log.write("sex_change", log_data);
 }
 
 STATE character::state() const
@@ -465,8 +582,26 @@ void character::state(STATE value)
 {
     this->assert_thread();
 
-    this->_state = value;
+    auto old_state = this->_state;
+    this->_state   = value;
     this->update_external(true);
+
+    // Log revive event (state change from GHOST to NORMAL)
+    if (old_state == STATE::GHOST && value == STATE::NORMAL)
+    {
+        auto log_data              = Json::Value();
+        log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+        log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+        log_data["level"]          = this->level();
+        auto map                   = this->map();
+        if (map != nullptr)
+        {
+            log_data["map"]        = map->model.id;
+            log_data["position_x"] = this->position().x;
+            log_data["position_y"] = this->position().y;
+        }
+        this->server.log.write("revive", log_data);
+    }
 }
 
 CLASS character::cls() const
@@ -480,9 +615,20 @@ void character::cls(CLASS value)
 {
     this->assert_thread();
 
-    this->_class = value;
+    if (this->_class == value)
+        return;
+
+    auto old_class = this->_class;
+    this->_class   = value;
     this->update_id();
     this->update(UPDATE_STATE_LEVEL::ALL);
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_class"]      = static_cast<int>(old_class);
+    log_data["new_class"]      = static_cast<int>(value);
+    this->server.log.write("class_change", log_data);
 }
 
 uint8_t character::promotion() const
@@ -495,9 +641,20 @@ void character::promotion(uint8_t value)
 {
     this->assert_thread();
 
-    this->_promotion = value;
+    if (this->_promotion == value)
+        return;
+
+    auto old_promotion = this->_promotion;
+    this->_promotion   = value;
     this->update_id();
     this->update(UPDATE_STATE_LEVEL::ALL);
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_promotion"]  = old_promotion;
+    log_data["new_promotion"]  = value;
+    this->server.log.write("promotion_change", log_data);
 }
 
 uint32_t character::exp() const
@@ -664,8 +821,9 @@ uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
 {
     this->assert_thread();
 
-    uint32_t capacity = 0xFFFFFFFF - this->_money;
-    uint32_t lack     = 0;
+    uint32_t capacity  = 0xFFFFFFFF - this->_money;
+    uint32_t lack      = 0;
+    auto     old_money = this->_money;
     if (value > capacity)
     {
         this->money(this->_money + capacity);
@@ -676,14 +834,33 @@ uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
         this->money(this->_money + value);
     }
 
+    // Log money gain event
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["amount"]         = static_cast<Json::Int64>(value - lack);
+    log_data["old_money"]      = static_cast<Json::Int64>(old_money);
+    log_data["new_money"]      = static_cast<Json::Int64>(this->_money);
+    this->server.log.write("money_gain", log_data);
+
     return lack;
 }
 
 void character::money_reduce(uint32_t value)
 {
     this->assert_thread();
-    value = std::min(this->_money, value);
+    value          = std::min(this->_money, value);
+    auto old_money = this->_money;
     this->money(this->_money - value);
+
+    // Log money reduce event
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["amount"]         = static_cast<Json::Int64>(value);
+    log_data["old_money"]      = static_cast<Json::Int64>(old_money);
+    log_data["new_money"]      = static_cast<Json::Int64>(this->_money);
+    this->server.log.write("money_reduce", log_data);
 }
 
 fb::game::cash* character::money_drop(uint32_t value)

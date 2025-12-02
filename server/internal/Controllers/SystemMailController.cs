@@ -14,11 +14,13 @@ namespace Internal.Controllers
     {
         private readonly DbContext _dbContext;
         private readonly RabbitMqService _rabbitMqService;
+        private readonly LogService _logService;
 
-        public SystemMailController(DbContext dbContext, RabbitMqService rabbitMqService)
+        public SystemMailController(DbContext dbContext, RabbitMqService rabbitMqService, LogService logService)
         {
             _dbContext = dbContext;
             _rabbitMqService = rabbitMqService;
+            _logService = logService;
         }
 
         [HttpGet]
@@ -77,6 +79,14 @@ namespace Internal.Controllers
                     Mail = protocolMail,
                     Error = (uint)ErrorCode.None
                 };
+
+                // Log system mail creation event
+                _logService.Write("system_mail_create", new
+                {
+                    mail_id = systemMail.Id,
+                    sender_id = systemMail.Sender,
+                    expire_date = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
+                });
 
                 _rabbitMqService.Publish(response, "amq.direct", "fb.system");
                 return response;

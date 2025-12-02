@@ -12,7 +12,7 @@ namespace Log.Worker
 {
     /// <summary>
     /// Background service that consumes log messages from RabbitMQ queues and stores them in the database.
-    /// Subscribes to all log queues (fb.log.0 to fb.log.127) and periodically processes messages in batches.
+    /// Creates an auto-generated queue and binds it to all log routing keys (fb.log.0 to fb.log.127) to receive messages.
     /// </summary>
     public class LogConsumerService : BackgroundService
     {
@@ -25,7 +25,7 @@ namespace Log.Worker
         private static readonly TimeSpan ProcessInterval = TimeSpan.FromSeconds(10);
         private const int BatchSize = 1000;
         private const string ExchangeName = "amq.direct";
-        private const string QueueNamePrefix = "fb.log.";
+        private const string RoutingKeyPrefix = "fb.log.";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LogConsumerService"/> class.
@@ -51,34 +51,43 @@ namespace Log.Worker
         /// <returns>A task representing the asynchronous operation.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            try
+            _logger.LogInformation("Log Consumer Service starting");
+
+            // Retry connection loop until successful or cancelled
+            while (!stoppingToken.IsCancellationRequested)
             {
-                await ConnectToRabbitMQAsync(stoppingToken);
-                _logger.LogInformation("Log Consumer Service started");
-
-                while (!stoppingToken.IsCancellationRequested)
+                try
                 {
-                    try
-                    {
-                        await ProcessLogsAsync(stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error processing logs");
-                    }
+                    await ConnectToRabbitMQAsync(stoppingToken);
+                    _logger.LogInformation("Log Consumer Service started");
 
-                    await Task.Delay(ProcessInterval, stoppingToken);
+                    // Main processing loop
+                    while (!stoppingToken.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            await ProcessLogsAsync(stoppingToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error processing logs");
+                        }
+
+                        await Task.Delay(ProcessInterval, stoppingToken);
+                    }
+                    break; // Exit retry loop if cancellation requested
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to connect to RabbitMQ, retrying in 5 seconds...");
+                    await DisconnectFromRabbitMQAsync(); // Clean up failed connection
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Fatal error in Log Consumer Service");
-            }
-            finally
-            {
-                await DisconnectFromRabbitMQAsync();
-                _logger.LogInformation("Log Consumer Service stopped");
-            }
+
+            // Clean shutdown
+            await DisconnectFromRabbitMQAsync();
+            _logger.LogInformation("Log Consumer Service stopped");
         }
 
         /// <summary>
@@ -89,15 +98,24 @@ namespace Log.Worker
         private async Task ConnectToRabbitMQAsync(CancellationToken cancellationToken)
         {
             var section = _configuration.GetSection("RabbitMQ");
+            var hostName = section.GetValue<string>("Host");
+            var port = section.GetValue<int>("Port");
+            var userName = section.GetValue<string>("Uid");
+            var password = section.GetValue<string>("Pwd");
+
+            _logger.LogInformation($"Attempting to connect to RabbitMQ at {hostName}:{port}");
+
             var factory = new ConnectionFactory
             {
-                HostName = section.GetValue<string>("Host"),
-                Port = section.GetValue<int>("Port"),
-                UserName = section.GetValue<string>("Uid"),
-                Password = section.GetValue<string>("Pwd")
+                HostName = hostName,
+                Port = port,
+                UserName = userName,
+                Password = password
             };
 
             _connection = factory.CreateConnection();
+            _logger.LogInformation("RabbitMQ connection established");
+
             _channel = _connection.CreateModel();
 
             // Declare exchange (should already exist, but ensure it's durable)
@@ -106,22 +124,37 @@ namespace Log.Worker
             // Get queue size from configuration
             var queueSize = _configuration.GetValue<int>("RabbitMQ:QueueSize", 128);
 
-            // Declare and bind all log queues
-            // In Direct exchange, queue name and routing key are the same (e.g., "fb.log.0")
+            // Declare queues with names matching routing keys (fb.log.0 to fb.log.{queueSize-1})
+            // All consumer instances use the same queue names, allowing RabbitMQ to distribute
+            // messages among multiple consumers, ensuring each message is consumed only once
             for (int i = 0; i < queueSize; i++)
             {
-                var queueName = $"{QueueNamePrefix}{i}";
-                var routingKey = queueName; // For Direct exchange, routing key equals queue name
-                _queueNames.Add(queueName);
+                var routingKey = $"{RoutingKeyPrefix}{i}";
+                var queueName = routingKey; // Queue name = Routing key
 
-                // Declare queue as durable to persist messages
-                _channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+                try
+                {
+                    // Declare queue with name matching routing key
+                    _channel.QueueDeclare(
+                        queue: queueName,
+                        durable: true,
+                        exclusive: false,
+                        autoDelete: false,
+                        arguments: null);
 
-                // Bind queue to exchange with routing key (same as queue name for Direct exchange)
-                _channel.QueueBind(queueName, ExchangeName, routingKey);
+                    // Bind queue to the corresponding routing key
+                    _channel.QueueBind(queueName, ExchangeName, routingKey);
+
+                    _queueNames.Add(queueName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to declare or bind queue '{QueueName}' to routing key '{RoutingKey}'", queueName, routingKey);
+                    throw;
+                }
             }
 
-            _logger.LogInformation($"Connected to RabbitMQ and subscribed to {queueSize} log queues");
+            _logger.LogInformation($"Connected to RabbitMQ and declared {queueSize} queues (fb.log.0 to fb.log.{queueSize - 1})");
             await Task.CompletedTask;
         }
 
@@ -138,7 +171,8 @@ namespace Log.Worker
             var allLogs = new List<JsonElement>();
             var messagesToAck = new List<(string QueueName, ulong DeliveryTag)>();
 
-            // Process messages from all queues
+            // Process messages from the auto-generated queue
+            // This queue is bound to all log routing keys (fb.log.0 to fb.log.127)
             foreach (var queueName in _queueNames)
             {
                 var messageCount = 0;

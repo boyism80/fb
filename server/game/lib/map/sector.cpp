@@ -170,8 +170,7 @@ std::vector<std::shared_ptr<fb::game::sector>> sectors::nears(const fb::model::p
     return this->nears(this->index(pivot));
 }
 
-std::vector<std::shared_ptr<fb::game::object>> sectors::objects(const fb::model::point16_t& pivot,
-                                                                OBJECT_TYPE                 type) const
+std::vector<std::shared_ptr<fb::game::object>> sectors::objects(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
 {
     auto&& sectors = this->nears(pivot);
     auto   objects = std::vector<std::shared_ptr<fb::game::object>>();
@@ -191,12 +190,9 @@ std::vector<std::shared_ptr<fb::game::object>> sectors::objects(const fb::model:
     else
     {
         auto filtered = std::vector<std::shared_ptr<fb::game::object>>();
-        std::copy_if(objects.begin(),
-                     objects.end(),
-                     std::back_inserter(filtered),
-                     [type](const std::shared_ptr<fb::game::object>& x) {
-                         return x->is(type);
-                     });
+        std::copy_if(objects.begin(), objects.end(), std::back_inserter(filtered), [type](const std::shared_ptr<fb::game::object>& x) {
+            return x->is(type);
+        });
         return std::move(filtered);
     }
 }
@@ -206,12 +202,9 @@ std::vector<std::shared_ptr<fb::game::object>> sectors::objects(OBJECT_TYPE type
     auto result = std::vector<std::shared_ptr<fb::game::object>>();
     for (auto& sector : this->active_sectors())
     {
-        std::copy_if(sector->begin(),
-                     sector->end(),
-                     std::back_inserter(result),
-                     [type](const std::shared_ptr<fb::game::object>& x) {
-                         return type == OBJECT_TYPE::UNKNOWN || x->is(type);
-                     });
+        std::copy_if(sector->begin(), sector->end(), std::back_inserter(result), [type](const std::shared_ptr<fb::game::object>& x) {
+            return type == OBJECT_TYPE::UNKNOWN || x->is(type);
+        });
     }
 
     return std::move(result);

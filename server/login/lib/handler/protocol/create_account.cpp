@@ -1,4 +1,6 @@
 #include <fb/login/handler/protocol/create_account.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::login::handler::protocol;
 
@@ -55,6 +57,13 @@ async::task<bool> create_account::handle(fb::socket<fb::login::session>& session
         auto session_data  = session.data();
         session_data->pk   = uid;
         session_data->name = name;
+
+        // Log account creation event
+        auto log_data            = Json::Value();
+        log_data["account_name"] = UTF8(name, PLATFORM::WINDOWS);
+        log_data["uid"]          = static_cast<Json::Int64>(uid);
+        this->server.log.write("account_create", log_data);
+
         co_return true;
     }
     catch (login_exception& e)

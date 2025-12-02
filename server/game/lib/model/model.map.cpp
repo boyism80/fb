@@ -19,7 +19,7 @@ fb::model::map* fb::model::__map::name2map(const std::string& name) const
     {
         if (v.name == name)
         {
-            auto lock = std::lock_guard(cache_mutex);
+            auto lock   = std::lock_guard(cache_mutex);
             cache[name] = &v;
             return &v;
         }

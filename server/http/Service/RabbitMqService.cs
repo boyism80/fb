@@ -20,7 +20,7 @@ namespace Http.Service
         /// <param name="configuration">The application configuration containing RabbitMQ connection settings.</param>
         public RabbitMqService(IConfiguration configuration)
         {
-            var section = configuration.GetSection("RabbitMQ");
+            var section = configuration.GetSection("RabbitMQ:Internal");
             var factory = new ConnectionFactory()
             {
                 HostName = section.GetValue<string>("Host"),

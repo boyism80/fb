@@ -7,8 +7,7 @@ update_option::update_option(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::update_option>(server)
 { }
 
-async::task<bool> update_option::handle(fb::socket<character>&                      session,
-                                        fb::protocol::game::request::update_option& request)
+async::task<bool> update_option::handle(fb::socket<character>& session, fb::protocol::game::request::update_option& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -34,9 +33,7 @@ async::task<bool> update_option::handle(fb::socket<character>&                  
 
     default:
         auto   next = !ch->option(option);
-        auto&& resp = co_await this->server.http.post("internal",
-                                                      "/in-game/option",
-                                                      SetOption{ch->id(), static_cast<uint8_t>(option), next});
+        auto&& resp = co_await this->server.http.post("internal", "/in-game/option", SetOption{ch->id(), static_cast<uint8_t>(option), next});
         co_await this->server.threads.switching(weak);
 
         if (resp.success == false)

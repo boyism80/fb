@@ -3,9 +3,7 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-bulletin_articles::bulletin_articles(const fb::model::bulletin&                    bulletin,
-                                     const std::list<fb::game::bulletin::article>& article_list,
-                                     BULLETIN_BUTTON_ENABLE                        button_flags) :
+bulletin_articles::bulletin_articles(const fb::model::bulletin& bulletin, const std::list<fb::game::bulletin::article>& article_list, BULLETIN_BUTTON_ENABLE button_flags) :
     bulletin(bulletin),
     article_list(article_list),
     button_flags(button_flags)

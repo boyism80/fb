@@ -13,9 +13,6 @@ async::task<bool> exit::handle(fb::socket<character>& session, fb::protocol::gam
     if (ch->inited() == false)
         co_return true;
 
-    std::ignore = this->server.transfer(session,
-                                        fb::config<std::string>("login:ip"),
-                                        fb::config<uint16_t>("login:port"),
-                                        internal::Service::Game);
+    std::ignore = this->server.transfer(session, fb::config<std::string>("login:ip"), fb::config<uint16_t>("login:port"), internal::Service::Game);
     co_return true;
 }

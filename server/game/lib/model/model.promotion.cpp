@@ -1,7 +1,6 @@
 #include <fb/model/model.h>
 
-const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_value::CLASS cls,
-                                                                uint8_t                      promotion) const
+const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_value::CLASS cls, uint8_t promotion) const
 {
     try
     {
@@ -14,9 +13,7 @@ const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_
     }
 }
 
-bool fb::model::__promotion::name2class(const std::string&            name,
-                                        fb::model::enum_value::CLASS& cls,
-                                        uint8_t&                      promotion) const
+bool fb::model::__promotion::name2class(const std::string& name, fb::model::enum_value::CLASS& cls, uint8_t& promotion) const
 {
     for (const auto& [k1, v1] : *this)
     {

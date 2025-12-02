@@ -9,30 +9,17 @@ using namespace std::chrono_literals;
 using namespace fb::protocol::internal::request;
 
 server::server(boost::asio::io_context& io_context, uint16_t port) :
-    fb::acceptor<session>(io_context, "GATEWAY", port)
+    fb::acceptor<session>(io_context, "GATEWAY", port),
+    log(fb::config<std::string>("amqp:log:ip"),
+        fb::config<uint16_t>("amqp:log:port"),
+        fb::config<std::string>("amqp:log:uid"),
+        fb::config<std::string>("amqp:log:pwd"),
+        std::to_string(fb::config<uint32_t>("id")),
+        fb::config<std::string>("name"),
+        fb::config<size_t>("amqp:log:queue_size"))
 {
-    // Register event handler
     this->handler.protocol.bind<fb::gateway::handler::protocol::check_version>();
     this->handler.protocol.bind<fb::gateway::handler::protocol::entry_list>();
-
-    // Initialize log collector with RabbitMQ
-    try
-    {
-        auto server_id   = std::to_string(this->id());
-        auto server_name = this->name();
-        auto queue_size  = fb::config<size_t>("amqp:log:queue_size");
-        this->log        = std::make_unique<fb::log_collector>(fb::config<std::string>("amqp:log:ip"),
-                                                        fb::config<uint16_t>("amqp:log:port"),
-                                                        fb::config<std::string>("amqp:log:uid"),
-                                                        fb::config<std::string>("amqp:log:pwd"),
-                                                        server_id,
-                                                        server_name,
-                                                        queue_size);
-    }
-    catch (const std::exception& e)
-    {
-        fb::logger::warn("Failed to initialize log collector: {}", e.what());
-    }
 }
 
 server::~server()

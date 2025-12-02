@@ -119,6 +119,24 @@ module.exports = function () {
                                         ports: [
                                             { containerPort: sectionConf.port, name: `login-${index}` },
                                         ],
+                                        readinessProbe: {
+                                            tcpSocket: {
+                                                port: `login-${index}`
+                                            },
+                                            initialDelaySeconds: 10,
+                                            periodSeconds: 5,
+                                            timeoutSeconds: 3,
+                                            failureThreshold: 3
+                                        },
+                                        livenessProbe: {
+                                            tcpSocket: {
+                                                port: `login-${index}`
+                                            },
+                                            initialDelaySeconds: 30,
+                                            periodSeconds: 10,
+                                            timeoutSeconds: 3,
+                                            failureThreshold: 3
+                                        },
                                         command: ["./app"],
                                         args: ["-c", "config.json"],
                                         volumeMounts: [{

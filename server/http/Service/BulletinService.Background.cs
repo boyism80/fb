@@ -10,6 +10,7 @@ namespace Http.Service
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<BulletinBackgroundService> _logger;
         private readonly BulletinCacheService _bulletinCacheService;
+        private readonly LogService _logService;
 
         private static readonly TimeSpan _processingInterval = TimeSpan.FromSeconds(1);
 
@@ -19,12 +20,14 @@ namespace Http.Service
             BulletinService bulletinService,
             IServiceScopeFactory scopeFactory,
             ILogger<BulletinBackgroundService> logger,
-            BulletinCacheService bulletinCacheService)
+            BulletinCacheService bulletinCacheService,
+            LogService logService = null)
         {
             _bulletinService = bulletinService;
             _scopeFactory = scopeFactory;
             _logger = logger;
             _bulletinCacheService = bulletinCacheService;
+            _logService = logService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -122,6 +125,18 @@ namespace Http.Service
 
                         // Batch cache insert
                         await _bulletinCacheService.SetArticlesBatchAsync(cacheItems);
+
+                        // Log bulletin write events
+                        foreach (var request in requests)
+                        {
+                            var articleId = startId + (uint)requests.IndexOf(request);
+                            _logService?.Write("bulletin_write", new
+                            {
+                                section = section,
+                                article_id = articleId,
+                                user_id = request.User
+                            });
+                        }
 
                         // Notify success
                         foreach (var request in requests)

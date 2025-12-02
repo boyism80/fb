@@ -6,6 +6,7 @@
 #include <string>
 #include <async/task.h>
 #include <fb/amqp.h>
+#include <fb/logger.h>
 #include <chrono>
 #include <thread>
 
@@ -119,18 +120,27 @@ public:
                                        }});
     }
 
-    void declare_queue(const std::string& exchange, const std::string& key)
+    void declare_queue(const std::string& exchange, const std::string& route_key)
     {
-        auto& queue = this->_amqp->declare_queue();
-        queue.bind(exchange, key);
-
-        auto& route = queue.route();
-        if (this->_handlers.contains(route))
+        try
         {
-            for (auto& [cmd, fn] : this->_handlers.at(route))
+            // Declare queue with auto-generated name and bind with specified route key
+            auto& queue = this->_amqp->declare_queue(true, false, false, false);
+            queue.bind(exchange, route_key);
+
+            auto& route = queue.route();
+            if (this->_handlers.contains(route))
             {
-                queue.handler(cmd, fn);
+                for (auto& [cmd, fn] : this->_handlers.at(route))
+                {
+                    queue.handler(cmd, fn);
+                }
             }
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::fatal("Failed to declare queue with route key '{}' for exchange '{}': {}", route_key, exchange, e.what());
+            throw;
         }
     }
 

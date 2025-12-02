@@ -21,8 +21,7 @@ async::task<bool> front_info::handle(fb::socket<character>& session, fb::protoco
     for (auto i = forwards.begin(); i != forwards.end(); i++)
     {
         auto object  = *i;
-        auto message = object->is(OBJECT_TYPE::ITEM) ? std::static_pointer_cast<fb::game::item>(object)->inven_name()
-                                                     : object->name();
+        auto message = object->is(OBJECT_TYPE::ITEM) ? std::static_pointer_cast<fb::game::item>(object)->inven_name() : object->name();
         ch->message(message, MESSAGE_TYPE::STATE);
     }
     co_return true;

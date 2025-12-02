@@ -1,7 +1,10 @@
+#include <fb/game/server.h>
 #include <fb/game/stat.h>
 #include <fb/game/character.h>
 #include <fb/game/mob.h>
 #include <fb/game/ai.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 
 using namespace fb::game;
 
@@ -356,15 +359,39 @@ character_stat::character_stat(character& owner) :
 void character_stat::base_hp(uint32_t value)
 {
     this->owner.assert_thread();
-    this->_max_hp = value;
+
+    if (this->_max_hp == value)
+        return;
+
+    auto old_base_hp = this->_max_hp;
+    this->_max_hp    = value;
     this->owner.update(UPDATE_STATE_LEVEL::BASED);
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->owner.id());
+    log_data["character_name"] = UTF8(this->owner.name(), PLATFORM::WINDOWS);
+    log_data["old_base_hp"]    = static_cast<Json::Int64>(old_base_hp);
+    log_data["new_base_hp"]    = static_cast<Json::Int64>(value);
+    this->owner.server.log.write("base_hp_change", log_data);
 }
 
 void character_stat::base_mp(uint32_t value)
 {
     this->owner.assert_thread();
-    this->_max_mp = value;
+
+    if (this->_max_mp == value)
+        return;
+
+    auto old_base_mp = this->_max_mp;
+    this->_max_mp    = value;
     this->owner.update(UPDATE_STATE_LEVEL::BASED);
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->owner.id());
+    log_data["character_name"] = UTF8(this->owner.name(), PLATFORM::WINDOWS);
+    log_data["old_base_mp"]    = static_cast<Json::Int64>(old_base_mp);
+    log_data["new_base_mp"]    = static_cast<Json::Int64>(value);
+    this->owner.server.log.write("base_mp_change", log_data);
 }
 
 void character_stat::base_str(uint8_t value)
