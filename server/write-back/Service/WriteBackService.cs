@@ -22,6 +22,7 @@ namespace WriteBack.Service
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly ILogger<Http.Service.WriteBackService> _logger;
+        private readonly Http.Service.HealthCheckService _healthCheck;
         private static readonly TimeSpan _delay = TimeSpan.FromSeconds(5);
 
         /// <summary>
@@ -31,15 +32,18 @@ namespace WriteBack.Service
         /// <param name="configuration">The application configuration containing database connection strings.</param>
         /// <param name="serviceProvider">The service provider for dependency injection.</param>
         /// <param name="logger">The logger for recording write-back operations and errors.</param>
+        /// <param name="healthCheck">The health check service for monitoring processing status.</param>
         public WriteBackService(RedisService redisService,
             IConfiguration configuration,
             IServiceProvider serviceProvider,
-            ILogger<Http.Service.WriteBackService> logger)
+            ILogger<Http.Service.WriteBackService> logger,
+            Http.Service.HealthCheckService healthCheck)
         {
             _redisService = redisService;
             _configuration = configuration;
             _logger = logger;
             _dbContext = ActivatorUtilities.CreateInstance<DbContext>(serviceProvider);
+            _healthCheck = healthCheck;
         }
 
         /// <summary>
@@ -71,10 +75,14 @@ namespace WriteBack.Service
                 thread.Start();
             }
 
+            stoppingToken.Register(() => _healthCheck.BeginShutdown());
+
             while (!stoppingToken.IsCancellationRequested && threads.Any(thread => thread.IsAlive))
             {
                 await Task.Delay(_delay, stoppingToken);
             }
+
+            _logger.LogInformation("All write-back workers stopped, all Redis data processed");
         }
 
         /// <summary>
@@ -103,9 +111,12 @@ namespace WriteBack.Service
 
                     if (result.Length == 0)
                     {
+                        _healthCheck.SetProcessing(false);
                         await Task.Delay(_delay, stoppingToken);
                         continue;
                     }
+
+                    _healthCheck.SetProcessing(true);
 
                     await using var dbConn = _dbContext.Connection(db);
                     var backgroundCommitEntryList = ((RedisResult[])result).Select((x => JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString())));

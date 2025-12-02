@@ -19,6 +19,7 @@ namespace Log.Worker
         private readonly IConfiguration _configuration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<LogConsumerService> _logger;
+        private readonly Http.Service.HealthCheckService _healthCheck;
         private IConnection _connection;
         private IModel _channel;
         private readonly List<string> _queueNames = new();
@@ -33,14 +34,17 @@ namespace Log.Worker
         /// <param name="configuration">The application configuration containing RabbitMQ connection settings.</param>
         /// <param name="serviceScopeFactory">The service scope factory for creating scoped dependencies.</param>
         /// <param name="logger">The logger instance.</param>
+        /// <param name="healthCheck">The health check service for monitoring processing status.</param>
         public LogConsumerService(
             IConfiguration configuration,
             IServiceScopeFactory serviceScopeFactory,
-            ILogger<LogConsumerService> logger)
+            ILogger<LogConsumerService> logger,
+            Http.Service.HealthCheckService healthCheck)
         {
             _configuration = configuration;
             _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
+            _healthCheck = healthCheck;
         }
 
         /// <summary>
@@ -52,6 +56,8 @@ namespace Log.Worker
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Log Consumer Service starting");
+
+            stoppingToken.Register(() => _healthCheck.BeginShutdown());
 
             // Retry connection loop until successful or cancelled
             while (!stoppingToken.IsCancellationRequested)
@@ -85,9 +91,94 @@ namespace Log.Worker
                 }
             }
 
+            // Process remaining messages during shutdown
+            _logger.LogInformation("Graceful shutdown initiated, processing remaining messages...");
+            await ProcessRemainingMessagesAsync();
+
             // Clean shutdown
             await DisconnectFromRabbitMQAsync();
-            _logger.LogInformation("Log Consumer Service stopped");
+            _logger.LogInformation("Log Consumer Service stopped, all messages processed");
+        }
+
+        /// <summary>
+        /// Processes all remaining messages in queues during graceful shutdown.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task ProcessRemainingMessagesAsync()
+        {
+            if (_channel == null)
+                return;
+
+            var totalProcessed = 0;
+            while (true)
+            {
+                var processedCount = 0;
+                var allLogs = new List<JsonElement>();
+                var messagesToAck = new List<(string QueueName, ulong DeliveryTag)>();
+
+                foreach (var queueName in _queueNames)
+                {
+                    while (true)
+                    {
+                        var result = _channel.BasicGet(queueName, autoAck: false);
+                        if (result == null)
+                            break;
+
+                        try
+                        {
+                            var body = result.Body.ToArray();
+                            var jsonString = Encoding.UTF8.GetString(body);
+                            using var doc = JsonDocument.Parse(jsonString);
+                            allLogs.Add(doc.RootElement.Clone());
+                            messagesToAck.Add((queueName, result.DeliveryTag));
+                            processedCount++;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, $"Failed to parse log message from queue {queueName}");
+                            _channel.BasicAck(result.DeliveryTag, false);
+                        }
+                    }
+                }
+
+                if (processedCount == 0)
+                {
+                    _healthCheck.SetProcessing(false);
+                    break;
+                }
+
+                _healthCheck.SetProcessing(true);
+                totalProcessed += processedCount;
+
+                foreach (var (queueName, deliveryTag) in messagesToAck)
+                {
+                    try
+                    {
+                        _channel.BasicAck(deliveryTag, false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, $"Failed to acknowledge message from queue {queueName}");
+                    }
+                }
+
+                if (allLogs.Count > 0)
+                {
+                    try
+                    {
+                        using var scope = _serviceScopeFactory.CreateScope();
+                        var logRepository = scope.ServiceProvider.GetRequiredService<LogRepository>();
+                        await logRepository.BulkInsertAsync(allLogs);
+                        _logger.LogInformation($"Processed {allLogs.Count} remaining log entries");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Failed to bulk insert {allLogs.Count} log entries during shutdown");
+                    }
+                }
+            }
+
+            _logger.LogInformation($"Graceful shutdown complete, processed {totalProcessed} remaining messages");
         }
 
         /// <summary>
@@ -201,6 +292,14 @@ namespace Log.Worker
                     }
                 }
             }
+
+            if (allLogs.Count == 0)
+            {
+                _healthCheck.SetProcessing(false);
+                return;
+            }
+
+            _healthCheck.SetProcessing(true);
 
             // Acknowledge all processed messages
             foreach (var (queueName, deliveryTag) in messagesToAck)

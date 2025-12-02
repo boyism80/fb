@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using WriteBack.Service;
+using Http.Service;
 
 namespace WriteBack
 {
@@ -19,22 +20,46 @@ namespace WriteBack
         /// <returns>A task representing the asynchronous execution of the application.</returns>
         static async Task Main(string[] args)
         {
-            var host = Host.CreateDefaultBuilder(args)
-                .ConfigureServices(services =>
-                {
-                    services.AddSingleton<Http.Service.RedisService>();
-                    services.AddSingleton<Http.Service.DbContext>();
-                    services.AddLogging(builder =>
-                    {
-                        builder.AddConsole();
-                    });
-                    services.AddHostedService<WriteBackService>();
-                    services.AddHostedService<Http.Service.ShutdownListenerService>();
-                })
-                .UseConsoleLifetime()
-                .Build();
+            var builder = WebApplication.CreateBuilder(args);
+            
+            // Add services
+            builder.Services.AddSingleton<Http.Service.RedisService>();
+            builder.Services.AddSingleton<Http.Service.DbContext>();
+            builder.Services.AddSingleton<Http.Service.HealthCheckService>();
+            builder.Logging.AddConsole();
+            builder.Services.AddHostedService<WriteBackService>();
+            builder.Services.AddHostedService<Http.Service.ShutdownListenerService>();
 
-            host.Run();
+            // Read HealthApi configuration
+            var healthApiEnabled = builder.Configuration.GetValue<bool>("HealthApi:Enabled", false);
+            var healthApiPort = builder.Configuration.GetValue<int>("HealthApi:Port", 80);
+
+            if (healthApiEnabled)
+            {
+                // Configure Kestrel to listen on configured port
+                builder.WebHost.ConfigureKestrel(options =>
+                {
+                    options.ListenAnyIP(healthApiPort);
+                });
+            }
+
+            var app = builder.Build();
+
+            if (healthApiEnabled)
+            {
+                // Health check endpoints
+                app.MapGet("/health/ready", (Http.Service.HealthCheckService health) =>
+                {
+                    return health.IsReady ? Results.Ok("Ready") : Results.ServiceUnavailable();
+                });
+
+                app.MapGet("/health/live", (Http.Service.HealthCheckService health) =>
+                {
+                    return health.IsAlive ? Results.Ok("Alive") : Results.ServiceUnavailable();
+                });
+            }
+
+            await app.RunAsync();
         }
     }
 }
