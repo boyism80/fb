@@ -63,45 +63,6 @@ module.exports = {
                 const headlessServiceName = `${resourceName}-headless`
                 const replicas = typeConf.replicas || 1
                 
-                // Create PersistentVolumes for each replica
-                // PV names must match StatefulSet PVC naming: data-{statefulset}-{ordinal}
-                for (let i = 0; i < replicas; i++) {
-                    const pvName = `data-${resourceName}-${i}`  // Matches PVC name
-                    const pv = new k8s.core.v1.PersistentVolume(pvName, {
-                        metadata: { 
-                            name: pvName,
-                            labels: {
-                                app: "rabbitmq",
-                                section: section,
-                                type: type
-                            }
-                        },
-                        spec: {
-                            capacity: { storage: "10Gi" },
-                            accessModes: ["ReadWriteOnce"],
-                            persistentVolumeReclaimPolicy: "Retain",
-                            storageClassName: "manual",
-                            // Ensure PV is only used on ubuntu-1 where hostPath exists
-                            nodeAffinity: {
-                                required: {
-                                    nodeSelectorTerms: [{
-                                        matchExpressions: [{
-                                            key: "kubernetes.io/hostname",
-                                            operator: "In",
-                                            values: ["ubuntu-1"]
-                                        }]
-                                    }]
-                                }
-                            },
-                            hostPath: {
-                                path: `/mnt/fb/rabbitmq/${section}-${type}/data-${i}`,
-                                type: "DirectoryOrCreate"
-                            }
-                        }
-                    })
-                    resources.push(pv)
-                }
-                
                 // Create ConfigMap for RabbitMQ configuration
                 const configMap = new k8s.core.v1.ConfigMap(`${resourceName}-config`, {
                     metadata: { name: `${resourceName}-config`, namespace: namespace.metadata.name },
@@ -150,36 +111,6 @@ cluster_partition_handling = autoheal
                                 nodeSelector: {
                                     "kubernetes.io/hostname": "ubuntu-1"
                                 },
-                                initContainers: [{
-                                    name: "cleanup-and-setup",
-                                    image: "busybox:latest",
-                                    securityContext: {
-                                        runAsUser: 0,
-                                        runAsGroup: 0,
-                                        privileged: false
-                                    },
-                                    command: [
-                                        "sh", "-c",
-                                        `#!/bin/sh
-echo "Removing all RabbitMQ data for fresh start..."
-rm -rf /var/lib/rabbitmq/*
-echo "Data cleanup complete"
-
-echo "Creating directory structure..."
-mkdir -p /var/lib/rabbitmq/mnesia
-mkdir -p /var/lib/rabbitmq/log
-
-echo "Setting ownership to 999:999..."
-chown -R 999:999 /var/lib/rabbitmq
-chmod -R 755 /var/lib/rabbitmq
-
-echo "Setup complete - ready for fresh RabbitMQ start"
-`
-                                    ],
-                                    volumeMounts: [
-                                        { name: "data", mountPath: "/var/lib/rabbitmq" }
-                                    ]
-                                }],
                                 containers: [{
                                     name: "rabbitmq",
                                     image: "rabbitmq:4.0.2-management",
@@ -204,9 +135,8 @@ export RABBITMQ_NODENAME=rabbit@$MY_POD_NAME.${headlessServiceName}.$MY_POD_NAME
 exec docker-entrypoint.sh rabbitmq-server
 `],
                                     volumeMounts: [
-                                                { name: "config", mountPath: "/etc/rabbitmq" },
-                                                { name: "data", mountPath: "/var/lib/rabbitmq" },
-                                            ],
+                                        { name: "config", mountPath: "/etc/rabbitmq" }
+                                    ],
                                             readinessProbe: {
                                                 exec: { command: ["rabbitmq-diagnostics", "ping"] },
                                                 initialDelaySeconds: 20,
@@ -219,25 +149,17 @@ exec docker-entrypoint.sh rabbitmq-server
                                                 periodSeconds: 30,
                                                 timeoutSeconds: 10,
                                             },
-                                        }],
-                                        volumes: [
-                                            {
-                                                name: "config",
-                                                configMap: { name: configMap.metadata.name },
-                                            }
-                                        ],
-                                    },
-                                },
-                        volumeClaimTemplates: [{
-                            metadata: { name: "data" },
-                            spec: {
-                                accessModes: ["ReadWriteOnce"],
-                                storageClassName: "manual",
-                                resources: { requests: { storage: "10Gi" } }
+                                }],
+                                volumes: [
+                                    {
+                                        name: "config",
+                                        configMap: { name: configMap.metadata.name }
+                                    }
+                                ]
                             }
-                        }]
-                            },
-                        }, { dependsOn: [headlessService, configMap, serviceAccount, roleBinding] })
+                        }
+                    },
+                }, { dependsOn: [headlessService, configMap, serviceAccount, roleBinding] })
                         
                         // Create ClusterIP service
                         const clusterIPService = new k8s.core.v1.Service(resourceName, {
