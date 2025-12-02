@@ -158,6 +158,7 @@ public class Program
         builder.Services.AddSingleton<RedisDistributedLockService>();
         builder.Services.AddSingleton<IMapper>(_ => new Mapper(config));
         builder.Services.AddSingleton<RabbitMqService>();
+        builder.Services.AddSingleton<LogService>();
         builder.Services.AddSingleton<SessionService>();
         builder.Services.AddSingleton<ServerStateService>();
         builder.Services.AddScoped<DbContext>();

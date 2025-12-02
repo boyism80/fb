@@ -38,10 +38,10 @@ namespace Http.Service
 
             var factory = new ConnectionFactory
             {
-                HostName = config["RabbitMQ:Host"],
-                Port = int.Parse(config["RabbitMQ:Port"]),
-                UserName = config["RabbitMQ:Uid"],
-                Password = config["RabbitMQ:Pwd"]
+                HostName = config["RabbitMQ:Internal:Host"],
+                Port = int.Parse(config["RabbitMQ:Internal:Port"]),
+                UserName = config["RabbitMQ:Internal:Uid"],
+                Password = config["RabbitMQ:Internal:Pwd"]
             };
 
             _connection = factory.CreateConnection();

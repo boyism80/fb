@@ -14,14 +14,17 @@ namespace Http.Service
         private readonly DbContext _dbContext;
         private readonly RabbitMqService _rabbitMqService;
         private readonly SessionService _sessionService;
+        private readonly LogService? _logService;
 
         public StorageService(DbContext dbContext,
             RabbitMqService rabbitMqService,
-            SessionService sessionService)
+            SessionService sessionService,
+            LogService? logService = null)
         {
             _dbContext = dbContext;
             _rabbitMqService = rabbitMqService;
             _sessionService = sessionService;
+            _logService = logService;
         }
 
         public async Task<List<StoragePendingBox>> GetPendingForUserAsync(uint user)
@@ -100,6 +103,16 @@ namespace Http.Service
             // Save using Repository (handles Redis caching and DB write-back automatically)
             _dbContext.StoragePendingBox.Set(pending);
             await _dbContext.SaveChangesAsync();
+
+            // Log storage pending creation event
+            _logService?.Write("storage_pending_create", new
+            {
+                pending_id = pending.Id,
+                user_id = pending.User,
+                user_name = userName,
+                is_global = !pending.User.HasValue,
+                expired_date = expiredDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
+            });
 
             if (pending.User.HasValue)
                 await NotifyPersonalPendingAsync(pending.User.Value);

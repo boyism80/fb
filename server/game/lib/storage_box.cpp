@@ -1,7 +1,10 @@
 #include <fb/game/storage.h>
 #include <fb/game/character.h>
+#include <fb/game/server.h>
 #include <fb/model/datetime.h>
 #include <fb/model/model.h>
+#include <fb/encoding.h>
+#include <json/json.h>
 #include <algorithm>
 
 namespace fb::game {
@@ -60,6 +63,22 @@ void storage_box::apply_pending(const std::vector<pending_box>& pending)
         mark.expire_date            = box.expire_date;
         this->_reward_marks[box.id] = mark;
 
+        // Log storage box entry addition
+        auto log_data              = Json::Value();
+        log_data["character_id"]   = static_cast<Json::Int64>(this->_owner.id());
+        log_data["character_name"] = UTF8(this->_owner.name(), PLATFORM::WINDOWS);
+        log_data["entry_id"]       = static_cast<Json::Int64>(id);
+        log_data["pending_id"]     = box.id;
+        log_data["title"]          = UTF8(box.title, PLATFORM::WINDOWS);
+        auto attachments_array     = Json::Value(Json::arrayValue);
+        for (const auto& attachment : e.attachments)
+        {
+            attachments_array.append(attachment.to_json());
+        }
+        log_data["attachments"] = attachments_array;
+        log_data["expire_date"] = e.expire_date.has_value() ? Json::Value(UTF8(e.expire_date.value().to_string(), PLATFORM::WINDOWS)) : Json::Value::null;
+        this->_owner.server.log.write("storage_box_entry_add", log_data);
+
         // Notify player about new storage box entry
         if (!box.title.empty())
         {
@@ -89,6 +108,20 @@ bool storage_box::receive_reward(uint32_t entry_id)
 
     if (this->_owner.reward(it->second.attachments) == false)
         return false;
+
+    // Log storage box attachment reception
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->_owner.id());
+    log_data["character_name"] = UTF8(this->_owner.name(), PLATFORM::WINDOWS);
+    log_data["entry_id"]       = static_cast<Json::Int64>(entry_id);
+    log_data["title"]          = UTF8(it->second.title, PLATFORM::WINDOWS);
+    auto attachments_array     = Json::Value(Json::arrayValue);
+    for (const auto& attachment : it->second.attachments)
+    {
+        attachments_array.append(attachment.to_json());
+    }
+    log_data["attachments"] = attachments_array;
+    this->_owner.server.log.write("storage_box_attachment_receive", log_data);
 
     it->second.received = true;
     return true;

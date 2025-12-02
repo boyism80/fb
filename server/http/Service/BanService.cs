@@ -11,16 +11,19 @@ namespace Http.Service
     {
         private readonly DbContext _dbContext;
         private readonly ILogger<BanService> _logger;
+        private readonly LogService? _logService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BanService"/> class.
         /// </summary>
         /// <param name="dbContext">The database context for data operations.</param>
         /// <param name="logger">The logger for recording operations and errors.</param>
-        public BanService(DbContext dbContext, ILogger<BanService> logger)
+        /// <param name="logService">The log service for recording ban operations (optional).</param>
+        public BanService(DbContext dbContext, ILogger<BanService> logger, LogService? logService = null)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _logService = logService;
         }
 
         /// <summary>
@@ -59,6 +62,15 @@ namespace Http.Service
             _logger.LogInformation("User {Name} (ID: {UserId}) has been banned. Reason: {Reason}, Expire: {ExpireDate}",
                 name, userId, reason, expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Permanent");
 
+            // Log ban event
+            _logService?.Write("ban", new
+            {
+                account_name = name,
+                uid = userId,
+                reason = reason,
+                expire_date = expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
+            });
+
             return new BanResult
             {
                 Success = true,
@@ -88,6 +100,13 @@ namespace Http.Service
             await _dbContext.Ban.Delete(userId);
 
             _logger.LogInformation("User {Name} (ID: {UserId}) has been unbanned.", name, userId);
+
+            // Log unban event
+            _logService?.Write("unban", new
+            {
+                account_name = name,
+                uid = userId
+            });
 
             return new UnbanResult
             {

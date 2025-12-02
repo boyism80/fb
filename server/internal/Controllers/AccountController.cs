@@ -24,6 +24,7 @@ namespace Internal.Controllers
         private readonly DbContext _dbContext;
         private readonly RedisService _redisService;
         private readonly ILogger<AccountController> _logger;
+        private readonly LogService _logService;
 
         // Object pool for SHA256 instances to reduce GC pressure
         // Limit pool size to 64 instances (reasonable for most scenarios)
@@ -95,12 +96,14 @@ namespace Internal.Controllers
         public AccountController(IMapper mapper,
             DbContext dbContext,
             RedisService redisService,
-            ILogger<AccountController> logger)
+            ILogger<AccountController> logger,
+            LogService logService)
         {
             _mapper = mapper;
             _dbContext = dbContext;
             _redisService = redisService;
             _logger = logger;
+            _logService = logService;
         }
         [HttpGet("uid/{name}")]
         public async Task<Response.GetUid> Uid(string name)
@@ -187,6 +190,14 @@ namespace Internal.Controllers
             _dbContext.Character.Set(ch);
 
             await _dbContext.SaveChangesAsync();
+
+            // Log account creation event
+            _logService.Write("account_create", new
+            {
+                account_name = request.Name,
+                uid = request.Uid
+            });
+
             return new Response.InitCharacter
             {
                 Success = true
@@ -246,6 +257,14 @@ namespace Internal.Controllers
                 _dbContext.Character.Set(ch);
 
                 await _dbContext.SaveChangesAsync();
+
+                // Log password change event
+                _logService.Write("password_change", new
+                {
+                    account_name = ch.Name,
+                    uid = request.Uid
+                });
+
                 return new Response.ChangePw
                 {
                     ErrorCode = 0

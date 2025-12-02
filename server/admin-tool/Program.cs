@@ -24,9 +24,10 @@ builder.Services.AddScoped<AuthenticationStateProvider, AdminTool.Authentication
 // HTTP project services
 builder.Services.AddSingleton<RedisService>();
 builder.Services.AddSingleton<RedisDistributedLockService>();
-builder.Services.AddSingleton<RabbitMqService>();
-builder.Services.AddSingleton<SessionService>();
-builder.Services.AddSingleton<WriteBackService>();
+    builder.Services.AddSingleton<RabbitMqService>();
+    builder.Services.AddSingleton<LogService>();
+    builder.Services.AddSingleton<SessionService>();
+    builder.Services.AddSingleton<WriteBackService>();
 builder.Services.AddScoped<DbContext>();
 builder.Services.AddScoped<BanService>();
 builder.Services.AddScoped<CacheService>();
