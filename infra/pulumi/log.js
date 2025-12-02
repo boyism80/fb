@@ -23,6 +23,9 @@ module.exports = {
                     "Uid": "fb",
                     "Pwd": "admin",
                     "QueueSize": 128
+                },
+                "Log": {
+                    "InstanceCount": 5
                 }
             }
 
@@ -60,6 +63,14 @@ module.exports = {
                                         add: ["SYS_PTRACE"]
                                     }
                                 },
+                                env: [{
+                                    name: "HOSTNAME",
+                                    valueFrom: {
+                                        fieldRef: {
+                                            fieldPath: "metadata.name"
+                                        }
+                                    }
+                                }],
                                 volumeMounts: [{
                                     name: "config-volume",
                                     mountPath: "/app/appsettings.json",
