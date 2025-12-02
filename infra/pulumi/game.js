@@ -92,6 +92,24 @@ module.exports = function () {
                                             ports: [
                                                 { containerPort: container.port, name: `game-${index}` },
                                             ],
+                                            readinessProbe: {
+                                                tcpSocket: {
+                                                    port: `game-${index}`
+                                                },
+                                                initialDelaySeconds: 10,
+                                                periodSeconds: 5,
+                                                timeoutSeconds: 3,
+                                                failureThreshold: 3
+                                            },
+                                            livenessProbe: {
+                                                tcpSocket: {
+                                                    port: `game-${index}`
+                                                },
+                                                initialDelaySeconds: 30,
+                                                periodSeconds: 10,
+                                                timeoutSeconds: 3,
+                                                failureThreshold: 3
+                                            },
                                             command: ["./app"],
                                             args: ["-c", "config.json"],
                                             volumeMounts: [{

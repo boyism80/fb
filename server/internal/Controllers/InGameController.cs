@@ -396,6 +396,19 @@ namespace Internal.Controllers
                 }
 
                 await _dbContext.SaveChangesAsync();
+
+                // Log character save event
+                _logService.Write("character_save", new
+                {
+                    character_id = request.Character.Id,
+                    character_name = request.Character.Name,
+                    item_count = request.Items?.Count ?? 0,
+                    spell_count = request.Spells?.Count ?? 0,
+                    achievement_count = request.Achievements?.Count ?? 0,
+                    quest_count = request.Quests?.Count ?? 0,
+                    storage_box_count = request.StorageBoxes?.Count ?? 0
+                });
+
                 return new Response.Save
                 {
                     Success = true

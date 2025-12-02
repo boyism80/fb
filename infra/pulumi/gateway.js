@@ -95,6 +95,24 @@ module.exports = function () {
                                     ports: [
                                         { containerPort: conf.gateway.port, name: `gateway` },
                                     ],
+                                    readinessProbe: {
+                                        tcpSocket: {
+                                            port: `gateway`
+                                        },
+                                        initialDelaySeconds: 10,
+                                        periodSeconds: 5,
+                                        timeoutSeconds: 3,
+                                        failureThreshold: 3
+                                    },
+                                    livenessProbe: {
+                                        tcpSocket: {
+                                            port: `gateway`
+                                        },
+                                        initialDelaySeconds: 30,
+                                        periodSeconds: 10,
+                                        timeoutSeconds: 3,
+                                        failureThreshold: 3
+                                    },
                                     command: ["./app"],
                                     args: ["-c", "config.json"],
                                     volumeMounts: [{

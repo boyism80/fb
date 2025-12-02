@@ -64,8 +64,9 @@ module.exports = {
                 const replicas = typeConf.replicas || 1
                 
                 // Create PersistentVolumes for each replica
+                // PV names must match StatefulSet PVC naming: data-{statefulset}-{ordinal}
                 for (let i = 0; i < replicas; i++) {
-                    const pvName = `${resourceName}-data-${i}`
+                    const pvName = `data-${resourceName}-${i}`  // Matches PVC name
                     const pv = new k8s.core.v1.PersistentVolume(pvName, {
                         metadata: { 
                             name: pvName,
@@ -80,6 +81,18 @@ module.exports = {
                             accessModes: ["ReadWriteOnce"],
                             persistentVolumeReclaimPolicy: "Retain",
                             storageClassName: "manual",
+                            // Ensure PV is only used on ubuntu-1 where hostPath exists
+                            nodeAffinity: {
+                                required: {
+                                    nodeSelectorTerms: [{
+                                        matchExpressions: [{
+                                            key: "kubernetes.io/hostname",
+                                            operator: "In",
+                                            values: ["ubuntu-1"]
+                                        }]
+                                    }]
+                                }
+                            },
                             hostPath: {
                                 path: `/mnt/fb/rabbitmq/${section}-${type}/data-${i}`,
                                 type: "DirectoryOrCreate"
