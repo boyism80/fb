@@ -26,10 +26,6 @@ module.exports = {
                 },
                 "Log": {
                     "InstanceCount": 5
-                },
-                "HealthApi": {
-                    "Enabled": true,
-                    "Port": 80
                 }
             }
 
@@ -46,9 +42,6 @@ module.exports = {
                     "appsettings.json": JSON.stringify(config),
                 },
             })
-
-            const healthApiEnabled = config.HealthApi?.Enabled !== false
-            const healthApiPort = config.HealthApi?.Port || 80
 
             const containerSpec = {
                 name: "log",
@@ -72,37 +65,6 @@ module.exports = {
                     mountPath: "/app/appsettings.json",
                     subPath: "appsettings.json"
                 }],
-            }
-
-            if (healthApiEnabled) {
-                containerSpec.ports = [{ containerPort: healthApiPort }]
-                containerSpec.readinessProbe = {
-                    httpGet: {
-                        path: "/health/ready",
-                        port: healthApiPort
-                    },
-                    initialDelaySeconds: 5,
-                    periodSeconds: 10,
-                    timeoutSeconds: 3,
-                    failureThreshold: 3
-                }
-                containerSpec.livenessProbe = {
-                    httpGet: {
-                        path: "/health/live",
-                        port: healthApiPort
-                    },
-                    initialDelaySeconds: 10,
-                    periodSeconds: 30,
-                    timeoutSeconds: 5,
-                    failureThreshold: 3
-                }
-                containerSpec.lifecycle = {
-                    preStop: {
-                        exec: {
-                            command: ["/bin/sh", "-c", "sleep 30"]
-                        }
-                    }
-                }
             }
 
             const deployment = new k8s.apps.v1.Deployment(`log-${section}`, {
