@@ -124,7 +124,7 @@ async::task<void> server::on_enter_group(const internal_resp::EnterGroup& resp)
     this->assert_group(resp.error, resp.member);
 
     auto gid = resp.group.id;
-    co_await this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp](auto& group) {
+    co_await this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp](auto& group) -> async::task<void> {
         // Build complete member list including master
         auto members = std::vector<std::string>{resp.group.members};
         members.push_back(resp.group.master);
@@ -133,55 +133,57 @@ async::task<void> server::on_enter_group(const internal_resp::EnterGroup& resp)
             members.push_back(resp.member);
 
         // Process group action for all affected members
-        this->characters.foreach (members, [this, resp, group](auto& ch) {
-            switch (resp.action)
-            {
-            case GroupAction::Create:
-                group->enter(ch);
-                ch->group_id(group->id());
-                if (ch->name() == resp.member)
+        co_await this->characters.async_write([this, &resp, &group, &members](auto& characters) -> async::task<void> {
+            co_await characters.foreach (members, [this, resp, group](auto& ch) {
+                switch (resp.action)
                 {
-                    ch->message("그룹에 참여했습니다.");
-
-                    // Log group create event
-                    auto log_data              = Json::Value();
-                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
-                    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
-                    log_data["group_id"]       = static_cast<Json::Int64>(group->id());
-                    this->log.write("group_create", log_data);
-                }
-                else
-                {
-                    ch->message(std::format("{}님 그룹 참여", resp.member));
-                }
-                break;
-
-            case GroupAction::Enter:
-                if (ch->name() == resp.member)
-                {
-                    ch->message("그룹에 참여했습니다.");
+                case GroupAction::Create:
                     group->enter(ch);
                     ch->group_id(group->id());
-                }
-                else
-                {
-                    ch->message(std::format("{}님 그룹 참여", resp.member));
-                }
-                break;
+                    if (ch->name() == resp.member)
+                    {
+                        ch->message("그룹에 참여했습니다.");
 
-            case GroupAction::Kick:
-                if (ch->name() == resp.member)
-                {
-                    group->detach(ch);
-                    ch->group_reset();
-                    ch->message("그룹에서 추방당했습니다.");
+                        // Log group create event
+                        auto log_data              = Json::Value();
+                        log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                        log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+                        log_data["group_id"]       = static_cast<Json::Int64>(group->id());
+                        this->log.write("group_create", log_data);
+                    }
+                    else
+                    {
+                        ch->message(std::format("{}님 그룹 참여", resp.member));
+                    }
+                    break;
+
+                case GroupAction::Enter:
+                    if (ch->name() == resp.member)
+                    {
+                        ch->message("그룹에 참여했습니다.");
+                        group->enter(ch);
+                        ch->group_id(group->id());
+                    }
+                    else
+                    {
+                        ch->message(std::format("{}님 그룹 참여", resp.member));
+                    }
+                    break;
+
+                case GroupAction::Kick:
+                    if (ch->name() == resp.member)
+                    {
+                        group->detach(ch);
+                        ch->group_reset();
+                        ch->message("그룹에서 추방당했습니다.");
+                    }
+                    else
+                    {
+                        ch->message(std::format("{}님 그룹 탈퇴", resp.member));
+                    }
+                    break;
                 }
-                else
-                {
-                    ch->message(std::format("{}님 그룹 탈퇴", resp.member));
-                }
-                break;
-            }
+            });
         });
     });
 }
@@ -196,27 +198,29 @@ async::task<void> server::on_leave_group(const internal_resp::LeaveGroup& resp)
     case GroupAction::Leave:
     {
         co_await this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp, gid](auto& group) -> async::task<void> {
-            co_await this->characters.invoke(resp.member, [group](auto& ch) {
-                ch->group_reset();
-                group->detach(ch);
-            });
+            co_await this->characters.async_write([this, &resp, &group, gid](auto& characters) -> async::task<void> {
+                characters.invoke(resp.member, [group](auto& ch) {
+                    ch->group_reset();
+                    group->detach(ch);
+                });
 
-            auto members = std::vector<std::string>{resp.member};
-            members.push_back(resp.group.master);
-            this->characters.foreach (members, [this, member = resp.member, gid](auto& ch) {
-                if (ch->name() == member)
-                {
-                    ch->message("그룹 탈퇴", MESSAGE_TYPE::STATE);
+                auto members = std::vector<std::string>{resp.member};
+                members.push_back(resp.group.master);
+                co_await characters.foreach (members, [this, member = resp.member, gid](auto& ch) {
+                    if (ch->name() == member)
+                    {
+                        ch->message("그룹 탈퇴", MESSAGE_TYPE::STATE);
 
-                    // Log group leave event
-                    auto log_data              = Json::Value();
-                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
-                    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
-                    log_data["group_id"]       = static_cast<Json::Int64>(gid);
-                    this->log.write("group_leave", log_data);
-                }
-                else
-                    ch->message(std::format("{}님 그룹에서 탈퇴", member), MESSAGE_TYPE::STATE);
+                        // Log group leave event
+                        auto log_data              = Json::Value();
+                        log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                        log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+                        log_data["group_id"]       = static_cast<Json::Int64>(gid);
+                        this->log.write("group_leave", log_data);
+                    }
+                    else
+                        ch->message(std::format("{}님 그룹에서 탈퇴", member), MESSAGE_TYPE::STATE);
+                });
             });
         });
     }
@@ -228,9 +232,11 @@ async::task<void> server::on_leave_group(const internal_resp::LeaveGroup& resp)
             auto members = std::vector<std::string>{resp.group.members};
             members.push_back(resp.group.master);
 
-            co_await this->characters.foreach (members, [](auto& ch) {
-                ch->group_reset();
-                ch->message("그룹 해체", MESSAGE_TYPE::STATE);
+            co_await this->characters.async_write([this, &resp, &members](auto& characters) -> async::task<void> {
+                co_await characters.foreach (members, [](auto& ch) {
+                    ch->group_reset();
+                    ch->message("그룹 해체", MESSAGE_TYPE::STATE);
+                });
             });
         });
         this->groups.erase(gid);
@@ -245,18 +251,20 @@ async::task<void> server::on_kick_group(const internal_resp::KickGroup& resp)
 
     auto gid = resp.group.id;
     co_await this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp, gid](auto& group) -> async::task<void> {
-        co_await this->characters.invoke(resp.member, [group](auto& ch) {
-            ch->group_reset();
-            group->detach(ch);
-        });
+        co_await this->characters.async_write([this, &resp, &group](auto& characters) -> async::task<void> {
+            characters.invoke(resp.member, [group](auto& ch) {
+                ch->group_reset();
+                group->detach(ch);
+            });
 
-        auto members = std::vector<std::string>{resp.group.members};
-        members.push_back(resp.group.master);
-        this->characters.foreach (members, [member = resp.member](auto& ch) {
-            if (ch->name() == member)
-                ch->message("그룹에서 추방당했습니다.", MESSAGE_TYPE::STATE);
-            else
-                ch->message(std::format("{}님 그룹에서 추방당했습니다.", member), MESSAGE_TYPE::STATE);
+            auto members = std::vector<std::string>{resp.group.members};
+            members.push_back(resp.group.master);
+            co_await characters.foreach (members, [member = resp.member](auto& ch) {
+                if (ch->name() == member)
+                    ch->message("그룹에서 추방당했습니다.", MESSAGE_TYPE::STATE);
+                else
+                    ch->message(std::format("{}님 그룹에서 추방당했습니다.", member), MESSAGE_TYPE::STATE);
+            });
         });
     });
 }
@@ -265,16 +273,18 @@ async::task<void> server::broadcast(const group& group, const std::string& messa
 {
     auto&& resp = co_await this->http.post("internal", "/group/broadcast", BroadcastGroup{config<uint32_t>("host"), group.id(), message, static_cast<uint8_t>(type)});
 
-    this->on_group_broadcast(resp);
+    co_await this->on_group_broadcast(resp);
 }
 
-void server::on_group_broadcast(const internal_resp::BroadcastGroup& resp)
+async::task<void> server::on_group_broadcast(const internal_resp::BroadcastGroup& resp)
 {
     this->assert_group(resp.error, "");
 
-    std::ignore = this->upsert_group_then(resp.group, [this, message = resp.message, type = resp.type](auto& group) {
-        this->characters.foreach (group->members(), [message, type](auto& ch) {
-            ch->message(message, static_cast<MESSAGE_TYPE>(type));
+    co_await this->upsert_group_then(resp.group, [this, message = resp.message, type = resp.type](auto& group) -> async::task<void> {
+        co_await this->characters.async_write([this, &group, &message, &type](auto& characters) -> async::task<void> {
+            co_await characters.foreach (group->members(), [message, type](auto& ch) {
+                ch->message(message, static_cast<MESSAGE_TYPE>(type));
+            });
         });
     });
 }

@@ -22,28 +22,30 @@ void server::assert_mail(uint32_t error) const
     }
 }
 
-void server::on_write_mail(const internal_resp::WriteMail& resp)
+async::task<void> server::on_write_mail(const internal_resp::WriteMail& resp)
 {
     assert_mail(resp.error);
 
-    auto ch = this->characters.find(resp.mail.user);
-    if (ch == nullptr)
-        return;
+    this->characters.write([this, &resp](auto& characters) {
+        auto ch = characters.find(resp.mail.user);
+        if (ch == nullptr)
+            return;
 
-    auto weak = ch->weak_from_this_as<character>();
-    this->threads.enqueue(weak, [this, ch, unread = resp.unread, resp](auto& thread) -> async::task<void> {
-        ch->mail_box.unread_count(unread);
+        auto weak = ch->weak_from_this_as<character>();
+        this->threads.enqueue(weak, [this, ch, unread = resp.unread, resp](auto& thread) -> async::task<void> {
+            ch->mail_box.unread_count(unread);
 
-        // Log mail receive event
-        auto log_data            = Json::Value();
-        log_data["character_id"] = static_cast<Json::Int64>(ch->id());
-        log_data["sender_name"]  = UTF8(resp.mail.sender, PLATFORM::WINDOWS);
-        log_data["mail_id"]      = static_cast<Json::Int64>(resp.mail.id);
-        log_data["title"]        = UTF8(resp.mail.title, PLATFORM::WINDOWS);
-        this->log.write("mail_receive", log_data);
-
-        co_return;
+            // Log mail receive event
+            auto log_data            = Json::Value();
+            log_data["character_id"] = static_cast<Json::Int64>(ch->id());
+            log_data["sender_name"]  = UTF8(resp.mail.sender, PLATFORM::WINDOWS);
+            log_data["mail_id"]      = static_cast<Json::Int64>(resp.mail.id);
+            log_data["title"]        = UTF8(resp.mail.title, PLATFORM::WINDOWS);
+            this->log.write("mail_receive", log_data);
+            co_return;
+        });
     });
+    co_return;
 }
 
 async::task<internal_resp::WriteMail> server::send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents)

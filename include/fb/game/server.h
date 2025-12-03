@@ -130,15 +130,15 @@ public:
     async::task<void> on_kick_group(const internal_resp::KickGroup& resp);
 
 public:
-    void              on_broadcast(const internal_resp::Broadcast& resp);
-    void              on_group_broadcast(const internal_resp::BroadcastGroup& resp);
+    async::task<void> on_broadcast(const internal_resp::Broadcast& resp);
+    async::task<void> on_group_broadcast(const internal_resp::BroadcastGroup& resp);
     async::task<void> on_clan_broadcast(const internal_resp::BroadcastClan& resp);
     async::task<void> on_clan_title_changed(const internal_resp::SetClanTitle& resp);
     async::task<void> on_clan_join_member(const internal_resp::JoinClan& resp);
     async::task<void> on_clan_leave_member(const internal_resp::LeaveClan& resp);
     async::task<void> on_clan_kick_member(const internal_resp::KickClan& resp);
-    void              on_write_mail(const internal_resp::WriteMail& resp);
-    void              on_whisper(const internal_resp::Whisper& resp);
+    async::task<void> on_write_mail(const internal_resp::WriteMail& resp);
+    async::task<void> on_whisper(const internal_resp::Whisper& resp);
     async::task<void> on_clan_change_role(const internal_resp::ChangeClanRole& resp);
 
 public:
@@ -202,11 +202,11 @@ public:
 protected:
     bool                                 decrypt_policy(uint8_t cmd) const override final;
     bool                                 assert_tps(const fb::socket<fb::game::character>& socket) const override final;
-    void                                 handle_init_amqp(fb::amqp::socket& amqp) override final;
-    [[nodiscard]] async::task<void>      handle_start() override final;
-    [[nodiscard]] async::task<bool>      handle_connected(fb::socket<fb::game::character>& ch) override final;
-    [[nodiscard]] async::task<bool>      handle_disconnected(fb::socket<fb::game::character>& ch) override final;
-    std::shared_ptr<fb::game::character> handle_accepted(fb::socket<fb::game::character>& socket) override final;
+    void                                 on_init_amqp(fb::amqp::socket& amqp) override final;
+    [[nodiscard]] async::task<void>      on_start() override final;
+    [[nodiscard]] async::task<bool>      on_connected(fb::socket<fb::game::character>& ch) override final;
+    [[nodiscard]] async::task<bool>      on_disconnected(fb::socket<fb::game::character>& ch) override final;
+    std::shared_ptr<fb::game::character> on_accepted(fb::socket<fb::game::character>& socket) override final;
 
 protected:
     uint8_t id() const override final;

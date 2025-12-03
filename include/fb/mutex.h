@@ -37,11 +37,8 @@ public:
 
 private:
     template <typename T>
-    [[nodiscard]] async::task<T> handle_locked(std::shared_ptr<async::task_completion_source<T>> promise,
-                                               const async_wait_func<T>&                         fn,
-                                               fb::dead_lock_detector&                           current,
-                                               const std::string                                 key,
-                                               std::mutex&                                       mutex)
+    [[nodiscard]] async::task<T>
+    on_locked(std::shared_ptr<async::task_completion_source<T>> promise, const async_wait_func<T>& fn, fb::dead_lock_detector& current, const std::string key, std::mutex& mutex)
     {
         {
             auto _ = std::lock_guard(mutex);
@@ -67,7 +64,7 @@ private:
     }
 
     template <typename T>
-    T handle_locked(const sync_wait_func<T>& fn, fb::dead_lock_detector& current, const std::string key, std::mutex& mutex)
+    T on_locked(const sync_wait_func<T>& fn, fb::dead_lock_detector& current, const std::string key, std::mutex& mutex)
     {
         auto _ = std::lock_guard(mutex);
 
@@ -77,7 +74,7 @@ private:
     }
 
     template <typename T>
-    T handle_locked(const sync_peek_func<T>& fn, const std::string key, std::mutex& mutex)
+    T on_locked(const sync_peek_func<T>& fn, const std::string key, std::mutex& mutex)
     {
         if (mutex.try_lock())
         {
@@ -126,12 +123,12 @@ private:
         if (thread != nullptr)
         {
             thread->dispatch([this, promise, &fn, &current, key, mutex](auto& thread) mutable -> async::task<void> {
-                co_await this->handle_locked(promise, fn, current, key, *mutex);
+                co_await this->on_locked(promise, fn, current, key, *mutex);
             });
         }
         else
         {
-            co_await this->handle_locked(promise, fn, current, key, *mutex);
+            co_await this->on_locked(promise, fn, current, key, *mutex);
         }
 
         co_return true;
@@ -152,12 +149,12 @@ private:
         if (thread != nullptr)
         {
             thread->dispatch([this, promise, &fn, key, mutex]() mutable {
-                this->handle_locked(promise, fn, key, *mutex);
+                this->on_locked(promise, fn, key, *mutex);
             });
         }
         else
         {
-            this->handle_locked(promise, fn, key, *mutex);
+            this->on_locked(promise, fn, key, *mutex);
         }
     }
 
@@ -176,7 +173,7 @@ private:
         auto& current = static_cast<fb::mst<std::string>&>(trans).add<fb::dead_lock_detector>(key, &trans);
         concurrent::assert_dead_lock(current);
 
-        return this->handle_locked(fn, current, key, *mutex);
+        return this->on_locked(fn, current, key, *mutex);
     }
 
     template <typename T>
@@ -191,7 +188,7 @@ private:
             mutex = this->_pool[key].get();
         }
 
-        return this->handle_locked(fn, key, *mutex);
+        return this->on_locked(fn, key, *mutex);
     }
 
 public:

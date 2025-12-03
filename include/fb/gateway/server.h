@@ -49,11 +49,11 @@ private:
 
 protected:
     bool                                  decrypt_policy(uint8_t cmd) const override final;
-    void                                  handle_init_amqp(fb::amqp::socket& amqp) override final;
-    [[nodiscard]] async::task<void>       handle_start() final;
-    std::shared_ptr<fb::gateway::session> handle_accepted(fb::socket<fb::gateway::session>& socket) final;
-    [[nodiscard]] async::task<bool>       handle_connected(fb::socket<fb::gateway::session>& session) final;
-    [[nodiscard]] async::task<bool>       handle_disconnected(fb::socket<fb::gateway::session>& session) final;
+    void                                  on_init_amqp(fb::amqp::socket& amqp) override final;
+    [[nodiscard]] async::task<void>       on_start() final;
+    std::shared_ptr<fb::gateway::session> on_accepted(fb::socket<fb::gateway::session>& socket) final;
+    [[nodiscard]] async::task<bool>       on_connected(fb::socket<fb::gateway::session>& session) final;
+    [[nodiscard]] async::task<bool>       on_disconnected(fb::socket<fb::gateway::session>& session) final;
 
 protected:
     Service service() const override final

@@ -395,12 +395,7 @@ async::task<bool> login::ensure_character_insert(const std::weak_ptr<fb::game::c
     while (true)
     {
         auto inserted = this->server.characters.write([ch](auto& container) {
-            auto name = ch->name();
-            if (container.contains(name) == false)
-            {
-                return container.insert(ch);
-            }
-            return false;
+            return container.insert(ch);
         });
 
         if (inserted)

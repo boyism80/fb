@@ -24,7 +24,7 @@ public:
     virtual async::task<void> on_bot_disconnected(game_bot& bot) override;
 
 private:
-    async::task<void> handle_timer(const fb::model::datetime& now, std::thread::id id);
+    async::task<void> on_timer(const fb::model::datetime& now, std::thread::id id);
 };
 
 } // namespace fb::bot::load

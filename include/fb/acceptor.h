@@ -69,7 +69,7 @@ public:
     }
 
 protected:
-    virtual void handle_init_amqp(fb::amqp::socket& amqp) = 0;
+    virtual void on_init_amqp(fb::amqp::socket& amqp) = 0;
 
 public:
     bool connected(uint32_t fd)
@@ -183,7 +183,7 @@ private:
     {
         try
         {
-            std::ignore = co_await this->handle_disconnected(socket);
+            std::ignore = co_await this->on_disconnected(socket);
         }
         catch (std::exception& e)
         {
@@ -252,7 +252,7 @@ private:
                 if (this->_running == false)
                     throw std::runtime_error("cannot accept socket. acceptor is cleaning now.");
 
-                shared_socket_ptr->data(this->handle_accepted(*shared_socket_ptr));
+                shared_socket_ptr->data(this->on_accepted(*shared_socket_ptr));
                 shared_socket_ptr->set_option(boost::asio::ip::tcp::no_delay(false));
 
                 {
@@ -268,7 +268,7 @@ private:
                     });
                 }
 
-                async::awaitable_get(this->handle_connected(*shared_socket_ptr));
+                async::awaitable_get(this->on_connected(*shared_socket_ptr));
 
                 boost::asio::co_spawn(*this, shared_socket_ptr->recv(), boost::asio::detached);
                 this->accept();
@@ -352,10 +352,10 @@ protected:
     }
 
 protected:
-    virtual std::shared_ptr<T> handle_accepted(fb::socket<T>& socket) = 0;
+    virtual std::shared_ptr<T> on_accepted(fb::socket<T>& socket) = 0;
 
 protected:
-    virtual async::task<void> handle_start()
+    virtual async::task<void> on_start()
     {
         lua::build<lua::luable>();
         lua::build<fb::thread, lua::luable>();
@@ -364,13 +364,13 @@ protected:
     }
 
 protected:
-    virtual async::task<bool> handle_connected(fb::socket<T>& session)
+    virtual async::task<bool> on_connected(fb::socket<T>& session)
     {
         co_return true;
     }
 
 protected:
-    virtual async::task<bool> handle_disconnected(fb::socket<T>& session)
+    virtual async::task<bool> on_disconnected(fb::socket<T>& session)
     {
         co_return true;
     }
@@ -386,7 +386,7 @@ protected:
     }
 
 protected:
-    virtual async::task<void> handle_exit()
+    virtual async::task<void> on_exit()
     {
         co_return;
     }
@@ -441,11 +441,11 @@ public:
             }));
         }
 
-        async::awaitable_get(this->handle_start());
+        async::awaitable_get(this->on_start());
 
         threads.push_back(std::thread([this]() {
             this->handler.amqp.on_initialize = [this](fb::amqp::socket& amqp) {
-                this->handle_init_amqp(amqp);
+                this->on_init_amqp(amqp);
             };
 
             this->handler.amqp.thread_loop();
@@ -491,7 +491,7 @@ private:
             {
                 try
                 {
-                    std::ignore = co_await this->handle_disconnected(*socket);
+                    std::ignore = co_await this->on_disconnected(*socket);
                 }
                 catch (std::exception& e)
                 {

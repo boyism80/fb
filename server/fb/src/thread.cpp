@@ -3,7 +3,7 @@
 fb::thread::thread(uint8_t index) :
     _index(index)
 {
-    this->_thread = std::thread(std::bind(&fb::thread::handle_thread, this, std::placeholders::_1), index);
+    this->_thread = std::thread(std::bind(&fb::thread::on_thread, this, std::placeholders::_1), index);
 }
 
 fb::thread::~thread()
@@ -11,7 +11,7 @@ fb::thread::~thread()
     this->exit();
 }
 
-void fb::thread::handle_thread(uint8_t index)
+void fb::thread::on_thread(uint8_t index)
 {
     constexpr auto term = 100ms;
 
@@ -34,7 +34,7 @@ void fb::thread::handle_thread(uint8_t index)
         else
         {
             auto begin = fb::model::datetime();
-            this->handle_idle();
+            this->on_idle();
             auto elapsed = fb::model::datetime() - begin;
 
             if (elapsed < term)
@@ -43,7 +43,7 @@ void fb::thread::handle_thread(uint8_t index)
     }
 }
 
-void fb::thread::handle_idle()
+void fb::thread::on_idle()
 {
     auto now = fb::model::datetime();
     for (int i = this->_timers.size() - 1; i >= 0; i--)
@@ -91,14 +91,11 @@ void fb::thread::exit()
     this->_exit = true;
 }
 
-std::shared_ptr<fb::timer> fb::thread::settimer(const fb::timer::handle_callback_type& fn,
-                                                const fb::model::timespan&             duration,
-                                                fb::timer::repeat_type                 repeat)
+std::shared_ptr<fb::timer> fb::thread::settimer(const fb::timer::handle_callback_type& fn, const fb::model::timespan& duration, fb::timer::repeat_type repeat)
 {
     if (this->id() != std::this_thread::get_id())
     {
-        throw std::runtime_error(std::format("cannot set timer. thread mismatched. stacktrace : {}",
-                                             boost::stacktrace::to_string(boost::stacktrace::stacktrace())));
+        throw std::runtime_error(std::format("cannot set timer. thread mismatched. stacktrace : {}", boost::stacktrace::to_string(boost::stacktrace::stacktrace())));
     }
 
     auto ptr = new fb::timer(
@@ -136,9 +133,7 @@ async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
     return promise->task();
 }
 
-void fb::thread::enqueue(const handle_func_type<void>& fn,
-                         const handle_error_type&      error,
-                         const std::function<void()>&  callback)
+void fb::thread::enqueue(const handle_func_type<void>& fn, const handle_error_type& error, const std::function<void()>& callback)
 {
     this->_queue.write([=, this](auto& queue) {
         queue.push([=, this]() {

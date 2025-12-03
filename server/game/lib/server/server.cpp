@@ -117,14 +117,14 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
 server::~server()
 { }
 
-async::task<void> server::handle_start()
+async::task<void> server::on_start()
 {
     this->threads.deletor = [](void* data) {
         auto params = static_cast<thread_params*>(data);
         delete params;
     };
 
-    co_await fb::acceptor<character>::handle_start();
+    co_await fb::acceptor<character>::on_start();
 
     auto maps_division = std::unordered_map<fb::thread*, std::vector<std::shared_ptr<fb::game::map>>>{};
     for (int i = 0; i < this->threads.count(); i++)
@@ -280,12 +280,12 @@ bool server::assert_tps(const fb::socket<fb::game::character>& socket) const
     return ch->role() == ROLE::USER;
 }
 
-async::task<bool> server::handle_connected(fb::socket<character>& socket)
+async::task<bool> server::on_connected(fb::socket<character>& socket)
 {
     co_return true;
 }
 
-async::task<bool> server::handle_disconnected(fb::socket<character>& socket)
+async::task<bool> server::on_disconnected(fb::socket<character>& socket)
 {
     auto ch = socket.data();
     if (ch == nullptr)
@@ -373,7 +373,7 @@ async::task<bool> server::handle_disconnected(fb::socket<character>& socket)
     co_return true;
 }
 
-std::shared_ptr<fb::game::character> server::handle_accepted(fb::socket<character>& socket)
+std::shared_ptr<fb::game::character> server::on_accepted(fb::socket<character>& socket)
 {
     return this->make<character>(socket);
 }
@@ -451,8 +451,11 @@ async::task<void> server::send(object& object, const fb::protocol::header& heade
 
     case fb::game::scope::WORLD:
     {
-        co_await this->characters.foreach ([stream, encrypt](auto& ch) {
-            ch->send(stream, encrypt);
+        this->characters.write([stream, encrypt](auto& characters) {
+            for (auto& [_, ch] : characters)
+            {
+                std::ignore = ch->send(stream, encrypt);
+            }
         });
     }
     break;
@@ -589,9 +592,9 @@ async::task<void> server::save(character& ch)
 
 void server::save()
 {
-    for (int i = 0; i < this->threads.size(); i++)
+    for (auto& [id, thread] : this->threads)
     {
-        std::ignore = this->threads[i]->dispatch([this](auto& thread) -> async::task<void> {
+        std::ignore = thread->dispatch([this](auto& thread) -> async::task<void> {
             auto params = thread.template data<thread_params>();
             for (auto& [id, character] : params->characters)
             {
@@ -629,7 +632,7 @@ const fb::model::datetime& server::time() const
     return this->_time;
 }
 
-void server::handle_init_amqp(fb::amqp::socket& amqp)
+void server::on_init_amqp(fb::amqp::socket& amqp)
 {
     this->handler.amqp.declare_queue("amq.direct", "fb.system");
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
@@ -647,30 +650,32 @@ async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE typ
     case BROADCAST_TYPE::GLOBAL:
     {
         auto&& resp = co_await this->http.post("internal", "/in-game/broadcast", Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
-        this->on_broadcast(resp);
+        co_await this->on_broadcast(resp);
     }
     break;
 
     case BROADCAST_TYPE::WORLD:
     {
-        co_await this->characters.foreach ([message, type](auto& ch) {
-            ch->message(message, type);
+        this->characters.write([message, type](auto& characters) {
+            for (auto& [_, ch] : characters)
+            {
+                ch->message(message, type);
+            }
         });
     }
     break;
     }
 }
 
-void server::on_broadcast(const internal_resp::Broadcast& resp)
+async::task<void> server::on_broadcast(const internal_resp::Broadcast& resp)
 {
-    std::ignore = this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type), BROADCAST_TYPE::WORLD);
+    co_await this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type), BROADCAST_TYPE::WORLD);
 }
 
 void server::rezen_force()
 {
-    for (int i = 0; i < this->threads.count(); i++)
+    for (auto& [id, thread] : this->threads)
     {
-        auto thread = this->threads.at(i);
         std::ignore = thread->dispatch([](auto& thread) -> async::task<void> {
             auto params = thread.template data<thread_params>();
             for (auto& rezen : params->rezens)
@@ -715,8 +720,11 @@ void server::update_time()
     auto updated = fb::model::datetime();
     if (this->_time.hours() != updated.hours())
     {
-        this->characters.foreach ([hours = updated.hours()](auto& ch) {
-            ch->update_time(hours);
+        this->characters.write([hours = updated.hours()](auto& characters) {
+            for (auto& [_, ch] : characters)
+            {
+                ch->update_time(hours);
+            }
         });
     }
 

@@ -191,3 +191,33 @@ character::container::character_ptr_t character::container::operator[] (const st
 
     return ch;
 }
+
+character::container::iterator character::container::begin()
+{
+    return this->_from_uid.begin();
+}
+
+character::container::iterator character::container::end()
+{
+    return this->_from_uid.end();
+}
+
+character::container::const_iterator character::container::begin() const
+{
+    return this->_from_uid.begin();
+}
+
+character::container::const_iterator character::container::end() const
+{
+    return this->_from_uid.end();
+}
+
+character::container::const_iterator character::container::cbegin() const
+{
+    return this->_from_uid.cbegin();
+}
+
+character::container::const_iterator character::container::cend() const
+{
+    return this->_from_uid.cend();
+}

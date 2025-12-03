@@ -9,8 +9,8 @@ using namespace fb::bot::load;
 login_bot_controller::login_bot_controller(bot_container& container) :
     fb::bot::login_bot_controller(container)
 {
-    this->bind(&login_bot_controller::handle_agreement);
-    this->bind(&login_bot_controller::handle_transfer);
+    this->bind(&login_bot_controller::on_agreement);
+    this->bind(&login_bot_controller::on_transfer);
 }
 
 void login_bot_controller::initialize()
@@ -18,8 +18,7 @@ void login_bot_controller::initialize()
     // No timers needed for login bot_controller as it's reactive
 }
 
-async::task<void> login_bot_controller::handle_agreement(login_bot&                                      bot,
-                                                         const fb::protocol::login::response::agreement& response)
+async::task<void> login_bot_controller::on_agreement(login_bot& bot, const fb::protocol::login::response::agreement& response)
 {
     auto           id     = bot.generate_id();
     auto           exists = false;
@@ -31,8 +30,7 @@ async::task<void> login_bot_controller::handle_agreement(login_bot&             
 
         while (true)
         {
-            auto&& resp = co_await bot.request<fb::protocol::login::response::message>(
-                fb::protocol::login::request::create(id, pw));
+            auto&& resp = co_await bot.request<fb::protocol::login::response::message>(fb::protocol::login::request::create(id, pw));
 
             if (resp.type == 0x00)
                 break;
@@ -65,8 +63,7 @@ async::task<void> login_bot_controller::handle_agreement(login_bot&             
 
             while (true)
             {
-                auto&& resp = co_await bot.request<fb::protocol::login::response::message>(
-                    fb::protocol::login::request::complete{hair, sex, nation, creature});
+                auto&& resp = co_await bot.request<fb::protocol::login::response::message>(fb::protocol::login::request::complete{hair, sex, nation, creature});
 
                 if (resp.type == 0x00)
                     break;
@@ -77,8 +74,7 @@ async::task<void> login_bot_controller::handle_agreement(login_bot&             
 
         while (true)
         {
-            auto&& resp = co_await bot.request<fb::protocol::login::response::message>(
-                fb::protocol::login::request::login{id, pw});
+            auto&& resp = co_await bot.request<fb::protocol::login::response::message>(fb::protocol::login::request::login{id, pw});
             if (resp.type == 0x00)
                 break;
 
@@ -93,8 +89,7 @@ async::task<void> login_bot_controller::handle_agreement(login_bot&             
     co_return;
 }
 
-async::task<void> login_bot_controller::handle_transfer(login_bot&                              bot,
-                                                        const fb::protocol::response::transfer& response)
+async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb::protocol::response::transfer& response)
 {
     bot.close();
 
@@ -109,9 +104,7 @@ async::task<void> login_bot_controller::handle_transfer(login_bot&              
 async::task<void> login_bot_controller::on_bot_connected(login_bot& bot)
 {
     auto& encryption = bot.encryption();
-    bot.send(fb::protocol::login::request::agreement(encryption.pattern(), fb::encryption::KEY_SIZE, encryption.iv()),
-             false,
-             true);
+    bot.send(fb::protocol::login::request::agreement(encryption.pattern(), fb::encryption::KEY_SIZE, encryption.iv()), false, true);
 
     // Bot is now managed by bot_controller's thread-safe collection
     co_return;

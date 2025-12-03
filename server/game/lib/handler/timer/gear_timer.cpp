@@ -64,7 +64,7 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
                 }
                 catch (std::exception& e)
                 {
-                    fb::logger::warn("handle_gear_timer: {}", e.what());
+                    fb::logger::warn("on_gear_timer: {}", e.what());
                 }
             }
         }

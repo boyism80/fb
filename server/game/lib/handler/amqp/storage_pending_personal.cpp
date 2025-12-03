@@ -23,7 +23,7 @@ async::task<void> storage_pending_personal::handle(const internal_resp::GetStora
     if (message.pending.empty())
         co_return;
 
-    co_await this->server.characters.async_read([&message](const auto& container) -> async::task<void> {
+    co_await this->server.characters.async_read([this, &message](const auto& container) -> async::task<void> {
         auto ch = container.find(message.user.value());
         if (ch == nullptr)
             co_return;

@@ -55,8 +55,8 @@ public:
     thread& operator= (const thread&) = delete;
 
 private:
-    void handle_thread(uint8_t index);
-    void handle_idle();
+    void on_thread(uint8_t index);
+    void on_idle();
     void assert_exec() const;
 
 public:

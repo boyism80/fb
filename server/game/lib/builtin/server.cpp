@@ -154,18 +154,20 @@ int builtin::server::builtin_name2ch(lua_State* L)
     auto argc   = lua->argc();
     auto name   = lua->tostring(1);
 
-    auto ch = server->characters.find(name);
-    if (ch == nullptr)
-    {
-        lua->pushnil();
-        return 1;
-    }
-
-    auto weak = ch->weak_from_this_as<character>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushobject(ch);
+    return server->characters.read([lua, server, name](auto& container) {
+        auto ch = container.find(name);
+        if (ch == nullptr)
+        {
+            lua->pushnil();
             return 1;
+        }
+
+        auto weak = ch->weak_from_this_as<character>();
+        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            return lua->ensure_resume(*server, weak, [=]() {
+                lua->pushobject(ch);
+                return 1;
+            });
         });
     });
 }
@@ -285,18 +287,20 @@ int builtin::server::builtin_id2ch(lua_State* L)
     auto server = lua->env<fb::game::server>("server");
     auto id     = static_cast<uint32_t>(lua->tointeger(1));
 
-    auto ch = server->characters.find(id);
-    if (ch == nullptr)
-    {
-        lua->pushnil();
-        return 1;
-    }
+    return server->characters.read([lua, server, id](auto& container) {
+        auto ch = container.find(id);
+        if (ch == nullptr)
+        {
+            lua->pushnil();
+            return 0;
+        }
 
-    auto weak = ch->weak_from_this_as<character>();
-    return lua->ensure_yield(*server, weak, [=](auto /*is_yield*/) {
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushobject(ch);
-            return 1;
+        auto weak = ch->weak_from_this_as<character>();
+        return lua->ensure_yield(*server, weak, [=](auto /*is_yield*/) {
+            return lua->ensure_resume(*server, weak, [=]() {
+                lua->pushobject(ch);
+                return 1;
+            });
         });
     });
 }
@@ -430,8 +434,11 @@ int builtin::server::builtin_timer(lua_State* L)
     auto decrease = lua->toboolean(2);
 
     auto type = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
-    server->characters.foreach ([value, type](auto& ch) {
-        ch->timer(value, type);
+    server->characters.write([value, type](auto& container) {
+        for (auto& [uid, ch] : container)
+        {
+            ch->timer(value, type);
+        }
     });
     return 0;
 }
@@ -445,8 +452,11 @@ int builtin::server::builtin_weather(lua_State* L)
     auto server = lua->env<fb::game::server>("server");
     auto value  = (uint32_t)lua->tointeger(1);
 
-    server->characters.foreach ([weather = WEATHER_TYPE(value)](auto& ch) {
-        ch->weather(weather);
+    server->characters.write([value](auto& container) {
+        for (auto& [uid, ch] : container)
+        {
+            ch->weather(WEATHER_TYPE(value));
+        }
     });
     return 0;
 }
@@ -460,8 +470,11 @@ int builtin::server::builtin_bright(lua_State* L)
     auto server = lua->env<fb::game::server>("server");
     auto value  = (uint32_t)lua->tointeger(1);
 
-    server->characters.foreach ([value](auto& ch) {
-        ch->bright(value);
+    server->characters.write([value](auto& container) {
+        for (auto& [uid, ch] : container)
+        {
+            ch->bright(value);
+        }
     });
     return 0;
 }

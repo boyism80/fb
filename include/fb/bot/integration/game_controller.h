@@ -46,15 +46,15 @@ public:
     void initialize() override;
 
 private:
-    async::task<void> handle_timer();
-    async::task<void> handle_time(game_bot& bot, const fb::protocol::game::response::time& response);
-    async::task<void> handle_state(game_bot& bot, const fb::protocol::game::response::update_internal& response);
-    async::task<void> handle_map(game_bot& bot, const fb::protocol::game::response::map_config& response);
-    async::task<void> handle_message(game_bot& bot, const fb::protocol::game::response::message& response);
-    async::task<void> handle_sequence(game_bot& bot, const fb::protocol::game::response::id& response);
-    async::task<void> handle_position(game_bot& bot, const fb::protocol::game::response::position& response);
-    async::task<void> handle_move(game_bot& bot, const fb::protocol::game::response::move& response);
-    async::task<void> handle_transfer(game_bot& bot, const fb::protocol::response::transfer& response);
+    async::task<void> on_timer();
+    async::task<void> on_time(game_bot& bot, const fb::protocol::game::response::time& response);
+    async::task<void> on_state(game_bot& bot, const fb::protocol::game::response::update_internal& response);
+    async::task<void> on_map(game_bot& bot, const fb::protocol::game::response::map_config& response);
+    async::task<void> on_message(game_bot& bot, const fb::protocol::game::response::message& response);
+    async::task<void> on_sequence(game_bot& bot, const fb::protocol::game::response::id& response);
+    async::task<void> on_position(game_bot& bot, const fb::protocol::game::response::position& response);
+    async::task<void> on_move(game_bot& bot, const fb::protocol::game::response::move& response);
+    async::task<void> on_transfer(game_bot& bot, const fb::protocol::response::transfer& response);
 
 protected:
     async::task<void> on_integration_hook_execution(uint8_t cmd, game_bot& bot, const fb::protocol::header& header) override;

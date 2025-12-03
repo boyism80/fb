@@ -243,6 +243,10 @@ private:
     std::unordered_map<std::string, character_ptr_t> _from_name;
 
 public:
+    using iterator       = std::unordered_map<uint32_t, character_ptr_t>::iterator;
+    using const_iterator = std::unordered_map<uint32_t, character_ptr_t>::const_iterator;
+
+public:
     fb::game::server& _server;
 
 public:
@@ -268,6 +272,14 @@ public:
 public:
     character_ptr_t operator[] (uint32_t uid);
     character_ptr_t operator[] (const std::string& name);
+
+public:
+    iterator       begin();
+    iterator       end();
+    const_iterator begin() const;
+    const_iterator end() const;
+    const_iterator cbegin() const;
+    const_iterator cend() const;
 };
 
 struct character::listener_t : public virtual life::listener_t, public virtual dialog::listener_t, public virtual trade::listener_t, public virtual equipment::listener_t

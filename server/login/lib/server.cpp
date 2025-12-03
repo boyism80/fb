@@ -41,9 +41,9 @@ bool server::decrypt_policy(uint8_t cmd) const
     }
 }
 
-async::task<void> server::handle_start()
+async::task<void> server::on_start()
 {
-    co_await fb::acceptor<session>::handle_start();
+    co_await fb::acceptor<session>::on_start();
 
     this->bind_timer<fb::login::handler::timer::heart_beat>(1s);
     this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.system");
@@ -96,22 +96,22 @@ void server::assert_account(const std::string& id, const std::string& pw) const
         throw pw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
 }
 
-std::shared_ptr<session> server::handle_accepted(fb::socket<session>& socket)
+std::shared_ptr<session> server::on_accepted(fb::socket<session>& socket)
 {
     return std::make_shared<session>();
 }
 
-async::task<bool> server::handle_connected(fb::socket<session>& socket)
+async::task<bool> server::on_connected(fb::socket<session>& socket)
 {
     co_return true;
 }
 
-async::task<bool> server::handle_disconnected(fb::socket<session>& socket)
+async::task<bool> server::on_disconnected(fb::socket<session>& socket)
 {
     co_return false;
 }
 
-void server::handle_init_amqp(fb::amqp::socket& amqp)
+void server::on_init_amqp(fb::amqp::socket& amqp)
 {
     this->handler.amqp.declare_queue("amq.direct", "fb.system");
 }

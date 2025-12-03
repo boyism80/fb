@@ -162,3 +162,33 @@ thread* thread_container::operator[] (std::thread::id id) const
 {
     return this->at(id);
 }
+
+thread_container::iterator thread_container::begin()
+{
+    return this->_thread_container.begin();
+}
+
+thread_container::iterator thread_container::end()
+{
+    return this->_thread_container.end();
+}
+
+thread_container::const_iterator thread_container::begin() const
+{
+    return this->_thread_container.begin();
+}
+
+thread_container::const_iterator thread_container::end() const
+{
+    return this->_thread_container.end();
+}
+
+thread_container::const_iterator thread_container::cbegin() const
+{
+    return this->_thread_container.cbegin();
+}
+
+thread_container::const_iterator thread_container::cend() const
+{
+    return this->_thread_container.cend();
+}
