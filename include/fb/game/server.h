@@ -34,12 +34,13 @@ REGISTER_RESPONSE(fb::protocol::internal::request::Shutdown, fb::protocol::inter
 REGISTER_RESPONSE(fb::protocol::internal::request::Heartbeat, fb::protocol::internal::response::Heartbeat)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteArticle, fb::protocol::internal::response::WriteArticle)
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteArticle, fb::protocol::internal::response::DeleteArticle)
-REGISTER_RESPONSE(fb::protocol::internal::request::CreateClan, fb::protocol::internal::response::CreateClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::CreateClan, fb::protocol::internal::response::ClanDetails)
 REGISTER_RESPONSE(fb::protocol::internal::request::DestroyClan, fb::protocol::internal::response::DestroyClan)
-REGISTER_RESPONSE(fb::protocol::internal::request::SetClanTitle, fb::protocol::internal::response::SetClanTitle)
-REGISTER_RESPONSE(fb::protocol::internal::request::JoinClan, fb::protocol::internal::response::JoinClan)
-REGISTER_RESPONSE(fb::protocol::internal::request::LeaveClan, fb::protocol::internal::response::LeaveClan)
-REGISTER_RESPONSE(fb::protocol::internal::request::KickClan, fb::protocol::internal::response::KickClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetClanTitle, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::JoinClan, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::LeaveClan, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::KickClan, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanRole, fb::protocol::internal::response::UpdatedClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastClan, fb::protocol::internal::response::BroadcastClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout)
 REGISTER_RESPONSE(fb::protocol::internal::request::Save, fb::protocol::internal::response::Save)
@@ -54,7 +55,6 @@ REGISTER_RESPONSE(fb::protocol::internal::request::WriteMail, fb::protocol::inte
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteMail, fb::protocol::internal::response::DeleteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper)
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
-REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanRole, fb::protocol::internal::response::ChangeClanRole)
 REGISTER_RESPONSE(fb::protocol::internal::request::UpdateFriends, fb::protocol::internal::response::UpdateFriends)
 REGISTER_RESPONSE(fb::protocol::internal::request::GetStoragePending, fb::protocol::internal::response::GetStoragePending)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol::internal::response::WriteSystemMail)
@@ -109,7 +109,7 @@ public:
     async::task<void> upsert_group_then(uint32_t gid, const std::function<void(group_ptr&)>& fn);
     async::task<void> upsert_group_then(uint32_t gid, const std::string& master, const std::vector<std::string>& members, const std::function<void(group_ptr&)>& fn);
     void              update_clan(clan& clan, fb::protocol::internal::Clan& resp1, const std::vector<fb::protocol::internal::ClanMember>& resp2) const;
-    async::task<void> upsert_clan_then(uint32_t id, std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn);
+    async::task<void> ensure_clan(uint32_t id, std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn);
 
 private:
     template <typename HandlerType> void bind_npc_interaction()
@@ -133,13 +133,11 @@ public:
     async::task<void> on_broadcast(const internal_resp::Broadcast& resp);
     async::task<void> on_group_broadcast(const internal_resp::BroadcastGroup& resp);
     async::task<void> on_clan_broadcast(const internal_resp::BroadcastClan& resp);
-    async::task<void> on_clan_title_changed(const internal_resp::SetClanTitle& resp);
-    async::task<void> on_clan_join_member(const internal_resp::JoinClan& resp);
-    async::task<void> on_clan_leave_member(const internal_resp::LeaveClan& resp);
-    async::task<void> on_clan_kick_member(const internal_resp::KickClan& resp);
+    async::task<void> on_create_clan(const internal_resp::ClanDetails& resp);
+    async::task<void> on_destroyed_clan(const internal_resp::DestroyClan& resp);
+    async::task<void> on_updated_clan(const internal_resp::UpdatedClan& resp);
     async::task<void> on_write_mail(const internal_resp::WriteMail& resp);
     async::task<void> on_whisper(const internal_resp::Whisper& resp);
-    async::task<void> on_clan_change_role(const internal_resp::ChangeClanRole& resp);
 
 public:
     template <typename T, typename... Args> std::shared_ptr<T> make(Args&&... args)
@@ -182,11 +180,6 @@ public:
     [[nodiscard]] async::task<void>                         broadcast(const group& group, const std::string& message, MESSAGE_TYPE type);
     [[nodiscard]] async::task<void>                         create_clan(character& me, std::string name);
     [[nodiscard]] async::task<void>                         destroy_clan(character& me);
-    [[nodiscard]] async::task<void>                         set_clan_title(uint32_t changer_uid, std::string title);
-    [[nodiscard]] async::task<void>                         join_clan_member(character& inviter, character& invitee);
-    [[nodiscard]] async::task<void>                         kick_clan_member(const clan& clan, const std::string& kicker, const std::string& target);
-    [[nodiscard]] async::task<void>                         change_clan_member_role(const clan& clan, uint32_t changer_uid, const std::string& target, CLAN_ROLE role);
-    [[nodiscard]] async::task<void>                         broadcast(const clan& clan, const std::string& message, MESSAGE_TYPE type);
     [[nodiscard]] async::task<internal_resp::WriteMail>     send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents);
     [[nodiscard]] async::task<internal_resp::GetMailList>   mail_list(const character& ch, uint16_t offset, uint16_t count);
     [[nodiscard]] async::task<internal_resp::GetMail>       read_mail(character& ch, uint16_t id);

@@ -155,11 +155,13 @@ table KickGroup {
 }
 
 table CreateClan {
+  host: uint;
   master: uint;
   name: string;
 }
 
 table DestroyClan {
+  host: uint;
   master: uint;
 }
 

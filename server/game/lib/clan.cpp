@@ -1,8 +1,11 @@
 #include <fb/game/clan.h>
 #include <fb/game/server.h>
+#include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/config.h>
 
 using namespace fb::game;
 using namespace fb::model;
+using namespace fb::protocol::internal;
 
 clan::clan(server& server, uint32_t id, const std::string& name, const std::optional<std::string>& title, const std::unordered_map<std::string, clan_member>& members) :
     _server(server),
@@ -20,16 +23,11 @@ clan::clan(clan&& r) :
     _members(std::move(r._members))
 { }
 
-void clan::update(const std::string& name, const std::optional<std::string>& title, const std::vector<clan_member>& members)
+void clan::update(const std::string& name, const std::optional<std::string>& title, const member_map& members)
 {
-    this->_name  = name;
-    this->_title = title;
-
-    this->_members.clear();
-    for (auto& member : members)
-    {
-        this->_members.insert({member.name, member});
-    }
+    this->_name    = name;
+    this->_title   = title;
+    this->_members = members;
 }
 
 uint32_t clan::id() const
@@ -136,4 +134,53 @@ std::vector<std::shared_ptr<fb::game::character>> clan::nears(const fb::game::ma
     }
 
     return result;
+}
+
+async::task<void> clan::set_title(character& changer, std::string title)
+{
+    auto   weak = changer.weak_from_this_as<character>();
+    auto&& resp = co_await this->_server.http.post("internal", "/clan/title", request::SetClanTitle{fb::config<uint32_t>("host"), changer.id(), title});
+    co_await this->_server.threads.switching(weak);
+    co_await this->_server.on_updated_clan(resp);
+}
+
+async::task<void> clan::join_member(character& inviter, character& invitee)
+{
+    auto   weak = inviter.weak_from_this_as<character>();
+    auto&& resp = co_await this->_server.http.post("internal", "/clan/join", request::JoinClan{fb::config<uint32_t>("host"), inviter.id(), invitee.id()});
+    co_await this->_server.threads.switching(weak);
+    co_await this->_server.on_updated_clan(resp);
+}
+
+async::task<void> clan::leave_member(character& leaver)
+{
+    auto   weak = leaver.weak_from_this_as<character>();
+    auto&& resp = co_await this->_server.http.post("internal", "/clan/leave", request::LeaveClan{fb::config<uint32_t>("host"), this->_id, leaver.name()});
+    co_await this->_server.threads.switching(weak);
+    co_await this->_server.on_updated_clan(resp);
+}
+
+async::task<void> clan::kick_member(character& kicker, const std::string& target)
+{
+    auto   weak = kicker.weak_from_this_as<character>();
+    auto&& resp = co_await this->_server.http.post("internal", "/clan/kick", request::KickClan{fb::config<uint32_t>("host"), this->_id, kicker.name(), target});
+    co_await this->_server.threads.switching(weak);
+    co_await this->_server.on_updated_clan(resp);
+}
+
+async::task<void> clan::change_role(character& changer, const std::string& target, CLAN_ROLE role)
+{
+    auto   weak = changer.weak_from_this_as<character>();
+    auto&& resp = co_await this->_server.http.post("internal",
+                                                   "/clan/change-role",
+                                                   request::ChangeClanRole{fb::config<uint32_t>("host"), changer.id(), target, this->_id, static_cast<uint32_t>(role)});
+    co_await this->_server.threads.switching(weak);
+    co_await this->_server.on_updated_clan(resp);
+}
+
+async::task<void> clan::broadcast(const std::string& message, MESSAGE_TYPE type)
+{
+    auto&& resp =
+        co_await this->_server.http.post("internal", "/clan/broadcast", request::BroadcastClan{fb::config<uint32_t>("host"), this->_id, message, static_cast<uint8_t>(type)});
+    co_await this->_server.on_clan_broadcast(resp);
 }

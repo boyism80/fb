@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "fb.protocol.internal.characterref_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -25,13 +27,35 @@ struct DestroyClanBuilder;
 struct DestroyClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef DestroyClanBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ERROR = 4
+    VT_HOST = 4,
+    VT_CLAN_ID = 6,
+    VT_CLAN_NAME = 8,
+    VT_ACTOR = 10,
+    VT_ERROR = 12
   };
+  uint32_t host() const {
+    return GetField<uint32_t>(VT_HOST, 0);
+  }
+  uint32_t clan_id() const {
+    return GetField<uint32_t>(VT_CLAN_ID, 0);
+  }
+  const ::flatbuffers::String *clan_name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CLAN_NAME);
+  }
+  const fb::protocol::internal::raw::CharacterRef *actor() const {
+    return GetPointer<const fb::protocol::internal::raw::CharacterRef *>(VT_ACTOR);
+  }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
+           VerifyField<uint32_t>(verifier, VT_CLAN_ID, 4) &&
+           VerifyOffset(verifier, VT_CLAN_NAME) &&
+           verifier.VerifyString(clan_name()) &&
+           VerifyOffset(verifier, VT_ACTOR) &&
+           verifier.VerifyTable(actor()) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -41,6 +65,18 @@ struct DestroyClanBuilder {
   typedef DestroyClan Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_host(uint32_t host) {
+    fbb_.AddElement<uint32_t>(DestroyClan::VT_HOST, host, 0);
+  }
+  void add_clan_id(uint32_t clan_id) {
+    fbb_.AddElement<uint32_t>(DestroyClan::VT_CLAN_ID, clan_id, 0);
+  }
+  void add_clan_name(::flatbuffers::Offset<::flatbuffers::String> clan_name) {
+    fbb_.AddOffset(DestroyClan::VT_CLAN_NAME, clan_name);
+  }
+  void add_actor(::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> actor) {
+    fbb_.AddOffset(DestroyClan::VT_ACTOR, actor);
+  }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(DestroyClan::VT_ERROR, error, 0);
   }
@@ -57,10 +93,35 @@ struct DestroyClanBuilder {
 
 inline ::flatbuffers::Offset<DestroyClan> CreateDestroyClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
+    uint32_t clan_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> clan_name = 0,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> actor = 0,
     uint32_t error = 0) {
   DestroyClanBuilder builder_(_fbb);
   builder_.add_error(error);
+  builder_.add_actor(actor);
+  builder_.add_clan_name(clan_name);
+  builder_.add_clan_id(clan_id);
+  builder_.add_host(host);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<DestroyClan> CreateDestroyClanDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
+    uint32_t clan_id = 0,
+    const char *clan_name = nullptr,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> actor = 0,
+    uint32_t error = 0) {
+  auto clan_name__ = clan_name ? _fbb.CreateString(clan_name) : 0;
+  return fb::protocol::internal::response::raw::CreateDestroyClan(
+      _fbb,
+      host,
+      clan_id,
+      clan_name__,
+      actor,
+      error);
 }
 
 inline const fb::protocol::internal::response::raw::DestroyClan *GetDestroyClan(const void *buf) {

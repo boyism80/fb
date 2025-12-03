@@ -116,10 +116,13 @@ int builtin::clan::builtin_title(lua_State* L)
     }
     else if (argc == 3)
     {
-        static auto fn = [](fb::game::server* server, fb::lua::context* lua, fb::game::clan* clan, uint32_t changer_uid, std::string title) -> async::task<void> {
+        static auto fn = [](fb::lua::context* lua, fb::game::clan* clan, std::shared_ptr<fb::game::character> changer_shared, std::string title) -> async::task<void> {
             try
             {
-                co_await server->set_clan_title(changer_uid, title);
+                if (changer_shared == nullptr)
+                    throw std::runtime_error("changer character is not alive");
+
+                co_await clan->set_title(*changer_shared, title);
                 lua->pushnil();
             }
             catch (std::exception& e)
@@ -134,9 +137,10 @@ int builtin::clan::builtin_title(lua_State* L)
         if (changer == nullptr)
             return 0;
 
-        auto title  = lua->tostring(3);
-        std::ignore = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
-            co_await fn(server, lua, clan, changer->id(), title);
+        auto changer_shared = changer->shared_from_this_as<fb::game::character>();
+        auto title          = lua->tostring(3);
+        std::ignore         = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
+            co_await fn(lua, clan, changer_shared, title);
         });
 
         return lua->yield(1);
@@ -180,7 +184,7 @@ int builtin::clan::builtin_join(lua_State* L)
     }
 
     static auto fn =
-        [](fb::game::server* server, fb::lua::context* lua, std::weak_ptr<fb::game::character> inviter_weak, std::weak_ptr<fb::game::character> invitee_weak) -> async::task<void> {
+        [](fb::lua::context* lua, fb::game::clan* clan, std::weak_ptr<fb::game::character> inviter_weak, std::weak_ptr<fb::game::character> invitee_weak) -> async::task<void> {
         try
         {
             auto inviter_shared = inviter_weak.lock();
@@ -191,7 +195,7 @@ int builtin::clan::builtin_join(lua_State* L)
             if (invitee_shared == nullptr)
                 throw std::runtime_error("invitee character is not alive");
 
-            co_await server->join_clan_member(*inviter_shared, *invitee_shared);
+            co_await clan->join_member(*inviter_shared, *invitee_shared);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -202,12 +206,15 @@ int builtin::clan::builtin_join(lua_State* L)
         lua->resume(1);
     };
 
+    auto inviter_weak = inviter->weak_from_this_as<fb::game::character>();
+    auto invitee_weak = invitee->weak_from_this_as<fb::game::character>();
+
     auto thread = server->threads.current();
     if (thread == nullptr)
         throw std::runtime_error("thread is not alive");
 
     std::ignore = thread->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(server, lua, inviter, invitee);
+        co_await fn(lua, clan, inviter_weak, invitee_weak);
     });
 
     return lua->yield(0);
@@ -225,12 +232,17 @@ int builtin::clan::builtin_leave(lua_State* L)
     if (clan == nullptr)
         return 0;
 
-    auto name = lua->tostring(2);
+    auto leaver = lua->touserdata<fb::game::character>(2);
+    if (leaver == nullptr)
+        return 0;
 
-    static auto fn = [](fb::game::server* server, fb::lua::context* lua, fb::game::clan* clan, const std::string& name) -> async::task<void> {
+    static auto fn = [](fb::lua::context* lua, fb::game::clan* clan, std::shared_ptr<fb::game::character> leaver_shared) -> async::task<void> {
         try
         {
-            co_await server->leave_clan_member(*clan, name);
+            if (leaver_shared == nullptr)
+                throw std::runtime_error("leaver character is not alive");
+
+            co_await clan->leave_member(*leaver_shared);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -241,8 +253,9 @@ int builtin::clan::builtin_leave(lua_State* L)
         lua->resume(1);
     };
 
-    std::ignore = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(server, lua, clan, name);
+    auto leaver_shared = leaver->shared_from_this_as<fb::game::character>();
+    std::ignore        = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(lua, clan, leaver_shared);
     });
 
     return lua->yield(1);
@@ -260,13 +273,19 @@ int builtin::clan::builtin_kick(lua_State* L)
     if (clan == nullptr)
         return 0;
 
-    auto kicker = lua->tostring(2);
+    auto kicker = lua->touserdata<fb::game::character>(2);
+    if (kicker == nullptr)
+        return 0;
+
     auto target = lua->tostring(3);
 
-    static auto fn = [](fb::game::server* server, fb::lua::context* lua, fb::game::clan* clan, const std::string& kicker, const std::string& target) -> async::task<void> {
+    static auto fn = [](fb::lua::context* lua, fb::game::clan* clan, std::shared_ptr<fb::game::character> kicker_shared, const std::string& target) -> async::task<void> {
         try
         {
-            co_await server->kick_clan_member(*clan, kicker, target);
+            if (kicker_shared == nullptr)
+                throw std::runtime_error("kicker character is not alive");
+
+            co_await clan->kick_member(*kicker_shared, target);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -277,8 +296,9 @@ int builtin::clan::builtin_kick(lua_State* L)
         lua->resume(1);
     };
 
-    std::ignore = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(server, lua, clan, kicker, target);
+    auto kicker_shared = kicker->shared_from_this_as<fb::game::character>();
+    std::ignore        = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(lua, clan, kicker_shared, target);
     });
 
     return lua->yield(1);
@@ -310,10 +330,13 @@ int builtin::clan::builtin_change_role(lua_State* L)
     auto role   = lua->toenum(4, CLAN_ROLE::MATE);
 
     static auto fn =
-        [](fb::game::server* server, fb::lua::context* lua, fb::game::clan* clan, uint32_t changer_uid, const std::string& target, CLAN_ROLE role) -> async::task<void> {
+        [](fb::lua::context* lua, fb::game::clan* clan, std::shared_ptr<fb::game::character> changer_shared, const std::string& target, CLAN_ROLE role) -> async::task<void> {
         try
         {
-            co_await server->change_clan_member_role(*clan, changer_uid, target, role);
+            if (changer_shared == nullptr)
+                throw std::runtime_error("changer character is not alive");
+
+            co_await clan->change_role(*changer_shared, target, role);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -324,8 +347,9 @@ int builtin::clan::builtin_change_role(lua_State* L)
         lua->resume(1);
     };
 
-    std::ignore = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(server, lua, clan, changer->id(), target, role);
+    auto changer_shared = changer->shared_from_this_as<fb::game::character>();
+    std::ignore         = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(lua, clan, changer_shared, target, role);
     });
 
     return lua->yield(1);
@@ -346,10 +370,10 @@ int builtin::clan::builtin_message(lua_State* L)
     auto message = lua->tostring(2);
     auto type    = lua->toenum(3, MESSAGE_TYPE::NOTIFY);
 
-    static auto fn = [](fb::game::server* server, fb::lua::context* lua, fb::game::clan* clan, const std::string& message, MESSAGE_TYPE type) -> async::task<void> {
+    static auto fn = [](fb::lua::context* lua, fb::game::clan* clan, const std::string& message, MESSAGE_TYPE type) -> async::task<void> {
         try
         {
-            co_await server->broadcast(*clan, message, type);
+            co_await clan->broadcast(message, type);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -361,7 +385,7 @@ int builtin::clan::builtin_message(lua_State* L)
     };
 
     std::ignore = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(server, lua, clan, message, type);
+        co_await fn(lua, clan, message, type);
     });
 
     return lua->yield(1);

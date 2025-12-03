@@ -162,6 +162,24 @@ table ClanMember {
     role: uint;
 }
 
+table CharacterRef {
+    uid: uint;
+    name: string;
+}
+
+enum ClanActionType : byte {
+    Join = 0,
+    Leave = 1,
+    Kick = 2,
+    ChangeRole = 3,
+    SetTitle = 4
+}
+
+enum ClanDetailsAction : byte {
+    Query = 0,
+    Create = 1
+}
+
 table Quest {
     uid: uint;
     qid: uint;

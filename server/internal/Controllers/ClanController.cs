@@ -53,8 +53,9 @@ namespace Internal.Controllers
                 };
             }).ToList();
         }
+
         [HttpGet("{id}")]
-        public async Task<Response.GetClan> Get(uint id)
+        public async Task<Response.ClanDetails> Get(uint id)
         {
             try
             {
@@ -63,29 +64,28 @@ namespace Internal.Controllers
                     var clan = await _dbContext.Clan.Get(id) ??
                         throw new LogicException(ErrorCode.NotFoundClan);
 
-                    var members = await _dbContext.ClanMember.Get(id);
-                    var conn = _dbContext.Connection(-1);
-                    var names = await conn.QueryAsync($"SELECT `id`, `name` FROM `name` WHERE id IN ({string.Join(',', members.Select(x => x.User))})");
-                    var nameDict = names.ToDictionary(x => x.id, x => x.name);
-
-                    return new Response.GetClan
+                    return new Response.ClanDetails
                     {
+                        Action = Protocol.ClanDetailsAction.Query,
                         Clan = _mapper.Map<Protocol.Clan>(clan),
-                        Members = await GetClanMemberResponse(id)
+                        Members = await GetClanMemberResponse(id),
+                        Error = (uint)ErrorCode.None
                     };
                 }
             }
             catch (LogicException e)
             {
-                return new Response.GetClan
+                return new Response.ClanDetails
                 {
+                    Action = Protocol.ClanDetailsAction.Query,
                     Error = (uint)e.Error
                 };
             }
             catch (Exception)
             {
-                return new Response.GetClan
+                return new Response.ClanDetails
                 {
+                    Action = Protocol.ClanDetailsAction.Query,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
@@ -93,7 +93,7 @@ namespace Internal.Controllers
             { }
         }
         [HttpPost("create")]
-        public async Task<Response.CreateClan> Create(Request.CreateClan request)
+        public async Task<Response.ClanDetails> Create(Request.CreateClan request)
         {
             await using var db = _dbContext.Connection(-1);
             await db.OpenAsync();
@@ -147,28 +147,38 @@ namespace Internal.Controllers
 
                         await _dbContext.SaveChangesAsync();
                         await trans.CommitAsync();
-                        return new Response.CreateClan
+
+                        var response = new Response.ClanDetails
                         {
+                            Host = request.Host,
+                            Action = Protocol.ClanDetailsAction.Create,
                             Clan = _mapper.Map<Protocol.Clan>(clan),
                             Members = await GetClanMemberResponse(clan.Id),
                             Error = (uint)ErrorCode.None
                         };
+
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                        return response;
                     }
                 }
             }
             catch (LogicException e)
             {
                 await trans.RollbackAsync();
-                return new Response.CreateClan
+                return new Response.ClanDetails
                 {
+                    Host = request.Host,
+                    Action = Protocol.ClanDetailsAction.Create,
                     Error = (uint)e.Error
                 };
             }
             catch (Exception)
             {
                 await trans.RollbackAsync();
-                return new Response.CreateClan
+                return new Response.ClanDetails
                 {
+                    Host = request.Host,
+                    Action = Protocol.ClanDetailsAction.Create,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
@@ -218,6 +228,7 @@ namespace Internal.Controllers
                         sync.Clan = null;
                         _dbContext.CharacterSync.Set(sync);
 
+                        var oldTitle = clan.Title;
                         clan.Deleted = true;
                         _dbContext.Clan.Set(clan);
 
@@ -228,10 +239,26 @@ namespace Internal.Controllers
 
                         await _dbContext.SaveChangesAsync();
                         await trans.CommitAsync();
-                        return new Response.DestroyClan
+
+                        var conn = _dbContext.Connection(-1);
+                        var masterName = await conn.QueryFirstOrDefaultAsync<string>(
+                            $"SELECT `name` FROM `name` WHERE id = {ch.Id}");
+
+                        var response = new Response.DestroyClan
                         {
+                            Host = request.Host,
+                            ClanId = clan.Id,
+                            ClanName = clan.Name,
+                            Actor = new Protocol.CharacterRef
+                            {
+                                Uid = ch.Id,
+                                Name = masterName ?? ch.Name
+                            },
                             Error = (uint)ErrorCode.None
                         };
+
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                        return response;
                     }
                 }
             }
@@ -240,6 +267,7 @@ namespace Internal.Controllers
                 await trans.RollbackAsync();
                 return new Response.DestroyClan
                 {
+                    Host = request.Host,
                     Error = (uint)e.Error
                 };
             }
@@ -248,6 +276,7 @@ namespace Internal.Controllers
                 await trans.RollbackAsync();
                 return new Response.DestroyClan
                 {
+                    Host = request.Host,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
@@ -257,7 +286,7 @@ namespace Internal.Controllers
             }
         }
         [HttpPost("title")]
-        public async Task<Response.SetClanTitle> SetTitle(Request.SetClanTitle request)
+        public async Task<Response.UpdatedClan> SetTitle(Request.SetClanTitle request)
         {
             try
             {
@@ -297,10 +326,19 @@ namespace Internal.Controllers
 
                         await _dbContext.SaveChangesAsync();
 
-                        var response = new Response.SetClanTitle
+                        var response = new Response.UpdatedClan
                         {
-                            Clan = clan.Id,
-                            Title = request.Title,
+                            Host = request.Host,
+                            Action = Protocol.ClanActionType.SetTitle,
+                            ClanId = clan.Id,
+                            ClanName = clan.Name,
+                            Actor = new Protocol.CharacterRef
+                            {
+                                Uid = changer.Id,
+                                Name = changer.Name
+                            },
+                            OldTitle = clan.Title,
+                            NewTitle = request.Title,
                             Error = (uint)ErrorCode.None
                         };
                         _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
@@ -310,15 +348,19 @@ namespace Internal.Controllers
             }
             catch (LogicException e)
             {
-                return new Response.SetClanTitle
+                return new Response.UpdatedClan
                 {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.SetTitle,
                     Error = (uint)e.Error
                 };
             }
             catch (Exception)
             {
-                return new Response.SetClanTitle
+                return new Response.UpdatedClan
                 {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.SetTitle,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
@@ -326,7 +368,7 @@ namespace Internal.Controllers
             { }
         }
         [HttpPost("join")]
-        public async Task<Response.JoinClan> Join(Request.JoinClan request)
+        public async Task<Response.UpdatedClan> Join(Request.JoinClan request)
         {
             try
             {
@@ -386,15 +428,27 @@ namespace Internal.Controllers
                             _dbContext.CharacterSync.Set(inviteeSync);
 
                             await _dbContext.SaveChangesAsync();
-                            var response = new Response.JoinClan
+
+                            var response = new Response.UpdatedClan
                             {
                                 Host = request.Host,
-                                Clan = clan.Id,
-                                Member = new Protocol.ClanMember
+                                Action = Protocol.ClanActionType.Join,
+                                ClanId = clan.Id,
+                                ClanName = clan.Name,
+                                Actor = new Protocol.CharacterRef
                                 {
-                                    Name = invitee.Name,
-                                    Uid = cm.User,
-                                    Role = cm.Role
+                                    Uid = inviter.Id,
+                                    Name = inviter.Name
+                                },
+                                Target = new Protocol.CharacterRef
+                                {
+                                    Uid = invitee.Id,
+                                    Name = invitee.Name
+                                },
+                                NewMember = new Protocol.CharacterRef
+                                {
+                                    Uid = invitee.Id,
+                                    Name = invitee.Name
                                 },
                                 Error = (uint)ErrorCode.None
                             };
@@ -407,27 +461,25 @@ namespace Internal.Controllers
             }
             catch (LogicException e)
             {
-                return new Response.JoinClan
+                return new Response.UpdatedClan
                 {
                     Host = request.Host,
-                    Clan = 0,
-                    Member = new Protocol.ClanMember(),
+                    Action = Protocol.ClanActionType.Join,
                     Error = (uint)e.Error
                 };
             }
             catch (Exception)
             {
-                return new Response.JoinClan
+                return new Response.UpdatedClan
                 {
                     Host = request.Host,
-                    Clan = 0,
-                    Member = new Protocol.ClanMember(),
+                    Action = Protocol.ClanActionType.Join,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
         }
         [HttpPost("leave")]
-        public async Task<Response.LeaveClan> Leave(Request.LeaveClan request)
+        public async Task<Response.UpdatedClan> Leave(Request.LeaveClan request)
         {
             try
             {
@@ -467,11 +519,27 @@ namespace Internal.Controllers
 
                         await _dbContext.SaveChangesAsync();
 
-                        var response = new Response.LeaveClan
+                        var response = new Response.UpdatedClan
                         {
-                            Clan = clan.Id,
-                            Uid = ch.Id,
-                            Uname = ch.Name,
+                            Host = request.Host,
+                            Action = Protocol.ClanActionType.Leave,
+                            ClanId = clan.Id,
+                            ClanName = clan.Name,
+                            Actor = new Protocol.CharacterRef
+                            {
+                                Uid = ch.Id,
+                                Name = ch.Name
+                            },
+                            Target = new Protocol.CharacterRef
+                            {
+                                Uid = ch.Id,
+                                Name = ch.Name
+                            },
+                            DeletedMember = new Protocol.CharacterRef
+                            {
+                                Uid = ch.Id,
+                                Name = ch.Name
+                            },
                             Error = (uint)ErrorCode.None
                         };
 
@@ -482,15 +550,19 @@ namespace Internal.Controllers
             }
             catch (LogicException e)
             {
-                return new Response.LeaveClan
+                return new Response.UpdatedClan
                 {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Leave,
                     Error = (uint)e.Error
                 };
             }
             catch (Exception)
             {
-                return new Response.LeaveClan
+                return new Response.UpdatedClan
                 {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Leave,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
@@ -498,7 +570,7 @@ namespace Internal.Controllers
             { }
         }
         [HttpPost("kick")]
-        public async Task<Response.KickClan> Kick(Request.KickClan request)
+        public async Task<Response.UpdatedClan> Kick(Request.KickClan request)
         {
             try
             {
@@ -568,16 +640,32 @@ namespace Internal.Controllers
                             targetSync.Clan = null;
                             _dbContext.CharacterSync.Set(targetSync);
 
-                            var response = new Response.KickClan
+                            await _dbContext.SaveChangesAsync();
+
+                            var response = new Response.UpdatedClan
                             {
                                 Host = request.Host,
-                                Clan = request.Clan,
-                                Uid = target.Id,
-                                Uname = target.Name,
-                                Error = 0
+                                Action = Protocol.ClanActionType.Kick,
+                                ClanId = clan.Id,
+                                ClanName = clan.Name,
+                                Actor = new Protocol.CharacterRef
+                                {
+                                    Uid = kicker.Id,
+                                    Name = kicker.Name
+                                },
+                                Target = new Protocol.CharacterRef
+                                {
+                                    Uid = target.Id,
+                                    Name = target.Name
+                                },
+                                DeletedMember = new Protocol.CharacterRef
+                                {
+                                    Uid = target.Id,
+                                    Name = target.Name
+                                },
+                                Error = (uint)ErrorCode.None
                             };
 
-                            await _dbContext.SaveChangesAsync();
                             _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
                             return response;
                         }
@@ -586,23 +674,19 @@ namespace Internal.Controllers
             }
             catch (LogicException e)
             {
-                return new Response.KickClan
+                return new Response.UpdatedClan
                 {
                     Host = request.Host,
-                    Clan = request.Clan,
-                    Uid = 0,
-                    Uname = request.Target,
+                    Action = Protocol.ClanActionType.Kick,
                     Error = (uint)e.Error
                 };
             }
             catch (Exception)
             {
-                return new Response.KickClan
+                return new Response.UpdatedClan
                 {
                     Host = request.Host,
-                    Clan = request.Clan,
-                    Uid = 0,
-                    Uname = request.Target,
+                    Action = Protocol.ClanActionType.Kick,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
@@ -646,7 +730,7 @@ namespace Internal.Controllers
             { }
         }
         [HttpPost("change-role")]
-        public async Task<Response.ChangeClanRole> ChangeRole(Request.ChangeClanRole request)
+        public async Task<Response.UpdatedClan> ChangeRole(Request.ChangeClanRole request)
         {
             try
             {
@@ -724,20 +808,29 @@ namespace Internal.Controllers
                             targetMember.Role = request.NewRole;
                             _dbContext.ClanMember.Set(targetMember);
 
-                            var response = new Response.ChangeClanRole
+                            await _dbContext.SaveChangesAsync();
+
+                            var response = new Response.UpdatedClan
                             {
                                 Host = request.Host,
-                                Clan = clan.Id,
-                                ChangerUid = changer.Id,
-                                ChangerName = changer.Name,
-                                TargetUid = target.Id,
-                                TargetName = target.Name,
+                                Action = Protocol.ClanActionType.ChangeRole,
+                                ClanId = clan.Id,
+                                ClanName = clan.Name,
+                                Actor = new Protocol.CharacterRef
+                                {
+                                    Uid = changer.Id,
+                                    Name = changer.Name
+                                },
+                                Target = new Protocol.CharacterRef
+                                {
+                                    Uid = target.Id,
+                                    Name = target.Name
+                                },
                                 OldRole = oldRole,
                                 NewRole = request.NewRole,
                                 Error = (uint)ErrorCode.None
                             };
 
-                            await _dbContext.SaveChangesAsync();
                             _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
                             return response;
                         }
@@ -746,31 +839,19 @@ namespace Internal.Controllers
             }
             catch (LogicException e)
             {
-                return new Response.ChangeClanRole
+                return new Response.UpdatedClan
                 {
                     Host = request.Host,
-                    Clan = request.Clan,
-                    ChangerUid = request.ChangerUid,
-                    ChangerName = "",
-                    TargetUid = 0,
-                    TargetName = request.TargetName,
-                    OldRole = 0,
-                    NewRole = request.NewRole,
+                    Action = Protocol.ClanActionType.ChangeRole,
                     Error = (uint)e.Error
                 };
             }
             catch (Exception)
             {
-                return new Response.ChangeClanRole
+                return new Response.UpdatedClan
                 {
                     Host = request.Host,
-                    Clan = request.Clan,
-                    ChangerUid = request.ChangerUid,
-                    ChangerName = "",
-                    TargetUid = 0,
-                    TargetName = request.TargetName,
-                    OldRole = 0,
-                    NewRole = request.NewRole,
+                    Action = Protocol.ClanActionType.ChangeRole,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }

@@ -141,7 +141,7 @@ function sample_clan(me, npc)
                 return
             end
 
-            local error = clan:leave(me:name())
+            local error = clan:leave(me)
             if error ~= nil then
                 me:dialog(npc, error)
             else
@@ -151,11 +151,11 @@ function sample_clan(me, npc)
             local name = me:input(npc, '상대 이름 입력')
             clan = me:clan()
             if clan == nil then
-                found:dialog(npc, '클랜 없음')
+                me:dialog(npc, '클랜 없음')
                 return
             end
 
-            local error = clan:kick(me:name(), name)
+            local error = clan:kick(me, name)
             if error ~= nil then
                 me:dialog(npc, error)
             else

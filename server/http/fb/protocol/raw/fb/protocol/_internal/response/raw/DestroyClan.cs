@@ -20,17 +20,39 @@ public struct DestroyClan : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public DestroyClan __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Error { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint ClanId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string ClanName { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetClanNameBytes() { return __p.__vector_as_span<byte>(8, 1); }
+#else
+  public ArraySegment<byte>? GetClanNameBytes() { return __p.__vector_as_arraysegment(8); }
+#endif
+  public byte[] GetClanNameArray() { return __p.__vector_as_array<byte>(8); }
+  public fb.protocol._internal.raw.CharacterRef? Actor { get { int o = __p.__offset(10); return o != 0 ? (fb.protocol._internal.raw.CharacterRef?)(new fb.protocol._internal.raw.CharacterRef()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public uint Error { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.DestroyClan> CreateDestroyClan(FlatBufferBuilder builder,
+      uint host = 0,
+      uint clan_id = 0,
+      StringOffset clan_nameOffset = default(StringOffset),
+      Offset<fb.protocol._internal.raw.CharacterRef> actorOffset = default(Offset<fb.protocol._internal.raw.CharacterRef>),
       uint error = 0) {
-    builder.StartTable(1);
+    builder.StartTable(5);
     DestroyClan.AddError(builder, error);
+    DestroyClan.AddActor(builder, actorOffset);
+    DestroyClan.AddClanName(builder, clan_nameOffset);
+    DestroyClan.AddClanId(builder, clan_id);
+    DestroyClan.AddHost(builder, host);
     return DestroyClan.EndDestroyClan(builder);
   }
 
-  public static void StartDestroyClan(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(0, error, 0); }
+  public static void StartDestroyClan(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
+  public static void AddClanId(FlatBufferBuilder builder, uint clanId) { builder.AddUint(1, clanId, 0); }
+  public static void AddClanName(FlatBufferBuilder builder, StringOffset clanNameOffset) { builder.AddOffset(2, clanNameOffset.Value, 0); }
+  public static void AddActor(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.CharacterRef> actorOffset) { builder.AddOffset(3, actorOffset.Value, 0); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(4, error, 0); }
   public static Offset<fb.protocol._internal.response.raw.DestroyClan> EndDestroyClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.DestroyClan>(o);
@@ -45,7 +67,11 @@ static public class DestroyClanVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Error*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*ClanId*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 8 /*ClanName*/, false)
+      && verifier.VerifyTable(tablePos, 10 /*Actor*/, fb.protocol._internal.raw.CharacterRefVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 12 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

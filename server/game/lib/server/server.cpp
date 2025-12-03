@@ -250,10 +250,9 @@ async::task<void> server::on_start()
     this->handler.amqp.bind<fb::game::handler::amqp::enter_group>("fb.group");
     this->handler.amqp.bind<fb::game::handler::amqp::leave_group>("fb.group");
     this->handler.amqp.bind<fb::game::handler::amqp::kick_group>("fb.group");
-    this->handler.amqp.bind<fb::game::handler::amqp::set_clan_title>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::join_clan>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::leave_clan>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::kick_clan>("fb.clan");
+    this->handler.amqp.bind<fb::game::handler::amqp::create_clan>("fb.clan");
+    this->handler.amqp.bind<fb::game::handler::amqp::destroy_clan>("fb.clan");
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>("fb.clan");
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>("fb.clan");
     this->handler.amqp.bind<fb::game::handler::amqp::write_mail>("fb.mail");
     this->handler.amqp.bind<fb::game::handler::amqp::ban>("fb.ban");

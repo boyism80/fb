@@ -12,9 +12,7 @@ async::task<void> kick_out::handle(const internal_resp::KickOut& message)
     this->server.characters.read([&message](const auto& container) {
         auto ch = container.find(message.name);
         if (ch != nullptr)
-        {
-            return ch;
-        }
+            return;
 
         auto socket = ch->socket();
         if (socket != nullptr)

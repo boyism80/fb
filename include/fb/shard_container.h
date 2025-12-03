@@ -176,6 +176,82 @@ public:
         });
     }
 
+    template <typename Callback = std::nullptr_t>
+    auto async_erase(HashType hash, Callback&& callback = nullptr)
+    {
+        if constexpr (std::is_same_v<std::decay_t<Callback>, std::nullptr_t>)
+        {
+            // No callback version
+            return this->_data.async_write([hash](map_type& data) -> async::task<bool> {
+                if (!data.contains(hash))
+                    co_return false;
+
+                data.erase(hash);
+                co_return true;
+            });
+        }
+        else
+        {
+            // With callback version - callback receives the element before erasure
+            // Callback signature: (const T&) -> async::task<void> or void
+            using callback_result = decltype(callback(std::declval<const T&>()));
+            using task_type       = std::conditional_t<std::is_same_v<callback_result, async::task<void>>, async::task<void>, async::task<callback_result>>;
+
+            auto callback_holder = std::make_shared<std::decay_t<Callback>>(std::forward<Callback>(callback));
+
+            if constexpr (std::is_same_v<callback_result, async::task<void>>)
+            {
+                return this->_data.async_write([hash, callback_holder](map_type& data) mutable -> async::task<void> {
+                    if (!data.contains(hash))
+                        co_return;
+
+                    // Get reference to element before erasure
+                    const auto& element = data.at(hash);
+
+                    // Call callback with element before erasing
+                    co_await (*callback_holder)(element);
+
+                    // Erase after callback
+                    data.erase(hash);
+                });
+            }
+            else if constexpr (std::is_same_v<callback_result, void>)
+            {
+                return this->_data.async_write([hash, callback_holder](map_type& data) mutable -> async::task<void> {
+                    if (!data.contains(hash))
+                        co_return;
+
+                    // Get reference to element before erasure
+                    const auto& element = data.at(hash);
+
+                    // Call callback with element before erasing
+                    (*callback_holder)(element);
+
+                    // Erase after callback
+                    data.erase(hash);
+                });
+            }
+            else
+            {
+                return this->_data.async_write([hash, callback_holder](map_type& data) mutable -> task_type {
+                    if (!data.contains(hash))
+                        co_return callback_result{};
+
+                    // Get reference to element before erasure
+                    const auto& element = data.at(hash);
+
+                    // Call callback with element before erasing
+                    auto result = co_await (*callback_holder)(element);
+
+                    // Erase after callback
+                    data.erase(hash);
+
+                    co_return result;
+                });
+            }
+        }
+    }
+
     template <typename Func>
     auto read(HashType hash, Func&& func) const
     {
@@ -372,6 +448,12 @@ public:
     bool erase(HashType hash)
     {
         return this->bucket(hash)->erase(hash);
+    }
+
+    template <typename Callback = std::nullptr_t>
+    auto async_erase(HashType hash, Callback&& callback = nullptr)
+    {
+        return this->bucket(hash)->async_erase(hash, std::forward<Callback>(callback));
     }
 
     template <typename Func>

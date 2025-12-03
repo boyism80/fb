@@ -81,7 +81,7 @@ login::init_base(const internal::Character& response, character& ch, std::option
 
     if (clan.has_value())
     {
-        co_await this->server.upsert_clan_then(clan.value(), [weak](auto& clan) -> async::task<void> {
+        co_await this->server.ensure_clan(clan.value(), [weak](auto& clan) -> async::task<void> {
             auto ch = weak.lock();
             if (ch == nullptr)
                 co_return;
