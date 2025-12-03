@@ -38,8 +38,12 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
             auto sstream = std::stringstream();
             sstream << "그룹원" << std::endl << "  * " << group->master() << std::endl;
 
+            auto master_name = group->master();
             for (auto& member : group->members())
-                sstream << "    " << member << std::endl;
+            {
+                if (member != master_name)
+                    sstream << "    " << member << std::endl;
+            }
             writer.write<std::string>(sstream.str());
         });
     }
