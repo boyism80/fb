@@ -250,7 +250,7 @@ public:
     ~container() = default;
 
 public:
-    void            insert(character_ptr_t ch);
+    bool            insert(character_ptr_t ch);
     void            remove(character_ptr_t ch);
     character_ptr_t find(uint32_t uid) const;
     character_ptr_t find(const std::string& name) const;

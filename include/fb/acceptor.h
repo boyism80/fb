@@ -144,8 +144,10 @@ private:
                                 co_return;
 
                             [[maybe_unused]]
-                            volatile auto holder = protocol;
-                            std::ignore          = co_await handler.fn(*socket, *protocol.get());
+                            volatile auto holder  = protocol;
+                            auto          success = co_await handler.fn(*socket, *protocol.get());
+                            if (success == false)
+                                socket->close();
                         }
                         catch (std::exception& e)
                         {

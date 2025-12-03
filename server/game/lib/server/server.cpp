@@ -359,7 +359,9 @@ async::task<bool> server::handle_disconnected(fb::socket<character>& socket)
             ptr->clan_reset();
         }
 
-        this->characters.remove(ptr);
+        this->characters.write([ptr](auto& container) {
+            container.remove(ptr);
+        });
         co_await ch->destroy();
         socket.data(nullptr);
     }

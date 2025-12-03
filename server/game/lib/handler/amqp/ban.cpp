@@ -31,7 +31,10 @@ std::string ban::build_ban_message(const std::string& reason, const std::optiona
 
 async::task<void> ban::handle(const internal_resp::Ban& message)
 {
-    auto ch = this->server.characters.find(message.name);
+    auto ch = this->server.characters.read([&message](const auto& container) {
+        return container.find(message.name);
+    });
+
     if (ch == nullptr)
         co_return;
 

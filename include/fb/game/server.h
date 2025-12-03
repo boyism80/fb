@@ -94,7 +94,7 @@ public:
     fb::game::listener_impl listener;
 
     fb::game::map_container                                 maps;
-    fb::game::character::container                          characters;
+    fb::locker<fb::game::character::container>              characters;
     fb::sharded_container<clan_ptr, 16>                     clans;
     fb::sharded_container<group_ptr, 16>                    groups;
     fb::sharded_container<map::cache_bytes, 1024, uint64_t> map_update_cache;

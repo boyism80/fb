@@ -17,7 +17,7 @@ login::login(fb::game::server& server) :
 { }
 
 async::task<bool>
-login::init_ch(const internal::Character& response, character& ch, std::optional<uint32_t> group, std::optional<uint32_t> clan, const std::optional<transfer_param>& transfer)
+login::init_base(const internal::Character& response, character& ch, std::optional<uint32_t> group, std::optional<uint32_t> clan, const std::optional<transfer_param>& transfer)
 {
     auto map  = response.map;
     auto weak = ch.weak_from_this_as<character>();
@@ -170,7 +170,7 @@ void login::init_achievements(const std::vector<fb::protocol::internal::Achievem
     }
 }
 
-void login::init_system_mail_users(const std::vector<fb::protocol::internal::SystemMailUser>& response, fb::game::character& ch)
+void login::init_system_mail(const std::vector<fb::protocol::internal::SystemMailUser>& response, fb::game::character& ch)
 {
     for (auto& smu : response)
     {
@@ -182,110 +182,8 @@ void login::init_system_mail_users(const std::vector<fb::protocol::internal::Sys
     }
 }
 
-std::string login::elapsed_message(const std::string& dt)
+void login::init_storage(const fb::protocol::internal::response::Init& response, fb::game::character& ch)
 {
-    auto elapsed = fb::model::datetime() - fb::model::datetime(dt);
-    if (elapsed.total_milliseconds() < 1000 * 60)
-        return std::string();
-
-    auto sstream = std::stringstream();
-    auto days    = elapsed.days();
-    if (days > 0)
-        sstream << days << "일 ";
-
-    auto hours = elapsed.hours();
-    if (hours > 0)
-        sstream << hours << "시간 ";
-
-    auto minutes = elapsed.minutes();
-    if (minutes > 0)
-        sstream << minutes << "분";
-    sstream << "만에 바람으로...";
-
-    return sstream.str();
-}
-
-async::task<void> login::force_disconnect_and_wait(const std::string& name, const std::string& log_context)
-{
-    auto existing_ch = this->server.characters.find(name);
-    if (existing_ch == nullptr)
-        co_return;
-
-    fb::logger::warn("Character {} {} - forcing disconnect", name, log_context);
-    auto existing_socket = existing_ch->socket();
-    if (existing_socket != nullptr)
-        existing_socket->close();
-
-    // Wait for character to be completely removed (max 5 seconds)
-    auto timeout = std::chrono::steady_clock::now() + 5s;
-    while (this->server.characters.contains(name))
-    {
-        if (std::chrono::steady_clock::now() >= timeout)
-        {
-            fb::logger::warn("Timeout waiting for character {} to be removed ({})", name, log_context);
-            break;
-        }
-        co_await this->server.sleep(100ms);
-    }
-}
-
-async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::game::request::login& request)
-{
-    auto ch = session.data();
-    if (ch == nullptr)
-        co_return false;
-
-    auto weak = ch->weak_from_this();
-    session.encryption(request.enc_type, request.enc_key);
-
-    ch->name(request.name);
-    fb::logger::info("{} has connected.", request.name);
-
-    auto delay = fb::config<uint32_t>("delay");
-    co_await this->server.sleep(std::chrono::seconds(delay));
-
-    // Check if character already exists in server before login API call
-    co_await this->force_disconnect_and_wait(request.name, "already exists in server before new login");
-
-    auto&& login_resp = co_await this->server.http.post("internal", "/in-game/login", Login{request.id, request.name, fb::config<uint8_t>("id")});
-    if (weak.expired())
-        co_return false;
-
-    co_await this->server.threads.switching(weak);
-    switch (static_cast<ERROR_CODE>(login_resp.error))
-    {
-    case ERROR_CODE::NONE:
-        // Additional safety check: session is not in Redis but character exists in server (abnormal state)
-        co_await this->force_disconnect_and_wait(request.name, "exists in server but session not in Redis");
-        break;
-    case ERROR_CODE::BANNED:
-        ch->message(fb::game::handler::amqp::ban::build_ban_message(login_resp.ban_reason, login_resp.ban_expire_date), MESSAGE_TYPE::NOTIFY);
-        co_return false;
-    default:
-        fb::logger::fatal("Unknown error: {}", login_resp.error);
-        co_return false;
-    }
-
-    auto&& response = co_await this->server.http.get<internal_resp::Init>("internal", std::format("/in-game/init/{}", request.id));
-    auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
-    if (weak.expired())
-        co_return false;
-
-    ch->thread(this->server.maps[map]->thread());
-    co_await this->server.threads.switching(weak);
-
-    if (co_await this->init_ch(response.character, *ch, response.group, response.clan, request.transfer) == false)
-        co_return false;
-    co_await this->server.threads.switching(weak);
-
-    ch->mail_box.unread_count(response.mail);
-
-    this->init_items(response.items, *ch);
-    this->init_spells(response.spells, *ch);
-    this->init_achievements(response.achievements, *ch);
-    this->init_quests(response.quests, *ch);
-    this->init_system_mail_users(response.received_system_mails, *ch);
-
     auto storage_boxes = std::vector<fb::game::storage_box::entry>();
     storage_boxes.reserve(response.storage_boxes.size());
     for (const auto& dto : response.storage_boxes)
@@ -328,7 +226,7 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
         storage_reward_marks.push_back(std::move(mark));
     }
 
-    ch->storage_box.init(storage_boxes, storage_reward_marks);
+    ch.storage_box.init(storage_boxes, storage_reward_marks);
 
     if (response.storage_pending.empty() == false)
     {
@@ -362,9 +260,36 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
             pending_models.push_back(std::move(pending_box));
         }
 
-        ch->storage_box.apply_pending(pending_models);
+        ch.storage_box.apply_pending(pending_models);
     }
+}
 
+async::task<bool> login::init(const fb::protocol::game::request::login& request, const std::weak_ptr<fb::game::character>& weak)
+{
+    auto&& response = co_await this->server.http.get<internal_resp::Init>("internal", std::format("/in-game/init/{}", request.id));
+    auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
+    if (weak.expired())
+        co_return false;
+
+    auto ch = weak.lock();
+    if (ch == nullptr)
+        co_return false;
+
+    ch->thread(this->server.maps[map]->thread());
+    co_await this->server.threads.switching(weak);
+
+    if (co_await this->init_base(response.character, *ch, response.group, response.clan, request.transfer) == false)
+        co_return false;
+    co_await this->server.threads.switching(weak);
+
+    ch->mail_box.unread_count(response.mail);
+
+    this->init_items(response.items, *ch);
+    this->init_spells(response.spells, *ch);
+    this->init_achievements(response.achievements, *ch);
+    this->init_quests(response.quests, *ch);
+    this->init_system_mail(response.received_system_mails, *ch);
+    this->init_storage(response, *ch);
     this->init_option(response.option, *ch);
     ch->init();
     ch->update_time(this->server.time().hours());
@@ -388,10 +313,134 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
 
     ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();
-    this->server.characters.insert(ch->shared_from_this_as<character>());
     co_await ch->process_system_mails();
+    co_return true;
+}
 
-    // Log login event
+async::task<bool> login::assert_login(const fb::protocol::game::request::login& request, const std::weak_ptr<fb::game::character>& weak)
+{
+    auto&& resp = co_await this->server.http.post("internal", "/in-game/login", Login{request.id, request.name, fb::config<uint8_t>("id")});
+    if (weak.expired())
+        co_return false;
+
+    auto ch = weak.lock();
+    if (ch == nullptr)
+        co_return false;
+
+    co_await this->server.threads.switching(weak);
+    switch (static_cast<ERROR_CODE>(resp.error))
+    {
+    case ERROR_CODE::NONE:
+        co_return true;
+
+    case ERROR_CODE::BANNED:
+        ch->message(fb::game::handler::amqp::ban::build_ban_message(resp.ban_reason, resp.ban_expire_date), MESSAGE_TYPE::NOTIFY);
+        co_return false;
+
+    default:
+        fb::logger::fatal("Unknown error: {}", resp.error);
+        co_return false;
+    }
+}
+
+std::string login::elapsed_message(const std::string& dt)
+{
+    auto elapsed = fb::model::datetime() - fb::model::datetime(dt);
+    if (elapsed.total_milliseconds() < 1000 * 60)
+        return std::string();
+
+    auto sstream = std::stringstream();
+    auto days    = elapsed.days();
+    if (days > 0)
+        sstream << days << "일 ";
+
+    auto hours = elapsed.hours();
+    if (hours > 0)
+        sstream << hours << "시간 ";
+
+    auto minutes = elapsed.minutes();
+    if (minutes > 0)
+        sstream << minutes << "분";
+    sstream << "만에 바람으로...";
+
+    return sstream.str();
+}
+
+async::task<bool> login::ensure_character_insert(const std::weak_ptr<fb::game::character>& weak)
+{
+    auto ch = weak.lock();
+    if (ch == nullptr)
+        co_return false;
+
+    auto success = this->server.characters.write([ch](auto& container) {
+        auto name   = ch->name();
+        auto old_ch = container.find(name);
+        if (old_ch == nullptr)
+        {
+            container.insert(ch);
+            return true;
+        }
+
+        auto socket = old_ch->socket();
+        if (socket != nullptr)
+            socket->close();
+
+        return false;
+    });
+
+    if (success)
+        co_return true;
+
+    auto timeout = std::chrono::steady_clock::now() + 5s;
+    while (true)
+    {
+        auto inserted = this->server.characters.write([ch](auto& container) {
+            auto name = ch->name();
+            if (container.contains(name) == false)
+            {
+                return container.insert(ch);
+            }
+            return false;
+        });
+
+        if (inserted)
+            co_return true;
+
+        if (std::chrono::steady_clock::now() >= timeout)
+            break;
+
+        co_await this->server.sleep(100ms);
+    }
+
+    co_return false;
+}
+
+async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::game::request::login& request)
+{
+    auto ch = session.data();
+    if (ch == nullptr)
+        co_return false;
+
+    auto weak = ch->weak_from_this_as<character>();
+    session.encryption(request.enc_type, request.enc_key);
+
+    ch->name(request.name);
+    fb::logger::info("{} has connected.", request.name);
+    if (co_await this->ensure_character_insert(weak) == false)
+    {
+        fb::logger::fatal("Character {} already exists in server during initial insert - disconnecting duplicate session", ch->name());
+        co_return false;
+    }
+
+    auto delay = fb::config<uint32_t>("delay");
+    co_await this->server.sleep(std::chrono::seconds(delay));
+
+    if (co_await this->assert_login(request, weak) == false)
+        co_return false;
+
+    if (co_await this->init(request, weak) == false)
+        co_return false;
+
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
     log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
