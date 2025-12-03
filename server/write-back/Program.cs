@@ -34,7 +34,7 @@ namespace WriteBack
                 .UseConsoleLifetime()
                 .Build();
 
-            host.Run();
+            await host.RunAsync();
         }
     }
 }
