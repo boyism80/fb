@@ -241,6 +241,9 @@ async::task<void> server::kick_group_member(character& kicker, std::weak_ptr<cha
         co_await this->threads.switching(weak);
 
         // Check constraints before API call
+        // TODO: Fix error message - MESSAGE_ALREADY_JOINED_GROUP means "already joined group" which is contradictory
+        // When kicker has no group, the error message should indicate they are not in a group, not that they've already joined one
+        // Need to define an appropriate error message constant (e.g., MESSAGE_GROUP_NOT_JOINED) and use it here
         auto kicker_group_id = kicker.group_id();
         if (kicker_group_id.has_value() == false)
             throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_GROUP));
