@@ -167,8 +167,8 @@ int builtin::clan::builtin_join(lua_State* L)
     if (inviter == nullptr)
         return 0;
 
-    auto invitee = lua->touserdata<fb::game::character>(3);
-    if (invitee == nullptr)
+    auto target_name = lua->tostring(3);
+    if (target_name.empty())
         return 0;
 
     if (clan->member(inviter->name()) == nullptr)
@@ -177,25 +177,14 @@ int builtin::clan::builtin_join(lua_State* L)
         return 1;
     }
 
-    if (invitee->clan_id().has_value())
-    {
-        lua->pushstring("invitee is already a member of a clan");
-        return 1;
-    }
-
-    static auto fn =
-        [](fb::lua::context* lua, fb::game::clan* clan, std::weak_ptr<fb::game::character> inviter_weak, std::weak_ptr<fb::game::character> invitee_weak) -> async::task<void> {
+    static auto fn = [](fb::lua::context* lua, fb::game::clan* clan, std::weak_ptr<fb::game::character> inviter_weak, const std::string& target_name) -> async::task<void> {
         try
         {
             auto inviter_shared = inviter_weak.lock();
             if (inviter_shared == nullptr)
                 throw std::runtime_error("inviter character is not alive");
 
-            auto invitee_shared = invitee_weak.lock();
-            if (invitee_shared == nullptr)
-                throw std::runtime_error("invitee character is not alive");
-
-            co_await clan->join_member(*inviter_shared, *invitee_shared);
+            co_await clan->join_member(*inviter_shared, target_name);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -207,14 +196,13 @@ int builtin::clan::builtin_join(lua_State* L)
     };
 
     auto inviter_weak = inviter->weak_from_this_as<fb::game::character>();
-    auto invitee_weak = invitee->weak_from_this_as<fb::game::character>();
 
     auto thread = server->threads.current();
     if (thread == nullptr)
         throw std::runtime_error("thread is not alive");
 
     std::ignore = thread->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(lua, clan, inviter_weak, invitee_weak);
+        co_await fn(lua, clan, inviter_weak, target_name);
     });
 
     return lua->yield(0);

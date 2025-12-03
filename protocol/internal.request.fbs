@@ -133,7 +133,14 @@ table SetOption {
   enabled: bool;
 }
 
+table CreateGroup {
+  host: uint;
+  master: uint;
+  member: string;
+}
+
 table EnterGroup {
+  host: uint;
   master: uint;
   member: string;
 }
@@ -146,12 +153,19 @@ table BroadcastGroup {
 }
 
 table LeaveGroup {
+  host: uint;
   member: string;
 }
 
 table KickGroup {
+  host: uint;
   kicker: string;
   target: string;
+}
+
+table DestroyGroup {
+  host: uint;
+  master: string;
 }
 
 table CreateClan {
@@ -168,7 +182,7 @@ table DestroyClan {
 table JoinClan {
   host: uint;
   inviter_uid: uint;
-  invitee_uid: uint;
+  invitee_name: string;
 }
 
 table LeaveClan {

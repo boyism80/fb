@@ -11,14 +11,6 @@ async::task<bool> fb::game::handler::protocol::group::handle(fb::socket<characte
     if (me->inited() == false)
         co_return true;
 
-    auto& gid = me->group_id();
-    if (gid.has_value() && me->name() == request.name)
-    {
-        co_await this->server.leave_group(*me);
-    }
-    else
-    {
-        std::ignore = co_await this->server.create_group(*me, request.name);
-    }
+    std::ignore = co_await this->server.handle_group_action(*me, request.name);
     co_return true;
 }

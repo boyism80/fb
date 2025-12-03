@@ -28,7 +28,8 @@
 #include <mutex>
 #include <memory>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.service_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.groupaction_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.groupactiontype_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.groupdetailsaction_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.clanactiontype_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.clandetailsaction_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.position_generated.h>
@@ -71,10 +72,12 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.writemail_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.deletemail_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.setoption_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.creategroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.entergroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.broadcastgroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.leavegroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.kickgroup_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.destroygroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.createclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.destroyclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.joinclan_generated.h>
@@ -114,10 +117,9 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.save_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.broadcastsave_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.setoption_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getgroup_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.entergroup_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.leavegroup_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.kickgroup_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.groupdetails_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.updatedgroup_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.destroygroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.broadcastgroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.clandetails_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.updatedclan_generated.h>
@@ -156,7 +158,8 @@ namespace fb::protocol::internal
     class StoragePendingBox;
     class StorageRewardMark;
     enum class Service : int8_t;
-    enum class GroupAction : int8_t;
+    enum class GroupActionType : int8_t;
+    enum class GroupDetailsAction : int8_t;
     enum class ClanActionType : int8_t;
     enum class ClanDetailsAction : int8_t;
 } // end of namespace fb::protocol::internal
@@ -181,10 +184,12 @@ namespace fb::protocol::internal::request
     class WriteMail;
     class DeleteMail;
     class SetOption;
+    class CreateGroup;
     class EnterGroup;
     class BroadcastGroup;
     class LeaveGroup;
     class KickGroup;
+    class DestroyGroup;
     class CreateClan;
     class DestroyClan;
     class JoinClan;
@@ -227,10 +232,9 @@ namespace fb::protocol::internal::response
     class Save;
     class BroadcastSave;
     class SetOption;
-    class GetGroup;
-    class EnterGroup;
-    class LeaveGroup;
-    class KickGroup;
+    class GroupDetails;
+    class UpdatedGroup;
+    class DestroyGroup;
     class BroadcastGroup;
     class ClanDetails;
     class UpdatedClan;
@@ -375,10 +379,12 @@ template <> struct FlatBufferOffset<fb::protocol::internal::request::DeleteArtic
 template <> struct FlatBufferOffset<fb::protocol::internal::request::WriteMail> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::WriteMail> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::DeleteMail> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteMail> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::SetOption> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetOption> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::CreateGroup> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::CreateGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::EnterGroup> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::EnterGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::BroadcastGroup> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::BroadcastGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::LeaveGroup> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::LeaveGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::KickGroup> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::KickGroup> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::DestroyGroup> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::DestroyGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::CreateClan> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::CreateClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::DestroyClan> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::DestroyClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::JoinClan> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::JoinClan> type; };
@@ -418,10 +424,9 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::ReserveNam
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Save> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Save> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::BroadcastSave> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastSave> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::SetOption> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::SetOption> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::GetGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetGroup> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::EnterGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::EnterGroup> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::LeaveGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::LeaveGroup> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::KickGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::KickGroup> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::GroupDetails> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GroupDetails> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::UpdatedGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::UpdatedGroup> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::DestroyGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::DestroyGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::BroadcastGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::ClanDetails> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::ClanDetails> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::UpdatedClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::UpdatedClan> type; };
@@ -436,7 +441,8 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::Ban> { typ
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Unban> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Unban> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Heartbeat> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Heartbeat> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Service> { typedef fb::protocol::internal::raw::Service type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::GroupAction> { typedef fb::protocol::internal::raw::GroupAction type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::GroupActionType> { typedef fb::protocol::internal::raw::GroupActionType type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::GroupDetailsAction> { typedef fb::protocol::internal::raw::GroupDetailsAction type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::ClanActionType> { typedef fb::protocol::internal::raw::ClanActionType type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::ClanDetailsAction> { typedef fb::protocol::internal::raw::ClanDetailsAction type; };
 template <typename T> struct FlatBufferOffset<std::optional<T>> { typedef typename FlatBufferOffset<T>::type type; };
@@ -527,6 +533,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteMail> build<fb::
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetOption> build<fb::protocol::internal::request::SetOption>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetOption& value);
 template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::CreateGroup> build<fb::protocol::internal::request::CreateGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::CreateGroup& value);
+template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::EnterGroup> build<fb::protocol::internal::request::EnterGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::EnterGroup& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::BroadcastGroup> build<fb::protocol::internal::request::BroadcastGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::BroadcastGroup& value);
@@ -534,6 +542,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::LeaveGroup> build<fb::protocol::internal::request::LeaveGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::LeaveGroup& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::KickGroup> build<fb::protocol::internal::request::KickGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::KickGroup& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::DestroyGroup> build<fb::protocol::internal::request::DestroyGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::DestroyGroup& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::CreateClan> build<fb::protocol::internal::request::CreateClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::CreateClan& value);
 template <>
@@ -613,13 +623,11 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastSave> build<
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::SetOption> build<fb::protocol::internal::response::SetOption>(FlatBufferBuilder& builder, const fb::protocol::internal::response::SetOption& value);
 template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::GetGroup> build<fb::protocol::internal::response::GetGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetGroup& value);
+flatbuffers::Offset<fb::protocol::internal::response::raw::GroupDetails> build<fb::protocol::internal::response::GroupDetails>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GroupDetails& value);
 template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::EnterGroup> build<fb::protocol::internal::response::EnterGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::EnterGroup& value);
+flatbuffers::Offset<fb::protocol::internal::response::raw::UpdatedGroup> build<fb::protocol::internal::response::UpdatedGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::UpdatedGroup& value);
 template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::LeaveGroup> build<fb::protocol::internal::response::LeaveGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::LeaveGroup& value);
-template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::KickGroup> build<fb::protocol::internal::response::KickGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickGroup& value);
+flatbuffers::Offset<fb::protocol::internal::response::raw::DestroyGroup> build<fb::protocol::internal::response::DestroyGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::DestroyGroup& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastGroup> build<fb::protocol::internal::response::BroadcastGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::BroadcastGroup& value);
 template <>
@@ -660,13 +668,16 @@ enum class Service : int8_t
     Login = fb::protocol::internal::raw::Service::Service_Login,
     Game = fb::protocol::internal::raw::Service::Service_Game,
 };
-enum class GroupAction : int8_t
+enum class GroupActionType : int8_t
 {
-    Create = fb::protocol::internal::raw::GroupAction::GroupAction_Create,
-    Enter = fb::protocol::internal::raw::GroupAction::GroupAction_Enter,
-    Leave = fb::protocol::internal::raw::GroupAction::GroupAction_Leave,
-    Kick = fb::protocol::internal::raw::GroupAction::GroupAction_Kick,
-    BreakUp = fb::protocol::internal::raw::GroupAction::GroupAction_BreakUp,
+    Enter = fb::protocol::internal::raw::GroupActionType::GroupActionType_Enter,
+    Leave = fb::protocol::internal::raw::GroupActionType::GroupActionType_Leave,
+    Kick = fb::protocol::internal::raw::GroupActionType::GroupActionType_Kick,
+};
+enum class GroupDetailsAction : int8_t
+{
+    Query = fb::protocol::internal::raw::GroupDetailsAction::GroupDetailsAction_Query,
+    Create = fb::protocol::internal::raw::GroupDetailsAction::GroupDetailsAction_Create,
 };
 enum class ClanActionType : int8_t
 {
@@ -1674,10 +1685,12 @@ enum class FlatBufferProtocolType
     WriteMail,
     DeleteMail,
     SetOption,
+    CreateGroup,
     EnterGroup,
     BroadcastGroup,
     LeaveGroup,
     KickGroup,
+    DestroyGroup,
     CreateClan,
     DestroyClan,
     JoinClan,
@@ -2471,12 +2484,54 @@ public:
         return SetOption(*raw);
     }
 };
+class CreateGroup
+{
+public:
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::CreateGroup;
+
+public:
+    uint32_t host = 0;
+    uint32_t master = 0;
+    std::string member;
+
+public:
+    CreateGroup() = default;
+
+    CreateGroup(const CreateGroup& x)
+        : host(x.host), master(x.master), member(x.member)
+    { }
+
+    CreateGroup(uint32_t host, uint32_t master, const std::string& member)
+        : host(host), master(master), member(member)
+    { }
+
+    CreateGroup(const fb::protocol::internal::request::raw::CreateGroup& raw)
+        : host(raw.host()), master(raw.master()), member(flatbuffers::option::decode(raw.member()->c_str()))
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::request::CreateGroup>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static CreateGroup Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::request::raw::GetCreateGroup(bytes);
+        return CreateGroup(*raw);
+    }
+};
 class EnterGroup
 {
 public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::EnterGroup;
 
 public:
+    uint32_t host = 0;
     uint32_t master = 0;
     std::string member;
 
@@ -2484,15 +2539,15 @@ public:
     EnterGroup() = default;
 
     EnterGroup(const EnterGroup& x)
-        : master(x.master), member(x.member)
+        : host(x.host), master(x.master), member(x.member)
     { }
 
-    EnterGroup(uint32_t master, const std::string& member)
-        : master(master), member(member)
+    EnterGroup(uint32_t host, uint32_t master, const std::string& member)
+        : host(host), master(master), member(member)
     { }
 
     EnterGroup(const fb::protocol::internal::request::raw::EnterGroup& raw)
-        : master(raw.master()), member(flatbuffers::option::decode(raw.member()->c_str()))
+        : host(raw.host()), master(raw.master()), member(flatbuffers::option::decode(raw.member()->c_str()))
     { }
 
 public:
@@ -2559,21 +2614,22 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::LeaveGroup;
 
 public:
+    uint32_t host = 0;
     std::string member;
 
 public:
     LeaveGroup() = default;
 
     LeaveGroup(const LeaveGroup& x)
-        : member(x.member)
+        : host(x.host), member(x.member)
     { }
 
-    LeaveGroup(const std::string& member)
-        : member(member)
+    LeaveGroup(uint32_t host, const std::string& member)
+        : host(host), member(member)
     { }
 
     LeaveGroup(const fb::protocol::internal::request::raw::LeaveGroup& raw)
-        : member(flatbuffers::option::decode(raw.member()->c_str()))
+        : host(raw.host()), member(flatbuffers::option::decode(raw.member()->c_str()))
     { }
 
 public:
@@ -2598,6 +2654,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::KickGroup;
 
 public:
+    uint32_t host = 0;
     std::string kicker;
     std::string target;
 
@@ -2605,15 +2662,15 @@ public:
     KickGroup() = default;
 
     KickGroup(const KickGroup& x)
-        : kicker(x.kicker), target(x.target)
+        : host(x.host), kicker(x.kicker), target(x.target)
     { }
 
-    KickGroup(const std::string& kicker, const std::string& target)
-        : kicker(kicker), target(target)
+    KickGroup(uint32_t host, const std::string& kicker, const std::string& target)
+        : host(host), kicker(kicker), target(target)
     { }
 
     KickGroup(const fb::protocol::internal::request::raw::KickGroup& raw)
-        : kicker(flatbuffers::option::decode(raw.kicker()->c_str())), target(flatbuffers::option::decode(raw.target()->c_str()))
+        : host(raw.host()), kicker(flatbuffers::option::decode(raw.kicker()->c_str())), target(flatbuffers::option::decode(raw.target()->c_str()))
     { }
 
 public:
@@ -2630,6 +2687,46 @@ public:
     {
         auto raw = fb::protocol::internal::request::raw::GetKickGroup(bytes);
         return KickGroup(*raw);
+    }
+};
+class DestroyGroup
+{
+public:
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::DestroyGroup;
+
+public:
+    uint32_t host = 0;
+    std::string master;
+
+public:
+    DestroyGroup() = default;
+
+    DestroyGroup(const DestroyGroup& x)
+        : host(x.host), master(x.master)
+    { }
+
+    DestroyGroup(uint32_t host, const std::string& master)
+        : host(host), master(master)
+    { }
+
+    DestroyGroup(const fb::protocol::internal::request::raw::DestroyGroup& raw)
+        : host(raw.host()), master(flatbuffers::option::decode(raw.master()->c_str()))
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::request::DestroyGroup>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static DestroyGroup Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::request::raw::GetDestroyGroup(bytes);
+        return DestroyGroup(*raw);
     }
 };
 class CreateClan
@@ -2721,21 +2818,21 @@ public:
 public:
     uint32_t host = 0;
     uint32_t inviter_uid = 0;
-    uint32_t invitee_uid = 0;
+    std::string invitee_name;
 
 public:
     JoinClan() = default;
 
     JoinClan(const JoinClan& x)
-        : host(x.host), inviter_uid(x.inviter_uid), invitee_uid(x.invitee_uid)
+        : host(x.host), inviter_uid(x.inviter_uid), invitee_name(x.invitee_name)
     { }
 
-    JoinClan(uint32_t host, uint32_t inviter_uid, uint32_t invitee_uid)
-        : host(host), inviter_uid(inviter_uid), invitee_uid(invitee_uid)
+    JoinClan(uint32_t host, uint32_t inviter_uid, const std::string& invitee_name)
+        : host(host), inviter_uid(inviter_uid), invitee_name(invitee_name)
     { }
 
     JoinClan(const fb::protocol::internal::request::raw::JoinClan& raw)
-        : host(raw.host()), inviter_uid(raw.inviter_uid()), invitee_uid(raw.invitee_uid())
+        : host(raw.host()), inviter_uid(raw.inviter_uid()), invitee_name(flatbuffers::option::decode(raw.invitee_name()->c_str()))
     { }
 
 public:
@@ -3279,10 +3376,9 @@ enum class FlatBufferProtocolType
     Save,
     BroadcastSave,
     SetOption,
-    GetGroup,
-    EnterGroup,
-    LeaveGroup,
-    KickGroup,
+    GroupDetails,
+    UpdatedGroup,
+    DestroyGroup,
     BroadcastGroup,
     ClanDetails,
     UpdatedClan,
@@ -4258,173 +4354,137 @@ public:
         return SetOption(*raw);
     }
 };
-class GetGroup
+class GroupDetails
 {
 public:
-    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::GetGroup;
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::GroupDetails;
 
 public:
+    uint32_t host = 0;
+    fb::protocol::internal::GroupDetailsAction action;
     fb::protocol::internal::Group group;
+    std::vector<fb::protocol::internal::CharacterRef> members = {};
     uint32_t error = 0;
 
 public:
-    GetGroup() = default;
+    GroupDetails() = default;
 
-    GetGroup(const GetGroup& x)
-        : group(x.group), error(x.error)
+    GroupDetails(const GroupDetails& x)
+        : host(x.host), action(x.action), group(x.group), members(x.members), error(x.error)
     { }
 
-    GetGroup(const fb::protocol::internal::Group& group, uint32_t error)
-        : group(group), error(error)
+    GroupDetails(uint32_t host, fb::protocol::internal::GroupDetailsAction action, const fb::protocol::internal::Group& group, std::vector<fb::protocol::internal::CharacterRef> members, uint32_t error)
+        : host(host), action(action), group(group), members(members), error(error)
     { }
 
-    GetGroup(const fb::protocol::internal::response::raw::GetGroup& raw)
-        : group(*raw.group()), error(raw.error())
+    GroupDetails(const fb::protocol::internal::response::raw::GroupDetails& raw)
+        : host(raw.host()), action((fb::protocol::internal::GroupDetailsAction)raw.action()), group(*raw.group()), members(unpack<fb::protocol::internal::CharacterRef>(raw.members())), error(raw.error())
     { }
 
 public:
     std::vector<uint8_t> Serialize() const
     {
         auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::response::GetGroup>(builder, *this));
+        builder.Finish(build<fb::protocol::internal::response::GroupDetails>(builder, *this));
         auto buffer = std::vector<uint8_t>(builder.GetSize());
         std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
         return buffer;
     }
 
-    static GetGroup Deserialize(const uint8_t* bytes)
+    static GroupDetails Deserialize(const uint8_t* bytes)
     {
-        auto raw = fb::protocol::internal::response::raw::GetGetGroup(bytes);
-        return GetGroup(*raw);
+        auto raw = fb::protocol::internal::response::raw::GetGroupDetails(bytes);
+        return GroupDetails(*raw);
     }
 };
-class EnterGroup
+class UpdatedGroup
 {
 public:
-    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::EnterGroup;
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::UpdatedGroup;
 
 public:
-    fb::protocol::internal::Group group;
-    std::string member;
-    fb::protocol::internal::GroupAction action;
     uint32_t host = 0;
+    fb::protocol::internal::GroupActionType action;
+    uint32_t group_id = 0;
+    std::string group_master;
+    fb::protocol::internal::CharacterRef actor;
+    std::optional<fb::protocol::internal::CharacterRef> target = std::nullopt;
+    std::optional<fb::protocol::internal::CharacterRef> new_member = std::nullopt;
+    std::optional<fb::protocol::internal::CharacterRef> deleted_member = std::nullopt;
     uint32_t error = 0;
 
 public:
-    EnterGroup() = default;
+    UpdatedGroup() = default;
 
-    EnterGroup(const EnterGroup& x)
-        : group(x.group), member(x.member), action(x.action), host(x.host), error(x.error)
+    UpdatedGroup(const UpdatedGroup& x)
+        : host(x.host), action(x.action), group_id(x.group_id), group_master(x.group_master), actor(x.actor), target(x.target), new_member(x.new_member), deleted_member(x.deleted_member), error(x.error)
     { }
 
-    EnterGroup(const fb::protocol::internal::Group& group, const std::string& member, fb::protocol::internal::GroupAction action, uint32_t host, uint32_t error)
-        : group(group), member(member), action(action), host(host), error(error)
+    UpdatedGroup(uint32_t host, fb::protocol::internal::GroupActionType action, uint32_t group_id, const std::string& group_master, const fb::protocol::internal::CharacterRef& actor, const std::optional<fb::protocol::internal::CharacterRef>& target, const std::optional<fb::protocol::internal::CharacterRef>& new_member, const std::optional<fb::protocol::internal::CharacterRef>& deleted_member, uint32_t error)
+        : host(host), action(action), group_id(group_id), group_master(group_master), actor(actor), target(target), new_member(new_member), deleted_member(deleted_member), error(error)
     { }
 
-    EnterGroup(const fb::protocol::internal::response::raw::EnterGroup& raw)
-        : group(*raw.group()), member(flatbuffers::option::decode(raw.member()->c_str())), action((fb::protocol::internal::GroupAction)raw.action()), host(raw.host()), error(raw.error())
+    UpdatedGroup(const fb::protocol::internal::response::raw::UpdatedGroup& raw)
+        : host(raw.host()), action((fb::protocol::internal::GroupActionType)raw.action()), group_id(raw.group_id()), group_master(flatbuffers::option::decode(raw.group_master()->c_str())), actor(*raw.actor()), target(raw.target() != nullptr ? *raw.target() : std::optional<fb::protocol::internal::CharacterRef>()), new_member(raw.new_member() != nullptr ? *raw.new_member() : std::optional<fb::protocol::internal::CharacterRef>()), deleted_member(raw.deleted_member() != nullptr ? *raw.deleted_member() : std::optional<fb::protocol::internal::CharacterRef>()), error(raw.error())
     { }
 
 public:
     std::vector<uint8_t> Serialize() const
     {
         auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::response::EnterGroup>(builder, *this));
+        builder.Finish(build<fb::protocol::internal::response::UpdatedGroup>(builder, *this));
         auto buffer = std::vector<uint8_t>(builder.GetSize());
         std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
         return buffer;
     }
 
-    static EnterGroup Deserialize(const uint8_t* bytes)
+    static UpdatedGroup Deserialize(const uint8_t* bytes)
     {
-        auto raw = fb::protocol::internal::response::raw::GetEnterGroup(bytes);
-        return EnterGroup(*raw);
+        auto raw = fb::protocol::internal::response::raw::GetUpdatedGroup(bytes);
+        return UpdatedGroup(*raw);
     }
 };
-class LeaveGroup
+class DestroyGroup
 {
 public:
-    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::LeaveGroup;
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::DestroyGroup;
 
 public:
-    fb::protocol::internal::Group group;
-    std::string member;
-    fb::protocol::internal::GroupAction action;
     uint32_t host = 0;
+    uint32_t group_id = 0;
+    std::string group_master;
+    fb::protocol::internal::CharacterRef actor;
     uint32_t error = 0;
 
 public:
-    LeaveGroup() = default;
+    DestroyGroup() = default;
 
-    LeaveGroup(const LeaveGroup& x)
-        : group(x.group), member(x.member), action(x.action), host(x.host), error(x.error)
+    DestroyGroup(const DestroyGroup& x)
+        : host(x.host), group_id(x.group_id), group_master(x.group_master), actor(x.actor), error(x.error)
     { }
 
-    LeaveGroup(const fb::protocol::internal::Group& group, const std::string& member, fb::protocol::internal::GroupAction action, uint32_t host, uint32_t error)
-        : group(group), member(member), action(action), host(host), error(error)
+    DestroyGroup(uint32_t host, uint32_t group_id, const std::string& group_master, const fb::protocol::internal::CharacterRef& actor, uint32_t error)
+        : host(host), group_id(group_id), group_master(group_master), actor(actor), error(error)
     { }
 
-    LeaveGroup(const fb::protocol::internal::response::raw::LeaveGroup& raw)
-        : group(*raw.group()), member(flatbuffers::option::decode(raw.member()->c_str())), action((fb::protocol::internal::GroupAction)raw.action()), host(raw.host()), error(raw.error())
+    DestroyGroup(const fb::protocol::internal::response::raw::DestroyGroup& raw)
+        : host(raw.host()), group_id(raw.group_id()), group_master(flatbuffers::option::decode(raw.group_master()->c_str())), actor(*raw.actor()), error(raw.error())
     { }
 
 public:
     std::vector<uint8_t> Serialize() const
     {
         auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::response::LeaveGroup>(builder, *this));
+        builder.Finish(build<fb::protocol::internal::response::DestroyGroup>(builder, *this));
         auto buffer = std::vector<uint8_t>(builder.GetSize());
         std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
         return buffer;
     }
 
-    static LeaveGroup Deserialize(const uint8_t* bytes)
+    static DestroyGroup Deserialize(const uint8_t* bytes)
     {
-        auto raw = fb::protocol::internal::response::raw::GetLeaveGroup(bytes);
-        return LeaveGroup(*raw);
-    }
-};
-class KickGroup
-{
-public:
-    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::KickGroup;
-
-public:
-    fb::protocol::internal::Group group;
-    std::string member;
-    fb::protocol::internal::GroupAction action;
-    uint32_t host = 0;
-    uint32_t error = 0;
-
-public:
-    KickGroup() = default;
-
-    KickGroup(const KickGroup& x)
-        : group(x.group), member(x.member), action(x.action), host(x.host), error(x.error)
-    { }
-
-    KickGroup(const fb::protocol::internal::Group& group, const std::string& member, fb::protocol::internal::GroupAction action, uint32_t host, uint32_t error)
-        : group(group), member(member), action(action), host(host), error(error)
-    { }
-
-    KickGroup(const fb::protocol::internal::response::raw::KickGroup& raw)
-        : group(*raw.group()), member(flatbuffers::option::decode(raw.member()->c_str())), action((fb::protocol::internal::GroupAction)raw.action()), host(raw.host()), error(raw.error())
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::response::KickGroup>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static KickGroup Deserialize(const uint8_t* bytes)
-    {
-        auto raw = fb::protocol::internal::response::raw::GetKickGroup(bytes);
-        return KickGroup(*raw);
+        auto raw = fb::protocol::internal::response::raw::GetDestroyGroup(bytes);
+        return DestroyGroup(*raw);
     }
 };
 class BroadcastGroup
@@ -5436,9 +5496,18 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::SetOption> build<fb::p
             flatbuffers::build<bool>(builder, value.enabled));
 }
 template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::CreateGroup> build<fb::protocol::internal::request::CreateGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::CreateGroup& value)
+{
+    return fb::protocol::internal::request::raw::CreateCreateGroup(builder,
+            flatbuffers::build<uint32_t>(builder, value.host),
+            flatbuffers::build<uint32_t>(builder, value.master),
+            flatbuffers::build<std::string>(builder, value.member));
+}
+template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::EnterGroup> build<fb::protocol::internal::request::EnterGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::EnterGroup& value)
 {
     return fb::protocol::internal::request::raw::CreateEnterGroup(builder,
+            flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.master),
             flatbuffers::build<std::string>(builder, value.member));
 }
@@ -5455,14 +5524,23 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::LeaveGroup> build<fb::protocol::internal::request::LeaveGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::LeaveGroup& value)
 {
     return fb::protocol::internal::request::raw::CreateLeaveGroup(builder,
+            flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<std::string>(builder, value.member));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::KickGroup> build<fb::protocol::internal::request::KickGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::KickGroup& value)
 {
     return fb::protocol::internal::request::raw::CreateKickGroup(builder,
+            flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<std::string>(builder, value.kicker),
             flatbuffers::build<std::string>(builder, value.target));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::DestroyGroup> build<fb::protocol::internal::request::DestroyGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::DestroyGroup& value)
+{
+    return fb::protocol::internal::request::raw::CreateDestroyGroup(builder,
+            flatbuffers::build<uint32_t>(builder, value.host),
+            flatbuffers::build<std::string>(builder, value.master));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::CreateClan> build<fb::protocol::internal::request::CreateClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::CreateClan& value)
@@ -5485,7 +5563,7 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::JoinClan> build<fb::pr
     return fb::protocol::internal::request::raw::CreateJoinClan(builder,
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.inviter_uid),
-            flatbuffers::build<uint32_t>(builder, value.invitee_uid));
+            flatbuffers::build<std::string>(builder, value.invitee_name));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::LeaveClan> build<fb::protocol::internal::request::LeaveClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::LeaveClan& value)
@@ -5766,40 +5844,37 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::SetOption> build<fb::
             flatbuffers::build<bool>(builder, value.success));
 }
 template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::GetGroup> build<fb::protocol::internal::response::GetGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetGroup& value)
+flatbuffers::Offset<fb::protocol::internal::response::raw::GroupDetails> build<fb::protocol::internal::response::GroupDetails>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GroupDetails& value)
 {
-    return fb::protocol::internal::response::raw::CreateGetGroup(builder,
+    return fb::protocol::internal::response::raw::CreateGroupDetails(builder,
+            flatbuffers::build<uint32_t>(builder, value.host),
+            flatbuffers::build<fb::protocol::internal::GroupDetailsAction>(builder, value.action),
             flatbuffers::build<fb::protocol::internal::Group>(builder, value.group),
+            flatbuffers::build<std::vector<fb::protocol::internal::CharacterRef>>(builder, value.members),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::EnterGroup> build<fb::protocol::internal::response::EnterGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::EnterGroup& value)
+flatbuffers::Offset<fb::protocol::internal::response::raw::UpdatedGroup> build<fb::protocol::internal::response::UpdatedGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::UpdatedGroup& value)
 {
-    return fb::protocol::internal::response::raw::CreateEnterGroup(builder,
-            flatbuffers::build<fb::protocol::internal::Group>(builder, value.group),
-            flatbuffers::build<std::string>(builder, value.member),
-            flatbuffers::build<fb::protocol::internal::GroupAction>(builder, value.action),
+    return fb::protocol::internal::response::raw::CreateUpdatedGroup(builder,
             flatbuffers::build<uint32_t>(builder, value.host),
+            flatbuffers::build<fb::protocol::internal::GroupActionType>(builder, value.action),
+            flatbuffers::build<uint32_t>(builder, value.group_id),
+            flatbuffers::build<std::string>(builder, value.group_master),
+            flatbuffers::build<fb::protocol::internal::CharacterRef>(builder, value.actor),
+            flatbuffers::build<std::optional<fb::protocol::internal::CharacterRef>>(builder, value.target),
+            flatbuffers::build<std::optional<fb::protocol::internal::CharacterRef>>(builder, value.new_member),
+            flatbuffers::build<std::optional<fb::protocol::internal::CharacterRef>>(builder, value.deleted_member),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::LeaveGroup> build<fb::protocol::internal::response::LeaveGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::LeaveGroup& value)
+flatbuffers::Offset<fb::protocol::internal::response::raw::DestroyGroup> build<fb::protocol::internal::response::DestroyGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::DestroyGroup& value)
 {
-    return fb::protocol::internal::response::raw::CreateLeaveGroup(builder,
-            flatbuffers::build<fb::protocol::internal::Group>(builder, value.group),
-            flatbuffers::build<std::string>(builder, value.member),
-            flatbuffers::build<fb::protocol::internal::GroupAction>(builder, value.action),
+    return fb::protocol::internal::response::raw::CreateDestroyGroup(builder,
             flatbuffers::build<uint32_t>(builder, value.host),
-            flatbuffers::build<uint32_t>(builder, value.error));
-}
-template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::KickGroup> build<fb::protocol::internal::response::KickGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickGroup& value)
-{
-    return fb::protocol::internal::response::raw::CreateKickGroup(builder,
-            flatbuffers::build<fb::protocol::internal::Group>(builder, value.group),
-            flatbuffers::build<std::string>(builder, value.member),
-            flatbuffers::build<fb::protocol::internal::GroupAction>(builder, value.action),
-            flatbuffers::build<uint32_t>(builder, value.host),
+            flatbuffers::build<uint32_t>(builder, value.group_id),
+            flatbuffers::build<std::string>(builder, value.group_master),
+            flatbuffers::build<fb::protocol::internal::CharacterRef>(builder, value.actor),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>

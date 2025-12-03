@@ -610,12 +610,23 @@ namespace fb.protocol._internal
                 builder.Build(value.Type),
                 builder.Build(value.Enabled));
         }
+        public static Offset<fb.protocol._internal.request.raw.CreateGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.CreateGroup value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.CreateGroup.CreateCreateGroup(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Master),
+                builder.Build(value.Member));
+        }
         public static Offset<fb.protocol._internal.request.raw.EnterGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.EnterGroup value)
         {
             if (value == null)
                 return default;
 
             return fb.protocol._internal.request.raw.EnterGroup.CreateEnterGroup(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
         }
@@ -636,6 +647,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveGroup.CreateLeaveGroup(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Member));
         }
         public static Offset<fb.protocol._internal.request.raw.KickGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.KickGroup value)
@@ -644,8 +656,18 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.KickGroup.CreateKickGroup(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Kicker),
                 builder.Build(value.Target));
+        }
+        public static Offset<fb.protocol._internal.request.raw.DestroyGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DestroyGroup value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.DestroyGroup.CreateDestroyGroup(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Master));
         }
         public static Offset<fb.protocol._internal.request.raw.CreateClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.CreateClan value)
         {
@@ -674,7 +696,7 @@ namespace fb.protocol._internal
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
                 builder.Build(value.Host),
                 builder.Build(value.InviterUid),
-                builder.Build(value.InviteeUid));
+                builder.Build(value.InviteeName));
         }
         public static Offset<fb.protocol._internal.request.raw.LeaveClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.LeaveClan value)
         {
@@ -1028,49 +1050,44 @@ namespace fb.protocol._internal
             return fb.protocol._internal.response.raw.SetOption.CreateSetOption(builder,
                 builder.Build(value.Success));
         }
-        public static Offset<fb.protocol._internal.response.raw.GetGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetGroup value)
+        public static Offset<fb.protocol._internal.response.raw.GroupDetails> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GroupDetails value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol._internal.response.raw.GetGroup.CreateGetGroup(builder,
+            return fb.protocol._internal.response.raw.GroupDetails.CreateGroupDetails(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Action),
                 builder.Build(value.Group),
+                builder.Build(value.Members),
                 builder.Build(value.Error));
         }
-        public static Offset<fb.protocol._internal.response.raw.EnterGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.EnterGroup value)
+        public static Offset<fb.protocol._internal.response.raw.UpdatedGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.UpdatedGroup value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol._internal.response.raw.EnterGroup.CreateEnterGroup(builder,
-                builder.Build(value.Group),
-                builder.Build(value.Member),
-                builder.Build(value.Action),
+            return fb.protocol._internal.response.raw.UpdatedGroup.CreateUpdatedGroup(builder,
                 builder.Build(value.Host),
+                builder.Build(value.Action),
+                builder.Build(value.GroupId),
+                builder.Build(value.GroupMaster),
+                builder.Build(value.Actor),
+                builder.Build(value.Target),
+                builder.Build(value.NewMember),
+                builder.Build(value.DeletedMember),
                 builder.Build(value.Error));
         }
-        public static Offset<fb.protocol._internal.response.raw.LeaveGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.LeaveGroup value)
+        public static Offset<fb.protocol._internal.response.raw.DestroyGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.DestroyGroup value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol._internal.response.raw.LeaveGroup.CreateLeaveGroup(builder,
-                builder.Build(value.Group),
-                builder.Build(value.Member),
-                builder.Build(value.Action),
+            return fb.protocol._internal.response.raw.DestroyGroup.CreateDestroyGroup(builder,
                 builder.Build(value.Host),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol._internal.response.raw.KickGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickGroup value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.response.raw.KickGroup.CreateKickGroup(builder,
-                builder.Build(value.Group),
-                builder.Build(value.Member),
-                builder.Build(value.Action),
-                builder.Build(value.Host),
+                builder.Build(value.GroupId),
+                builder.Build(value.GroupMaster),
+                builder.Build(value.Actor),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.BroadcastGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.BroadcastGroup value)
@@ -1270,6 +1287,10 @@ namespace fb.protocol._internal
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.StoragePendingBox>(value.Select(x => Build(builder, x)).ToArray());
         }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.CharacterRef> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.CharacterRef>(value.Select(x => Build(builder, x)).ToArray());
+        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.ClanMember> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.ClanMember>(value.Select(x => Build(builder, x)).ToArray());
@@ -1282,9 +1303,13 @@ namespace fb.protocol._internal
         {
             return (fb.protocol._internal.raw.Service)value;
         }
-        public static fb.protocol._internal.raw.GroupAction Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupAction value)
+        public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
-            return (fb.protocol._internal.raw.GroupAction)value;
+            return (fb.protocol._internal.raw.GroupActionType)value;
+        }
+        public static fb.protocol._internal.raw.GroupDetailsAction Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupDetailsAction value)
+        {
+            return (fb.protocol._internal.raw.GroupDetailsAction)value;
         }
         public static fb.protocol._internal.raw.ClanActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.ClanActionType value)
         {
@@ -1836,12 +1861,23 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Type),
                 builder.Build(value.Enabled));
         }
+        public static Offset<fb.protocol._internal.request.raw.CreateGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.CreateGroup value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.CreateGroup.CreateCreateGroup(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Master),
+                builder.Build(value.Member));
+        }
         public static Offset<fb.protocol._internal.request.raw.EnterGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.EnterGroup value)
         {
             if (value == null)
                 return default;
 
             return fb.protocol._internal.request.raw.EnterGroup.CreateEnterGroup(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
         }
@@ -1862,6 +1898,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveGroup.CreateLeaveGroup(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Member));
         }
         public static Offset<fb.protocol._internal.request.raw.KickGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.KickGroup value)
@@ -1870,8 +1907,18 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.KickGroup.CreateKickGroup(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Kicker),
                 builder.Build(value.Target));
+        }
+        public static Offset<fb.protocol._internal.request.raw.DestroyGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DestroyGroup value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.DestroyGroup.CreateDestroyGroup(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Master));
         }
         public static Offset<fb.protocol._internal.request.raw.CreateClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.CreateClan value)
         {
@@ -1900,7 +1947,7 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
                 builder.Build(value.Host),
                 builder.Build(value.InviterUid),
-                builder.Build(value.InviteeUid));
+                builder.Build(value.InviteeName));
         }
         public static Offset<fb.protocol._internal.request.raw.LeaveClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.LeaveClan value)
         {
@@ -2254,49 +2301,44 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.response.raw.SetOption.CreateSetOption(builder,
                 builder.Build(value.Success));
         }
-        public static Offset<fb.protocol._internal.response.raw.GetGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetGroup value)
+        public static Offset<fb.protocol._internal.response.raw.GroupDetails> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GroupDetails value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol._internal.response.raw.GetGroup.CreateGetGroup(builder,
+            return fb.protocol._internal.response.raw.GroupDetails.CreateGroupDetails(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Action),
                 builder.Build(value.Group),
+                builder.Build(value.Members),
                 builder.Build(value.Error));
         }
-        public static Offset<fb.protocol._internal.response.raw.EnterGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.EnterGroup value)
+        public static Offset<fb.protocol._internal.response.raw.UpdatedGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.UpdatedGroup value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol._internal.response.raw.EnterGroup.CreateEnterGroup(builder,
-                builder.Build(value.Group),
-                builder.Build(value.Member),
-                builder.Build(value.Action),
+            return fb.protocol._internal.response.raw.UpdatedGroup.CreateUpdatedGroup(builder,
                 builder.Build(value.Host),
+                builder.Build(value.Action),
+                builder.Build(value.GroupId),
+                builder.Build(value.GroupMaster),
+                builder.Build(value.Actor),
+                builder.Build(value.Target),
+                builder.Build(value.NewMember),
+                builder.Build(value.DeletedMember),
                 builder.Build(value.Error));
         }
-        public static Offset<fb.protocol._internal.response.raw.LeaveGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.LeaveGroup value)
+        public static Offset<fb.protocol._internal.response.raw.DestroyGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.DestroyGroup value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol._internal.response.raw.LeaveGroup.CreateLeaveGroup(builder,
-                builder.Build(value.Group),
-                builder.Build(value.Member),
-                builder.Build(value.Action),
+            return fb.protocol._internal.response.raw.DestroyGroup.CreateDestroyGroup(builder,
                 builder.Build(value.Host),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol._internal.response.raw.KickGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickGroup value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.response.raw.KickGroup.CreateKickGroup(builder,
-                builder.Build(value.Group),
-                builder.Build(value.Member),
-                builder.Build(value.Action),
-                builder.Build(value.Host),
+                builder.Build(value.GroupId),
+                builder.Build(value.GroupMaster),
+                builder.Build(value.Actor),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.BroadcastGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.BroadcastGroup value)
@@ -2496,6 +2538,10 @@ namespace fb.protocol._internal.request
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.StoragePendingBox>(value.Select(x => Build(builder, x)).ToArray());
         }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.CharacterRef> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.CharacterRef>(value.Select(x => Build(builder, x)).ToArray());
+        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.ClanMember> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.ClanMember>(value.Select(x => Build(builder, x)).ToArray());
@@ -2508,9 +2554,13 @@ namespace fb.protocol._internal.request
         {
             return (fb.protocol._internal.raw.Service)value;
         }
-        public static fb.protocol._internal.raw.GroupAction Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupAction value)
+        public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
-            return (fb.protocol._internal.raw.GroupAction)value;
+            return (fb.protocol._internal.raw.GroupActionType)value;
+        }
+        public static fb.protocol._internal.raw.GroupDetailsAction Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupDetailsAction value)
+        {
+            return (fb.protocol._internal.raw.GroupDetailsAction)value;
         }
         public static fb.protocol._internal.raw.ClanActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.ClanActionType value)
         {
@@ -2543,10 +2593,12 @@ namespace fb.protocol._internal.request
         WriteMail,
         DeleteMail,
         SetOption,
+        CreateGroup,
         EnterGroup,
         BroadcastGroup,
         LeaveGroup,
         KickGroup,
+        DestroyGroup,
         CreateClan,
         DestroyClan,
         JoinClan,
@@ -3079,12 +3131,23 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Type),
                 builder.Build(value.Enabled));
         }
+        public static Offset<fb.protocol._internal.request.raw.CreateGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.CreateGroup value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.CreateGroup.CreateCreateGroup(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Master),
+                builder.Build(value.Member));
+        }
         public static Offset<fb.protocol._internal.request.raw.EnterGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.EnterGroup value)
         {
             if (value == null)
                 return default;
 
             return fb.protocol._internal.request.raw.EnterGroup.CreateEnterGroup(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
         }
@@ -3105,6 +3168,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveGroup.CreateLeaveGroup(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Member));
         }
         public static Offset<fb.protocol._internal.request.raw.KickGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.KickGroup value)
@@ -3113,8 +3177,18 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.KickGroup.CreateKickGroup(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Kicker),
                 builder.Build(value.Target));
+        }
+        public static Offset<fb.protocol._internal.request.raw.DestroyGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DestroyGroup value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.DestroyGroup.CreateDestroyGroup(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Master));
         }
         public static Offset<fb.protocol._internal.request.raw.CreateClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.CreateClan value)
         {
@@ -3143,7 +3217,7 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
                 builder.Build(value.Host),
                 builder.Build(value.InviterUid),
-                builder.Build(value.InviteeUid));
+                builder.Build(value.InviteeName));
         }
         public static Offset<fb.protocol._internal.request.raw.LeaveClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.LeaveClan value)
         {
@@ -3497,49 +3571,44 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.response.raw.SetOption.CreateSetOption(builder,
                 builder.Build(value.Success));
         }
-        public static Offset<fb.protocol._internal.response.raw.GetGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetGroup value)
+        public static Offset<fb.protocol._internal.response.raw.GroupDetails> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GroupDetails value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol._internal.response.raw.GetGroup.CreateGetGroup(builder,
+            return fb.protocol._internal.response.raw.GroupDetails.CreateGroupDetails(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Action),
                 builder.Build(value.Group),
+                builder.Build(value.Members),
                 builder.Build(value.Error));
         }
-        public static Offset<fb.protocol._internal.response.raw.EnterGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.EnterGroup value)
+        public static Offset<fb.protocol._internal.response.raw.UpdatedGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.UpdatedGroup value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol._internal.response.raw.EnterGroup.CreateEnterGroup(builder,
-                builder.Build(value.Group),
-                builder.Build(value.Member),
-                builder.Build(value.Action),
+            return fb.protocol._internal.response.raw.UpdatedGroup.CreateUpdatedGroup(builder,
                 builder.Build(value.Host),
+                builder.Build(value.Action),
+                builder.Build(value.GroupId),
+                builder.Build(value.GroupMaster),
+                builder.Build(value.Actor),
+                builder.Build(value.Target),
+                builder.Build(value.NewMember),
+                builder.Build(value.DeletedMember),
                 builder.Build(value.Error));
         }
-        public static Offset<fb.protocol._internal.response.raw.LeaveGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.LeaveGroup value)
+        public static Offset<fb.protocol._internal.response.raw.DestroyGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.DestroyGroup value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol._internal.response.raw.LeaveGroup.CreateLeaveGroup(builder,
-                builder.Build(value.Group),
-                builder.Build(value.Member),
-                builder.Build(value.Action),
+            return fb.protocol._internal.response.raw.DestroyGroup.CreateDestroyGroup(builder,
                 builder.Build(value.Host),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol._internal.response.raw.KickGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickGroup value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.response.raw.KickGroup.CreateKickGroup(builder,
-                builder.Build(value.Group),
-                builder.Build(value.Member),
-                builder.Build(value.Action),
-                builder.Build(value.Host),
+                builder.Build(value.GroupId),
+                builder.Build(value.GroupMaster),
+                builder.Build(value.Actor),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.BroadcastGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.BroadcastGroup value)
@@ -3739,6 +3808,10 @@ namespace fb.protocol._internal.response
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.StoragePendingBox>(value.Select(x => Build(builder, x)).ToArray());
         }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.CharacterRef> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.CharacterRef>(value.Select(x => Build(builder, x)).ToArray());
+        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.ClanMember> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.ClanMember>(value.Select(x => Build(builder, x)).ToArray());
@@ -3751,9 +3824,13 @@ namespace fb.protocol._internal.response
         {
             return (fb.protocol._internal.raw.Service)value;
         }
-        public static fb.protocol._internal.raw.GroupAction Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupAction value)
+        public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
-            return (fb.protocol._internal.raw.GroupAction)value;
+            return (fb.protocol._internal.raw.GroupActionType)value;
+        }
+        public static fb.protocol._internal.raw.GroupDetailsAction Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupDetailsAction value)
+        {
+            return (fb.protocol._internal.raw.GroupDetailsAction)value;
         }
         public static fb.protocol._internal.raw.ClanActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.ClanActionType value)
         {
@@ -3791,10 +3868,9 @@ namespace fb.protocol._internal.response
         Save,
         BroadcastSave,
         SetOption,
-        GetGroup,
-        EnterGroup,
-        LeaveGroup,
-        KickGroup,
+        GroupDetails,
+        UpdatedGroup,
+        DestroyGroup,
         BroadcastGroup,
         ClanDetails,
         UpdatedClan,
@@ -3819,13 +3895,16 @@ namespace fb.protocol._internal
         Login,
         Game,
     }
-    public enum GroupAction
+    public enum GroupActionType
     {
-        Create,
         Enter,
         Leave,
         Kick,
-        BreakUp,
+    }
+    public enum GroupDetailsAction
+    {
+        Query,
+        Create,
     }
     public enum ClanActionType
     {
@@ -5635,9 +5714,50 @@ namespace fb.protocol._internal.request
             return new SetOption(bytes);
         }
     }
+    public class CreateGroup : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.CreateGroup;
+        public uint Host { get; set; } = 0;
+        public uint Master { get; set; } = 0;
+        public string Member { get; set; } = string.Empty;
+
+        public CreateGroup()
+        { }
+
+        public CreateGroup(fb.protocol._internal.request.raw.CreateGroup raw)
+        {
+            Host = raw.Host;
+            Master = raw.Master;
+            Member = raw.Member;
+        }
+
+        public CreateGroup(byte[] bytes) : this(fb.protocol._internal.request.raw.CreateGroup.GetRootAsCreateGroup(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static CreateGroup Deserialize(byte[] bytes)
+        {
+            return new CreateGroup(bytes);
+        }
+    }
     public class EnterGroup : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.EnterGroup;
+        public uint Host { get; set; } = 0;
         public uint Master { get; set; } = 0;
         public string Member { get; set; } = string.Empty;
 
@@ -5646,6 +5766,7 @@ namespace fb.protocol._internal.request
 
         public EnterGroup(fb.protocol._internal.request.raw.EnterGroup raw)
         {
+            Host = raw.Host;
             Master = raw.Master;
             Member = raw.Member;
         }
@@ -5718,6 +5839,7 @@ namespace fb.protocol._internal.request
     public class LeaveGroup : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.LeaveGroup;
+        public uint Host { get; set; } = 0;
         public string Member { get; set; } = string.Empty;
 
         public LeaveGroup()
@@ -5725,6 +5847,7 @@ namespace fb.protocol._internal.request
 
         public LeaveGroup(fb.protocol._internal.request.raw.LeaveGroup raw)
         {
+            Host = raw.Host;
             Member = raw.Member;
         }
 
@@ -5754,6 +5877,7 @@ namespace fb.protocol._internal.request
     public class KickGroup : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.KickGroup;
+        public uint Host { get; set; } = 0;
         public string Kicker { get; set; } = string.Empty;
         public string Target { get; set; } = string.Empty;
 
@@ -5762,6 +5886,7 @@ namespace fb.protocol._internal.request
 
         public KickGroup(fb.protocol._internal.request.raw.KickGroup raw)
         {
+            Host = raw.Host;
             Kicker = raw.Kicker;
             Target = raw.Target;
         }
@@ -5787,6 +5912,44 @@ namespace fb.protocol._internal.request
         public static KickGroup Deserialize(byte[] bytes)
         {
             return new KickGroup(bytes);
+        }
+    }
+    public class DestroyGroup : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.DestroyGroup;
+        public uint Host { get; set; } = 0;
+        public string Master { get; set; } = string.Empty;
+
+        public DestroyGroup()
+        { }
+
+        public DestroyGroup(fb.protocol._internal.request.raw.DestroyGroup raw)
+        {
+            Host = raw.Host;
+            Master = raw.Master;
+        }
+
+        public DestroyGroup(byte[] bytes) : this(fb.protocol._internal.request.raw.DestroyGroup.GetRootAsDestroyGroup(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static DestroyGroup Deserialize(byte[] bytes)
+        {
+            return new DestroyGroup(bytes);
         }
     }
     public class CreateClan : IFlatBufferEx
@@ -5872,7 +6035,7 @@ namespace fb.protocol._internal.request
         public int ProtocolType => (int)FlatBufferProtocolType.JoinClan;
         public uint Host { get; set; } = 0;
         public uint InviterUid { get; set; } = 0;
-        public uint InviteeUid { get; set; } = 0;
+        public string InviteeName { get; set; } = string.Empty;
 
         public JoinClan()
         { }
@@ -5881,7 +6044,7 @@ namespace fb.protocol._internal.request
         {
             Host = raw.Host;
             InviterUid = raw.InviterUid;
-            InviteeUid = raw.InviteeUid;
+            InviteeName = raw.InviteeName;
         }
 
         public JoinClan(byte[] bytes) : this(fb.protocol._internal.request.raw.JoinClan.GetRootAsJoinClan(new ByteBuffer(bytes)))
@@ -6417,10 +6580,12 @@ namespace fb.protocol._internal.request
                 FlatBufferProtocolType.WriteMail => typeof(fb.protocol._internal.request.WriteMail),
                 FlatBufferProtocolType.DeleteMail => typeof(fb.protocol._internal.request.DeleteMail),
                 FlatBufferProtocolType.SetOption => typeof(fb.protocol._internal.request.SetOption),
+                FlatBufferProtocolType.CreateGroup => typeof(fb.protocol._internal.request.CreateGroup),
                 FlatBufferProtocolType.EnterGroup => typeof(fb.protocol._internal.request.EnterGroup),
                 FlatBufferProtocolType.BroadcastGroup => typeof(fb.protocol._internal.request.BroadcastGroup),
                 FlatBufferProtocolType.LeaveGroup => typeof(fb.protocol._internal.request.LeaveGroup),
                 FlatBufferProtocolType.KickGroup => typeof(fb.protocol._internal.request.KickGroup),
+                FlatBufferProtocolType.DestroyGroup => typeof(fb.protocol._internal.request.DestroyGroup),
                 FlatBufferProtocolType.CreateClan => typeof(fb.protocol._internal.request.CreateClan),
                 FlatBufferProtocolType.DestroyClan => typeof(fb.protocol._internal.request.DestroyClan),
                 FlatBufferProtocolType.JoinClan => typeof(fb.protocol._internal.request.JoinClan),
@@ -7380,22 +7545,28 @@ namespace fb.protocol._internal.response
             return new SetOption(bytes);
         }
     }
-    public class GetGroup : IFlatBufferEx
+    public class GroupDetails : IFlatBufferEx
     {
-        public int ProtocolType => (int)FlatBufferProtocolType.GetGroup;
+        public int ProtocolType => (int)FlatBufferProtocolType.GroupDetails;
+        public uint Host { get; set; } = 0;
+        public fb.protocol._internal.GroupDetailsAction Action { get; set; }
         public fb.protocol._internal.Group Group { get; set; } = new fb.protocol._internal.Group();
+        public List<fb.protocol._internal.CharacterRef> Members { get; set; } = new List<fb.protocol._internal.CharacterRef>();
         public uint Error { get; set; } = 0;
 
-        public GetGroup()
+        public GroupDetails()
         { }
 
-        public GetGroup(fb.protocol._internal.response.raw.GetGroup raw)
+        public GroupDetails(fb.protocol._internal.response.raw.GroupDetails raw)
         {
+            Host = raw.Host;
+            Action = (fb.protocol._internal.GroupDetailsAction)raw.Action;
             Group = new Group(raw.Group.Value);
+            Members = Enumerable.Range(0, raw.MembersLength).Select(i => raw.Members(i)).Select(x => new CharacterRef(x.Value)).ToList();
             Error = raw.Error;
         }
 
-        public GetGroup(byte[] bytes) : this(fb.protocol._internal.response.raw.GetGroup.GetRootAsGetGroup(new ByteBuffer(bytes)))
+        public GroupDetails(byte[] bytes) : this(fb.protocol._internal.response.raw.GroupDetails.GetRootAsGroupDetails(new ByteBuffer(bytes)))
         { }
 
         public byte[] Serialize()
@@ -7413,33 +7584,41 @@ namespace fb.protocol._internal.response
             }
         }
 
-        public static GetGroup Deserialize(byte[] bytes)
+        public static GroupDetails Deserialize(byte[] bytes)
         {
-            return new GetGroup(bytes);
+            return new GroupDetails(bytes);
         }
     }
-    public class EnterGroup : IFlatBufferEx
+    public class UpdatedGroup : IFlatBufferEx
     {
-        public int ProtocolType => (int)FlatBufferProtocolType.EnterGroup;
-        public fb.protocol._internal.Group Group { get; set; } = new fb.protocol._internal.Group();
-        public string Member { get; set; } = string.Empty;
-        public fb.protocol._internal.GroupAction Action { get; set; }
+        public int ProtocolType => (int)FlatBufferProtocolType.UpdatedGroup;
         public uint Host { get; set; } = 0;
+        public fb.protocol._internal.GroupActionType Action { get; set; }
+        public uint GroupId { get; set; } = 0;
+        public string GroupMaster { get; set; } = string.Empty;
+        public fb.protocol._internal.CharacterRef Actor { get; set; } = new fb.protocol._internal.CharacterRef();
+        public fb.protocol._internal.CharacterRef Target { get; set; } = null;
+        public fb.protocol._internal.CharacterRef NewMember { get; set; } = null;
+        public fb.protocol._internal.CharacterRef DeletedMember { get; set; } = null;
         public uint Error { get; set; } = 0;
 
-        public EnterGroup()
+        public UpdatedGroup()
         { }
 
-        public EnterGroup(fb.protocol._internal.response.raw.EnterGroup raw)
+        public UpdatedGroup(fb.protocol._internal.response.raw.UpdatedGroup raw)
         {
-            Group = new Group(raw.Group.Value);
-            Member = raw.Member;
-            Action = (fb.protocol._internal.GroupAction)raw.Action;
             Host = raw.Host;
+            Action = (fb.protocol._internal.GroupActionType)raw.Action;
+            GroupId = raw.GroupId;
+            GroupMaster = raw.GroupMaster;
+            Actor = new CharacterRef(raw.Actor.Value);
+            Target = raw.Target != null ? new CharacterRef(raw.Target.Value) : null;
+            NewMember = raw.NewMember != null ? new CharacterRef(raw.NewMember.Value) : null;
+            DeletedMember = raw.DeletedMember != null ? new CharacterRef(raw.DeletedMember.Value) : null;
             Error = raw.Error;
         }
 
-        public EnterGroup(byte[] bytes) : this(fb.protocol._internal.response.raw.EnterGroup.GetRootAsEnterGroup(new ByteBuffer(bytes)))
+        public UpdatedGroup(byte[] bytes) : this(fb.protocol._internal.response.raw.UpdatedGroup.GetRootAsUpdatedGroup(new ByteBuffer(bytes)))
         { }
 
         public byte[] Serialize()
@@ -7457,33 +7636,33 @@ namespace fb.protocol._internal.response
             }
         }
 
-        public static EnterGroup Deserialize(byte[] bytes)
+        public static UpdatedGroup Deserialize(byte[] bytes)
         {
-            return new EnterGroup(bytes);
+            return new UpdatedGroup(bytes);
         }
     }
-    public class LeaveGroup : IFlatBufferEx
+    public class DestroyGroup : IFlatBufferEx
     {
-        public int ProtocolType => (int)FlatBufferProtocolType.LeaveGroup;
-        public fb.protocol._internal.Group Group { get; set; } = new fb.protocol._internal.Group();
-        public string Member { get; set; } = string.Empty;
-        public fb.protocol._internal.GroupAction Action { get; set; }
+        public int ProtocolType => (int)FlatBufferProtocolType.DestroyGroup;
         public uint Host { get; set; } = 0;
+        public uint GroupId { get; set; } = 0;
+        public string GroupMaster { get; set; } = string.Empty;
+        public fb.protocol._internal.CharacterRef Actor { get; set; } = new fb.protocol._internal.CharacterRef();
         public uint Error { get; set; } = 0;
 
-        public LeaveGroup()
+        public DestroyGroup()
         { }
 
-        public LeaveGroup(fb.protocol._internal.response.raw.LeaveGroup raw)
+        public DestroyGroup(fb.protocol._internal.response.raw.DestroyGroup raw)
         {
-            Group = new Group(raw.Group.Value);
-            Member = raw.Member;
-            Action = (fb.protocol._internal.GroupAction)raw.Action;
             Host = raw.Host;
+            GroupId = raw.GroupId;
+            GroupMaster = raw.GroupMaster;
+            Actor = new CharacterRef(raw.Actor.Value);
             Error = raw.Error;
         }
 
-        public LeaveGroup(byte[] bytes) : this(fb.protocol._internal.response.raw.LeaveGroup.GetRootAsLeaveGroup(new ByteBuffer(bytes)))
+        public DestroyGroup(byte[] bytes) : this(fb.protocol._internal.response.raw.DestroyGroup.GetRootAsDestroyGroup(new ByteBuffer(bytes)))
         { }
 
         public byte[] Serialize()
@@ -7501,53 +7680,9 @@ namespace fb.protocol._internal.response
             }
         }
 
-        public static LeaveGroup Deserialize(byte[] bytes)
+        public static DestroyGroup Deserialize(byte[] bytes)
         {
-            return new LeaveGroup(bytes);
-        }
-    }
-    public class KickGroup : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.KickGroup;
-        public fb.protocol._internal.Group Group { get; set; } = new fb.protocol._internal.Group();
-        public string Member { get; set; } = string.Empty;
-        public fb.protocol._internal.GroupAction Action { get; set; }
-        public uint Host { get; set; } = 0;
-        public uint Error { get; set; } = 0;
-
-        public KickGroup()
-        { }
-
-        public KickGroup(fb.protocol._internal.response.raw.KickGroup raw)
-        {
-            Group = new Group(raw.Group.Value);
-            Member = raw.Member;
-            Action = (fb.protocol._internal.GroupAction)raw.Action;
-            Host = raw.Host;
-            Error = raw.Error;
-        }
-
-        public KickGroup(byte[] bytes) : this(fb.protocol._internal.response.raw.KickGroup.GetRootAsKickGroup(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = FlatBufferBuilderPool.Get();
-            try
-            {
-                var offset = builder.Build(this);
-                builder.Finish(offset.Value);
-                return builder.SizedByteArray();
-            }
-            finally
-            {
-                FlatBufferBuilderPool.Return(builder);
-            }
-        }
-
-        public static KickGroup Deserialize(byte[] bytes)
-        {
-            return new KickGroup(bytes);
+            return new DestroyGroup(bytes);
         }
     }
     public class BroadcastGroup : IFlatBufferEx
@@ -8127,10 +8262,9 @@ namespace fb.protocol._internal.response
                 FlatBufferProtocolType.Save => typeof(fb.protocol._internal.response.Save),
                 FlatBufferProtocolType.BroadcastSave => typeof(fb.protocol._internal.response.BroadcastSave),
                 FlatBufferProtocolType.SetOption => typeof(fb.protocol._internal.response.SetOption),
-                FlatBufferProtocolType.GetGroup => typeof(fb.protocol._internal.response.GetGroup),
-                FlatBufferProtocolType.EnterGroup => typeof(fb.protocol._internal.response.EnterGroup),
-                FlatBufferProtocolType.LeaveGroup => typeof(fb.protocol._internal.response.LeaveGroup),
-                FlatBufferProtocolType.KickGroup => typeof(fb.protocol._internal.response.KickGroup),
+                FlatBufferProtocolType.GroupDetails => typeof(fb.protocol._internal.response.GroupDetails),
+                FlatBufferProtocolType.UpdatedGroup => typeof(fb.protocol._internal.response.UpdatedGroup),
+                FlatBufferProtocolType.DestroyGroup => typeof(fb.protocol._internal.response.DestroyGroup),
                 FlatBufferProtocolType.BroadcastGroup => typeof(fb.protocol._internal.response.BroadcastGroup),
                 FlatBufferProtocolType.ClanDetails => typeof(fb.protocol._internal.response.ClanDetails),
                 FlatBufferProtocolType.UpdatedClan => typeof(fb.protocol._internal.response.UpdatedClan),

@@ -155,32 +155,31 @@ table SetOption {
   success: bool;
 }
 
-table GetGroup {
+table GroupDetails {
+  host: uint;
+  action: fb.protocol.internal.GroupDetailsAction;
   group: fb.protocol.internal.Group;
+  members: [fb.protocol.internal.CharacterRef];
   error: uint;
 }
 
-table EnterGroup {
-  group: fb.protocol.internal.Group;
-  member: string;
-  action: fb.protocol.internal.GroupAction;
+table UpdatedGroup {
   host: uint;
+  action: fb.protocol.internal.GroupActionType;
+  group_id: uint;
+  group_master: string;
+  actor: fb.protocol.internal.CharacterRef;
+  target: fb.protocol.internal.CharacterRef?;
+  new_member: fb.protocol.internal.CharacterRef?;
+  deleted_member: fb.protocol.internal.CharacterRef?;
   error: uint;
 }
 
-table LeaveGroup {
-  group: fb.protocol.internal.Group;
-  member: string;
-  action: fb.protocol.internal.GroupAction;
+table DestroyGroup {
   host: uint;
-  error: uint;
-}
-
-table KickGroup {
-  group: fb.protocol.internal.Group;
-  member: string;
-  action: fb.protocol.internal.GroupAction;
-  host: uint;
+  group_id: uint;
+  group_master: string;
+  actor: fb.protocol.internal.CharacterRef;
   error: uint;
 }
 

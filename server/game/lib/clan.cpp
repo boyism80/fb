@@ -144,10 +144,10 @@ async::task<void> clan::set_title(character& changer, std::string title)
     co_await this->_server.on_updated_clan(resp);
 }
 
-async::task<void> clan::join_member(character& inviter, character& invitee)
+async::task<void> clan::join_member(character& inviter, const std::string& target_name)
 {
     auto   weak = inviter.weak_from_this_as<character>();
-    auto&& resp = co_await this->_server.http.post("internal", "/clan/join", request::JoinClan{fb::config<uint32_t>("host"), inviter.id(), invitee.id()});
+    auto&& resp = co_await this->_server.http.post("internal", "/clan/join", request::JoinClan{fb::config<uint32_t>("host"), inviter.id(), target_name});
     co_await this->_server.threads.switching(weak);
     co_await this->_server.on_updated_clan(resp);
 }
@@ -160,20 +160,20 @@ async::task<void> clan::leave_member(character& leaver)
     co_await this->_server.on_updated_clan(resp);
 }
 
-async::task<void> clan::kick_member(character& kicker, const std::string& target)
+async::task<void> clan::kick_member(character& kicker, const std::string& target_name)
 {
     auto   weak = kicker.weak_from_this_as<character>();
-    auto&& resp = co_await this->_server.http.post("internal", "/clan/kick", request::KickClan{fb::config<uint32_t>("host"), this->_id, kicker.name(), target});
+    auto&& resp = co_await this->_server.http.post("internal", "/clan/kick", request::KickClan{fb::config<uint32_t>("host"), this->_id, kicker.name(), target_name});
     co_await this->_server.threads.switching(weak);
     co_await this->_server.on_updated_clan(resp);
 }
 
-async::task<void> clan::change_role(character& changer, const std::string& target, CLAN_ROLE role)
+async::task<void> clan::change_role(character& changer, const std::string& target_name, CLAN_ROLE role)
 {
     auto   weak = changer.weak_from_this_as<character>();
     auto&& resp = co_await this->_server.http.post("internal",
                                                    "/clan/change-role",
-                                                   request::ChangeClanRole{fb::config<uint32_t>("host"), changer.id(), target, this->_id, static_cast<uint32_t>(role)});
+                                                   request::ChangeClanRole{fb::config<uint32_t>("host"), changer.id(), target_name, this->_id, static_cast<uint32_t>(role)});
     co_await this->_server.threads.switching(weak);
     co_await this->_server.on_updated_clan(resp);
 }

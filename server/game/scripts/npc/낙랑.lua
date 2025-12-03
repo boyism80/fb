@@ -44,7 +44,7 @@ function sample_group(me, npc)
             return
         end
 
-        group:messagee(message, MESSAGE_TYPE.NOTIFY)
+        group:message(message, MESSAGE_TYPE.NOTIFY)
     else
         me:chat('invalid selected')
     end
@@ -124,7 +124,7 @@ function sample_clan(me, npc)
                     return
                 end
 
-                local error = clan:join(me, found)
+                local error = clan:join(me, found:name())
                 if error ~= nil then
                     found:dialog(npc, error)
                 else

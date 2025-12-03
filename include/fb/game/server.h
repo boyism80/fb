@@ -45,11 +45,13 @@ REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastClan, fb::protocol::
 REGISTER_RESPONSE(fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout)
 REGISTER_RESPONSE(fb::protocol::internal::request::Save, fb::protocol::internal::response::Save)
 REGISTER_RESPONSE(fb::protocol::internal::request::Broadcast, fb::protocol::internal::response::Broadcast)
-REGISTER_RESPONSE(fb::protocol::internal::request::EnterGroup, fb::protocol::internal::response::EnterGroup)
+REGISTER_RESPONSE(fb::protocol::internal::request::CreateGroup, fb::protocol::internal::response::GroupDetails)
+REGISTER_RESPONSE(fb::protocol::internal::request::EnterGroup, fb::protocol::internal::response::UpdatedGroup)
+REGISTER_RESPONSE(fb::protocol::internal::request::LeaveGroup, fb::protocol::internal::response::UpdatedGroup)
+REGISTER_RESPONSE(fb::protocol::internal::request::KickGroup, fb::protocol::internal::response::UpdatedGroup)
+REGISTER_RESPONSE(fb::protocol::internal::request::DestroyGroup, fb::protocol::internal::response::DestroyGroup)
 REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastGroup, fb::protocol::internal::response::BroadcastGroup)
 REGISTER_RESPONSE(fb::protocol::internal::request::Login, fb::protocol::internal::response::Login)
-REGISTER_RESPONSE(fb::protocol::internal::request::LeaveGroup, fb::protocol::internal::response::LeaveGroup)
-REGISTER_RESPONSE(fb::protocol::internal::request::KickGroup, fb::protocol::internal::response::KickGroup)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetOption, fb::protocol::internal::response::SetOption)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteMail, fb::protocol::internal::response::WriteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteMail, fb::protocol::internal::response::DeleteMail)
@@ -106,8 +108,7 @@ public:
     ~server();
 
 public:
-    async::task<void> upsert_group_then(uint32_t gid, const std::function<void(group_ptr&)>& fn);
-    async::task<void> upsert_group_then(uint32_t gid, const std::string& master, const std::vector<std::string>& members, const std::function<void(group_ptr&)>& fn);
+    async::task<void> ensure_group(uint32_t id, std::function<async::task<void>(std::shared_ptr<fb::game::group>&)> fn);
     void              update_clan(clan& clan, fb::protocol::internal::Clan& resp1, const std::vector<fb::protocol::internal::ClanMember>& resp2) const;
     async::task<void> ensure_clan(uint32_t id, std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn);
 
@@ -125,17 +126,15 @@ public:
     void assert_mail(uint32_t error) const;
 
 public:
-    async::task<void> on_enter_group(const internal_resp::EnterGroup& resp);
-    async::task<void> on_leave_group(const internal_resp::LeaveGroup& resp);
-    async::task<void> on_kick_group(const internal_resp::KickGroup& resp);
-
-public:
     async::task<void> on_broadcast(const internal_resp::Broadcast& resp);
     async::task<void> on_group_broadcast(const internal_resp::BroadcastGroup& resp);
     async::task<void> on_clan_broadcast(const internal_resp::BroadcastClan& resp);
     async::task<void> on_create_clan(const internal_resp::ClanDetails& resp);
     async::task<void> on_destroyed_clan(const internal_resp::DestroyClan& resp);
     async::task<void> on_updated_clan(const internal_resp::UpdatedClan& resp);
+    async::task<void> on_create_group(const internal_resp::GroupDetails& resp);
+    async::task<void> on_destroyed_group(const internal_resp::DestroyGroup& resp);
+    async::task<void> on_updated_group(const internal_resp::UpdatedGroup& resp);
     async::task<void> on_write_mail(const internal_resp::WriteMail& resp);
     async::task<void> on_whisper(const internal_resp::Whisper& resp);
 
@@ -175,9 +174,8 @@ public:
     const fb::model::datetime&                              time() const;
     [[nodiscard]] async::task<void>                         broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type);
     [[nodiscard]] async::task<bool>                         create_group(character& me, const std::string& target);
-    [[nodiscard]] async::task<void>                         leave_group(character& me);
-    [[nodiscard]] async::task<void>                         kick_group_member(const group& group, const std::string& kicker, const std::string& target);
-    [[nodiscard]] async::task<void>                         broadcast(const group& group, const std::string& message, MESSAGE_TYPE type);
+    [[nodiscard]] async::task<void>                         destroy_group(character& me);
+    [[nodiscard]] async::task<bool>                         handle_group_action(character& actor, const std::string& target_name);
     [[nodiscard]] async::task<void>                         create_clan(character& me, std::string name);
     [[nodiscard]] async::task<void>                         destroy_clan(character& me);
     [[nodiscard]] async::task<internal_resp::WriteMail>     send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents);

@@ -247,9 +247,9 @@ async::task<void> server::on_start()
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast>("fb.global");
     this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_fetch>("fb.global");
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>("fb.system");
-    this->handler.amqp.bind<fb::game::handler::amqp::enter_group>("fb.group");
-    this->handler.amqp.bind<fb::game::handler::amqp::leave_group>("fb.group");
-    this->handler.amqp.bind<fb::game::handler::amqp::kick_group>("fb.group");
+    this->handler.amqp.bind<fb::game::handler::amqp::create_group>("fb.group");
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_group>("fb.group");
+    this->handler.amqp.bind<fb::game::handler::amqp::destroy_group>("fb.group");
     this->handler.amqp.bind<fb::game::handler::amqp::create_clan>("fb.clan");
     this->handler.amqp.bind<fb::game::handler::amqp::destroy_clan>("fb.clan");
     this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>("fb.clan");

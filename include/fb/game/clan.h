@@ -49,10 +49,10 @@ public:
 
 public:
     async::task<void> set_title(character& changer, std::string title);
-    async::task<void> join_member(character& inviter, character& invitee);
+    async::task<void> join_member(character& inviter, const std::string& target_name);
     async::task<void> leave_member(character& leaver);
-    async::task<void> kick_member(character& kicker, const std::string& target);
-    async::task<void> change_role(character& changer, const std::string& target, CLAN_ROLE role);
+    async::task<void> kick_member(character& kicker, const std::string& target_name);
+    async::task<void> change_role(character& changer, const std::string& target_name, CLAN_ROLE role);
     async::task<void> broadcast(const std::string& message, MESSAGE_TYPE type);
 };
 

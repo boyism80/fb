@@ -25,13 +25,18 @@ struct LeaveGroupBuilder;
 struct LeaveGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LeaveGroupBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_MEMBER = 4
+    VT_HOST = 4,
+    VT_MEMBER = 6
   };
+  uint32_t host() const {
+    return GetField<uint32_t>(VT_HOST, 0);
+  }
   const ::flatbuffers::String *member() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MEMBER);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyOffset(verifier, VT_MEMBER) &&
            verifier.VerifyString(member()) &&
            verifier.EndTable();
@@ -42,6 +47,9 @@ struct LeaveGroupBuilder {
   typedef LeaveGroup Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_host(uint32_t host) {
+    fbb_.AddElement<uint32_t>(LeaveGroup::VT_HOST, host, 0);
+  }
   void add_member(::flatbuffers::Offset<::flatbuffers::String> member) {
     fbb_.AddOffset(LeaveGroup::VT_MEMBER, member);
   }
@@ -58,18 +66,22 @@ struct LeaveGroupBuilder {
 
 inline ::flatbuffers::Offset<LeaveGroup> CreateLeaveGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
     ::flatbuffers::Offset<::flatbuffers::String> member = 0) {
   LeaveGroupBuilder builder_(_fbb);
   builder_.add_member(member);
+  builder_.add_host(host);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<LeaveGroup> CreateLeaveGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
     const char *member = nullptr) {
   auto member__ = member ? _fbb.CreateString(member) : 0;
   return fb::protocol::internal::request::raw::CreateLeaveGroup(
       _fbb,
+      host,
       member__);
 }
 

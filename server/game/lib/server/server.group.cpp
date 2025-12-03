@@ -6,85 +6,6 @@
 
 using namespace fb::game;
 
-async::task<void> server::upsert_group_then(uint32_t gid, const std::function<void(group_ptr&)>& fn)
-{
-    co_await this->groups.async_write(
-        gid,
-        [this, gid, fn](auto& group) -> async::task<void> {
-            // Execute callback with existing group
-            fn(group);
-            co_return;
-        },
-        [this, gid]() -> async::task<std::shared_ptr<fb::game::group>> {
-            // Fetch group data from internal server when not found locally
-            auto&& resp = co_await this->http.get<internal_resp::GetGroup>("internal", std::format("/group/{}", gid));
-            switch (static_cast<ERROR_CODE>(resp.error))
-            {
-            case ERROR_CODE::NONE:
-                co_return this->make<fb::game::group>(gid, resp.group.master, resp.group.members);
-
-            default:
-                throw std::runtime_error(std::format("cannot get group (error : {})", resp.error));
-            }
-        });
-}
-
-async::task<void> server::upsert_group_then(uint32_t gid, const std::string& master, const std::vector<std::string>& members, const std::function<void(group_ptr&)>& fn)
-{
-    co_await this->groups.async_write(
-        gid,
-        [this, fn, master, members](auto& group) -> async::task<void> {
-            // Update existing group with new member data
-            group->update(master, members);
-            fn(group);
-            co_return;
-        },
-        [this, gid, master, members]() -> std::shared_ptr<fb::game::group> {
-            // Create new group with provided data
-            return this->make<fb::game::group>(gid, master, members);
-        });
-}
-
-async::task<bool> server::create_group(character& me, const std::string& target)
-{
-    auto weak = me.weak_from_this_as<fb::game::character>();
-    try
-    {
-        if (me.option(OPTION::GROUP) == false)
-            throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
-
-        auto&& resp = co_await this->http.post("internal", "/group/create", EnterGroup{me.id(), target});
-        co_await this->threads.switching(weak);
-
-        co_await this->on_enter_group(resp);
-        co_return true;
-    }
-    catch (std::exception& e)
-    {
-        me.message(e.what(), MESSAGE_TYPE::STATE);
-        co_return false;
-    }
-}
-
-async::task<void> server::leave_group(character& me)
-{
-    auto group_id = me.group_id();
-    if (group_id.has_value() == false)
-        co_return;
-
-    auto   weak     = me.weak_from_this_as<fb::game::character>();
-    auto&& response = co_await this->http.post("internal", "/group/leave", LeaveGroup{me.name()});
-    co_await this->threads.switching(weak);
-    co_await this->on_leave_group(response);
-}
-
-async::task<void> server::kick_group_member(const group& group, const std::string& kicker, const std::string& target)
-{
-    auto&& resp = co_await this->http.post("internal", "/group/kick", KickGroup{kicker, target});
-
-    co_await this->on_kick_group(resp);
-}
-
 void server::assert_group(uint32_t error, const std::string& actor) const
 {
     // Convert error codes to localized error messages
@@ -119,172 +40,431 @@ void server::assert_group(uint32_t error, const std::string& actor) const
     }
 }
 
-async::task<void> server::on_enter_group(const internal_resp::EnterGroup& resp)
+async::task<void> server::ensure_group(uint32_t id, std::function<async::task<void>(std::shared_ptr<fb::game::group>&)> fn)
 {
-    this->assert_group(resp.error, resp.member);
-
-    auto gid = resp.group.id;
-    co_await this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp](auto& group) -> async::task<void> {
-        // Build complete member list including master
-        auto members = std::vector<std::string>{resp.group.members};
-        members.push_back(resp.group.master);
-
-        if (resp.action == GroupAction::Kick)
-            members.push_back(resp.member);
-
-        // Process group action for all affected members
-        co_await this->characters.async_write([this, &resp, &group, &members](auto& characters) -> async::task<void> {
-            co_await characters.foreach (members, [this, resp, group](auto& ch) {
-                switch (resp.action)
+    co_await this->groups.async_write(
+        id,
+        [this, id, fn](auto& group) -> async::task<void> {
+            co_await fn(group);
+        },
+        [=, this]() -> async::task<std::shared_ptr<fb::game::group>> {
+            auto&& resp = co_await this->http.get<internal_resp::GroupDetails>("internal", std::format("/group/{}", id));
+            switch (static_cast<ERROR_CODE>(resp.error))
+            {
+            case ERROR_CODE::NONE:
+            {
+                auto members = std::vector<std::string>{};
+                for (auto& member : resp.members)
                 {
-                case GroupAction::Create:
-                    group->enter(ch);
-                    ch->group_id(group->id());
-                    if (ch->name() == resp.member)
-                    {
-                        ch->message("그룹에 참여했습니다.");
+                    members.push_back(member.name);
+                }
+                co_return this->make<fb::game::group>(id, resp.group.master, members);
+            }
 
-                        // Log group create event
-                        auto log_data              = Json::Value();
-                        log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
-                        log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
-                        log_data["group_id"]       = static_cast<Json::Int64>(group->id());
-                        this->log.write("group_create", log_data);
+            default:
+                throw std::runtime_error(std::format("cannot get group (error : {})", resp.error));
+            }
+        });
+}
+
+async::task<bool> server::create_group(character& me, const std::string& target)
+{
+    auto weak = me.weak_from_this_as<fb::game::character>();
+    try
+    {
+        if (me.option(OPTION::GROUP) == false)
+            throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
+
+        // Check current group state and call appropriate API
+        co_await this->characters.async_read([this, &me, &target, weak](auto& characters) -> async::task<void> {
+            auto invitee = characters.find(target);
+            if (invitee == nullptr)
+                throw std::runtime_error(_TEXT(MESSAGE_USER_NOT_LOGIN));
+
+            auto my_group_id      = me.group_id();
+            auto invitee_group_id = invitee->group_id();
+
+            co_await this->threads.switching(weak);
+
+            if (my_group_id.has_value() == false)
+            {
+                // I don't have a group - create new group
+                if (invitee_group_id.has_value())
+                    throw std::runtime_error(_TEXT(MESSAGE_GROUP_ALREADY_JOINED));
+
+                auto&& resp = co_await this->http.post("internal", "/group/create", request::CreateGroup{fb::config<uint32_t>("host"), me.id(), target});
+                co_await this->on_create_group(resp);
+            }
+            else
+            {
+                // I have a group - check if I'm the master
+                co_await this->ensure_group(my_group_id.value(), [this, &me, invitee, weak](auto& group) -> async::task<void> {
+                    if (group->master() != me.name())
+                        throw std::runtime_error(_TEXT(MESSAGE_GROUP_NOT_OWNER));
+
+                    auto invitee_group_id = invitee->group_id();
+                    if (invitee_group_id.has_value())
+                    {
+                        // Invitee is already in a group - check if same group
+                        if (invitee_group_id.value() == group->id())
+                        {
+                            // Same group - kick member
+                            co_await group->kick_member(me, invitee->name());
+                        }
+                        else
+                        {
+                            throw std::runtime_error(_TEXT(MESSAGE_GROUP_ALREADY_JOINED));
+                        }
                     }
                     else
                     {
-                        ch->message(std::format("{}님 그룹 참여", resp.member));
+                        // Invitee is not in a group - enter group
+                        co_await group->enter_member(me, invitee->name());
                     }
-                    break;
+                });
+            }
+        });
 
-                case GroupAction::Enter:
-                    if (ch->name() == resp.member)
-                    {
-                        ch->message("그룹에 참여했습니다.");
-                        group->enter(ch);
-                        ch->group_id(group->id());
-                    }
-                    else
-                    {
-                        ch->message(std::format("{}님 그룹 참여", resp.member));
-                    }
-                    break;
+        co_return true;
+    }
+    catch (std::exception& e)
+    {
+        me.message(e.what(), MESSAGE_TYPE::STATE);
+        co_return false;
+    }
+}
 
-                case GroupAction::Kick:
-                    if (ch->name() == resp.member)
-                    {
-                        group->detach(ch);
-                        ch->group_reset();
-                        ch->message("그룹에서 추방당했습니다.");
-                    }
-                    else
-                    {
-                        ch->message(std::format("{}님 그룹 탈퇴", resp.member));
-                    }
-                    break;
+async::task<void> server::destroy_group(character& me)
+{
+    auto group_id = me.group_id();
+    if (group_id.has_value() == false)
+        co_return;
+
+    auto   weak = me.weak_from_this_as<fb::game::character>();
+    auto&& resp = co_await this->http.post("internal", "/group/destroy", request::DestroyGroup{fb::config<uint32_t>("host"), me.name()});
+    co_await this->threads.switching(weak);
+    co_await this->on_destroyed_group(resp);
+}
+
+async::task<bool> server::handle_group_action(character& actor, const std::string& target_name)
+{
+    auto weak = actor.weak_from_this_as<fb::game::character>();
+    try
+    {
+        if (actor.option(OPTION::GROUP) == false)
+            throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
+
+        // Case 1: Actor clicks their own group icon (actor == target)
+        if (actor.name() == target_name)
+        {
+            auto group_id = actor.group_id();
+            if (group_id.has_value() == false)
+            {
+                // No group - do nothing
+                co_return false;
+            }
+
+            // Has group - check if master or member
+            co_await this->ensure_group(group_id.value(), [this, &actor, weak](auto& group) -> async::task<void> {
+                if (group->master() == actor.name())
+                {
+                    // Master - destroy group
+                    co_await this->destroy_group(actor);
+                }
+                else
+                {
+                    // Member - leave group
+                    co_await group->leave_member(actor);
                 }
             });
+
+            co_return true;
+        }
+
+        // Case 2: Actor clicks target's group icon (actor != target)
+        // Check if target is on the same server
+        co_await this->characters.async_read([this, &actor, &target_name, weak](auto& characters) -> async::task<void> {
+            auto target = characters.find(target_name);
+
+            if (target != nullptr)
+            {
+                // Target is on the same server - can check state before API call
+                auto actor_group_id  = actor.group_id();
+                auto target_group_id = target->group_id();
+
+                co_await this->threads.switching(weak);
+
+                if (actor_group_id.has_value() == false)
+                {
+                    // Actor has no group
+                    if (target_group_id.has_value())
+                    {
+                        // Target has a group - cannot create
+                        throw std::runtime_error(_TEXT(MESSAGE_GROUP_ALREADY_JOINED));
+                    }
+
+                    // Both have no group - create
+                    auto&& resp = co_await this->http.post("internal", "/group/create", request::CreateGroup{fb::config<uint32_t>("host"), actor.id(), target_name});
+                    co_await this->on_create_group(resp);
+                }
+                else
+                {
+                    // Actor has a group - check if master
+                    co_await this->ensure_group(actor_group_id.value(), [this, &actor, target, target_group_id, weak](auto& group) -> async::task<void> {
+                        if (group->master() != actor.name())
+                        {
+                            // Actor is a member, not master - do nothing
+                            co_return;
+                        }
+
+                        // Actor is master
+                        if (target_group_id.has_value())
+                        {
+                            // Target has a group
+                            if (target_group_id.value() == group->id())
+                            {
+                                // Same group - kick member
+                                co_await group->kick_member(actor, target->name());
+                            }
+                            else
+                            {
+                                // Different group - cannot invite
+                                throw std::runtime_error(_TEXT(MESSAGE_GROUP_ALREADY_JOINED));
+                            }
+                        }
+                        else
+                        {
+                            // Target has no group - enter group
+                            co_await group->enter_member(actor, target->name());
+                        }
+                    });
+                }
+            }
+            else
+            {
+                // Target is on a different server - must call API and handle errors
+                auto actor_group_id = actor.group_id();
+
+                co_await this->threads.switching(weak);
+
+                if (actor_group_id.has_value() == false)
+                {
+                    // Actor has no group - try to create (API will handle errors)
+                    auto&& resp = co_await this->http.post("internal", "/group/create", request::CreateGroup{fb::config<uint32_t>("host"), actor.id(), target_name});
+                    co_await this->on_create_group(resp);
+                }
+                else
+                {
+                    // Actor has a group - check if master
+                    co_await this->ensure_group(actor_group_id.value(), [this, &actor, &target_name, weak](auto& group) -> async::task<void> {
+                        if (group->master() != actor.name())
+                        {
+                            // Actor is a member, not master - do nothing
+                            co_return;
+                        }
+
+                        // Actor is master - try to enter (API will handle errors)
+                        auto&& resp = co_await this->http.post("internal", "/group/enter", request::EnterGroup{fb::config<uint32_t>("host"), actor.id(), target_name});
+                        co_await this->on_updated_group(resp);
+                    });
+                }
+            }
         });
-    });
+
+        co_return true;
+    }
+    catch (std::exception& e)
+    {
+        actor.message(e.what(), MESSAGE_TYPE::STATE);
+        co_return false;
+    }
 }
 
-async::task<void> server::on_leave_group(const internal_resp::LeaveGroup& resp)
+async::task<void> server::on_create_group(const internal_resp::GroupDetails& resp)
 {
-    this->assert_group(resp.error, resp.member);
+    this->assert_group(resp.error, "");
 
-    auto gid = resp.group.id;
-    switch (resp.action)
+    // Create group directly from GroupDetails without calling GET API
+    auto id      = resp.group.id;
+    auto master  = resp.group.master;
+    auto members = std::vector<std::string>{};
+    for (auto& member : resp.members)
     {
-    case GroupAction::Leave:
-    {
-        co_await this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp, gid](auto& group) -> async::task<void> {
-            co_await this->characters.async_write([this, &resp, &group, gid](auto& characters) -> async::task<void> {
-                characters.invoke(resp.member, [group](auto& ch) {
-                    ch->group_reset();
-                    group->detach(ch);
-                });
+        members.push_back(member.name);
+    }
 
-                auto members = std::vector<std::string>{resp.member};
-                members.push_back(resp.group.master);
-                co_await characters.foreach (members, [this, member = resp.member, gid](auto& ch) {
-                    if (ch->name() == member)
+    // Store master UID for character attachment
+    auto master_uid = static_cast<uint32_t>(0);
+    for (auto& member : resp.members)
+    {
+        if (member.name == master)
+        {
+            master_uid = member.uid;
+            break;
+        }
+    }
+
+    // Use async_write with factory to create or update group
+    co_await this->groups.async_write(
+        id,
+        [=, this](auto& group) -> async::task<void> {
+            group->update(master, members);
+
+            if (master_uid != 0)
+            {
+                co_await this->characters.async_read([id, master_uid, &group, this](auto& characters) -> async::task<void> {
+                    auto ch = characters.find(master_uid);
+                    if (ch != nullptr)
                     {
-                        ch->message("그룹 탈퇴", MESSAGE_TYPE::STATE);
+                        ch->group_id(id);
+                        group->enter(ch->weak_from_this_as<character>());
 
-                        // Log group leave event
                         auto log_data              = Json::Value();
                         log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
                         log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
-                        log_data["group_id"]       = static_cast<Json::Int64>(gid);
-                        this->log.write("group_leave", log_data);
+                        log_data["group_id"]       = static_cast<Json::Int64>(id);
+                        this->log.write("group_create", log_data);
                     }
-                    else
-                        ch->message(std::format("{}님 그룹에서 탈퇴", member), MESSAGE_TYPE::STATE);
+                    co_return;
                 });
-            });
+            }
+            co_return;
+        },
+        [=, this]() -> async::task<std::shared_ptr<fb::game::group>> {
+            co_return this->make<fb::game::group>(id, master, members);
         });
-    }
-    break;
-
-    case GroupAction::BreakUp:
-    {
-        co_await this->groups.async_write(gid, [this, gid, &resp](auto& groups) -> async::task<void> {
-            auto members = std::vector<std::string>{resp.group.members};
-            members.push_back(resp.group.master);
-
-            co_await this->characters.async_write([this, &resp, &members](auto& characters) -> async::task<void> {
-                co_await characters.foreach (members, [](auto& ch) {
-                    ch->group_reset();
-                    ch->message("그룹 해체", MESSAGE_TYPE::STATE);
-                });
-            });
-        });
-        this->groups.erase(gid);
-    }
-    break;
-    }
 }
 
-async::task<void> server::on_kick_group(const internal_resp::KickGroup& resp)
+async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& resp)
 {
-    this->assert_group(resp.error, resp.member);
+    this->assert_group(resp.error, resp.actor.name);
 
-    auto gid = resp.group.id;
-    co_await this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp, gid](auto& group) -> async::task<void> {
-        co_await this->characters.async_write([this, &resp, &group](auto& characters) -> async::task<void> {
-            characters.invoke(resp.member, [group](auto& ch) {
-                ch->group_reset();
-                group->detach(ch);
-            });
+    co_await this->ensure_group(resp.group_id, [this, &resp](auto& group) -> async::task<void> {
+        switch (static_cast<internal::GroupActionType>(resp.action))
+        {
+        case internal::GroupActionType::Enter:
+        {
+            if (resp.new_member.has_value() == false)
+                break;
 
-            auto members = std::vector<std::string>{resp.group.members};
-            members.push_back(resp.group.master);
-            co_await characters.foreach (members, [member = resp.member](auto& ch) {
-                if (ch->name() == member)
-                    ch->message("그룹에서 추방당했습니다.", MESSAGE_TYPE::STATE);
-                else
-                    ch->message(std::format("{}님 그룹에서 추방당했습니다.", member), MESSAGE_TYPE::STATE);
+            co_await this->characters.async_write([this, &resp, group](auto& characters) -> async::task<void> {
+                auto ch = characters.find(resp.new_member.value().name);
+                if (ch == nullptr)
+                    co_return;
+
+                if (ch->group_id().has_value())
+                    co_return;
+
+                auto weak    = ch->weak_from_this_as<character>();
+                auto members = std::vector<std::shared_ptr<fb::game::character>>();
+                for (auto& member_ptr : group->characters())
+                {
+                    members.push_back(member_ptr);
+                }
+
+                co_await characters.foreach (
+                    [this, &resp](auto& member) {
+                        member->message(std::format("{}님 그룹 참여", resp.new_member.value().name), MESSAGE_TYPE::STATE);
+                    },
+                    members);
+
+                if (weak.expired() == false)
+                {
+                    group->enter(weak);
+                    ch->group_id(group->id());
+                    ch->message("그룹에 참여했습니다.", MESSAGE_TYPE::STATE);
+
+                    // Log group enter event
+                    auto log_data              = Json::Value();
+                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                    log_data["character_name"] = UTF8(resp.new_member.value().name, PLATFORM::WINDOWS);
+                    log_data["group_id"]       = static_cast<Json::Int64>(group->id());
+                    this->log.write("group_enter", log_data);
+                }
             });
-        });
+            break;
+        }
+
+        case internal::GroupActionType::Leave:
+        case internal::GroupActionType::Kick:
+        {
+            if (resp.deleted_member.has_value() == false)
+                break;
+
+            co_await this->characters.async_write([this, &resp, group](auto& characters) -> async::task<void> {
+                auto ch = characters.find(resp.deleted_member.value().name);
+                if (ch != nullptr)
+                {
+                    auto weak = ch->weak_from_this_as<character>();
+                    group->detach(weak);
+                    ch->group_reset();
+                    ch->message(resp.action == internal::GroupActionType::Kick ? "그룹에서 추방당했습니다." : "그룹 탈퇴", MESSAGE_TYPE::STATE);
+
+                    // Log group leave/kick event
+                    auto log_data              = Json::Value();
+                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                    log_data["character_name"] = UTF8(resp.deleted_member.value().name, PLATFORM::WINDOWS);
+                    log_data["group_id"]       = static_cast<Json::Int64>(group->id());
+                    this->log.write(resp.action == internal::GroupActionType::Kick ? "group_kick" : "group_leave", log_data);
+                }
+
+                auto members = std::vector<std::shared_ptr<fb::game::character>>();
+                for (auto& member_ptr : group->characters())
+                {
+                    members.push_back(member_ptr);
+                }
+
+                auto message = std::format("{}님이 그룹에서 {}했습니다.", resp.deleted_member.value().name, resp.action == internal::GroupActionType::Kick ? "추방당" : "탈퇴");
+                co_await characters.foreach (
+                    [this, message](auto& member) {
+                        member->message(message, MESSAGE_TYPE::STATE);
+                    },
+                    members);
+            });
+            break;
+        }
+
+        default:
+            break;
+        }
     });
 }
 
-async::task<void> server::broadcast(const group& group, const std::string& message, MESSAGE_TYPE type)
+async::task<void> server::on_destroyed_group(const internal_resp::DestroyGroup& resp)
 {
-    auto&& resp = co_await this->http.post("internal", "/group/broadcast", BroadcastGroup{config<uint32_t>("host"), group.id(), message, static_cast<uint8_t>(type)});
+    this->assert_group(resp.error, resp.actor.name);
 
-    co_await this->on_group_broadcast(resp);
+    auto gid = resp.group_id;
+    co_await this->groups.async_erase(gid, [this, gid, &resp](const auto& group) -> async::task<void> {
+        auto members = std::vector<std::string>{group->members()};
+        members.push_back(group->master());
+
+        co_await this->characters.async_write([this, &resp, &members](auto& characters) -> async::task<void> {
+            co_await characters.foreach (members, [](auto& ch) {
+                ch->group_reset();
+                ch->message("그룹 해체", MESSAGE_TYPE::STATE);
+            });
+        });
+    });
 }
 
 async::task<void> server::on_group_broadcast(const internal_resp::BroadcastGroup& resp)
 {
     this->assert_group(resp.error, "");
 
-    co_await this->upsert_group_then(resp.group, [this, message = resp.message, type = resp.type](auto& group) -> async::task<void> {
-        co_await this->characters.async_write([this, &group, &message, &type](auto& characters) -> async::task<void> {
-            co_await characters.foreach (group->members(), [message, type](auto& ch) {
-                ch->message(message, static_cast<MESSAGE_TYPE>(type));
-            });
+    co_await this->ensure_group(resp.group, [this, message = resp.message, type = resp.type](auto& group) -> async::task<void> {
+        auto members = std::vector<std::shared_ptr<fb::game::character>>();
+        for (auto& member_ptr : group->characters())
+        {
+            members.push_back(member_ptr);
+        }
+
+        co_await this->characters.async_write([this, &message, &type, &members](auto& characters) -> async::task<void> {
+            co_await characters.foreach (
+                [this, message, type](auto& member) {
+                    member->message(message, static_cast<MESSAGE_TYPE>(type));
+                },
+                members);
         });
     });
 }

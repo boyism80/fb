@@ -39,6 +39,12 @@ public:
     character_set            characters() const;
     std::vector<std::string> members() const;
     character_vector         nears(const fb::game::map& map, const fb::model::point16_t& position) const;
+
+public:
+    async::task<void> enter_member(character& inviter, const std::string& target_name);
+    async::task<void> leave_member(character& leaver);
+    async::task<void> kick_member(character& kicker, const std::string& target_name);
+    async::task<void> broadcast(const std::string& message, MESSAGE_TYPE type);
 };
 
 } // namespace fb::game

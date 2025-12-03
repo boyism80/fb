@@ -38,8 +38,9 @@ namespace Internal.Controllers
             _redisService = redisService;
             _distributedLock = distributedLock;
         }
+
         [HttpGet("{id}")]
-        public async Task<Response.GetGroup> Get(uint id)
+        public async Task<Response.GroupDetails> Get(uint id)
         {
             try
             {
@@ -53,42 +54,62 @@ namespace Internal.Controllers
                     var master = await _dbContext.Character.Get(group.Master) ??
                         throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                    var members = new List<Character>();
-                    foreach (var x in group.Members)
+                    var members = new List<Protocol.CharacterRef>();
+                    foreach (var uid in group.Members)
                     {
-                        var ch = await _dbContext.Character.Get(x) ??
+                        var ch = await _dbContext.Character.Get(uid) ??
                             throw new LogicException(ErrorCode.NotFoundCharacter);
-                        members.Add(ch);
+                        members.Add(new Protocol.CharacterRef
+                        {
+                            Uid = ch.Id,
+                            Name = ch.Name
+                        });
                     }
 
-                    return new Response.GetGroup
+                    // Add master to members list
+                    members.Add(new Protocol.CharacterRef
                     {
+                        Uid = master.Id,
+                        Name = master.Name
+                    });
+
+                    return new Response.GroupDetails
+                    {
+                        Host = _configuration.GetValue<uint>("id"),
+                        Action = Protocol.GroupDetailsAction.Query,
                         Group = new Protocol.Group
                         {
                             Id = group.Master,
                             Master = master.Name,
-                            Members = members.ConvertAll(x => x.Name)
-                        }
+                            Members = new List<string>() // Empty for GroupDetails, members are in CharacterRef array
+                        },
+                        Members = members,
+                        Error = (uint)ErrorCode.None
                     };
                 }
             }
             catch (LogicException e)
             {
-                return new Response.GetGroup
+                return new Response.GroupDetails
                 {
+                    Host = _configuration.GetValue<uint>("id"),
+                    Action = Protocol.GroupDetailsAction.Query,
                     Error = (uint)e.Error
                 };
             }
             catch (Exception)
             {
-                return new Response.GetGroup
+                return new Response.GroupDetails
                 {
+                    Host = _configuration.GetValue<uint>("id"),
+                    Action = Protocol.GroupDetailsAction.Query,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
         }
+
         [HttpPost("create")]
-        public async Task<Response.EnterGroup> Create(Request.EnterGroup request)
+        public async Task<Response.GroupDetails> Create(Request.CreateGroup request)
         {
             try
             {
@@ -120,87 +141,67 @@ namespace Internal.Controllers
                         var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
+                        // Create group - actor must not be in a group
+                        if (actorSync.Group != null)
+                            throw new LogicException(ErrorCode.GroupAlreadyJoined);
+
+                        if (targetSync.Group != null)
+                            throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
+
+                        var masterSetting = await _dbContext.Option.Get(actor.Id) ??
+                            throw new Exception($"user option {request.Master} not found");
+
+                        if (masterSetting.Group == false)
+                            throw new LogicException(ErrorCode.DisabledGroup);
+
+                        var memberSetting = await _dbContext.Option.Get(target.Id) ??
+                            throw new Exception($"user option {request.Member} not found");
+
+                        if (memberSetting.Group == false)
+                            throw new LogicException(ErrorCode.DisabledGroupTarget);
+
                         await using (await _distributedLock.Lock(Group.DistributedLockKey(actor.Id)))
                         {
-                            var isCreated = false;
-                            Group group;
-                            if (actorSync.Group == null)
+                            var group = new Group
                             {
-                                // 그룹이 없어서 새로 만드는 경우
-                                isCreated = true;
-                                group = new Group
-                                {
-                                    Master = actor.Id,
-                                };
-                                actorSync.Group = group.Master;
-                                _dbContext.CharacterSync.Set(actorSync);
-                            }
-                            else
-                            {
-                                // 그룹이 이미 있는 경우
-                                if (actorSync.Group.Value != actor.Id)
-                                    throw new LogicException(ErrorCode.NotGroupMaster); // 그룹장이 아닌 경우
+                                Master = actor.Id,
+                            };
+                            group.Members.Add(target.Id);
 
-                                group = await _dbContext.Group.Get(actor.Id);
-                            }
-
-                            group.Deleted = false;
-                            Protocol.GroupAction action;
-                            if (group.Members.Contains(target.Id))
-                            {
-                                group.Members.Remove(target.Id);
-                                targetSync.Group = null;
-                                action = Protocol.GroupAction.Kick;
-                            }
-                            else
-                            {
-                                var masterSetting = await _dbContext.Option.Get(actor.Id) ??
-                                throw new Exception($"user option {request.Master} not found");
-
-                                if (masterSetting.Group == false)
-                                    throw new LogicException(ErrorCode.DisabledGroup);
-
-                                var memberSetting = await _dbContext.Option.Get(target.Id) ??
-                                    throw new Exception($"user option {request.Member} not found");
-
-                                if (memberSetting.Group == false)
-                                    throw new LogicException(ErrorCode.DisabledGroupTarget);
-
-                                if (targetSync.Group != null)
-                                    throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
-
-                                group.Members.Add(target.Id);
-                                targetSync.Group = group.Master;
-                                action = isCreated ? Protocol.GroupAction.Create : Protocol.GroupAction.Enter;
-                            }
-
-                            _dbContext.Group.Set(group);
+                            actorSync.Group = group.Master;
+                            targetSync.Group = group.Master;
+                            _dbContext.CharacterSync.Set(actorSync);
                             _dbContext.CharacterSync.Set(targetSync);
+                            _dbContext.Group.Set(group);
 
-                            var memberNames = new List<string>();
-                            foreach (var uid in group.Members)
+                            var members = new List<Protocol.CharacterRef>();
+                            members.Add(new Protocol.CharacterRef
                             {
-                                var ch = await _dbContext.Character.Get(uid) ??
-                                    throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                                memberNames.Add(ch.Name);
-                            }
-
-                            var response = new Response.EnterGroup
+                                Uid = actor.Id,
+                                Name = actor.Name
+                            });
+                            members.Add(new Protocol.CharacterRef
                             {
+                                Uid = target.Id,
+                                Name = target.Name
+                            });
+
+                            await _dbContext.SaveChangesAsync();
+
+                            var response = new Response.GroupDetails
+                            {
+                                Host = map.Host,
+                                Action = Protocol.GroupDetailsAction.Create,
                                 Group = new Protocol.Group
                                 {
                                     Id = group.Master,
                                     Master = actor.Name,
-                                    Members = memberNames
+                                    Members = new List<string>()
                                 },
-                                Member = request.Member,
-                                Host = map.Host,
-                                Action = action,
-                                Error = 0
+                                Members = members,
+                                Error = (uint)ErrorCode.None
                             };
 
-                            await _dbContext.SaveChangesAsync();
                             _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
                             return response;
                         }
@@ -209,23 +210,141 @@ namespace Internal.Controllers
             }
             catch (LogicException e)
             {
-                return new Response.EnterGroup
+                return new Response.GroupDetails
                 {
-                    Member = request.Member,
+                    Host = _configuration.GetValue<uint>("id"),
+                    Action = Protocol.GroupDetailsAction.Create,
                     Error = (uint)e.Error
                 };
             }
             catch (Exception)
             {
-                return new Response.EnterGroup
+                return new Response.GroupDetails
                 {
-                    Member = request.Member,
-                    Error = uint.MaxValue
+                    Host = _configuration.GetValue<uint>("id"),
+                    Action = Protocol.GroupDetailsAction.Create,
+                    Error = (uint)ErrorCode.Unhandled
                 };
             }
         }
+
+        [HttpPost("enter")]
+        public async Task<Response.UpdatedGroup> Enter(Request.EnterGroup request)
+        {
+            try
+            {
+                var actor = await _dbContext.Character.Get(request.Master) ??
+                    throw new Exception($"user {request.Master} not found");
+
+                if (actor.Name == request.Member)
+                    throw new LogicException(ErrorCode.CannotGroupSelf);
+
+                if (await _sessionService.Get(actor.Name) == null)
+                    throw new Exception($"user {request.Master} is offline");
+
+                if (Table.Map.TryGetValue(actor.Map, out var map) == false)
+                    throw new Exception("invalid map");
+
+                var targetSession = await _sessionService.Get(request.Member) ??
+                    throw new LogicException(ErrorCode.Offline);
+
+                var target = await _dbContext.Character.Get(targetSession.Uid) ??
+                    throw new LogicException(ErrorCode.Offline);
+
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(actor.Id)))
+                {
+                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(target.Id)))
+                    {
+                        var actorSync = await _dbContext.CharacterSync.Get(actor.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        // Enter group - actor must be group master
+                        if (actorSync.Group == null)
+                            throw new LogicException(ErrorCode.GroupNotJoined);
+
+                        if (actorSync.Group.Value != actor.Id)
+                            throw new LogicException(ErrorCode.NotGroupMaster);
+
+                        if (targetSync.Group != null)
+                            throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
+
+                        var masterSetting = await _dbContext.Option.Get(actor.Id) ??
+                            throw new Exception($"user option {request.Master} not found");
+
+                        if (masterSetting.Group == false)
+                            throw new LogicException(ErrorCode.DisabledGroup);
+
+                        var memberSetting = await _dbContext.Option.Get(target.Id) ??
+                            throw new Exception($"user option {request.Member} not found");
+
+                        if (memberSetting.Group == false)
+                            throw new LogicException(ErrorCode.DisabledGroupTarget);
+
+                        await using (await _distributedLock.Lock(Group.DistributedLockKey(actor.Id)))
+                        {
+                            var group = await _dbContext.Group.Get(actor.Id) ??
+                                throw new LogicException(ErrorCode.GroupNotFound);
+
+                            if (group.Members.Contains(target.Id))
+                                throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
+
+                            group.Members.Add(target.Id);
+                            targetSync.Group = group.Master;
+                            _dbContext.Group.Set(group);
+                            _dbContext.CharacterSync.Set(targetSync);
+
+                            await _dbContext.SaveChangesAsync();
+
+                            var response = new Response.UpdatedGroup
+                            {
+                                Host = map.Host,
+                                Action = Protocol.GroupActionType.Enter,
+                                GroupId = group.Master,
+                                GroupMaster = actor.Name,
+                                Actor = new Protocol.CharacterRef
+                                {
+                                    Uid = actor.Id,
+                                    Name = actor.Name
+                                },
+                                NewMember = new Protocol.CharacterRef
+                                {
+                                    Uid = target.Id,
+                                    Name = target.Name
+                                },
+                                Error = (uint)ErrorCode.None
+                            };
+
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
+                            return response;
+                        }
+                    }
+                }
+            }
+            catch (LogicException e)
+            {
+                return new Response.UpdatedGroup
+                {
+                    Host = _configuration.GetValue<uint>("id"),
+                    Action = Protocol.GroupActionType.Enter,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.UpdatedGroup
+                {
+                    Host = _configuration.GetValue<uint>("id"),
+                    Action = Protocol.GroupActionType.Enter,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
         [HttpPost("leave")]
-        public async Task<Response.LeaveGroup> Leave(Request.LeaveGroup request)
+        public async Task<Response.UpdatedGroup> Leave(Request.LeaveGroup request)
         {
             try
             {
@@ -235,13 +354,13 @@ namespace Internal.Controllers
                 var character = await _dbContext.Character.Get(session.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
+                if (Table.Map.TryGetValue(character.Map, out var map) == false)
+                    throw new LogicException(ErrorCode.NotFoundMap);
+
                 await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(character.Id)))
                 {
                     var sync = await _dbContext.CharacterSync.Get(character.Id) ??
                         throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                    if (Table.Map.TryGetValue(character.Map, out var map) == false)
-                        throw new LogicException(ErrorCode.NotFoundMap);
 
                     var groupId = sync.Group ??
                         throw new LogicException(ErrorCode.GroupNotJoined);
@@ -249,106 +368,72 @@ namespace Internal.Controllers
                     await using (await _distributedLock.Lock(Group.DistributedLockKey(groupId)))
                     {
                         var group = await _dbContext.Group.Get(groupId) ??
-                        throw new LogicException(ErrorCode.GroupNotFound);
+                            throw new LogicException(ErrorCode.GroupNotFound);
 
+                        // Leave group - character must not be master
                         if (character.Id == group.Master)
+                            throw new LogicException(ErrorCode.NotGroupMaster); // Use destroy endpoint instead
+
+                        if (!group.Members.Contains(character.Id))
+                            throw new LogicException(ErrorCode.GroupNotJoined);
+
+                        group.Members.Remove(character.Id);
+                        _dbContext.Group.Set(group);
+
+                        sync.Group = null;
+                        _dbContext.CharacterSync.Set(sync);
+
+                        var master = await _dbContext.Character.Get(group.Master) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                        await _dbContext.SaveChangesAsync();
+
+                        var response = new Response.UpdatedGroup
                         {
-                            // 그룹장이 길드 해체
-                            var memberNames = new List<string>();
-                            foreach (var uid in group.Members)
+                            Host = map.Host,
+                            Action = Protocol.GroupActionType.Leave,
+                            GroupId = group.Master,
+                            GroupMaster = master.Name,
+                            Actor = new Protocol.CharacterRef
                             {
-                                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(uid)))
-                                {
-                                    var member = await _dbContext.Character.Get(uid) ??
-                                        throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                                    var memberSync = await _dbContext.CharacterSync.Get(uid) ??
-                                        throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                                    memberSync.Group = null;
-                                    _dbContext.CharacterSync.Set(memberSync);
-                                    memberNames.Add(member.Name);
-                                }
-                            }
-                            sync.Group = null;
-                            _dbContext.CharacterSync.Set(sync);
-
-                            group.Deleted = true;
-                            _dbContext.Group.Set(group);
-
-                            await _dbContext.SaveChangesAsync();
-
-                            var response = new Response.LeaveGroup
+                                Uid = character.Id,
+                                Name = character.Name
+                            },
+                            DeletedMember = new Protocol.CharacterRef
                             {
-                                Group = new Protocol.Group
-                                {
-                                    Id = group.Master,
-                                    Master = character.Name,
-                                    Members = memberNames,
-                                },
-                                Action = Protocol.GroupAction.BreakUp,
-                                Member = request.Member,
-                                Host = map.Host
-                            };
-                            _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
-                            return response;
-                        }
-                        else
-                        {
-                            var master = await _dbContext.Character.Get(group.Master) ??
-                                throw new LogicException(ErrorCode.NotFoundCharacter);
+                                Uid = character.Id,
+                                Name = character.Name
+                            },
+                            Error = (uint)ErrorCode.None
+                        };
 
-                            group.Members.Remove(character.Id);
-                            _dbContext.Group.Set(group);
-
-                            sync.Group = null;
-                            _dbContext.CharacterSync.Set(sync);
-
-                            var members = new List<Character>();
-                            foreach (var uid in group.Members)
-                            {
-                                members.Add(await _dbContext.Character.Get(uid));
-                            }
-
-                            await _dbContext.SaveChangesAsync();
-
-                            var response = new Response.LeaveGroup
-                            {
-                                Action = Protocol.GroupAction.Leave,
-                                Member = request.Member,
-                                Group = new Protocol.Group
-                                {
-                                    Id = group.Master,
-                                    Master = master.Name,
-                                    Members = members.ConvertAll(x => x.Name)
-                                },
-                                Host = map.Host
-                            };
-                            _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
-                            return response;
-                        }
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
+                        return response;
                     }
                 }
             }
             catch (LogicException e)
             {
-                return new Response.LeaveGroup
+                return new Response.UpdatedGroup
                 {
-                    Member = request.Member,
+                    Host = _configuration.GetValue<uint>("id"),
+                    Action = Protocol.GroupActionType.Leave,
                     Error = (uint)e.Error
                 };
             }
             catch (Exception)
             {
-                return new Response.LeaveGroup
+                return new Response.UpdatedGroup
                 {
-                    Member = request.Member,
+                    Host = _configuration.GetValue<uint>("id"),
+                    Action = Protocol.GroupActionType.Leave,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
         }
+
         [HttpPost("kick")]
-        public async Task<Response.KickGroup> Kick(Request.KickGroup request)
+        public async Task<Response.UpdatedGroup> Kick(Request.KickGroup request)
         {
             try
             {
@@ -368,6 +453,9 @@ namespace Internal.Controllers
                 // Prevent self-kicking
                 if (kicker.Name == target.Name)
                     throw new LogicException(ErrorCode.CannotGroupSelf);
+
+                if (Table.Map.TryGetValue(kicker.Map, out var map) == false)
+                    throw new LogicException(ErrorCode.NotFoundMap);
 
                 await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(kicker.Id)))
                 {
@@ -407,31 +495,27 @@ namespace Internal.Controllers
                             targetSync.Group = null;
                             _dbContext.CharacterSync.Set(targetSync);
 
-                            var members = new List<Character>();
-                            foreach (var uid in group.Members)
-                            {
-                                var member = await _dbContext.Character.Get(uid) ??
-                                    throw new LogicException(ErrorCode.NotFoundCharacter);
-                                members.Add(member);
-                            }
+                            await _dbContext.SaveChangesAsync();
 
-                            var memberNames = members.ConvertAll(x => x.Name);
-
-                            var response = new Response.KickGroup
+                            var response = new Response.UpdatedGroup
                             {
-                                Group = new Protocol.Group
+                                Host = map.Host,
+                                Action = Protocol.GroupActionType.Kick,
+                                GroupId = group.Master,
+                                GroupMaster = kicker.Name,
+                                Actor = new Protocol.CharacterRef
                                 {
-                                    Id = group.Master,
-                                    Master = kicker.Name,
-                                    Members = memberNames
+                                    Uid = kicker.Id,
+                                    Name = kicker.Name
                                 },
-                                Member = target.Name,
-                                Action = Protocol.GroupAction.Kick,
-                                Host = Table.Map[kicker.Map].Host,
-                                Error = 0
+                                DeletedMember = new Protocol.CharacterRef
+                                {
+                                    Uid = target.Id,
+                                    Name = target.Name
+                                },
+                                Error = (uint)ErrorCode.None
                             };
 
-                            await _dbContext.SaveChangesAsync();
                             _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
                             return response;
                         }
@@ -440,33 +524,130 @@ namespace Internal.Controllers
             }
             catch (LogicException e)
             {
-                return new Response.KickGroup
+                return new Response.UpdatedGroup
                 {
-                    Member = request.Target,
+                    Host = _configuration.GetValue<uint>("id"),
+                    Action = Protocol.GroupActionType.Kick,
                     Error = (uint)e.Error
                 };
             }
             catch (Exception)
             {
-                return new Response.KickGroup
+                return new Response.UpdatedGroup
                 {
-                    Member = request.Target,
+                    Host = _configuration.GetValue<uint>("id"),
+                    Action = Protocol.GroupActionType.Kick,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
         }
-        [HttpPost("group")]
+
+        [HttpPost("destroy")]
+        public async Task<Response.DestroyGroup> Destroy(Request.DestroyGroup request)
+        {
+            try
+            {
+                var session = await _sessionService.Get(request.Master) ??
+                    throw new LogicException(ErrorCode.Offline);
+
+                var character = await _dbContext.Character.Get(session.Uid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                if (Table.Map.TryGetValue(character.Map, out var map) == false)
+                    throw new LogicException(ErrorCode.NotFoundMap);
+
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(character.Id)))
+                {
+                    var sync = await _dbContext.CharacterSync.Get(character.Id) ??
+                        throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                    var groupId = sync.Group ??
+                        throw new LogicException(ErrorCode.GroupNotJoined);
+
+                    await using (await _distributedLock.Lock(Group.DistributedLockKey(groupId)))
+                    {
+                        var group = await _dbContext.Group.Get(groupId) ??
+                            throw new LogicException(ErrorCode.GroupNotFound);
+
+                        // Destroy group - character must be master
+                        if (group.Master != character.Id)
+                            throw new LogicException(ErrorCode.NotGroupMaster);
+
+                        // Remove all members from group
+                        var memberNames = new List<string>();
+                        foreach (var uid in group.Members)
+                        {
+                            await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(uid)))
+                            {
+                                var member = await _dbContext.Character.Get(uid) ??
+                                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                                var memberSync = await _dbContext.CharacterSync.Get(uid) ??
+                                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                                memberSync.Group = null;
+                                _dbContext.CharacterSync.Set(memberSync);
+                                memberNames.Add(member.Name);
+                            }
+                        }
+
+                        sync.Group = null;
+                        _dbContext.CharacterSync.Set(sync);
+
+                        group.Deleted = true;
+                        _dbContext.Group.Set(group);
+
+                        await _dbContext.SaveChangesAsync();
+
+                        var response = new Response.DestroyGroup
+                        {
+                            Host = map.Host,
+                            GroupId = group.Master,
+                            GroupMaster = character.Name,
+                            Actor = new Protocol.CharacterRef
+                            {
+                                Uid = character.Id,
+                                Name = character.Name
+                            },
+                            Error = (uint)ErrorCode.None
+                        };
+
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
+                        return response;
+                    }
+                }
+            }
+            catch (LogicException e)
+            {
+                return new Response.DestroyGroup
+                {
+                    Host = _configuration.GetValue<uint>("id"),
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.DestroyGroup
+                {
+                    Host = _configuration.GetValue<uint>("id"),
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
+        [HttpPost("broadcast")]
         public async Task<Response.BroadcastGroup> Broadcast(Request.BroadcastGroup request)
         {
             try
             {
                 await using (await _distributedLock.Lock(Group.DistributedLockKey(request.Group)))
                 {
-                    var clan = await _dbContext.Group.Get(request.Group) ??
+                    var group = await _dbContext.Group.Get(request.Group) ??
                         throw new LogicException(ErrorCode.GroupNotFound);
 
                     var response = new Response.BroadcastGroup
                     {
+                        Host = request.Host,
                         Group = request.Group,
                         Message = request.Message,
                         Type = request.Type,
@@ -480,6 +661,7 @@ namespace Internal.Controllers
             {
                 return new Response.BroadcastGroup
                 {
+                    Host = request.Host,
                     Error = (uint)e.Error
                 };
             }
@@ -487,11 +669,10 @@ namespace Internal.Controllers
             {
                 return new Response.BroadcastGroup
                 {
+                    Host = request.Host,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
-            finally
-            { }
         }
     }
 }

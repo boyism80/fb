@@ -43,9 +43,9 @@
 #include <fb/game/handler/amqp/whisper.h>
 #include <fb/game/handler/amqp/shutdown.h>
 #include <fb/game/handler/amqp/broadcast.h>
-#include <fb/game/handler/amqp/enter_group.h>
-#include <fb/game/handler/amqp/leave_group.h>
-#include <fb/game/handler/amqp/kick_group.h>
+#include <fb/game/handler/amqp/create_group.h>
+#include <fb/game/handler/amqp/updated_group.h>
+#include <fb/game/handler/amqp/destroy_group.h>
 #include <fb/game/handler/amqp/create_clan.h>
 #include <fb/game/handler/amqp/destroy_clan.h>
 #include <fb/game/handler/amqp/updated_clan.h>

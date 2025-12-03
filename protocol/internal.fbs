@@ -6,12 +6,15 @@ enum Service : byte {
     Game
 }
 
-enum GroupAction : byte { 
-    Create,
-    Enter,
-    Leave,
-    Kick,
-    BreakUp
+enum GroupActionType : byte {
+    Enter = 0,
+    Leave = 1,
+    Kick = 2
+}
+
+enum GroupDetailsAction : byte {
+    Query = 0,
+    Create = 1
 }
 
 table Position {

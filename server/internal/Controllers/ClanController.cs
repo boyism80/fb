@@ -22,12 +22,14 @@ namespace Internal.Controllers
         private readonly RabbitMqService _rabbitMqService;
         private readonly IMapper _mapper;
         private readonly RedisDistributedLockService _distributedLock;
+        private readonly SessionService _sessionService;
         public ClanController(IConfiguration configuration,
             DbContext dbContext,
             RedisService redisService,
             RabbitMqService rabbitMqService,
             IMapper mapper,
-            RedisDistributedLockService distributedLock)
+            RedisDistributedLockService distributedLock,
+            SessionService sessionService)
         {
             _configuration = configuration;
             _dbContext = dbContext;
@@ -35,6 +37,7 @@ namespace Internal.Controllers
             _rabbitMqService = rabbitMqService;
             _mapper = mapper;
             _distributedLock = distributedLock;
+            _sessionService = sessionService;
         }
         private async Task<List<Protocol.ClanMember>> GetClanMemberResponse(uint id)
         {
@@ -376,9 +379,15 @@ namespace Internal.Controllers
                 var inviter = await _dbContext.Character.Get(request.InviterUid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                // Get invitee character (the one being invited)
-                var invitee = await _dbContext.Character.Get(request.InviteeUid) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacter);
+                if (inviter.Name == request.InviteeName)
+                    throw new LogicException(ErrorCode.CannotInviteSelf);
+
+                // Get invitee session and character (the one being invited)
+                var inviteeSession = await _sessionService.Get(request.InviteeName) ??
+                    throw new LogicException(ErrorCode.Offline);
+
+                var invitee = await _dbContext.Character.Get(inviteeSession.Uid) ??
+                    throw new LogicException(ErrorCode.Offline);
 
                 // Prevent self-invitation
                 if (inviter.Id == invitee.Id)

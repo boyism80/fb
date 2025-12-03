@@ -20,33 +20,37 @@ public struct KickGroup : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public KickGroup __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Kicker { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Kicker { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetKickerBytes() { return __p.__vector_as_span<byte>(4, 1); }
+  public Span<byte> GetKickerBytes() { return __p.__vector_as_span<byte>(6, 1); }
 #else
-  public ArraySegment<byte>? GetKickerBytes() { return __p.__vector_as_arraysegment(4); }
+  public ArraySegment<byte>? GetKickerBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
-  public byte[] GetKickerArray() { return __p.__vector_as_array<byte>(4); }
-  public string Target { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetKickerArray() { return __p.__vector_as_array<byte>(6); }
+  public string Target { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetTargetBytes() { return __p.__vector_as_span<byte>(6, 1); }
+  public Span<byte> GetTargetBytes() { return __p.__vector_as_span<byte>(8, 1); }
 #else
-  public ArraySegment<byte>? GetTargetBytes() { return __p.__vector_as_arraysegment(6); }
+  public ArraySegment<byte>? GetTargetBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
-  public byte[] GetTargetArray() { return __p.__vector_as_array<byte>(6); }
+  public byte[] GetTargetArray() { return __p.__vector_as_array<byte>(8); }
 
   public static Offset<fb.protocol._internal.request.raw.KickGroup> CreateKickGroup(FlatBufferBuilder builder,
+      uint host = 0,
       StringOffset kickerOffset = default(StringOffset),
       StringOffset targetOffset = default(StringOffset)) {
-    builder.StartTable(2);
+    builder.StartTable(3);
     KickGroup.AddTarget(builder, targetOffset);
     KickGroup.AddKicker(builder, kickerOffset);
+    KickGroup.AddHost(builder, host);
     return KickGroup.EndKickGroup(builder);
   }
 
-  public static void StartKickGroup(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddKicker(FlatBufferBuilder builder, StringOffset kickerOffset) { builder.AddOffset(0, kickerOffset.Value, 0); }
-  public static void AddTarget(FlatBufferBuilder builder, StringOffset targetOffset) { builder.AddOffset(1, targetOffset.Value, 0); }
+  public static void StartKickGroup(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
+  public static void AddKicker(FlatBufferBuilder builder, StringOffset kickerOffset) { builder.AddOffset(1, kickerOffset.Value, 0); }
+  public static void AddTarget(FlatBufferBuilder builder, StringOffset targetOffset) { builder.AddOffset(2, targetOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.KickGroup> EndKickGroup(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.KickGroup>(o);
@@ -61,8 +65,9 @@ static public class KickGroupVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Kicker*/, false)
-      && verifier.VerifyString(tablePos, 6 /*Target*/, false)
+      && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 6 /*Kicker*/, false)
+      && verifier.VerifyString(tablePos, 8 /*Target*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

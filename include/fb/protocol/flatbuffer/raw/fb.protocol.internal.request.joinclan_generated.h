@@ -27,7 +27,7 @@ struct JoinClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_HOST = 4,
     VT_INVITER_UID = 6,
-    VT_INVITEE_UID = 8
+    VT_INVITEE_NAME = 8
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -35,14 +35,15 @@ struct JoinClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t inviter_uid() const {
     return GetField<uint32_t>(VT_INVITER_UID, 0);
   }
-  uint32_t invitee_uid() const {
-    return GetField<uint32_t>(VT_INVITEE_UID, 0);
+  const ::flatbuffers::String *invitee_name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_INVITEE_NAME);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_INVITER_UID, 4) &&
-           VerifyField<uint32_t>(verifier, VT_INVITEE_UID, 4) &&
+           VerifyOffset(verifier, VT_INVITEE_NAME) &&
+           verifier.VerifyString(invitee_name()) &&
            verifier.EndTable();
   }
 };
@@ -57,8 +58,8 @@ struct JoinClanBuilder {
   void add_inviter_uid(uint32_t inviter_uid) {
     fbb_.AddElement<uint32_t>(JoinClan::VT_INVITER_UID, inviter_uid, 0);
   }
-  void add_invitee_uid(uint32_t invitee_uid) {
-    fbb_.AddElement<uint32_t>(JoinClan::VT_INVITEE_UID, invitee_uid, 0);
+  void add_invitee_name(::flatbuffers::Offset<::flatbuffers::String> invitee_name) {
+    fbb_.AddOffset(JoinClan::VT_INVITEE_NAME, invitee_name);
   }
   explicit JoinClanBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -75,12 +76,25 @@ inline ::flatbuffers::Offset<JoinClan> CreateJoinClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t host = 0,
     uint32_t inviter_uid = 0,
-    uint32_t invitee_uid = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> invitee_name = 0) {
   JoinClanBuilder builder_(_fbb);
-  builder_.add_invitee_uid(invitee_uid);
+  builder_.add_invitee_name(invitee_name);
   builder_.add_inviter_uid(inviter_uid);
   builder_.add_host(host);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<JoinClan> CreateJoinClanDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
+    uint32_t inviter_uid = 0,
+    const char *invitee_name = nullptr) {
+  auto invitee_name__ = invitee_name ? _fbb.CreateString(invitee_name) : 0;
+  return fb::protocol::internal::request::raw::CreateJoinClan(
+      _fbb,
+      host,
+      inviter_uid,
+      invitee_name__);
 }
 
 inline const fb::protocol::internal::request::raw::JoinClan *GetJoinClan(const void *buf) {

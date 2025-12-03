@@ -9,16 +9,16 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct EnterGroup : IFlatbufferObject
+public struct CreateGroup : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
   public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static EnterGroup GetRootAsEnterGroup(ByteBuffer _bb) { return GetRootAsEnterGroup(_bb, new EnterGroup()); }
-  public static EnterGroup GetRootAsEnterGroup(ByteBuffer _bb, EnterGroup obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public static bool VerifyEnterGroup(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, EnterGroupVerify.Verify); }
+  public static CreateGroup GetRootAsCreateGroup(ByteBuffer _bb) { return GetRootAsCreateGroup(_bb, new CreateGroup()); }
+  public static CreateGroup GetRootAsCreateGroup(ByteBuffer _bb, CreateGroup obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public static bool VerifyCreateGroup(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, CreateGroupVerify.Verify); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public EnterGroup __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public CreateGroup __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Master { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
@@ -30,31 +30,31 @@ public struct EnterGroup : IFlatbufferObject
 #endif
   public byte[] GetMemberArray() { return __p.__vector_as_array<byte>(8); }
 
-  public static Offset<fb.protocol._internal.request.raw.EnterGroup> CreateEnterGroup(FlatBufferBuilder builder,
+  public static Offset<fb.protocol._internal.request.raw.CreateGroup> CreateCreateGroup(FlatBufferBuilder builder,
       uint host = 0,
       uint master = 0,
       StringOffset memberOffset = default(StringOffset)) {
     builder.StartTable(3);
-    EnterGroup.AddMember(builder, memberOffset);
-    EnterGroup.AddMaster(builder, master);
-    EnterGroup.AddHost(builder, host);
-    return EnterGroup.EndEnterGroup(builder);
+    CreateGroup.AddMember(builder, memberOffset);
+    CreateGroup.AddMaster(builder, master);
+    CreateGroup.AddHost(builder, host);
+    return CreateGroup.EndCreateGroup(builder);
   }
 
-  public static void StartEnterGroup(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartCreateGroup(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
   public static void AddMaster(FlatBufferBuilder builder, uint master) { builder.AddUint(1, master, 0); }
   public static void AddMember(FlatBufferBuilder builder, StringOffset memberOffset) { builder.AddOffset(2, memberOffset.Value, 0); }
-  public static Offset<fb.protocol._internal.request.raw.EnterGroup> EndEnterGroup(FlatBufferBuilder builder) {
+  public static Offset<fb.protocol._internal.request.raw.CreateGroup> EndCreateGroup(FlatBufferBuilder builder) {
     int o = builder.EndTable();
-    return new Offset<fb.protocol._internal.request.raw.EnterGroup>(o);
+    return new Offset<fb.protocol._internal.request.raw.CreateGroup>(o);
   }
-  public static void FinishEnterGroupBuffer(FlatBufferBuilder builder, Offset<fb.protocol._internal.request.raw.EnterGroup> offset) { builder.Finish(offset.Value); }
-  public static void FinishSizePrefixedEnterGroupBuffer(FlatBufferBuilder builder, Offset<fb.protocol._internal.request.raw.EnterGroup> offset) { builder.FinishSizePrefixed(offset.Value); }
+  public static void FinishCreateGroupBuffer(FlatBufferBuilder builder, Offset<fb.protocol._internal.request.raw.CreateGroup> offset) { builder.Finish(offset.Value); }
+  public static void FinishSizePrefixedCreateGroupBuffer(FlatBufferBuilder builder, Offset<fb.protocol._internal.request.raw.CreateGroup> offset) { builder.FinishSizePrefixed(offset.Value); }
 }
 
 
-static public class EnterGroupVerify
+static public class CreateGroupVerify
 {
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {

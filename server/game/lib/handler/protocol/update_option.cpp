@@ -32,15 +32,26 @@ async::task<bool> update_option::handle(fb::socket<character>& session, fb::prot
         break;
 
     default:
-        auto   next = !ch->option(option);
+        auto next = !ch->option(option);
+
+        // If group option is being turned OFF, handle group leave/destroy before API call
+        if (option == OPTION::GROUP && !next)
+        {
+            // Group option turned OFF - leave or destroy group only if currently in a group
+            auto group_id = ch->group_id();
+            if (group_id.has_value())
+            {
+                // Currently in a group - use handle_group_action to handle both master (destroy) and member (leave) cases
+                // Note: handle_group_action checks OPTION::GROUP, but at this point it's still true
+                std::ignore = co_await this->server.handle_group_action(*ch, ch->name());
+            }
+        }
+
         auto&& resp = co_await this->server.http.post("internal", "/in-game/option", SetOption{ch->id(), static_cast<uint8_t>(option), next});
         co_await this->server.threads.switching(weak);
 
         if (resp.success == false)
             ch->message("설정을 변경하지 못했습니다.");
-
-        if (option == OPTION::GROUP && !next)
-            co_await this->server.leave_group(*ch);
 
         ch->option(option, next);
         break;
