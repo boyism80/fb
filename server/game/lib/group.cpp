@@ -127,33 +127,3 @@ std::vector<std::weak_ptr<character>> group::nears(const fb::game::map& map, con
 
     return result;
 }
-
-async::task<void> group::enter_member(character& inviter, const std::string& target_name)
-{
-    auto   weak = inviter.weak_from_this_as<character>();
-    auto&& resp = co_await this->_server.http.post("internal", "/group/enter", EnterGroup{fb::config<uint32_t>("host"), inviter.id(), target_name});
-    co_await this->_server.threads.switching(weak);
-    co_await this->_server.on_updated_group(resp);
-}
-
-async::task<void> group::leave_member(character& leaver)
-{
-    auto   weak = leaver.weak_from_this_as<character>();
-    auto&& resp = co_await this->_server.http.post("internal", "/group/leave", LeaveGroup{fb::config<uint32_t>("host"), leaver.name()});
-    co_await this->_server.threads.switching(weak);
-    co_await this->_server.on_updated_group(resp);
-}
-
-async::task<void> group::kick_member(character& kicker, const std::string& target_name)
-{
-    auto   weak = kicker.weak_from_this_as<character>();
-    auto&& resp = co_await this->_server.http.post("internal", "/group/kick", KickGroup{fb::config<uint32_t>("host"), kicker.name(), target_name});
-    co_await this->_server.threads.switching(weak);
-    co_await this->_server.on_updated_group(resp);
-}
-
-async::task<void> group::broadcast(const std::string& message, MESSAGE_TYPE type)
-{
-    auto&& resp = co_await this->_server.http.post("internal", "/group/broadcast", BroadcastGroup{fb::config<uint32_t>("host"), this->_id, message, static_cast<uint8_t>(type)});
-    co_await this->_server.on_group_broadcast(resp);
-}

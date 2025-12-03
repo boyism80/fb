@@ -100,13 +100,14 @@ int builtin::group::builtin_message(lua_State* L)
     if (group == nullptr)
         return 0;
 
-    auto message = lua->tostring(2);
-    auto type    = lua->toenum(3, MESSAGE_TYPE::STATE);
+    auto message  = lua->tostring(2);
+    auto type     = lua->toenum(3, MESSAGE_TYPE::STATE);
+    auto group_id = group->id();
 
-    static auto fn = [](fb::lua::context* lua, fb::game::group* group, const std::string& message, MESSAGE_TYPE type) -> async::task<void> {
+    static auto fn = [](fb::lua::context* lua, fb::game::server* server, uint32_t group_id, const std::string& message, MESSAGE_TYPE type) -> async::task<void> {
         try
         {
-            co_await group->broadcast(message, type);
+            co_await server->broadcast_group(group_id, message, type);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -118,7 +119,7 @@ int builtin::group::builtin_message(lua_State* L)
     };
 
     std::ignore = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(lua, group, message, type);
+        co_await fn(lua, server, group_id, message, type);
     });
 
     return lua->yield(1);
@@ -144,13 +145,13 @@ int builtin::group::builtin_kick(lua_State* L)
     if (target_name.empty())
         return 0;
 
-    static auto fn = [](fb::lua::context* lua, fb::game::group* group, std::shared_ptr<fb::game::character> kicker_shared, const std::string& target_name) -> async::task<void> {
+    static auto fn = [](fb::lua::context* lua, fb::game::server* server, std::shared_ptr<fb::game::character> kicker_shared, const std::string& target_name) -> async::task<void> {
         try
         {
             if (kicker_shared == nullptr)
                 throw std::runtime_error("kicker character is not alive");
 
-            co_await group->kick_member(*kicker_shared, target_name);
+            co_await server->kick_group_member(*kicker_shared, target_name);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -163,7 +164,7 @@ int builtin::group::builtin_kick(lua_State* L)
 
     auto kicker_shared = kicker->shared_from_this_as<fb::game::character>();
     std::ignore        = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(lua, group, kicker_shared, target_name);
+        co_await fn(lua, server, kicker_shared, target_name);
     });
 
     return lua->yield(1);

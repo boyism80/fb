@@ -73,9 +73,10 @@ login::init_base(const internal::Character& response, character& ch, std::option
 
     if (group.has_value())
     {
-        std::ignore = this->server.upsert_group_then(group.value(), [&ch](auto& group) {
+        co_await this->server.ensure_group(group.value(), [&ch](auto& group) -> async::task<void> {
             group->enter(ch.weak_from_this_as<character>());
             ch.group_id(group->id());
+            co_return;
         });
     }
 
@@ -373,8 +374,8 @@ async::task<bool> login::ensure_character_insert(const std::weak_ptr<fb::game::c
         co_return false;
 
     auto success = this->server.characters.write([ch](auto& container) {
-        auto name   = ch->name();
-        auto old_ch = container.find(name);
+        auto& name   = ch->name();
+        auto  old_ch = container.find(name);
         if (old_ch == nullptr)
         {
             container.insert(ch);
@@ -421,11 +422,6 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
 
     ch->name(request.name);
     fb::logger::info("{} has connected.", request.name);
-    if (co_await this->ensure_character_insert(weak) == false)
-    {
-        fb::logger::fatal("Character {} already exists in server during initial insert - disconnecting duplicate session", ch->name());
-        co_return false;
-    }
 
     auto delay = fb::config<uint32_t>("delay");
     co_await this->server.sleep(std::chrono::seconds(delay));
@@ -435,6 +431,12 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
 
     if (co_await this->init(request, weak) == false)
         co_return false;
+
+    if (co_await this->ensure_character_insert(weak) == false)
+    {
+        fb::logger::fatal("Character {} already exists in server during initial insert - disconnecting duplicate session", ch->name());
+        co_return false;
+    }
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(ch->id());

@@ -153,6 +153,66 @@ async::task<void> server::destroy_clan(character& me)
     co_await this->on_destroyed_clan(resp);
 }
 
+async::task<void> server::join_clan_member(character& inviter, const std::string& target_name)
+{
+    auto   weak = inviter.weak_from_this_as<character>();
+    auto&& resp = co_await this->http.post("internal", "/clan/join", request::JoinClan{fb::config<uint32_t>("host"), inviter.id(), target_name});
+    co_await this->threads.switching(weak);
+    co_await this->on_updated_clan(resp);
+}
+
+async::task<void> server::leave_clan_member(character& leaver)
+{
+    auto weak    = leaver.weak_from_this_as<character>();
+    auto clan_id = leaver.clan_id();
+    if (clan_id.has_value() == false)
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
+    auto&& resp = co_await this->http.post("internal", "/clan/leave", request::LeaveClan{fb::config<uint32_t>("host"), clan_id.value(), leaver.name()});
+    co_await this->threads.switching(weak);
+    co_await this->on_updated_clan(resp);
+}
+
+async::task<void> server::kick_clan_member(character& kicker, const std::string& target_name)
+{
+    auto clan_id = kicker.clan_id();
+    if (clan_id.has_value() == false)
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
+    auto   weak = kicker.weak_from_this_as<character>();
+    auto&& resp = co_await this->http.post("internal", "/clan/kick", request::KickClan{fb::config<uint32_t>("host"), clan_id.value(), kicker.name(), target_name});
+    co_await this->threads.switching(weak);
+    co_await this->on_updated_clan(resp);
+}
+
+async::task<void> server::change_clan_role(character& changer, const std::string& target_name, CLAN_ROLE role)
+{
+    auto clan_id = changer.clan_id();
+    if (clan_id.has_value() == false)
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
+    auto   weak = changer.weak_from_this_as<character>();
+    auto&& resp = co_await this->http.post("internal",
+                                           "/clan/change-role",
+                                           request::ChangeClanRole{fb::config<uint32_t>("host"), changer.id(), target_name, clan_id.value(), static_cast<uint32_t>(role)});
+    co_await this->threads.switching(weak);
+    co_await this->on_updated_clan(resp);
+}
+
+async::task<void> server::set_clan_title(character& changer, const std::string& title)
+{
+    auto   weak = changer.weak_from_this_as<character>();
+    auto&& resp = co_await this->http.post("internal", "/clan/title", request::SetClanTitle{fb::config<uint32_t>("host"), changer.id(), title});
+    co_await this->threads.switching(weak);
+    co_await this->on_updated_clan(resp);
+}
+
+async::task<void> server::broadcast_clan(uint32_t clan_id, const std::string& message, MESSAGE_TYPE type)
+{
+    auto&& resp = co_await this->http.post("internal", "/clan/broadcast", request::BroadcastClan{fb::config<uint32_t>("host"), clan_id, message, static_cast<uint8_t>(type)});
+    co_await this->on_clan_broadcast(resp);
+}
+
 async::task<void> server::on_destroyed_clan(const internal_resp::DestroyClan& resp)
 {
     this->assert_clan(resp.error);

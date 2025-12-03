@@ -655,11 +655,11 @@ async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE typ
 
     case BROADCAST_TYPE::WORLD:
     {
-        this->characters.write([message, type](auto& characters) {
-            for (auto& [_, ch] : characters)
-            {
+        co_await this->characters.async_write([message, type](auto& characters) -> async::task<void> {
+            co_await characters.foreach ([message, type](auto& ch) -> async::task<void> {
                 ch->message(message, type);
-            }
+                co_return;
+            });
         });
     }
     break;
