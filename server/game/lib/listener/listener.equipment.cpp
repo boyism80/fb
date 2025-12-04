@@ -1,4 +1,5 @@
 #include <fb/game/server.h>
+#include <fb/model/model.h>
 
 using namespace fb::game;
 
@@ -11,35 +12,35 @@ void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS p
     switch (parts)
     {
     case EQUIPMENT_PARTS::WEAPON:
-        sstream << "w:무기  :";
+        sstream << _TEXT(MESSAGE_EQUIPMENT_PART_WEAPON);
         break;
 
     case EQUIPMENT_PARTS::ARMOR:
-        sstream << "a:갑옷  :";
+        sstream << _TEXT(MESSAGE_EQUIPMENT_PART_ARMOR);
         break;
 
     case EQUIPMENT_PARTS::SHIELD:
-        sstream << "s:방패  :";
+        sstream << _TEXT(MESSAGE_EQUIPMENT_PART_SHIELD);
         break;
 
     case EQUIPMENT_PARTS::HELMET:
-        sstream << "h:머리  :";
+        sstream << _TEXT(MESSAGE_EQUIPMENT_PART_HELMET);
         break;
 
     case EQUIPMENT_PARTS::LEFT_HAND:
-        sstream << "l:왼손  :";
+        sstream << _TEXT(MESSAGE_EQUIPMENT_PART_LEFT_HAND);
         break;
 
     case EQUIPMENT_PARTS::RIGHT_HAND:
-        sstream << "r:오른손  :";
+        sstream << _TEXT(MESSAGE_EQUIPMENT_PART_RIGHT_HAND);
         break;
 
     case EQUIPMENT_PARTS::LEFT_AUX:
-        sstream << "[:보조1  :";
+        sstream << _TEXT(MESSAGE_EQUIPMENT_PART_LEFT_AUX);
         break;
 
     case EQUIPMENT_PARTS::RIGHT_AUX:
-        sstream << "]:보조2  :";
+        sstream << _TEXT(MESSAGE_EQUIPMENT_PART_RIGHT_AUX);
         break;
     }
 
@@ -47,7 +48,7 @@ void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS p
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 
     sstream.str(std::string());
-    sstream << std::format("갑옷 강도  {}  {} S  {}", me.stat.phydef(), me.stat.regenerative(), me.stat.magdef());
+    sstream << std::format(_TEXT(MESSAGE_EQUIPMENT_STAT_ARMOR), me.stat.phydef(), me.stat.regenerative(), me.stat.magdef());
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 }
 
@@ -70,10 +71,10 @@ void listener_impl::on_durability_down(character& me, fb::game::equipment& equip
 
     if (after == 0)
     {
-        me.message(std::format("{}의 내구도가 다 닳았습니다.", equipment.name()));
+        me.message(std::format(_TEXT(MESSAGE_EQUIPMENT_DURABILITY_EXHAUSTED), equipment.name()));
     }
     else if (percent_after % 5 == 0 || percent_after < 5 || percent_before - percent_after >= 5)
     {
-        me.message(std::format("{}의 내구도가 {}% 남았습니다.", equipment.name(), percent_after));
+        me.message(std::format(_TEXT(MESSAGE_EQUIPMENT_DURABILITY_REMAINING), equipment.name(), percent_after));
     }
 }

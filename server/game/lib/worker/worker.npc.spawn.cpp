@@ -1,5 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/game/worker.h>
+#include <fb/model/model.h>
+#include <macro.h>
 
 using table = fb::model::table;
 
@@ -22,7 +24,7 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
     auto& npc_model   = table::npc[spawn_model.npc];
     auto& map_model   = table::map[spawn_model.parent];
     if (this->_server.maps.contains(spawn_model.parent) == false)
-        throw std::runtime_error(std::format("NPC {}를 배치할 수 없습니다. {} 맵이 로드되지 않았습니다.", npc_model.name, map_model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_ASSET_NPC_SPAWN_FAILED), npc_model.name, map_model.name));
 
     auto map = this->_server.maps[spawn_model.parent];
     if (map == nullptr || map->active == false)

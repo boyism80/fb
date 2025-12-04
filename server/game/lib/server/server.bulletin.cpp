@@ -64,7 +64,7 @@ async::task<void> server::write_bulletin(character& ch, uint16_t section, const 
     auto&& resp = co_await this->http.post("internal", "/bulletin/write", WriteArticle{section, ch.id(), title, contents});
 
     if (resp.success == false)
-        throw std::runtime_error("게시글 작성 실패");
+        throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_WRITE_FAILED));
 }
 
 async::task<void> server::delete_bulletin(character& ch, uint16_t section, uint16_t id)

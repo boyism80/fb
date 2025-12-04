@@ -519,7 +519,7 @@ int builtin::object::builtin_map(lua_State* L)
 
         if (map == nullptr)
         {
-            lua->pushstring("올바르지 않은 맵입니다.");
+            lua->pushstring(_TEXT(MESSAGE_MAP_INVALID));
             return 1;
         }
 

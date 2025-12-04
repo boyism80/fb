@@ -228,7 +228,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
         {
             auto&& resp = co_await this->server.send_mail(*ch, request.user, request.title, request.contents);
             co_await this->server.threads.switching(weak);
-            ch->mail_box.message("우편을 보냈습니다.", true, false);
+            ch->mail_box.message(_TEXT(MESSAGE_MAIL_SENT), true, false);
 
             // Log mail write event
             auto log_data             = Json::Value();

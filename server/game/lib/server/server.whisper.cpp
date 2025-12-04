@@ -15,7 +15,7 @@ void server::assert_whisper(const internal_resp::Whisper& response) const
         throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), response.to));
 
     case ERROR_CODE::DISABLED_WHISPER_TARGET:
-        throw std::runtime_error(std::format("{}님은 귓속말 거부 상태입니다.", response.to));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), response.to));
 
     default:
         throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), response.error));

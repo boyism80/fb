@@ -51,7 +51,7 @@ async::task<bool> update_option::handle(fb::socket<character>& session, fb::prot
         co_await this->server.threads.switching(weak);
 
         if (resp.success == false)
-            ch->message("설정을 변경하지 못했습니다.");
+            ch->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
 
         ch->option(option, next);
         break;

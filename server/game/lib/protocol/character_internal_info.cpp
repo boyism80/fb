@@ -36,7 +36,7 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     {
         this->ch.server.groups.read(group_id.value(), [&writer](auto& group) {
             auto sstream = std::stringstream();
-            sstream << "그룹원" << std::endl << "  * " << group->master() << std::endl;
+            sstream << _TEXT(MESSAGE_GROUP_MEMBERS_HEADER) << std::endl << "  * " << group->master() << std::endl;
 
             auto master_name = group->master();
             for (auto& member : group->members())
@@ -49,7 +49,7 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     }
     else
     {
-        writer.write<std::string>("그룹 없음.");
+        writer.write<std::string>(_TEXT(MESSAGE_GROUP_NONE));
     }
     writer.write<uint8_t>(this->ch.option(OPTION::GROUP));
 

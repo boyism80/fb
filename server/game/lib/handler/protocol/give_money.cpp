@@ -31,10 +31,10 @@ async::task<bool> give_money::handle(fb::socket<character>& session, fb::protoco
             auto capacity = 0xFFFFFFFF - you->money();
             money         = std::min(capacity, money);
             if (money == 0)
-                throw std::runtime_error("상대방이 돈을 받을 수 없습니다.");
+                throw std::runtime_error(_TEXT(MESSAGE_MONEY_TARGET_CANNOT_RECEIVE));
 
             you->money_add(money);
-            you->message(std::format("{}님이 {}전을 주었습니다.", me->name(), money));
+            you->message(std::format(_TEXT(MESSAGE_MONEY_GIVE), me->name(), money));
         }
         break;
 
@@ -42,7 +42,7 @@ async::task<bool> give_money::handle(fb::socket<character>& session, fb::protoco
         {
             auto mob = std::static_pointer_cast<fb::game::mob>(forward);
             if (mob->items().size() >= CONTAINER_CAPACITY)
-                throw std::runtime_error("더 이상 줄 수 없습니다.");
+                throw std::runtime_error(_TEXT(MESSAGE_MONEY_CANNOT_GIVE_ANYMORE));
 
             auto item = this->server.make<fb::game::cash>(money);
             mob->push_item(item);

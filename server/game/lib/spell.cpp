@@ -2,6 +2,7 @@
 #include <fb/game/life.h>
 #include <fb/game/spell.h>
 #include <fb/game/character.h>
+#include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
 
@@ -372,7 +373,7 @@ bool buffs::remove(uint32_t id)
     if (this->_owner.is(OBJECT_TYPE::CHARACTER))
     {
         auto& ch = static_cast<character&>(this->_owner);
-        ch.message(std::format("{} 해제", buff->model.name));
+        ch.message(std::format(_TEXT(MESSAGE_SPELL_UNBUFF), buff->model.name));
     }
 
     this->erase(id);

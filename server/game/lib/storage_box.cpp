@@ -82,11 +82,11 @@ void storage_box::apply_pending(const std::vector<pending_box>& pending)
         // Notify player about new storage box entry
         if (!box.title.empty())
         {
-            this->_owner.message(std::format("통합보관함에 '{}' 보상이 추가되었습니다.", box.title), MESSAGE_TYPE::STATE);
+            this->_owner.message(std::format(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED), box.title), MESSAGE_TYPE::STATE);
         }
         else
         {
-            this->_owner.message("통합보관함에 보상이 추가되었습니다.", MESSAGE_TYPE::STATE);
+            this->_owner.message(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED_NO_TITLE), MESSAGE_TYPE::STATE);
         }
     }
 }

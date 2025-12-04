@@ -1,4 +1,5 @@
 #include <fb/login/handler/protocol/complete.h>
+#include <fb/model/model.h>
 
 using namespace fb::login::handler::protocol;
 
@@ -22,7 +23,7 @@ async::task<bool> complete::handle(fb::socket<fb::login::session>& session, fb::
         co_await this->server.threads.switching(weak);
 
         if (response.success == false)
-            throw id_exception("이미 존재하는 이름입니다.");
+            throw id_exception(_TEXT(MESSAGE_ACCOUNT_ALREADY_EXISTS));
 
         session.send(response::message(_TEXT(MESSAGE_ACCOUNT_SUCCESS_REGISTER_ACCOUNT), 0x00));
         session_data->pk = -1;

@@ -19,7 +19,7 @@ async::task<bool> spell_cast::handle(fb::socket<character>& session, fb::protoco
 
     if (ch->role() == ROLE::USER && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_SPELL))
     {
-        ch->message("마력이 미치지 않습니다.");
+        ch->message(_TEXT(MESSAGE_SPELL_DISABLED_AREA));
         co_return true;
     }
 
@@ -33,7 +33,7 @@ async::task<bool> spell_cast::handle(fb::socket<character>& session, fb::protoco
     auto delay = spell->delay();
     if (delay > 0)
     {
-        ch->message(std::format("{}초 후에 사용할 수 있습니다.", delay));
+        ch->message(std::format(_TEXT(MESSAGE_SPELL_DELAY), delay));
         co_return true;
     }
 

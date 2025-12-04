@@ -30,7 +30,7 @@ async::task<bool> move::handle(fb::socket<character>& session, DIRECTION directi
     {
         if (ch->condition(warp->condition) == false)
         {
-            ch->message("감히 접근할 수 없습니다.");
+            ch->message(_TEXT(MESSAGE_WARP_CANNOT_ACCESS));
             ch->update_position();
             co_return true;
         }

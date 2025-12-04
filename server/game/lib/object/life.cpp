@@ -1,6 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/game/life.h>
 #include <fb/game/map.h>
+#include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
 
@@ -200,7 +201,7 @@ async::task<void> life::attack(DURATION duration)
             // Handle weapon durability
             if (attack_count > 0 && weapon->durability_down(attack_count))
             {
-                ch->message(std::format("{} 깨졌습니다.", weapon->name()));
+                ch->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), weapon->name()));
                 ch->items.equipment_off(EQUIPMENT_PARTS::WEAPON);
             }
         }

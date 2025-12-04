@@ -172,13 +172,10 @@ async::task<void> server::kick_group_member(character& kicker, const std::string
     auto weak = kicker.weak_from_this_as<character>();
     try
     {
-        // TODO: Fix error message - MESSAGE_ALREADY_JOINED_GROUP means "already joined group" which is contradictory
-        // When kicker has no group, the error message should indicate they are not in a group, not that they've already joined one
-        // Need to define an appropriate error message constant (e.g., MESSAGE_GROUP_NOT_JOINED) and use it here
         // Check kicker's group status
         auto kicker_group_id = kicker.group_id();
         if (kicker_group_id.has_value() == false)
-            throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_GROUP));
+            throw std::runtime_error(_TEXT(MESSAGE_GROUP_NOT_JOINED));
 
         // Try to find target in the same thread's thread_params
         auto current_thread = this->threads.current();
@@ -398,12 +395,12 @@ async::task<void> server::on_create_group(const internal_resp::GroupDetails& res
                         {
                             if (other_member.name != member_ptr->name())
                             {
-                                member_ptr->message(std::format("{}님 그룹 참여", other_member.name), MESSAGE_TYPE::STATE);
+                                member_ptr->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), other_member.name), MESSAGE_TYPE::STATE);
                             }
                         }
 
                         // Send "그룹에 참여했습니다." message
-                        member_ptr->message("그룹에 참여했습니다.", MESSAGE_TYPE::STATE);
+                        member_ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
                     }
                     co_return;
                 });
@@ -444,7 +441,7 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
 
                 co_await characters.foreach (
                     [this, &resp](auto& member) {
-                        member->message(std::format("{}님 그룹 참여", resp.new_member.value().name), MESSAGE_TYPE::STATE);
+                        member->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), resp.new_member.value().name), MESSAGE_TYPE::STATE);
                     },
                     members);
 
@@ -459,7 +456,7 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
                 {
                     group->enter(weak);
                     ch->group_id(group->id());
-                    ch->message("그룹에 참여했습니다.", MESSAGE_TYPE::STATE);
+                    ch->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
                 }
             });
             break;
@@ -478,7 +475,7 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
                     auto weak = ch->weak_from_this_as<character>();
                     group->detach(weak);
                     ch->group_reset();
-                    ch->message(resp.action == internal::GroupActionType::Kick ? "그룹에서 추방당했습니다." : "그룹 탈퇴", MESSAGE_TYPE::STATE);
+                    ch->message(resp.action == internal::GroupActionType::Kick ? _TEXT(MESSAGE_GROUP_KICKED) : _TEXT(MESSAGE_GROUP_LEFT_SUCCESS), MESSAGE_TYPE::STATE);
 
                     // Log group leave/kick event
                     auto log_data              = Json::Value();
@@ -494,7 +491,8 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
                     members.push_back(member_ptr);
                 }
 
-                auto message = std::format("{}님이 그룹에서 {}했습니다.", resp.deleted_member.value().name, resp.action == internal::GroupActionType::Kick ? "추방당" : "탈퇴");
+                auto message = resp.action == internal::GroupActionType::Kick ? std::format(_TEXT(MESSAGE_GROUP_MEMBER_KICKED), resp.deleted_member.value().name)
+                                                                              : std::format(_TEXT(MESSAGE_GROUP_MEMBER_LEFT), resp.deleted_member.value().name);
                 co_await characters.foreach (
                     [this, message](auto& member) {
                         member->message(message, MESSAGE_TYPE::STATE);
@@ -522,7 +520,7 @@ async::task<void> server::on_destroyed_group(const internal_resp::DestroyGroup& 
         co_await this->characters.async_write([this, &resp, &members](auto& characters) -> async::task<void> {
             co_await characters.foreach (members, [](auto& ch) {
                 ch->group_reset();
-                ch->message("그룹 해체", MESSAGE_TYPE::STATE);
+                ch->message(_TEXT(MESSAGE_GROUP_DISBANDED), MESSAGE_TYPE::STATE);
             });
         });
     });

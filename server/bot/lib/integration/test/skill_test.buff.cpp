@@ -4,8 +4,7 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
-async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::game_bot> caster,
-                                                      std::shared_ptr<fb::bot::game_bot> target)
+async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::game_bot> caster, std::shared_ptr<fb::bot::game_bot> target)
 {
     fb::logger::debug("Bot {} starting buff/debuff spell test", caster->oid());
     caster->chat("=== BUFF/DEBUFF SPELL TEST STARTED ===");
@@ -21,9 +20,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
         bool        is_self_cast;     // true: cast on self, false: cast on target
         int         expected_mp_cost; // Expected MP consumption
         OBJECT_TYPE target_type;      // Target object type
-        std::function<async::task<bool>(const std::shared_ptr<fb::bot::game_bot>&,
-                                        const std::shared_ptr<fb::bot::game_bot>&)>
-            condition_check;
+        std::function<async::task<bool>(const std::shared_ptr<fb::bot::game_bot>&, const std::shared_ptr<fb::bot::game_bot>&)> condition_check;
         // Additional effect verification function (caster, target)
     };
 
@@ -31,209 +28,207 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
         // DEBUFF spells (6 total) - uses debuff_cast
         {"혼마술",
          SPELL_TYPE::TARGET,
-         false, 40,
+         false,                                 40,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"중독",
          SPELL_TYPE::TARGET,
-         false, 30,
+         false,                                 30,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"절망",
          SPELL_TYPE::TARGET,
-         false, 80,
+         false,                                 80,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"저주",
          SPELL_TYPE::TARGET,
-         false, 30,
+         false,                                 30,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"마비",
          SPELL_TYPE::TARGET,
-         false, 80,
+         false,                                 80,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"노도성황",
          SPELL_TYPE::TARGET,
-         false, 30,
+         false,                                 30,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
 
         // BUFF spells - Self buffs (19 total) - uses buff_cast(me, me)
         {"투명",
          SPELL_TYPE::NORMAL,
-         true,  0,
+         true,                                  0,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"신의축복",
          SPELL_TYPE::NORMAL,
-         true,  30,
+         true,                                  30,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"백호령",
          SPELL_TYPE::NORMAL,
-         true,  30,
+         true,                                  30,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"진백호령",
          SPELL_TYPE::NORMAL,
-         true,  30,
+         true,                                  30,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"측면공격",
          SPELL_TYPE::NORMAL,
-         true,  90,
+         true,                                  90,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"후면공격",
          SPELL_TYPE::NORMAL,
-         true,  90,
+         true,                                  90,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"차폐",
          SPELL_TYPE::NORMAL,
-         true,  100,
+         true,                                  100,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"전혈",
          SPELL_TYPE::NORMAL,
-         true,  30,
+         true,                                  30,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"운기",
          SPELL_TYPE::NORMAL,
-         true,  30,
+         true,                                  30,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"심안투영",
          SPELL_TYPE::NORMAL,
-         true,  30,
+         true,                                  30,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"파력무참",
          SPELL_TYPE::NORMAL,
-         true,  0,
+         true,                                  0,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"신령지익",
          SPELL_TYPE::NORMAL,
-         true,  0,
+         true,                                  0,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"이중공격",
          SPELL_TYPE::NORMAL,
-         true,  60,
+         true,                                  60,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"삼중공격",
          SPELL_TYPE::NORMAL,
-         true,  60,
+         true,                                  60,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"사중공격",
          SPELL_TYPE::NORMAL,
-         true,  150,
+         true,                                  150,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"오중공격",
          SPELL_TYPE::NORMAL,
-         true,  200,
+         true,                                  200,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"분신",
          SPELL_TYPE::NORMAL,
-         true,  0,
+         true,                                  0,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"누리의힘",
          SPELL_TYPE::NORMAL,
-         true,  30,
+         true,                                  30,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
         {"금강불체",
          SPELL_TYPE::NORMAL,
-         true,  600,
+         true,                                  600,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
              co_return true;
-         }},
+         }                                                                  },
 
         // BUFF spells - Target buffs (4 total) - uses buff_cast(me, you)
-        {"무장",
-         SPELL_TYPE::TARGET,
-         false, 30,
+        {
+         "무장",     SPELL_TYPE::TARGET,
+         false,                                 30,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
-             co_return true;
-         }},
+         [](const auto& caster,                                                                   const auto& target) -> async::task<bool> {
+                co_return true;
+            }                                                               },
         {"보호",
          SPELL_TYPE::TARGET,
-         false, 30,
+         false,                                 30,
          OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
-             co_return true;
-         }},
+         [](const auto& caster,                                                                   const auto& target) -> async::
+                                                        task<bool> {
+                                                            co_return true;
+                                                        }                   },
         {"망각",
          SPELL_TYPE::TARGET,
-         false, 60,
+         false,                                 60,
          OBJECT_TYPE::MOB,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
-             co_return true;
-         }},
-        {"대지의힘",
-         SPELL_TYPE::TARGET,
-         false, 30,
-         OBJECT_TYPE::UNKNOWN,
-         [](const auto& caster, const auto& target) -> async::task<bool> {
+         [](const auto& caster,                                                                   const auto& target) -> async::
+                                                        task<bool> {
+                                                            co_return true;
+                                                        }                   },
+        {"대지의힘", SPELL_TYPE::TARGET, false, 30,  OBJECT_TYPE::UNKNOWN, [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }}
     };
@@ -287,9 +282,9 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
             auto before_caster_mp = caster->mp();
             expected_caster_mp    = before_caster_mp - spell.expected_mp_cost;
 
-            auto&& resp = co_await caster->request<fb::protocol::game::response::message>(
-                fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", target_oid, target_position),
-                DEFAULT_TIMEOUT);
+            auto&& resp =
+                co_await caster->request<fb::protocol::game::response::message>(fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", target_oid, target_position),
+                                                                                DEFAULT_TIMEOUT);
 
             if (resp.text == std::format("{} 외웠습니다.", name_with(spell.name)))
                 break;

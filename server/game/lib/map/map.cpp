@@ -19,16 +19,16 @@ map::map(fb::game::server& server, const fb::model::map& model, bool active, con
 
     this->_size.width = reader.read<uint16_t>();
     if (this->_size.width == 0)
-        throw std::runtime_error(std::format("맵 데이터가 올바르지 않습니다. ({})", model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), model.name));
 
     this->_size.height = reader.read<uint16_t>();
     if (this->_size.height == 0)
-        throw std::runtime_error(std::format("맵 데이터가 올바르지 않습니다. ({})", model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), model.name));
 
     uint32_t map_size = this->_size.width * this->_size.height;
     this->_tiles      = std::make_unique<tile[]>(map_size);
     if (this->_tiles == nullptr)
-        throw std::runtime_error(std::format("맵 타일 메모리를 할당할 수 없습니다. ({})", model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_TILE_ALLOCATION_FAILED), model.name));
 
     for (uint32_t i = 0; i < map_size; i++)
     {

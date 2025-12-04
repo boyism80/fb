@@ -55,7 +55,7 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
             throw id_exception(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
 
         case ERROR_CODE::ALREADY_LOGIN:
-            throw id_exception("이미 접속중입니다.");
+            throw id_exception(_TEXT(MESSAGE_ACCOUNT_ALREADY_LOGIN));
 
         case ERROR_CODE::BANNED:
             throw id_exception(build_ban_message(response3.ban_reason, response3.ban_expire_date));
@@ -104,18 +104,18 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
 
 std::string login::build_ban_message(const std::string& reason, const std::optional<std::string>& expire_date)
 {
-    auto ban_message = std::string("계정이 정지되었습니다.");
+    auto ban_message = std::string(_TEXT(MESSAGE_ACCOUNT_BANNED));
     if (!reason.empty())
     {
-        ban_message += std::format("\n사유: {}", reason);
+        ban_message += std::format(_TEXT(MESSAGE_ACCOUNT_BAN_REASON), reason);
     }
     if (expire_date.has_value())
     {
-        ban_message += std::format("\n만료일: {}", expire_date.value());
+        ban_message += std::format(_TEXT(MESSAGE_ACCOUNT_BAN_EXPIRE_DATE), expire_date.value());
     }
     else
     {
-        ban_message += "\n만료일: 영구정지";
+        ban_message += _TEXT(MESSAGE_ACCOUNT_BAN_PERMANENT);
     }
     return ban_message;
 }

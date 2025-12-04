@@ -143,7 +143,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<std::shared_ptr<fb::
                 auto diff = fb::model::datetime() - drop_time.value();
                 if (diff < fb::model::const_value::death_penalty::warmth_time)
                 {
-                    owner->message("죽은 자의 온기가 남아있습니다.");
+                    owner->message(_TEXT(MESSAGE_ITEM_DEATH_PENALTY_WARMTH));
                     break;
                 }
             }

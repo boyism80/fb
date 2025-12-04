@@ -1,6 +1,7 @@
 #include <fb/game/character.h>
 #include <fb/game/server.h>
 #include <fb/game/regex.h>
+#include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
 
@@ -711,7 +712,7 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
             }
 
             if (notify)
-                this->message(std::format("경험치가 {}({}%) 올랐습니다.", value, int(this->experience_percent())));
+                this->message(std::format(_TEXT(MESSAGE_EXP_GAINED), value, int(this->experience_percent())));
         }
 
         if (table::ability.contains(this->_class) == false)
@@ -1646,7 +1647,7 @@ async::task<void> character::death_penalty()
         if (equipment->durability_down(penalty))
         {
             this->items.equipment_off(parts);
-            this->message(std::format("{} 깨졌습니다.", equipment->name()));
+            this->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), equipment->name()));
             equipment.reset();
             continue;
         }
@@ -1676,7 +1677,7 @@ async::task<void> character::death_penalty()
         if (penalty > 0)
         {
             this->exp(this->exp() - penalty);
-            this->message(std::format("경험치를 {} 잃었습니다.", penalty));
+            this->message(std::format(_TEXT(MESSAGE_EXP_LOST), penalty));
         }
     }
 }

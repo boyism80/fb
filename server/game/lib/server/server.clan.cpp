@@ -1,4 +1,5 @@
 #include <fb/game/server.h>
+#include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
 
@@ -12,7 +13,7 @@ void server::assert_clan(uint32_t error) const
         return;
 
     case ERROR_CODE::CLAN_NAME_ALREADY_EXISTS:
-        throw std::runtime_error(std::format("클랜명이 이미 존재함"));
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_NAME_ALREADY_EXISTS));
 
     default:
         throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), error));
@@ -229,7 +230,7 @@ async::task<void> server::on_destroyed_clan(const internal_resp::DestroyClan& re
             members.push_back(shared_ptr);
         }
 
-        auto message = std::format("{} 문파가 해체되었습니다.", resp.clan_name);
+        auto message = std::format(_TEXT(MESSAGE_CLAN_DISBANDED), resp.clan_name);
         co_await this->characters.async_write([this, message, members](auto& characters) -> async::task<void> {
             co_await characters.foreach (
                 [this, message](auto& ch) {
@@ -292,7 +293,7 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
 
                 co_await characters.foreach (
                     [this, &resp](auto& member) {
-                        member->message(std::format("{}님이 문파에 가입했습니다.", resp.new_member.value().name), MESSAGE_TYPE::NOTIFY);
+                        member->message(std::format(_TEXT(MESSAGE_CLAN_MEMBER_JOINED), resp.new_member.value().name), MESSAGE_TYPE::NOTIFY);
                     },
                     members);
 
@@ -301,7 +302,7 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                     clan->attach_character(weak);
                     ch->clan_id(clan->id());
                     ch->update_external(false);
-                    ch->message(std::format("{} 문파에 가입되었습니다.", clan->name()), MESSAGE_TYPE::NOTIFY);
+                    ch->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan->name()), MESSAGE_TYPE::NOTIFY);
 
                     // Log clan join event
                     auto log_data              = Json::Value();
@@ -329,7 +330,7 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                     clan->detach(weak);
                     ch->clan_reset();
                     ch->update_external(false);
-                    ch->message(resp.action == internal::ClanActionType::Kick ? "문파에서 추방당했습니다." : "문파에서 탈퇴했습니다.", MESSAGE_TYPE::NOTIFY);
+                    ch->message(resp.action == internal::ClanActionType::Kick ? _TEXT(MESSAGE_CLAN_KICKED) : _TEXT(MESSAGE_CLAN_LEFT), MESSAGE_TYPE::NOTIFY);
 
                     // Log clan leave/kick event
                     auto log_data              = Json::Value();
@@ -350,7 +351,7 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                     members.push_back(shared_ptr);
                 }
 
-                auto message = std::format("{}님이 문파에서 {}했습니다.", resp.deleted_member.value().name, resp.action == internal::ClanActionType::Kick ? "추방당" : "탈퇴");
+                auto message = std::format(_TEXT(MESSAGE_CLAN_MEMBER_ACTION), resp.deleted_member.value().name, resp.action == internal::ClanActionType::Kick ? "추방당" : "탈퇴");
                 co_await characters.foreach (
                     [this, message](auto& member) {
                         member->message(message, MESSAGE_TYPE::NOTIFY);
@@ -373,7 +374,7 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                 auto target = characters.find(resp.target.value().uid);
                 if (target != nullptr && resp.old_role.has_value() && resp.new_role.has_value())
                 {
-                    target->message(std::format("문파 직책이 변경되었습니다. ({} -> {})", resp.old_role.value(), resp.new_role.value()), MESSAGE_TYPE::NOTIFY);
+                    target->message(std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED), resp.old_role.value(), resp.new_role.value()), MESSAGE_TYPE::NOTIFY);
                 }
 
                 for (auto& [uid, weak] : clan->characters())
@@ -387,7 +388,7 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
 
                     if (resp.target.has_value() && resp.old_role.has_value() && resp.new_role.has_value())
                     {
-                        shared->message(std::format("{}님의 문파 직책이 {}에서 {}로 변경되었습니다.", resp.target.value().name, resp.old_role.value(), resp.new_role.value()),
+                        shared->message(std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED_DETAILED), resp.target.value().name, resp.old_role.value(), resp.new_role.value()),
                                         MESSAGE_TYPE::NOTIFY);
                     }
                 }

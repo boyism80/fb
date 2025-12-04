@@ -353,16 +353,16 @@ std::string login::elapsed_message(const std::string& dt)
     auto sstream = std::stringstream();
     auto days    = elapsed.days();
     if (days > 0)
-        sstream << days << "일 ";
+        sstream << days << _TEXT(MESSAGE_LOGIN_ELAPSED_DAYS);
 
     auto hours = elapsed.hours();
     if (hours > 0)
-        sstream << hours << "시간 ";
+        sstream << hours << _TEXT(MESSAGE_LOGIN_ELAPSED_HOURS);
 
     auto minutes = elapsed.minutes();
     if (minutes > 0)
-        sstream << minutes << "분";
-    sstream << "만에 바람으로...";
+        sstream << minutes << _TEXT(MESSAGE_LOGIN_ELAPSED_MINUTES);
+    sstream << _TEXT(MESSAGE_LOGIN_ELAPSED_SUFFIX);
 
     return sstream.str();
 }
