@@ -1551,7 +1551,7 @@ async::task<bool> game_bot::invite_group(std::shared_ptr<game_bot> target, std::
         },
         timeout);
 
-    co_return resp.text == std::format("{}님 그룹 참여", target->name());
+    co_return resp.text == std::format(_TEXT(MESSAGE_GROUP_JOINED), target->name());
 }
 
 async::task<bool> game_bot::leave_group(std::chrono::milliseconds timeout)
@@ -1563,7 +1563,7 @@ async::task<bool> game_bot::leave_group(std::chrono::milliseconds timeout)
         },
         timeout);
 
-    co_return resp.text == "그룹 탈퇴";
+    co_return resp.text == _TEXT(MESSAGE_GROUP_LEFT_SUCCESS);
 }
 
 async::task<bool> game_bot::kick_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout)
@@ -1576,7 +1576,7 @@ async::task<bool> game_bot::kick_group(std::shared_ptr<game_bot> target, std::ch
         },
         timeout);
 
-    co_return resp.text == "그룹에서 추방당했습니다.";
+    co_return resp.text == _TEXT(MESSAGE_GROUP_KICKED);
 }
 
 async::task<bool> game_bot::change_clan_role(std::shared_ptr<game_bot> target, CLAN_ROLE role, std::chrono::milliseconds timeout)

@@ -71,7 +71,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
                          return resp.type == MESSAGE_TYPE::STATE;
                      },
                      DEFAULT_TIMEOUT);
-                 co_return resp.text == "비바람이 휘몰아치고 있습니다.";
+                 co_return resp.text == _TEXT(MESSAGE_NOT_READY_GAME_SERVER);
              }
              else
              {
