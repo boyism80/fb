@@ -173,9 +173,9 @@ public:
     fb::thread*                                             thread(const fb::game::map& map);
     const fb::model::datetime&                              time() const;
     [[nodiscard]] async::task<void>                         broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type);
-    [[nodiscard]] async::task<bool>                         create_group(character& me, const std::string& target_name);
+    [[nodiscard]] async::task<void>                         create_group(character& me, const std::string& target_name);
     [[nodiscard]] async::task<void>                         destroy_group(character& me);
-    [[nodiscard]] async::task<bool>                         handle_group_action(character& actor, const std::string& target_name);
+    [[nodiscard]] async::task<void>                         handle_group_action(character& actor, const std::string& target_name);
     [[nodiscard]] async::task<void>                         toggle_group_member(character& actor, const std::string& target_name);
     [[nodiscard]] async::task<void>                         leave_group_member(character& leaver);
     [[nodiscard]] async::task<void>                         broadcast_group(uint32_t group_id, const std::string& message, MESSAGE_TYPE type);

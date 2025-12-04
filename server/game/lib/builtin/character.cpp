@@ -1278,9 +1278,9 @@ int builtin::character::builtin_create_group(lua_State* L)
 
         try
         {
-            auto success = co_await server->create_group(*shared, target);
+            co_await server->create_group(*shared, target);
             co_await lua->switching();
-            lua->pushboolean(success);
+            lua->pushboolean(true);
             lua->resume(1);
         }
         catch (std::exception& e)

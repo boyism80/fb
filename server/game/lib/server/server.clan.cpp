@@ -238,161 +238,126 @@ async::task<void> server::join_clan_member(character& inviter, const std::string
 async::task<void> server::leave_clan_member(character& leaver)
 {
     auto weak = leaver.weak_from_this_as<character>();
-    try
-    {
-        // Check if in a clan
-        auto clan_id = leaver.clan_id();
-        if (clan_id.has_value() == false)
-            throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
-        // Verify that leaver is not master before API call (ensure_clan is thread-safe)
-        co_await this->ensure_clan(clan_id.value(), [this, &leaver](auto& clan) -> async::task<void> {
-            auto member = clan->member(leaver.name());
-            if (member != nullptr)
-            {
-                // Master cannot leave clan (must use destroy_clan instead)
-                if (member->role == CLAN_ROLE::MASTER)
-                    throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_LEAVE_MASTER));
-            }
-            co_return;
-        });
+    // Check if in a clan
+    auto clan_id = leaver.clan_id();
+    if (clan_id.has_value() == false)
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
-        // Call API (checks passed)
-        auto&& resp = co_await this->http.post("internal", "/clan/leave", request::LeaveClan{fb::config<uint32_t>("host"), clan_id.value(), leaver.name()});
-        co_await this->threads.switching(weak);
-        co_await this->on_updated_clan(resp);
-    }
-    catch (std::exception& e)
-    {
-        auto ch = weak.lock();
-        if (ch != nullptr)
-            ch->message(e.what(), MESSAGE_TYPE::STATE);
-    }
+    // Verify that leaver is not master before API call (ensure_clan is thread-safe)
+    co_await this->ensure_clan(clan_id.value(), [this, &leaver](auto& clan) -> async::task<void> {
+        auto member = clan->member(leaver.name());
+        if (member != nullptr)
+        {
+            // Master cannot leave clan (must use destroy_clan instead)
+            if (member->role == CLAN_ROLE::MASTER)
+                throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_LEAVE_MASTER));
+        }
+        co_return;
+    });
+
+    // Call API (checks passed)
+    auto&& resp = co_await this->http.post("internal", "/clan/leave", request::LeaveClan{fb::config<uint32_t>("host"), clan_id.value(), leaver.name()});
+    co_await this->threads.switching(weak);
+    co_await this->on_updated_clan(resp);
 }
 
 async::task<void> server::kick_clan_member(character& kicker, const std::string& target_name)
 {
     auto weak = kicker.weak_from_this_as<character>();
-    try
-    {
-        // Check kicker's clan status
-        auto kicker_clan_id = kicker.clan_id();
-        if (kicker_clan_id.has_value() == false)
-            throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
-        // Try to find target in the same thread's thread_params
-        auto current_thread = this->threads.current();
-        if (current_thread != nullptr)
+    // Check kicker's clan status
+    auto kicker_clan_id = kicker.clan_id();
+    if (kicker_clan_id.has_value() == false)
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
+    // Try to find target in the same thread's thread_params
+    auto current_thread = this->threads.current();
+    if (current_thread != nullptr)
+    {
+        auto params = current_thread->template data<thread_params>();
+        auto target = params->characters.find(target_name);
+
+        if (target != nullptr)
         {
-            auto params = current_thread->template data<thread_params>();
-            auto target = params->characters.find(target_name);
-
-            if (target != nullptr)
-            {
-                // Found target in same thread - check state without thread switching
-                auto target_clan_id = target->clan_id();
-                if (target_clan_id.has_value() == false || target_clan_id.value() != kicker_clan_id.value())
-                    throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
-            }
+            // Found target in same thread - check state without thread switching
+            auto target_clan_id = target->clan_id();
+            if (target_clan_id.has_value() == false || target_clan_id.value() != kicker_clan_id.value())
+                throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
         }
+    }
 
-        // Call API (either target not found in same thread, or checks passed)
-        auto&& resp = co_await this->http.post("internal", "/clan/kick", request::KickClan{fb::config<uint32_t>("host"), kicker_clan_id.value(), kicker.name(), target_name});
-        co_await this->threads.switching(weak);
-        co_await this->on_updated_clan(resp);
-    }
-    catch (std::exception& e)
-    {
-        auto ch = weak.lock();
-        if (ch != nullptr)
-            ch->message(e.what(), MESSAGE_TYPE::STATE);
-    }
+    // Call API (either target not found in same thread, or checks passed)
+    auto&& resp = co_await this->http.post("internal", "/clan/kick", request::KickClan{fb::config<uint32_t>("host"), kicker_clan_id.value(), kicker.name(), target_name});
+    co_await this->threads.switching(weak);
+    co_await this->on_updated_clan(resp);
 }
 
 async::task<void> server::change_clan_role(character& changer, const std::string& target_name, CLAN_ROLE role)
 {
     auto weak = changer.weak_from_this_as<character>();
-    try
-    {
-        // Check changer's clan status
-        auto changer_clan_id = changer.clan_id();
-        if (changer_clan_id.has_value() == false)
-            throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+    // Check changer's clan status
+    auto changer_clan_id = changer.clan_id();
+    if (changer_clan_id.has_value() == false)
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
-        // Try to find target in the same thread's thread_params
-        auto current_thread = this->threads.current();
-        if (current_thread != nullptr)
+    // Try to find target in the same thread's thread_params
+    auto current_thread = this->threads.current();
+    if (current_thread != nullptr)
+    {
+        auto params = current_thread->template data<thread_params>();
+        auto target = params->characters.find(target_name);
+
+        if (target != nullptr)
         {
-            auto params = current_thread->template data<thread_params>();
-            auto target = params->characters.find(target_name);
-
-            if (target != nullptr)
-            {
-                // Found target in same thread - check state without thread switching
-                auto target_clan_id = target->clan_id();
-                if (target_clan_id.has_value() == false || target_clan_id.value() != changer_clan_id.value())
-                    throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
-            }
+            // Found target in same thread - check state without thread switching
+            auto target_clan_id = target->clan_id();
+            if (target_clan_id.has_value() == false || target_clan_id.value() != changer_clan_id.value())
+                throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
         }
+    }
 
-        // Call API (either target not found in same thread, or checks passed)
-        auto&& resp =
-            co_await this->http.post("internal",
-                                     "/clan/change-role",
-                                     request::ChangeClanRole{fb::config<uint32_t>("host"), changer.id(), target_name, changer_clan_id.value(), static_cast<uint32_t>(role)});
-        co_await this->threads.switching(weak);
-        co_await this->on_updated_clan(resp);
-    }
-    catch (std::exception& e)
-    {
-        auto ch = weak.lock();
-        if (ch != nullptr)
-            ch->message(e.what(), MESSAGE_TYPE::STATE);
-    }
+    // Call API (either target not found in same thread, or checks passed)
+    auto&& resp = co_await this->http.post("internal",
+                                           "/clan/change-role",
+                                           request::ChangeClanRole{fb::config<uint32_t>("host"), changer.id(), target_name, changer_clan_id.value(), static_cast<uint32_t>(role)});
+    co_await this->threads.switching(weak);
+    co_await this->on_updated_clan(resp);
 }
 
 async::task<void> server::set_clan_title(character& changer, const std::string& title)
 {
     auto weak = changer.weak_from_this_as<character>();
-    try
-    {
-        // Check changer's clan status
-        auto changer_clan_id = changer.clan_id();
-        if (changer_clan_id.has_value() == false)
-            throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+    // Check changer's clan status
+    auto changer_clan_id = changer.clan_id();
+    if (changer_clan_id.has_value() == false)
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
-        // Verify privilege and title before API call (ensure_clan is thread-safe)
-        co_await this->ensure_clan(changer_clan_id.value(), [this, &changer, &title](auto& clan) -> async::task<void> {
-            auto member = clan->member(changer.name());
-            if (member != nullptr)
-            {
-                // Check if changer has sufficient privileges (Master role or higher)
-                if (static_cast<uint32_t>(member->role) < static_cast<uint32_t>(fb::model::const_value::clan::MINIMUM_CHANGE_TITLE_PRIVILEGE))
-                    throw std::runtime_error(_TEXT(MESSAGE_CLAN_NO_PRIVILEGE));
-            }
+    // Verify privilege and title before API call (ensure_clan is thread-safe)
+    co_await this->ensure_clan(changer_clan_id.value(), [this, &changer, &title](auto& clan) -> async::task<void> {
+        auto member = clan->member(changer.name());
+        if (member != nullptr)
+        {
+            // Check if changer has sufficient privileges (Master role or higher)
+            if (static_cast<uint32_t>(member->role) < static_cast<uint32_t>(fb::model::const_value::clan::MINIMUM_CHANGE_TITLE_PRIVILEGE))
+                throw std::runtime_error(_TEXT(MESSAGE_CLAN_NO_PRIVILEGE));
+        }
 
-            // Check if title is the same (no change needed)
-            auto current_title = clan->title();
-            if (current_title.has_value() && current_title.value() == title)
-                throw std::runtime_error(_TEXT(MESSAGE_CLAN_TITLE_NOT_CHANGED));
+        // Check if title is the same (no change needed)
+        auto current_title = clan->title();
+        if (current_title.has_value() && current_title.value() == title)
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_TITLE_NOT_CHANGED));
 
-            // Check if title is too short (minimum 2 characters)
-            if (!title.empty() && title.length() < 2)
-                throw std::runtime_error(_TEXT(MESSAGE_CLAN_TITLE_TOO_SHORT));
-            co_return;
-        });
+        // Check if title is too short (minimum 2 characters)
+        if (!title.empty() && title.length() < 2)
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_TITLE_TOO_SHORT));
+        co_return;
+    });
 
-        // Call API (checks passed)
-        auto&& resp = co_await this->http.post("internal", "/clan/title", request::SetClanTitle{fb::config<uint32_t>("host"), changer.id(), title});
-        co_await this->threads.switching(weak);
-        co_await this->on_updated_clan(resp);
-    }
-    catch (std::exception& e)
-    {
-        auto ch = weak.lock();
-        if (ch != nullptr)
-            ch->message(e.what(), MESSAGE_TYPE::STATE);
-    }
+    // Call API (checks passed)
+    auto&& resp = co_await this->http.post("internal", "/clan/title", request::SetClanTitle{fb::config<uint32_t>("host"), changer.id(), title});
+    co_await this->threads.switching(weak);
+    co_await this->on_updated_clan(resp);
 }
 
 async::task<void> server::broadcast_clan(uint32_t clan_id, const std::string& message, MESSAGE_TYPE type)

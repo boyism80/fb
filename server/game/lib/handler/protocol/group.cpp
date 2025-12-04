@@ -11,6 +11,15 @@ async::task<bool> fb::game::handler::protocol::group::handle(fb::socket<characte
     if (me->inited() == false)
         co_return true;
 
-    std::ignore = co_await this->server.handle_group_action(*me, request.name);
+    auto weak = me->weak_from_this_as<character>();
+    try
+    {
+        co_await this->server.handle_group_action(*me, request.name);
+    }
+    catch (std::exception& e)
+    {
+        if (weak.expired() == false)
+            me->message(e.what(), MESSAGE_TYPE::STATE);
+    }
     co_return true;
 }

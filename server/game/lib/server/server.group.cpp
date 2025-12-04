@@ -67,49 +67,37 @@ async::task<void> server::ensure_group(uint32_t id, std::function<async::task<vo
         });
 }
 
-async::task<bool> server::create_group(character& me, const std::string& target_name)
+async::task<void> server::create_group(character& me, const std::string& target_name)
 {
     auto weak = me.weak_from_this_as<fb::game::character>();
-    try
+
+    if (me.option(OPTION::GROUP) == false)
+        throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
+
+    if (me.group_id().has_value())
+        throw std::runtime_error(_TEXT(MESSAGE_GROUP_ALREADY_JOINED));
+
+    // Try to find target in the same thread's thread_params
+    auto current_thread = this->threads.current();
+    if (current_thread != nullptr)
     {
-        if (me.option(OPTION::GROUP) == false)
-            throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
-
-        if (me.group_id().has_value())
-            throw std::runtime_error(_TEXT(MESSAGE_GROUP_ALREADY_JOINED));
-
-        // Try to find target in the same thread's thread_params
-        auto current_thread = this->threads.current();
-        if (current_thread != nullptr)
+        auto params = current_thread->template data<thread_params>();
+        auto target = params->characters.find(target_name);
+        if (target != nullptr)
         {
-            auto params = current_thread->template data<thread_params>();
-            auto target = params->characters.find(target_name);
-            if (target != nullptr)
-            {
-                // Found target in same thread - check state without thread switching
-                if (target->group_id().has_value())
-                    throw std::runtime_error(_TEXT(MESSAGE_GROUP_ALREADY_JOINED));
+            // Found target in same thread - check state without thread switching
+            if (target->group_id().has_value())
+                throw std::runtime_error(_TEXT(MESSAGE_GROUP_ALREADY_JOINED));
 
-                if (target->option(OPTION::GROUP) == false)
-                    throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
-            }
+            if (target->option(OPTION::GROUP) == false)
+                throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
         }
-
-        // Call API (either target not found in same thread, or checks passed)
-        auto&& resp = co_await this->http.post("internal", "/group/create", request::CreateGroup{fb::config<uint32_t>("host"), me.id(), target_name});
-        co_await this->threads.switching(weak);
-        co_await this->on_create_group(resp);
-
-        co_return true;
     }
-    catch (std::exception& e)
-    {
-        auto ch = weak.lock();
-        if (ch != nullptr)
-            ch->message(e.what(), MESSAGE_TYPE::STATE);
 
-        co_return false;
-    }
+    // Call API (either target not found in same thread, or checks passed)
+    auto&& resp = co_await this->http.post("internal", "/group/create", request::CreateGroup{fb::config<uint32_t>("host"), me.id(), target_name});
+    co_await this->threads.switching(weak);
+    co_await this->on_create_group(resp);
 }
 
 async::task<void> server::destroy_group(character& me)
@@ -127,38 +115,32 @@ async::task<void> server::destroy_group(character& me)
 async::task<void> server::toggle_group_member(character& actor, const std::string& target_name)
 {
     auto weak = actor.weak_from_this_as<character>();
-    try
+    // Try to find target in the same thread's thread_params
+    auto current_thread = this->threads.current();
+    if (current_thread != nullptr)
     {
-        // Try to find target in the same thread's thread_params
-        auto current_thread = this->threads.current();
-        if (current_thread != nullptr)
+        auto params = current_thread->template data<thread_params>();
+        auto target = params->characters.find(target_name);
+        if (target != nullptr)
         {
-            auto params = current_thread->template data<thread_params>();
-            auto target = params->characters.find(target_name);
-            if (target != nullptr)
-            {
-                // Found target in same thread - check state without thread switching
-                if (target->option(OPTION::GROUP) == false)
-                    throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
-            }
+            // Found target in same thread - check state without thread switching
+            if (target->option(OPTION::GROUP) == false)
+                throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
         }
+    }
 
-        // Call toggle API (either target not found in same thread, or checks passed)
-        auto&& resp = co_await this->http.post("internal", "/group/toggle", request::EnterGroup{fb::config<uint32_t>("host"), actor.id(), target_name});
-        co_await this->threads.switching(weak);
-        co_await this->on_updated_group(resp);
-    }
-    catch (std::exception& e)
-    {
-        auto ch = weak.lock();
-        if (ch != nullptr)
-            ch->message(e.what(), MESSAGE_TYPE::STATE);
-    }
+    // Call toggle API (either target not found in same thread, or checks passed)
+    auto&& resp = co_await this->http.post("internal", "/group/toggle", request::EnterGroup{fb::config<uint32_t>("host"), actor.id(), target_name});
+    co_await this->threads.switching(weak);
+    co_await this->on_updated_group(resp);
 }
 
 async::task<void> server::leave_group_member(character& leaver)
 {
-    auto   weak = leaver.weak_from_this_as<character>();
+    auto weak = leaver.weak_from_this_as<character>();
+    if (leaver.group_id().has_value() == false)
+        co_return;
+
     auto&& resp = co_await this->http.post("internal", "/group/leave", request::LeaveGroup{fb::config<uint32_t>("host"), leaver.name()});
     co_await this->threads.switching(weak);
     co_await this->on_updated_group(resp);
@@ -170,98 +152,90 @@ async::task<void> server::broadcast_group(uint32_t group_id, const std::string& 
     co_await this->on_group_broadcast(resp);
 }
 
-async::task<bool> server::handle_group_action(character& actor, const std::string& target_name)
+async::task<void> server::handle_group_action(character& actor, const std::string& target_name)
 {
     auto weak = actor.weak_from_this_as<fb::game::character>();
-    try
+    if (actor.option(OPTION::GROUP) == false)
+        throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
+
+    // Define action function type
+    using action_func = std::function<async::task<void>(character&, const std::string&)>;
+    auto action       = action_func();
+
+    // Case 1: Actor clicks their own group icon (actor == target)
+    if (actor.name() == target_name)
     {
-        if (actor.option(OPTION::GROUP) == false)
-            throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
+        auto group_id = actor.group_id();
+        if (group_id.has_value() == false)
+            co_return;
 
-        // Define action function type
-        using action_func = std::function<async::task<void>(character&, const std::string&)>;
-        auto action       = action_func();
+        // Has group - check if master or member
+        auto actor_name = actor.name();
+        co_await this->ensure_group(group_id.value(), [this, &action, actor_name](auto& group) -> async::task<void> {
+            auto is_master = (group->master() == actor_name);
+            action         = [this, is_master](character& actor, const std::string&) -> async::task<void> {
+                if (is_master)
+                {
+                    // Master - destroy group
+                    co_await this->destroy_group(actor);
+                }
+                else
+                {
+                    // Member - leave group
+                    co_await this->leave_group_member(actor);
+                }
+            };
+            co_return;
+        });
+    }
+    else
+    {
+        // Case 2: Actor clicks target's group icon (actor != target)
+        // Determine action based on actor's state and group state only
+        auto actor_group_id = actor.group_id();
 
-        // Case 1: Actor clicks their own group icon (actor == target)
-        if (actor.name() == target_name)
+        if (actor_group_id.has_value() == false)
         {
-            auto group_id = actor.group_id();
-            if (group_id.has_value() == false)
-            {
-                // No group - do nothing
-                co_return false;
-            }
-
-            // Has group - check if master or member
-            auto actor_name = actor.name();
-            co_await this->ensure_group(group_id.value(), [this, &action, actor_name](auto& group) -> async::task<void> {
+            // Actor has no group - try to create (API will handle errors if target has group)
+            action = [this, target_name](character& actor, const std::string&) -> async::task<void> {
+                co_await this->create_group(actor, target_name);
+            };
+        }
+        else
+        {
+            // Actor has a group - check if master
+            auto actor_group_id_value = actor_group_id.value();
+            auto actor_name           = actor.name();
+            co_await this->ensure_group(actor_group_id_value, [this, &action, target_name, actor_name](auto& group) -> async::task<void> {
                 auto is_master = (group->master() == actor_name);
-                action         = [this, is_master](character& actor, const std::string&) -> async::task<void> {
-                    if (is_master)
+
+                action = [this, is_master, target_name](character& actor, const std::string&) -> async::task<void> {
+                    if (is_master == false)
                     {
-                        // Master - destroy group
-                        co_await this->destroy_group(actor);
+                        // Actor is a member, not master - do nothing
+                        co_return;
                     }
-                    else
-                    {
-                        // Member - leave group
-                        co_await this->leave_group_member(actor);
-                    }
+
+                    // Actor is master - toggle member (enter if not in group, kick if already in group)
+                    co_await this->toggle_group_member(actor, target_name);
                 };
                 co_return;
             });
         }
-        else
-        {
-            // Case 2: Actor clicks target's group icon (actor != target)
-            // Determine action based on actor's state and group state only
-            auto actor_group_id = actor.group_id();
+    }
 
-            if (actor_group_id.has_value() == false)
-            {
-                // Actor has no group - try to create (API will handle errors if target has group)
-                action = [this, target_name](character& actor, const std::string&) -> async::task<void> {
-                    co_await this->create_group(actor, target_name);
-                };
-            }
-            else
-            {
-                // Actor has a group - check if master
-                auto actor_group_id_value = actor_group_id.value();
-                auto actor_name           = actor.name();
-                co_await this->ensure_group(actor_group_id_value, [this, &action, target_name, actor_name](auto& group) -> async::task<void> {
-                    auto is_master = (group->master() == actor_name);
-
-                    action = [this, is_master, target_name](character& actor, const std::string&) -> async::task<void> {
-                        if (is_master == false)
-                        {
-                            // Actor is a member, not master - do nothing
-                            co_return;
-                        }
-
-                        // Actor is master - toggle member (enter if not in group, kick if already in group)
-                        co_await this->toggle_group_member(actor, target_name);
-                    };
-                    co_return;
-                });
-            }
-        }
-
-        co_await this->threads.switching(weak);
-        if (action)
+    co_await this->threads.switching(weak);
+    if (action)
+    {
+        try
         {
             co_await action(actor, target_name);
         }
-
-        co_return true;
-    }
-    catch (std::exception& e)
-    {
-        auto ch = weak.lock();
-        if (ch != nullptr)
-            ch->message(e.what(), MESSAGE_TYPE::STATE);
-
-        co_return false;
+        catch (std::exception& e)
+        {
+            if (weak.expired() == false)
+                actor.message(e.what(), MESSAGE_TYPE::STATE);
+        }
     }
 }
 

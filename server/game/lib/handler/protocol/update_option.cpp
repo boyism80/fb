@@ -43,7 +43,14 @@ async::task<bool> update_option::handle(fb::socket<character>& session, fb::prot
             {
                 // Currently in a group - use handle_group_action to handle both master (destroy) and member (leave) cases
                 // Note: handle_group_action checks OPTION::GROUP, but at this point it's still true
-                std::ignore = co_await this->server.handle_group_action(*ch, ch->name());
+                try
+                {
+                    co_await this->server.handle_group_action(*ch, ch->name());
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::warn("update_option: handle_group_action failed: {}", e.what());
+                }
             }
         }
 
