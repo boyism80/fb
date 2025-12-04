@@ -9,7 +9,7 @@ IMPLEMENT_LUA_EXTENSION(group, "fb.game.group")
 {"members",             builtin::group::builtin_members},
 {"nears",               builtin::group::builtin_nears},
 {"message",             builtin::group::builtin_message},
-{"kick",                builtin::group::builtin_kick},
+{"toggle",              builtin::group::builtin_toggle},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::group::builtin_master(lua_State* L)
@@ -118,14 +118,37 @@ int builtin::group::builtin_message(lua_State* L)
         lua->resume(1);
     };
 
-    std::ignore = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(lua, server, group_id, message, type);
-    });
+    // Use group's master character to determine the thread
+    auto master_name = group->master();
+    return server->characters.read([=](auto& container) {
+        auto master_ch = container.find(master_name);
+        if (master_ch == nullptr)
+        {
+            // If master not found, fall back to current thread dispatch
+            auto thread = server->threads.current();
+            if (thread == nullptr)
+            {
+                lua->pushstring("thread not found");
+                return 1;
+            }
 
-    return lua->yield(1);
+            thread->dispatch([=](auto&) -> async::task<void> {
+                co_await fn(lua, server, group_id, message, type);
+            });
+            return lua->yield(1);
+        }
+        else
+        {
+            auto weak = master_ch->weak_from_this_as<fb::game::character>();
+            server->threads.enqueue(weak, [=](auto&) -> async::task<void> {
+                co_await fn(lua, server, group_id, message, type);
+            });
+            return lua->yield(1);
+        }
+    });
 }
 
-int builtin::group::builtin_kick(lua_State* L)
+int builtin::group::builtin_toggle(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -137,21 +160,21 @@ int builtin::group::builtin_kick(lua_State* L)
     if (group == nullptr)
         return 0;
 
-    auto kicker = lua->touserdata<fb::game::character>(2);
-    if (kicker == nullptr)
+    auto actor = lua->touserdata<fb::game::character>(2);
+    if (actor == nullptr)
         return 0;
 
     auto target_name = lua->tostring(3);
     if (target_name.empty())
         return 0;
 
-    static auto fn = [](fb::lua::context* lua, fb::game::server* server, std::shared_ptr<fb::game::character> kicker_shared, const std::string& target_name) -> async::task<void> {
+    static auto fn = [](fb::lua::context* lua, fb::game::server* server, std::shared_ptr<fb::game::character> actor_shared, const std::string& target_name) -> async::task<void> {
         try
         {
-            if (kicker_shared == nullptr)
-                throw std::runtime_error("kicker character is not alive");
+            if (actor_shared == nullptr)
+                throw std::runtime_error("actor character is not alive");
 
-            co_await server->kick_group_member(*kicker_shared, target_name);
+            co_await server->toggle_group_member(*actor_shared, target_name);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -162,9 +185,10 @@ int builtin::group::builtin_kick(lua_State* L)
         lua->resume(1);
     };
 
-    auto kicker_shared = kicker->shared_from_this_as<fb::game::character>();
-    std::ignore        = server->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(lua, server, kicker_shared, target_name);
+    auto actor_shared = actor->shared_from_this_as<fb::game::character>();
+    auto actor_weak   = actor->weak_from_this_as<fb::game::character>();
+    server->threads.enqueue(actor_weak, [=](auto&) -> async::task<void> {
+        co_await fn(lua, server, actor_shared, target_name);
     });
 
     return lua->yield(1);

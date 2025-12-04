@@ -11,7 +11,7 @@ struct group
     static int builtin_members(lua_State* L);
     static int builtin_nears(lua_State* L);
     static int builtin_message(lua_State* L);
-    static int builtin_kick(lua_State* L);
+    static int builtin_toggle(lua_State* L);
 };
 
 } // namespace fb::game::builtin

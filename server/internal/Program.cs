@@ -172,6 +172,7 @@ public class Program
         builder.Services.AddHostedService<Http.Service.SessionTtlRefreshService>();
         builder.Services.AddHealthChecks();
         builder.Services.AddScoped<StorageService>();
+        builder.Services.AddScoped<Internal.Services.GroupService>();
 
         var app = builder.Build();
         app.MapHealthChecks("/health");

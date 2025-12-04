@@ -20,7 +20,8 @@ function sample_group(me, npc)
                 end
             end
 
-            if me:create_group(name) then
+            local error = group:toggle(me, name)
+            if error == nil then
                 if found == nil then
                     me:dialog(npc, '그룹에 초대했습니다.')
                 else
