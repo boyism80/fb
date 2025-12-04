@@ -111,7 +111,7 @@ async::task<void> server::on_create_clan(const internal_resp::ClanDetails& resp)
                     if (ch != nullptr)
                     {
                         ch->clan_id(id);
-                        clan->attach_character(ch->weak_from_this_as<character>());
+                        clan->attach(ch->weak_from_this_as<character>());
 
                         // Log clan create event only if master is in this server
                         auto log_data              = Json::Value();
@@ -425,6 +425,10 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
             if (resp.new_member.has_value() == false || resp.target.has_value() == false)
                 break;
 
+            // Add member to clan with role (default to MATE if not specified)
+            auto role = resp.new_role.has_value() ? static_cast<CLAN_ROLE>(resp.new_role.value()) : CLAN_ROLE::MATE;
+            clan->join(clan_member{resp.new_member.value().name, role});
+
             co_await this->characters.async_write([this, &resp, clan](auto& characters) -> async::task<void> {
                 auto ch = characters.find(resp.new_member.value().name);
                 if (ch == nullptr)
@@ -451,7 +455,7 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
 
                 if (weak.expired() == false)
                 {
-                    clan->attach_character(weak);
+                    clan->attach(weak);
                     ch->clan_id(clan->id());
                     ch->update_external(false);
                     ch->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan->name()), MESSAGE_TYPE::NOTIFY);

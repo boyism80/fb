@@ -90,9 +90,8 @@ std::vector<std::shared_ptr<fb::bot::game_bot>> bot_integration_test::get_test_b
 
 async::task<void> bot_integration_test::on_active(game_bot_controller& controller)
 {
-    auto ip = controller.container.ipv4(fb::config<std::string>("ip"));
-    auto endpoint =
-        boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
+    auto ip       = controller.container.ipv4(fb::config<std::string>("ip"));
+    auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
 
     fb::logger::debug("{} initializing and spawning {} bots", this->name(), this->bot_count);
 
@@ -187,8 +186,7 @@ async::task<void> bot_integration_test::on_parallel_scenario_finished(uint32_t i
     co_return;
 }
 
-async::task<void> bot_integration_test::execute_parallel_scenario(std::shared_ptr<parallel_scenarios_context> context,
-                                                                  uint32_t                                    index)
+async::task<void> bot_integration_test::execute_parallel_scenario(std::shared_ptr<parallel_scenarios_context> context, uint32_t index)
 {
     auto& queue = context->queues[index];
     while (queue.empty() == false)
@@ -256,8 +254,7 @@ async::task<bool> bot_integration_test::parallel_scenarios(std::vector<std::pair
     return context->promise->task();
 }
 
-async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot&                      bot,
-                                                         const fb::protocol::game::response::id& response)
+async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response)
 {
     if (this->is_ready() == false)
         co_return;
@@ -271,8 +268,7 @@ async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot&     
     co_return;
 }
 
-async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot&                            bot,
-                                                         const fb::protocol::game::response::position& response)
+async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot& bot, const fb::protocol::game::response::position& response)
 {
     if (this->is_ready() == false)
         co_return;
@@ -286,9 +282,7 @@ async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot&     
     co_return;
 }
 
-async::task<void>
-bot_integration_test::on_hook_update_external(fb::bot::game_bot&                                         bot,
-                                              const fb::protocol::game::response::update_external<true>& response)
+async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bot& bot, const fb::protocol::game::response::update_external<true>& response)
 {
     if (bot.inited() == false)
     {
@@ -349,15 +343,11 @@ async::task<void> bot_integration_test::arrange_bots_in_line_formation()
         co_await bot->move(DIRECTION::RIGHT, i);
 
         co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_INTERVAL);
-        fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM",
-                          bot->name(),
-                          target_position.x,
-                          target_position.y);
+        fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM", bot->name(), target_position.x, target_position.y);
     }
 }
 
-async::task<void>
-bot_integration_test::arrange_bots_in_grid_formation(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y)
+async::task<void> bot_integration_test::arrange_bots_in_grid_formation(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y)
 {
     auto bots = this->get_test_bots();
 
@@ -380,10 +370,7 @@ bot_integration_test::arrange_bots_in_grid_formation(uint16_t start_x, uint16_t 
         else
             std::ignore = bot->map_move("낙랑의방", grid_x, grid_y, DEFAULT_TIMEOUT);
 
-        fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM",
-                          bot->fd(),
-                          bot->position().x,
-                          bot->position().y);
+        fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM", bot->fd(), bot->position().x, bot->position().y);
     }
 }
 
@@ -405,7 +392,7 @@ async::task<void> bot_integration_test::form_group()
                 if (resp.type != MESSAGE_TYPE::STATE)
                     return false;
 
-                return resp.text.find("님 그룹 참여") != std::string::npos;
+                return resp.text.find("님 그룹에 참여") != std::string::npos;
             },
             DEFAULT_TIMEOUT);
         caster->chat(resp.text);

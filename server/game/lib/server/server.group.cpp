@@ -206,13 +206,16 @@ async::task<void> server::handle_group_action(character& actor, const std::strin
             // Actor has a group - check if master
             auto actor_group_id_value = actor_group_id.value();
             auto actor_name           = actor.name();
-            co_await this->ensure_group(actor_group_id_value, [this, &action, target_name, actor_name](auto& group) -> async::task<void> {
+            co_await this->ensure_group(actor_group_id_value, [this, &action, weak, target_name, actor_name](auto& group) -> async::task<void> {
                 auto is_master = (group->master() == actor_name);
 
-                action = [this, is_master, target_name](character& actor, const std::string&) -> async::task<void> {
+                action = [this, is_master, target_name, weak](character& actor, const std::string&) -> async::task<void> {
                     if (is_master == false)
                     {
-                        // Actor is a member, not master - do nothing
+                        auto actor = weak.lock();
+                        if (actor != nullptr)
+                            actor->message(_TEXT(MESSAGE_GROUP_NOT_OWNER));
+
                         co_return;
                     }
 

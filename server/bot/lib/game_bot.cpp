@@ -1547,7 +1547,13 @@ async::task<bool> game_bot::invite_group(std::shared_ptr<game_bot> target, std::
     auto&& resp = co_await this->request<fb::protocol::game::response::message>(
         fb::protocol::game::request::group{target->name()},
         [](auto& resp) -> bool {
-            return resp.type == MESSAGE_TYPE::STATE;
+            if (resp.type != MESSAGE_TYPE::STATE)
+                return false;
+
+            if (resp.text == _TEXT(MESSAGE_GROUP_JOINED_SUCCESS))
+                return false;
+
+            return true;
         },
         timeout);
 
@@ -1559,24 +1565,29 @@ async::task<bool> game_bot::leave_group(std::chrono::milliseconds timeout)
     auto&& resp = co_await this->request<fb::protocol::game::response::message>(
         fb::protocol::game::request::group{this->name()},
         [](auto& resp) -> bool {
-            return resp.type == MESSAGE_TYPE::STATE;
+            if (resp.type != MESSAGE_TYPE::STATE)
+                return false;
+
+            return resp.text == _TEXT(MESSAGE_GROUP_LEFT_SUCCESS);
         },
         timeout);
 
-    co_return resp.text == _TEXT(MESSAGE_GROUP_LEFT_SUCCESS);
+    co_return true;
 }
 
 async::task<bool> game_bot::kick_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout)
 {
     auto&& resp = co_await this->request<fb::protocol::game::response::message>(
-        target,
         fb::protocol::game::request::group{target->name()},
-        [](auto& resp) -> bool {
-            return resp.type == MESSAGE_TYPE::STATE;
+        [&target](auto& resp) -> bool {
+            if (resp.type != MESSAGE_TYPE::STATE)
+                return false;
+
+            return resp.text == std::format(_TEXT(MESSAGE_GROUP_MEMBER_KICKED), target->name());
         },
         timeout);
 
-    co_return resp.text == _TEXT(MESSAGE_GROUP_KICKED);
+    co_return true;
 }
 
 async::task<bool> game_bot::change_clan_role(std::shared_ptr<game_bot> target, CLAN_ROLE role, std::chrono::milliseconds timeout)

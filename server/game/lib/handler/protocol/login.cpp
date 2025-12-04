@@ -87,7 +87,7 @@ login::init_base(const internal::Character& response, character& ch, std::option
             if (ch == nullptr)
                 co_return;
 
-            clan->attach_character(weak);
+            clan->attach(weak);
             ch->clan_id(clan->id());
             co_return;
         });

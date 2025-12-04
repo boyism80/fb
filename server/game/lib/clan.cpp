@@ -88,7 +88,7 @@ const std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>>& clan::ch
     return this->_characters;
 }
 
-void clan::attach_character(std::weak_ptr<character> ch)
+void clan::attach(std::weak_ptr<character> ch)
 {
     auto shared = ch.lock();
     if (shared == nullptr)
