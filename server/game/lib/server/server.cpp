@@ -143,7 +143,7 @@ async::task<void> server::on_start()
     for (auto& [thread, maps] : maps_division)
     {
         async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
-            auto params = new thread_params();
+            auto params = new thread_params(*this);
             for (auto map : maps)
             {
                 params->maps.insert({map->model.id, map});
