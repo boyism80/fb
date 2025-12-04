@@ -2781,7 +2781,13 @@ public:
     inline static constexpr const char* MESSAGE_CLAN_NAME_ALREADY_EXISTS = "클랜명이 이미 존재함";
     inline static constexpr const char* MESSAGE_CLAN_KICKED = "문파에서 추방당했습니다.";
     inline static constexpr const char* MESSAGE_CLAN_LEFT = "문파에서 탈퇴했습니다.";
-    inline static constexpr const char* MESSAGE_CLAN_MEMBER_ACTION = "{}님이 문파에서 {}했습니다.";
+    inline static constexpr const char* MESSAGE_CLAN_NO_PRIVILEGE = "문파 권한이 부족합니다.";
+    inline static constexpr const char* MESSAGE_CLAN_CANNOT_LEAVE_MASTER = "문파 마스터는 탈퇴할 수 없습니다.";
+    inline static constexpr const char* MESSAGE_CLAN_MEMBER_EXISTS = "문파에 다른 멤버가 존재합니다.";
+    inline static constexpr const char* MESSAGE_CLAN_TITLE_NOT_CHANGED = "문파 칭호가 변경되지 않았습니다.";
+    inline static constexpr const char* MESSAGE_CLAN_TITLE_TOO_SHORT = "문파 칭호가 너무 짧습니다.";
+    inline static constexpr const char* MESSAGE_CLAN_MEMBER_KICKED = "{}님이 문파에서 추방당했습니다.";
+    inline static constexpr const char* MESSAGE_CLAN_MEMBER_LEFT = "{}님이 문파에서 탈퇴했습니다.";
     inline static constexpr const char* MESSAGE_CLAN_ROLE_CHANGED = "문파 직책이 변경되었습니다. ({} -> {})";
     inline static constexpr const char* MESSAGE_CLAN_DISBANDED = "{} 문파가 해체되었습니다.";
     inline static constexpr const char* MESSAGE_CLAN_MEMBER_JOINED = "{}님이 문파에 가입했습니다.";

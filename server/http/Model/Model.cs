@@ -1009,7 +1009,13 @@ namespace Fb.Model.ConstValue
         public const string MessageClanNameAlreadyExists = "클랜명이 이미 존재함";
         public const string MessageClanKicked = "문파에서 추방당했습니다.";
         public const string MessageClanLeft = "문파에서 탈퇴했습니다.";
-        public const string MessageClanMemberAction = "{}님이 문파에서 {}했습니다.";
+        public const string MessageClanNoPrivilege = "문파 권한이 부족합니다.";
+        public const string MessageClanCannotLeaveMaster = "문파 마스터는 탈퇴할 수 없습니다.";
+        public const string MessageClanMemberExists = "문파에 다른 멤버가 존재합니다.";
+        public const string MessageClanTitleNotChanged = "문파 칭호가 변경되지 않았습니다.";
+        public const string MessageClanTitleTooShort = "문파 칭호가 너무 짧습니다.";
+        public const string MessageClanMemberKicked = "{}님이 문파에서 추방당했습니다.";
+        public const string MessageClanMemberLeft = "{}님이 문파에서 탈퇴했습니다.";
         public const string MessageClanRoleChanged = "문파 직책이 변경되었습니다. ({} -> {})";
         public const string MessageClanDisbanded = "{} 문파가 해체되었습니다.";
         public const string MessageClanMemberJoined = "{}님이 문파에 가입했습니다.";
