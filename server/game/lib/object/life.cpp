@@ -1,6 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/game/life.h>
 #include <fb/game/map.h>
+#include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
 
@@ -122,7 +123,7 @@ void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_typ
 
         // Log death event
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ch.id());
+        log_data["character_id"]   = static_cast<Json::Int64>(ch.id);
         log_data["character_name"] = UTF8(ch.name(), PLATFORM::WINDOWS);
         log_data["level"]          = ch.level();
         auto map                   = ch.map();
@@ -135,7 +136,7 @@ void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_typ
         if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
         {
             auto& killer            = static_cast<character&>(*from);
-            log_data["killer_id"]   = static_cast<Json::Int64>(killer.id());
+            log_data["killer_id"]   = static_cast<Json::Int64>(killer.id);
             log_data["killer_name"] = UTF8(killer.name(), PLATFORM::WINDOWS);
         }
         ch.server.log.write("death", log_data);
@@ -200,7 +201,7 @@ async::task<void> life::attack(DURATION duration)
             // Handle weapon durability
             if (attack_count > 0 && weapon->durability_down(attack_count))
             {
-                ch->message(std::format("{} 깨졌습니다.", weapon->name()));
+                ch->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), weapon->name()));
                 ch->items.equipment_off(EQUIPMENT_PARTS::WEAPON);
             }
         }

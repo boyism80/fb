@@ -137,14 +137,14 @@ const item::nullable_time& item::dropped_time() const
     return this->_dropped_time;
 }
 
-void fb::game::item::death_cid(std::optional<uint32_t> cid)
+void fb::game::item::death_uid(std::optional<uint32_t> cid)
 {
-    this->_death_cid = cid;
+    this->_death_uid = cid;
 }
 
-std::optional<uint32_t> fb::game::item::death_cid() const
+std::optional<uint32_t> fb::game::item::death_uid() const
 {
-    return this->_death_cid;
+    return this->_death_uid;
 }
 
 bool item::active()
@@ -275,7 +275,7 @@ fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const
 
     auto& model        = this->based<fb::model::item>();
     auto  result       = fb::protocol::internal::Item();
-    result.user        = owner->id();
+    result.user        = owner->id;
     result.index       = -1;
     result.parts       = static_cast<uint16_t>(parts);
     result.stored      = -1;

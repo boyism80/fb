@@ -22,35 +22,37 @@ void server::assert_mail(uint32_t error) const
     }
 }
 
-void server::on_write_mail(const internal_resp::WriteMail& resp)
+async::task<void> server::on_write_mail(const internal_resp::WriteMail& resp)
 {
     assert_mail(resp.error);
 
-    auto ch = this->characters.find(resp.mail.user);
-    if (ch == nullptr)
-        return;
+    this->characters.write([this, &resp](auto& characters) {
+        auto ch = characters.find(resp.mail.user);
+        if (ch == nullptr)
+            return;
 
-    auto weak = ch->weak_from_this_as<character>();
-    this->threads.enqueue(weak, [this, ch, unread = resp.unread, resp](auto& thread) -> async::task<void> {
-        ch->mail_box.unread_count(unread);
+        auto weak = ch->template weak_from_this_as<character>();
+        this->threads.enqueue(weak, [this, ch, unread = resp.unread, resp](auto& thread) -> async::task<void> {
+            ch->mail_box.unread_count(unread);
 
-        // Log mail receive event
-        auto log_data            = Json::Value();
-        log_data["character_id"] = static_cast<Json::Int64>(ch->id());
-        log_data["sender_name"]  = UTF8(resp.mail.sender, PLATFORM::WINDOWS);
-        log_data["mail_id"]      = static_cast<Json::Int64>(resp.mail.id);
-        log_data["title"]        = UTF8(resp.mail.title, PLATFORM::WINDOWS);
-        this->log.write("mail_receive", log_data);
-
-        co_return;
+            // Log mail receive event
+            auto log_data            = Json::Value();
+            log_data["character_id"] = static_cast<Json::Int64>(ch->id);
+            log_data["sender_name"]  = UTF8(resp.mail.sender, PLATFORM::WINDOWS);
+            log_data["mail_id"]      = static_cast<Json::Int64>(resp.mail.id);
+            log_data["title"]        = UTF8(resp.mail.title, PLATFORM::WINDOWS);
+            this->log.write("mail_receive", log_data);
+            co_return;
+        });
     });
+    co_return;
 }
 
 async::task<internal_resp::WriteMail> server::send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents)
 {
     auto   weak   = ch.weak_from_this();
     auto   thread = ch.thread();
-    auto&& resp   = co_await this->http.post("internal", "/mail/write", WriteMail{ch.id(), to, title, contents, config<uint32_t>("id")});
+    auto&& resp   = co_await this->http.post("internal", "/mail/write", WriteMail{ch.id, to, title, contents, config<uint32_t>("id")});
     co_await this->threads.switching(weak);
 
     this->assert_mail(resp.error);
@@ -61,7 +63,7 @@ async::task<internal_resp::WriteMail> server::send_mail(const character& ch, con
 async::task<internal_resp::GetMailList> server::mail_list(const character& ch, uint16_t offset, uint16_t count)
 {
     auto   weak = ch.weak_from_this();
-    auto&& resp = co_await this->http.get<internal_resp::GetMailList>("internal", std::format("/mail/{}?offset={}&count={}", ch.id(), offset, count));
+    auto&& resp = co_await this->http.get<internal_resp::GetMailList>("internal", std::format("/mail/{}?offset={}&count={}", ch.id, offset, count));
     co_await this->threads.switching(weak);
 
     this->assert_mail(resp.error);
@@ -71,7 +73,7 @@ async::task<internal_resp::GetMailList> server::mail_list(const character& ch, u
 async::task<internal_resp::GetMail> server::read_mail(character& ch, uint16_t id)
 {
     auto   weak = ch.weak_from_this();
-    auto   url  = std::format("/mail/{}/{}", ch.id(), id);
+    auto   url  = std::format("/mail/{}/{}", ch.id, id);
     auto&& resp = co_await this->http.get<internal_resp::GetMail>("internal", url);
     co_await this->threads.switching(weak);
 
@@ -83,7 +85,7 @@ async::task<internal_resp::GetMail> server::read_mail(character& ch, uint16_t id
 async::task<internal_resp::DeleteMail> server::delete_mail(character& ch, uint16_t id)
 {
     auto   weak = ch.weak_from_this();
-    auto&& resp = co_await this->http.post("internal", "/mail/delete", DeleteMail{ch.id(), id});
+    auto&& resp = co_await this->http.post("internal", "/mail/delete", DeleteMail{ch.id, id});
     co_await this->threads.switching(weak);
     this->assert_mail(resp.error);
     ch.mail_box.unread_count(resp.unread);

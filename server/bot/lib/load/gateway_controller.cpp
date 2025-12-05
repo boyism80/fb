@@ -10,24 +10,21 @@ gateway_bot_controller::gateway_bot_controller(bot_container& container) :
     fb::bot::gateway_bot_controller(container),
     _remained_count(fb::config<uint32_t>("spawn_count") / fb::config<uint32_t>("io_size"))
 {
-    this->bind(&gateway_bot_controller::handle_welcome);
-    this->bind(&gateway_bot_controller::handle_crt);
-    this->bind(&gateway_bot_controller::handle_hosts);
-    this->bind(&gateway_bot_controller::handle_transfer);
+    this->bind(&gateway_bot_controller::on_welcome);
+    this->bind(&gateway_bot_controller::on_crt);
+    this->bind(&gateway_bot_controller::on_hosts);
+    this->bind(&gateway_bot_controller::on_transfer);
 }
 
 void gateway_bot_controller::initialize()
 {
-    this->bind_timer(&gateway_bot_controller::handle_bot_spawn,
-                     std::chrono::milliseconds(fb::config<uint32_t>("interval")));
+    this->bind_timer(&gateway_bot_controller::on_bot_spawn, std::chrono::milliseconds(fb::config<uint32_t>("interval")));
 }
 
-async::task<void> gateway_bot_controller::handle_bot_spawn()
+async::task<void> gateway_bot_controller::on_bot_spawn()
 {
-    auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(fb::config<std::string>("ip")),
-                                                   fb::config<uint16_t>("port"));
-    auto count =
-        std::min(this->_remained_count, fb::config<uint32_t>("spawn_per_interval") / fb::config<uint32_t>("io_size"));
+    auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(fb::config<std::string>("ip")), fb::config<uint16_t>("port"));
+    auto count    = std::min(this->_remained_count, fb::config<uint32_t>("spawn_per_interval") / fb::config<uint32_t>("io_size"));
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -39,30 +36,26 @@ async::task<void> gateway_bot_controller::handle_bot_spawn()
     co_return;
 }
 
-async::task<void> gateway_bot_controller::handle_welcome(gateway_bot&                                    bot,
-                                                         const fb::protocol::gateway::response::welcome& response)
+async::task<void> gateway_bot_controller::on_welcome(gateway_bot& bot, const fb::protocol::gateway::response::welcome& response)
 {
     bot.send(fb::protocol::gateway::request::version{550, 0xD7}, false, true);
     co_return;
 }
 
-async::task<void> gateway_bot_controller::handle_crt(gateway_bot&                                       bot,
-                                                     const fb::protocol::gateway::response::encryption& response)
+async::task<void> gateway_bot_controller::on_crt(gateway_bot& bot, const fb::protocol::gateway::response::encryption& response)
 {
     bot.encryption(response.cryptor);
     bot.send(fb::protocol::gateway::request::endpoint{0x01, 0});
     co_return;
 }
 
-async::task<void> gateway_bot_controller::handle_hosts(gateway_bot&                                     bot,
-                                                       const fb::protocol::gateway::response::endpoint& response)
+async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const fb::protocol::gateway::response::endpoint& response)
 {
     bot.send(fb::protocol::gateway::request::endpoint{0x00, 0});
     co_return;
 }
 
-async::task<void> gateway_bot_controller::handle_transfer(gateway_bot&                            bot,
-                                                          const fb::protocol::response::transfer& response)
+async::task<void> gateway_bot_controller::on_transfer(gateway_bot& bot, const fb::protocol::response::transfer& response)
 {
     bot.close();
 

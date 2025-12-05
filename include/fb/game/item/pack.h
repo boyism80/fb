@@ -21,7 +21,7 @@ public:
     std::string             inven_name() const override;
 
 public:
-    bool active() final;
+    bool active() override final;
 };
 
 } // namespace fb::game

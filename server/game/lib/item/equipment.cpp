@@ -48,7 +48,7 @@ bool fb::game::equipment::active()
         {
             auto params = fb::model::dsl::level(dsl.params);
             if (owner->level() < params.min)
-                throw std::runtime_error("레벨이 부족합니다.");
+                throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_LEVEL_INSUFFICIENT));
         }
         break;
 
@@ -56,7 +56,7 @@ bool fb::game::equipment::active()
         {
             auto params = fb::model::dsl::strength(dsl.params);
             if (owner->stat.str() < params.value)
-                throw std::runtime_error("너무 무겁습니다.");
+                throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_TOO_HEAVY));
         }
         break;
 
@@ -64,7 +64,7 @@ bool fb::game::equipment::active()
         {
             auto params = fb::model::dsl::dexterity(dsl.params);
             if (owner->stat.dex() < params.value)
-                throw std::runtime_error("민첩함이 부족합니다.");
+                throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_DEXTERITY_INSUFFICIENT));
         }
         break;
 
@@ -72,7 +72,7 @@ bool fb::game::equipment::active()
         {
             auto params = fb::model::dsl::intelligence(dsl.params);
             if (owner->stat.intelligence() < params.value)
-                throw std::runtime_error("지능이 부족합니다.");
+                throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_INTELLIGENCE_INSUFFICIENT));
         }
         break;
 
@@ -80,7 +80,7 @@ bool fb::game::equipment::active()
         {
             auto params = fb::model::dsl::class_t(dsl.params);
             if (owner->cls() != params.value)
-                throw std::runtime_error("착용할 수 없습니다.");
+                throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_CANNOT_EQUIP));
         }
         break;
 
@@ -88,7 +88,7 @@ bool fb::game::equipment::active()
         {
             auto params = fb::model::dsl::promotion(dsl.params);
             if (owner->promotion() < params.value)
-                throw std::runtime_error("착용할 수 없습니다.");
+                throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_CANNOT_EQUIP));
         }
         break;
 
@@ -96,7 +96,7 @@ bool fb::game::equipment::active()
         {
             auto params = fb::model::dsl::sex(dsl.params);
             if (owner->sex() != params.value)
-                throw std::runtime_error("착용할 수 없습니다.");
+                throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_CANNOT_EQUIP));
         }
         break;
         }
@@ -150,7 +150,7 @@ bool fb::game::equipment::active()
         break;
 
     default:
-        throw std::runtime_error("입을 수 없는 물건입니다.");
+        throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_INVALID_TYPE));
     }
 
     fb::game::item::active();

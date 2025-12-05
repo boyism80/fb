@@ -9,10 +9,10 @@ game_bot_controller::game_bot_controller(bot_container& container) :
 
 void game_bot_controller::initialize()
 {
-    this->bind_thread_timer(&game_bot_controller::handle_timer, 100ms);
+    this->bind_thread_timer(&game_bot_controller::on_timer, 100ms);
 }
 
-async::task<void> game_bot_controller::handle_timer(const fb::model::datetime& now, std::thread::id id)
+async::task<void> game_bot_controller::on_timer(const fb::model::datetime& now, std::thread::id id)
 {
     auto thread = this->container.threads.at(id);
     auto params = thread->data<bot_thread_params>();

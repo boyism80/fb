@@ -27,7 +27,8 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_UID = 4,
     VT_NAME = 6,
-    VT_HOST = 8
+    VT_HOST = 8,
+    VT_FORCE = 10
   };
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
@@ -38,12 +39,16 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t host() const {
     return GetField<uint8_t>(VT_HOST, 0);
   }
+  bool force() const {
+    return GetField<uint8_t>(VT_FORCE, 0) != 0;
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
            VerifyField<uint8_t>(verifier, VT_HOST, 1) &&
+           VerifyField<uint8_t>(verifier, VT_FORCE, 1) &&
            verifier.EndTable();
   }
 };
@@ -61,6 +66,9 @@ struct LoginBuilder {
   void add_host(uint8_t host) {
     fbb_.AddElement<uint8_t>(Login::VT_HOST, host, 0);
   }
+  void add_force(bool force) {
+    fbb_.AddElement<uint8_t>(Login::VT_FORCE, static_cast<uint8_t>(force), 0);
+  }
   explicit LoginBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -76,10 +84,12 @@ inline ::flatbuffers::Offset<Login> CreateLogin(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t uid = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
-    uint8_t host = 0) {
+    uint8_t host = 0,
+    bool force = false) {
   LoginBuilder builder_(_fbb);
   builder_.add_name(name);
   builder_.add_uid(uid);
+  builder_.add_force(force);
   builder_.add_host(host);
   return builder_.Finish();
 }
@@ -88,13 +98,15 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t uid = 0,
     const char *name = nullptr,
-    uint8_t host = 0) {
+    uint8_t host = 0,
+    bool force = false) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return fb::protocol::internal::request::raw::CreateLogin(
       _fbb,
       uid,
       name__,
-      host);
+      host,
+      force);
 }
 
 inline const fb::protocol::internal::request::raw::Login *GetLogin(const void *buf) {

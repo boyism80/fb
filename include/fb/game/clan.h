@@ -32,7 +32,7 @@ public:
     ~clan() = default;
 
 public:
-    void                              update(const std::string& name, const std::optional<std::string>& title, const std::vector<clan_member>& members);
+    void                              update(const std::string& name, const std::optional<std::string>& title, const member_map& members);
     uint32_t                          id() const;
     const std::string&                name() const;
     const std::optional<std::string>& title() const;
@@ -43,7 +43,7 @@ public:
     void                              leave(const std::string& member);
     void                              change_role(const std::string& member_name, CLAN_ROLE new_role);
     const character_map&              characters() const;
-    void                              attach_character(character_weak_ptr ch);
+    void                              attach(character_weak_ptr ch);
     void                              detach(character_weak_ptr ch);
     std::vector<character_ptr_t>      nears(const fb::game::map& map, const fb::model::point16_t& position) const;
 };

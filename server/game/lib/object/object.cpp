@@ -512,7 +512,7 @@ async::task<bool> object::map(map_ptr map, const fb::model::point16_t& position,
                 if (thread != nullptr)
                 {
                     auto params = thread->template data<thread_params>();
-                    params->characters.erase(ch.id());
+                    params->characters.remove(ch.shared_from_this_as<character>());
                 }
             }
 
@@ -560,7 +560,7 @@ async::task<bool> object::map(map_ptr map, const fb::model::point16_t& position,
             if (thread != nullptr)
             {
                 auto params = thread->template data<thread_params>();
-                params->characters.insert({ch.id(), ch.shared_from_this_as<character>()});
+                params->characters.insert(ch.shared_from_this_as<character>());
             }
         }
 

@@ -20,17 +20,21 @@ public struct DestroyClan : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public DestroyClan __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Master { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Master { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.DestroyClan> CreateDestroyClan(FlatBufferBuilder builder,
+      uint host = 0,
       uint master = 0) {
-    builder.StartTable(1);
+    builder.StartTable(2);
     DestroyClan.AddMaster(builder, master);
+    DestroyClan.AddHost(builder, host);
     return DestroyClan.EndDestroyClan(builder);
   }
 
-  public static void StartDestroyClan(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddMaster(FlatBufferBuilder builder, uint master) { builder.AddUint(0, master, 0); }
+  public static void StartDestroyClan(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
+  public static void AddMaster(FlatBufferBuilder builder, uint master) { builder.AddUint(1, master, 0); }
   public static Offset<fb.protocol._internal.request.raw.DestroyClan> EndDestroyClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.DestroyClan>(o);
@@ -45,7 +49,8 @@ static public class DestroyClanVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Master*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Master*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

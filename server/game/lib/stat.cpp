@@ -3,6 +3,7 @@
 #include <fb/game/character.h>
 #include <fb/game/mob.h>
 #include <fb/game/ai.h>
+#include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
 
@@ -368,7 +369,7 @@ void character_stat::base_hp(uint32_t value)
     this->owner.update(UPDATE_STATE_LEVEL::BASED);
 
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->owner.id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->owner.id);
     log_data["character_name"] = UTF8(this->owner.name(), PLATFORM::WINDOWS);
     log_data["old_base_hp"]    = static_cast<Json::Int64>(old_base_hp);
     log_data["new_base_hp"]    = static_cast<Json::Int64>(value);
@@ -387,7 +388,7 @@ void character_stat::base_mp(uint32_t value)
     this->owner.update(UPDATE_STATE_LEVEL::BASED);
 
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->owner.id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->owner.id);
     log_data["character_name"] = UTF8(this->owner.name(), PLATFORM::WINDOWS);
     log_data["old_base_mp"]    = static_cast<Json::Int64>(old_base_mp);
     log_data["new_base_mp"]    = static_cast<Json::Int64>(value);
@@ -688,7 +689,7 @@ uint32_t character_stat::damage(uint32_t value, std::shared_ptr<fb::game::object
         if (equipment->durability_down(1))
         {
             auto equipment = this->owner.items.equipment_off(parts);
-            this->owner.message(std::format("{} 깨졌습니다.", equipment->name()));
+            this->owner.message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), equipment->name()));
             equipment.reset();
         }
     }

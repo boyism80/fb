@@ -9,12 +9,13 @@ kick_out::kick_out(fb::game::server& server) :
 
 async::task<void> kick_out::handle(const internal_resp::KickOut& message)
 {
-    auto ch = this->server.characters.find(message.name);
-    if (ch == nullptr)
-        co_return;
+    this->server.characters.read([&message](const auto& container) {
+        auto ch = container.find(message.name);
+        if (ch == nullptr)
+            return;
 
-    auto socket = ch->socket();
-    if (socket != nullptr)
-        socket->close();
+        ch->socket.close();
+    });
+
     co_return;
 }

@@ -115,7 +115,7 @@ bool quest::complete()
 
     // Log quest complete event
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(owner->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
     log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
     log_data["quest_id"]       = static_cast<Json::Int64>(this->id);
     log_data["step"]           = static_cast<Json::Int64>(this->_step);
@@ -156,7 +156,7 @@ bool quests::start(uint32_t id)
 
     // Log quest start event
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(owner->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
     log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
     log_data["quest_id"]       = static_cast<Json::Int64>(id);
     owner->server.log.write("quest_start", log_data);

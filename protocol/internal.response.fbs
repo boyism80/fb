@@ -155,32 +155,33 @@ table SetOption {
   success: bool;
 }
 
-table GetGroup {
+table GroupDetails {
+  host: uint;
+  action: fb.protocol.internal.GroupDetailsAction;
   group: fb.protocol.internal.Group;
+  members: [fb.protocol.internal.CharacterRef];
+  actor: string;
+  target: string;
   error: uint;
 }
 
-table EnterGroup {
-  group: fb.protocol.internal.Group;
-  member: string;
-  action: fb.protocol.internal.GroupAction;
+table UpdatedGroup {
   host: uint;
+  action: fb.protocol.internal.GroupActionType;
+  group_id: uint;
+  group_master: string;
+  actor: fb.protocol.internal.CharacterRef;
+  target: fb.protocol.internal.CharacterRef?;
+  new_member: fb.protocol.internal.CharacterRef?;
+  deleted_member: fb.protocol.internal.CharacterRef?;
   error: uint;
 }
 
-table LeaveGroup {
-  group: fb.protocol.internal.Group;
-  member: string;
-  action: fb.protocol.internal.GroupAction;
+table DestroyGroup {
   host: uint;
-  error: uint;
-}
-
-table KickGroup {
-  group: fb.protocol.internal.Group;
-  member: string;
-  action: fb.protocol.internal.GroupAction;
-  host: uint;
+  group_id: uint;
+  group_master: string;
+  actor: fb.protocol.internal.CharacterRef;
   error: uint;
 }
 
@@ -192,49 +193,27 @@ table BroadcastGroup {
   error: uint;
 }
 
-table GetClan {
+table ClanDetails {
+  host: uint;
+  action: fb.protocol.internal.ClanDetailsAction;
   clan: fb.protocol.internal.Clan;
   members: [fb.protocol.internal.ClanMember];
   error: uint;
 }
 
-table CreateClan {
-  clan: fb.protocol.internal.Clan;
-  members: [fb.protocol.internal.ClanMember];
-  error: uint;
-}
-
-table DestroyClan {
-  error: uint;
-}
-
-table JoinClan {
+table UpdatedClan {
   host: uint;
-  clan: uint;
-  member: fb.protocol.internal.ClanMember;
-  error: uint;
-}
-
-table LeaveClan {
-  host: uint;
-  clan: uint;
-  uid: uint;
-  uname: string;
-  error: uint;
-}
-
-table KickClan {
-  host: uint;
-  clan: uint;
-  uid: uint;
-  uname: string;
-  error: uint;
-}
-
-table SetClanTitle {
-  host: uint;
-  clan: uint;
-  title: string?;
+  action: fb.protocol.internal.ClanActionType;
+  clan_id: uint;
+  clan_name: string;
+  actor: fb.protocol.internal.CharacterRef;
+  target: fb.protocol.internal.CharacterRef?;
+  new_member: fb.protocol.internal.CharacterRef?;
+  deleted_member: fb.protocol.internal.CharacterRef?;
+  old_role: uint?;
+  new_role: uint?;
+  old_title: string?;
+  new_title: string?;
   error: uint;
 }
 
@@ -246,15 +225,11 @@ table BroadcastClan {
   error: uint;
 }
 
-table ChangeClanRole {
+table DestroyClan {
   host: uint;
-  clan: uint;
-  changer_uid: uint;
-  changer_name: string;
-  target_uid: uint;
-  target_name: string;
-  old_role: uint;
-  new_role: uint;
+  clan_id: uint;
+  clan_name: string;
+  actor: fb.protocol.internal.CharacterRef;
   error: uint;
 }
 

@@ -7,15 +7,19 @@ character::container::container(fb::game::server& server) :
     _server(server)
 { }
 
-void character::container::insert(character_ptr_t ch)
+bool character::container::insert(character_ptr_t ch)
 {
-    this->_from_uid[ch->id()]    = ch;
+    if (this->_from_uid.contains(ch->id) || this->_from_name.contains(ch->name()))
+        return false;
+
+    this->_from_uid[ch->id]      = ch;
     this->_from_name[ch->name()] = ch;
+    return true;
 }
 
 void character::container::remove(character_ptr_t ch)
 {
-    this->_from_uid.erase(ch->id());
+    this->_from_uid.erase(ch->id);
     this->_from_name.erase(ch->name());
 }
 
@@ -126,7 +130,8 @@ async::task<void> character::container::foreach_async(const std::vector<std::str
         auto ch = this->find(name);
         if (ch == nullptr)
         {
-            miss(name);
+            if (miss != nullptr)
+                miss(name);
             continue;
         }
 
@@ -141,7 +146,8 @@ async::task<void> character::container::invoke(const std::string& name, characte
     auto ch = this->find(name);
     if (ch == nullptr)
     {
-        miss(name);
+        if (miss != nullptr)
+            miss(name);
         co_return;
     }
 
@@ -158,7 +164,8 @@ async::task<void> character::container::invoke_async(const std::string& name, ch
     auto ch = this->find(name);
     if (ch == nullptr)
     {
-        miss(name);
+        if (miss != nullptr)
+            miss(name);
         co_return;
     }
 
@@ -186,4 +193,34 @@ character::container::character_ptr_t character::container::operator[] (const st
         throw std::out_of_range("out of range exception");
 
     return ch;
+}
+
+character::container::iterator character::container::begin()
+{
+    return this->_from_uid.begin();
+}
+
+character::container::iterator character::container::end()
+{
+    return this->_from_uid.end();
+}
+
+character::container::const_iterator character::container::begin() const
+{
+    return this->_from_uid.begin();
+}
+
+character::container::const_iterator character::container::end() const
+{
+    return this->_from_uid.end();
+}
+
+character::container::const_iterator character::container::cbegin() const
+{
+    return this->_from_uid.cbegin();
+}
+
+character::container::const_iterator character::container::cend() const
+{
+    return this->_from_uid.cend();
 }

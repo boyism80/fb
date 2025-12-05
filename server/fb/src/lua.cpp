@@ -710,10 +710,9 @@ void fb::lua::context_pool::setup(fb::thread_container& threads)
         return;
 
     this->_threads = &threads;
-    for (int i = 0; i < threads.size(); i++)
+    for (auto& [id, thread] : threads)
     {
-        auto thread = threads.at(i);
-        this->_roots.insert({thread->id(), new root(*thread)});
+        this->_roots.insert({id, new root(*thread)});
     }
 }
 

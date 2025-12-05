@@ -76,10 +76,7 @@ struct life::listener_t : public virtual fb::game::object::listener_t, public vi
 };
 
 struct life::initial_params : public fb::game::object::initial_params
-{
-public:
-    uint32_t exp = 0;
-};
+{ };
 
 } // namespace fb::game
 

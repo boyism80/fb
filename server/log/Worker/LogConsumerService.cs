@@ -19,7 +19,6 @@ namespace Log.Worker
         private readonly IConfiguration _configuration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<LogConsumerService> _logger;
-        private readonly Http.Service.HealthCheckService _healthCheck;
         private IConnection _connection;
         private IModel _channel;
         private readonly List<string> _queueNames = new();
@@ -34,17 +33,14 @@ namespace Log.Worker
         /// <param name="configuration">The application configuration containing RabbitMQ connection settings.</param>
         /// <param name="serviceScopeFactory">The service scope factory for creating scoped dependencies.</param>
         /// <param name="logger">The logger instance.</param>
-        /// <param name="healthCheck">The health check service for monitoring processing status.</param>
         public LogConsumerService(
             IConfiguration configuration,
             IServiceScopeFactory serviceScopeFactory,
-            ILogger<LogConsumerService> logger,
-            Http.Service.HealthCheckService healthCheck)
+            ILogger<LogConsumerService> logger)
         {
             _configuration = configuration;
             _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
-            _healthCheck = healthCheck;
         }
 
         /// <summary>
@@ -56,8 +52,6 @@ namespace Log.Worker
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Log Consumer Service starting");
-
-            stoppingToken.Register(() => _healthCheck.BeginShutdown());
 
             // Retry connection loop until successful or cancelled
             while (!stoppingToken.IsCancellationRequested)
@@ -143,11 +137,9 @@ namespace Log.Worker
 
                 if (processedCount == 0)
                 {
-                    _healthCheck.SetProcessing(false);
                     break;
                 }
 
-                _healthCheck.SetProcessing(true);
                 totalProcessed += processedCount;
 
                 foreach (var (queueName, deliveryTag) in messagesToAck)
@@ -295,11 +287,8 @@ namespace Log.Worker
 
             if (allLogs.Count == 0)
             {
-                _healthCheck.SetProcessing(false);
                 return;
             }
-
-            _healthCheck.SetProcessing(true);
 
             // Acknowledge all processed messages
             foreach (var (queueName, deliveryTag) in messagesToAck)

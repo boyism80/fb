@@ -20,7 +20,7 @@ async::task<bool> whisper::handle(fb::socket<character>& session, fb::protocol::
 
     if (me->role() == ROLE::USER && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_WHISPER))
     {
-        me->message("귓속말을 할 수 없는 지역입니다.");
+        me->message(_TEXT(MESSAGE_WHISPER_DISABLED_AREA));
         co_return true;
     }
 

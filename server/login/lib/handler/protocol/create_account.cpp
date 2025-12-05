@@ -1,4 +1,5 @@
 #include <fb/login/handler/protocol/create_account.h>
+#include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
 
@@ -23,7 +24,7 @@ async::task<bool> create_account::handle(fb::socket<fb::login::session>& session
         co_await this->server.threads.switching(weak);
 
         if (response1.success == false)
-            throw id_exception("이미 존재하는 이름입니다.");
+            throw id_exception(_TEXT(MESSAGE_ACCOUNT_ALREADY_EXISTS));
 
         auto        uid    = response1.uid;
         static auto device = std::random_device{};
@@ -51,7 +52,7 @@ async::task<bool> create_account::handle(fb::socket<fb::login::session>& session
         co_await this->server.threads.switching(weak);
 
         if (response2.success == false)
-            throw id_exception("이미 존재하는 이름입니다.");
+            throw id_exception(_TEXT(MESSAGE_ACCOUNT_ALREADY_EXISTS));
 
         this->server.send(session, response::message("", 0x00));
         auto session_data  = session.data();

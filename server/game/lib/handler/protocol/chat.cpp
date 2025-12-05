@@ -50,7 +50,7 @@ async::task<bool> chat::handle(fb::socket<character>& session, fb::protocol::gam
         if (stop)
         {
             auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+            log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
             log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
             log_data["command"]        = UTF8(request.message, PLATFORM::WINDOWS);
             auto map                   = ch->map();
@@ -71,7 +71,7 @@ async::task<bool> chat::handle(fb::socket<character>& session, fb::protocol::gam
 
     // Log chat event
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
     log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
     log_data["message"]        = UTF8(message, PLATFORM::WINDOWS);
     log_data["chat_type"]      = request.shout ? "shout" : "normal";

@@ -1,7 +1,11 @@
 #include <fb/game/group.h>
 #include <fb/game/server.h>
+#include <fb/game/character.h>
+#include <fb/protocol/flatbuffer/protocol.h>
+#include <algorithm>
 
 using namespace fb::game;
+using namespace fb::protocol::internal::request;
 
 group::group(server& server, uint32_t id, const std::string& master, const std::vector<std::string>& members) :
     _server(server),
@@ -43,49 +47,26 @@ void group::detach(std::weak_ptr<character> ch)
     this->_active_members.erase(ptr);
 }
 
-async::task<void> group::update(const std::string& master, const std::vector<std::string>& members)
+void group::add_member(const std::string& name)
 {
-    this->_master = master;
-
-    this->_members.clear();
-    for (auto& member : members)
+    // Prevent duplicate entries
+    for (auto& member : this->_members)
     {
-        this->_members.push_back(member);
+        if (member == name)
+            return;
     }
 
-    // Group members by thread for efficient processing
-    auto g = std::unordered_map<fb::thread*, std::vector<std::string>>();
+    this->_members.push_back(name);
+}
 
-    auto concated = std::vector<std::string>(members);
-    concated.push_back(master);
-    for (auto& name : concated)
-    {
-        auto hash   = std::hash<std::string>{}(name);
-        auto thread = this->_server.threads.modular(hash);
-
-        if (g.contains(thread) == false)
-            g.insert({thread, std::vector<std::string>{}});
-
-        g[thread].push_back(name);
-    }
-
-    // Process each thread's members
-    for (auto& [thread, names] : g)
-    {
-        if (names.size() == 0)
-            continue;
-
-        co_await thread->switching();
-        auto params = thread->template data<thread_params>();
-        for (auto& name : names)
-        {
-            // TODO: Character synchronization logic needs implementation
-            // if (params->characters.contains(name) == false)
-            //     continue;
-
-            // ... 다시 생각해볼 필요가 있음;;
-        }
-    }
+void group::remove_member(const std::string& name)
+{
+    this->_members.erase(std::remove_if(this->_members.begin(),
+                                        this->_members.end(),
+                                        [&name](const std::string& member) {
+                                            return member == name;
+                                        }),
+                         this->_members.end());
 }
 
 uint32_t group::id() const

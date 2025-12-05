@@ -152,8 +152,7 @@ async::task<bool> drop_loot_test::test_scenario_1()
         DEFAULT_TIMEOUT);
 
     // Check that all items are recovered
-    if (!this->has_item(bot1, "목도") || !this->has_item(bot1, "목검") || !this->has_item(bot1, "양첨목봉") ||
-        !this->has_item(bot1, "현철중검"))
+    if (!this->has_item(bot1, "목도") || !this->has_item(bot1, "목검") || !this->has_item(bot1, "양첨목봉") || !this->has_item(bot1, "현철중검"))
     {
         fb::logger::fatal("Scenario 1: Third loot failed - missing items");
         co_return false;
@@ -223,8 +222,7 @@ async::task<bool> drop_loot_test::test_scenario_3()
     // Check that count stays at 2
     if (this->get_item_count(bot1, "도토리") != 201)
     {
-        fb::logger::fatal("Scenario 3: Item count check failed - expected 2, got {}",
-                          this->get_item_count(bot1, "도토리"));
+        fb::logger::fatal("Scenario 3: Item count check failed - expected 2, got {}", this->get_item_count(bot1, "도토리"));
         co_return false;
     }
 
@@ -332,7 +330,7 @@ async::task<bool> drop_loot_test::test_scenario_5()
     std::ignore = co_await bot1->request<fb::protocol::game::response::message>(
         fb::protocol::game::request::loot(false),
         [](auto& resp) -> bool {
-            return resp.text.find("죽은 자의 온기가 남아있습니다.") != std::string::npos;
+            return resp.text.find(_TEXT(MESSAGE_ITEM_DEATH_PENALTY_WARMTH)) != std::string::npos;
         },
         DEFAULT_TIMEOUT);
 

@@ -1,6 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/game/trade.h>
+#include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
 
@@ -35,7 +36,7 @@ bool trade::begin(std::shared_ptr<fb::game::character> you)
 
     try
     {
-        if (owner->id() == you->id())
+        if (owner->id == you->id)
         {
             // 자기 자신과 거래를 하려고 시도하는 경우
             return false;
@@ -49,9 +50,7 @@ bool trade::begin(std::shared_ptr<fb::game::character> you)
         if (you->option(OPTION::TRADE) == false)
         {
             // 상대방이 교환 거부중
-            std::stringstream sstream;
-            sstream << you->name() << _TEXT(MESSAGE_TRADE_REFUSED_BY_PARTNER);
-            throw std::runtime_error(sstream.str());
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_REFUSED_BY_PARTNER), you->name()));
         }
 
         if (this->trading())
@@ -62,9 +61,7 @@ bool trade::begin(std::shared_ptr<fb::game::character> you)
         if (you->trade.trading())
         {
             // 상대방이 이미 교환중
-            std::stringstream sstream;
-            sstream << you->name() << _TEXT(MESSAGE_TRADE_PARTNER_ALREADY_TRADING);
-            throw std::runtime_error(sstream.str());
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_PARTNER_ALREADY_TRADING), you->name()));
         }
 
         if (owner->sight(*you) == false)
@@ -76,10 +73,7 @@ bool trade::begin(std::shared_ptr<fb::game::character> you)
         if (owner->distance_sqrt(*you) > 16)
         {
             // 상대방과의 거리가 너무 멈
-            std::stringstream sstream;
-            sstream << you->name() << _TEXT(MESSAGE_TRADE_PARTNER_TOO_FAR);
-
-            throw std::runtime_error(sstream.str());
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_PARTNER_TOO_FAR), you->name()));
         }
 
         this->_you      = you->weak_from_this_as<character>();
@@ -479,9 +473,9 @@ bool trade::lock()
 
             // Log trade completion
             auto log_data               = Json::Value();
-            log_data["character1_id"]   = static_cast<Json::Int64>(owner->id());
+            log_data["character1_id"]   = static_cast<Json::Int64>(owner->id);
             log_data["character1_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
-            log_data["character2_id"]   = static_cast<Json::Int64>(you->id());
+            log_data["character2_id"]   = static_cast<Json::Int64>(you->id);
             log_data["character2_name"] = UTF8(you->name(), PLATFORM::WINDOWS);
             log_data["money1"]          = static_cast<Json::Int64>(this->_money);
             log_data["money2"]          = static_cast<Json::Int64>(you->trade._money);

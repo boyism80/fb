@@ -1,8 +1,11 @@
 #include <fb/game/clan.h>
 #include <fb/game/server.h>
+#include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/config.h>
 
 using namespace fb::game;
 using namespace fb::model;
+using namespace fb::protocol::internal;
 
 clan::clan(server& server, uint32_t id, const std::string& name, const std::optional<std::string>& title, const std::unordered_map<std::string, clan_member>& members) :
     _server(server),
@@ -20,16 +23,11 @@ clan::clan(clan&& r) :
     _members(std::move(r._members))
 { }
 
-void clan::update(const std::string& name, const std::optional<std::string>& title, const std::vector<clan_member>& members)
+void clan::update(const std::string& name, const std::optional<std::string>& title, const member_map& members)
 {
-    this->_name  = name;
-    this->_title = title;
-
-    this->_members.clear();
-    for (auto& member : members)
-    {
-        this->_members.insert({member.name, member});
-    }
+    this->_name    = name;
+    this->_title   = title;
+    this->_members = members;
 }
 
 uint32_t clan::id() const
@@ -90,16 +88,16 @@ const std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>>& clan::ch
     return this->_characters;
 }
 
-void clan::attach_character(std::weak_ptr<character> ch)
+void clan::attach(std::weak_ptr<character> ch)
 {
     auto shared = ch.lock();
     if (shared == nullptr)
         return;
 
-    if (this->_characters.contains(shared->id()))
+    if (this->_characters.contains(shared->id))
         return;
 
-    this->_characters.insert({shared->id(), ch});
+    this->_characters.insert({shared->id, ch});
 }
 
 void clan::detach(std::weak_ptr<character> ch)
@@ -108,10 +106,10 @@ void clan::detach(std::weak_ptr<character> ch)
     if (shared == nullptr)
         return;
 
-    if (!this->_characters.contains(shared->id()))
+    if (!this->_characters.contains(shared->id))
         return;
 
-    this->_characters.erase(shared->id());
+    this->_characters.erase(shared->id);
 }
 
 std::vector<std::shared_ptr<fb::game::character>> clan::nears(const fb::game::map& map, const point16_t& position) const

@@ -33,7 +33,8 @@ public:
 public:
     void                     enter(std::weak_ptr<character> ch);
     void                     detach(std::weak_ptr<character> ch);
-    async::task<void>        update(const std::string& master, const std::vector<std::string>& members);
+    void                     add_member(const std::string& name);
+    void                     remove_member(const std::string& name);
     uint32_t                 id() const;
     const std::string&       master() const;
     character_set            characters() const;

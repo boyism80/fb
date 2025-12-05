@@ -117,14 +117,14 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
 server::~server()
 { }
 
-async::task<void> server::handle_start()
+async::task<void> server::on_start()
 {
     this->threads.deletor = [](void* data) {
         auto params = static_cast<thread_params*>(data);
         delete params;
     };
 
-    co_await fb::acceptor<character>::handle_start();
+    co_await fb::acceptor<character>::on_start();
 
     auto maps_division = std::unordered_map<fb::thread*, std::vector<std::shared_ptr<fb::game::map>>>{};
     for (int i = 0; i < this->threads.count(); i++)
@@ -143,7 +143,7 @@ async::task<void> server::handle_start()
     for (auto& [thread, maps] : maps_division)
     {
         async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
-            auto params = new thread_params();
+            auto params = new thread_params(*this);
             for (auto map : maps)
             {
                 params->maps.insert({map->model.id, map});
@@ -247,13 +247,12 @@ async::task<void> server::handle_start()
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast>("fb.global");
     this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_fetch>("fb.global");
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>("fb.system");
-    this->handler.amqp.bind<fb::game::handler::amqp::enter_group>("fb.group");
-    this->handler.amqp.bind<fb::game::handler::amqp::leave_group>("fb.group");
-    this->handler.amqp.bind<fb::game::handler::amqp::kick_group>("fb.group");
-    this->handler.amqp.bind<fb::game::handler::amqp::set_clan_title>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::join_clan>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::leave_clan>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::kick_clan>("fb.clan");
+    this->handler.amqp.bind<fb::game::handler::amqp::create_group>("fb.group");
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_group>("fb.group");
+    this->handler.amqp.bind<fb::game::handler::amqp::destroy_group>("fb.group");
+    this->handler.amqp.bind<fb::game::handler::amqp::create_clan>("fb.clan");
+    this->handler.amqp.bind<fb::game::handler::amqp::destroy_clan>("fb.clan");
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>("fb.clan");
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>("fb.clan");
     this->handler.amqp.bind<fb::game::handler::amqp::write_mail>("fb.mail");
     this->handler.amqp.bind<fb::game::handler::amqp::ban>("fb.ban");
@@ -280,12 +279,12 @@ bool server::assert_tps(const fb::socket<fb::game::character>& socket) const
     return ch->role() == ROLE::USER;
 }
 
-async::task<bool> server::handle_connected(fb::socket<character>& socket)
+async::task<bool> server::on_connected(fb::socket<character>& socket)
 {
     co_return true;
 }
 
-async::task<bool> server::handle_disconnected(fb::socket<character>& socket)
+async::task<bool> server::on_disconnected(fb::socket<character>& socket)
 {
     auto ch = socket.data();
     if (ch == nullptr)
@@ -329,7 +328,7 @@ async::task<bool> server::handle_disconnected(fb::socket<character>& socket)
     {
         // Log logout event
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ptr->id());
+        log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
         log_data["character_name"] = UTF8(ptr->name(), PLATFORM::WINDOWS);
         log_data["level"]          = ptr->level();
         auto map                   = ptr->map();
@@ -359,7 +358,9 @@ async::task<bool> server::handle_disconnected(fb::socket<character>& socket)
             ptr->clan_reset();
         }
 
-        this->characters.remove(ptr);
+        this->characters.write([ptr](auto& container) {
+            container.remove(ptr);
+        });
         co_await ch->destroy();
         socket.data(nullptr);
     }
@@ -369,11 +370,6 @@ async::task<bool> server::handle_disconnected(fb::socket<character>& socket)
     }
 
     co_return true;
-}
-
-std::shared_ptr<fb::game::character> server::handle_accepted(fb::socket<character>& socket)
-{
-    return this->make<character>(socket);
 }
 
 uint8_t server::id() const
@@ -449,8 +445,11 @@ async::task<void> server::send(object& object, const fb::protocol::header& heade
 
     case fb::game::scope::WORLD:
     {
-        co_await this->characters.foreach ([stream, encrypt](auto& ch) {
-            ch->send(stream, encrypt);
+        this->characters.write([stream, encrypt](auto& characters) {
+            for (auto& [_, ch] : characters)
+            {
+                std::ignore = ch->send(stream, encrypt);
+            }
         });
     }
     break;
@@ -499,19 +498,19 @@ async::task<void> server::save(character& ch)
         if (spell == nullptr)
             continue;
 
-        spells.push_back(internal::Spell{ch.id(), i, spell->model.id, spell->next().to_string()});
+        spells.push_back(internal::Spell{ch.id, i, spell->model.id, spell->next().to_string()});
     }
 
     auto achievements = std::vector<internal::Achievement>();
     for (auto& [model, achievement] : ch.achievements)
     {
-        achievements.push_back(internal::Achievement{ch.id(), model, achievement->text, achievement->icon, achievement->color});
+        achievements.push_back(internal::Achievement{ch.id, model, achievement->text, achievement->icon, achievement->color});
     }
 
     auto quests = std::vector<internal::Quest>();
     for (auto& [qid, quest] : ch.quests)
     {
-        quests.push_back(internal::Quest{ch.id(), qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
+        quests.push_back(internal::Quest{ch.id, qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
     // Get system mail users from character's in-memory collection
@@ -526,7 +525,7 @@ async::task<void> server::save(character& ch)
             continue;
 
         received_system_mails.push_back(
-            internal::SystemMailUser{ch.id(), mail_id, smu.read, smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value().to_string()) : std::nullopt});
+            internal::SystemMailUser{ch.id, mail_id, smu.read, smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value().to_string()) : std::nullopt});
     }
     auto        storage_boxes   = std::vector<internal::StorageBox>();
     const auto& character_boxes = ch.storage_box.entries();
@@ -557,7 +556,7 @@ async::task<void> server::save(character& ch)
             }
         }
 
-        storage_boxes.emplace_back(ch.id(),
+        storage_boxes.emplace_back(ch.id,
                                    box.id,
                                    box.title,
                                    box.message,
@@ -587,9 +586,9 @@ async::task<void> server::save(character& ch)
 
 void server::save()
 {
-    for (int i = 0; i < this->threads.size(); i++)
+    for (auto& [id, thread] : this->threads)
     {
-        std::ignore = this->threads[i]->dispatch([this](auto& thread) -> async::task<void> {
+        std::ignore = thread->dispatch([this](auto& thread) -> async::task<void> {
             auto params = thread.template data<thread_params>();
             for (auto& [id, character] : params->characters)
             {
@@ -627,7 +626,7 @@ const fb::model::datetime& server::time() const
     return this->_time;
 }
 
-void server::handle_init_amqp(fb::amqp::socket& amqp)
+void server::on_init_amqp(fb::amqp::socket& amqp)
 {
     this->handler.amqp.declare_queue("amq.direct", "fb.system");
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
@@ -645,30 +644,32 @@ async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE typ
     case BROADCAST_TYPE::GLOBAL:
     {
         auto&& resp = co_await this->http.post("internal", "/in-game/broadcast", Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
-        this->on_broadcast(resp);
+        co_await this->on_broadcast(resp);
     }
     break;
 
     case BROADCAST_TYPE::WORLD:
     {
-        co_await this->characters.foreach ([message, type](auto& ch) {
-            ch->message(message, type);
+        co_await this->characters.async_write([message, type](auto& characters) -> async::task<void> {
+            co_await characters.foreach ([message, type](auto& ch) -> async::task<void> {
+                ch->message(message, type);
+                co_return;
+            });
         });
     }
     break;
     }
 }
 
-void server::on_broadcast(const internal_resp::Broadcast& resp)
+async::task<void> server::on_broadcast(const internal_resp::Broadcast& resp)
 {
-    std::ignore = this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type), BROADCAST_TYPE::WORLD);
+    co_await this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type), BROADCAST_TYPE::WORLD);
 }
 
 void server::rezen_force()
 {
-    for (int i = 0; i < this->threads.count(); i++)
+    for (auto& [id, thread] : this->threads)
     {
-        auto thread = this->threads.at(i);
         std::ignore = thread->dispatch([](auto& thread) -> async::task<void> {
             auto params = thread.template data<thread_params>();
             for (auto& rezen : params->rezens)
@@ -713,8 +714,11 @@ void server::update_time()
     auto updated = fb::model::datetime();
     if (this->_time.hours() != updated.hours())
     {
-        this->characters.foreach ([hours = updated.hours()](auto& ch) {
-            ch->update_time(hours);
+        this->characters.write([hours = updated.hours()](auto& characters) {
+            for (auto& [_, ch] : characters)
+            {
+                ch->update_time(hours);
+            }
         });
     }
 

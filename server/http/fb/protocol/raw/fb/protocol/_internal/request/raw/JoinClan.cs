@@ -22,14 +22,20 @@ public struct JoinClan : IFlatbufferObject
 
   public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint InviterUid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint InviteeUid { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string InviteeName { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetInviteeNameBytes() { return __p.__vector_as_span<byte>(8, 1); }
+#else
+  public ArraySegment<byte>? GetInviteeNameBytes() { return __p.__vector_as_arraysegment(8); }
+#endif
+  public byte[] GetInviteeNameArray() { return __p.__vector_as_array<byte>(8); }
 
   public static Offset<fb.protocol._internal.request.raw.JoinClan> CreateJoinClan(FlatBufferBuilder builder,
       uint host = 0,
       uint inviter_uid = 0,
-      uint invitee_uid = 0) {
+      StringOffset invitee_nameOffset = default(StringOffset)) {
     builder.StartTable(3);
-    JoinClan.AddInviteeUid(builder, invitee_uid);
+    JoinClan.AddInviteeName(builder, invitee_nameOffset);
     JoinClan.AddInviterUid(builder, inviter_uid);
     JoinClan.AddHost(builder, host);
     return JoinClan.EndJoinClan(builder);
@@ -38,7 +44,7 @@ public struct JoinClan : IFlatbufferObject
   public static void StartJoinClan(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
   public static void AddInviterUid(FlatBufferBuilder builder, uint inviterUid) { builder.AddUint(1, inviterUid, 0); }
-  public static void AddInviteeUid(FlatBufferBuilder builder, uint inviteeUid) { builder.AddUint(2, inviteeUid, 0); }
+  public static void AddInviteeName(FlatBufferBuilder builder, StringOffset inviteeNameOffset) { builder.AddOffset(2, inviteeNameOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.JoinClan> EndJoinClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.JoinClan>(o);
@@ -55,7 +61,7 @@ static public class JoinClanVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*InviterUid*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*InviteeUid*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 8 /*InviteeName*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

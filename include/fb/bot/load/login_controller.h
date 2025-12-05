@@ -24,8 +24,8 @@ public:
     virtual async::task<void> on_bot_disconnected(login_bot& bot) override;
 
 private:
-    async::task<void> handle_agreement(login_bot& bot, const fb::protocol::login::response::agreement& response);
-    async::task<void> handle_transfer(login_bot& bot, const fb::protocol::response::transfer& response);
+    async::task<void> on_agreement(login_bot& bot, const fb::protocol::login::response::agreement& response);
+    async::task<void> on_transfer(login_bot& bot, const fb::protocol::response::transfer& response);
 };
 
 } // namespace fb::bot::load

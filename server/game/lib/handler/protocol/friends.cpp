@@ -13,6 +13,6 @@ async::task<bool> friends::handle(fb::socket<character>& session, fb::protocol::
     if (ch->inited() == false)
         co_return true;
 
-    auto&& resp = co_await this->server.http.post("internal", "/in-game/update-friends", UpdateFriends{ch->id(), request.names});
+    auto&& resp = co_await this->server.http.post("internal", "/in-game/update-friends", UpdateFriends{ch->id, request.names});
     co_return true;
 }

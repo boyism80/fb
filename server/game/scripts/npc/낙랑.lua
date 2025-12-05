@@ -20,7 +20,8 @@ function sample_group(me, npc)
                 end
             end
 
-            if me:create_group(name) then
+            local error = group:toggle(me, name)
+            if error == nil then
                 if found == nil then
                     me:dialog(npc, '그룹에 초대했습니다.')
                 else
@@ -44,7 +45,7 @@ function sample_group(me, npc)
             return
         end
 
-        group:messagee(message, MESSAGE_TYPE.NOTIFY)
+        group:message(message, MESSAGE_TYPE.NOTIFY)
     else
         me:chat('invalid selected')
     end
@@ -124,7 +125,7 @@ function sample_clan(me, npc)
                     return
                 end
 
-                local error = clan:join(me, found)
+                local error = clan:join(me, found:name())
                 if error ~= nil then
                     found:dialog(npc, error)
                 else
@@ -141,7 +142,7 @@ function sample_clan(me, npc)
                 return
             end
 
-            local error = clan:leave(me:name())
+            local error = clan:leave(me)
             if error ~= nil then
                 me:dialog(npc, error)
             else
@@ -151,11 +152,11 @@ function sample_clan(me, npc)
             local name = me:input(npc, '상대 이름 입력')
             clan = me:clan()
             if clan == nil then
-                found:dialog(npc, '클랜 없음')
+                me:dialog(npc, '클랜 없음')
                 return
             end
 
-            local error = clan:kick(me:name(), name)
+            local error = clan:kick(me, name)
             if error ~= nil then
                 me:dialog(npc, error)
             else

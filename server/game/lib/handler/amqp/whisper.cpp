@@ -12,5 +12,5 @@ async::task<void> whisper::handle(const internal_resp::Whisper& message)
     if (message.host == fb::config<uint16_t>("id"))
         co_return;
 
-    this->server.on_whisper(message);
+    co_await this->server.on_whisper(message);
 }

@@ -30,14 +30,14 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     _current_test(nullptr)
 {
     // Bind integration test specific handlers
-    this->bind(&game_bot_controller::handle_time);
-    this->bind(&game_bot_controller::handle_state);
-    this->bind(&game_bot_controller::handle_message);
-    this->bind(&game_bot_controller::handle_sequence);
-    this->bind(&game_bot_controller::handle_position);
-    this->bind(&game_bot_controller::handle_move);
-    this->bind(&game_bot_controller::handle_map);
-    this->bind(&game_bot_controller::handle_transfer);
+    this->bind(&game_bot_controller::on_time);
+    this->bind(&game_bot_controller::on_state);
+    this->bind(&game_bot_controller::on_message);
+    this->bind(&game_bot_controller::on_sequence);
+    this->bind(&game_bot_controller::on_position);
+    this->bind(&game_bot_controller::on_move);
+    this->bind(&game_bot_controller::on_map);
+    this->bind(&game_bot_controller::on_transfer);
 }
 
 void game_bot_controller::initialize()
@@ -74,7 +74,7 @@ void game_bot_controller::initialize()
     fb::model::loader().run();
 
     // Set up integration test timer with different interval (slower for detailed testing)
-    this->bind_timer(&game_bot_controller::handle_timer, 1000ms);
+    this->bind_timer(&game_bot_controller::on_timer, 1000ms);
 
     auto local = fb::config<std::string>("ip") == "127.0.0.1";
 
@@ -172,7 +172,7 @@ async::task<void> game_bot_controller::start_current_test()
     this->start_next_test();
 }
 
-async::task<void> game_bot_controller::handle_timer()
+async::task<void> game_bot_controller::on_timer()
 {
     // Timer is only used for starting the first test from the queue
     // Subsequent tests are started automatically by the test chain
@@ -188,21 +188,21 @@ async::task<void> game_bot_controller::handle_timer()
     co_return;
 }
 
-async::task<void> game_bot_controller::handle_time(game_bot& bot, const fb::protocol::game::response::time& response)
+async::task<void> game_bot_controller::on_time(game_bot& bot, const fb::protocol::game::response::time& response)
 {
     // Integration test: Validate time synchronization
     // TODO: Add time validation logic
     co_return;
 }
 
-async::task<void> game_bot_controller::handle_state(game_bot& bot, const fb::protocol::game::response::update_internal& response)
+async::task<void> game_bot_controller::on_state(game_bot& bot, const fb::protocol::game::response::update_internal& response)
 {
     // Integration test: Validate state consistency
     // TODO: Add state validation logic
     co_return;
 }
 
-async::task<void> game_bot_controller::handle_message(game_bot& bot, const fb::protocol::game::response::message& response)
+async::task<void> game_bot_controller::on_message(game_bot& bot, const fb::protocol::game::response::message& response)
 {
     // Integration test: Validate message handling and trigger test responses
     if (response.type == MESSAGE_TYPE::NOTIFY)
@@ -213,7 +213,7 @@ async::task<void> game_bot_controller::handle_message(game_bot& bot, const fb::p
     co_return;
 }
 
-async::task<void> game_bot_controller::handle_sequence(game_bot& bot, const fb::protocol::game::response::id& response)
+async::task<void> game_bot_controller::on_sequence(game_bot& bot, const fb::protocol::game::response::id& response)
 {
     // Integration test: Validate object ID consistency
     bot.set_oid(response.oid);
@@ -221,7 +221,7 @@ async::task<void> game_bot_controller::handle_sequence(game_bot& bot, const fb::
     co_return;
 }
 
-async::task<void> game_bot_controller::handle_position(game_bot& bot, const fb::protocol::game::response::position& response)
+async::task<void> game_bot_controller::on_position(game_bot& bot, const fb::protocol::game::response::position& response)
 {
     // Integration test: Validate position updates
     bot.set_position(response.abs);
@@ -229,7 +229,7 @@ async::task<void> game_bot_controller::handle_position(game_bot& bot, const fb::
     co_return;
 }
 
-async::task<void> game_bot_controller::handle_move(game_bot& bot, const fb::protocol::game::response::move& response)
+async::task<void> game_bot_controller::on_move(game_bot& bot, const fb::protocol::game::response::move& response)
 {
     // Integration test: Validate movement mechanics
     if (bot.oid() != response.id)
@@ -243,14 +243,14 @@ async::task<void> game_bot_controller::handle_move(game_bot& bot, const fb::prot
     co_return;
 }
 
-async::task<void> game_bot_controller::handle_map(game_bot& bot, const fb::protocol::game::response::map_config& response)
+async::task<void> game_bot_controller::on_map(game_bot& bot, const fb::protocol::game::response::map_config& response)
 {
     // TODO: Execute map-specific test scenarios
     // Example: Test NPC interactions, item spawning, area transitions, etc.
     co_return;
 }
 
-async::task<void> game_bot_controller::handle_transfer(game_bot& bot, const fb::protocol::response::transfer& response)
+async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::protocol::response::transfer& response)
 {
     // Integration test: Validate server transfer mechanics
     bot.close();

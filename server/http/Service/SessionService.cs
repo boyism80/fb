@@ -92,18 +92,48 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Attempts to login by setting a session using the login.lua script.
-        /// If a session already exists, it publishes a KickOut message.
+        /// Atomically gets and deletes a session by name using the get_and_delete_session.lua script.
+        /// Returns the session if it existed, null otherwise.
         /// </summary>
-        /// <param name="name">The character name.</param>
-        /// <param name="session">The session data to store.</param>
-        /// <returns>True if login was successful (new session created), false if an existing session was found.</returns>
-        public async Task<bool> Login(string name, Session session)
+        /// <param name="name">The character name to get and delete the session for.</param>
+        /// <returns>The session if it existed and was deleted; otherwise, null.</returns>
+        public async Task<Session> GetAndDelete(string name)
         {
             var key = new SessionKey().Key;
             var redis = _redisService.Redis(-1);
 
-            var redisResult = await redis.ScriptEvaluateAsync("login.lua", new
+            var redisResult = await redis.ScriptEvaluateAsync("get_and_delete_session.lua", new
+            {
+                key = new RedisKey(key),
+                name = name
+            });
+
+            var found = (bool)redisResult[0];
+            if (!found)
+            {
+                return null;
+            }
+
+            var sessionJson = redisResult[1].ToString();
+            return JsonConvert.DeserializeObject<Session>(sessionJson);
+        }
+
+        /// <summary>
+        /// Attempts to login by setting a session.
+        /// If force is false, uses try_login.lua script which does not delete existing sessions.
+        /// If force is true, uses login.lua script which deletes existing sessions and publishes KickOut message.
+        /// </summary>
+        /// <param name="name">The character name.</param>
+        /// <param name="session">The session data to store.</param>
+        /// <param name="force">If true, replaces existing session. If false, fails if session exists.</param>
+        /// <returns>True if login was successful (new session created), false if an existing session was found.</returns>
+        public async Task<bool> Login(string name, Session session, bool force = false)
+        {
+            var key = new SessionKey().Key;
+            var redis = _redisService.Redis(-1);
+
+            string scriptName = force ? "login.lua" : "try_login.lua";
+            var redisResult = await redis.ScriptEvaluateAsync(scriptName, new
             {
                 key = new RedisKey(key),
                 name = name,
@@ -117,14 +147,18 @@ namespace Http.Service
                 return true;
             }
 
-            var existingSession = JsonConvert.DeserializeObject<Session>(redisResult[1].ToString());
-
-            // Publish KickOut message to notify the game server to disconnect the existing user
-            _rabbitMqService.Publish(new Response.KickOut
+            // If force is true and login failed, publish KickOut message
+            if (force)
             {
-                Uid = existingSession.Uid,
-                Name = name
-            }, "amq.direct", $"fb.game.{existingSession.Host}");
+                var existingSession = JsonConvert.DeserializeObject<Session>(redisResult[1].ToString());
+
+                // Publish KickOut message to notify the game server to disconnect the existing user
+                _rabbitMqService.Publish(new Response.KickOut
+                {
+                    Uid = existingSession.Uid,
+                    Name = name
+                }, "amq.direct", $"fb.game.{existingSession.Host}");
+            }
 
             return false;
         }

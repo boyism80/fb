@@ -97,7 +97,7 @@ async::task<bool> item_test_give::test_give_non_tradeable_item()
         DEFAULT_TIMEOUT);
 
     // Check if the operation failed as expected
-    if (resp.text != "줄 수 없습니다.")
+    if (resp.text != _TEXT(MESSAGE_ITEM_CANNOT_GIVE))
     {
         fb::logger::fatal("Test failed: Non-tradeable item was given successfully");
         co_return false;
@@ -173,7 +173,7 @@ async::task<bool> item_test_give::test_give_item_inventory_full()
     std::ignore = co_await bot1->request<fb::protocol::game::response::message>(
         fb::protocol::game::request::give_item(0, false),
         [](auto& resp) -> bool {
-            return resp.type == MESSAGE_TYPE::STATE && resp.text == "상대방의 인벤토리가 가득 찼습니다.";
+            return resp.type == MESSAGE_TYPE::STATE && resp.text == _TEXT(MESSAGE_ITEM_TARGET_INVENTORY_FULL);
         },
         DEFAULT_TIMEOUT);
 
@@ -197,7 +197,7 @@ async::task<bool> item_test_give::test_give_item_inventory_full()
     std::ignore = co_await bot1->request<fb::protocol::game::response::message>(
         fb::protocol::game::request::give_item(1, true),
         [](auto& resp) -> bool {
-            return resp.type == MESSAGE_TYPE::STATE && resp.text == "상대방의 인벤토리가 가득 찼습니다.";
+            return resp.type == MESSAGE_TYPE::STATE && resp.text == _TEXT(MESSAGE_ITEM_TARGET_INVENTORY_FULL);
         },
         DEFAULT_TIMEOUT);
 
@@ -245,7 +245,7 @@ async::task<bool> item_test_give::test_give_max_money()
     std::ignore = co_await bot1->request<fb::protocol::game::response::message>(
         fb::protocol::game::request::give_money(2),
         [](auto& resp) -> bool {
-            return resp.type == MESSAGE_TYPE::STATE && resp.text == "상대방이 돈을 받을 수 없습니다.";
+            return resp.type == MESSAGE_TYPE::STATE && resp.text == _TEXT(MESSAGE_MONEY_TARGET_CANNOT_RECEIVE);
         },
         DEFAULT_TIMEOUT);
 

@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using WriteBack.Service;
 
 namespace WriteBack
 {
@@ -21,46 +19,22 @@ namespace WriteBack
         /// <returns>A task representing the asynchronous execution of the application.</returns>
         static async Task Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
-
-            // Add services
-            builder.Services.AddSingleton<Http.Service.RedisService>();
-            builder.Services.AddSingleton<Http.Service.DbContext>();
-            builder.Services.AddSingleton<Http.Service.HealthCheckService>();
-            builder.Logging.AddConsole();
-            builder.Services.AddHostedService<WriteBack.Service.WriteBackService>();
-            builder.Services.AddHostedService<Http.Service.ShutdownListenerService>();
-
-            // Read HealthApi configuration
-            var healthApiEnabled = builder.Configuration.GetValue<bool>("HealthApi:Enabled", false);
-            var healthApiPort = builder.Configuration.GetValue<int>("HealthApi:Port", 80);
-
-            if (healthApiEnabled)
-            {
-                // Configure Kestrel to listen on configured port
-                builder.WebHost.ConfigureKestrel(options =>
+            var host = Host.CreateDefaultBuilder(args)
+                .ConfigureServices(services =>
                 {
-                    options.ListenAnyIP(healthApiPort);
-                });
-            }
+                    services.AddSingleton<Http.Service.RedisService>();
+                    services.AddSingleton<Http.Service.DbContext>();
+                    services.AddLogging(builder =>
+                    {
+                        builder.AddConsole();
+                    });
+                    services.AddHostedService<WriteBackService>();
+                    services.AddHostedService<Http.Service.ShutdownListenerService>();
+                })
+                .UseConsoleLifetime()
+                .Build();
 
-            var app = builder.Build();
-
-            if (healthApiEnabled)
-            {
-                // Health check endpoints
-                app.MapGet("/health/ready", (Http.Service.HealthCheckService health) =>
-                {
-                    return health.IsReady ? Results.Ok("Ready") : Results.StatusCode(503);
-                });
-
-                app.MapGet("/health/live", (Http.Service.HealthCheckService health) =>
-                {
-                    return health.IsAlive ? Results.Ok("Alive") : Results.StatusCode(503);
-                });
-            }
-
-            await app.RunAsync();
+            await host.RunAsync();
         }
     }
 }

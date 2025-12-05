@@ -61,10 +61,10 @@ async::task<void> server::write_bulletin(character& ch, uint16_t section, const 
     if (contents.length() > 256)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_TOO_LONG_CONTENTS));
 
-    auto&& resp = co_await this->http.post("internal", "/bulletin/write", WriteArticle{section, ch.id(), title, contents});
+    auto&& resp = co_await this->http.post("internal", "/bulletin/write", WriteArticle{section, ch.id, title, contents});
 
     if (resp.success == false)
-        throw std::runtime_error("게시글 작성 실패");
+        throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_WRITE_FAILED));
 }
 
 async::task<void> server::delete_bulletin(character& ch, uint16_t section, uint16_t id)
@@ -75,7 +75,7 @@ async::task<void> server::delete_bulletin(character& ch, uint16_t section, uint1
     if (ch.condition(table::bulletin[section].condition) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_NOT_AUTH));
 
-    auto&& resp = co_await this->http.post("internal", "/bulletin/delete", DeleteArticle{id, section, ch.id()});
+    auto&& resp = co_await this->http.post("internal", "/bulletin/delete", DeleteArticle{id, section, ch.id});
 
     switch (resp.result)
     {

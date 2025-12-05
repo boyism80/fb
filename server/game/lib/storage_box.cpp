@@ -58,14 +58,14 @@ void storage_box::apply_pending(const std::vector<pending_box>& pending)
 
         this->_entries.emplace(id, e);
         reward_mark mark{};
-        mark.user                   = this->_owner.id();
+        mark.user                   = this->_owner.id;
         mark.pending_id             = box.id;
         mark.expire_date            = box.expire_date;
         this->_reward_marks[box.id] = mark;
 
         // Log storage box entry addition
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(this->_owner.id());
+        log_data["character_id"]   = static_cast<Json::Int64>(this->_owner.id);
         log_data["character_name"] = UTF8(this->_owner.name(), PLATFORM::WINDOWS);
         log_data["entry_id"]       = static_cast<Json::Int64>(id);
         log_data["pending_id"]     = box.id;
@@ -82,11 +82,11 @@ void storage_box::apply_pending(const std::vector<pending_box>& pending)
         // Notify player about new storage box entry
         if (!box.title.empty())
         {
-            this->_owner.message(std::format("통합보관함에 '{}' 보상이 추가되었습니다.", box.title), MESSAGE_TYPE::STATE);
+            this->_owner.message(std::format(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED), box.title), MESSAGE_TYPE::STATE);
         }
         else
         {
-            this->_owner.message("통합보관함에 보상이 추가되었습니다.", MESSAGE_TYPE::STATE);
+            this->_owner.message(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED_NO_TITLE), MESSAGE_TYPE::STATE);
         }
     }
 }
@@ -111,7 +111,7 @@ bool storage_box::receive_reward(uint32_t entry_id)
 
     // Log storage box attachment reception
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->_owner.id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->_owner.id);
     log_data["character_name"] = UTF8(this->_owner.name(), PLATFORM::WINDOWS);
     log_data["entry_id"]       = static_cast<Json::Int64>(entry_id);
     log_data["title"]          = UTF8(it->second.title, PLATFORM::WINDOWS);

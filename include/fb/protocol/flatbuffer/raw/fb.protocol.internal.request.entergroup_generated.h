@@ -25,9 +25,13 @@ struct EnterGroupBuilder;
 struct EnterGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef EnterGroupBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_MASTER = 4,
-    VT_MEMBER = 6
+    VT_HOST = 4,
+    VT_MASTER = 6,
+    VT_MEMBER = 8
   };
+  uint32_t host() const {
+    return GetField<uint32_t>(VT_HOST, 0);
+  }
   uint32_t master() const {
     return GetField<uint32_t>(VT_MASTER, 0);
   }
@@ -36,6 +40,7 @@ struct EnterGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_MASTER, 4) &&
            VerifyOffset(verifier, VT_MEMBER) &&
            verifier.VerifyString(member()) &&
@@ -47,6 +52,9 @@ struct EnterGroupBuilder {
   typedef EnterGroup Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_host(uint32_t host) {
+    fbb_.AddElement<uint32_t>(EnterGroup::VT_HOST, host, 0);
+  }
   void add_master(uint32_t master) {
     fbb_.AddElement<uint32_t>(EnterGroup::VT_MASTER, master, 0);
   }
@@ -66,21 +74,25 @@ struct EnterGroupBuilder {
 
 inline ::flatbuffers::Offset<EnterGroup> CreateEnterGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
     uint32_t master = 0,
     ::flatbuffers::Offset<::flatbuffers::String> member = 0) {
   EnterGroupBuilder builder_(_fbb);
   builder_.add_member(member);
   builder_.add_master(master);
+  builder_.add_host(host);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<EnterGroup> CreateEnterGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
     uint32_t master = 0,
     const char *member = nullptr) {
   auto member__ = member ? _fbb.CreateString(member) : 0;
   return fb::protocol::internal::request::raw::CreateEnterGroup(
       _fbb,
+      host,
       master,
       member__);
 }

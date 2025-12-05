@@ -11,14 +11,15 @@ async::task<bool> fb::game::handler::protocol::group::handle(fb::socket<characte
     if (me->inited() == false)
         co_return true;
 
-    auto& gid = me->group_id();
-    if (gid.has_value() && me->name() == request.name)
+    auto weak = me->weak_from_this_as<character>();
+    try
     {
-        co_await this->server.leave_group(*me);
+        co_await this->server.handle_group_action(*me, request.name);
     }
-    else
+    catch (std::exception& e)
     {
-        std::ignore = co_await this->server.create_group(*me, request.name);
+        if (weak.expired() == false)
+            me->message(e.what(), MESSAGE_TYPE::STATE);
     }
     co_return true;
 }

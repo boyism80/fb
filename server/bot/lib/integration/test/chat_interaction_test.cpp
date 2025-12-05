@@ -1,5 +1,6 @@
 #include <fb/bot/integration/chat_interaction_test.h>
 #include <fb/bot/integration/game_controller.h>
+#include <fb/model/model.h>
 
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
@@ -120,9 +121,7 @@ async::task<bool> chat_interaction_test::test_scenario_1(int index)
 
         // Step 9: Deposit 동동주 via chat
         bot->chat("Depositing 동동주 via chat");
-        std::ignore = co_await bot->request<fb::protocol::game::response::item_remove>(
-            fb::protocol::game::request::chat(false, "동동주 맡아줘"),
-            DEFAULT_TIMEOUT);
+        std::ignore = co_await bot->request<fb::protocol::game::response::item_remove>(fb::protocol::game::request::chat(false, "동동주 맡아줘"), DEFAULT_TIMEOUT);
 
         // Step 10: Withdraw 동동주 via chat
         bot->chat("Withdrawing 동동주 via chat");
@@ -160,7 +159,7 @@ async::task<bool> chat_interaction_test::test_scenario_1(int index)
         std::ignore = co_await bot->request<fb::protocol::game::response::chat>(
             fb::protocol::game::request::chat(false, "도토리 다 돌려줘"),
             [npc_oid](auto& resp) -> bool {
-                return resp.text.find("더 이상 가질 수 없습니다.") != std::string::npos;
+                return resp.text.find(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE)) != std::string::npos;
             },
             DEFAULT_TIMEOUT);
     }
@@ -203,7 +202,7 @@ async::task<bool> chat_interaction_test::test_scenario_2(int index)
                 if (resp.oid != npc_oid)
                     return false;
 
-                return resp.text.find("고칠 물건이 없습니다.") != std::string::npos;
+                return resp.text.find(_TEXT(MESSAGE_ITEM_CANNOT_REPAIR)) != std::string::npos;
             },
             DEFAULT_TIMEOUT);
 
@@ -331,26 +330,14 @@ async::task<bool> chat_interaction_test::test_scenario_4(int index)
             DEFAULT_TIMEOUT);
 
         std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
-            fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
-                                                0,
-                                                "",
-                                                0,
-                                                0,
-                                                "",
-                                                DIALOG_RESULT::NEXT),
+            fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST, 0, "", 0, 0, "", DIALOG_RESULT::NEXT),
             [](auto& resp) -> bool {
                 return resp.type == dialog_ext_type::list;
             },
             DEFAULT_TIMEOUT);
 
         std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
-            fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST,
-                                                0,
-                                                "",
-                                                0,
-                                                0,
-                                                "",
-                                                DIALOG_RESULT::NEXT),
+            fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST, 0, "", 0, 0, "", DIALOG_RESULT::NEXT),
             [](auto& resp) -> bool {
                 return resp.type == dialog_type::item;
             },
@@ -358,13 +345,7 @@ async::task<bool> chat_interaction_test::test_scenario_4(int index)
 
         auto   item_name = "unknown";
         auto&& resp      = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
-            fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::ITEM,
-                                                0,
-                                                item_name,
-                                                0,
-                                                0,
-                                                "",
-                                                DIALOG_RESULT::NEXT),
+            fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::ITEM, 0, item_name, 0, 0, "", DIALOG_RESULT::NEXT),
             [](auto& resp) -> bool {
                 return resp.type == dialog_ext_type::normal;
             },

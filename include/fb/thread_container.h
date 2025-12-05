@@ -23,6 +23,10 @@ private:
     unique_id_list          _keys;
 
 public:
+    using iterator       = unique_thread_container::iterator;
+    using const_iterator = unique_thread_container::const_iterator;
+
+public:
     std::function<void(void*)> deletor;
 
 public:
@@ -330,6 +334,14 @@ public:
 
     void settimer(const fb::timer::handle_callback_type& fn, const fb::model::timespan& duration);
     void exit();
+
+public:
+    iterator       begin();
+    iterator       end();
+    const_iterator begin() const;
+    const_iterator end() const;
+    const_iterator cbegin() const;
+    const_iterator cend() const;
 };
 
 } // namespace fb

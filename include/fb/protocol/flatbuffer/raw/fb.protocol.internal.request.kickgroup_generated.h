@@ -25,9 +25,13 @@ struct KickGroupBuilder;
 struct KickGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef KickGroupBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_KICKER = 4,
-    VT_TARGET = 6
+    VT_HOST = 4,
+    VT_KICKER = 6,
+    VT_TARGET = 8
   };
+  uint32_t host() const {
+    return GetField<uint32_t>(VT_HOST, 0);
+  }
   const ::flatbuffers::String *kicker() const {
     return GetPointer<const ::flatbuffers::String *>(VT_KICKER);
   }
@@ -36,6 +40,7 @@ struct KickGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyOffset(verifier, VT_KICKER) &&
            verifier.VerifyString(kicker()) &&
            VerifyOffset(verifier, VT_TARGET) &&
@@ -48,6 +53,9 @@ struct KickGroupBuilder {
   typedef KickGroup Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_host(uint32_t host) {
+    fbb_.AddElement<uint32_t>(KickGroup::VT_HOST, host, 0);
+  }
   void add_kicker(::flatbuffers::Offset<::flatbuffers::String> kicker) {
     fbb_.AddOffset(KickGroup::VT_KICKER, kicker);
   }
@@ -67,22 +75,26 @@ struct KickGroupBuilder {
 
 inline ::flatbuffers::Offset<KickGroup> CreateKickGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
     ::flatbuffers::Offset<::flatbuffers::String> kicker = 0,
     ::flatbuffers::Offset<::flatbuffers::String> target = 0) {
   KickGroupBuilder builder_(_fbb);
   builder_.add_target(target);
   builder_.add_kicker(kicker);
+  builder_.add_host(host);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<KickGroup> CreateKickGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
     const char *kicker = nullptr,
     const char *target = nullptr) {
   auto kicker__ = kicker ? _fbb.CreateString(kicker) : 0;
   auto target__ = target ? _fbb.CreateString(target) : 0;
   return fb::protocol::internal::request::raw::CreateKickGroup(
       _fbb,
+      host,
       kicker__,
       target__);
 }

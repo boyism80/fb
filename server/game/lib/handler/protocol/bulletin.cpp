@@ -88,7 +88,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 if (!resp.mail.read)
                 {
                     auto log_data              = Json::Value();
-                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
                     log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
                     log_data["mail_id"]        = request.article;
                     log_data["sender_name"]    = UTF8(resp.mail.sender, PLATFORM::WINDOWS);
@@ -134,7 +134,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
 
             // Log bulletin write event
             auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+            log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
             log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
             log_data["section"]        = request.section;
             log_data["title"]          = UTF8(request.title, PLATFORM::WINDOWS);
@@ -161,7 +161,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
 
                 // Log mail delete event
                 auto log_data              = Json::Value();
-                log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
                 log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
                 log_data["mail_id"]        = request.article;
                 this->server.log.write("mail_delete", log_data);
@@ -174,7 +174,7 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
 
                 // Log bulletin delete event
                 auto log_data              = Json::Value();
-                log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
                 log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
                 log_data["section"]        = request.section;
                 log_data["article_id"]     = request.article;
@@ -228,11 +228,11 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
         {
             auto&& resp = co_await this->server.send_mail(*ch, request.user, request.title, request.contents);
             co_await this->server.threads.switching(weak);
-            ch->mail_box.message("우편을 보냈습니다.", true, false);
+            ch->mail_box.message(_TEXT(MESSAGE_MAIL_SENT), true, false);
 
             // Log mail write event
             auto log_data             = Json::Value();
-            log_data["sender_id"]     = static_cast<Json::Int64>(ch->id());
+            log_data["sender_id"]     = static_cast<Json::Int64>(ch->id);
             log_data["sender_name"]   = UTF8(ch->name(), PLATFORM::WINDOWS);
             log_data["receiver_name"] = UTF8(request.user, PLATFORM::WINDOWS);
             log_data["title"]         = UTF8(request.title, PLATFORM::WINDOWS);
