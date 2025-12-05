@@ -95,9 +95,11 @@ async::task<void> server::on_start()
     co_await this->load_entries();
 }
 
-std::shared_ptr<session> server::on_accepted(fb::socket<session>& socket)
+async::task<void> server::on_accepted(fb::socket<session>& socket)
 {
-    return std::make_shared<session>();
+    auto data = std::make_shared<session>();
+    socket.data(data);
+    co_return;
 }
 
 async::task<bool> server::on_connected(fb::socket<session>& socket)
@@ -121,9 +123,9 @@ async::task<void> server::update_status()
 {
     try
     {
-        co_await this->http.post("internal",
-                                 "/server/heartbeat",
-                                 Heartbeat{internal::Service::Gateway, this->id(), this->name(), fb::config<std::string>("ip"), fb::config<uint16_t>("port")});
+        std::ignore = co_await this->http.post("internal",
+                                               "/server/heartbeat",
+                                               Heartbeat{internal::Service::Gateway, this->id(), this->name(), fb::config<std::string>("ip"), fb::config<uint16_t>("port")});
     }
     catch (const std::exception& e)
     {

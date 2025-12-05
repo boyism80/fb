@@ -10,6 +10,7 @@ table Login {
   uid: uint;
   name: string;
   host: ubyte;
+  force: bool;
 }
 
 

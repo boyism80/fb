@@ -48,12 +48,12 @@ private:
     // override
 
 protected:
-    bool                                  decrypt_policy(uint8_t cmd) const override final;
-    void                                  on_init_amqp(fb::amqp::socket& amqp) override final;
-    [[nodiscard]] async::task<void>       on_start() final;
-    std::shared_ptr<fb::gateway::session> on_accepted(fb::socket<fb::gateway::session>& socket) final;
-    [[nodiscard]] async::task<bool>       on_connected(fb::socket<fb::gateway::session>& session) final;
-    [[nodiscard]] async::task<bool>       on_disconnected(fb::socket<fb::gateway::session>& session) final;
+    bool                            decrypt_policy(uint8_t cmd) const override final;
+    void                            on_init_amqp(fb::amqp::socket& amqp) override final;
+    [[nodiscard]] async::task<void> on_start() final;
+    [[nodiscard]] async::task<void> on_accepted(fb::socket<fb::gateway::session>& socket) final;
+    [[nodiscard]] async::task<bool> on_connected(fb::socket<fb::gateway::session>& session) final;
+    [[nodiscard]] async::task<bool> on_disconnected(fb::socket<fb::gateway::session>& session) final;
 
 protected:
     Service service() const override final

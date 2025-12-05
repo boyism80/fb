@@ -200,13 +200,12 @@ public:
     [[nodiscard]] async::task<internal_resp::Unban>         unban(const std::string& name);
 
 protected:
-    bool                                 decrypt_policy(uint8_t cmd) const override final;
-    bool                                 assert_tps(const fb::socket<fb::game::character>& socket) const override final;
-    void                                 on_init_amqp(fb::amqp::socket& amqp) override final;
-    [[nodiscard]] async::task<void>      on_start() override final;
-    [[nodiscard]] async::task<bool>      on_connected(fb::socket<fb::game::character>& ch) override final;
-    [[nodiscard]] async::task<bool>      on_disconnected(fb::socket<fb::game::character>& ch) override final;
-    std::shared_ptr<fb::game::character> on_accepted(fb::socket<fb::game::character>& socket) override final;
+    bool                            decrypt_policy(uint8_t cmd) const override final;
+    bool                            assert_tps(const fb::socket<fb::game::character>& socket) const override final;
+    void                            on_init_amqp(fb::amqp::socket& amqp) override final;
+    [[nodiscard]] async::task<void> on_start() override final;
+    [[nodiscard]] async::task<bool> on_connected(fb::socket<fb::game::character>& ch) override final;
+    [[nodiscard]] async::task<bool> on_disconnected(fb::socket<fb::game::character>& ch) override final;
 
 protected:
     uint8_t id() const override final;

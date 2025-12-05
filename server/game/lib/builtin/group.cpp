@@ -132,7 +132,7 @@ int builtin::group::builtin_message(lua_State* L)
                 return 1;
             }
 
-            thread->dispatch([=](auto&) -> async::task<void> {
+            std::ignore = thread->dispatch([=](auto&) -> async::task<void> {
                 co_await fn(lua, server, group_id, message, type);
             });
             return lua->yield(1);

@@ -242,8 +242,8 @@ private:
 
     void accept()
     {
-        auto shared_socket_ptr = std::make_shared<fb::socket<T>>(*this, std::bind_front(&acceptor::on_socket_received, this), std::bind_front(&acceptor::on_socket_closed, this));
-        this->async_accept(*shared_socket_ptr, [this, shared_socket_ptr](boost::system::error_code error) mutable {
+        auto socket_ptr = std::make_shared<fb::socket<T>>(*this, std::bind_front(&acceptor::on_socket_received, this), std::bind_front(&acceptor::on_socket_closed, this));
+        this->async_accept(*socket_ptr, [this, socket_ptr](boost::system::error_code error) mutable {
             try
             {
                 if (error)
@@ -252,31 +252,31 @@ private:
                 if (this->_running == false)
                     throw std::runtime_error("cannot accept socket. acceptor is cleaning now.");
 
-                shared_socket_ptr->data(this->on_accepted(*shared_socket_ptr));
-                shared_socket_ptr->set_option(boost::asio::ip::tcp::no_delay(false));
+                async::awaitable_get(this->on_accepted(*socket_ptr));
+                socket_ptr->set_option(boost::asio::ip::tcp::no_delay(false));
 
                 {
-                    auto fd = shared_socket_ptr->fd();
-                    this->_sockets.write([fd, &shared_socket_ptr](auto& v) -> void {
+                    auto fd = socket_ptr->fd();
+                    this->_sockets.write([fd, &socket_ptr](auto& v) -> void {
                         if (v.contains(fd))
                         {
                             fb::logger::warn(std::format("socket already exists. fd: {}", fd));
                             v.erase(fd); // remove old socket if exists
                         }
 
-                        v.insert({fd, shared_socket_ptr});
+                        v.insert({fd, socket_ptr});
                     });
                 }
 
-                async::awaitable_get(this->on_connected(*shared_socket_ptr));
+                async::awaitable_get(this->on_connected(*socket_ptr));
 
-                boost::asio::co_spawn(*this, shared_socket_ptr->recv(), boost::asio::detached);
+                boost::asio::co_spawn(*this, socket_ptr->recv(), boost::asio::detached);
                 this->accept();
             }
             catch (std::exception& e)
             {
                 fb::logger::fatal("acceptor::accept: error={}\n{}", e.what(), boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
-                shared_socket_ptr->close();
+                socket_ptr->close();
             }
         });
     }
@@ -352,7 +352,10 @@ protected:
     }
 
 protected:
-    virtual std::shared_ptr<T> on_accepted(fb::socket<T>& socket) = 0;
+    virtual async::task<void> on_accepted(fb::socket<T>& socket)
+    {
+        co_return;
+    }
 
 protected:
     virtual async::task<void> on_start()

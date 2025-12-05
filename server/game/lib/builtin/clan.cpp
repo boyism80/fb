@@ -376,7 +376,7 @@ int builtin::clan::builtin_message(lua_State* L)
     if (thread == nullptr)
         return 0;
 
-    thread->dispatch([=](auto&) -> async::task<void> {
+    std::ignore = thread->dispatch([=](auto&) -> async::task<void> {
         co_await fn(lua, server, clan_id, message, type);
     });
 

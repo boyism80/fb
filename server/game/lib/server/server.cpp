@@ -372,11 +372,6 @@ async::task<bool> server::on_disconnected(fb::socket<character>& socket)
     co_return true;
 }
 
-std::shared_ptr<fb::game::character> server::on_accepted(fb::socket<character>& socket)
-{
-    return this->make<character>(socket);
-}
-
 uint8_t server::id() const
 {
     return fb::config<uint8_t>("id");

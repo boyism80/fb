@@ -76,7 +76,7 @@ namespace Internal.Controllers
                 {
                     Uid = request.Uid,
                     Host = request.Host
-                });
+                }, request.Force);
 
                 if (!success)
                 {
@@ -142,10 +142,9 @@ namespace Internal.Controllers
 
                 if (request.ForceShutdown && string.IsNullOrEmpty(request.Name) == false)
                 {
-                    var session = await _sessionService.Get(request.Name);
+                    var session = await _sessionService.GetAndDelete(request.Name);
                     if (session != null)
                     {
-                        await _sessionService.Delete(request.Name);
                         _rabbitMqService.Publish(new Response.KickOut
                         {
                             Uid = session.Uid,

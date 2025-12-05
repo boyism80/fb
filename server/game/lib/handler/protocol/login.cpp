@@ -16,86 +16,6 @@ login::login(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, fb::protocol::game::request::login>(server)
 { }
 
-async::task<bool>
-login::init_base(const internal::Character& response, character& ch, std::optional<uint32_t> group, std::optional<uint32_t> clan, const std::optional<transfer_param>& transfer)
-{
-    auto map  = response.map;
-    auto weak = ch.weak_from_this_as<character>();
-    ch.id(response.id);
-    ch.name(response.name);
-    ch.pw(response.pw);
-    ch.birthday(response.birth);
-    ch.created_date(fb::model::datetime(response.created_date));
-    ch.updated_date(fb::model::datetime(response.updated_date));
-    ch.role(static_cast<ROLE>(response.role));
-    ch.cls(static_cast<CLASS>(response.class_type));
-    ch.promotion(response.promotion);
-    ch.color(response.color);
-    ch.direction(DIRECTION(response.direction));
-    ch.look(response.look);
-    ch.money(response.money);
-    ch.items.deposited(response.deposited_money);
-    ch.sex(SEX(response.sex));
-    ch.stat.base_hp(response.base_hp);
-    ch.stat.hp(response.hp);
-    ch.stat.base_mp(response.base_mp);
-    ch.stat.mp(response.mp);
-    ch.level(response.level);
-    ch.exp(response.exp);
-    ch.state(STATE(response.state));
-    ch.title(response.title);
-
-    if (response.armor_color.has_value())
-        ch.armor_color(response.armor_color.value());
-
-    if (response.disguise.has_value())
-        ch.disguise(response.disguise.value());
-    else
-        ch.undisguise();
-
-    for (auto& buff : response.buffs)
-    {
-        auto& model = table::spell[buff.model];
-        ch.buffs.push_back(model, buff.time);
-    }
-
-    if (this->server.maps.contains(map) == false)
-        co_return false;
-
-    auto position_x = response.position.x;
-    auto position_y = response.position.y;
-    if (transfer != std::nullopt)
-    {
-        map        = transfer.value().map;
-        position_x = uint32_t(transfer.value().position.x);
-        position_y = uint32_t(transfer.value().position.y);
-    }
-
-    if (group.has_value())
-    {
-        co_await this->server.ensure_group(group.value(), [&ch](auto& group) -> async::task<void> {
-            group->enter(ch.weak_from_this_as<character>());
-            ch.group_id(group->id());
-            co_return;
-        });
-    }
-
-    if (clan.has_value())
-    {
-        co_await this->server.ensure_clan(clan.value(), [weak](auto& clan) -> async::task<void> {
-            auto ch = weak.lock();
-            if (ch == nullptr)
-                co_return;
-
-            clan->attach(weak);
-            ch->clan_id(clan->id());
-            co_return;
-        });
-    }
-
-    co_return co_await ch.map(this->server.maps[map], fb::model::point16_t(position_x, position_y));
-}
-
 void login::init_option(const internal::Option& response, fb::game::character& ch)
 {
     ch.option(OPTION::WHISPER, response.whisper, false);
@@ -265,22 +185,86 @@ void login::init_storage(const fb::protocol::internal::response::Init& response,
     }
 }
 
-async::task<bool> login::init(const fb::protocol::game::request::login& request, const std::weak_ptr<fb::game::character>& weak)
+async::task<std::shared_ptr<character>> login::init(const fb::protocol::game::request::login& request, fb::socket<character>& session)
 {
     auto&& response = co_await this->server.http.get<internal_resp::Init>("internal", std::format("/in-game/init/{}", request.id));
     auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
-    if (weak.expired())
-        co_return false;
 
-    auto ch = weak.lock();
-    if (ch == nullptr)
-        co_return false;
+    auto params            = character::initial_params{};
+    params.server          = &this->server;
+    params.socket          = &session;
+    params.id              = response.character.id;
+    params.name            = response.character.name;
+    params.pw              = response.character.pw;
+    params.birthday        = response.character.birth;
+    params.created_date    = fb::model::datetime(response.character.created_date);
+    params.updated_date    = fb::model::datetime(response.character.updated_date);
+    params.role            = static_cast<ROLE>(response.character.role);
+    params.class_type      = static_cast<CLASS>(response.character.class_type);
+    params.promotion       = response.character.promotion;
+    params.color           = response.character.color;
+    params.direction       = DIRECTION(response.character.direction);
+    params.look            = response.character.look;
+    params.money           = response.character.money;
+    params.deposited_money = response.character.deposited_money;
+    params.sex             = SEX(response.character.sex);
+    params.base_hp         = response.character.base_hp;
+    params.hp              = response.character.hp;
+    params.base_mp         = response.character.base_mp;
+    params.mp              = response.character.mp;
+    params.level           = response.character.level;
+    params.exp             = response.character.exp;
+    params.state           = STATE(response.character.state);
+    params.title           = response.character.title;
+    params.armor_color     = response.character.armor_color;
+    params.disguise        = response.character.disguise;
+
+    auto ch = std::make_shared<character>(params);
 
     ch->thread(this->server.maps[map]->thread());
+    auto weak = ch->weak_from_this_as<character>();
     co_await this->server.threads.switching(weak);
 
-    if (co_await this->init_base(response.character, *ch, response.group, response.clan, request.transfer) == false)
-        co_return false;
+    auto position_x = response.character.position.x;
+    auto position_y = response.character.position.y;
+    if (request.transfer != std::nullopt)
+    {
+        map        = request.transfer.value().map;
+        position_x = uint32_t(request.transfer.value().position.x);
+        position_y = uint32_t(request.transfer.value().position.y);
+    }
+
+    if (response.group.has_value())
+    {
+        co_await this->server.ensure_group(response.group.value(), [&ch](auto& group) -> async::task<void> {
+            group->enter(ch->weak_from_this_as<character>());
+            ch->group_id(group->id());
+            co_return;
+        });
+    }
+
+    if (response.clan.has_value())
+    {
+        co_await this->server.ensure_clan(response.clan.value(), [weak](auto& clan) -> async::task<void> {
+            auto ch = weak.lock();
+            if (ch == nullptr)
+                co_return;
+
+            clan->attach(weak);
+            ch->clan_id(clan->id());
+            co_return;
+        });
+    }
+
+    if (co_await ch->map(this->server.maps[map], fb::model::point16_t(position_x, position_y)) == false)
+        co_return nullptr;
+
+    for (auto& buff : response.character.buffs)
+    {
+        auto& model = table::spell[buff.model];
+        ch->buffs.push_back(model, buff.time);
+    }
+
     co_await this->server.threads.switching(weak);
 
     ch->mail_box.unread_count(response.mail);
@@ -315,27 +299,19 @@ async::task<bool> login::init(const fb::protocol::game::request::login& request,
     ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();
     co_await ch->process_system_mails();
-    co_return true;
+    co_return ch;
 }
 
-async::task<bool> login::assert_login(const fb::protocol::game::request::login& request, const std::weak_ptr<fb::game::character>& weak)
+async::task<bool> login::assert_login(const fb::protocol::game::request::login& request)
 {
-    auto&& resp = co_await this->server.http.post("internal", "/in-game/login", Login{request.id, request.name, fb::config<uint8_t>("id")});
-    if (weak.expired())
-        co_return false;
-
-    auto ch = weak.lock();
-    if (ch == nullptr)
-        co_return false;
-
-    co_await this->server.threads.switching(weak);
+    auto&& resp = co_await this->server.http.post("internal", "/in-game/login", Login{request.id, request.name, fb::config<uint8_t>("id"), false});
     switch (static_cast<ERROR_CODE>(resp.error))
     {
     case ERROR_CODE::NONE:
         co_return true;
 
     case ERROR_CODE::BANNED:
-        ch->message(fb::game::handler::amqp::ban::build_ban_message(resp.ban_reason, resp.ban_expire_date), MESSAGE_TYPE::NOTIFY);
+        fb::logger::warn("Character {} is banned: {}", request.name, resp.ban_reason);
         co_return false;
 
     default:
@@ -413,30 +389,39 @@ async::task<bool> login::ensure_character_insert(const std::weak_ptr<fb::game::c
 
 async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::game::request::login& request)
 {
-    auto ch = session.data();
-    if (ch == nullptr)
-        co_return false;
-
-    auto weak = ch->weak_from_this_as<character>();
     session.encryption(request.enc_type, request.enc_key);
-
-    ch->name(request.name);
     fb::logger::info("{} has connected.", request.name);
+
+    auto exists = this->server.characters.read([id = request.id](auto& container) {
+        return container.find(id) != nullptr;
+    });
+    if (exists)
+    {
+        fb::logger::fatal("Character {} already exists in server during initial insert - disconnecting duplicate session", request.name);
+        co_return false;
+    }
 
     auto delay = fb::config<uint32_t>("delay");
     co_await this->server.sleep(std::chrono::seconds(delay));
 
-    if (co_await this->assert_login(request, weak) == false)
+    if (co_await this->assert_login(request) == false)
         co_return false;
 
-    if (co_await this->init(request, weak) == false)
+    auto ch = co_await this->init(request, session);
+    if (ch == nullptr)
         co_return false;
 
-    if (co_await this->ensure_character_insert(weak) == false)
+    auto inserted = this->server.characters.write([ch](auto& container) {
+        return container.insert(ch);
+    });
+
+    if (inserted == false)
     {
-        fb::logger::fatal("Character {} already exists in server during initial insert - disconnecting duplicate session", ch->name());
+        fb::logger::fatal("Character {} already exists in server during initial insert - disconnecting duplicate session", request.name);
         co_return false;
     }
+
+    session.data(ch);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(ch->id());

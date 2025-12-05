@@ -8,19 +8,29 @@
 using namespace fb::game;
 using namespace fb::model;
 
-character::character(fb::game::server& server, fb::socket<character>& socket) :
+character::character(const initial_params& params) :
     stat(*this),
     storage_box(*this),
-    life(server,
+    life(*params.server,
          table::life[0],
          stat,
          fb::game::life::initial_params{
              {
-              .id = (uint32_t)socket.fd(),
+              .id = params.id,
               }
 }),
-    listener(server.listener), _socket(socket.template weak_from_this_as<fb::socket<character>>())
-{ }
+    listener(params.server->listener), _socket(params.socket != nullptr ? params.socket->template weak_from_this_as<fb::socket<character>>() : socket_ptr_t()), _id(params.id),
+    _name(params.name), _role(params.role), _pw(params.pw), _birthday(params.birthday), _created_date(params.created_date), _updated_date(params.updated_date), _look(params.look),
+    _color(params.color), _armor_color(params.armor_color), _experience(params.exp), _sex(params.sex), _state(params.state), _level(params.level), _class(params.class_type),
+    _promotion(params.promotion), _money(params.money), _disguise(params.disguise), _title(params.title)
+{
+    this->items.deposited(params.deposited_money);
+    this->stat.base_hp(params.base_hp);
+    this->stat.hp(params.hp);
+    this->stat.base_mp(params.base_mp);
+    this->stat.mp(params.mp);
+    this->direction(params.direction);
+}
 
 character::~character()
 {
@@ -195,13 +205,6 @@ uint32_t character::id() const
     return this->_id;
 }
 
-void character::id(uint32_t id)
-{
-    this->assert_thread();
-
-    this->_id = id;
-}
-
 ROLE character::role() const
 {
     return this->_role;
@@ -261,20 +264,6 @@ const std::string& character::name() const
     return this->_name;
 }
 
-void character::name(const std::string& value)
-{
-    this->assert_thread();
-
-    this->_name = value;
-}
-
-void character::pw(const std::string& value)
-{
-    this->assert_thread();
-
-    this->_pw = value;
-}
-
 const std::optional<uint32_t>& fb::game::character::birthday() const
 {
     return this->_birthday;
@@ -304,24 +293,11 @@ const fb::model::datetime& character::created_date() const
     return this->_created_date;
 }
 
-void character::created_date(const fb::model::datetime& value)
-{
-    this->assert_thread();
-    this->_created_date = value;
-}
-
 const fb::model::datetime& character::updated_date() const
 {
     this->assert_thread();
 
     return this->_updated_date;
-}
-
-void character::updated_date(const fb::model::datetime& value)
-{
-    this->assert_thread();
-
-    this->_updated_date = value;
 }
 
 uint16_t character::look() const

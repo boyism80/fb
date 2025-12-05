@@ -46,6 +46,7 @@ public:
 
 public:
     struct listener_t;
+    struct initial_params;
 
 private:
     uint32_t                _id;
@@ -96,7 +97,41 @@ private:
     using object::based;
 
 public:
-    character(fb::game::server& server, fb::socket<character>& socket);
+    struct initial_params : fb::game::life::initial_params
+    {
+    public:
+        fb::game::server*      server = nullptr;
+        fb::socket<character>* socket = nullptr;
+
+        uint32_t                id = 0;
+        std::string             name;
+        std::string             pw;
+        std::optional<uint32_t> birthday = std::nullopt;
+        fb::model::datetime     created_date;
+        fb::model::datetime     updated_date;
+        ROLE                    role            = ROLE::USER;
+        CLASS                   class_type      = CLASS::NONE;
+        uint8_t                 promotion       = 0;
+        uint16_t                color           = 0;
+        DIRECTION               direction       = DIRECTION::BOTTOM;
+        uint16_t                look            = 0;
+        uint32_t                money           = 0;
+        uint32_t                deposited_money = 0;
+        SEX                     sex             = SEX::MAN;
+        uint32_t                base_hp         = 0;
+        uint32_t                hp              = 0;
+        uint32_t                base_mp         = 0;
+        uint32_t                mp              = 0;
+        uint8_t                 level           = 1;
+        uint32_t                exp             = 0;
+        STATE                   state           = STATE::NORMAL;
+        std::string             title;
+        std::optional<uint8_t>  armor_color = std::nullopt;
+        std::optional<uint16_t> disguise    = std::nullopt;
+    };
+
+public:
+    character(const initial_params& params);
     ~character();
 
 public:
@@ -116,21 +151,16 @@ public:
     bool                                               inited() const;
     fb::socket<character>*                             socket() const;
     uint32_t                                           id() const;
-    void                                               id(uint32_t id);
     ROLE                                               role() const;
     void                                               role(ROLE value);
     async::task<void>                                  attack(DURATION duration = DURATION::ATTACK) override final;
     uint32_t                                           auto_attack_damage(MOB_SIZE size) const override final;
     void                                               action(ACTION action, DURATION duration, uint8_t sound = 0x00) override final;
     const std::string&                                 name() const override final;
-    void                                               name(const std::string& value);
-    void                                               pw(const std::string& value);
     const std::optional<uint32_t>&                     birthday() const;
     void                                               birthday(const std::optional<uint32_t>& value);
     const fb::model::datetime&                         created_date() const;
-    void                                               created_date(const fb::model::datetime& value);
     const fb::model::datetime&                         updated_date() const;
-    void                                               updated_date(const fb::model::datetime& value);
     uint16_t                                           look() const override final;
     void                                               look(uint16_t value);
     uint8_t                                            color() const override final;
