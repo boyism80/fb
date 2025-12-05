@@ -99,38 +99,31 @@ public:
     struct initial_params : fb::game::life::initial_params
     {
     public:
-        fb::game::server&      server;
-        fb::socket<character>& socket;
-
+        fb::socket<character>&  socket;
         uint32_t                id = 0;
         std::string             name;
         std::string             pw;
         std::optional<uint32_t> birthday = std::nullopt;
         fb::model::datetime     created_date;
         fb::model::datetime     updated_date;
-        ROLE                    role            = ROLE::USER;
-        CLASS                   class_type      = CLASS::NONE;
-        uint8_t                 promotion       = 0;
-        uint16_t                color           = 0;
-        DIRECTION               direction       = DIRECTION::BOTTOM;
-        uint16_t                look            = 0;
-        uint32_t                money           = 0;
-        uint32_t                deposited_money = 0;
-        SEX                     sex             = SEX::MAN;
-        uint32_t                base_hp         = 0;
-        uint32_t                hp              = 0;
-        uint32_t                base_mp         = 0;
-        uint32_t                mp              = 0;
-        uint8_t                 level           = 1;
-        uint32_t                exp             = 0;
-        STATE                   state           = STATE::NORMAL;
+        ROLE                    role       = ROLE::USER;
+        CLASS                   class_type = CLASS::NONE;
+        uint8_t                 promotion  = 0;
+        uint16_t                color      = 0;
+        DIRECTION               direction  = DIRECTION::BOTTOM;
+        uint16_t                look       = 0;
+        uint32_t                money      = 0;
+        SEX                     sex        = SEX::MAN;
+        uint8_t                 level      = 1;
+        uint32_t                exp        = 0;
+        STATE                   state      = STATE::NORMAL;
         std::string             title;
         std::optional<uint8_t>  armor_color = std::nullopt;
         std::optional<uint16_t> disguise    = std::nullopt;
     };
 
 public:
-    character(const initial_params& params);
+    character(fb::game::server& server, const initial_params& params);
     ~character();
 
 public:

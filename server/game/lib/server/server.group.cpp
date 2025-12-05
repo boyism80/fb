@@ -42,9 +42,13 @@ void server::assert_group(uint32_t error, const std::string& actor) const
 
 async::task<void> server::ensure_group(uint32_t id, std::function<async::task<void>(std::shared_ptr<fb::game::group>&)> fn)
 {
+    auto thread = this->threads.current();
     co_await this->groups.async_write(
         id,
-        [this, id, fn](auto& group) -> async::task<void> {
+        [this, fn, thread](auto& group) -> async::task<void> {
+            if (thread != nullptr)
+                co_await thread->switching();
+
             co_await fn(group);
         },
         [=, this]() -> async::task<std::shared_ptr<fb::game::group>> {
@@ -65,6 +69,9 @@ async::task<void> server::ensure_group(uint32_t id, std::function<async::task<vo
                 throw std::runtime_error(std::format("cannot get group (error : {})", resp.error));
             }
         });
+
+    if (thread != nullptr)
+        co_await thread->switching();
 }
 
 async::task<void> server::create_group(character& me, const std::string& target_name)

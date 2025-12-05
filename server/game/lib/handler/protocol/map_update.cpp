@@ -10,6 +10,9 @@ map_update::map_update(fb::game::server& server) :
 async::task<bool> map_update::handle(fb::socket<character>& session, fb::protocol::game::request::map_update& request)
 {
     auto ch = session.data();
+    if (ch == nullptr)
+        co_return true;
+
     if (ch->inited() == false)
         co_return true;
 

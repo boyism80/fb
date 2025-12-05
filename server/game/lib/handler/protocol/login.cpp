@@ -190,38 +190,40 @@ async::task<std::shared_ptr<character>> login::init(const fb::protocol::game::re
     auto&& response = co_await this->server.http.get<internal_resp::Init>("internal", std::format("/in-game/init/{}", request.id));
     auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
 
-    auto params            = character::initial_params{.server = this->server, .socket = session};
-    params.id              = response.character.id;
-    params.name            = response.character.name;
-    params.pw              = response.character.pw;
-    params.birthday        = response.character.birth;
-    params.created_date    = fb::model::datetime(response.character.created_date);
-    params.updated_date    = fb::model::datetime(response.character.updated_date);
-    params.role            = static_cast<ROLE>(response.character.role);
-    params.class_type      = static_cast<CLASS>(response.character.class_type);
-    params.promotion       = response.character.promotion;
-    params.color           = response.character.color;
-    params.direction       = DIRECTION(response.character.direction);
-    params.look            = response.character.look;
-    params.money           = response.character.money;
-    params.deposited_money = response.character.deposited_money;
-    params.sex             = SEX(response.character.sex);
-    params.base_hp         = response.character.base_hp;
-    params.hp              = response.character.hp;
-    params.base_mp         = response.character.base_mp;
-    params.mp              = response.character.mp;
-    params.level           = response.character.level;
-    params.exp             = response.character.exp;
-    params.state           = STATE(response.character.state);
-    params.title           = response.character.title;
-    params.armor_color     = response.character.armor_color;
-    params.disguise        = response.character.disguise;
+    auto params         = character::initial_params{.socket = session};
+    params.id           = response.character.id;
+    params.name         = response.character.name;
+    params.pw           = response.character.pw;
+    params.birthday     = response.character.birth;
+    params.created_date = fb::model::datetime(response.character.created_date);
+    params.updated_date = fb::model::datetime(response.character.updated_date);
+    params.role         = static_cast<ROLE>(response.character.role);
+    params.class_type   = static_cast<CLASS>(response.character.class_type);
+    params.promotion    = response.character.promotion;
+    params.color        = response.character.color;
+    params.direction    = DIRECTION(response.character.direction);
+    params.look         = response.character.look;
+    params.money        = response.character.money;
+    params.sex          = SEX(response.character.sex);
+    params.level        = response.character.level;
+    params.exp          = response.character.exp;
+    params.state        = STATE(response.character.state);
+    params.title        = response.character.title;
+    params.armor_color  = response.character.armor_color;
+    params.disguise     = response.character.disguise;
 
-    auto ch = std::make_shared<character>(params);
-
-    ch->thread(this->server.maps[map]->thread());
+    auto ch   = this->server.make<character>(params);
     auto weak = ch->weak_from_this_as<character>();
     co_await this->server.threads.switching(weak);
+    ch->items.deposited(response.character.deposited_money);
+    ch->stat.base_hp(response.character.base_hp);
+    ch->stat.hp(response.character.hp);
+    ch->stat.base_mp(response.character.base_mp);
+    ch->stat.mp(response.character.mp);
+
+    auto thread = this->server.maps[map]->thread();
+    ch->thread(thread);
+    co_await thread->switching();
 
     auto position_x = response.character.position.x;
     auto position_y = response.character.position.y;
@@ -230,28 +232,6 @@ async::task<std::shared_ptr<character>> login::init(const fb::protocol::game::re
         map        = request.transfer.value().map;
         position_x = uint32_t(request.transfer.value().position.x);
         position_y = uint32_t(request.transfer.value().position.y);
-    }
-
-    if (response.group.has_value())
-    {
-        co_await this->server.ensure_group(response.group.value(), [&ch](auto& group) -> async::task<void> {
-            group->enter(ch->weak_from_this_as<character>());
-            ch->group_id(group->id());
-            co_return;
-        });
-    }
-
-    if (response.clan.has_value())
-    {
-        co_await this->server.ensure_clan(response.clan.value(), [weak](auto& clan) -> async::task<void> {
-            auto ch = weak.lock();
-            if (ch == nullptr)
-                co_return;
-
-            clan->attach(weak);
-            ch->clan_id(clan->id());
-            co_return;
-        });
     }
 
     if (co_await ch->map(this->server.maps[map], fb::model::point16_t(position_x, position_y)) == false)
@@ -263,10 +243,25 @@ async::task<std::shared_ptr<character>> login::init(const fb::protocol::game::re
         ch->buffs.push_back(model, buff.time);
     }
 
-    co_await this->server.threads.switching(weak);
+    if (response.group.has_value())
+    {
+        co_await this->server.ensure_group(response.group.value(), [this, &ch, weak](auto& group) -> async::task<void> {
+            group->enter(weak);
+            ch->group_id(group->id());
+            co_return;
+        });
+    }
+
+    if (response.clan.has_value())
+    {
+        co_await this->server.ensure_clan(response.clan.value(), [this, &ch, weak](auto& clan) -> async::task<void> {
+            clan->attach(weak);
+            ch->clan_id(clan->id());
+            co_return;
+        });
+    }
 
     ch->mail_box.unread_count(response.mail);
-
     this->init_items(response.items, *ch);
     this->init_spells(response.spells, *ch);
     this->init_achievements(response.achievements, *ch);

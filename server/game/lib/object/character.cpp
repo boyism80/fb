@@ -8,29 +8,23 @@
 using namespace fb::game;
 using namespace fb::model;
 
-character::character(const initial_params& params) :
+character::character(fb::game::server& server, const initial_params& params) :
     stat(*this),
     storage_box(*this),
-    life(params.server,
+    life(server,
          table::life[0],
          stat,
          fb::game::life::initial_params{
              {
-              .id = params.id,
+              .id        = params.id,
+              .position  = params.position,
+              .direction = params.direction,
               }
 }),
-    listener(params.server.listener), id(params.id), socket(params.socket), _pw(params.pw), _created_date(params.created_date), _updated_date(params.updated_date),
-    _name(params.name), _role(params.role), _birthday(params.birthday), _look(params.look), _color(params.color), _armor_color(params.armor_color), _experience(params.exp),
-    _sex(params.sex), _state(params.state), _level(params.level), _class(params.class_type), _promotion(params.promotion), _money(params.money), _disguise(params.disguise),
-    _title(params.title)
-{
-    this->items.deposited(params.deposited_money);
-    this->stat.base_hp(params.base_hp);
-    this->stat.hp(params.hp);
-    this->stat.base_mp(params.base_mp);
-    this->stat.mp(params.mp);
-    this->direction(params.direction);
-}
+    listener(server.listener), id(params.id), socket(params.socket), _pw(params.pw), _created_date(params.created_date), _updated_date(params.updated_date), _name(params.name),
+    _role(params.role), _birthday(params.birthday), _look(params.look), _color(params.color), _armor_color(params.armor_color), _experience(params.exp), _sex(params.sex),
+    _state(params.state), _level(params.level), _class(params.class_type), _promotion(params.promotion), _money(params.money), _disguise(params.disguise), _title(params.title)
+{ }
 
 character::~character()
 {

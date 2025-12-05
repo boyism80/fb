@@ -23,9 +23,13 @@ void server::assert_clan(uint32_t error) const
 
 async::task<void> server::ensure_clan(uint32_t id, std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn)
 {
+    auto thread = this->threads.current();
     co_await this->clans.async_write(
         id,
-        [this, id, fn](auto& clan) -> async::task<void> {
+        [this, fn, thread](auto& clan) -> async::task<void> {
+            if (thread != nullptr)
+                co_await thread->switching();
+
             co_await fn(clan);
         },
         [=, this]() -> async::task<std::shared_ptr<fb::game::clan>> {
@@ -49,6 +53,9 @@ async::task<void> server::ensure_clan(uint32_t id, std::function<async::task<voi
                 throw std::runtime_error(std::format("cannot get clan (error : {})", resp.error));
             }
         });
+
+    if (thread != nullptr)
+        co_await thread->switching();
 }
 
 void server::update_clan(clan& clan, fb::protocol::internal::Clan& resp1, const std::vector<fb::protocol::internal::ClanMember>& resp2) const
