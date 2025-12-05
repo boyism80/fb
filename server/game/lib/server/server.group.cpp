@@ -280,7 +280,7 @@ async::task<void> server::on_create_group(const internal_resp::GroupDetails& res
                     auto ch = characters.find(master_uid);
                     if (ch != nullptr)
                     {
-                        auto weak = ch->weak_from_this_as<character>();
+                        auto weak = ch->template weak_from_this_as<character>();
                         ch->group_id(id);
                         group->enter(weak);
 
@@ -306,7 +306,7 @@ async::task<void> server::on_create_group(const internal_resp::GroupDetails& res
                         auto invited_ch = characters.find(member.name);
                         if (invited_ch != nullptr)
                         {
-                            auto invited_weak = invited_ch->weak_from_this_as<character>();
+                            auto invited_weak = invited_ch->template weak_from_this_as<character>();
                             if (invited_weak.expired() == false)
                             {
                                 invited_ch->group_id(id);
@@ -363,7 +363,7 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
                 if (ch == nullptr)
                     co_return;
 
-                auto weak          = ch->weak_from_this_as<character>();
+                auto weak          = ch->template weak_from_this_as<character>();
                 auto before_thread = this->threads.current();
                 auto after_thread  = ch->thread();
                 co_await after_thread->switching();
@@ -414,7 +414,7 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
                 if (ch != nullptr)
                 {
                     auto thread = ch->thread();
-                    auto weak   = ch->weak_from_this_as<character>();
+                    auto weak   = ch->template weak_from_this_as<character>();
                     group->detach(weak);
 
                     co_await thread->switching();

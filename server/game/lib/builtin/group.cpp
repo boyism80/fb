@@ -139,7 +139,7 @@ int builtin::group::builtin_message(lua_State* L)
         }
         else
         {
-            auto weak = master_ch->weak_from_this_as<fb::game::character>();
+            auto weak = master_ch->template weak_from_this_as<fb::game::character>();
             server->threads.enqueue(weak, [=](auto&) -> async::task<void> {
                 co_await fn(lua, server, group_id, message, type);
             });

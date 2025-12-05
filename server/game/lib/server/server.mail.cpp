@@ -31,7 +31,7 @@ async::task<void> server::on_write_mail(const internal_resp::WriteMail& resp)
         if (ch == nullptr)
             return;
 
-        auto weak = ch->weak_from_this_as<character>();
+        auto weak = ch->template weak_from_this_as<character>();
         this->threads.enqueue(weak, [this, ch, unread = resp.unread, resp](auto& thread) -> async::task<void> {
             ch->mail_box.unread_count(unread);
 

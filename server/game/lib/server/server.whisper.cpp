@@ -33,7 +33,7 @@ async::task<void> server::whisper(character& sender, std::string receiver_name, 
         auto receiver    = characters.find(receiver_name);
         if (receiver != nullptr)
         {
-            auto target_weak = receiver->weak_from_this_as<character>();
+            auto target_weak = receiver->template weak_from_this_as<character>();
             co_await this->threads.switching(target_weak);
             auto target_name = receiver->name();
 

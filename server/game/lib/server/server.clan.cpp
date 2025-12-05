@@ -111,7 +111,7 @@ async::task<void> server::on_create_clan(const internal_resp::ClanDetails& resp)
                     if (ch != nullptr)
                     {
                         ch->clan_id(id);
-                        clan->attach(ch->weak_from_this_as<character>());
+                        clan->attach(ch->template weak_from_this_as<character>());
 
                         // Log clan create event only if master is in this server
                         auto log_data              = Json::Value();
@@ -437,7 +437,7 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                 if (ch->clan_id().has_value())
                     co_return;
 
-                auto weak    = ch->weak_from_this_as<character>();
+                auto weak    = ch->template weak_from_this_as<character>();
                 auto members = std::vector<std::shared_ptr<fb::game::character>>();
                 for (auto& [_, weak_ptr] : clan->characters())
                 {
@@ -482,7 +482,7 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                 auto ch = characters.find(resp.deleted_member.value().name);
                 if (ch != nullptr)
                 {
-                    auto weak = ch->weak_from_this_as<character>();
+                    auto weak = ch->template weak_from_this_as<character>();
                     clan->detach(weak);
                     ch->clan_reset();
                     ch->update_external(false);

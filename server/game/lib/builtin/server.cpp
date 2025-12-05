@@ -162,7 +162,7 @@ int builtin::server::builtin_name2ch(lua_State* L)
             return 1;
         }
 
-        auto weak = ch->weak_from_this_as<character>();
+        auto weak = ch->template weak_from_this_as<character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushobject(ch);
@@ -295,7 +295,7 @@ int builtin::server::builtin_id2ch(lua_State* L)
             return 0;
         }
 
-        auto weak = ch->weak_from_this_as<character>();
+        auto weak = ch->template weak_from_this_as<character>();
         return lua->ensure_yield(*server, weak, [=](auto /*is_yield*/) {
             return lua->ensure_resume(*server, weak, [=]() {
                 lua->pushobject(ch);
