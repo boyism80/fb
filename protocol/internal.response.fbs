@@ -160,6 +160,8 @@ table GroupDetails {
   action: fb.protocol.internal.GroupDetailsAction;
   group: fb.protocol.internal.Group;
   members: [fb.protocol.internal.CharacterRef];
+  actor: string;
+  target: string;
   error: uint;
 }
 

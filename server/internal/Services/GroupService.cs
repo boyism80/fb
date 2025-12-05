@@ -87,6 +87,8 @@ namespace Internal.Services
                             Members = new List<string>() // Empty for GroupDetails, members are in CharacterRef array
                         },
                         Members = members,
+                        Actor = string.Empty,
+                        Target = string.Empty,
                         Error = (uint)ErrorCode.None
                     };
                 }
@@ -97,6 +99,8 @@ namespace Internal.Services
                 {
                     Host = _configuration.GetValue<uint>("id"),
                     Action = Protocol.GroupDetailsAction.Query,
+                    Actor = string.Empty,
+                    Target = string.Empty,
                     Error = (uint)e.Error
                 };
             }
@@ -106,6 +110,8 @@ namespace Internal.Services
                 {
                     Host = _configuration.GetValue<uint>("id"),
                     Action = Protocol.GroupDetailsAction.Query,
+                    Actor = string.Empty,
+                    Target = string.Empty,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
@@ -179,17 +185,19 @@ namespace Internal.Services
                             _dbContext.CharacterSync.Set(targetSync);
                             _dbContext.Group.Set(group);
 
-                            var members = new List<Protocol.CharacterRef>();
-                            members.Add(new Protocol.CharacterRef
+                            var members = new List<Protocol.CharacterRef>
                             {
-                                Uid = actor.Id,
-                                Name = actor.Name
-                            });
-                            members.Add(new Protocol.CharacterRef
-                            {
-                                Uid = target.Id,
-                                Name = target.Name
-                            });
+                                new Protocol.CharacterRef
+                                {
+                                    Uid = actor.Id,
+                                    Name = actor.Name
+                                },
+                                new Protocol.CharacterRef
+                                {
+                                    Uid = target.Id,
+                                    Name = target.Name
+                                }
+                            };
 
                             await _dbContext.SaveChangesAsync();
 
@@ -203,6 +211,8 @@ namespace Internal.Services
                                     Master = actor.Name,
                                     Members = new List<string>()
                                 },
+                                Actor = actor.Name,
+                                Target = target.Name,
                                 Members = members,
                                 Error = (uint)ErrorCode.None
                             };
@@ -219,6 +229,8 @@ namespace Internal.Services
                 {
                     Host = _configuration.GetValue<uint>("id"),
                     Action = Protocol.GroupDetailsAction.Create,
+                    Actor = string.Empty,
+                    Target = request.Member,
                     Error = (uint)e.Error
                 };
             }
@@ -228,6 +240,8 @@ namespace Internal.Services
                 {
                     Host = _configuration.GetValue<uint>("id"),
                     Action = Protocol.GroupDetailsAction.Create,
+                    Actor = string.Empty,
+                    Target = string.Empty,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
@@ -697,6 +711,10 @@ namespace Internal.Services
                 {
                     Host = _configuration.GetValue<uint>("id"),
                     Action = Protocol.GroupActionType.Enter,
+                    Target = new Protocol.CharacterRef
+                    {
+                        Name = request.Member
+                    },
                     Error = (uint)e.Error
                 };
             }

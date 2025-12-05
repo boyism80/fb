@@ -33,7 +33,9 @@ struct GroupDetails FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ACTION = 6,
     VT_GROUP = 8,
     VT_MEMBERS = 10,
-    VT_ERROR = 12
+    VT_ACTOR = 12,
+    VT_TARGET = 14,
+    VT_ERROR = 16
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -47,6 +49,12 @@ struct GroupDetails FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef>> *members() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef>> *>(VT_MEMBERS);
   }
+  const ::flatbuffers::String *actor() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ACTOR);
+  }
+  const ::flatbuffers::String *target() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TARGET);
+  }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
@@ -59,6 +67,10 @@ struct GroupDetails FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_MEMBERS) &&
            verifier.VerifyVector(members()) &&
            verifier.VerifyVectorOfTables(members()) &&
+           VerifyOffset(verifier, VT_ACTOR) &&
+           verifier.VerifyString(actor()) &&
+           VerifyOffset(verifier, VT_TARGET) &&
+           verifier.VerifyString(target()) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -80,6 +92,12 @@ struct GroupDetailsBuilder {
   void add_members(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef>>> members) {
     fbb_.AddOffset(GroupDetails::VT_MEMBERS, members);
   }
+  void add_actor(::flatbuffers::Offset<::flatbuffers::String> actor) {
+    fbb_.AddOffset(GroupDetails::VT_ACTOR, actor);
+  }
+  void add_target(::flatbuffers::Offset<::flatbuffers::String> target) {
+    fbb_.AddOffset(GroupDetails::VT_TARGET, target);
+  }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(GroupDetails::VT_ERROR, error, 0);
   }
@@ -100,9 +118,13 @@ inline ::flatbuffers::Offset<GroupDetails> CreateGroupDetails(
     fb::protocol::internal::raw::GroupDetailsAction action = fb::protocol::internal::raw::GroupDetailsAction_Query,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Group> group = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef>>> members = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> actor = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> target = 0,
     uint32_t error = 0) {
   GroupDetailsBuilder builder_(_fbb);
   builder_.add_error(error);
+  builder_.add_target(target);
+  builder_.add_actor(actor);
   builder_.add_members(members);
   builder_.add_group(group);
   builder_.add_host(host);
@@ -116,14 +138,20 @@ inline ::flatbuffers::Offset<GroupDetails> CreateGroupDetailsDirect(
     fb::protocol::internal::raw::GroupDetailsAction action = fb::protocol::internal::raw::GroupDetailsAction_Query,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Group> group = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef>> *members = nullptr,
+    const char *actor = nullptr,
+    const char *target = nullptr,
     uint32_t error = 0) {
   auto members__ = members ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef>>(*members) : 0;
+  auto actor__ = actor ? _fbb.CreateString(actor) : 0;
+  auto target__ = target ? _fbb.CreateString(target) : 0;
   return fb::protocol::internal::response::raw::CreateGroupDetails(
       _fbb,
       host,
       action,
       group,
       members__,
+      actor__,
+      target__,
       error);
 }
 

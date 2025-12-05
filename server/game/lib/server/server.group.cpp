@@ -84,6 +84,9 @@ async::task<void> server::create_group(character& me, const std::string& target_
     if (me.group_id().has_value())
         throw std::runtime_error(_TEXT(MESSAGE_GROUP_ALREADY_JOINED));
 
+    if (me.name() == target_name)
+        throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
+
     // Try to find target in the same thread's thread_params
     auto current_thread = this->threads.current();
     if (current_thread != nullptr)
@@ -174,7 +177,7 @@ async::task<void> server::handle_group_action(character& actor, const std::strin
     {
         auto group_id = actor.group_id();
         if (group_id.has_value() == false)
-            co_return;
+            throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
 
         // Has group - check if master or member
         auto actor_name = actor.name();
@@ -251,7 +254,7 @@ async::task<void> server::handle_group_action(character& actor, const std::strin
 
 async::task<void> server::on_create_group(const internal_resp::GroupDetails& resp)
 {
-    this->assert_group(resp.error, "");
+    this->assert_group(resp.error, resp.target);
 
     // Create group directly from GroupDetails without calling GET API
     auto id      = resp.group.id;
@@ -353,7 +356,10 @@ async::task<void> server::on_create_group(const internal_resp::GroupDetails& res
 
 async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& resp)
 {
-    this->assert_group(resp.error, resp.actor.name);
+    auto target = std::string{};
+    if (resp.target.has_value())
+        target = resp.target.value().name;
+    this->assert_group(resp.error, target);
 
     co_await this->ensure_group(resp.group_id, [this, &resp](auto& group) -> async::task<void> {
         switch (static_cast<internal::GroupActionType>(resp.action))
@@ -470,7 +476,6 @@ async::task<void> server::on_destroyed_group(const internal_resp::DestroyGroup& 
     auto gid = resp.group_id;
     co_await this->groups.async_erase(gid, [this, gid, &resp](const auto& group) -> async::task<void> {
         auto members = std::vector<std::string>{group->members()};
-        members.push_back(group->master());
 
         co_await this->characters.async_write([this, &resp, &members](auto& characters) -> async::task<void> {
             co_await characters.foreach (members, [](auto& ch) {

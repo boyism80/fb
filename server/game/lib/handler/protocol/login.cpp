@@ -234,6 +234,8 @@ async::task<std::shared_ptr<character>> login::init(const fb::protocol::game::re
         position_y = uint32_t(request.transfer.value().position.y);
     }
 
+    session.data(ch);
+
     if (co_await ch->map(this->server.maps[map], fb::model::point16_t(position_x, position_y)) == false)
         co_return nullptr;
 
@@ -411,8 +413,6 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
         fb::logger::fatal("Character {} already exists in server during initial insert - disconnecting duplicate session", request.name);
         co_return false;
     }
-
-    session.data(ch);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(ch->id);

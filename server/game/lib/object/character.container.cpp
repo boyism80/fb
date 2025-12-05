@@ -130,7 +130,8 @@ async::task<void> character::container::foreach_async(const std::vector<std::str
         auto ch = this->find(name);
         if (ch == nullptr)
         {
-            miss(name);
+            if (miss != nullptr)
+                miss(name);
             continue;
         }
 
@@ -145,7 +146,8 @@ async::task<void> character::container::invoke(const std::string& name, characte
     auto ch = this->find(name);
     if (ch == nullptr)
     {
-        miss(name);
+        if (miss != nullptr)
+            miss(name);
         co_return;
     }
 
@@ -162,7 +164,8 @@ async::task<void> character::container::invoke_async(const std::string& name, ch
     auto ch = this->find(name);
     if (ch == nullptr)
     {
-        miss(name);
+        if (miss != nullptr)
+            miss(name);
         co_return;
     }
 

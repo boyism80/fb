@@ -25,16 +25,34 @@ public struct GroupDetails : IFlatbufferObject
   public fb.protocol._internal.raw.Group? Group { get { int o = __p.__offset(8); return o != 0 ? (fb.protocol._internal.raw.Group?)(new fb.protocol._internal.raw.Group()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public fb.protocol._internal.raw.CharacterRef? Members(int j) { int o = __p.__offset(10); return o != 0 ? (fb.protocol._internal.raw.CharacterRef?)(new fb.protocol._internal.raw.CharacterRef()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int MembersLength { get { int o = __p.__offset(10); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public uint Error { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Actor { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetActorBytes() { return __p.__vector_as_span<byte>(12, 1); }
+#else
+  public ArraySegment<byte>? GetActorBytes() { return __p.__vector_as_arraysegment(12); }
+#endif
+  public byte[] GetActorArray() { return __p.__vector_as_array<byte>(12); }
+  public string Target { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetTargetBytes() { return __p.__vector_as_span<byte>(14, 1); }
+#else
+  public ArraySegment<byte>? GetTargetBytes() { return __p.__vector_as_arraysegment(14); }
+#endif
+  public byte[] GetTargetArray() { return __p.__vector_as_array<byte>(14); }
+  public uint Error { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.GroupDetails> CreateGroupDetails(FlatBufferBuilder builder,
       uint host = 0,
       fb.protocol._internal.raw.GroupDetailsAction action = fb.protocol._internal.raw.GroupDetailsAction.Query,
       Offset<fb.protocol._internal.raw.Group> groupOffset = default(Offset<fb.protocol._internal.raw.Group>),
       VectorOffset membersOffset = default(VectorOffset),
+      StringOffset actorOffset = default(StringOffset),
+      StringOffset targetOffset = default(StringOffset),
       uint error = 0) {
-    builder.StartTable(5);
+    builder.StartTable(7);
     GroupDetails.AddError(builder, error);
+    GroupDetails.AddTarget(builder, targetOffset);
+    GroupDetails.AddActor(builder, actorOffset);
     GroupDetails.AddMembers(builder, membersOffset);
     GroupDetails.AddGroup(builder, groupOffset);
     GroupDetails.AddHost(builder, host);
@@ -42,7 +60,7 @@ public struct GroupDetails : IFlatbufferObject
     return GroupDetails.EndGroupDetails(builder);
   }
 
-  public static void StartGroupDetails(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartGroupDetails(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
   public static void AddAction(FlatBufferBuilder builder, fb.protocol._internal.raw.GroupDetailsAction action) { builder.AddSbyte(1, (sbyte)action, 0); }
   public static void AddGroup(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Group> groupOffset) { builder.AddOffset(2, groupOffset.Value, 0); }
@@ -52,7 +70,9 @@ public struct GroupDetails : IFlatbufferObject
   public static VectorOffset CreateMembersVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.CharacterRef>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateMembersVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.CharacterRef>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartMembersVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(4, error, 0); }
+  public static void AddActor(FlatBufferBuilder builder, StringOffset actorOffset) { builder.AddOffset(4, actorOffset.Value, 0); }
+  public static void AddTarget(FlatBufferBuilder builder, StringOffset targetOffset) { builder.AddOffset(5, targetOffset.Value, 0); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(6, error, 0); }
   public static Offset<fb.protocol._internal.response.raw.GroupDetails> EndGroupDetails(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.GroupDetails>(o);
@@ -71,7 +91,9 @@ static public class GroupDetailsVerify
       && verifier.VerifyField(tablePos, 6 /*Action*/, 1 /*fb.protocol._internal.raw.GroupDetailsAction*/, 1, false)
       && verifier.VerifyTable(tablePos, 8 /*Group*/, fb.protocol._internal.raw.GroupVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 10 /*Members*/, fb.protocol._internal.raw.CharacterRefVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 12 /*Error*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 12 /*Actor*/, false)
+      && verifier.VerifyString(tablePos, 14 /*Target*/, false)
+      && verifier.VerifyField(tablePos, 16 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
