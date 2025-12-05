@@ -38,7 +38,7 @@ bool consume::active()
 
     // Log item consume event
     auto log_data               = Json::Value();
-    log_data["character_id"]    = static_cast<Json::Int64>(owner->id());
+    log_data["character_id"]    = static_cast<Json::Int64>(owner->id);
     log_data["character_name"]  = UTF8(owner->name(), PLATFORM::WINDOWS);
     log_data["item_id"]         = static_cast<Json::Int64>(this->based<fb::model::item>().id);
     log_data["item_name"]       = UTF8(this->name(), PLATFORM::WINDOWS);

@@ -151,16 +151,14 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
         std::ignore = this->server.save(me);
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
-        writer.write<uint32_t>(me.id());
+        writer.write<uint32_t>(me.id);
         writer.write<std::string>(me.name());
         writer.write<uint8_t>(1);
         writer.write<uint16_t>(map.model.id);
         writer.write<uint16_t>(p.x);
         writer.write<uint16_t>(p.y);
 
-        auto socket = me.socket();
-        if (socket != nullptr)
-            std::ignore = this->server.transfer(*socket, response.ip, response.port, fb::protocol::internal::Service::Game, stream);
+        std::ignore = this->server.transfer(me.socket, response.ip, response.port, fb::protocol::internal::Service::Game, stream);
         co_return true;
     }
     catch (std::exception& e)

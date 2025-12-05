@@ -114,7 +114,7 @@ uint8_t spells::add(std::shared_ptr<spell> element)
         {
             auto& ch                   = static_cast<character&>(*owner);
             auto  log_data             = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(ch.id());
+            log_data["character_id"]   = static_cast<Json::Int64>(ch.id);
             log_data["character_name"] = UTF8(ch.name(), PLATFORM::WINDOWS);
             log_data["spell_id"]       = static_cast<Json::Int64>(element->model.id);
             log_data["spell_name"]     = UTF8(element->model.name, PLATFORM::WINDOWS);
@@ -143,7 +143,7 @@ uint8_t spells::add(std::shared_ptr<spell> element, uint8_t index)
         {
             auto& ch                   = static_cast<character&>(*owner);
             auto  log_data             = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(ch.id());
+            log_data["character_id"]   = static_cast<Json::Int64>(ch.id);
             log_data["character_name"] = UTF8(ch.name(), PLATFORM::WINDOWS);
             log_data["spell_id"]       = static_cast<Json::Int64>(element->model.id);
             log_data["spell_name"]     = UTF8(element->model.name, PLATFORM::WINDOWS);
@@ -203,7 +203,7 @@ bool spells::remove(uint8_t index)
             // Note: element is already removed, so we can't get model info here
             // We'll log what we can
             auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(ch.id());
+            log_data["character_id"]   = static_cast<Json::Int64>(ch.id);
             log_data["character_name"] = UTF8(ch.name(), PLATFORM::WINDOWS);
             log_data["slot"]           = index;
             ch.server.log.write("spell_remove", log_data);

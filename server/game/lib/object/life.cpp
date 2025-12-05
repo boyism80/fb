@@ -123,7 +123,7 @@ void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_typ
 
         // Log death event
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ch.id());
+        log_data["character_id"]   = static_cast<Json::Int64>(ch.id);
         log_data["character_name"] = UTF8(ch.name(), PLATFORM::WINDOWS);
         log_data["level"]          = ch.level();
         auto map                   = ch.map();
@@ -136,7 +136,7 @@ void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_typ
         if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
         {
             auto& killer            = static_cast<character&>(*from);
-            log_data["killer_id"]   = static_cast<Json::Int64>(killer.id());
+            log_data["killer_id"]   = static_cast<Json::Int64>(killer.id);
             log_data["killer_name"] = UTF8(killer.name(), PLATFORM::WINDOWS);
         }
         ch.server.log.write("death", log_data);

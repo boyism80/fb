@@ -9,17 +9,17 @@ character::container::container(fb::game::server& server) :
 
 bool character::container::insert(character_ptr_t ch)
 {
-    if (this->_from_uid.contains(ch->id()) || this->_from_name.contains(ch->name()))
+    if (this->_from_uid.contains(ch->id) || this->_from_name.contains(ch->name()))
         return false;
 
-    this->_from_uid[ch->id()]    = ch;
+    this->_from_uid[ch->id]      = ch;
     this->_from_name[ch->name()] = ch;
     return true;
 }
 
 void character::container::remove(character_ptr_t ch)
 {
-    this->_from_uid.erase(ch->id());
+    this->_from_uid.erase(ch->id);
     this->_from_name.erase(ch->name());
 }
 

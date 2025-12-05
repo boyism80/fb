@@ -3331,7 +3331,7 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
         lua->resume(1);
     };
 
-    async::awaitable_then(fn(server, lua, ch->id(), title, contents, expire_date), [lua](auto result) {
+    async::awaitable_then(fn(server, lua, ch->id, title, contents, expire_date), [lua](auto result) {
         result();
     });
 

@@ -328,7 +328,7 @@ async::task<bool> server::on_disconnected(fb::socket<character>& socket)
     {
         // Log logout event
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ptr->id());
+        log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
         log_data["character_name"] = UTF8(ptr->name(), PLATFORM::WINDOWS);
         log_data["level"]          = ptr->level();
         auto map                   = ptr->map();
@@ -498,19 +498,19 @@ async::task<void> server::save(character& ch)
         if (spell == nullptr)
             continue;
 
-        spells.push_back(internal::Spell{ch.id(), i, spell->model.id, spell->next().to_string()});
+        spells.push_back(internal::Spell{ch.id, i, spell->model.id, spell->next().to_string()});
     }
 
     auto achievements = std::vector<internal::Achievement>();
     for (auto& [model, achievement] : ch.achievements)
     {
-        achievements.push_back(internal::Achievement{ch.id(), model, achievement->text, achievement->icon, achievement->color});
+        achievements.push_back(internal::Achievement{ch.id, model, achievement->text, achievement->icon, achievement->color});
     }
 
     auto quests = std::vector<internal::Quest>();
     for (auto& [qid, quest] : ch.quests)
     {
-        quests.push_back(internal::Quest{ch.id(), qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
+        quests.push_back(internal::Quest{ch.id, qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
     // Get system mail users from character's in-memory collection
@@ -525,7 +525,7 @@ async::task<void> server::save(character& ch)
             continue;
 
         received_system_mails.push_back(
-            internal::SystemMailUser{ch.id(), mail_id, smu.read, smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value().to_string()) : std::nullopt});
+            internal::SystemMailUser{ch.id, mail_id, smu.read, smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value().to_string()) : std::nullopt});
     }
     auto        storage_boxes   = std::vector<internal::StorageBox>();
     const auto& character_boxes = ch.storage_box.entries();
@@ -556,7 +556,7 @@ async::task<void> server::save(character& ch)
             }
         }
 
-        storage_boxes.emplace_back(ch.id(),
+        storage_boxes.emplace_back(ch.id,
                                    box.id,
                                    box.title,
                                    box.message,

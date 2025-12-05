@@ -94,10 +94,10 @@ void clan::attach(std::weak_ptr<character> ch)
     if (shared == nullptr)
         return;
 
-    if (this->_characters.contains(shared->id()))
+    if (this->_characters.contains(shared->id))
         return;
 
-    this->_characters.insert({shared->id(), ch});
+    this->_characters.insert({shared->id, ch});
 }
 
 void clan::detach(std::weak_ptr<character> ch)
@@ -106,10 +106,10 @@ void clan::detach(std::weak_ptr<character> ch)
     if (shared == nullptr)
         return;
 
-    if (!this->_characters.contains(shared->id()))
+    if (!this->_characters.contains(shared->id))
         return;
 
-    this->_characters.erase(shared->id());
+    this->_characters.erase(shared->id);
 }
 
 std::vector<std::shared_ptr<fb::game::character>> clan::nears(const fb::game::map& map, const point16_t& position) const

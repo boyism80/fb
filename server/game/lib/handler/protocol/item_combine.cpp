@@ -97,7 +97,7 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, fb::proto
 
     // Log item combine event
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
     log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
     log_data["success"]        = success;
     auto source_items          = Json::Value(Json::arrayValue);

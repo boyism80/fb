@@ -95,7 +95,7 @@ async::task<void> server::create_group(character& me, const std::string& target_
     }
 
     // Call API (either target not found in same thread, or checks passed)
-    auto&& resp = co_await this->http.post("internal", "/group/create", request::CreateGroup{fb::config<uint32_t>("host"), me.id(), target_name});
+    auto&& resp = co_await this->http.post("internal", "/group/create", request::CreateGroup{fb::config<uint32_t>("host"), me.id, target_name});
     co_await this->threads.switching(weak);
     co_await this->on_create_group(resp);
 }
@@ -130,7 +130,7 @@ async::task<void> server::toggle_group_member(character& actor, const std::strin
     }
 
     // Call toggle API (either target not found in same thread, or checks passed)
-    auto&& resp = co_await this->http.post("internal", "/group/toggle", request::EnterGroup{fb::config<uint32_t>("host"), actor.id(), target_name});
+    auto&& resp = co_await this->http.post("internal", "/group/toggle", request::EnterGroup{fb::config<uint32_t>("host"), actor.id, target_name});
     co_await this->threads.switching(weak);
     co_await this->on_updated_group(resp);
 }
@@ -286,7 +286,7 @@ async::task<void> server::on_create_group(const internal_resp::GroupDetails& res
 
                         // Log group create event (always log regardless of weak state)
                         auto log_data              = Json::Value();
-                        log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                        log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
                         log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
                         log_data["group_id"]       = static_cast<Json::Int64>(id);
                         this->log.write("group_create", log_data);
@@ -384,7 +384,7 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
 
                 // Log group enter event (always log regardless of weak state)
                 auto log_data              = Json::Value();
-                log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
                 log_data["character_name"] = UTF8(resp.new_member.value().name, PLATFORM::WINDOWS);
                 log_data["group_id"]       = static_cast<Json::Int64>(group->id());
                 this->log.write("group_enter", log_data);
@@ -426,7 +426,7 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
 
                     // Log group leave/kick event
                     auto log_data              = Json::Value();
-                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
                     log_data["character_name"] = UTF8(resp.deleted_member.value().name, PLATFORM::WINDOWS);
                     log_data["group_id"]       = static_cast<Json::Int64>(group->id());
                     this->log.write(resp.action == internal::GroupActionType::Kick ? "group_kick" : "group_leave", log_data);

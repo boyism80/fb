@@ -47,9 +47,9 @@ async::task<void> server::whisper(character& sender, std::string receiver_name, 
 
             // Log whisper event
             auto log_data             = Json::Value();
-            log_data["sender_id"]     = static_cast<Json::Int64>(sender.id());
+            log_data["sender_id"]     = static_cast<Json::Int64>(sender.id);
             log_data["sender_name"]   = UTF8(sender_name, PLATFORM::WINDOWS);
-            log_data["receiver_id"]   = static_cast<Json::Int64>(receiver->id());
+            log_data["receiver_id"]   = static_cast<Json::Int64>(receiver->id);
             log_data["receiver_name"] = UTF8(target_name, PLATFORM::WINDOWS);
             log_data["message"]       = UTF8(message, PLATFORM::WINDOWS);
             this->log.write("whisper", log_data);
@@ -64,7 +64,7 @@ async::task<void> server::whisper(character& sender, std::string receiver_name, 
 
             // Log whisper event (cross-server)
             auto log_data             = Json::Value();
-            log_data["sender_id"]     = static_cast<Json::Int64>(sender.id());
+            log_data["sender_id"]     = static_cast<Json::Int64>(sender.id);
             log_data["sender_name"]   = UTF8(sender_name, PLATFORM::WINDOWS);
             log_data["receiver_name"] = UTF8(receiver_name, PLATFORM::WINDOWS);
             log_data["message"]       = UTF8(message, PLATFORM::WINDOWS);
@@ -83,7 +83,7 @@ async::task<void> server::on_whisper(const internal_resp::Whisper& resp)
             // Log whisper event (received)
             auto log_data             = Json::Value();
             log_data["sender_name"]   = UTF8(resp.from, PLATFORM::WINDOWS);
-            log_data["receiver_id"]   = static_cast<Json::Int64>(ch->id());
+            log_data["receiver_id"]   = static_cast<Json::Int64>(ch->id);
             log_data["receiver_name"] = UTF8(resp.to, PLATFORM::WINDOWS);
             log_data["message"]       = UTF8(resp.message, PLATFORM::WINDOWS);
             this->log.write("whisper", log_data);

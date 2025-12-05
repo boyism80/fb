@@ -11,7 +11,7 @@ using namespace fb::model;
 character::character(const initial_params& params) :
     stat(*this),
     storage_box(*this),
-    life(*params.server,
+    life(params.server,
          table::life[0],
          stat,
          fb::game::life::initial_params{
@@ -19,10 +19,10 @@ character::character(const initial_params& params) :
               .id = params.id,
               }
 }),
-    listener(params.server->listener), _socket(params.socket != nullptr ? params.socket->template weak_from_this_as<fb::socket<character>>() : socket_ptr_t()), _id(params.id),
-    _name(params.name), _role(params.role), _pw(params.pw), _birthday(params.birthday), _created_date(params.created_date), _updated_date(params.updated_date), _look(params.look),
-    _color(params.color), _armor_color(params.armor_color), _experience(params.exp), _sex(params.sex), _state(params.state), _level(params.level), _class(params.class_type),
-    _promotion(params.promotion), _money(params.money), _disguise(params.disguise), _title(params.title)
+    listener(params.server.listener), id(params.id), socket(params.socket), _pw(params.pw), _created_date(params.created_date), _updated_date(params.updated_date),
+    _name(params.name), _role(params.role), _birthday(params.birthday), _look(params.look), _color(params.color), _armor_color(params.armor_color), _experience(params.exp),
+    _sex(params.sex), _state(params.state), _level(params.level), _class(params.class_type), _promotion(params.promotion), _money(params.money), _disguise(params.disguise),
+    _title(params.title)
 {
     this->items.deposited(params.deposited_money);
     this->stat.base_hp(params.base_hp);
@@ -50,26 +50,24 @@ async::task<size_t> character::send(const fb::stream& stream, bool encrypt, bool
 {
     this->assert_thread();
 
-    auto socket = this->_socket.lock();
-    if (socket == nullptr || !socket->is_open())
+    if (!this->socket.is_open())
     {
         co_return 0; // Gracefully return 0 instead of throwing
     }
 
-    co_return co_await socket->send(stream, encrypt, wrap);
+    co_return co_await this->socket.send(stream, encrypt, wrap);
 }
 
 async::task<size_t> character::send(const fb::protocol::header& response, bool encrypt, bool wrap)
 {
     this->assert_thread();
 
-    auto socket = this->_socket.lock();
-    if (socket == nullptr || !socket->is_open())
+    if (!this->socket.is_open())
     {
         co_return 0; // Gracefully return 0 instead of throwing
     }
 
-    co_return co_await socket->send(response, encrypt, wrap);
+    co_return co_await this->socket.send(response, encrypt, wrap);
 }
 
 OBJECT_TYPE character::what() const
@@ -103,7 +101,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map> map, const fb::m
         {
             // Log map transfer event
             auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+            log_data["character_id"]   = static_cast<Json::Int64>(this->id);
             log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
             log_data["level"]          = this->level();
             if (old_map != nullptr)
@@ -131,7 +129,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map> map, const fb::m
         {
             // Log map transfer event
             auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+            log_data["character_id"]   = static_cast<Json::Int64>(this->id);
             log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
             log_data["level"]          = this->level();
             if (old_map != nullptr)
@@ -191,20 +189,6 @@ bool character::inited() const
     return true;
 }
 
-fb::socket<character>* character::socket() const
-{
-    auto shared_ptr = this->_socket.lock();
-    if (shared_ptr == nullptr)
-        return nullptr;
-
-    return shared_ptr.get();
-}
-
-uint32_t character::id() const
-{
-    return this->_id;
-}
-
 ROLE character::role() const
 {
     return this->_role;
@@ -221,7 +205,7 @@ void character::role(ROLE value)
     this->_role   = value;
 
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["old_role"]       = static_cast<int>(old_role);
     log_data["new_role"]       = static_cast<int>(value);
@@ -280,24 +264,11 @@ void fb::game::character::birthday(const std::optional<uint32_t>& value)
     this->_birthday   = value;
 
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["old_birthday"]   = old_birthday.has_value() ? static_cast<Json::Int64>(old_birthday.value()) : Json::Value::null;
     log_data["new_birthday"]   = value.has_value() ? static_cast<Json::Int64>(value.value()) : Json::Value::null;
     this->server.log.write("birthday_change", log_data);
-}
-
-const fb::model::datetime& character::created_date() const
-{
-    this->assert_thread();
-    return this->_created_date;
-}
-
-const fb::model::datetime& character::updated_date() const
-{
-    this->assert_thread();
-
-    return this->_updated_date;
 }
 
 uint16_t character::look() const
@@ -319,7 +290,7 @@ void character::look(uint16_t value)
     this->update_external(true);
 
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["old_look"]       = old_look;
     log_data["new_look"]       = value;
@@ -437,7 +408,7 @@ void character::level(uint8_t value)
     this->update(UPDATE_STATE_LEVEL::ALL);
 
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["old_level"]      = old_level;
     log_data["new_level"]      = value;
@@ -467,7 +438,7 @@ bool character::level_up()
 
     // Log level up event
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["old_level"]      = old_level;
     log_data["new_level"]      = this->_level;
@@ -505,7 +476,7 @@ void character::sex(SEX value)
     this->update_external(true);
 
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["old_sex"]        = static_cast<int>(old_sex);
     log_data["new_sex"]        = static_cast<int>(value);
@@ -567,7 +538,7 @@ void character::state(STATE value)
     if (old_state == STATE::GHOST && value == STATE::NORMAL)
     {
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+        log_data["character_id"]   = static_cast<Json::Int64>(this->id);
         log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
         log_data["level"]          = this->level();
         auto map                   = this->map();
@@ -601,7 +572,7 @@ void character::cls(CLASS value)
     this->update(UPDATE_STATE_LEVEL::ALL);
 
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["old_class"]      = static_cast<int>(old_class);
     log_data["new_class"]      = static_cast<int>(value);
@@ -627,7 +598,7 @@ void character::promotion(uint8_t value)
     this->update(UPDATE_STATE_LEVEL::ALL);
 
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["old_promotion"]  = old_promotion;
     log_data["new_promotion"]  = value;
@@ -813,7 +784,7 @@ uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
 
     // Log money gain event
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["amount"]         = static_cast<Json::Int64>(value - lack);
     log_data["old_money"]      = static_cast<Json::Int64>(old_money);
@@ -832,7 +803,7 @@ void character::money_reduce(uint32_t value)
 
     // Log money reduce event
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["amount"]         = static_cast<Json::Int64>(value);
     log_data["old_money"]      = static_cast<Json::Int64>(old_money);
@@ -1247,7 +1218,7 @@ async::task<void> character::process_system_mails()
             co_return;
 
         auto now          = fb::model::datetime();
-        auto created_date = this->created_date();
+        auto created_date = this->_created_date;
 
         const auto& system_mail_users = this->mail_box.get_system_mail_users();
         auto        user_mail_ids     = std::set<uint32_t>();
@@ -1331,7 +1302,7 @@ fb::thread* character::thread() const
     if (this->_thread != nullptr)
         return this->_thread;
     else
-        return this->server.threads.modular(this->_id);
+        return this->server.threads.modular(this->id);
 }
 
 void character::thread(fb::thread* value)
@@ -1355,7 +1326,7 @@ fb::protocol::internal::Character character::to_protocol() const
     this->assert_thread();
 
     auto dto             = fb::protocol::internal::Character();
-    dto.id               = this->_id;
+    dto.id               = this->id;
     dto.name             = this->_name;
     dto.pw               = this->_pw;
     dto.birth            = this->_birthday;
@@ -1581,7 +1552,7 @@ async::task<void> character::death_penalty()
         // TODO: Phase 3 - Convert to smart pointer return type
         auto cash_shared = this->server.make<fb::game::cash>(money);
         auto cash        = cash_shared.get();
-        cash->death_cid(this->id());
+        cash->death_uid(this->id);
         std::ignore = co_await cash->map(this->map(), this->position());
     }
 
@@ -1608,7 +1579,7 @@ async::task<void> character::death_penalty()
         {
             this->items.drop(i, item->count(), false, ITEM_DELETE_TYPE::NONE);
             item->container(nullptr);
-            item->death_cid(this->id());
+            item->death_uid(this->id);
             std::ignore = co_await item->map(this->map(), this->position());
         }
     }
@@ -1632,7 +1603,7 @@ async::task<void> character::death_penalty()
         {
             this->items.equipment_off(parts);
             equipment->container(nullptr);
-            equipment->death_cid(this->id());
+            equipment->death_uid(this->id);
             std::ignore = co_await equipment->map(this->map(), this->position());
         }
         else if (this->items.free())

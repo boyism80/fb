@@ -37,7 +37,6 @@ public:
     class container;
 
 private:
-    using socket_ptr_t      = std::weak_ptr<fb::socket<character>>;
     using mob_vector_t      = std::vector<std::shared_ptr<fb::game::mob>>;
     using achievement_map_t = std::map<uint32_t, std::unique_ptr<achievement>>;
 
@@ -49,49 +48,49 @@ public:
     struct initial_params;
 
 private:
-    uint32_t                _id;
-    socket_ptr_t            _socket;
-    std::string             _name;
-    ROLE                    _role;
-    std::string             _pw;
-    std::optional<uint32_t> _birthday;
-    fb::model::datetime     _created_date;
-    fb::model::datetime     _updated_date;
-    uint16_t                _look              = 0;
-    uint8_t                 _color             = 0;
-    std::optional<uint8_t>  _armor_color       = 0;
-    uint32_t                _experience        = 0;
-    NATION                  _nation            = NATION::GOGURYEO;
-    CREATURE                _creature          = CREATURE::DRAGON;
-    SEX                     _sex               = SEX::MAN;
-    STATE                   _state             = STATE::NORMAL;
-    uint8_t                 _level             = 1;
-    CLASS                   _class             = CLASS::NONE;
-    uint8_t                 _promotion         = 0;
-    uint32_t                _money             = 0;
-    std::optional<uint16_t> _disguise          = 0;
-    std::string             _title             = "";
-    std::optional<uint32_t> _group_id          = std::nullopt;
-    std::optional<uint32_t> _clan_id           = std::nullopt;
-    uint16_t                _weapon_damage     = 0;
-    bool                    _detect            = false;
-    mob_vector_t            _spawned_mobs      = {};
-    bool                    _super_hide        = false;
-    bool                    _options[0x0B + 1] = {
+    const std::string         _pw;
+    const fb::model::datetime _created_date;
+    const fb::model::datetime _updated_date;
+    const std::string         _name;
+    ROLE                      _role;
+    std::optional<uint32_t>   _birthday;
+    uint16_t                  _look              = 0;
+    uint8_t                   _color             = 0;
+    std::optional<uint8_t>    _armor_color       = 0;
+    uint32_t                  _experience        = 0;
+    NATION                    _nation            = NATION::GOGURYEO;
+    CREATURE                  _creature          = CREATURE::DRAGON;
+    SEX                       _sex               = SEX::MAN;
+    STATE                     _state             = STATE::NORMAL;
+    uint8_t                   _level             = 1;
+    CLASS                     _class             = CLASS::NONE;
+    uint8_t                   _promotion         = 0;
+    uint32_t                  _money             = 0;
+    std::optional<uint16_t>   _disguise          = 0;
+    std::string               _title             = "";
+    std::optional<uint32_t>   _group_id          = std::nullopt;
+    std::optional<uint32_t>   _clan_id           = std::nullopt;
+    uint16_t                  _weapon_damage     = 0;
+    bool                      _detect            = false;
+    mob_vector_t              _spawned_mobs      = {};
+    bool                      _super_hide        = false;
+    bool                      _options[0x0B + 1] = {
         1,
     };
 
 public:
-    fb::game::trade       trade;
-    fb::game::items       items;
-    fb::game::quests      quests;
-    fb::game::bulletin    bulletin = fb::game::bulletin(*this);
-    fb::game::mail_box    mail_box = fb::game::mail_box(*this);
-    fb::game::storage_box storage_box;
-    fb::lua::context*     dialog = nullptr;
-    achievement_map_t     achievements;
-    listener_t&           listener;
-    character_stat        stat;
+    const uint32_t         id;
+    fb::socket<character>& socket;
+    fb::game::trade        trade;
+    fb::game::items        items;
+    fb::game::quests       quests;
+    fb::game::bulletin     bulletin = fb::game::bulletin(*this);
+    fb::game::mail_box     mail_box = fb::game::mail_box(*this);
+    fb::game::storage_box  storage_box;
+    fb::lua::context*      dialog = nullptr;
+    achievement_map_t      achievements;
+    listener_t&            listener;
+    character_stat         stat;
 
 private:
     using object::based;
@@ -100,8 +99,8 @@ public:
     struct initial_params : fb::game::life::initial_params
     {
     public:
-        fb::game::server*      server = nullptr;
-        fb::socket<character>* socket = nullptr;
+        fb::game::server&      server;
+        fb::socket<character>& socket;
 
         uint32_t                id = 0;
         std::string             name;
@@ -149,8 +148,6 @@ public:
 
 public:
     bool                                               inited() const;
-    fb::socket<character>*                             socket() const;
-    uint32_t                                           id() const;
     ROLE                                               role() const;
     void                                               role(ROLE value);
     async::task<void>                                  attack(DURATION duration = DURATION::ATTACK) override final;
@@ -159,8 +156,6 @@ public:
     const std::string&                                 name() const override final;
     const std::optional<uint32_t>&                     birthday() const;
     void                                               birthday(const std::optional<uint32_t>& value);
-    const fb::model::datetime&                         created_date() const;
-    const fb::model::datetime&                         updated_date() const;
     uint16_t                                           look() const override final;
     void                                               look(uint16_t value);
     uint8_t                                            color() const override final;

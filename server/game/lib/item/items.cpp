@@ -134,8 +134,8 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<std::shared_ptr<fb::
         if (item == nullptr)
             continue;
 
-        auto death_cid = item->death_cid();
-        if (death_cid.has_value() && death_cid.value() != owner->id())
+        auto death_uid = item->death_uid();
+        if (death_uid.has_value() && death_uid.value() != owner->id)
         {
             auto& drop_time = item->dropped_time();
             if (drop_time.has_value())
@@ -225,7 +225,7 @@ uint8_t fb::game::items::add(std::shared_ptr<fb::game::item> item, uint8_t index
         return 0xFF;
 
     item->container(this);
-    item->death_cid(std::nullopt);
+    item->death_uid(std::nullopt);
     if (item->empty() == false)
     {
         owner->listener.on_item_update(*owner, index);
@@ -235,7 +235,7 @@ uint8_t fb::game::items::add(std::shared_ptr<fb::game::item> item, uint8_t index
         if (!model.attr(ITEM_ATTRIBUTE::CASH))
         {
             auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(owner->id());
+            log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
             log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
             log_data["item_id"]        = static_cast<Json::Int64>(model.id);
             log_data["item_name"]      = UTF8(model.name, PLATFORM::WINDOWS);
@@ -291,7 +291,7 @@ bool fb::game::items::store(std::shared_ptr<fb::game::item> item)
 
     // Log item deposit event
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(owner->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
     log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
     log_data["item_id"]        = static_cast<Json::Int64>(item_id);
     log_data["item_name"]      = UTF8(item_name, PLATFORM::WINDOWS);
@@ -411,7 +411,7 @@ std::shared_ptr<fb::game::item> fb::game::items::retrieve(uint8_t index, uint16_
 
         // Log item retrieve event
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(owner->id());
+        log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
         log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
         log_data["item_id"]        = static_cast<Json::Int64>(item_id);
         log_data["item_name"]      = UTF8(item_name, PLATFORM::WINDOWS);
@@ -433,7 +433,7 @@ std::shared_ptr<fb::game::item> fb::game::items::retrieve(uint8_t index, uint16_
 
         // Log item retrieve event
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(owner->id());
+        log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
         log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
         log_data["item_id"]        = static_cast<Json::Int64>(item_id);
         log_data["item_name"]      = UTF8(item_name, PLATFORM::WINDOWS);
@@ -527,7 +527,7 @@ uint32_t fb::game::items::deposit(uint32_t value)
     if (deposited_amount > 0)
     {
         auto log_data                 = Json::Value();
-        log_data["character_id"]      = static_cast<Json::Int64>(owner->id());
+        log_data["character_id"]      = static_cast<Json::Int64>(owner->id);
         log_data["character_name"]    = UTF8(owner->name(), PLATFORM::WINDOWS);
         log_data["amount"]            = static_cast<Json::Int64>(deposited_amount);
         log_data["current_deposited"] = static_cast<Json::Int64>(this->_deposited);
@@ -563,7 +563,7 @@ uint32_t fb::game::items::withdraw(uint32_t value)
     if (withdrawn_amount > 0)
     {
         auto log_data                 = Json::Value();
-        log_data["character_id"]      = static_cast<Json::Int64>(owner->id());
+        log_data["character_id"]      = static_cast<Json::Int64>(owner->id);
         log_data["character_name"]    = UTF8(owner->name(), PLATFORM::WINDOWS);
         log_data["amount"]            = static_cast<Json::Int64>(withdrawn_amount);
         log_data["current_deposited"] = static_cast<Json::Int64>(this->_deposited);
@@ -1103,7 +1103,7 @@ std::shared_ptr<fb::game::item> fb::game::items::remove(uint8_t index, uint16_t 
         if (!model.attr(ITEM_ATTRIBUTE::CASH))
         {
             auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(owner->id());
+            log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
             log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
             log_data["item_id"]        = static_cast<Json::Int64>(model.id);
             log_data["item_name"]      = UTF8(model.name, PLATFORM::WINDOWS);

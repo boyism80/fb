@@ -49,7 +49,7 @@ protected:
     uint16_t                _count        = 0;
     uint16_t                _trade_count  = 0;
     items*                  _container    = nullptr;
-    std::optional<uint32_t> _death_cid    = std::nullopt;
+    std::optional<uint32_t> _death_uid    = std::nullopt;
     nullable_time           _dropped_time = std::nullopt;
 
 public:
@@ -69,8 +69,8 @@ public:
     uint16_t                                trade_count() const;
     void                                    trade_count(uint16_t value);
     const nullable_time&                    dropped_time() const;
-    void                                    death_cid(std::optional<uint32_t> cid);
-    std::optional<uint32_t>                 death_cid() const;
+    void                                    death_uid(std::optional<uint32_t> cid);
+    std::optional<uint32_t>                 death_uid() const;
     fb::thread*                             thread() const override final;
     void                                    assert_thread() const override;
     virtual std::string                     tip_message() const;

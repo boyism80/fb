@@ -36,7 +36,7 @@ bool trade::begin(std::shared_ptr<fb::game::character> you)
 
     try
     {
-        if (owner->id() == you->id())
+        if (owner->id == you->id)
         {
             // 자기 자신과 거래를 하려고 시도하는 경우
             return false;
@@ -473,9 +473,9 @@ bool trade::lock()
 
             // Log trade completion
             auto log_data               = Json::Value();
-            log_data["character1_id"]   = static_cast<Json::Int64>(owner->id());
+            log_data["character1_id"]   = static_cast<Json::Int64>(owner->id);
             log_data["character1_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
-            log_data["character2_id"]   = static_cast<Json::Int64>(you->id());
+            log_data["character2_id"]   = static_cast<Json::Int64>(you->id);
             log_data["character2_name"] = UTF8(you->name(), PLATFORM::WINDOWS);
             log_data["money1"]          = static_cast<Json::Int64>(this->_money);
             log_data["money2"]          = static_cast<Json::Int64>(you->trade._money);

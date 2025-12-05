@@ -46,5 +46,5 @@ async::task<void> ban::handle(const internal_resp::Ban& message)
     ch->message(build_ban_message(message.reason, message.expire_date), MESSAGE_TYPE::POPUP);
 
     co_await ch->thread()->sleep(1s);
-    ch->socket()->close();
+    ch->socket.close();
 }

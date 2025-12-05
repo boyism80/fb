@@ -14,9 +14,7 @@ async::task<void> kick_out::handle(const internal_resp::KickOut& message)
         if (ch == nullptr)
             return;
 
-        auto socket = ch->socket();
-        if (socket != nullptr)
-            socket->close();
+        ch->socket.close();
     });
 
     co_return;

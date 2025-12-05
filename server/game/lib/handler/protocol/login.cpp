@@ -190,9 +190,7 @@ async::task<std::shared_ptr<character>> login::init(const fb::protocol::game::re
     auto&& response = co_await this->server.http.get<internal_resp::Init>("internal", std::format("/in-game/init/{}", request.id));
     auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
 
-    auto params            = character::initial_params{};
-    params.server          = &this->server;
-    params.socket          = &session;
+    auto params            = character::initial_params{.server = this->server, .socket = session};
     params.id              = response.character.id;
     params.name            = response.character.name;
     params.pw              = response.character.pw;
@@ -358,9 +356,7 @@ async::task<bool> login::ensure_character_insert(const std::weak_ptr<fb::game::c
             return true;
         }
 
-        auto socket = old_ch->socket();
-        if (socket != nullptr)
-            socket->close();
+        old_ch->socket.close();
 
         return false;
     });
@@ -424,7 +420,7 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     session.data(ch);
 
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(ch->id());
+    log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
     log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
     log_data["level"]          = ch->level();
     log_data["map"]            = ch->map()->model.id;
