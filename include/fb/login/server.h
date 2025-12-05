@@ -114,10 +114,10 @@ public:
 protected:
     bool                            decrypt_policy(uint8_t cmd) const override final;
     void                            on_init_amqp(fb::amqp::socket& amqp) override final;
-    [[nodiscard]] async::task<void> on_start() final;
-    [[nodiscard]] async::task<void> on_accepted(fb::socket<fb::login::session>& socket) final;
-    [[nodiscard]] async::task<bool> on_connected(fb::socket<fb::login::session>& socket) final;
-    [[nodiscard]] async::task<bool> on_disconnected(fb::socket<fb::login::session>& socket) final;
+    [[nodiscard]] async::task<void> on_start() override final;
+    [[nodiscard]] async::task<void> on_accepted(fb::socket<fb::login::session>& socket) override final;
+    [[nodiscard]] async::task<bool> on_connected(fb::socket<fb::login::session>& socket) override final;
+    [[nodiscard]] async::task<bool> on_disconnected(fb::socket<fb::login::session>& socket) override final;
 
 protected:
     fb::protocol::internal::Service service() const override final
