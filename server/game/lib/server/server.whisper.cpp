@@ -27,22 +27,23 @@ async::task<void> server::whisper(character& sender, std::string receiver_name, 
     if (sender.option(OPTION::WHISPER) == false)
         throw std::runtime_error(_TEXT(MESSAGE_WHISPER_DISABLED_MINE));
 
-    co_await this->characters.async_write([this, &sender, &receiver_name, &message](auto& characters) -> async::task<void> {
-        auto sender_weak = sender.weak_from_this_as<character>();
-        auto sender_name = sender.name();
-        auto receiver    = characters.find(receiver_name);
+    auto sender_weak = sender.weak_from_this_as<character>();
+    auto sender_name = sender.name();
+
+    // Try to find target in the same thread's thread_params
+    auto current_thread = this->threads.current();
+    if (current_thread != nullptr)
+    {
+        auto params   = current_thread->template data<thread_params>();
+        auto receiver = params->characters.find(receiver_name);
         if (receiver != nullptr)
         {
-            auto target_weak = receiver->template weak_from_this_as<character>();
-            co_await this->threads.switching(target_weak);
-            auto target_name = receiver->name();
-
+            // Found target in same thread - process without thread switching
             if (receiver->option(OPTION::WHISPER) == false)
                 throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), receiver_name));
 
+            auto target_name = receiver->name();
             receiver->message(std::format("{}> {}", sender_name, message), MESSAGE_TYPE::NOTIFY);
-
-            co_await this->threads.switching(sender_weak);
             sender.message(std::format("{}< {}", target_name, message), MESSAGE_TYPE::NOTIFY);
 
             // Log whisper event
@@ -53,24 +54,24 @@ async::task<void> server::whisper(character& sender, std::string receiver_name, 
             log_data["receiver_name"] = UTF8(target_name, PLATFORM::WINDOWS);
             log_data["message"]       = UTF8(message, PLATFORM::WINDOWS);
             this->log.write("whisper", log_data);
+            co_return;
         }
-        else
-        {
-            auto&& resp = co_await this->http.post("internal", "/in-game/whisper", Whisper{sender_name, receiver_name, message});
-            co_await this->threads.switching(sender_weak);
+    }
 
-            co_await this->on_whisper(resp);
-            sender.message(std::format("{}< {}", receiver_name, message), MESSAGE_TYPE::NOTIFY);
+    // Target not found in same thread - call API for cross-server whisper
+    auto&& resp = co_await this->http.post("internal", "/in-game/whisper", Whisper{sender_name, receiver_name, message});
+    co_await this->threads.switching(sender_weak);
 
-            // Log whisper event (cross-server)
-            auto log_data             = Json::Value();
-            log_data["sender_id"]     = static_cast<Json::Int64>(sender.id);
-            log_data["sender_name"]   = UTF8(sender_name, PLATFORM::WINDOWS);
-            log_data["receiver_name"] = UTF8(receiver_name, PLATFORM::WINDOWS);
-            log_data["message"]       = UTF8(message, PLATFORM::WINDOWS);
-            this->log.write("whisper", log_data);
-        }
-    });
+    co_await this->on_whisper(resp);
+    sender.message(std::format("{}< {}", receiver_name, message), MESSAGE_TYPE::NOTIFY);
+
+    // Log whisper event (cross-server)
+    auto log_data             = Json::Value();
+    log_data["sender_id"]     = static_cast<Json::Int64>(sender.id);
+    log_data["sender_name"]   = UTF8(sender_name, PLATFORM::WINDOWS);
+    log_data["receiver_name"] = UTF8(receiver_name, PLATFORM::WINDOWS);
+    log_data["message"]       = UTF8(message, PLATFORM::WINDOWS);
+    this->log.write("whisper", log_data);
 }
 
 async::task<void> server::on_whisper(const internal_resp::Whisper& resp)
