@@ -2,9 +2,10 @@
 
 using namespace fb::amqp;
 
-queue::queue(socket& owner, const amqp_bytes_t& name) :
+queue::queue(socket& owner, const amqp_bytes_t& name, fb::thread_container& threads) :
     _owner(owner),
-    _raw_name(name)
+    _raw_name(name),
+    _threads(threads)
 { }
 
 queue::~queue()
@@ -18,16 +19,10 @@ queue::~queue()
 
 bool queue::bind(const std::string& exchange, const std::string& route)
 {
-    amqp_queue_bind(this->_owner,
-                    1,
-                    this->_raw_name,
-                    amqp_cstring_bytes(exchange.c_str()),
-                    amqp_cstring_bytes(route.c_str()),
-                    amqp_empty_table);
+    amqp_queue_bind(this->_owner, 1, this->_raw_name, amqp_cstring_bytes(exchange.c_str()), amqp_cstring_bytes(route.c_str()), amqp_empty_table);
     if (amqp_get_rpc_reply(this->_owner).reply_type != AMQP_RESPONSE_NORMAL)
         return false;
-    this->_name =
-        std::string((const char*)this->_raw_name.bytes, (const char*)this->_raw_name.bytes + this->_raw_name.len);
+    this->_name = std::string((const char*)this->_raw_name.bytes, (const char*)this->_raw_name.bytes + this->_raw_name.len);
 
     auto r = amqp_basic_consume(this->_owner, 1, this->_raw_name, amqp_empty_bytes, 0, 1, 0, amqp_empty_table);
     if (amqp_get_rpc_reply(this->_owner).reply_type != AMQP_RESPONSE_NORMAL)
@@ -68,6 +63,44 @@ async::task<void> queue::invoke(const std::vector<uint8_t>& message)
         co_return;
 
     co_await found->second(((const uint8_t*)stream.data()) + (sizeof(uint32_t) * 2));
+}
+
+void queue::invoke_async(const std::vector<uint8_t>& message)
+{
+    auto target_thread = this->_threads.least_loaded();
+    if (target_thread == nullptr)
+    {
+        // Fallback to synchronous invoke if no thread available
+        async::awaitable_then(this->invoke(message), [](async::awaitable_result<void> result) {
+            // work done
+            try
+            {
+                result();
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal("AMQP message processing error: {}", e.what());
+            }
+            catch (...)
+            {
+                fb::logger::fatal("AMQP message processing error: unknown error");
+            }
+        });
+    }
+    else
+    {
+        // Enqueue to the least loaded thread
+        target_thread->enqueue(
+            [message, this](auto& thread) -> async::task<void> {
+                co_await this->invoke(message);
+            },
+            [](std::exception& e) {
+                fb::logger::fatal("AMQP message processing error: {}", e.what());
+            },
+            []() {
+                // work done
+            });
+    }
 }
 
 void queue::handler(uint32_t cmd, const handle_func& fn)

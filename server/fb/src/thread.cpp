@@ -214,3 +214,10 @@ uint8_t fb::thread::index() const
 {
     return this->_index;
 }
+
+size_t fb::thread::queue_size() const
+{
+    return this->_queue.read([](const auto& queue) -> size_t {
+        return queue.size();
+    });
+}

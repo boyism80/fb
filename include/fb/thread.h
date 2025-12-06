@@ -128,6 +128,7 @@ public:
 
     [[nodiscard]] async::task<void> dispatch(const handle_func_type<void>& fn);
     [[nodiscard]] async::task<void> switching();
+    size_t                          queue_size() const;
 };
 
 } // namespace fb

@@ -66,7 +66,7 @@ bool socket::connect(const std::string& hostname, uint16_t port, const std::stri
     return true;
 }
 
-queue& socket::declare_queue(bool durable, bool exclusive, bool auto_delete, bool quorum)
+queue& socket::declare_queue(bool durable, bool exclusive, bool auto_delete, bool quorum, fb::thread_container& threads)
 {
     amqp_table_t arguments = amqp_empty_table;
 
@@ -110,7 +110,7 @@ queue& socket::declare_queue(bool durable, bool exclusive, bool auto_delete, boo
     if (name.bytes == nullptr)
         throw std::runtime_error("Out of memory while copying queue name");
 
-    auto ptr = new queue(*this, name);
+    auto ptr = new queue(*this, name, threads);
     this->_queues.push_back(std::unique_ptr<queue>(ptr));
 
     return *ptr;
@@ -173,9 +173,7 @@ bool socket::select(const timeval* timeout)
             if (queue->consumer_tag() == consumer_tag)
             {
                 auto message = std::vector<uint8_t>((uint8_t*)envelope.message.body.bytes, (uint8_t*)envelope.message.body.bytes + envelope.message.body.len);
-                async::awaitable_then(queue->invoke(message), [](async::awaitable_result<void> result) {
-                    // work done
-                });
+                queue->invoke_async(message);
                 break;
             }
         }
