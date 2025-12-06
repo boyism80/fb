@@ -383,18 +383,10 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
             if (resp.new_member.has_value() == false)
                 break;
 
-            group->add_member(resp.new_member.value().name);
-
-            co_await this->characters.async_write([this, &resp, group](auto& characters) -> async::task<void> {
-                auto ch = characters.find(resp.new_member.value().name);
+            auto new_member = std::string{resp.new_member.value().name};
+            co_await this->characters.async_write([this, new_member, group](auto& characters) -> async::task<void> {
+                auto ch = characters.find(new_member);
                 if (ch == nullptr)
-                    co_return;
-
-                auto weak          = ch->template weak_from_this_as<character>();
-                auto before_thread = this->threads.current();
-                auto after_thread  = ch->thread();
-                co_await after_thread->switching();
-                if (weak.expired())
                     co_return;
 
                 auto members = std::vector<std::shared_ptr<fb::game::character>>();
@@ -404,8 +396,8 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
                 }
 
                 characters.foreach_enqueue(
-                    [this, &resp](auto& member) -> async::task<void> {
-                        member->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), resp.new_member.value().name), MESSAGE_TYPE::STATE);
+                    [this, new_member](auto& member) -> async::task<void> {
+                        member->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), new_member), MESSAGE_TYPE::STATE);
                         co_return;
                     },
                     members);
@@ -413,17 +405,21 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
                 // Log group enter event (always log regardless of weak state)
                 auto log_data              = Json::Value();
                 log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-                log_data["character_name"] = UTF8(resp.new_member.value().name, PLATFORM::WINDOWS);
+                log_data["character_name"] = UTF8(new_member, PLATFORM::WINDOWS);
                 log_data["group_id"]       = static_cast<Json::Int64>(group->id());
                 this->log.write("group_enter", log_data);
 
-                if (weak.expired() == false)
-                {
-                    group->enter(weak);
-                    ch->group_id(group->id());
-                    ch->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
-                }
-                co_await before_thread->switching();
+                auto weak = ch->template weak_from_this_as<character>();
+                group->enter(weak);
+                group->add_member(new_member);
+
+                auto thread = this->threads.current();
+                co_await ch->thread()->switching();
+                ch->group_id(group->id());
+                ch->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
+
+                if (thread != nullptr)
+                    co_await thread->switching();
             });
             break;
         }
