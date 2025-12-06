@@ -284,6 +284,9 @@ public:
     async::task<void> foreach_async(character_async_function_t&& fn, const std::vector<character_ptr_t>& characters);
     async::task<void> foreach (const std::vector<std::string>& names, character_function_t && fn, character_function_t_miss miss = nullptr);
     async::task<void> foreach_async(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss = nullptr);
+    void              foreach_enqueue(character_async_function_t&& fn, character_predicate_t predict = nullptr);
+    void              foreach_enqueue(character_async_function_t&& fn, const std::vector<character_ptr_t>& characters);
+    void              foreach_enqueue(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss = nullptr);
     async::task<void> invoke(const std::string& name, character_function_t fn, character_function_t_miss miss = nullptr);
     async::task<void> invoke_async(const std::string& name, character_async_function_t fn, character_function_t_miss miss = nullptr);
 

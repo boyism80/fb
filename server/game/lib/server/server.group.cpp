@@ -43,35 +43,49 @@ void server::assert_group(uint32_t error, const std::string& actor) const
 async::task<void> server::ensure_group(uint32_t id, std::function<async::task<void>(std::shared_ptr<fb::game::group>&)> fn)
 {
     auto thread = this->threads.current();
-    co_await this->groups.async_write(
-        id,
-        [this, fn, thread](auto& group) -> async::task<void> {
-            if (thread != nullptr)
-                co_await thread->switching();
+    if (thread == nullptr)
+    {
+        throw std::runtime_error(std::format("No thread available for ensure_group (group_id: {})", id));
+    }
 
-            co_await fn(group);
+    // Use try_async_write with retry mechanism
+    // Note: We need to ensure we return to the original thread after try_async_write completes
+    auto success = co_await thread->enqueue_with_retry(
+        [=, this](auto& thread) -> async::task<bool> {
+            auto result = co_await this->groups.try_async_write(
+                id,
+                [this, fn, &thread](auto& group) -> async::task<void> {
+                    co_await fn(group);
+                    // Ensure we return to the original thread after fn completes
+                    co_await thread.switching();
+                },
+                [=, this]() -> async::task<std::shared_ptr<fb::game::group>> {
+                    auto&& resp = co_await this->http.get<internal_resp::GroupDetails>("internal", std::format("/group/{}", id));
+                    switch (static_cast<ERROR_CODE>(resp.error))
+                    {
+                    case ERROR_CODE::NONE:
+                    {
+                        auto members = std::vector<std::string>{};
+                        for (auto& member : resp.members)
+                        {
+                            members.push_back(member.name);
+                        }
+                        co_return this->make<fb::game::group>(id, resp.group.master, members);
+                    }
+
+                    default:
+                        throw std::runtime_error(std::format("cannot get group (error : {})", resp.error));
+                    }
+                });
+            co_return result;
         },
-        [=, this]() -> async::task<std::shared_ptr<fb::game::group>> {
-            auto&& resp = co_await this->http.get<internal_resp::GroupDetails>("internal", std::format("/group/{}", id));
-            switch (static_cast<ERROR_CODE>(resp.error))
-            {
-            case ERROR_CODE::NONE:
-            {
-                auto members = std::vector<std::string>{};
-                for (auto& member : resp.members)
-                {
-                    members.push_back(member.name);
-                }
-                co_return this->make<fb::game::group>(id, resp.group.master, members);
-            }
+        10 // max_retries
+    );
 
-            default:
-                throw std::runtime_error(std::format("cannot get group (error : {})", resp.error));
-            }
-        });
-
-    if (thread != nullptr)
-        co_await thread->switching();
+    if (!success)
+    {
+        throw std::runtime_error(std::format("Failed to acquire group lock after retries (group_id: {})", id));
+    }
 }
 
 async::task<void> server::create_group(character& me, const std::string& target_name)
@@ -389,9 +403,10 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
                     members.push_back(member_ptr);
                 }
 
-                co_await characters.foreach (
-                    [this, &resp](auto& member) {
+                characters.foreach_enqueue(
+                    [this, &resp](auto& member) -> async::task<void> {
                         member->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), resp.new_member.value().name), MESSAGE_TYPE::STATE);
+                        co_return;
                     },
                     members);
 
@@ -454,9 +469,10 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
 
                 auto message = resp.action == internal::GroupActionType::Kick ? std::format(_TEXT(MESSAGE_GROUP_MEMBER_KICKED), resp.deleted_member.value().name)
                                                                               : std::format(_TEXT(MESSAGE_GROUP_MEMBER_LEFT), resp.deleted_member.value().name);
-                co_await characters.foreach (
-                    [this, message](auto& member) {
+                characters.foreach_enqueue(
+                    [this, message](auto& member) -> async::task<void> {
                         member->message(message, MESSAGE_TYPE::STATE);
+                        co_return;
                     },
                     members);
             });
@@ -474,16 +490,18 @@ async::task<void> server::on_destroyed_group(const internal_resp::DestroyGroup& 
     this->assert_group(resp.error, resp.actor.name);
 
     auto gid = resp.group_id;
-    co_await this->groups.async_erase(gid, [this, gid, &resp](const auto& group) -> async::task<void> {
+    this->groups.erase(gid, [this, gid, &resp](const auto& group) {
         auto members = std::vector<std::string>{group->members()};
 
-        co_await this->characters.async_write([this, &resp, &members](auto& characters) -> async::task<void> {
-            co_await characters.foreach (members, [](auto& ch) {
+        this->characters.write([this, &resp, &members](auto& characters) {
+            characters.foreach_enqueue(members, [](auto& ch) -> async::task<void> {
                 ch->group_reset();
                 ch->message(_TEXT(MESSAGE_GROUP_DISBANDED), MESSAGE_TYPE::STATE);
+                co_return;
             });
         });
     });
+    co_return;
 }
 
 async::task<void> server::on_group_broadcast(const internal_resp::BroadcastGroup& resp)
@@ -497,12 +515,14 @@ async::task<void> server::on_group_broadcast(const internal_resp::BroadcastGroup
             members.push_back(member_ptr);
         }
 
-        co_await this->characters.async_write([this, &message, &type, &members](auto& characters) -> async::task<void> {
-            co_await characters.foreach (
-                [this, message, type](auto& member) {
+        this->characters.write([this, &message, &type, &members](auto& characters) {
+            characters.foreach_enqueue(
+                [this, message, type](auto& member) -> async::task<void> {
                     member->message(message, static_cast<MESSAGE_TYPE>(type));
+                    co_return;
                 },
                 members);
         });
+        co_return;
     });
 }

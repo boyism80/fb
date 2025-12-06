@@ -165,15 +165,41 @@ public:
         });
     }
 
-    bool erase(HashType hash)
+    template <typename Callback = std::nullptr_t>
+    bool erase(HashType hash, Callback&& callback = nullptr)
     {
-        return this->_data.write([&](map_type& data) {
-            if (!data.contains(hash))
-                return false;
+        if constexpr (std::is_same_v<std::decay_t<Callback>, std::nullptr_t>)
+        {
+            // No callback version
+            return this->_data.write([&](map_type& data) {
+                if (!data.contains(hash))
+                    return false;
 
-            data.erase(hash);
-            return true;
-        });
+                data.erase(hash);
+                return true;
+            });
+        }
+        else
+        {
+            // With callback version - callback receives the element before erasure
+            // Callback signature: (const T&) -> void
+            auto callback_holder = std::make_shared<std::decay_t<Callback>>(std::forward<Callback>(callback));
+
+            return this->_data.write([hash, callback_holder](map_type& data) {
+                if (!data.contains(hash))
+                    return false;
+
+                // Get reference to element before erasure
+                const auto& element = data.at(hash);
+
+                // Call callback with element before erasing
+                (*callback_holder)(element);
+
+                // Erase after callback
+                data.erase(hash);
+                return true;
+            });
+        }
     }
 
     template <typename Callback = std::nullptr_t>
@@ -350,6 +376,92 @@ public:
         }
     }
 
+    template <typename Func>
+    auto try_async_read(HashType hash, Func&& func) const -> async::task<bool>
+    {
+        auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(func));
+
+        return this->_data.try_async_read([hash, func_holder](const map_type& data) mutable -> async::task<void> {
+            if (!data.contains(hash))
+                throw std::runtime_error("Element not found");
+
+            co_await (*func_holder)(data.at(hash));
+        });
+    }
+
+    template <typename Func>
+    auto try_async_write(HashType hash, Func&& func) -> async::task<bool>
+    {
+        auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(func));
+
+        return this->_data.try_async_write([hash, func_holder](map_type& data) mutable -> async::task<void> {
+            if (!data.contains(hash))
+                throw std::runtime_error("Element not found");
+
+            co_await (*func_holder)(data.at(hash));
+        });
+    }
+
+    template <typename Func, typename Factory>
+    auto try_async_write(HashType hash, Func&& func, Factory&& factory) -> async::task<bool>
+    {
+        using task_type = decltype(func(std::declval<T&>()));
+
+        auto func_holder    = std::make_shared<std::decay_t<Func>>(std::forward<Func>(func));
+        auto factory_holder = std::make_shared<std::decay_t<Factory>>(std::forward<Factory>(factory));
+
+        if constexpr (std::is_same_v<task_type, async::task<void>>)
+        {
+            return this->_data.try_async_write([hash, func_holder, factory_holder](map_type& data) mutable -> async::task<void> {
+                if (!data.contains(hash))
+                {
+                    // Create element using factory
+                    if constexpr (std::is_invocable_r_v<T, Factory>)
+                    {
+                        // Regular function returning T
+                        data.insert(hash, (*factory_holder)());
+                    }
+                    else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
+                    {
+                        // Coroutine function returning async::task<T>
+                        data.insert(hash, co_await (*factory_holder)());
+                    }
+                    else
+                    {
+                        static_assert(std::is_invocable_r_v<T, Factory> || std::is_invocable_r_v<async::task<T>, Factory>, "Factory must return T or async::task<T>");
+                    }
+                }
+
+                co_await (*func_holder)(data.at(hash));
+            });
+        }
+        else
+        {
+            return this->_data.try_async_write([hash, func_holder, factory_holder](map_type& data) mutable -> async::task<void> {
+                if (!data.contains(hash))
+                {
+                    // Create element using factory
+                    if constexpr (std::is_invocable_r_v<T, Factory>)
+                    {
+                        // Regular function returning T
+                        data.insert(hash, (*factory_holder)());
+                    }
+                    else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
+                    {
+                        // Coroutine function returning async::task<T>
+                        data.insert(hash, co_await (*factory_holder)());
+                    }
+                    else
+                    {
+                        static_assert(std::is_invocable_r_v<T, Factory> || std::is_invocable_r_v<async::task<T>, Factory>, "Factory must return T or async::task<T>");
+                    }
+                }
+
+                co_await (*func_holder)(data.at(hash));
+            });
+        }
+    }
+
     template <typename Func, typename Factory>
     auto async_write(HashType hash, Func&& func, Factory&& factory)
     {
@@ -445,9 +557,10 @@ public:
         return this->bucket(hash)->insert(hash, value);
     }
 
-    bool erase(HashType hash)
+    template <typename Callback = std::nullptr_t>
+    bool erase(HashType hash, Callback&& callback = nullptr)
     {
-        return this->bucket(hash)->erase(hash);
+        return this->bucket(hash)->erase(hash, std::forward<Callback>(callback));
     }
 
     template <typename Callback = std::nullptr_t>
@@ -490,6 +603,24 @@ public:
     auto async_write(HashType hash, Func&& func, Factory&& factory)
     {
         return this->bucket(hash)->async_write(hash, std::forward<Func>(func), std::forward<Factory>(factory));
+    }
+
+    template <typename Func>
+    auto try_async_read(HashType hash, Func&& func) const -> async::task<bool>
+    {
+        return this->bucket(hash)->try_async_read(hash, std::forward<Func>(func));
+    }
+
+    template <typename Func>
+    auto try_async_write(HashType hash, Func&& func) -> async::task<bool>
+    {
+        return this->bucket(hash)->try_async_write(hash, std::forward<Func>(func));
+    }
+
+    template <typename Func, typename Factory>
+    auto try_async_write(HashType hash, Func&& func, Factory&& factory) -> async::task<bool>
+    {
+        return this->bucket(hash)->try_async_write(hash, std::forward<Func>(func), std::forward<Factory>(factory));
     }
 
 private:

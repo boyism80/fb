@@ -1,4 +1,5 @@
 #include <fb/thread.h>
+#include <sstream>
 
 fb::thread::thread(uint8_t index) :
     _index(index)
@@ -220,4 +221,11 @@ size_t fb::thread::queue_size() const
     return this->_queue.read([](const auto& queue) -> size_t {
         return queue.size();
     });
+}
+
+std::string fb::thread::to_string() const
+{
+    std::ostringstream oss;
+    oss << "thread[" << static_cast<int>(this->_index) << ":" << this->_thread.get_id() << "]";
+    return oss.str();
 }
