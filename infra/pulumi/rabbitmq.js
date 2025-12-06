@@ -134,73 +134,73 @@ cluster_partition_handling = autoheal
 export RABBITMQ_NODENAME=rabbit@$MY_POD_NAME.${headlessServiceName}.$MY_POD_NAMESPACE.svc.cluster.local
 exec docker-entrypoint.sh rabbitmq-server
 `],
-                                    volumeMounts: [
-                                        { name: "config", mountPath: "/etc/rabbitmq" }
-                                    ],
-                                            readinessProbe: {
-                                                exec: { command: ["rabbitmq-diagnostics", "ping"] },
-                                                initialDelaySeconds: 20,
-                                                periodSeconds: 10,
-                                                timeoutSeconds: 5,
-                                            },
-                                            livenessProbe: {
-                                                exec: { command: ["rabbitmq-diagnostics", "ping"] },
-                                                initialDelaySeconds: 60,
-                                                periodSeconds: 30,
-                                                timeoutSeconds: 10,
-                                            },
-                                }],
-                                volumes: [
-                                    {
-                                        name: "config",
-                                        configMap: { name: configMap.metadata.name }
-                                    }
-                                ]
+                                        volumeMounts: [
+                                            { name: "config", mountPath: "/etc/rabbitmq" }
+                                        ],
+                                        readinessProbe: {
+                                            exec: { command: ["rabbitmq-diagnostics", "ping"] },
+                                            initialDelaySeconds: 20,
+                                            periodSeconds: 10,
+                                            timeoutSeconds: 5,
+                                        },
+                                        livenessProbe: {
+                                            exec: { command: ["rabbitmq-diagnostics", "ping"] },
+                                            initialDelaySeconds: 60,
+                                            periodSeconds: 30,
+                                            timeoutSeconds: 10,
+                                        },
+                                    }],
+                                    volumes: [
+                                        {
+                                            name: "config",
+                                            configMap: { name: configMap.metadata.name }
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    },
-                }, { dependsOn: [headlessService, configMap, serviceAccount, roleBinding] })
-                        
-                        // Create ClusterIP service
-                        const clusterIPService = new k8s.core.v1.Service(resourceName, {
-                            metadata: { name: resourceName, namespace: namespace.metadata.name },
-                            spec: {
-                                type: "ClusterIP",
-                                selector: { app: "rabbitmq", section: section, type: type },
-                                ports: [
-                                    { name: "amqp", port: typeConf.port.amqp.cluster, targetPort: 5672 },
-                                    { name: "management", port: typeConf.port.management.cluster, targetPort: 15672 },
-                                ],
-                            },
-                        }, { dependsOn: [statefulSet] });
-                        
-                        // Create NodePort service
-                        const nodeportService = new k8s.core.v1.Service(`${resourceName}-nodeport`, {
-                            metadata: { name: `${resourceName}-nodeport`, namespace: namespace.metadata.name },
-                            spec: {
-                                type: "NodePort",
-                                selector: { app: "rabbitmq", section: section, type: type },
-                                ports: [
-                                    {
-                                        name: "amqp",
-                                        port: typeConf.port.amqp.cluster,
-                                        targetPort: 5672,
-                                        nodePort: typeConf.port.amqp.node,
-                                    },
-                                    {
-                                        name: "management",
-                                        port: typeConf.port.management.cluster,
-                                        targetPort: 15672,
-                                        nodePort: typeConf.port.management.node,
-                                    },
-                                ],
-                            },
-                        }, { dependsOn: [statefulSet] });
-                        
-                        resources.push(configMap, headlessService, statefulSet, clusterIPService, nodeportService)
-                    }
+                        },
+                    }, { dependsOn: [headlessService, configMap, serviceAccount, roleBinding] })
+                    
+                    // Create ClusterIP service
+                    const clusterIPService = new k8s.core.v1.Service(resourceName, {
+                        metadata: { name: resourceName, namespace: namespace.metadata.name },
+                        spec: {
+                            type: "ClusterIP",
+                            selector: { app: "rabbitmq", section: section, type: type },
+                            ports: [
+                                { name: "amqp", port: typeConf.port.amqp.cluster, targetPort: 5672 },
+                                { name: "management", port: typeConf.port.management.cluster, targetPort: 15672 },
+                            ],
+                        },
+                    }, { dependsOn: [statefulSet] });
+                    
+                    // Create NodePort service
+                    const nodeportService = new k8s.core.v1.Service(`${resourceName}-nodeport`, {
+                        metadata: { name: `${resourceName}-nodeport`, namespace: namespace.metadata.name },
+                        spec: {
+                            type: "NodePort",
+                            selector: { app: "rabbitmq", section: section, type: type },
+                            ports: [
+                                {
+                                    name: "amqp",
+                                    port: typeConf.port.amqp.cluster,
+                                    targetPort: 5672,
+                                    nodePort: typeConf.port.amqp.node,
+                                },
+                                {
+                                    name: "management",
+                                    port: typeConf.port.management.cluster,
+                                    targetPort: 15672,
+                                    nodePort: typeConf.port.management.node,
+                                },
+                            ],
+                        },
+                    }, { dependsOn: [statefulSet] });
+                    
+                    resources.push(configMap, headlessService, statefulSet, clusterIPService, nodeportService)
                 }
-                
-                return resources
             }
+            
+            return resources
         }
+    }
