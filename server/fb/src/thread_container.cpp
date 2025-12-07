@@ -14,7 +14,7 @@ thread_container::thread_container(fb::async_executor& executor, uint32_t count)
         auto ptr       = std::make_unique<thread>(i);
         auto id        = ptr->id();
         this->_keys[i] = id;
-        this->_thread_container.insert({id, std::move(ptr)});
+        this->_logic_threads.insert({id, std::move(ptr)});
     }
 }
 
@@ -22,7 +22,7 @@ thread_container::~thread_container()
 {
     if (this->deletor)
     {
-        for (auto& [id, thread] : this->_thread_container)
+        for (auto& [id, thread] : this->_logic_threads)
         {
             if (thread == nullptr)
                 continue;
@@ -31,7 +31,7 @@ thread_container::~thread_container()
         }
     }
 
-    for (auto& [id, thread] : this->_thread_container)
+    for (auto& [id, thread] : this->_logic_threads)
     {
         thread->exit();
         thread->join();
@@ -40,10 +40,10 @@ thread_container::~thread_container()
 
 thread* thread_container::at(uint8_t index) const
 {
-    if (this->_thread_container.size() == 0)
+    if (this->_logic_threads.size() == 0)
         return nullptr;
 
-    if (index > this->_thread_container.size() - 1)
+    if (index > this->_logic_threads.size() - 1)
         return nullptr;
 
     auto& id = this->_keys[index];
@@ -52,8 +52,8 @@ thread* thread_container::at(uint8_t index) const
 
 thread* thread_container::at(std::thread::id id) const
 {
-    auto found = this->_thread_container.find(id);
-    if (found == this->_thread_container.end())
+    auto found = this->_logic_threads.find(id);
+    if (found == this->_logic_threads.end())
         return nullptr;
     else
         return found->second.get();
@@ -61,7 +61,7 @@ thread* thread_container::at(std::thread::id id) const
 
 thread* thread_container::modular(uint32_t id) const
 {
-    if (this->_thread_container.size() == 0)
+    if (this->_logic_threads.size() == 0)
         return nullptr;
 
     auto index = id % this->size();
@@ -71,8 +71,8 @@ thread* thread_container::modular(uint32_t id) const
 thread* thread_container::current()
 {
     auto id    = std::this_thread::get_id();
-    auto found = this->_thread_container.find(id);
-    if (found == this->_thread_container.end())
+    auto found = this->_logic_threads.find(id);
+    if (found == this->_logic_threads.end())
         return nullptr;
     else
         return found->second.get();
@@ -81,8 +81,8 @@ thread* thread_container::current()
 const thread* thread_container::current() const
 {
     auto id    = std::this_thread::get_id();
-    auto found = this->_thread_container.find(id);
-    if (found == this->_thread_container.end())
+    auto found = this->_logic_threads.find(id);
+    if (found == this->_logic_threads.end())
         return nullptr;
     else
         return found->second.get();
@@ -90,12 +90,12 @@ const thread* thread_container::current() const
 
 uint8_t thread_container::count() const
 {
-    return (uint8_t)this->_thread_container.size();
+    return (uint8_t)this->_logic_threads.size();
 }
 
 bool thread_container::empty() const
 {
-    return this->_thread_container.size() == 0;
+    return this->_logic_threads.size() == 0;
 }
 
 bool thread_container::valid(uint8_t index) const
@@ -124,18 +124,18 @@ bool thread_container::valid(thread* thread) const
 
 size_t thread_container::size() const
 {
-    return this->_thread_container.size();
+    return this->_logic_threads.size();
 }
 
 void thread_container::settimer(const fb::timer::handle_callback_type& fn, const fb::model::timespan& duration)
 {
-    if (this->_thread_container.empty())
+    if (this->_logic_threads.empty())
     {
         throw std::runtime_error("cannot set timer. logic thread does not exists");
     }
     else
     {
-        for (auto& [key, thread] : this->_thread_container)
+        for (auto& [key, thread] : this->_logic_threads)
         {
             std::ignore = thread->dispatch([fn, duration](auto& thread) -> async::task<void> {
                 thread.settimer(fn, duration);
@@ -147,10 +147,31 @@ void thread_container::settimer(const fb::timer::handle_callback_type& fn, const
 
 void thread_container::exit()
 {
-    for (auto& [id, thread] : this->_thread_container)
+    for (auto& [id, thread] : this->_logic_threads)
     {
         thread->exit();
     }
+}
+
+thread* thread_container::least_loaded() const
+{
+    if (this->_logic_threads.empty())
+        return nullptr;
+
+    thread* result   = nullptr;
+    size_t  min_size = SIZE_MAX;
+
+    for (auto& [id, thread] : this->_logic_threads)
+    {
+        auto size = thread->queue_size();
+        if (size < min_size)
+        {
+            min_size = size;
+            result   = thread.get();
+        }
+    }
+
+    return result;
 }
 
 thread* thread_container::operator[] (uint8_t index) const
@@ -165,30 +186,30 @@ thread* thread_container::operator[] (std::thread::id id) const
 
 thread_container::iterator thread_container::begin()
 {
-    return this->_thread_container.begin();
+    return this->_logic_threads.begin();
 }
 
 thread_container::iterator thread_container::end()
 {
-    return this->_thread_container.end();
+    return this->_logic_threads.end();
 }
 
 thread_container::const_iterator thread_container::begin() const
 {
-    return this->_thread_container.begin();
+    return this->_logic_threads.begin();
 }
 
 thread_container::const_iterator thread_container::end() const
 {
-    return this->_thread_container.end();
+    return this->_logic_threads.end();
 }
 
 thread_container::const_iterator thread_container::cbegin() const
 {
-    return this->_thread_container.cbegin();
+    return this->_logic_threads.cbegin();
 }
 
 thread_container::const_iterator thread_container::cend() const
 {
-    return this->_thread_container.cend();
+    return this->_logic_threads.cend();
 }

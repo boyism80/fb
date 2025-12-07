@@ -13,6 +13,7 @@
 #include <rabbitmq-c/amqp.h>
 #include <rabbitmq-c/tcp_socket.h>
 #include <async/awaitable_then.h>
+#include <fb/thread_container.h>
 
 namespace fb::amqp {
 class queue;
@@ -32,7 +33,7 @@ public:
 public:
     bool connect(const std::string& hostname, uint16_t port, const std::string& id, const std::string& pw, const std::string& vhost);
 
-    queue& declare_queue(bool durable = true, bool exclusive = false, bool auto_delete = false, bool quorum = false);
+    queue& declare_queue(bool durable, bool exclusive, bool auto_delete, bool quorum, fb::thread_container& threads);
 
     bool select(const timeval* timeout = nullptr);
 

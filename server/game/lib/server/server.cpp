@@ -650,8 +650,8 @@ async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE typ
 
     case BROADCAST_TYPE::WORLD:
     {
-        co_await this->characters.async_write([message, type](auto& characters) -> async::task<void> {
-            co_await characters.foreach ([message, type](auto& ch) -> async::task<void> {
+        this->characters.write([message, type](auto& characters) {
+            characters.foreach_enqueue([message, type](auto& ch) -> async::task<void> {
                 ch->message(message, type);
                 co_return;
             });

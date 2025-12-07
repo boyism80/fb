@@ -177,6 +177,79 @@ async::task<void> character::container::invoke_async(const std::string& name, ch
         co_await before->switching();
 }
 
+void character::container::foreach_enqueue(character_async_function_t&& fn, const std::vector<character_ptr_t>& characters)
+{
+    auto group = std::unordered_map<fb::thread*, std::vector<std::weak_ptr<character>>>();
+
+    for (auto& ch : characters)
+    {
+        auto each_thread = ch->thread();
+        if (each_thread == nullptr)
+            continue;
+
+        auto weak_ptr = ch->weak_from_this_as<character>();
+        if (group.contains(each_thread) == false)
+            group[each_thread] = std::vector<std::weak_ptr<character>>();
+
+        group[each_thread].push_back(weak_ptr);
+    }
+
+    auto fn_holder = std::make_shared<character_async_function_t>(std::move(fn));
+    for (auto& [thread, weak_ptrs] : group)
+    {
+        thread->enqueue(
+            [fn_holder, weak_ptrs](auto& thread) -> async::task<void> {
+                for (auto& weak_ptr : weak_ptrs)
+                {
+                    auto shared_ptr = weak_ptr.lock();
+                    if (shared_ptr == nullptr)
+                        continue;
+
+                    co_await (*fn_holder)(shared_ptr);
+                }
+            },
+            [](std::exception& e) {
+                fb::logger::fatal("foreach_enqueue error: {}", e.what());
+            },
+            []() {
+                // work done
+            });
+    }
+}
+
+void character::container::foreach_enqueue(character_async_function_t&& fn, character_predicate_t predict)
+{
+    auto targets = std::vector<character_ptr_t>();
+    for (auto& [uid, ch] : this->_from_uid)
+    {
+        if (predict != nullptr && predict(ch) == false)
+            continue;
+
+        targets.push_back(ch);
+    }
+
+    this->foreach_enqueue(std::move(fn), std::move(targets));
+}
+
+void character::container::foreach_enqueue(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss)
+{
+    auto targets = std::vector<character_ptr_t>();
+    for (auto& name : names)
+    {
+        auto ch = this->find(name);
+        if (ch == nullptr)
+        {
+            if (miss != nullptr)
+                miss(name);
+            continue;
+        }
+
+        targets.push_back(ch);
+    }
+
+    this->foreach_enqueue(std::move(fn), std::move(targets));
+}
+
 character::container::character_ptr_t character::container::operator[] (uint32_t uid)
 {
     auto ch = this->find(uid);

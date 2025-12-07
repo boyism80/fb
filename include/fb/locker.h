@@ -137,6 +137,26 @@ public:
         }
     }
 
+    bool try_lock_shared()
+    {
+        if (!this->_writer.load(std::memory_order_acquire) && this->writer_queue_empty())
+        {
+            this->_reader_count.fetch_add(1, std::memory_order_relaxed);
+            return true;
+        }
+        return false;
+    }
+
+    bool try_lock()
+    {
+        auto expected = false;
+        if (this->_reader_count.load(std::memory_order_acquire) == 0 && this->_writer.compare_exchange_strong(expected, true, std::memory_order_acq_rel))
+        {
+            return true;
+        }
+        return false;
+    }
+
 private:
     std::atomic<int>                                                 _reader_count{0};
     std::atomic<bool>                                                _writer{false};
@@ -245,6 +265,74 @@ public:
                 auto result = co_await (*func_holder)(this->_value);
                 this->_async_mutex.unlock();
                 co_return result;
+            }
+        }
+        catch (...)
+        {
+            this->_async_mutex.unlock();
+            throw;
+        }
+    }
+
+    template <typename Func> auto try_async_read(Func&& fn) const -> async::task<bool>
+    {
+        // Create shared_ptr holder to ensure function lifetime safety
+        auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(fn));
+
+        if (!this->_async_mutex.try_lock_shared())
+        {
+            co_return false;
+        }
+
+        std::shared_lock lock(this->_sync_mutex);
+
+        try
+        {
+            if constexpr (std::is_same_v<decltype((*func_holder)(this->_value)), async::task<void>>)
+            {
+                co_await (*func_holder)(this->_value);
+                this->_async_mutex.unlock_shared();
+                co_return true;
+            }
+            else
+            {
+                co_await (*func_holder)(this->_value);
+                this->_async_mutex.unlock_shared();
+                co_return true;
+            }
+        }
+        catch (...)
+        {
+            this->_async_mutex.unlock_shared();
+            throw;
+        }
+    }
+
+    template <typename Func> auto try_async_write(Func&& fn) -> async::task<bool>
+    {
+        // Create shared_ptr holder to ensure function lifetime safety
+        auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(fn));
+
+        if (!this->_async_mutex.try_lock())
+        {
+            co_return false;
+        }
+
+        std::unique_lock lock(this->_sync_mutex);
+
+        try
+        {
+            if constexpr (std::is_same_v<decltype((*func_holder)(this->_value)), async::task<void>>)
+            {
+                co_await (*func_holder)(this->_value);
+                this->_async_mutex.unlock();
+                co_return true;
+            }
+            else
+            {
+                co_await (*func_holder)(this->_value);
+                this->_async_mutex.unlock();
+                co_return true;
             }
         }
         catch (...)

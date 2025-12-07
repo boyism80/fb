@@ -128,6 +128,80 @@ public:
 
     [[nodiscard]] async::task<void> dispatch(const handle_func_type<void>& fn);
     [[nodiscard]] async::task<void> switching();
+    size_t                          queue_size() const;
+    std::string                     to_string() const;
+
+    template <typename RetryFunc>
+    async::task<bool> enqueue_with_retry(
+        RetryFunc&&              fn,
+        size_t                   max_retries = 10,
+        const handle_error_type& error       = [](std::exception& e) {
+        })
+    {
+        static_assert(std::is_same_v<decltype(fn(*this)), async::task<bool>>, "RetryFunc must return async::task<bool>");
+
+        auto           promise     = std::make_shared<async::task_completion_source<bool>>();
+        auto           retry_count = std::make_shared<size_t>(0);
+        constexpr auto retry_delay = 100ms;
+
+        auto retry_func = std::make_shared<std::function<void()>>();
+        *retry_func     = [=, this]() mutable {
+            async::awaitable_then(fn(*this), [=, this](async::awaitable_result<bool> result) mutable {
+                try
+                {
+                    auto success = result();
+                    if (success)
+                    {
+                        promise->set_value(true);
+                    }
+                    else if (*retry_count < max_retries)
+                    {
+                        (*retry_count)++;
+                        // Sleep before retry
+                        async::awaitable_then(this->sleep(retry_delay), [=, this](async::awaitable_result<void> sleep_result) {
+                            try
+                            {
+                                sleep_result();
+                                // Re-enqueue after sleep
+                                this->_queue.write([retry_func](auto& queue) {
+                                    queue.push(*retry_func);
+                                });
+                            }
+                            catch (std::exception& e)
+                            {
+                                error(e);
+                                promise->set_exception(std::make_exception_ptr(e));
+                            }
+                            catch (...)
+                            {
+                                promise->set_exception(std::make_exception_ptr(std::runtime_error("unknown error")));
+                            }
+                        });
+                    }
+                    else
+                    {
+                        promise->set_value(false); // Max retries exceeded
+                    }
+                }
+                catch (std::exception& e)
+                {
+                    error(e);
+                    promise->set_exception(std::make_exception_ptr(e));
+                }
+                catch (...)
+                {
+                    promise->set_exception(std::make_exception_ptr(std::runtime_error("unknown error")));
+                }
+            });
+        };
+
+        // First attempt
+        this->_queue.write([retry_func](auto& queue) {
+            queue.push(*retry_func);
+        });
+
+        return promise->task();
+    }
 };
 
 } // namespace fb

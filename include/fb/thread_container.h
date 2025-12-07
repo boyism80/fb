@@ -19,7 +19,7 @@ public:
 
 private:
     fb::async_executor&     _executor;
-    unique_thread_container _thread_container;
+    unique_thread_container _logic_threads;
     unique_id_list          _keys;
 
 public:
@@ -332,8 +332,9 @@ public:
         });
     }
 
-    void settimer(const fb::timer::handle_callback_type& fn, const fb::model::timespan& duration);
-    void exit();
+    void        settimer(const fb::timer::handle_callback_type& fn, const fb::model::timespan& duration);
+    void        exit();
+    fb::thread* least_loaded() const;
 
 public:
     iterator       begin();

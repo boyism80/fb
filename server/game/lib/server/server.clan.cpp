@@ -24,38 +24,52 @@ void server::assert_clan(uint32_t error) const
 async::task<void> server::ensure_clan(uint32_t id, std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn)
 {
     auto thread = this->threads.current();
-    co_await this->clans.async_write(
-        id,
-        [this, fn, thread](auto& clan) -> async::task<void> {
-            if (thread != nullptr)
-                co_await thread->switching();
+    if (thread == nullptr)
+    {
+        throw std::runtime_error(std::format("No thread available for ensure_clan (clan_id: {})", id));
+    }
 
-            co_await fn(clan);
+    // Use try_async_write with retry mechanism
+    // Note: We need to ensure we return to the original thread after try_async_write completes
+    auto success = co_await thread->enqueue_with_retry(
+        [=, this](auto& thread) -> async::task<bool> {
+            auto result = co_await this->clans.try_async_write(
+                id,
+                [this, fn, &thread](auto& clan) -> async::task<void> {
+                    co_await fn(clan);
+                    // Ensure we return to the original thread after fn completes
+                    co_await thread.switching();
+                },
+                [=, this]() -> async::task<std::shared_ptr<fb::game::clan>> {
+                    auto&& resp = co_await this->http.get<internal_resp::ClanDetails>("internal", std::format("/clan/{}", id));
+                    switch (static_cast<ERROR_CODE>(resp.error))
+                    {
+                    case ERROR_CODE::NONE:
+                    {
+                        auto members = std::unordered_map<std::string, clan_member>{};
+                        for (auto& member : resp.members)
+                        {
+                            members.insert({
+                                member.name,
+                                clan_member{member.name, static_cast<CLAN_ROLE>(member.role)}
+                            });
+                        }
+                        co_return std::make_shared<fb::game::clan>(*this, id, resp.clan.name, resp.clan.title, members);
+                    }
+
+                    default:
+                        throw std::runtime_error(std::format("cannot get clan (error : {})", resp.error));
+                    }
+                });
+            co_return result;
         },
-        [=, this]() -> async::task<std::shared_ptr<fb::game::clan>> {
-            auto&& resp = co_await this->http.get<internal_resp::ClanDetails>("internal", std::format("/clan/{}", id));
-            switch (static_cast<ERROR_CODE>(resp.error))
-            {
-            case ERROR_CODE::NONE:
-            {
-                auto members = std::unordered_map<std::string, clan_member>{};
-                for (auto& member : resp.members)
-                {
-                    members.insert({
-                        member.name,
-                        clan_member{member.name, static_cast<CLAN_ROLE>(member.role)}
-                    });
-                }
-                co_return std::make_shared<fb::game::clan>(*this, id, resp.clan.name, resp.clan.title, members);
-            }
+        10 // max_retries
+    );
 
-            default:
-                throw std::runtime_error(std::format("cannot get clan (error : {})", resp.error));
-            }
-        });
-
-    if (thread != nullptr)
-        co_await thread->switching();
+    if (!success)
+    {
+        throw std::runtime_error(std::format("Failed to acquire clan lock after retries (clan_id: {})", id));
+    }
 }
 
 void server::update_clan(clan& clan, fb::protocol::internal::Clan& resp1, const std::vector<fb::protocol::internal::ClanMember>& resp2) const
@@ -379,7 +393,7 @@ async::task<void> server::on_destroyed_clan(const internal_resp::DestroyClan& re
 
     // Atomic operation: read clan data, send message, and erase in one atomic block
     // async_erase callback receives the clan before erasure, and callback is only called if clan exists
-    co_await this->clans.async_erase(resp.clan_id, [this, &resp](const auto& clan) -> async::task<void> {
+    this->clans.erase(resp.clan_id, [this, &resp](const auto& clan) {
         auto members = std::vector<std::shared_ptr<fb::game::character>>();
         for (auto& [_, weak_ptr] : clan->characters())
         {
@@ -390,16 +404,18 @@ async::task<void> server::on_destroyed_clan(const internal_resp::DestroyClan& re
         }
 
         auto message = std::format(_TEXT(MESSAGE_CLAN_DISBANDED), resp.clan_name);
-        co_await this->characters.async_write([this, message, members](auto& characters) -> async::task<void> {
-            co_await characters.foreach (
-                [this, message](auto& ch) {
+        this->characters.write([this, message, members](auto& characters) {
+            characters.foreach_enqueue(
+                [this, message](auto& ch) -> async::task<void> {
                     ch->message(message, MESSAGE_TYPE::NOTIFY);
                     ch->clan_reset();
+                    co_return;
                 },
                 members);
         });
     });
     // If clan doesn't exist, callback is not called (no exception thrown)
+    co_return;
 }
 
 async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp)
@@ -454,9 +470,10 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                     members.push_back(shared_ptr);
                 }
 
-                co_await characters.foreach (
-                    [this, &resp](auto& member) {
+                characters.foreach_enqueue(
+                    [this, &resp](auto& member) -> async::task<void> {
                         member->message(std::format(_TEXT(MESSAGE_CLAN_MEMBER_JOINED), resp.new_member.value().name), MESSAGE_TYPE::NOTIFY);
+                        co_return;
                     },
                     members);
 
@@ -485,7 +502,7 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
             if (resp.deleted_member.has_value() == false)
                 break;
 
-            co_await this->characters.async_write([this, &resp, clan](auto& characters) -> async::task<void> {
+            this->characters.write([this, &resp, clan](auto& characters) {
                 auto ch = characters.find(resp.deleted_member.value().name);
                 if (ch != nullptr)
                 {
@@ -516,9 +533,10 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
 
                 auto message = resp.action == internal::ClanActionType::Kick ? std::format(_TEXT(MESSAGE_CLAN_MEMBER_KICKED), resp.deleted_member.value().name)
                                                                              : std::format(_TEXT(MESSAGE_CLAN_MEMBER_LEFT), resp.deleted_member.value().name);
-                co_await characters.foreach (
-                    [this, message](auto& member) {
+                characters.foreach_enqueue(
+                    [this, message](auto& member) -> async::task<void> {
                         member->message(message, MESSAGE_TYPE::NOTIFY);
+                        co_return;
                     },
                     members);
             });
@@ -581,12 +599,14 @@ async::task<void> server::on_clan_broadcast(const internal_resp::BroadcastClan& 
             members.push_back(shared_ptr);
         }
 
-        co_await this->characters.async_write([this, &resp, &members](auto& characters) -> async::task<void> {
-            co_await characters.foreach (
-                [this, resp](auto& member) {
+        this->characters.write([this, &resp, &members](auto& characters) {
+            characters.foreach_enqueue(
+                [this, resp](auto& member) -> async::task<void> {
                     member->message(resp.message, static_cast<MESSAGE_TYPE>(resp.type));
+                    co_return;
                 },
                 members);
         });
+        co_return;
     });
 }

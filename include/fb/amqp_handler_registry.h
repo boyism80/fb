@@ -125,7 +125,7 @@ public:
         try
         {
             // Declare queue with auto-generated name and bind with specified route key
-            auto& queue = this->_amqp->declare_queue(true, false, false, false);
+            auto& queue = this->_amqp->declare_queue(true, false, false, false, this->_owner.threads);
             queue.bind(exchange, route_key);
 
             auto& route = queue.route();
