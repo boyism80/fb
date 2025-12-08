@@ -396,6 +396,16 @@ namespace Http.Reepository
         }
 
         /// <summary>
+        /// Generates a distributed lock key for the entire Redis key (used for cache synchronization).
+        /// </summary>
+        /// <param name="redisKey">The Redis key to generate a lock key for.</param>
+        /// <returns>A formatted lock key string for distributed locking.</returns>
+        private static string GetRedisKeyLockKey(RedisKey redisKey)
+        {
+            return $"lock:{redisKey}";
+        }
+
+        /// <summary>
         /// Retrieves a single entity with multi-level caching (local, Redis hash, database).
         /// Uses distributed locking to ensure consistency across cache levels and handles hash-based Redis operations.
         /// </summary>
@@ -542,6 +552,7 @@ namespace Http.Reepository
         /// <summary>
         /// Queues a single entity for upsert with Redis hash caching and write-back support.
         /// Updates local cache, Redis hash cache, and schedules database write-back.
+        /// If Redis key doesn't exist, calls GetAll to synchronize cache with database.
         /// </summary>
         /// <param name="value">The entity to upsert.</param>
         /// <returns>The same entity instance for method chaining.</returns>
@@ -551,19 +562,40 @@ namespace Http.Reepository
             {
                 value.UpdatedDate = DateTime.Now;
 
+                var redisKey = value.GetRedisKey();
                 var redis = _redisService.Redis(value.GetHash()).Connection;
+
+                // Use distributed lock to ensure cache synchronization
+                await using (await _distributedLock.Lock(GetRedisKeyLockKey(redisKey)))
+                {
+                    // Check if Redis key exists
+                    var keyExists = await redis.KeyExistsAsync(redisKey);
+                    if (!keyExists)
+                    {
+                        // Redis key doesn't exist, clear local cache and call GetAll to synchronize cache with database
+                        _local.Remove(redisKey);
+                        await GetAll((TKey)(object)value);
+                    }
+                }
+
+                // Add the new entity to Redis cache (outside of distributed lock)
                 await redis.TransactAsync(cmd =>
                 {
-                    cmd.Enqueue(trans => trans.JsonHashSetAsync(value.GetRedisKey(), value.GetRedisField(), value));
-                    cmd.Enqueue(trans => trans.KeyExpireAsync(value.GetRedisKey(), expiry: (TimeSpan?)null));
-                    cmd.Enqueue(trans => trans.HashIncrementAsync(Const.ReferenceCountKey, value.GetRedisKey().ToString()));
+                    cmd.Enqueue(trans => trans.JsonHashSetAsync(redisKey, value.GetRedisField(), value));
+                    cmd.Enqueue(trans => trans.KeyExpireAsync(redisKey, expiry: (TimeSpan?)null));
+                    cmd.Enqueue(trans => trans.HashIncrementAsync(Const.ReferenceCountKey, redisKey.ToString()));
                 });
 
-                if (_local.TryGetValue(value.GetRedisKey(), out var localValues))
-                    localValues[value.GetRedisField()] = JsonConvert.SerializeObject(value);
+                // Update local cache
+                if (!_local.TryGetValue(redisKey, out var localValues))
+                {
+                    _local[redisKey] = new Dictionary<string, string>();
+                    localValues = _local[redisKey];
+                }
+                localValues[value.GetRedisField()] = JsonConvert.SerializeObject(value);
 
                 var sql = OnUpsert(value);
-                await _dbExecuteService.Post(value.GetHash(), sql, value.GetRedisKey().ToString());
+                await _dbExecuteService.Post(value.GetHash(), sql, redisKey.ToString());
             });
 
             return value;
@@ -572,6 +604,7 @@ namespace Http.Reepository
         /// <summary>
         /// Queues multiple entities for upsert with Redis hash caching and write-back support.
         /// Entities are grouped by hash and Redis key for efficient batch operations with hash structures.
+        /// If Redis key doesn't exist, calls GetAll to synchronize cache with database.
         /// </summary>
         /// <param name="values">The entities to upsert.</param>
         /// <returns>The same entity array for method chaining.</returns>
@@ -599,12 +632,39 @@ namespace Http.Reepository
                         {
                             var redisKey = keyGroup.Key;
                             var valueSet = keyGroup.ToDictionary(x => x.GetRedisField(), x => x);
+
+                            // Use distributed lock to ensure cache synchronization
+                            await using (await _distributedLock.Lock(GetRedisKeyLockKey(redisKey)))
+                            {
+                                // Check if Redis key exists
+                                var keyExists = await redis.KeyExistsAsync(redisKey);
+                                if (!keyExists)
+                                {
+                                    // Redis key doesn't exist, clear local cache and call GetAll to synchronize cache with database
+                                    _local.Remove(redisKey);
+                                    await GetAll((TKey)(object)keyGroup.First());
+                                }
+                            }
+
+                            // Add the new entities to Redis cache (outside of distributed lock)
                             await redis.TransactAsync(cmd =>
                             {
                                 cmd.Enqueue(trans => trans.JsonHashSetAsync(redisKey, valueSet));
                                 cmd.Enqueue(trans => trans.KeyExpireAsync(redisKey, expiry: (TimeSpan?)null));
                                 cmd.Enqueue(trans => trans.HashIncrementAsync(Const.ReferenceCountKey, redisKey.ToString()));
                             });
+
+                            // Update local cache
+                            if (!_local.TryGetValue(redisKey, out var localValues))
+                            {
+                                _local[redisKey] = new Dictionary<string, string>();
+                                localValues = _local[redisKey];
+                            }
+                            foreach (var (field, val) in valueSet)
+                            {
+                                localValues[field] = JsonConvert.SerializeObject(val);
+                            }
+
                             var sql = OnUpsert(hashGroup.ToArray());
                             await _dbExecuteService.Post(hash, sql, redisKey.ToString());
                         }
