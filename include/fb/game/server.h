@@ -17,7 +17,8 @@
 #include <fb/game/npc_interaction_handler.h>
 #include <fb/game/system_mail.h>
 #include <fb/game/storage.h>
-#include <fb/game/polling/polling.h>
+#include <fb/game/channel/system_mail_channel.h>
+#include <fb/game/channel/storage_pending_channel.h>
 #include <fb/log_collector.h>
 #include <fb/locker.h>
 #include <vector>
@@ -92,7 +93,8 @@ private:
 
 public:
     fb::log_collector       log;
-    fb::game::polling       poll = polling(*this);
+    fb::game::system_mail_channel     system_mail;
+    fb::game::storage_pending_channel storage_pending;
     fb::game::listener_impl listener;
 
     fb::game::map_container                                 maps;

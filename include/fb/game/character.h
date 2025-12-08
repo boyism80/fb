@@ -219,6 +219,7 @@ public:
     bool                                               condition(const std::vector<fb::model::dsl>& conditions) const override final;
     void                                               message(const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
     async::task<void>                                  process_system_mails();
+    void                                               process_storage_pending();
     fb::thread*                                        thread() const override final;
     void                                               thread(fb::thread* value);
     void                                               assert_thread() const override final;

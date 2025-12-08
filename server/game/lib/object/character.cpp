@@ -1212,7 +1212,7 @@ async::task<void> character::process_system_mails()
 {
     this->assert_thread();
 
-    co_await this->server.poll.system_mail.read_async([&](const std::vector<fb::game::system_mail>& system_mails) -> async::task<void> {
+    co_await this->server.system_mail.read_async([&](const std::vector<fb::game::system_mail>& system_mails) -> async::task<void> {
         if (system_mails.empty())
             co_return;
 
@@ -1294,6 +1294,26 @@ async::task<void> character::process_system_mails()
     });
 
     co_return;
+}
+
+void character::process_storage_pending()
+{
+    this->assert_thread();
+
+    this->server.storage_pending.read([this](const auto& pending_map) {
+        if (pending_map.empty())
+            return;
+
+        // Convert map to vector for apply_pending
+        auto pending = std::vector<fb::game::storage_box::pending_box>();
+        pending.reserve(pending_map.size());
+        for (const auto& [id, box] : pending_map)
+        {
+            pending.push_back(box);
+        }
+
+        this->storage_box.apply_pending(pending);
+    });
 }
 
 fb::thread* character::thread() const

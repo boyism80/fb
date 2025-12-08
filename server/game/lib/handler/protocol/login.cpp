@@ -109,16 +109,16 @@ void login::init_storage(const fb::protocol::internal::response::Init& response,
     storage_boxes.reserve(response.storage_boxes.size());
     for (const auto& dto : response.storage_boxes)
     {
-        fb::game::storage_box::entry box{};
+        auto box    = fb::game::storage_box::entry{};
         box.id      = dto.id;
         box.title   = dto.title;
         box.message = dto.message;
 
         if (!dto.attachments.empty())
         {
-            Json::Value        json;
-            Json::Reader       reader;
-            std::istringstream stream(dto.attachments);
+            auto json   = Json::Value{};
+            auto reader = Json::Reader{};
+            auto stream = std::istringstream(dto.attachments);
             if (reader.parse(stream, json) && json.isArray())
             {
                 box.attachments.reserve(json.size());
@@ -163,9 +163,9 @@ void login::init_storage(const fb::protocol::internal::response::Init& response,
 
             if (!dto.attachments.empty())
             {
-                Json::Value        json;
-                Json::Reader       reader;
-                std::istringstream stream(dto.attachments);
+                auto json   = Json::Value{};
+                auto reader = Json::Reader{};
+                auto stream = std::istringstream(dto.attachments);
                 if (reader.parse(stream, json) && json.isArray())
                 {
                     pending_box.attachments.reserve(json.size());
@@ -263,6 +263,15 @@ async::task<std::shared_ptr<character>> login::init(const fb::protocol::game::re
         });
     }
 
+    auto inserted = this->server.characters.write([ch](auto& container) {
+        return container.insert(ch);
+    });
+    if (inserted == false)
+    {
+        fb::logger::fatal("Character {} already exists in server during initial insert - disconnecting duplicate session", ch->name());
+        co_return nullptr;
+    }
+
     ch->mail_box.unread_count(response.mail);
     this->init_items(response.items, *ch);
     this->init_spells(response.spells, *ch);
@@ -294,6 +303,7 @@ async::task<std::shared_ptr<character>> login::init(const fb::protocol::game::re
     ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();
     co_await ch->process_system_mails();
+    ch->process_storage_pending();
     co_return ch;
 }
 
@@ -338,48 +348,6 @@ std::string login::elapsed_message(const std::string& dt)
     return sstream.str();
 }
 
-async::task<bool> login::ensure_character_insert(const std::weak_ptr<fb::game::character>& weak)
-{
-    auto ch = weak.lock();
-    if (ch == nullptr)
-        co_return false;
-
-    auto success = this->server.characters.write([ch](auto& container) {
-        auto& name   = ch->name();
-        auto  old_ch = container.find(name);
-        if (old_ch == nullptr)
-        {
-            container.insert(ch);
-            return true;
-        }
-
-        old_ch->socket.close();
-
-        return false;
-    });
-
-    if (success)
-        co_return true;
-
-    auto timeout = std::chrono::steady_clock::now() + 5s;
-    while (true)
-    {
-        auto inserted = this->server.characters.write([ch](auto& container) {
-            return container.insert(ch);
-        });
-
-        if (inserted)
-            co_return true;
-
-        if (std::chrono::steady_clock::now() >= timeout)
-            break;
-
-        co_await this->server.sleep(100ms);
-    }
-
-    co_return false;
-}
-
 async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::game::request::login& request)
 {
     session.encryption(request.enc_type, request.enc_key);
@@ -403,16 +371,6 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     auto ch = co_await this->init(request, session);
     if (ch == nullptr)
         co_return false;
-
-    auto inserted = this->server.characters.write([ch](auto& container) {
-        return container.insert(ch);
-    });
-
-    if (inserted == false)
-    {
-        fb::logger::fatal("Character {} already exists in server during initial insert - disconnecting duplicate session", request.name);
-        co_return false;
-    }
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(ch->id);

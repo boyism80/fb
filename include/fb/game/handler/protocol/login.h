@@ -25,7 +25,6 @@ private:
     void                                                            init_storage(const fb::protocol::internal::response::Init& response, fb::game::character& ch);
     [[nodiscard]] async::task<std::shared_ptr<fb::game::character>> init(const fb::protocol::game::request::login& request, fb::socket<character>& session);
     std::string                                                     elapsed_message(const std::string& dt);
-    [[nodiscard]] async::task<bool>                                 ensure_character_insert(const std::weak_ptr<fb::game::character>& weak);
     [[nodiscard]] async::task<bool>                                 assert_login(const fb::protocol::game::request::login& request);
 
 public:

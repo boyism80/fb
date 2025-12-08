@@ -43,8 +43,8 @@ void storage_box::apply_pending(const std::vector<pending_box>& pending)
         if (this->_reward_marks.find(box.id) != this->_reward_marks.end())
             continue;
 
-        auto  id = this->_sequence++;
-        entry e{};
+        auto id   = this->_sequence++;
+        auto e    = entry{};
         e.id      = id;
         e.title   = box.title;
         e.message = box.message;
