@@ -79,6 +79,7 @@ cluster_partition_handling = autoheal
                         "rabbitmq-env.conf": `# Limit Erlang VM scheduler threads to reduce CPU overhead
 # +S N:M format: N schedulers, M online schedulers
 # Limit to 8 schedulers to prevent excessive thread creation
+# Note: Logical processors are limited via Kubernetes CPU resource limits
 RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
 `
                     },
@@ -124,6 +125,16 @@ RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
                                         { name: "management", containerPort: 15672 },
                                         { name: "epmd", containerPort: 4369 },
                                     ],
+                                    resources: {
+                                        limits: {
+                                            cpu: "8",
+                                            memory: "4Gi"
+                                        },
+                                        requests: {
+                                            cpu: "8",
+                                            memory: "4Gi"
+                                        }
+                                    },
                                     env: [
                                         { name: "RABBITMQ_DEFAULT_USER", value: "fb" },
                                         { name: "RABBITMQ_DEFAULT_PASS", value: "admin" },
