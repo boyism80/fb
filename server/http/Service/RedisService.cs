@@ -135,6 +135,14 @@ namespace Http.Service
             return Redis((int)(id % ShardSize));
         }
 
+        public Redis Redis(uint? id)
+        {
+            if (id == null)
+                return Redis(-1);
+            else
+                return Redis(id.Value);
+        }
+
         /// <summary>
         /// Gets the Redis instance for the specified string key using hash-based sharding.
         /// Uses a simple hash algorithm to distribute keys across shards.
@@ -159,7 +167,11 @@ namespace Http.Service
         /// <returns>The Redis instance for the calculated shard based on key hash.</returns>
         public Redis Redis(IRedisValueKey key)
         {
-            return Redis(key.GetHash());
+            var hash = key.GetHash();
+            if (hash == null)
+                return Redis(-1);
+            else
+                return Redis(hash.Value);
         }
 
         /// <summary>

@@ -6,7 +6,7 @@ namespace Http.Model
     {
         public required uint User { get; set; }
         public required uint MailId { get; set; }
-        public uint GetHash() => User;
+        public uint? GetHash() => User;
 
         public RedisKey GetRedisKey() => $"cache:system_mail_user:{User}";
 

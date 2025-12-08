@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Fb.Model;
 using StackExchange.Redis;
 
@@ -10,7 +9,7 @@ namespace Http.Model
         public string Id { get; set; } = string.Empty;
         public uint? User { get; set; }
 
-        public uint GetHash() => User ?? GlobalShardSeed;
+        public uint? GetHash() => User;
 
         public RedisKey GetRedisKey() => User.HasValue
             ? $"cache:storage:pending:{User.Value}"

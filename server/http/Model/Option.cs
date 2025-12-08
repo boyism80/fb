@@ -5,7 +5,7 @@ namespace Http.Model
     public class OptionKey : BaseModel, IRedisValueKey
     {
         public required uint Uid { get; set; }
-        public uint GetHash() => Uid;
+        public uint? GetHash() => Uid;
 
         public RedisKey GetRedisKey() => $"cache:option:{Uid}";
     }

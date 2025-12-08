@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Fb.Model;
 using StackExchange.Redis;
 
@@ -8,7 +7,7 @@ namespace Http.Model
     {
         public required uint User { get; set; }
         public uint Id { get; set; }
-        public uint GetHash() => User;
+        public uint? GetHash() => User;
 
         public RedisKey GetRedisKey() => $"cache:storage:box:{User}";
 

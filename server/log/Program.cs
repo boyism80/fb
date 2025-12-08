@@ -1,4 +1,3 @@
-using Dapper;
 using Http.Service;
 using Log.Repository;
 using Log.Worker;

@@ -37,7 +37,7 @@ namespace Http.Model
         /// Gets the hash value used for sharding and distribution logic.
         /// </summary>
         /// <returns>A hash value for determining the target shard or partition.</returns>
-        uint GetHash();
+        uint? GetHash();
     }
 
     /// <summary>

@@ -7,7 +7,7 @@ namespace Http.Model
     {
         public required uint Clan { get; set; }
         public uint User { get; set; }
-        public uint GetHash() => Clan;
+        public uint? GetHash() => Clan;
 
         public RedisKey GetRedisKey() => $"cache:clan-member:{Clan}";
 

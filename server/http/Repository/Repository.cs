@@ -586,13 +586,14 @@ namespace Http.Reepository
 
                 foreach (var hashGroup in values.GroupBy(x => x.GetHash()))
                 {
-                    if (hashGroup.GroupBy(x => x.GetHash()).Count() > 1)
-                        throw new InvalidOperationException();
-
                     var hash = hashGroup.Key;
                     var redis = _redisService.Redis(hash).Connection;
 
-                    foreach (var modGroup in hashGroup.GroupBy(x => (int)(x.GetHash() % _redisService.ShardSize)))
+                    foreach (var modGroup in hashGroup.GroupBy(x =>
+                    {
+                        var h = x.GetHash();
+                        return h != null ? (int)(h.Value % _redisService.ShardSize) : -1;
+                    }))
                     {
                         foreach (var keyGroup in modGroup.GroupBy(x => x.GetRedisKey()))
                         {

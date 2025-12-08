@@ -111,7 +111,7 @@ namespace WriteBack.Service
 
                     await using var dbConn = _dbContext.Connection(db);
                     var backgroundCommitEntryList = ((RedisResult[])result).Select((x => JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString())));
-                    foreach (var g in backgroundCommitEntryList.GroupBy(x => (int)(x.Hash % _redisService.ShardSize)))
+                    foreach (var g in backgroundCommitEntryList.GroupBy(x => x.Hash != null ? (int)(x.Hash % _redisService.ShardSize) : -1))
                     {
                         var mod = g.Key;
                         var sql = string.Join(Environment.NewLine, g.Select(x => x.SQL));
