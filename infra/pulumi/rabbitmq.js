@@ -79,7 +79,7 @@ cluster_partition_handling = autoheal
                         "rabbitmq-env.conf": `# Limit Erlang VM scheduler threads to reduce CPU overhead
 # +S N:M format: N schedulers, M online schedulers
 # Limit to 8 schedulers to prevent excessive thread creation
-SERVER_ERL_ARGS="+S 8:8"
+RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
 `
                     },
                 })
@@ -137,6 +137,7 @@ SERVER_ERL_ARGS="+S 8:8"
                                     command: ["/bin/bash", "-c"],
                                     args: [pulumi.interpolate`
 export RABBITMQ_NODENAME=rabbit@$MY_POD_NAME.${headlessServiceName}.$MY_POD_NAMESPACE.svc.cluster.local
+export RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
 exec docker-entrypoint.sh rabbitmq-server
 `],
                                         volumeMounts: [
