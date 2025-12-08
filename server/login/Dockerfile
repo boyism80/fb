@@ -13,8 +13,8 @@ RUN cmake --build . --config ${BUILD_TYPE} --parallel
 
 FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
 WORKDIR /app
-COPY --from=build /app/login/build/app .
+COPY --from=build /app/login/build/app ./login
 COPY --from=build /fb/data/json/server/ /app/json/
 
 WORKDIR /app
-CMD ["./app"]
+CMD ["./login"]

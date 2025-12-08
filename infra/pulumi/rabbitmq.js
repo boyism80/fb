@@ -75,6 +75,11 @@ cluster_formation.k8s.service_name = ${headlessServiceName}
 cluster_formation.node_cleanup.interval = 60
 cluster_formation.node_cleanup.only_log_warning = true
 cluster_partition_handling = autoheal
+`,
+                        "rabbitmq-env.conf": `# Limit Erlang VM scheduler threads to reduce CPU overhead
+# +S N:M format: N schedulers, M online schedulers
+# Limit to 8 schedulers to prevent excessive thread creation
+SERVER_ERL_ARGS="+S 8:8"
 `
                     },
                 })
@@ -128,10 +133,6 @@ cluster_partition_handling = autoheal
                                         { name: "K8S_HOSTNAME_SUFFIX", value: pulumi.interpolate`.${headlessServiceName}.${namespace.metadata.name}.svc.cluster.local` },
                                         { name: "MY_POD_NAME", valueFrom: { fieldRef: { fieldPath: "metadata.name" } } },
                                         { name: "MY_POD_NAMESPACE", valueFrom: { fieldRef: { fieldPath: "metadata.namespace" } } },
-                                        // Limit Erlang VM scheduler threads to reduce CPU overhead
-                                        // +S N:M format: N schedulers, M online schedulers
-                                        // Limit to 8 schedulers to prevent excessive thread creation
-                                        { name: "RABBITMQ_SERVER_ERL_ARGS", value: "+S 8:8" },
                                     ],
                                     command: ["/bin/bash", "-c"],
                                     args: [pulumi.interpolate`

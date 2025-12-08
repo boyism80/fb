@@ -137,7 +137,7 @@ module.exports = function () {
                                             timeoutSeconds: 3,
                                             failureThreshold: 3
                                         },
-                                        command: ["./app"],
+                                        command: ["./login"],
                                         args: ["-c", "config.json"],
                                         volumeMounts: [{
                                             name: "config-volume",

@@ -23,8 +23,8 @@ RUN AVAILABLE_MEM_KB=$(grep MemAvailable /proc/meminfo | awk '{print $2}') && \
 
 FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
 WORKDIR /app
-COPY --from=build /app/bot/build/app .
+COPY --from=build /app/bot/build/app ./bot
 COPY --from=build /fb/data/json/server/ /app/json/
 
 WORKDIR /app
-CMD ["./app"]
+CMD ["./bot"]
