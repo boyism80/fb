@@ -3,6 +3,7 @@ using Dapper;
 using Http.Model;
 using Http.Redis;
 using Http.Service;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
@@ -353,8 +354,57 @@ namespace Http.Reepository
             return {contains_refs}
             """;
 
+        /// <summary>
+        /// Lua script for setting a single hash field in Redis cache.
+        /// Sets hash field, removes expiry, and increments reference count.
+        /// </summary>
+        private static readonly string SetHashFieldScript = """
+            local CACHE_KEY = KEYS[1]
+            local COUNT_REFS = KEYS[2]
+            local FIELD = ARGV[1]
+            local VALUE = ARGV[2]
+
+            -- Set hash field
+            redis.call('hset', CACHE_KEY, FIELD, VALUE)
+
+            -- Remove expiry (persist the key)
+            redis.call('persist', CACHE_KEY)
+
+            -- Increment reference count
+            redis.call('hincrby', COUNT_REFS, CACHE_KEY, 1)
+
+            return 1
+            """;
+
+        /// <summary>
+        /// Lua script for setting multiple hash fields in Redis cache.
+        /// Sets hash fields, removes expiry, and increments reference count.
+        /// </summary>
+        private static readonly string SetHashFieldsScript = """
+            local CACHE_KEY = KEYS[1]
+            local COUNT_REFS = KEYS[2]
+            local LENGTH = tonumber(ARGV[1])
+
+            -- Set hash fields
+            for i = 1, LENGTH do
+                local field = ARGV[i * 2]
+                local value = ARGV[i * 2 + 1]
+                redis.call('hset', CACHE_KEY, field, value)
+            end
+
+            -- Remove expiry (persist the key)
+            redis.call('persist', CACHE_KEY)
+
+            -- Increment reference count
+            redis.call('hincrby', COUNT_REFS, CACHE_KEY, 1)
+
+            return 1
+            """;
+
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _local = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
         private readonly Dictionary<Service.Redis, LoadedLuaScript> _updateHashExpiryScripts = new Dictionary<Service.Redis, LoadedLuaScript>();
+        private readonly Dictionary<Service.Redis, LoadedLuaScript> _setHashFieldScripts = new Dictionary<Service.Redis, LoadedLuaScript>();
+        private readonly Dictionary<Service.Redis, LoadedLuaScript> _setHashFieldsScripts = new Dictionary<Service.Redis, LoadedLuaScript>();
         private readonly RedisService _redisService;
         private readonly RedisDistributedLockService _distributedLock;
         private readonly WriteBackService _dbExecuteService;
@@ -393,17 +443,61 @@ namespace Http.Reepository
         /// <returns>A formatted lock key string for distributed locking.</returns>
         private static string GetLockKey(TKey key)
         {
-            return $"lock:{key.GetRedisKey()}:{key.GetRedisField()}";
+            return GetLockKey(key.GetRedisKey());
+        }
+
+        private static string GetLockKey(RedisKey key)
+        {
+            return $"lock:{key}";
         }
 
         /// <summary>
-        /// Generates a distributed lock key for the entire Redis key (used for cache synchronization).
+        /// Synchronizes cache from database by loading entities and updating both Redis and local cache.
+        /// Retrieves entities from database, stores them in Redis using Lua script, and updates local cache.
         /// </summary>
-        /// <param name="redisKey">The Redis key to generate a lock key for.</param>
-        /// <returns>A formatted lock key string for distributed locking.</returns>
-        private static string GetRedisKeyLockKey(RedisKey redisKey)
+        /// <param name="redis">The Redis service instance for cache operations.</param>
+        /// <param name="key">The key identifying the entities to retrieve and cache.</param>
+        /// <returns>A collection of entities loaded from the database.</returns>
+        private async Task<IEnumerable<TModel>> SyncCacheFromDatabase(Service.Redis redis, TKey key)
         {
-            return $"lock:{redisKey}";
+            var mysqlValues = await base.GetAll(key);
+            if (mysqlValues.Any())
+            {
+                foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
+                {
+                    var dataGroup = g.ToDictionary(x => x.GetRedisField(), x => x);
+                    var values = new List<RedisValue>
+                        {
+                            (int)Const.CacheTimeToLive.TotalSeconds,
+                            dataGroup.Count
+                        };
+                    foreach (var (k, v) in dataGroup)
+                    {
+                        values.Add(k);
+                        values.Add(JsonConvert.SerializeObject(v));
+                    }
+
+                    if (!_updateHashExpiryScripts.TryGetValue(redis, out var script))
+                    {
+                        script = LuaScript.Prepare(UpdateHashExpiryScript).Load(redis.GetServer());
+                        _updateHashExpiryScripts[redis] = script;
+                    }
+
+                    var result = await redis.Connection.ScriptEvaluateAsync(script.Hash,
+                        keys:
+                        [
+                            g.Key,
+                                new RedisKey(Const.ReferenceCountKey)
+                        ],
+                        values: values.ToArray());
+
+                    _local.AddOrUpdate(g.Key,
+                        new ConcurrentDictionary<string, string>(g.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x))),
+                        (key, oldValue) => new ConcurrentDictionary<string, string>(g.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x))));
+                }
+            }
+
+            return mysqlValues;
         }
 
         /// <summary>
@@ -429,7 +523,8 @@ namespace Http.Reepository
                 var redisValues = await redis.Connection.JsonHashGetAllAsync<TModel>(key.GetRedisKey());
                 if (redisValues.Count > 0)
                 {
-                    _local[key.GetRedisKey()] = new ConcurrentDictionary<string, string>(redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value)));
+                    var newCache = new ConcurrentDictionary<string, string>(redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value)));
+                    _local.AddOrUpdate(key.GetRedisKey(), newCache, (k, oldValue) => newCache);
                     if (redisValues.TryGetValue(key.GetRedisField(), out var redisValue))
                     {
                         if (redisValue.Deleted)
@@ -439,53 +534,25 @@ namespace Http.Reepository
                     }
                 }
 
-                var mysqlValues = await base.GetAll(key);
-                if (mysqlValues.Any())
+                var mysqlValues = await SyncCacheFromDatabase(redis, key);
+                var found = mysqlValues.FirstOrDefault(x =>
                 {
-                    foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
-                    {
-                        var dataGroup = g.ToDictionary(x => x.GetRedisField(), x => x);
-                        var values = new List<RedisValue>
-                        {
-                            (int)Const.CacheTimeToLive.TotalSeconds,
-                            dataGroup.Count
-                        };
-                        foreach (var (k, v) in dataGroup)
-                        {
-                            values.Add(k);
-                            values.Add(JsonConvert.SerializeObject(v));
-                        }
-                        var result = await redis.ScriptEvaluateAsync("update_hash_expiry.lua",
-                            keys:
-                            [
-                                g.Key,
-                                new RedisKey(Const.ReferenceCountKey)
-                            ],
-                            values: values.ToArray());
-                        _local[g.Key] = new ConcurrentDictionary<string, string>(g.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x)));
-                    }
+                    if (x.GetRedisKey() != key.GetRedisKey())
+                        return false;
 
-                    var value = mysqlValues.FirstOrDefault(x =>
-                    {
-                        if (x.GetRedisKey() != key.GetRedisKey())
-                            return false;
+                    if (x.GetRedisField() != key.GetRedisField())
+                        return false;
 
-                        if (x.GetRedisField() != key.GetRedisField())
-                            return false;
+                    return true;
+                });
 
-                        return true;
-                    });
+                if (found == null)
+                    return null;
 
-                    if (value == null)
-                        return null;
+                if (found.Deleted)
+                    return null;
 
-                    if (value.Deleted)
-                        return null;
-
-                    return value;
-                }
-
-                return null;
+                return found;
             }
         }
 
@@ -506,47 +573,13 @@ namespace Http.Reepository
                 var redisValues = await redis.Connection.JsonHashGetAsync<TModel>(key.GetRedisKey());
                 if (redisValues.Count > 0)
                 {
-                    _local[key.GetRedisKey()] = new ConcurrentDictionary<string, string>(redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value)));
+                    var newCache = new ConcurrentDictionary<string, string>(redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value)));
+                    _local.AddOrUpdate(key.GetRedisKey(), newCache, (k, oldValue) => newCache);
                     return redisValues.Values.Where(x => !x.Deleted);
                 }
 
-                var mysqlValues = await base.GetAll(key);
-                if (mysqlValues.Any())
-                {
-                    foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
-                    {
-                        var dataGroup = g.ToDictionary(x => new RedisValue(x.GetRedisField()), x => x);
-                        var values = new List<RedisValue>
-                        {
-                            (int)Const.CacheTimeToLive.TotalSeconds,
-                            dataGroup.Count
-                        };
-                        foreach (var (k, v) in dataGroup)
-                        {
-                            values.Add(k);
-                            values.Add(JsonConvert.SerializeObject(v));
-                        }
-                        if (!_updateHashExpiryScripts.TryGetValue(redis, out var script))
-                        {
-                            script = LuaScript.Prepare(UpdateHashExpiryScript).Load(redis.GetServer());
-                            _updateHashExpiryScripts[redis] = script;
-                        }
-
-                        var result = await redis.Connection.ScriptEvaluateAsync(script.Hash,
-                            keys:
-                            [
-                                g.Key,
-                                new RedisKey(Const.ReferenceCountKey)
-                            ],
-                            values: values.ToArray());
-
-                        _local[g.Key] = new ConcurrentDictionary<string, string>(g.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x)));
-                    }
-
-                    return mysqlValues.Where(x => !x.Deleted);
-                }
-
-                return [];
+                var mysqlValues = await SyncCacheFromDatabase(redis, key);
+                return mysqlValues.Where(x => !x.Deleted);
             }
         }
 
@@ -564,32 +597,43 @@ namespace Http.Reepository
                 value.UpdatedDate = DateTime.Now;
 
                 var redisKey = value.GetRedisKey();
-                var redis = _redisService.Redis(value.GetHash()).Connection;
+                var redis = _redisService.Redis(value.GetHash());
 
                 // Use distributed lock to ensure cache synchronization
-                await using (await _distributedLock.Lock(GetRedisKeyLockKey(redisKey)))
+                await using (await _distributedLock.Lock(GetLockKey(value)))
                 {
                     // Check if Redis key exists
-                    var keyExists = await redis.KeyExistsAsync(redisKey);
+                    var keyExists = await redis.Connection.KeyExistsAsync(redisKey);
                     if (!keyExists)
                     {
-                        // Redis key doesn't exist, clear local cache and call GetAll to synchronize cache with database
+                        // Redis key doesn't exist, clear local cache and call SyncCacheFromDatabase to synchronize cache with database
                         _local.TryRemove(redisKey, out _);
-                        await GetAll((TKey)(object)value);
+                        await SyncCacheFromDatabase(redis, value);
                     }
+
+                    // Add the new entity to Redis cache using Lua script
+                    if (!_setHashFieldScripts.TryGetValue(redis, out var script))
+                    {
+                        script = LuaScript.Prepare(SetHashFieldScript).Load(redis.GetServer());
+                        _setHashFieldScripts[redis] = script;
+                    }
+
+                    await redis.Connection.ScriptEvaluateAsync(script.Hash,
+                        keys:
+                        [
+                            redisKey,
+                            new RedisKey(Const.ReferenceCountKey)
+                        ],
+                        values:
+                        [
+                            value.GetRedisField(),
+                            JsonConvert.SerializeObject(value)
+                        ]);
+
+                    // Update local cache (thread-safe with ConcurrentDictionary)
+                    var localValues = _local.GetOrAdd(redisKey, _ => new ConcurrentDictionary<string, string>());
+                    localValues[value.GetRedisField()] = JsonConvert.SerializeObject(value);
                 }
-
-                // Add the new entity to Redis cache (outside of distributed lock)
-                await redis.TransactAsync(cmd =>
-                {
-                    cmd.Enqueue(trans => trans.JsonHashSetAsync(redisKey, value.GetRedisField(), value));
-                    cmd.Enqueue(trans => trans.KeyExpireAsync(redisKey, expiry: (TimeSpan?)null));
-                    cmd.Enqueue(trans => trans.HashIncrementAsync(Const.ReferenceCountKey, redisKey.ToString()));
-                });
-
-                // Update local cache
-                var localValues = _local.GetOrAdd(redisKey, _ => new ConcurrentDictionary<string, string>());
-                localValues[value.GetRedisField()] = JsonConvert.SerializeObject(value);
 
                 var sql = OnUpsert(value);
                 await _dbExecuteService.Post(value.GetHash(), sql, redisKey.ToString());
@@ -617,41 +661,50 @@ namespace Http.Reepository
                 foreach (var hashGroup in values.GroupBy(x => x.GetHash()))
                 {
                     var hash = hashGroup.Key;
-                    var redis = _redisService.Redis(hash).Connection;
+                    var redis = _redisService.Redis(hash);
 
-                    foreach (var modGroup in hashGroup.GroupBy(x =>
+                    // Process keyGroups sequentially
+                    foreach (var keyGroup in hashGroup.GroupBy(x => x.GetRedisKey()))
                     {
-                        var h = x.GetHash();
-                        return h != null ? (int)(h.Value % _redisService.ShardSize) : -1;
-                    }))
-                    {
-                        // Process keyGroups in parallel for better performance
-                        var keyGroups = modGroup.GroupBy(x => x.GetRedisKey()).ToList();
-                        await Task.WhenAll(keyGroups.Select(async keyGroup =>
+                        var redisKey = keyGroup.Key;
+                        var valueSet = keyGroup.ToDictionary(x => x.GetRedisField(), x => x);
+
+                        // Use distributed lock to ensure cache synchronization
+                        await using (await _distributedLock.Lock(GetLockKey(redisKey)))
                         {
-                            var redisKey = keyGroup.Key;
-                            var valueSet = keyGroup.ToDictionary(x => x.GetRedisField(), x => x);
-
-                            // Use distributed lock to ensure cache synchronization
-                            await using (await _distributedLock.Lock(GetRedisKeyLockKey(redisKey)))
+                            // Check if Redis key exists
+                            var keyExists = await redis.Connection.KeyExistsAsync(redisKey);
+                            if (!keyExists)
                             {
-                                // Check if Redis key exists
-                                var keyExists = await redis.KeyExistsAsync(redisKey);
-                                if (!keyExists)
-                                {
-                                    // Redis key doesn't exist, clear local cache and call GetAll to synchronize cache with database
-                                    _local.TryRemove(redisKey, out _);
-                                    await GetAll((TKey)(object)keyGroup.First());
-                                }
+                                // Redis key doesn't exist, clear local cache and call SyncCacheFromDatabase to synchronize cache with database
+                                _local.TryRemove(redisKey, out _);
+                                await SyncCacheFromDatabase(redis, keyGroup.First());
                             }
 
-                            // Add the new entities to Redis cache (outside of distributed lock)
-                            await redis.TransactAsync(cmd =>
+                            // Add the new entities to Redis cache using Lua script
+                            if (!_setHashFieldsScripts.TryGetValue(redis, out var script))
                             {
-                                cmd.Enqueue(trans => trans.JsonHashSetAsync(redisKey, valueSet));
-                                cmd.Enqueue(trans => trans.KeyExpireAsync(redisKey, expiry: (TimeSpan?)null));
-                                cmd.Enqueue(trans => trans.HashIncrementAsync(Const.ReferenceCountKey, redisKey.ToString()));
-                            });
+                                script = LuaScript.Prepare(SetHashFieldsScript).Load(redis.GetServer());
+                                _setHashFieldsScripts[redis] = script;
+                            }
+
+                            var scriptValues = new List<RedisValue>
+                            {
+                                valueSet.Count
+                            };
+                            foreach (var (field, val) in valueSet)
+                            {
+                                scriptValues.Add(field);
+                                scriptValues.Add(JsonConvert.SerializeObject(val));
+                            }
+
+                            await redis.Connection.ScriptEvaluateAsync(script.Hash,
+                                keys:
+                                [
+                                    redisKey,
+                                    new RedisKey(Const.ReferenceCountKey)
+                                ],
+                                values: scriptValues.ToArray());
 
                             // Update local cache (thread-safe with ConcurrentDictionary)
                             var localValues = _local.GetOrAdd(redisKey, _ => new ConcurrentDictionary<string, string>());
@@ -659,10 +712,11 @@ namespace Http.Reepository
                             {
                                 localValues[field] = JsonConvert.SerializeObject(val);
                             }
+                        }
 
-                            var sql = OnUpsert(hashGroup.ToArray());
-                            await _dbExecuteService.Post(hash, sql, redisKey.ToString());
-                        }));
+                        // Execute OnUpsert and Post for each keyGroup (same hash connection, but grouped by redisKey)
+                        var sql = OnUpsert(keyGroup.ToArray());
+                        await _dbExecuteService.Post(hash, sql, redisKey.ToString());
                     }
                 }
             });
