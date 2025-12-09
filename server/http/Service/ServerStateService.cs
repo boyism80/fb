@@ -136,7 +136,7 @@ namespace Http.Service
                 };
                 var key = new HeartBeatKey { Service = service, Id = id };
                 var json = JsonConvert.SerializeObject(config);
-                
+
                 await redis.Connection.StringSetAsync(key.Key, json);
                 await redis.Connection.KeyExpireAsync(key.Key, TimeSpan.FromSeconds(5));
 

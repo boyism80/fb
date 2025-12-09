@@ -72,9 +72,15 @@ module.exports = {
 cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
 cluster_formation.k8s.address_type = hostname
 cluster_formation.k8s.service_name = ${headlessServiceName}
-cluster_formation.node_cleanup.interval = 10
+cluster_formation.node_cleanup.interval = 60
 cluster_formation.node_cleanup.only_log_warning = true
 cluster_partition_handling = autoheal
+`,
+                        "rabbitmq-env.conf": `# Limit Erlang VM scheduler threads to reduce CPU overhead
+# +S N:M format: N schedulers, M online schedulers
+# Limit to 8 schedulers to prevent excessive thread creation
+# Note: Logical processors are limited via Kubernetes CPU resource limits
+RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
 `
                     },
                 })
@@ -119,6 +125,16 @@ cluster_partition_handling = autoheal
                                         { name: "management", containerPort: 15672 },
                                         { name: "epmd", containerPort: 4369 },
                                     ],
+                                    resources: {
+                                        limits: {
+                                            cpu: "8",
+                                            memory: "4Gi"
+                                        },
+                                        requests: {
+                                            cpu: "8",
+                                            memory: "4Gi"
+                                        }
+                                    },
                                     env: [
                                         { name: "RABBITMQ_DEFAULT_USER", value: "fb" },
                                         { name: "RABBITMQ_DEFAULT_PASS", value: "admin" },
@@ -132,6 +148,7 @@ cluster_partition_handling = autoheal
                                     command: ["/bin/bash", "-c"],
                                     args: [pulumi.interpolate`
 export RABBITMQ_NODENAME=rabbit@$MY_POD_NAME.${headlessServiceName}.$MY_POD_NAMESPACE.svc.cluster.local
+export RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
 exec docker-entrypoint.sh rabbitmq-server
 `],
                                         volumeMounts: [

@@ -134,7 +134,7 @@ namespace Http.Reepository
                 VALUES (@sender, @title, @contents, @expireDate, 0, NOW(), NOW());
                 SELECT LAST_INSERT_ID();";
 
-            await using var conn = _dbContext.Connection(0);
+            await using var conn = _dbContext.Connection(-1);
             var id = await conn.QueryFirstOrDefaultAsync<uint>(query, new { sender, title, contents, expireDate });
 
             var systemMail = new SystemMail

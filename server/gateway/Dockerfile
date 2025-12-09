@@ -13,7 +13,7 @@ RUN cmake --build . --config ${BUILD_TYPE} --parallel
 
 FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
 WORKDIR /app
-COPY --from=build /app/gateway/build/app .
+COPY --from=build /app/gateway/build/app ./gateway
 
 WORKDIR /app
-CMD ["./app"]
+CMD ["./gateway"]

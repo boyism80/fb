@@ -1,5 +1,4 @@
 using Fb.Model.EnumValue;
-using Http;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using Protocol = fb.protocol._internal;

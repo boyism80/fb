@@ -1,4 +1,3 @@
-using Http.Service;
 using Log.Repository;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

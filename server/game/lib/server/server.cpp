@@ -14,6 +14,8 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     maps(*this, fb::config<uint32_t>("id")),
     listener(*this),
     characters(*this),
+    system_mail(*this),
+    storage_pending(*this),
     clans([](const std::shared_ptr<clan>& clan) -> uint32_t {
         return clan->id();
     }),
@@ -207,8 +209,6 @@ async::task<void> server::on_start()
     this->bind_timer<fb::game::handler::timer::heart_beat>(1s);
     this->bind_timer<fb::game::handler::timer::update_time>(1s);
     this->bind_timer<fb::game::handler::timer::announce>(std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
-    this->bind_timer<fb::game::handler::timer::system_mail_timer>(30s);
-    this->bind_timer<fb::game::handler::timer::storage_pending_timer>(15s);
     // log_flush timer removed - logs are now published immediately to RabbitMQ
 
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
@@ -217,8 +217,6 @@ async::task<void> server::on_start()
     this->bind_thread_timer<fb::game::handler::timer::gear_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
-    this->bind_thread_timer<fb::game::handler::timer::system_mail_distribution_timer>(5s);
-    this->bind_thread_timer<fb::game::handler::timer::storage_pending_distribution_timer>(5s);
 
     this->bind_npc_interaction<fb::game::handler::npc_interaction::sell>();
     this->bind_npc_interaction<fb::game::handler::npc_interaction::buy>();
@@ -256,6 +254,12 @@ async::task<void> server::on_start()
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>("fb.clan");
     this->handler.amqp.bind<fb::game::handler::amqp::write_mail>("fb.mail");
     this->handler.amqp.bind<fb::game::handler::amqp::ban>("fb.ban");
+
+    // Fetch system mails on server startup
+    co_await this->system_mail.fetch();
+
+    // Fetch storage pending on server startup
+    co_await this->storage_pending.fetch();
 }
 
 bool server::decrypt_policy(uint8_t cmd) const

@@ -9,7 +9,7 @@ namespace Http.Model
         public short Index { get; set; }
         public short Parts { get; set; }
         public short Stored { get; set; }
-        public uint GetHash() => Owner;
+        public uint? GetHash() => Owner;
 
         public RedisKey GetRedisKey() => $"cache:item:{Owner}";
 

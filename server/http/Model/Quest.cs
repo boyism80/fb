@@ -6,7 +6,7 @@ namespace Http.Model
     {
         public required uint User { get; set; }
         public uint Id { get; set; }
-        public uint GetHash() => User;
+        public uint? GetHash() => User;
         public RedisKey GetRedisKey() => $"cache:quest:{User}";
         public RedisValue GetRedisField() => Id.ToString();
     }

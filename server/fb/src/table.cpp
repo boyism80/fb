@@ -21,10 +21,9 @@ bool fb::table::load(const std::string& path, Json::Value& json)
     return true;
 }
 
-uint32_t
-fb::table::load(const std::string& path, const handle_callback& callback, const handle_error& error, bool async)
+uint32_t fb::table::load(const std::string& path, const handle_callback& callback, const handle_error& error, bool async)
 {
-    Json::Value data;
+    auto data = Json::Value{};
     if (fb::table::load(path, data) == false)
         return 0;
 
@@ -48,8 +47,8 @@ fb::table::load(const std::string& path, const handle_callback& callback, const 
     auto fn = [&]() {
         while (true)
         {
-            auto key  = Json::Value();
-            auto data = Json::Value();
+            auto key  = Json::Value{};
+            auto data = Json::Value{};
 
             bool queue_empty = work.write([&key, &data](auto& w) -> bool {
                 if (w.queue.empty())

@@ -485,7 +485,7 @@ bool trade::lock()
                 auto item = owner->items[index];
                 if (item != nullptr)
                 {
-                    Json::Value item_data;
+                    auto item_data         = Json::Value{};
                     item_data["item_id"]   = static_cast<Json::Int64>(item->based<fb::model::item>().id);
                     item_data["item_name"] = UTF8(item->name(), PLATFORM::WINDOWS);
                     item_data["count"]     = static_cast<Json::Int64>(item->trade_count());
@@ -501,7 +501,7 @@ bool trade::lock()
                 auto item = you->items[index];
                 if (item != nullptr)
                 {
-                    Json::Value item_data;
+                    auto item_data         = Json::Value{};
                     item_data["item_id"]   = static_cast<Json::Int64>(item->based<fb::model::item>().id);
                     item_data["item_name"] = UTF8(item->name(), PLATFORM::WINDOWS);
                     item_data["count"]     = static_cast<Json::Int64>(item->trade_count());

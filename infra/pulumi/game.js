@@ -110,7 +110,7 @@ module.exports = function () {
                                                 timeoutSeconds: 3,
                                                 failureThreshold: 3
                                             },
-                                            command: ["./app"],
+                                            command: ["./game"],
                                             args: ["-c", "config.json"],
                                             volumeMounts: [{
                                                 name: "config-volume",

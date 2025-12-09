@@ -5,6 +5,7 @@
 #include <json/json.h>
 #include <sstream>
 #include <unordered_map>
+#include <unordered_set>
 #include <memory>
 #include <vector>
 #include <utility>
@@ -38,9 +39,9 @@ async::task<void> storage_pending_fetch::handle(const internal_resp::GetStorageP
 
         if (!dto.attachments.empty())
         {
-            Json::Value        json;
-            Json::Reader       reader;
-            std::istringstream stream(dto.attachments);
+            auto json   = Json::Value{};
+            auto reader = Json::Reader{};
+            auto stream = std::istringstream(dto.attachments);
             if (reader.parse(stream, json) && json.isArray())
             {
                 pending.attachments.reserve(json.size());
@@ -60,9 +61,37 @@ async::task<void> storage_pending_fetch::handle(const internal_resp::GetStorageP
     if (dao.empty())
         co_return;
 
-    this->server.poll.storage_pending.write([&dao](auto& buffer) {
-        buffer.reserve(buffer.size() + dao.size());
-        buffer.insert(buffer.end(), std::make_move_iterator(dao.begin()), std::make_move_iterator(dao.end()));
+    this->server.storage_pending.write([&dao](auto& buffer) {
+        // Append only non-duplicate items (map automatically handles duplicates by key)
+        for (auto& item : dao)
+        {
+            if (buffer.find(item.id) == buffer.end())
+            {
+                buffer[item.id] = std::move(item);
+            }
+        }
+    });
+
+    // Notify all connected characters about new storage pending
+    auto& server = this->server;
+    server.characters.write([&server](auto& characters) {
+        characters.foreach_enqueue([&server](auto& ch) -> async::task<void> {
+            server.storage_pending.read([&ch](const auto& pending_map) {
+                if (pending_map.empty())
+                    return;
+
+                // Convert map to vector for apply_pending
+                auto pending = std::vector<fb::game::storage_box::pending_box>();
+                pending.reserve(pending_map.size());
+                for (const auto& [id, box] : pending_map)
+                {
+                    pending.push_back(box);
+                }
+
+                ch->storage_box.apply_pending(pending);
+            });
+            co_return;
+        });
     });
 
     co_return;

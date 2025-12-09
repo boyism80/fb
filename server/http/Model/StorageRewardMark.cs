@@ -6,7 +6,7 @@ namespace Http.Model
     {
         public required uint User { get; set; }
         public string PendingId { get; set; } = string.Empty;
-        public uint GetHash() => User;
+        public uint? GetHash() => User;
 
         public RedisKey GetRedisKey() => $"cache:storage:mark:{User}";
 

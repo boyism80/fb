@@ -154,6 +154,14 @@ namespace Http.Service
             return new MySqlConnection(_configuration.GetConnectionString($"MySql:{id % SharedDbSize}"));
         }
 
+        public MySqlConnection Connection(uint? id)
+        {
+            if (id == null)
+                return Connection(-1);
+            else
+                return Connection(id.Value);
+        }
+
         /// <summary>
         /// Creates multiple MySQL connections grouped by shard for the specified ID list.
         /// Groups IDs by their target shard to optimize database operations.
@@ -167,6 +175,24 @@ namespace Http.Service
                 throw new Exception("shard db size cannot be zero");
 
             foreach (var g in idList.Distinct().GroupBy(id => (int)(id % SharedDbSize)))
+            {
+                yield return (Connection(g.Key), g.ToArray());
+            }
+        }
+
+        public IEnumerable<(MySqlConnection Connection, uint?[] IdList)> Connections(IEnumerable<uint?> idList)
+        {
+            if (SharedDbSize == 0)
+                throw new Exception("shard db size cannot be zero");
+
+            var groups = idList.Distinct().GroupBy(id =>
+            {
+                if (id == null)
+                    return -1;
+                else
+                    return (int)(id.Value % SharedDbSize);
+            });
+            foreach (var g in groups)
             {
                 yield return (Connection(g.Key), g.ToArray());
             }
@@ -187,6 +213,25 @@ namespace Http.Service
                 throw new Exception("shard db size cannot be zero");
 
             foreach (var g in values.GroupBy(value => (int)(selector(value) % SharedDbSize)))
+            {
+                yield return (Connection(g.Key), g.ToArray());
+            }
+        }
+
+        public IEnumerable<(MySqlConnection Connection, T[] Values)> Connections<T>(IEnumerable<T> values, Func<T, uint?> selector)
+        {
+            if (SharedDbSize == 0)
+                throw new Exception("shard db size cannot be zero");
+
+            var groups = values.GroupBy(value =>
+            {
+                if (selector(value) == null)
+                    return -1;
+                else
+                    return (int)(selector(value).Value % SharedDbSize);
+            });
+
+            foreach (var g in groups)
             {
                 yield return (Connection(g.Key), g.ToArray());
             }

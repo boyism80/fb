@@ -5,7 +5,7 @@ namespace Http.Model
     public class ClanKey : BaseModel, IRedisValueKey
     {
         public required uint Id { get; set; }
-        public uint GetHash() => Id;
+        public uint? GetHash() => Id;
 
         public RedisKey GetRedisKey() => $"cache:clan:{Id}";
     }

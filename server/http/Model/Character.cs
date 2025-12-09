@@ -5,7 +5,7 @@ namespace Http.Model
     public class CharacterKey : BaseModel, IRedisValueKey
     {
         public required uint Id { get; set; }
-        public uint GetHash() => Id;
+        public uint? GetHash() => Id;
 
         public RedisKey GetRedisKey() => $"cache:user:{Id}";
     }

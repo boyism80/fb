@@ -125,7 +125,8 @@ public:
         try
         {
             // Declare queue with auto-generated name and bind with specified route key
-            auto& queue = this->_amqp->declare_queue(true, false, false, false, this->_owner.threads);
+            // auto_delete: true to automatically delete queue when connection closes
+            auto& queue = this->_amqp->declare_queue(true, false, true, false, this->_owner.threads);
             queue.bind(exchange, route_key);
 
             auto& route = queue.route();

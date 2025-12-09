@@ -42,9 +42,9 @@ async::task<void> storage_pending_personal::handle(const internal_resp::GetStora
 
             if (!dto.attachments.empty())
             {
-                Json::Value        json;
-                Json::Reader       reader;
-                std::istringstream stream(dto.attachments);
+                auto json   = Json::Value{};
+                auto reader = Json::Reader{};
+                auto stream = std::istringstream(dto.attachments);
                 if (reader.parse(stream, json) && json.isArray())
                 {
                     pending.attachments.reserve(json.size());
