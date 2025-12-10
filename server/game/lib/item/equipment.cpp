@@ -225,10 +225,12 @@ std::string fb::game::equipment::tip_message() const
     auto&             model = this->based<fb::model::equipment>();
 
     sstream << this->name() << std::endl;
-    sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(model.durability) << ' ' << std::fixed << std::setprecision(1)
-            << (this->_durability / (float)model.durability) * 100 << '%' << std::endl;
+    sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(model.durability) << ' '
+            << std::fixed << std::setprecision(1) << (this->_durability / (float)model.durability) * 100 << '%'
+            << std::endl;
     sstream << this->mid_message();
-    sstream << "무장:   " << std::to_string(model.defensive_physical) << " Hit:  " << std::to_string(model.hit) << " Dam:  " << std::to_string(model.damage);
+    sstream << "무장:   " << std::to_string(model.defensive_physical) << " Hit:  " << std::to_string(model.hit)
+            << " Dam:  " << std::to_string(model.damage);
 
     if (model.base_hp)
         sstream << std::left << std::setw(14) << std::endl << "체력치 상승:" << std::to_string(model.base_hp);

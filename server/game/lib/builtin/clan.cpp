@@ -116,7 +116,10 @@ int builtin::clan::builtin_title(lua_State* L)
     }
     else if (argc == 3)
     {
-        static auto fn = [](fb::lua::context* lua, fb::game::server* server, std::weak_ptr<fb::game::character> weak_ptr, std::string title) -> async::task<void> {
+        static auto fn = [](fb::lua::context*                  lua,
+                            fb::game::server*                  server,
+                            std::weak_ptr<fb::game::character> weak_ptr,
+                            std::string                        title) -> async::task<void> {
             try
             {
                 auto shared_ptr = weak_ptr.lock();
@@ -178,7 +181,10 @@ int builtin::clan::builtin_join(lua_State* L)
         return 1;
     }
 
-    static auto fn = [](fb::lua::context* lua, fb::game::server* server, std::weak_ptr<fb::game::character> weak_ptr, const std::string& target_name) -> async::task<void> {
+    static auto fn = [](fb::lua::context*                  lua,
+                        fb::game::server*                  server,
+                        std::weak_ptr<fb::game::character> weak_ptr,
+                        const std::string&                 target_name) -> async::task<void> {
         try
         {
             auto shared_ptr = weak_ptr.lock();
@@ -220,7 +226,9 @@ int builtin::clan::builtin_leave(lua_State* L)
     if (leaver == nullptr)
         return 0;
 
-    static auto fn = [](fb::lua::context* lua, fb::game::server* server, std::weak_ptr<fb::game::character> weak_ptr) -> async::task<void> {
+    static auto fn = [](fb::lua::context*                  lua,
+                        fb::game::server*                  server,
+                        std::weak_ptr<fb::game::character> weak_ptr) -> async::task<void> {
         try
         {
             auto shared_ptr = weak_ptr.lock();
@@ -264,7 +272,10 @@ int builtin::clan::builtin_kick(lua_State* L)
 
     auto target = lua->tostring(3);
 
-    static auto fn = [](fb::lua::context* lua, fb::game::server* server, std::weak_ptr<fb::game::character> weak_ptr, const std::string& target) -> async::task<void> {
+    static auto fn = [](fb::lua::context*                  lua,
+                        fb::game::server*                  server,
+                        std::weak_ptr<fb::game::character> weak_ptr,
+                        const std::string&                 target) -> async::task<void> {
         try
         {
             auto shared_ptr = weak_ptr.lock();
@@ -315,8 +326,11 @@ int builtin::clan::builtin_change_role(lua_State* L)
     auto target = lua->tostring(3);
     auto role   = lua->toenum(4, CLAN_ROLE::MATE);
 
-    static auto fn =
-        [](fb::lua::context* lua, fb::game::server* server, std::weak_ptr<fb::game::character> weak_ptr, const std::string& target, CLAN_ROLE role) -> async::task<void> {
+    static auto fn = [](fb::lua::context*                  lua,
+                        fb::game::server*                  server,
+                        std::weak_ptr<fb::game::character> weak_ptr,
+                        const std::string&                 target,
+                        CLAN_ROLE                          role) -> async::task<void> {
         try
         {
             auto shared_ptr = weak_ptr.lock();
@@ -358,7 +372,11 @@ int builtin::clan::builtin_message(lua_State* L)
     auto type    = lua->toenum(3, MESSAGE_TYPE::NOTIFY);
     auto clan_id = clan->id();
 
-    static auto fn = [](fb::lua::context* lua, fb::game::server* server, uint32_t clan_id, const std::string& message, MESSAGE_TYPE type) -> async::task<void> {
+    static auto fn = [](fb::lua::context*  lua,
+                        fb::game::server*  server,
+                        uint32_t           clan_id,
+                        const std::string& message,
+                        MESSAGE_TYPE       type) -> async::task<void> {
         try
         {
             co_await server->broadcast_clan(clan_id, message, type);

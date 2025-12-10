@@ -3,8 +3,10 @@
 #include <fb/bot/integration/gateway_controller.h>
 
 using namespace std::chrono_literals;
+using namespace fb::bot::integration;
 
-namespace fb::bot::integration {
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
 
 communication_test::communication_test(game_bot_controller& controller) :
     bot_integration_test(controller, REQUIRED_BOTS) // Spawn required bots
@@ -68,8 +70,8 @@ async::task<bool> communication_test::test_normal_chat()
     const std::string test_message = "Hello, this is a normal chat test!";
 
     // Send normal chat message from bot1 and wait for chat response
-    std::ignore = co_await bot1->request<fb::protocol::game::response::chat>(
-        fb::protocol::game::request::chat(false, test_message),
+    std::ignore = co_await bot1->request<game_resp::chat>(
+        game_reqs::chat(false, test_message),
         [test_message, bot1](auto& response) -> bool {
             // Check for decorated format: "name: message"
             std::string expected_text = std::format("{}: {}", bot1->name(), test_message);
@@ -93,8 +95,8 @@ async::task<bool> communication_test::test_shout_chat()
     const std::string test_message = "HELLO EVERYONE, THIS IS A SHOUT TEST!";
 
     // Send shout message from bot1 and wait for chat response
-    std::ignore = co_await bot1->request<fb::protocol::game::response::chat>(
-        fb::protocol::game::request::chat(true, test_message),
+    std::ignore = co_await bot1->request<game_resp::chat>(
+        game_reqs::chat(true, test_message),
         [test_message, bot1](auto& response) -> bool {
             // Check for decorated format: "name! message"
             std::string expected_text = std::format("{}! {}", bot1->name(), test_message);
@@ -118,8 +120,8 @@ async::task<bool> communication_test::test_whisper()
     const std::string test_message = "This is a secret whisper message!";
 
     // Send whisper from bot1 to bot2 and wait for confirmation message
-    std::ignore = co_await bot1->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::whisper(bot2->name(), test_message),
+    std::ignore = co_await bot1->request<game_resp::message>(
+        game_reqs::whisper(bot2->name(), test_message),
         [test_message, bot2](auto& response) -> bool {
             if (response.type != MESSAGE_TYPE::NOTIFY)
                 return false;
@@ -148,9 +150,8 @@ async::task<bool> communication_test::test_whisper_block()
     auto& bot2 = bots[1];
 
     // First, disable whisper option for bot2 (block whispers)
-    auto&& disable_resp = co_await bot2->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::update_option(OPTION::WHISPER, false),
-        DEFAULT_TIMEOUT);
+    auto&& disable_resp =
+        co_await bot2->request<game_resp::message>(game_reqs::update_option(OPTION::WHISPER, false), DEFAULT_TIMEOUT);
 
     fb::logger::debug("Whisper option disabled for bot2: {}", disable_resp.text);
 
@@ -159,8 +160,8 @@ async::task<bool> communication_test::test_whisper_block()
     try
     {
         // Send whisper from bot1 to bot2 (should fail with error message)
-        std::ignore = co_await bot1->request<fb::protocol::game::response::message>(
-            fb::protocol::game::request::whisper(bot2->name(), test_message),
+        std::ignore = co_await bot1->request<game_resp::message>(
+            game_reqs::whisper(bot2->name(), test_message),
             [bot2](auto& response) -> bool {
                 // Look for error message indicating whisper is blocked
                 return response.type == MESSAGE_TYPE::NOTIFY && response.text.find("귓속말 거부") != std::string::npos;
@@ -176,9 +177,8 @@ async::task<bool> communication_test::test_whisper_block()
     }
 
     // Re-enable whisper option for bot2
-    std::ignore = co_await bot2->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::update_option(OPTION::WHISPER, false),
-        DEFAULT_TIMEOUT);
+    std::ignore =
+        co_await bot2->request<game_resp::message>(game_reqs::update_option(OPTION::WHISPER, false), DEFAULT_TIMEOUT);
 
     fb::logger::debug("Whisper option re-enabled for bot2");
 
@@ -189,5 +189,3 @@ std::string communication_test::name() const
 {
     return "Communication Test";
 }
-
-} // namespace fb::bot::integration

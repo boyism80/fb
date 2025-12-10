@@ -9,6 +9,12 @@ using namespace fb::game;
 using namespace std::chrono_literals;
 using table = fb::model::table;
 
+namespace game_resp     = fb::protocol::game::response;
+namespace game_reqs     = fb::protocol::game::request;
+namespace internal      = fb::protocol::internal;
+namespace internal_resp = fb::protocol::internal::response;
+namespace internal_reqs = fb::protocol::internal::request;
+
 server::server(boost::asio::io_context& io_context, uint16_t port) :
     fb::acceptor<character>(io_context, "GAME", port),
     maps(*this, fb::config<uint32_t>("id")),
@@ -208,7 +214,8 @@ async::task<void> server::on_start()
 
     this->bind_timer<fb::game::handler::timer::heart_beat>(1s);
     this->bind_timer<fb::game::handler::timer::update_time>(1s);
-    this->bind_timer<fb::game::handler::timer::announce>(std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
+    this->bind_timer<fb::game::handler::timer::announce>(
+        std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
     // log_flush timer removed - logs are now published immediately to RabbitMQ
 
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
@@ -305,7 +312,7 @@ async::task<bool> server::on_disconnected(fb::socket<character>& socket)
     try
     {
         co_await this->save(*ch);
-        std::ignore = co_await this->http.post("internal", "/in-game/logout", Logout{ch->name()});
+        std::ignore = co_await this->http.post("internal", "/in-game/logout", internal_reqs::Logout{ch->name()});
     }
     catch (std::exception& e)
     {
@@ -381,12 +388,13 @@ uint8_t server::id() const
     return fb::config<uint8_t>("id");
 }
 
-Service server::service() const
+internal::Service server::service() const
 {
-    return Service::Game;
+    return internal::Service::Game;
 }
 
-async::task<void> server::send(object& object, const fb::protocol::header& header, fb::game::scope scope, bool exclude_self, bool encrypt)
+async::task<void>
+server::send(object& object, const fb::protocol::header& header, fb::game::scope scope, bool exclude_self, bool encrypt)
 {
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);
@@ -508,13 +516,15 @@ async::task<void> server::save(character& ch)
     auto achievements = std::vector<internal::Achievement>();
     for (auto& [model, achievement] : ch.achievements)
     {
-        achievements.push_back(internal::Achievement{ch.id, model, achievement->text, achievement->icon, achievement->color});
+        achievements.push_back(
+            internal::Achievement{ch.id, model, achievement->text, achievement->icon, achievement->color});
     }
 
     auto quests = std::vector<internal::Quest>();
     for (auto& [qid, quest] : ch.quests)
     {
-        quests.push_back(internal::Quest{ch.id, qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
+        quests.push_back(
+            internal::Quest{ch.id, qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
     // Get system mail users from character's in-memory collection
@@ -528,8 +538,11 @@ async::task<void> server::save(character& ch)
         if (smu.expire_date.has_value() && smu.expire_date.value() < now)
             continue;
 
-        received_system_mails.push_back(
-            internal::SystemMailUser{ch.id, mail_id, smu.read, smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value().to_string()) : std::nullopt});
+        received_system_mails.push_back(internal::SystemMailUser{
+            ch.id,
+            mail_id,
+            smu.read,
+            smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value().to_string()) : std::nullopt});
     }
     auto        storage_boxes   = std::vector<internal::StorageBox>();
     const auto& character_boxes = ch.storage_box.entries();
@@ -566,7 +579,8 @@ async::task<void> server::save(character& ch)
                                    box.message,
                                    attachments_json,
                                    box.received,
-                                   box.expire_date.has_value() ? std::make_optional(box.expire_date->to_string()) : std::nullopt);
+                                   box.expire_date.has_value() ? std::make_optional(box.expire_date->to_string())
+                                                               : std::nullopt);
     }
 
     auto        storage_reward_marks = std::vector<internal::StorageRewardMark>();
@@ -582,10 +596,17 @@ async::task<void> server::save(character& ch)
 
     std::ignore = co_await this->http.post("internal",
                                            "/in-game/save",
-                                           Save{ch.to_protocol(), items, spells, achievements, quests, received_system_mails, storage_boxes, storage_reward_marks});
+                                           internal_reqs::Save{ch.to_protocol(),
+                                                               items,
+                                                               spells,
+                                                               achievements,
+                                                               quests,
+                                                               received_system_mails,
+                                                               storage_boxes,
+                                                               storage_reward_marks});
 
     co_await this->threads.switching(weak);
-    ch.send(fb_resp::save());
+    ch.send(game_resp::save());
 }
 
 void server::save()
@@ -647,7 +668,10 @@ async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE typ
     {
     case BROADCAST_TYPE::GLOBAL:
     {
-        auto&& resp = co_await this->http.post("internal", "/in-game/broadcast", Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
+        auto&& resp = co_await this->http.post(
+            "internal",
+            "/in-game/broadcast",
+            internal_reqs::Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
         co_await this->on_broadcast(resp);
     }
     break;
@@ -703,9 +727,13 @@ async::task<void> server::update_status()
 {
     try
     {
-        co_await this->http.post("internal",
-                                 "/server/heartbeat",
-                                 request::Heartbeat{internal::Service::Game, this->id(), this->name(), fb::config<std::string>("ip"), fb::config<uint16_t>("port")});
+        std::ignore = co_await this->http.post("internal",
+                                               "/server/heartbeat",
+                                               internal_reqs::Heartbeat{internal::Service::Game,
+                                                                        this->id(),
+                                                                        this->name(),
+                                                                        fb::config<std::string>("ip"),
+                                                                        fb::config<uint16_t>("port")});
     }
     catch (const std::exception& e)
     {
@@ -729,7 +757,9 @@ void server::update_time()
     this->_time = updated;
 }
 
-async::task<bool> server::npc_interaction(character& ch, const std::string& message, const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
+async::task<bool> server::npc_interaction(character&                                         ch,
+                                          const std::string&                                 message,
+                                          const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
 {
     ch.assert_thread();
 

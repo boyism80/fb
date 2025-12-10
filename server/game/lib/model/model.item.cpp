@@ -8,6 +8,8 @@
 #include <shared_mutex>
 #include <mutex>
 
+using namespace fb::model::enum_value;
+
 ITEM_ATTRIBUTE fb::model::item::attr() const
 {
     auto attr = ITEM_ATTRIBUTE::NONE;

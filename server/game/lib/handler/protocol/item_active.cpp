@@ -3,11 +3,13 @@
 
 using namespace fb::game::handler::protocol;
 
+namespace game_reqs = fb::protocol::game::request;
+
 item_active::item_active(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::item_active>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::item_active>(server)
 { }
 
-async::task<bool> item_active::handle(fb::socket<character>& session, fb::protocol::game::request::item_active& request)
+async::task<bool> item_active::handle(fb::socket<character>& session, game_reqs::item_active& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)

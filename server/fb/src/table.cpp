@@ -21,7 +21,8 @@ bool fb::table::load(const std::string& path, Json::Value& json)
     return true;
 }
 
-uint32_t fb::table::load(const std::string& path, const handle_callback& callback, const handle_error& error, bool async)
+uint32_t
+fb::table::load(const std::string& path, const handle_callback& callback, const handle_error& error, bool async)
 {
     auto data = Json::Value{};
     if (fb::table::load(path, data) == false)

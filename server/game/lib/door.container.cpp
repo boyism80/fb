@@ -75,8 +75,10 @@ fb::game::door* door::container::find(const character& ch) const
 
 door::container::iterator::iterator(const door::container::base_iterator& i, const container& container) :
     door::container::base_iterator(i),
-    pair(i != static_cast<const super&>(container).end() ? std::make_optional<std::pair<fb::model::point16_t, door&>>(container.map.point(i->first), *i->second.get())
-                                                         : std::nullopt)
+    pair(i != static_cast<const super&>(container).end()
+             ? std::make_optional<std::pair<fb::model::point16_t, door&>>(container.map.point(i->first),
+                                                                          *i->second.get())
+             : std::nullopt)
 { }
 
 std::pair<fb::model::point16_t, fb::game::door&> door::container::iterator::operator* ()
@@ -84,10 +86,13 @@ std::pair<fb::model::point16_t, fb::game::door&> door::container::iterator::oper
     return this->pair.value();
 }
 
-door::container::const_iterator::const_iterator(const door::container::const_base_iterator& i, const container& container) :
+door::container::const_iterator::const_iterator(const door::container::const_base_iterator& i,
+                                                const container&                            container) :
     door::container::const_base_iterator(i),
-    pair(i != static_cast<const super&>(container).end() ? std::make_optional<std::pair<fb::model::point16_t, door&>>(container.map.point(i->first), *i->second.get())
-                                                         : std::nullopt)
+    pair(i != static_cast<const super&>(container).end()
+             ? std::make_optional<std::pair<fb::model::point16_t, door&>>(container.map.point(i->first),
+                                                                          *i->second.get())
+             : std::nullopt)
 { }
 
 const std::pair<fb::model::point16_t, fb::game::door&> door::container::const_iterator::operator* () const

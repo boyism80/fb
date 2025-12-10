@@ -4,7 +4,7 @@
 #include <fb/game/object.h>
 #include <fb/game/map.h>
 
-namespace fb::game::handler::timer {
+using namespace fb::game::handler::timer;
 
 soliloquy_timer::soliloquy_timer(fb::game::server& server) :
     fb::handler::timer<fb::game::server>(server)
@@ -35,5 +35,3 @@ async::task<void> soliloquy_timer::handle(const fb::model::datetime& now, std::t
 
     co_return;
 }
-
-} // namespace fb::game::handler::timer

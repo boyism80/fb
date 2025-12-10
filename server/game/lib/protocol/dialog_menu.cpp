@@ -3,7 +3,11 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-dialog_menu::dialog_menu(const fb::model::object& obj, const std::vector<std::string>& menus, const std::string& message, uint32_t oid, fb::game::dialog::interaction interaction) :
+dialog_menu::dialog_menu(const fb::model::object&        obj,
+                         const std::vector<std::string>& menus,
+                         const std::string&              message,
+                         uint32_t                        oid,
+                         fb::game::dialog::interaction   interaction) :
     portrait(fb::game::portrait_factory::create(obj)),
     menus(menus),
     message(message),

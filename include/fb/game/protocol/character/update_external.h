@@ -11,6 +11,9 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+
+using namespace fb::game;
+
 template <bool Detailed>
 struct preset_serializer
 {
@@ -117,14 +120,22 @@ public:
 public:
 #ifndef BOT
     update_external(const fb::game::character& ch, const fb::game::object& to) :
-        preset(preset_serializer<Detailed>{
-            .oid         = ch.oid(),
-            .position    = ch.position(),
-            .direction   = ch.direction(),
-            .head_marker = head_marker(ch, to),
-            .name        = ch.name(),
-            .portrait =
-                character_portrait(ch.sex(), ch.state(), ch.look(), ch.color(), std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt)})
+        preset(preset_serializer<Detailed>{.oid         = ch.oid(),
+                                           .position    = ch.position(),
+                                           .direction   = ch.direction(),
+                                           .head_marker = head_marker(ch, to),
+                                           .name        = ch.name(),
+                                           .portrait    = character_portrait(ch.sex(),
+                                                                          ch.state(),
+                                                                          ch.look(),
+                                                                          ch.color(),
+                                                                          std::nullopt,
+                                                                          std::nullopt,
+                                                                          std::nullopt,
+                                                                          std::nullopt,
+                                                                          std::nullopt,
+                                                                          std::nullopt,
+                                                                          std::nullopt)})
     {
         if (ch.items.armor() != nullptr)
         {

@@ -3,11 +3,13 @@
 
 using namespace fb::game::handler::protocol;
 
+namespace game_reqs = fb::protocol::game::request;
+
 whisper::whisper(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::whisper>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::whisper>(server)
 { }
 
-async::task<bool> whisper::handle(fb::socket<character>& session, fb::protocol::game::request::whisper& request)
+async::task<bool> whisper::handle(fb::socket<character>& session, game_reqs::whisper& request)
 {
     auto me = session.data();
     if (me->inited() == false)

@@ -4,6 +4,9 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
+
 user_list_test::user_list_test(game_bot_controller& controller) :
     bot_integration_test(controller, 21) // Use 21 bots (4x5+1) for user list testing
 { }
@@ -56,11 +59,13 @@ async::task<bool> user_list_test::test_scenario_1()
             }
         }
 
-        auto&& resp = co_await bot->request<fb::protocol::game::response::user_list>(fb::protocol::game::request::user_list(), DEFAULT_TIMEOUT);
+        auto&& resp = co_await bot->request<game_resp::user_list>(game_reqs::user_list(), DEFAULT_TIMEOUT);
 
         if (resp.users.size() < bots.size())
         {
-            throw std::runtime_error(std::format("User list scenario 1 failed: user count mismatch: {} < {}", resp.users.size(), bots.size()));
+            throw std::runtime_error(std::format("User list scenario 1 failed: user count mismatch: {} < {}",
+                                                 resp.users.size(),
+                                                 bots.size()));
         }
 
         for (auto& user : resp.users)

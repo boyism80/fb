@@ -71,7 +71,8 @@ int builtin::item::builtin_rename(lua_State* L)
     auto  argc   = lua->argc();
     auto  item   = lua->touserdata<fb::game::item>(1);
     auto& model  = item->based<fb::model::item>();
-    auto  weapon = model.attr(ITEM_ATTRIBUTE::WEAPON) ? item->weak_from_this_as<fb::game::weapon>() : std::weak_ptr<fb::game::weapon>();
+    auto  weapon = model.attr(ITEM_ATTRIBUTE::WEAPON) ? item->weak_from_this_as<fb::game::weapon>()
+                                                      : std::weak_ptr<fb::game::weapon>();
 
     if (weapon.expired())
     {

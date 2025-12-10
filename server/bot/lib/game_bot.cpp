@@ -3,6 +3,9 @@
 
 using namespace fb::bot;
 
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
+
 game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id) :
     bot<game_bot>(bot_controller, id)
 {
@@ -491,7 +494,7 @@ async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model:
     for (int i = 0; i < step; i++)
     {
         this->_direction = direction;
-        this->send(fb::protocol::game::request::move{direction, this->_oid, after});
+        this->send(game_reqs::move{direction, this->_oid, after});
         switch (direction)
         {
         case DIRECTION::LEFT:
@@ -516,7 +519,8 @@ async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model:
     co_await this->thread()->sleep(delay);
 }
 
-async::task<void> game_bot::map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
+async::task<void>
+game_bot::map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/맵이동 {} {} {}", map_name, x, y);
     auto map     = table::map.name2map(map_name);
@@ -530,8 +534,8 @@ async::task<void> game_bot::map_move(const std::string& map_name, uint16_t x, ui
     }
     else if (this->_map != map->id)
     {
-        std::ignore = co_await this->request<fb::protocol::game::response::map_config>(
-            fb::protocol::game::request::chat{false, command},
+        std::ignore = co_await this->request<game_resp::map_config>(
+            game_reqs::chat{false, command},
             [map](auto& resp) -> bool {
                 return resp.id == map->id;
             },
@@ -539,8 +543,8 @@ async::task<void> game_bot::map_move(const std::string& map_name, uint16_t x, ui
     }
     else
     {
-        std::ignore = co_await this->request<fb::protocol::game::response::position>(
-            fb::protocol::game::request::chat{false, command},
+        std::ignore = co_await this->request<game_resp::position>(
+            game_reqs::chat{false, command},
             [x, y](auto& resp) -> bool {
                 return resp.abs.x == x && resp.abs.y == y;
             },
@@ -551,19 +555,20 @@ async::task<void> game_bot::map_move(const std::string& map_name, uint16_t x, ui
 async::task<void> game_bot::change_level(uint8_t level, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/레벨바꾸기 {}", level);
-    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, command},
         [level](auto& resp) -> bool {
             return ENUM_IN(resp.level, UPDATE_STATE_LEVEL::BASED) && resp.ch_level == level;
         },
         timeout);
 }
 
-async::task<void> game_bot::change_stats(uint8_t str, uint8_t dex, uint8_t intelligence, std::chrono::milliseconds timeout)
+async::task<void>
+game_bot::change_stats(uint8_t str, uint8_t dex, uint8_t intelligence, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/스탯바꾸기 {} {} {}", str, dex, intelligence);
-    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, command},
         [str, dex, intelligence](auto& resp) -> bool {
             return resp.ch_strength == str && resp.ch_dexterity == dex && resp.ch_intelligence == intelligence;
         },
@@ -573,8 +578,8 @@ async::task<void> game_bot::change_stats(uint8_t str, uint8_t dex, uint8_t intel
 async::task<void> game_bot::change_str(uint8_t str, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/힘바꾸기 {}", str);
-    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, command},
         [str](auto& resp) -> bool {
             return resp.ch_strength == str;
         },
@@ -584,8 +589,8 @@ async::task<void> game_bot::change_str(uint8_t str, std::chrono::milliseconds ti
 async::task<void> game_bot::change_dex(uint8_t dex, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/민첩바꾸기 {}", dex);
-    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, command},
         [dex](auto& resp) -> bool {
             return resp.ch_dexterity == dex;
         },
@@ -595,8 +600,8 @@ async::task<void> game_bot::change_dex(uint8_t dex, std::chrono::milliseconds ti
 async::task<void> game_bot::change_int(uint8_t intelligence, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/지력바꾸기 {}", intelligence);
-    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, command},
         [intelligence](auto& resp) -> bool {
             return resp.ch_intelligence == intelligence;
         },
@@ -606,8 +611,8 @@ async::task<void> game_bot::change_int(uint8_t intelligence, std::chrono::millis
 async::task<void> game_bot::change_sex(SEX sex, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/성별바꾸기 {}", (uint8_t)sex);
-    std::ignore  = co_await this->request<fb::protocol::game::response::update_external<true>>(
-        fb::protocol::game::request::chat{false, command},
+    std::ignore  = co_await this->request<game_resp::update_external<true>>(
+        game_reqs::chat{false, command},
         [sex](auto& resp) -> bool {
             return resp.sex == sex;
         },
@@ -617,8 +622,8 @@ async::task<void> game_bot::change_sex(SEX sex, std::chrono::milliseconds timeou
 async::task<void> game_bot::change_base_hp(uint32_t hp, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/체력바꾸기 {}", hp);
-    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, command},
         [hp](auto& resp) -> bool {
             return resp.ch_base_hp == hp;
         },
@@ -628,8 +633,8 @@ async::task<void> game_bot::change_base_hp(uint32_t hp, std::chrono::millisecond
 async::task<void> game_bot::change_base_mp(uint32_t mp, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/마력바꾸기 {}", mp);
-    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, command},
         [mp](auto& resp) -> bool {
             return resp.ch_base_mp == mp;
         },
@@ -639,8 +644,8 @@ async::task<void> game_bot::change_base_mp(uint32_t mp, std::chrono::millisecond
 async::task<void> game_bot::change_hp(uint32_t hp, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/현재체력 {}", hp);
-    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, command},
         [hp](auto& resp) -> bool {
             return resp.ch_hp == hp;
         },
@@ -650,8 +655,8 @@ async::task<void> game_bot::change_hp(uint32_t hp, std::chrono::milliseconds tim
 async::task<void> game_bot::change_mp(uint32_t mp, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/현재마력 {}", mp);
-    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, command},
         [mp](auto& resp) -> bool {
             return resp.ch_mp == mp;
         },
@@ -665,8 +670,8 @@ async::task<void> game_bot::direction(DIRECTION direction, std::chrono::millisec
 
     try
     {
-        std::ignore = co_await this->request<fb::protocol::game::response::direction>(
-            fb::protocol::game::request::direction{direction},
+        std::ignore = co_await this->request<game_resp::direction>(
+            game_reqs::direction{direction},
             [direction](auto& resp) -> bool {
                 return resp.value == direction;
             },
@@ -684,9 +689,9 @@ async::task<void> game_bot::process_random_pattern(const fb::model::datetime& no
     if (now < this->_next_action_time)
         co_return;
 
-    static std::random_device       device;
-    static std::mt19937             gen(device());
-    std::uniform_int_distribution<> dist(0, this->_pattern_params.size() - 1);
+    static auto device = std::random_device();
+    static auto gen    = std::mt19937(device());
+    static auto dist   = std::uniform_int_distribution<>(0, this->_pattern_params.size() - 1);
 
     auto& pattern  = this->_pattern_params.at(dist(gen));
     auto  datetime = fb::model::datetime{now};
@@ -698,10 +703,10 @@ async::task<void> game_bot::process_random_pattern(const fb::model::datetime& no
 
 async::task<void> game_bot::pattern_chat()
 {
-    static std::random_device              device;
-    static std::mt19937                    gen(device());
-    static std::vector<std::string>        messages{"안녕하세요", "반갑습니다."};
-    static std::uniform_int_distribution<> dist(0, messages.size() - 1);
+    static auto device   = std::random_device();
+    static auto gen      = std::mt19937(device());
+    static auto messages = std::vector<std::string>{"안녕하세요", "반갑습니다."};
+    static auto dist     = std::uniform_int_distribution<>(0, messages.size() - 1);
 
     auto& message = messages.at(dist(gen));
     this->chat(message);
@@ -710,19 +715,19 @@ async::task<void> game_bot::pattern_chat()
 
 async::task<void> game_bot::pattern_attack()
 {
-    this->send(fb::protocol::game::request::attack());
+    this->send(game_reqs::attack());
     co_return;
 }
 
 async::task<void> game_bot::pattern_direction()
 {
-    static std::vector<DIRECTION>          directions{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
-    static std::random_device              device;
-    static std::mt19937                    gen(device());
-    static std::uniform_int_distribution<> dist(0, directions.size() - 1);
+    static std::vector<DIRECTION> directions{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
+    static auto                   device = std::random_device();
+    static auto                   gen    = std::mt19937(device());
+    static auto                   dist   = std::uniform_int_distribution<>(0, directions.size() - 1);
 
     auto direction = directions.at(dist(gen));
-    this->send(fb::protocol::game::request::direction{direction});
+    this->send(game_reqs::direction{direction});
 
     // Update internal direction state
     this->_direction = direction;
@@ -732,13 +737,13 @@ async::task<void> game_bot::pattern_direction()
 
 async::task<void> game_bot::pattern_move()
 {
-    static std::vector<DIRECTION>          directions{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
-    static std::random_device              device;
-    static std::mt19937                    gen(device());
-    static std::uniform_int_distribution<> dist(0, directions.size() - 1);
+    static std::vector<DIRECTION> directions{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
+    static auto                   device = std::random_device();
+    static auto                   gen    = std::mt19937(device());
+    static auto                   dist   = std::uniform_int_distribution<>(0, directions.size() - 1);
 
     auto direction = directions.at(dist(gen));
-    this->send(fb::protocol::game::request::move{direction, this->_oid, this->_position});
+    this->send(game_reqs::move{direction, this->_oid, this->_position});
 
     // Update internal direction state
     this->_direction = direction;
@@ -766,33 +771,33 @@ async::task<void> game_bot::pattern_move()
 
 async::task<void> game_bot::pattern_loot()
 {
-    this->send(fb::protocol::game::request::loot{false});
+    this->send(game_reqs::loot{false});
     co_return;
 }
 
 async::task<void> game_bot::pattern_emotion()
 {
-    static std::random_device              device;
-    static std::mt19937                    gen(device());
-    static std::uniform_int_distribution<> dist(0, 0xFF - 0x0B);
+    static auto device = std::random_device();
+    static auto gen    = std::mt19937(device());
+    static auto dist   = std::uniform_int_distribution<>(0, 0xFF - 0x0B);
 
-    this->send(fb::protocol::game::request::emotion{(uint8_t)dist(gen)});
+    this->send(game_reqs::emotion{(uint8_t)dist(gen)});
     co_return;
 }
 
 async::task<void> game_bot::pattern_bulletin_sections()
 {
-    std::random_device              device;
-    std::mt19937                    gen(device());
-    std::uniform_int_distribution<> dist(0, 1);
+    static auto device = std::random_device();
+    static auto gen    = std::mt19937(device());
+    static auto dist   = std::uniform_int_distribution<>(0, 1);
 
-    this->send(fb::protocol::game::request::bulletin(BULLETIN_ACTION::SECTIONS));
+    this->send(game_reqs::bulletin(BULLETIN_ACTION::SECTIONS));
 
     auto section = (uint32_t)dist(gen);
-    this->send(fb::protocol::game::request::bulletin(BULLETIN_ACTION::ARTICLES, section));
-    this->send(fb::protocol::game::request::bulletin(BULLETIN_ACTION::ARTICLE, section, 0));
-    this->send(fb::protocol::game::request::bulletin(BULLETIN_ACTION::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
-    this->send(fb::protocol::game::request::bulletin(BULLETIN_ACTION::DELETE, section, 0));
+    this->send(game_reqs::bulletin(BULLETIN_ACTION::ARTICLES, section));
+    this->send(game_reqs::bulletin(BULLETIN_ACTION::ARTICLE, section, 0));
+    this->send(game_reqs::bulletin(BULLETIN_ACTION::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
+    this->send(game_reqs::bulletin(BULLETIN_ACTION::DELETE, section, 0));
     co_return;
 }
 
@@ -875,19 +880,19 @@ uint8_t game_bot::get_spell_slot_by_name(const std::string& name) const
 
 void game_bot::remove_buffs()
 {
-    this->send(fb::protocol::game::request::chat{false, "/버프해제"});
+    this->send(game_reqs::chat{false, "/버프해제"});
 }
 
 void game_bot::chat(const std::string& message)
 {
-    this->send(fb::protocol::game::request::chat{false, message});
+    this->send(game_reqs::chat{false, message});
 }
 
 async::task<void> game_bot::create_item(const std::string& item_name, uint32_t count, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/아이템생성 {} {}", item_name, count);
-    std::ignore  = co_await this->request<fb::protocol::game::response::item_update>(
-        fb::protocol::game::request::chat{false, command},
+    std::ignore  = co_await this->request<game_resp::item_update>(
+        game_reqs::chat{false, command},
         [item_name, count](auto& resp) -> bool {
             return resp.name.starts_with(item_name) && resp.count == count;
         },
@@ -902,8 +907,8 @@ async::task<game_bot::simple_npc> game_bot::create_npc(const std::string& npc_na
         throw std::runtime_error(std::format("Failed to find NPC model for {}", npc_name));
 
     auto   look = model->look;
-    auto&& resp = co_await this->request<fb::protocol::game::response::update>(
-        fb::protocol::game::request::chat{false, command},
+    auto&& resp = co_await this->request<game_resp::update>(
+        game_reqs::chat{false, command},
         [bot_pos = this->position(), look](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
@@ -929,8 +934,8 @@ async::task<game_bot::simple_npc> game_bot::create_npc(const std::string& npc_na
 async::task<void> game_bot::change_money(uint32_t amount, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/금전 {}", amount);
-    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, command},
         [amount](auto& resp) -> bool {
             return resp.ch_money == amount;
         },
@@ -939,8 +944,8 @@ async::task<void> game_bot::change_money(uint32_t amount, std::chrono::milliseco
 
 async::task<void> game_bot::drop_item(uint8_t index, bool all, std::chrono::milliseconds timeout)
 {
-    std::ignore = co_await this->request<fb::protocol::game::response::item_remove>(
-        fb::protocol::game::request::item_drop(index + 1, all),
+    std::ignore = co_await this->request<game_resp::item_remove>(
+        game_reqs::item_drop(index + 1, all),
         [index, all](auto& resp) -> bool {
             return resp.type == ITEM_DELETE_TYPE::DROP && resp.index == index;
         },
@@ -950,8 +955,8 @@ async::task<void> game_bot::drop_item(uint8_t index, bool all, std::chrono::mill
 async::task<void> game_bot::drop_money(uint32_t amount, std::chrono::milliseconds timeout)
 {
     auto before = this->money();
-    std::ignore = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::item_drop_money(amount),
+    std::ignore = co_await this->request<game_resp::update_internal>(
+        game_reqs::item_drop_money(amount),
         [before, amount](auto& resp) -> bool {
             return resp.ch_money == before - amount;
         },
@@ -986,8 +991,8 @@ async::task<bool> game_bot::equip(uint8_t slot, std::chrono::milliseconds timeou
         }
 
         auto   prefix = prefix_map.at(item_model->type);
-        auto&& resp   = co_await this->request<fb::protocol::game::response::message>(
-            fb::protocol::game::request::item_active(slot),
+        auto&& resp   = co_await this->request<game_resp::message>(
+            game_reqs::item_active(slot),
             [prefix](auto& resp) -> bool {
                 return resp.type == MESSAGE_TYPE::STATE;
             },
@@ -1005,7 +1010,7 @@ async::task<bool> game_bot::unequip(EQUIPMENT_PARTS parts, std::chrono::millisec
 {
     try
     {
-        std::ignore = co_await this->request<fb::protocol::game::response::item_update>(fb::protocol::game::request::item_inactive(parts), timeout);
+        std::ignore = co_await this->request<game_resp::item_update>(game_reqs::item_inactive(parts), timeout);
 
         co_return true;
     }
@@ -1023,21 +1028,22 @@ async::task<void> game_bot::sleep(std::chrono::milliseconds timeout)
 async::task<void> game_bot::change_class(const std::string& class_name, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/직업바꾸기 {}", class_name);
-    std::ignore  = co_await this->request<fb::protocol::game::response::update_internal>(fb::protocol::game::request::chat{false, command}, timeout);
+    std::ignore  = co_await this->request<game_resp::update_internal>(game_reqs::chat{false, command}, timeout);
 }
 
-async::task<spawned_monster_info> game_bot::spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot>                               bot,
-                                                                         const std::string&                                               monster_name,
-                                                                         uint16_t                                                         x,
-                                                                         uint16_t                                                         y,
-                                                                         std::function<bool(const fb::protocol::game::response::update&)> validator,
-                                                                         std::chrono::milliseconds                                        timeout)
+async::task<spawned_monster_info>
+game_bot::spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot>            bot,
+                                       const std::string&                            monster_name,
+                                       uint16_t                                      x,
+                                       uint16_t                                      y,
+                                       std::function<bool(const game_resp::update&)> validator,
+                                       std::chrono::milliseconds                     timeout)
 {
 
-    auto&& spawn_response =
-        co_await this->request<fb::protocol::game::response::update>(fb::protocol::game::request::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
-                                                                     validator,
-                                                                     timeout);
+    auto&& spawn_response = co_await this->request<game_resp::update>(
+        game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
+        validator,
+        timeout);
 
     if (spawn_response.objects_data.empty())
     {
@@ -1053,12 +1059,13 @@ async::task<spawned_monster_info> game_bot::spawn_monster_with_validator(std::sh
     co_return monster_info;
 }
 
-async::task<spawned_monster_info> game_bot::spawn_monster(const std::string& monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
+async::task<spawned_monster_info>
+game_bot::spawn_monster(const std::string& monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
 {
     auto expected_look = table::mob.name2mob(monster_name)->look;
 
-    auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
-        fb::protocol::game::request::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
+    auto&& spawn_response = co_await this->request<game_resp::update>(
+        game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
         [expected_look](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
@@ -1082,12 +1089,14 @@ async::task<spawned_monster_info> game_bot::spawn_monster(const std::string& mon
     co_return monster_info;
 }
 
-async::task<void> game_bot::spawn_monsters_bulk(const std::string& monster_name, uint8_t range, std::chrono::milliseconds timeout)
+async::task<void> game_bot::spawn_monsters_bulk(const std::string&        monster_name,
+                                                uint8_t                   range,
+                                                std::chrono::milliseconds timeout)
 {
     auto expected_look = table::mob.name2mob(monster_name)->look;
 
-    std::ignore = co_await this->request<fb::protocol::game::response::update>(
-        fb::protocol::game::request::chat{false, std::format("/몬스터범위생성 {} {}", monster_name, range)},
+    std::ignore = co_await this->request<game_resp::update>(
+        game_reqs::chat{false, std::format("/몬스터범위생성 {} {}", monster_name, range)},
         [expected_look](auto& resp) -> bool {
             for (const auto& mob : resp.objects_data)
             {
@@ -1099,11 +1108,12 @@ async::task<void> game_bot::spawn_monsters_bulk(const std::string& monster_name,
         timeout);
 }
 
-async::task<std::vector<spawned_monster_info>> game_bot::spawn_monsters_relative_with_validator(std::shared_ptr<fb::bot::game_bot>                               bot,
-                                                                                                const std::string&                                               monster_name,
-                                                                                                const std::vector<std::pair<int, int>>&                          relative_positions,
-                                                                                                std::function<bool(const fb::protocol::game::response::update&)> validator,
-                                                                                                std::chrono::milliseconds                                        timeout)
+async::task<std::vector<spawned_monster_info>>
+game_bot::spawn_monsters_relative_with_validator(std::shared_ptr<fb::bot::game_bot>            bot,
+                                                 const std::string&                            monster_name,
+                                                 const std::vector<std::pair<int, int>>&       relative_positions,
+                                                 std::function<bool(const game_resp::update&)> validator,
+                                                 std::chrono::milliseconds                     timeout)
 {
 
     auto                              caster_pos = this->position();
@@ -1114,14 +1124,15 @@ async::task<std::vector<spawned_monster_info>> game_bot::spawn_monsters_relative
         auto monster_x = caster_pos.x + rel_x;
         auto monster_y = caster_pos.y + rel_y;
 
-        auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
-            fb::protocol::game::request::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
+        auto&& spawn_response = co_await this->request<game_resp::update>(
+            game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
             validator,
             timeout);
 
         if (spawn_response.objects_data.empty())
         {
-            throw std::runtime_error(std::format("Failed to spawn monster {} at ({}, {})", monster_name, monster_x, monster_y));
+            throw std::runtime_error(
+                std::format("Failed to spawn monster {} at ({}, {})", monster_name, monster_x, monster_y));
         }
 
         auto&                mob = spawn_response.objects_data.front();
@@ -1135,9 +1146,10 @@ async::task<std::vector<spawned_monster_info>> game_bot::spawn_monsters_relative
     co_return spawned_monsters;
 }
 
-async::task<std::vector<spawned_monster_info>> game_bot::spawn_monsters_relative(const std::string&                      monster_name,
-                                                                                 const std::vector<std::pair<int, int>>& relative_positions,
-                                                                                 std::chrono::milliseconds               timeout)
+async::task<std::vector<spawned_monster_info>>
+game_bot::spawn_monsters_relative(const std::string&                      monster_name,
+                                  const std::vector<std::pair<int, int>>& relative_positions,
+                                  std::chrono::milliseconds               timeout)
 {
     auto expected_look = table::mob.name2mob(monster_name)->look;
 
@@ -1149,8 +1161,8 @@ async::task<std::vector<spawned_monster_info>> game_bot::spawn_monsters_relative
         auto monster_x = caster_pos.x + rel_x;
         auto monster_y = caster_pos.y + rel_y;
 
-        auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
-            fb::protocol::game::request::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
+        auto&& spawn_response = co_await this->request<game_resp::update>(
+            game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
             [expected_look, monster_x, monster_y](auto& resp) -> bool {
                 if (resp.objects_data.empty())
                     return false;
@@ -1170,7 +1182,8 @@ async::task<std::vector<spawned_monster_info>> game_bot::spawn_monsters_relative
 
         if (spawn_response.objects_data.empty())
         {
-            throw std::runtime_error(std::format("Failed to spawn monster {} at ({}, {})", monster_name, monster_x, monster_y));
+            throw std::runtime_error(
+                std::format("Failed to spawn monster {} at ({}, {})", monster_name, monster_x, monster_y));
         }
 
         auto&                mob = spawn_response.objects_data.front();
@@ -1184,7 +1197,10 @@ async::task<std::vector<spawned_monster_info>> game_bot::spawn_monsters_relative
     co_return spawned_monsters;
 }
 
-async::task<spawned_monster_info> game_bot::spawn_monster_relative(const std::string& monster_name, int relative_x, int relative_y, std::chrono::milliseconds timeout)
+async::task<spawned_monster_info> game_bot::spawn_monster_relative(const std::string&        monster_name,
+                                                                   int                       relative_x,
+                                                                   int                       relative_y,
+                                                                   std::chrono::milliseconds timeout)
 {
     auto expected_look = table::mob.name2mob(monster_name)->look;
 
@@ -1192,8 +1208,8 @@ async::task<spawned_monster_info> game_bot::spawn_monster_relative(const std::st
     auto monster_x  = caster_pos.x + relative_x;
     auto monster_y  = caster_pos.y + relative_y;
 
-    auto&& spawn_response = co_await this->request<fb::protocol::game::response::update>(
-        fb::protocol::game::request::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
+    auto&& spawn_response = co_await this->request<game_resp::update>(
+        game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
         [expected_look, monster_x, monster_y](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
@@ -1213,7 +1229,10 @@ async::task<spawned_monster_info> game_bot::spawn_monster_relative(const std::st
 
     if (spawn_response.objects_data.empty())
     {
-        throw std::runtime_error(std::format("Failed to spawn monster {} at relative position ({}, {})", monster_name, relative_x, relative_y));
+        throw std::runtime_error(std::format("Failed to spawn monster {} at relative position ({}, {})",
+                                             monster_name,
+                                             relative_x,
+                                             relative_y));
     }
 
     auto&                mob = spawn_response.objects_data.front();
@@ -1228,26 +1247,28 @@ async::task<spawned_monster_info> game_bot::spawn_monster_relative(const std::st
 async::task<bool> game_bot::set_max_hp_mp(int max_hp, int max_mp, std::chrono::milliseconds timeout)
 {
 
-    auto hp_result =
-        co_await this->request<fb::protocol::game::response::update_internal>(fb::protocol::game::request::chat{false, std::format("/체력바꾸기 {}", max_hp)}, timeout);
+    auto hp_result = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, std::format("/체력바꾸기 {}", max_hp)},
+        timeout);
 
-    auto mp_result =
-        co_await this->request<fb::protocol::game::response::update_internal>(fb::protocol::game::request::chat{false, std::format("/마력바꾸기 {}", max_mp)}, timeout);
+    auto mp_result = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, std::format("/마력바꾸기 {}", max_mp)},
+        timeout);
 
     co_return true; // Both commands should succeed if bot is valid
 }
 
 async::task<bool> game_bot::set_current_hp_mp(int current_hp, int current_mp, std::chrono::milliseconds timeout)
 {
-    auto hp_result = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, std::format("/현재체력 {}", current_hp)},
+    auto hp_result = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, std::format("/현재체력 {}", current_hp)},
         [current_hp](auto& resp) -> bool {
             return resp.ch_hp == current_hp;
         },
         timeout);
 
-    auto mp_result = co_await this->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::chat{false, std::format("/현재마력 {}", current_mp)},
+    auto mp_result = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, std::format("/현재마력 {}", current_mp)},
         [current_mp](auto& resp) -> bool {
             return resp.ch_mp == current_mp;
         },
@@ -1256,18 +1277,26 @@ async::task<bool> game_bot::set_current_hp_mp(int current_hp, int current_mp, st
     co_return true; // Both commands should succeed if bot is valid
 }
 
-async::task<bool> game_bot::setup_bot_stats(int max_hp, int max_mp, std::optional<int> current_hp, std::optional<int> current_mp, std::chrono::milliseconds timeout)
+async::task<bool> game_bot::setup_bot_stats(int                       max_hp,
+                                            int                       max_mp,
+                                            std::optional<int>        current_hp,
+                                            std::optional<int>        current_mp,
+                                            std::chrono::milliseconds timeout)
 {
     // Set max HP/MP
-    std::ignore = co_await this->request<fb::protocol::game::response::update_internal>(fb::protocol::game::request::chat{false, std::format("/체력바꾸기 {}", max_hp)}, timeout);
+    std::ignore = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, std::format("/체력바꾸기 {}", max_hp)},
+        timeout);
 
-    std::ignore = co_await this->request<fb::protocol::game::response::update_internal>(fb::protocol::game::request::chat{false, std::format("/마력바꾸기 {}", max_mp)}, timeout);
+    std::ignore = co_await this->request<game_resp::update_internal>(
+        game_reqs::chat{false, std::format("/마력바꾸기 {}", max_mp)},
+        timeout);
 
     // Set current HP/MP if specified
     if (current_hp.has_value())
     {
-        std::ignore = co_await this->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat{false, std::format("/현재체력 {}", current_hp.value())},
+        std::ignore = co_await this->request<game_resp::update_internal>(
+            game_reqs::chat{false, std::format("/현재체력 {}", current_hp.value())},
             [current_hp](auto& resp) -> bool {
                 return resp.ch_hp == current_hp.value();
             },
@@ -1276,8 +1305,8 @@ async::task<bool> game_bot::setup_bot_stats(int max_hp, int max_mp, std::optiona
 
     if (current_mp.has_value())
     {
-        std::ignore = co_await this->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat{false, std::format("/현재마력 {}", current_mp.value())},
+        std::ignore = co_await this->request<game_resp::update_internal>(
+            game_reqs::chat{false, std::format("/현재마력 {}", current_mp.value())},
             [current_mp](auto& resp) -> bool {
                 return resp.ch_mp == current_mp.value();
             },
@@ -1289,8 +1318,8 @@ async::task<bool> game_bot::setup_bot_stats(int max_hp, int max_mp, std::optiona
 
 async::task<uint8_t> game_bot::learn_spell(const std::string& spell_name, std::chrono::milliseconds timeout)
 {
-    auto&& resp = co_await this->request<fb::protocol::game::response::spell_update>(
-        fb::protocol::game::request::chat{false, std::format("/마법배우기 {}", spell_name)},
+    auto&& resp = co_await this->request<game_resp::spell_update>(
+        game_reqs::chat{false, std::format("/마법배우기 {}", spell_name)},
         [](auto& resp) -> bool {
             return resp.index != 0xFF;
         },
@@ -1299,7 +1328,8 @@ async::task<uint8_t> game_bot::learn_spell(const std::string& spell_name, std::c
     co_return resp.index;
 }
 
-async::task<size_t> game_bot::learn_spells(const std::vector<std::string>& spell_names, std::chrono::milliseconds timeout)
+async::task<size_t> game_bot::learn_spells(const std::vector<std::string>& spell_names,
+                                           std::chrono::milliseconds       timeout)
 {
 
     size_t learned_count = 0;
@@ -1333,14 +1363,14 @@ async::task<void> game_bot::clear_all_spells(std::chrono::milliseconds timeout)
         last_slot = std::max<uint8_t>(last_slot, slot);
     }
 
-    this->send(fb::protocol::game::request::chat{false, "/마법지우기"});
+    this->send(game_reqs::chat{false, "/마법지우기"});
     co_return; // Command should succeed if bot is valid
 }
 
 async::task<void> game_bot::clear_all_drop_items(std::chrono::milliseconds timeout)
 {
 
-    this->send(fb::protocol::game::request::chat{false, "/아이템삭제"});
+    this->send(game_reqs::chat{false, "/아이템삭제"});
     co_return;
 }
 
@@ -1355,8 +1385,8 @@ async::task<void> game_bot::clear_inventory(std::chrono::milliseconds timeout)
         last_slot = std::max<uint8_t>(last_slot, slot);
     }
 
-    std::ignore = co_await this->request<fb::protocol::game::response::item_remove>(
-        fb::protocol::game::request::chat{false, "/아이템초기화"},
+    std::ignore = co_await this->request<game_resp::item_remove>(
+        game_reqs::chat{false, "/아이템초기화"},
         [last_slot](auto& resp) -> bool {
             return resp.index == last_slot;
         },
@@ -1384,7 +1414,9 @@ async::task<void> game_bot::fill_inventory(const std::string& name, std::chrono:
     co_return;
 }
 
-async::task<void> game_bot::move_bot_back_to_position(const fb::model::point<uint16_t>& original_position, std::chrono::milliseconds interval, std::chrono::milliseconds timeout)
+async::task<void> game_bot::move_bot_back_to_position(const fb::model::point<uint16_t>& original_position,
+                                                      std::chrono::milliseconds         interval,
+                                                      std::chrono::milliseconds         timeout)
 {
     auto thread           = this->thread();
     auto current_position = this->position();
@@ -1394,7 +1426,7 @@ async::task<void> game_bot::move_bot_back_to_position(const fb::model::point<uin
     {
         for (auto i = 0; i < move_y_axis; i++)
         {
-            this->send(fb::protocol::game::request::move{DIRECTION::TOP, this->oid(), current_position});
+            this->send(game_reqs::move{DIRECTION::TOP, this->oid(), current_position});
             co_await thread->sleep(interval);
             current_position.y--;
             this->set_position(current_position);
@@ -1404,7 +1436,8 @@ async::task<void> game_bot::move_bot_back_to_position(const fb::model::point<uin
     }
 }
 
-async::task<void> game_bot::reverse_condition(const std::vector<fb::model::dsl>& conditions, std::chrono::milliseconds timeout)
+async::task<void> game_bot::reverse_condition(const std::vector<fb::model::dsl>& conditions,
+                                              std::chrono::milliseconds          timeout)
 {
     for (auto& condition : conditions)
     {
@@ -1452,7 +1485,8 @@ async::task<void> game_bot::reverse_condition(const std::vector<fb::model::dsl>&
     }
 }
 
-async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& conditions, std::chrono::milliseconds timeout)
+async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& conditions,
+                                            std::chrono::milliseconds          timeout)
 {
     static auto class_names = std::unordered_map<CLASS, std::unordered_map<uint8_t, std::string>>{
         {CLASS::WARRIOR, {{0, "전사"}, {1, "검객"}, {2, "검제"}, {3, "검황"}, {4, "검성"}}  },
@@ -1534,8 +1568,8 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
 
 async::task<void> game_bot::update_internal_info(std::chrono::milliseconds timeout)
 {
-    auto&& resp = co_await this->request<fb::protocol::game::response::internal_info>(
-        fb::protocol::game::request::self_info{},
+    auto&& resp = co_await this->request<game_resp::internal_info>(
+        game_reqs::self_info{},
         [](auto& resp) -> bool {
             return true;
         },
@@ -1544,8 +1578,8 @@ async::task<void> game_bot::update_internal_info(std::chrono::milliseconds timeo
 
 async::task<bool> game_bot::invite_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout)
 {
-    auto&& resp = co_await this->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::group{target->name()},
+    auto&& resp = co_await this->request<game_resp::message>(
+        game_reqs::group{target->name()},
         [](auto& resp) -> bool {
             if (resp.type != MESSAGE_TYPE::STATE)
                 return false;
@@ -1562,8 +1596,8 @@ async::task<bool> game_bot::invite_group(std::shared_ptr<game_bot> target, std::
 
 async::task<bool> game_bot::leave_group(std::chrono::milliseconds timeout)
 {
-    auto&& resp = co_await this->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::group{this->name()},
+    auto&& resp = co_await this->request<game_resp::message>(
+        game_reqs::group{this->name()},
         [](auto& resp) -> bool {
             if (resp.type != MESSAGE_TYPE::STATE)
                 return false;
@@ -1577,8 +1611,8 @@ async::task<bool> game_bot::leave_group(std::chrono::milliseconds timeout)
 
 async::task<bool> game_bot::kick_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout)
 {
-    auto&& resp = co_await this->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::group{target->name()},
+    auto&& resp = co_await this->request<game_resp::message>(
+        game_reqs::group{target->name()},
         [&target](auto& resp) -> bool {
             if (resp.type != MESSAGE_TYPE::STATE)
                 return false;
@@ -1590,7 +1624,9 @@ async::task<bool> game_bot::kick_group(std::shared_ptr<game_bot> target, std::ch
     co_return true;
 }
 
-async::task<bool> game_bot::change_clan_role(std::shared_ptr<game_bot> target, CLAN_ROLE role, std::chrono::milliseconds timeout)
+async::task<bool> game_bot::change_clan_role(std::shared_ptr<game_bot> target,
+                                             CLAN_ROLE                 role,
+                                             std::chrono::milliseconds timeout)
 {
     // Find NPC 낙랑 for clan management
     auto npc = table::npc.name2npc("낙랑");
@@ -1601,7 +1637,7 @@ async::task<bool> game_bot::change_clan_role(std::shared_ptr<game_bot> target, C
 
     // Open NPC dialog
     auto&& resp = co_await this->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::click(1),
+        game_reqs::click(1),
         [&npc](auto& resp) {
             return resp.type == fb::bot::integration::dialog_type::menu && resp.look == npc->look;
         },
@@ -1614,7 +1650,7 @@ async::task<bool> game_bot::change_clan_role(std::shared_ptr<game_bot> target, C
 
     // Select clan management menu
     auto&& resp2 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU, 0, "", 1, 0, "", DIALOG_RESULT::PREV),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::MENU, 0, "", 1, 0, "", DIALOG_RESULT::PREV),
         [&npc](auto& resp) {
             return resp.type == fb::bot::integration::dialog_ext_type::list;
         },
@@ -1627,7 +1663,7 @@ async::task<bool> game_bot::change_clan_role(std::shared_ptr<game_bot> target, C
 
     // Navigate to role change option (menu item 5)
     auto&& resp3 = co_await this->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST, 0, "", 5, 0, "", DIALOG_RESULT::NEXT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::LIST, 0, "", 5, 0, "", DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             return resp.type == fb::bot::integration::dialog_type::input;
         },
@@ -1640,7 +1676,7 @@ async::task<bool> game_bot::change_clan_role(std::shared_ptr<game_bot> target, C
 
     // Enter target name
     auto&& resp4 = co_await this->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT, 0, target->name(), 0, 0, "", DIALOG_RESULT::NEXT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::INPUT, 0, target->name(), 0, 0, "", DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             return resp.type == fb::bot::integration::dialog_type::input;
         },
@@ -1653,7 +1689,13 @@ async::task<bool> game_bot::change_clan_role(std::shared_ptr<game_bot> target, C
 
     // Enter role value
     auto&& resp5 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT, 0, std::to_string(static_cast<uint8_t>(role)), 0, 0, "", DIALOG_RESULT::NEXT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::INPUT,
+                          0,
+                          std::to_string(static_cast<uint8_t>(role)),
+                          0,
+                          0,
+                          "",
+                          DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             return resp.type == fb::bot::integration::dialog_ext_type::normal;
         },
@@ -1678,7 +1720,7 @@ async::task<bool> game_bot::invite_to_clan(std::shared_ptr<game_bot> invitee, st
 
     // Open NPC dialog
     auto&& resp1 = co_await this->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::click(1),
+        game_reqs::click(1),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1697,7 +1739,7 @@ async::task<bool> game_bot::invite_to_clan(std::shared_ptr<game_bot> invitee, st
 
     // Select clan management menu
     auto&& resp2 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU, 0, "", 1, 0, "", DIALOG_RESULT::PREV),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::MENU, 0, "", 1, 0, "", DIALOG_RESULT::PREV),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1718,7 +1760,7 @@ async::task<bool> game_bot::invite_to_clan(std::shared_ptr<game_bot> invitee, st
 
     // Navigate to invite target selection dialog
     auto&& resp3 = co_await this->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST, 0, "", 2, 0, "", DIALOG_RESULT::NEXT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::LIST, 0, "", 2, 0, "", DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1738,7 +1780,7 @@ async::task<bool> game_bot::invite_to_clan(std::shared_ptr<game_bot> invitee, st
     // Send invite to target
     auto&& resp4 = co_await this->request<fb::bot::integration::dialog_bot>(
         invitee,
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT, 0x02, invitee->name(), 0, 0, "", DIALOG_RESULT::NEXT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::INPUT, 0x02, invitee->name(), 0, 0, "", DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1757,7 +1799,7 @@ async::task<bool> game_bot::invite_to_clan(std::shared_ptr<game_bot> invitee, st
 
     // Target accepts clan invite
     auto&& resp5 = co_await invitee->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU, 0, "", 0, 0, "", DIALOG_RESULT::NEXT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::MENU, 0, "", 0, 0, "", DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1777,7 +1819,7 @@ async::task<bool> game_bot::invite_to_clan(std::shared_ptr<game_bot> invitee, st
     // Target confirms clan join completion
     auto&& resp6 = co_await invitee->request<fb::bot::integration::dialog_ext_bot>(
         this->shared_from_this_as<game_bot>(),
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL, 1, "", 0, 0, "", DIALOG_RESULT::QUIT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::NORMAL, 1, "", 0, 0, "", DIALOG_RESULT::QUIT),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1795,11 +1837,11 @@ async::task<bool> game_bot::invite_to_clan(std::shared_ptr<game_bot> invitee, st
     }
 
     // Clan master confirms invite completion
-    this->send(fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::NORMAL, 1, "", 0, 0, "", DIALOG_RESULT::QUIT));
+    this->send(game_reqs::dialog(game_reqs::dialog::INTERACTION::NORMAL, 1, "", 0, 0, "", DIALOG_RESULT::QUIT));
 
     // Verify clan invite result by checking target's clan info
-    auto&& resp = co_await this->request<fb::protocol::game::response::external_info>(
-        fb::protocol::game::request::click(invitee->oid()),
+    auto&& resp = co_await this->request<game_resp::external_info>(
+        game_reqs::click(invitee->oid()),
         [oid = invitee->oid()](auto& resp) {
             return resp.oid == oid;
         },
@@ -1830,7 +1872,7 @@ async::task<bool> game_bot::kick_from_clan(std::shared_ptr<game_bot> target, std
 
     // Open NPC dialog
     auto&& resp1 = co_await this->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::click(1),
+        game_reqs::click(1),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1849,7 +1891,7 @@ async::task<bool> game_bot::kick_from_clan(std::shared_ptr<game_bot> target, std
 
     // Select clan management menu
     auto&& resp2 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU, 0, "", 1, 0, "", DIALOG_RESULT::PREV),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::MENU, 0, "", 1, 0, "", DIALOG_RESULT::PREV),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1870,7 +1912,7 @@ async::task<bool> game_bot::kick_from_clan(std::shared_ptr<game_bot> target, std
 
     // Navigate to kick target selection dialog (menu item 4)
     auto&& resp3 = co_await this->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST, 0, "", 4, 0, "", DIALOG_RESULT::NEXT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::LIST, 0, "", 4, 0, "", DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1889,7 +1931,7 @@ async::task<bool> game_bot::kick_from_clan(std::shared_ptr<game_bot> target, std
 
     // Enter target name
     auto&& resp4 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT, 0, target->name(), 0, 0, "", DIALOG_RESULT::NEXT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::INPUT, 0, target->name(), 0, 0, "", DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1920,7 +1962,7 @@ async::task<bool> game_bot::leave_clan(std::chrono::milliseconds timeout)
 
     // Open NPC dialog
     auto&& resp1 = co_await this->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::click(1),
+        game_reqs::click(1),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1939,7 +1981,7 @@ async::task<bool> game_bot::leave_clan(std::chrono::milliseconds timeout)
 
     // Select clan management menu
     auto&& resp2 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU, 0, "", 1, 0, "", DIALOG_RESULT::PREV),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::MENU, 0, "", 1, 0, "", DIALOG_RESULT::PREV),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1960,7 +2002,7 @@ async::task<bool> game_bot::leave_clan(std::chrono::milliseconds timeout)
 
     // Navigate to leave clan option (menu item 3)
     auto&& resp3 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST, 0, "", 3, 0, "", DIALOG_RESULT::NEXT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::LIST, 0, "", 3, 0, "", DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -1991,7 +2033,7 @@ async::task<bool> game_bot::destroy_clan(std::chrono::milliseconds timeout)
 
     // Open NPC dialog
     auto&& resp1 = co_await this->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::click(1),
+        game_reqs::click(1),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -2010,7 +2052,7 @@ async::task<bool> game_bot::destroy_clan(std::chrono::milliseconds timeout)
 
     // Select clan management menu
     auto&& resp2 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU, 0, "", 1, 0, "", DIALOG_RESULT::PREV),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::MENU, 0, "", 1, 0, "", DIALOG_RESULT::PREV),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -2031,7 +2073,7 @@ async::task<bool> game_bot::destroy_clan(std::chrono::milliseconds timeout)
 
     // Navigate to destroy clan option (menu item 1)
     auto&& resp3 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST, 0, "", 1, 0, "", DIALOG_RESULT::NEXT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::LIST, 0, "", 1, 0, "", DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -2062,7 +2104,7 @@ async::task<bool> game_bot::change_clan_title(const std::string& title, std::chr
 
     // Open NPC dialog
     auto&& resp1 = co_await this->request<fb::bot::integration::dialog_bot>(
-        fb::protocol::game::request::click(1),
+        game_reqs::click(1),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -2081,7 +2123,7 @@ async::task<bool> game_bot::change_clan_title(const std::string& title, std::chr
 
     // Select clan management menu
     auto&& resp2 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::MENU, 0, "", 1, 0, "", DIALOG_RESULT::PREV),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::MENU, 0, "", 1, 0, "", DIALOG_RESULT::PREV),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -2102,7 +2144,7 @@ async::task<bool> game_bot::change_clan_title(const std::string& title, std::chr
 
     // Navigate to title change option (menu item 0)
     auto&& resp3 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST, 0, "", 0, 0, "", DIALOG_RESULT::NEXT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::LIST, 0, "", 0, 0, "", DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -2121,7 +2163,7 @@ async::task<bool> game_bot::change_clan_title(const std::string& title, std::chr
 
     // Enter new title
     auto&& resp4 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::INPUT, 0, title, 0, 0, "", DIALOG_RESULT::NEXT),
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::INPUT, 0, title, 0, 0, "", DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;
@@ -2146,8 +2188,12 @@ async::task<bool> game_bot::change_clan_title(const std::string& title, std::chr
 bool game_bot::simple_item::is_equipment(const game_bot_controller& controller) const
 {
     // Equipment types used in tests (from item_test.equipment.cpp)
-    static const auto equipment_types =
-        std::unordered_set<ITEM_TYPE>{ITEM_TYPE::WEAPON, ITEM_TYPE::ARMOR, ITEM_TYPE::HELMET, ITEM_TYPE::RING, ITEM_TYPE::SHIELD, ITEM_TYPE::AUXILIARY};
+    static const auto equipment_types = std::unordered_set<ITEM_TYPE>{ITEM_TYPE::WEAPON,
+                                                                      ITEM_TYPE::ARMOR,
+                                                                      ITEM_TYPE::HELMET,
+                                                                      ITEM_TYPE::RING,
+                                                                      ITEM_TYPE::SHIELD,
+                                                                      ITEM_TYPE::AUXILIARY};
 
     try
     {
@@ -2189,20 +2235,23 @@ std::string game_bot::simple_item::get_equipment_info(const game_bot_controller&
         // Add durability info if available (for equipment with durability)
         if (model.durability > 0)
         {
-            sstream << "내구성: " << std::to_string(model.durability) << '/' << std::to_string(model.durability) << ' ' << std::fixed << std::setprecision(1) << 100.0 << '%'
-                    << std::endl;
+            sstream << "내구성: " << std::to_string(model.durability) << '/' << std::to_string(model.durability) << ' '
+                    << std::fixed << std::setprecision(1) << 100.0 << '%' << std::endl;
         }
 
         // Add weapon damage info if it's a weapon
         if (item_model->type == ITEM_TYPE::WEAPON)
         {
             auto& weapon_model = static_cast<const fb::model::weapon&>(*item_model);
-            sstream << "파괴력: 　　 S:　" << std::to_string(weapon_model.damage_small.min) << 'm' << std::to_string(weapon_model.damage_small.max) << std::endl;
-            sstream << "　　　  　 　L:　" << std::to_string(weapon_model.damage_large.min) << 'm' << std::to_string(weapon_model.damage_large.max) << std::endl;
+            sstream << "파괴력: 　　 S:　" << std::to_string(weapon_model.damage_small.min) << 'm'
+                    << std::to_string(weapon_model.damage_small.max) << std::endl;
+            sstream << "　　　  　 　L:　" << std::to_string(weapon_model.damage_large.min) << 'm'
+                    << std::to_string(weapon_model.damage_large.max) << std::endl;
         }
 
         // Add basic stats
-        sstream << "무장:   " << std::to_string(model.defensive_physical) << " Hit:  " << std::to_string(model.hit) << " Dam:  " << std::to_string(model.damage);
+        sstream << "무장:   " << std::to_string(model.defensive_physical) << " Hit:  " << std::to_string(model.hit)
+                << " Dam:  " << std::to_string(model.damage);
 
         // Add stat bonuses
         if (model.base_hp)

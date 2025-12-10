@@ -6,11 +6,13 @@
 using namespace fb::game::handler::protocol;
 using table = fb::model::table;
 
+namespace game_reqs = fb::protocol::game::request;
+
 item_combine::item_combine(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::item_combine>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::item_combine>(server)
 { }
 
-async::task<bool> item_combine::handle(fb::socket<character>& session, fb::protocol::game::request::item_combine& request)
+async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs::item_combine& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -55,7 +57,8 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, fb::proto
             auto index = ch->items.index(table::item[params.id]);
             if (item == nullptr)
             {
-                throw std::runtime_error(std::format("user {} try to combine with {} but has no item", ch->name(), params.id));
+                throw std::runtime_error(
+                    std::format("user {} try to combine with {} but has no item", ch->name(), params.id));
             }
 
             auto count = item->count();

@@ -7,9 +7,9 @@
 #include <fb/game/character.h>
 #endif
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::response {
+
+using namespace fb::model::enum_value;
 
 class external_info : public fb::protocol::header
 {

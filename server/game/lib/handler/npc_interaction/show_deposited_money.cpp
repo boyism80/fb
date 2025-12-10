@@ -4,7 +4,9 @@
 
 using namespace fb::game::handler::npc_interaction;
 
-async::task<void> show_deposited_money::handle(character_type& ch, const std::string& message, const npc_list_type& npcs)
+async::task<void> show_deposited_money::handle(character_type&      ch,
+                                               const std::string&   message,
+                                               const npc_list_type& npcs)
 {
     ch.assert_thread();
     auto weak = ch.weak_from_this();

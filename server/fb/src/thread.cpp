@@ -92,11 +92,14 @@ void fb::thread::exit()
     this->_exit = true;
 }
 
-std::shared_ptr<fb::timer> fb::thread::settimer(const fb::timer::handle_callback_type& fn, const fb::model::timespan& duration, fb::timer::repeat_type repeat)
+std::shared_ptr<fb::timer> fb::thread::settimer(const fb::timer::handle_callback_type& fn,
+                                                const fb::model::timespan&             duration,
+                                                fb::timer::repeat_type                 repeat)
 {
     if (this->id() != std::this_thread::get_id())
     {
-        throw std::runtime_error(std::format("cannot set timer. thread mismatched. stacktrace : {}", boost::stacktrace::to_string(boost::stacktrace::stacktrace())));
+        throw std::runtime_error(std::format("cannot set timer. thread mismatched. stacktrace : {}",
+                                             boost::stacktrace::to_string(boost::stacktrace::stacktrace())));
     }
 
     auto ptr = new fb::timer(
@@ -134,7 +137,9 @@ async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
     return promise->task();
 }
 
-void fb::thread::enqueue(const handle_func_type<void>& fn, const handle_error_type& error, const std::function<void()>& callback)
+void fb::thread::enqueue(const handle_func_type<void>& fn,
+                         const handle_error_type&      error,
+                         const std::function<void()>&  callback)
 {
     this->_queue.write([=, this](auto& queue) {
         queue.push([=, this]() {

@@ -7,9 +7,9 @@
 #include <fb/game/life.h>
 #endif
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::response {
+
+using namespace fb::model::enum_value;
 
 class die : public fb::protocol::header
 {

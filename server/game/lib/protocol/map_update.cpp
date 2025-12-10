@@ -2,6 +2,8 @@
 
 namespace fb::protocol::game::request {
 
+using namespace fb::model::enum_value;
+
 #ifndef BOT // server only
 async::task<void> map_update::deserialize(fb::stream_reader<big_endian>& reader)
 {
@@ -27,6 +29,8 @@ async::task<void> map_update::serialize(fb::stream_writer<big_endian>& writer) c
 } // namespace fb::protocol::game::request
 
 namespace fb::protocol::game::response {
+
+using namespace fb::model::enum_value;
 
 #ifndef BOT
 async::task<void> map_update::serialize(fb::stream_writer<big_endian>& writer) const

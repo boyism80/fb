@@ -17,6 +17,9 @@
 
 namespace fb::bot::integration {
 
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
+
 class game_bot_controller : public fb::bot::game_bot_controller
 {
 private:
@@ -47,17 +50,19 @@ public:
 
 private:
     async::task<void> on_timer();
-    async::task<void> on_time(game_bot& bot, const fb::protocol::game::response::time& response);
-    async::task<void> on_state(game_bot& bot, const fb::protocol::game::response::update_internal& response);
-    async::task<void> on_map(game_bot& bot, const fb::protocol::game::response::map_config& response);
-    async::task<void> on_message(game_bot& bot, const fb::protocol::game::response::message& response);
-    async::task<void> on_sequence(game_bot& bot, const fb::protocol::game::response::id& response);
-    async::task<void> on_position(game_bot& bot, const fb::protocol::game::response::position& response);
-    async::task<void> on_move(game_bot& bot, const fb::protocol::game::response::move& response);
+    async::task<void> on_time(game_bot& bot, const game_resp::time& response);
+    async::task<void> on_state(game_bot& bot, const game_resp::update_internal& response);
+    async::task<void> on_map(game_bot& bot, const game_resp::map_config& response);
+    async::task<void> on_message(game_bot& bot, const game_resp::message& response);
+    async::task<void> on_sequence(game_bot& bot, const game_resp::id& response);
+    async::task<void> on_position(game_bot& bot, const game_resp::position& response);
+    async::task<void> on_move(game_bot& bot, const game_resp::move& response);
     async::task<void> on_transfer(game_bot& bot, const fb::protocol::response::transfer& response);
 
 protected:
-    async::task<void> on_integration_hook_execution(uint8_t cmd, game_bot& bot, const fb::protocol::header& header) override;
+    async::task<void> on_integration_hook_execution(uint8_t                     cmd,
+                                                    game_bot&                   bot,
+                                                    const fb::protocol::header& header) override;
 
 public:
     virtual async::task<void> on_bot_connected(game_bot& bot) override;
@@ -71,7 +76,9 @@ public:
     void              print_final_test_results();
     async::task<void> active_test();
 
-    template <typename ResponseType> void hook_for_test(bot_integration_test* test, const std::function<async::task<void>(game_bot&, const ResponseType&)>& fn)
+    template <typename ResponseType> void
+    hook_for_test(bot_integration_test*                                                   test,
+                  const std::function<async::task<void>(game_bot&, const ResponseType&)>& fn)
     {
         auto hook_func = [fn](game_bot& bot, const fb::protocol::header& header) -> async::task<void> {
             auto& protocol = static_cast<const ResponseType&>(header);
@@ -82,7 +89,8 @@ public:
         this->_test_hooks[test][ResponseType::header].push_back(hook_func);
     }
 
-    template <typename Class, typename ResponseType> void hook(bot_integration_test* test, Class* instance, async::task<void> (Class::*fn)(game_bot&, const ResponseType&))
+    template <typename Class, typename ResponseType> void
+    hook(bot_integration_test* test, Class* instance, async::task<void> (Class::*fn)(game_bot&, const ResponseType&))
     {
         auto hook_func = [instance, fn](game_bot& bot, const fb::protocol::header& header) -> async::task<void> {
             auto& protocol = static_cast<const ResponseType&>(header);

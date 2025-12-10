@@ -7,9 +7,9 @@
 #include <string>
 #include <fb/model/model.h>
 
-using namespace fb::model::enum_value;
-
 namespace fb::game {
+
+using namespace fb::model::enum_value;
 
 class character;
 

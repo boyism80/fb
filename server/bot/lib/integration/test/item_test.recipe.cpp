@@ -5,6 +5,9 @@ using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 using namespace fb;
 
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
+
 async::task<bool> item_test::test_item_combine(uint32_t index)
 {
     fb::logger::debug("Starting scenario 3-1: Item combine");
@@ -38,7 +41,9 @@ async::task<bool> item_test::test_item_combine(uint32_t index)
             expected_failed_items.push_back(table::item[params.id].name);
         }
 
-        bot->chat(std::format("Scenario 3-1: Expected items: {} or {}", boost::algorithm::join(expected_success_items, ", "), boost::algorithm::join(expected_failed_items, ", ")));
+        bot->chat(std::format("Scenario 3-1: Expected items: {} or {}",
+                              boost::algorithm::join(expected_success_items, ", "),
+                              boost::algorithm::join(expected_failed_items, ", ")));
 
         auto slot = 0;
         for (auto& source : recipe.source)
@@ -57,8 +62,8 @@ async::task<bool> item_test::test_item_combine(uint32_t index)
         }
 
         auto   success = false;
-        auto&& resp    = co_await bot->request<fb::protocol::game::response::message>(
-            fb::protocol::game::request::item_combine(slots),
+        auto&& resp    = co_await bot->request<game_resp::message>(
+            game_reqs::item_combine(slots),
             [&success](auto& resp) -> bool {
                 if (resp.type != MESSAGE_TYPE::STATE)
                     return false;
@@ -92,7 +97,9 @@ async::task<bool> item_test::test_item_combine(uint32_t index)
 
                 if (bot->get_item_count_by_name(item.name) != count)
                 {
-                    fb::logger::fatal("Scenario 3-1: Item count mismatch: {} != {}", bot->get_item_count_by_name(item.name), count);
+                    fb::logger::fatal("Scenario 3-1: Item count mismatch: {} != {}",
+                                      bot->get_item_count_by_name(item.name),
+                                      count);
                     passed = false;
                 }
             }
@@ -132,8 +139,8 @@ async::task<bool> item_test::test_item_combine_failure()
     co_await bot->create_item("뢰진도", 1, DEFAULT_TIMEOUT);
 
     bot->chat("Scenario 3-2: Try to combine items with no recipe");
-    std::ignore = co_await bot->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::item_combine({0, 1, 2, 3, 4}),
+    std::ignore = co_await bot->request<game_resp::message>(
+        game_reqs::item_combine({0, 1, 2, 3, 4}),
         [](auto& resp) -> bool {
             if (resp.type != MESSAGE_TYPE::STATE)
                 return false;

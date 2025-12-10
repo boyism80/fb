@@ -6,6 +6,8 @@
 using namespace fb::login::handler::protocol;
 using table = fb::model::table;
 
+namespace internal_reqs = fb::protocol::internal::request;
+
 login::login(fb::login::server& server) :
     fb::handler::protocol<fb::login::server, fb::protocol::login::request::login>(server)
 { }
@@ -23,17 +25,19 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
     {
         this->server.assert_account(name, pw);
 
-        auto&& response = co_await this->server.http.get<internal::response::GetUid>("internal", std::format("/account/uid/{}", name));
+        auto&& resp1 = co_await this->server.http.get<internal::response::GetUid>("internal",
+                                                                                  std::format("/account/uid/{}", name));
         co_await this->server.threads.switching(weak);
 
-        if (response.success == false)
+        if (resp1.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
-        auto   uid       = response.uid;
-        auto&& response2 = co_await this->server.http.post("internal", "/account/authenticate", Authenticate{uid, pw});
+        auto   uid = resp1.uid;
+        auto&& resp2 =
+            co_await this->server.http.post("internal", "/account/authenticate", internal_reqs::Authenticate{uid, pw});
         co_await this->server.threads.switching(weak);
 
-        switch (response2.error_code)
+        switch (resp2.error_code)
         {
         case 1:
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
@@ -42,11 +46,14 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_PASSWORD));
         }
 
-        auto   map       = response2.map;
-        auto&& response3 = co_await this->server.http.post("internal", "/in-game/transfer", Transfer{fb::protocol::internal::Service ::Game, table::map[map].host, name, true});
+        auto   map   = resp2.map;
+        auto&& resp3 = co_await this->server.http.post(
+            "internal",
+            "/in-game/transfer",
+            internal_reqs::Transfer{fb::protocol::internal::Service ::Game, table::map[map].host, name, true});
         co_await this->server.threads.switching(weak);
 
-        switch (static_cast<ERROR_CODE>(response3.error))
+        switch (static_cast<ERROR_CODE>(resp3.error))
         {
         case ERROR_CODE::NONE:
             break;
@@ -58,10 +65,10 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_ALREADY_LOGIN));
 
         case ERROR_CODE::BANNED:
-            throw id_exception(build_ban_message(response3.ban_reason, response3.ban_expire_date));
+            throw id_exception(build_ban_message(resp3.ban_reason, resp3.ban_expire_date));
 
         default:
-            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), response3.error));
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp3.error));
         }
 
         // Log game server entry event
@@ -70,8 +77,8 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
         log_data["uid"]            = static_cast<Json::Int64>(uid);
         log_data["game_server_id"] = static_cast<Json::Int64>(table::map[map].host);
         log_data["map"]            = static_cast<Json::Int64>(map);
-        log_data["ip"]             = response3.ip;
-        log_data["port"]           = static_cast<Json::Int64>(response3.port);
+        log_data["ip"]             = resp3.ip;
+        log_data["port"]           = static_cast<Json::Int64>(resp3.port);
         this->server.log.write("game_server_entry", log_data);
 
         session.send(response::message("", 0x00));
@@ -80,7 +87,7 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
         writer.write<uint32_t>(uid);
         writer.write<std::string>(name);
         writer.write<uint8_t>(0);
-        std::ignore = this->server.transfer(session, response3.ip, response3.port, internal::Service::Login, parameter);
+        std::ignore = this->server.transfer(session, resp3.ip, resp3.port, internal::Service::Login, parameter);
         co_return true;
     }
     catch (login_exception& e)

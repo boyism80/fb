@@ -4,9 +4,9 @@
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::response {
+
+using namespace fb::model::enum_value;
 
 class bright : public fb::protocol::header
 {

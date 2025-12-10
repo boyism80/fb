@@ -1,6 +1,6 @@
 #include <fb/game/handler/timer/buff_timer.h>
 
-namespace fb::game::handler::timer {
+using namespace fb::game::handler::timer;
 
 buff_timer::buff_timer(fb::game::server& server) :
     fb::handler::timer<fb::game::server>(server)
@@ -63,5 +63,3 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
 
     co_return;
 }
-
-} // namespace fb::game::handler::timer

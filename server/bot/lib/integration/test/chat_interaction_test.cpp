@@ -5,6 +5,9 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
+
 chat_interaction_test::chat_interaction_test(game_bot_controller& controller) :
     bot_integration_test(controller, 5) // Use 5 bots for parallel processing
 { }
@@ -73,8 +76,8 @@ async::task<bool> chat_interaction_test::test_scenario_1(int index)
         auto base_price     = game_bot::simple_item("진호박", 0).get_price(this->controller);
         auto expected_money = (base_price / 2) * 5;
 
-        std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat(false, "진호박 5개 판다"),
+        std::ignore = co_await bot->request<game_resp::update_internal>(
+            game_reqs::chat(false, "진호박 5개 판다"),
             [expected_money](auto& resp) -> bool {
                 // Verify money increase
                 return resp.ch_money >= expected_money;
@@ -85,8 +88,8 @@ async::task<bool> chat_interaction_test::test_scenario_1(int index)
         bot->chat("Selling remaining 진호박 5개 via chat");
         expected_money = (base_price / 2) * 10;
 
-        std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat(false, "진호박 다 판다"),
+        std::ignore = co_await bot->request<game_resp::update_internal>(
+            game_reqs::chat(false, "진호박 다 판다"),
             [expected_money](auto& resp) -> bool {
                 return resp.ch_money >= expected_money;
             },
@@ -94,8 +97,8 @@ async::task<bool> chat_interaction_test::test_scenario_1(int index)
 
         // Step 6: Deposit all money via chat
         bot->chat("Depositing all money via chat");
-        std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat(false, "돈 다 맡아줘"),
+        std::ignore = co_await bot->request<game_resp::update_internal>(
+            game_reqs::chat(false, "돈 다 맡아줘"),
             [](auto& resp) -> bool {
                 return resp.ch_money == 0;
             },
@@ -103,8 +106,8 @@ async::task<bool> chat_interaction_test::test_scenario_1(int index)
 
         // Step 7: Withdraw all money via chat
         bot->chat("Withdrawing all money via chat");
-        std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat(false, "돈 다 돌려줘"),
+        std::ignore = co_await bot->request<game_resp::update_internal>(
+            game_reqs::chat(false, "돈 다 돌려줘"),
             [](auto& resp) -> bool {
                 return resp.ch_money > 0;
             },
@@ -112,8 +115,8 @@ async::task<bool> chat_interaction_test::test_scenario_1(int index)
 
         // Step 8: Get 동동주 via chat
         bot->chat("Getting 동동주 via chat");
-        std::ignore = co_await bot->request<fb::protocol::game::response::item_update>(
-            fb::protocol::game::request::chat(false, "동동주 줘"),
+        std::ignore = co_await bot->request<game_resp::item_update>(
+            game_reqs::chat(false, "동동주 줘"),
             [](auto& resp) -> bool {
                 return resp.name.find("동동주") == 0;
             },
@@ -121,12 +124,13 @@ async::task<bool> chat_interaction_test::test_scenario_1(int index)
 
         // Step 9: Deposit 동동주 via chat
         bot->chat("Depositing 동동주 via chat");
-        std::ignore = co_await bot->request<fb::protocol::game::response::item_remove>(fb::protocol::game::request::chat(false, "동동주 맡아줘"), DEFAULT_TIMEOUT);
+        std::ignore =
+            co_await bot->request<game_resp::item_remove>(game_reqs::chat(false, "동동주 맡아줘"), DEFAULT_TIMEOUT);
 
         // Step 10: Withdraw 동동주 via chat
         bot->chat("Withdrawing 동동주 via chat");
-        std::ignore = co_await bot->request<fb::protocol::game::response::item_update>(
-            fb::protocol::game::request::chat(false, "동동주 돌려줘"),
+        std::ignore = co_await bot->request<game_resp::item_update>(
+            game_reqs::chat(false, "동동주 돌려줘"),
             [](auto& resp) -> bool {
                 return resp.name.find("동동주") == 0;
             },
@@ -136,8 +140,8 @@ async::task<bool> chat_interaction_test::test_scenario_1(int index)
         bot->chat("Creating 도토리 201개 and depositing all");
         co_await bot->create_item("도토리", 201, DEFAULT_TIMEOUT);
 
-        std::ignore = co_await bot->request<fb::protocol::game::response::item_remove>(
-            fb::protocol::game::request::chat(false, "도토리 다 맡아줘"),
+        std::ignore = co_await bot->request<game_resp::item_remove>(
+            game_reqs::chat(false, "도토리 다 맡아줘"),
             [](auto& resp) -> bool {
                 return true; // Just verify response received
             },
@@ -147,8 +151,8 @@ async::task<bool> chat_interaction_test::test_scenario_1(int index)
         bot->chat("Creating 도토리 201개 again and depositing all");
         co_await bot->create_item("도토리", 201, DEFAULT_TIMEOUT);
 
-        std::ignore = co_await bot->request<fb::protocol::game::response::item_remove>(
-            fb::protocol::game::request::chat(false, "도토리 다 맡아줘"),
+        std::ignore = co_await bot->request<game_resp::item_remove>(
+            game_reqs::chat(false, "도토리 다 맡아줘"),
             [](auto& resp) -> bool {
                 return true; // Just verify response received
             },
@@ -156,8 +160,8 @@ async::task<bool> chat_interaction_test::test_scenario_1(int index)
 
         // Step 13: Try to withdraw all 도토리 (should fail)
         bot->chat("Trying to withdraw all 도토리 (should fail)");
-        std::ignore = co_await bot->request<fb::protocol::game::response::chat>(
-            fb::protocol::game::request::chat(false, "도토리 다 돌려줘"),
+        std::ignore = co_await bot->request<game_resp::chat>(
+            game_reqs::chat(false, "도토리 다 돌려줘"),
             [npc_oid](auto& resp) -> bool {
                 return resp.text.find(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE)) != std::string::npos;
             },
@@ -196,8 +200,8 @@ async::task<bool> chat_interaction_test::test_scenario_2(int index)
         co_await bot->create_item("양첨목봉", 1, DEFAULT_TIMEOUT);
         co_await bot->change_money(100000, DEFAULT_TIMEOUT);
 
-        std::ignore = co_await bot->request<fb::protocol::game::response::chat>(
-            fb::protocol::game::request::chat(false, "전부 고쳐줘"),
+        std::ignore = co_await bot->request<game_resp::chat>(
+            game_reqs::chat(false, "전부 고쳐줘"),
             [npc_oid](auto& resp) -> bool {
                 if (resp.oid != npc_oid)
                     return false;
@@ -209,8 +213,8 @@ async::task<bool> chat_interaction_test::test_scenario_2(int index)
         bot->chat("/내구도 1");
         co_await this->sleep(1s);
 
-        std::ignore = co_await bot->request<fb::protocol::game::response::chat>(
-            fb::protocol::game::request::chat(false, "전부 고쳐줘"),
+        std::ignore = co_await bot->request<game_resp::chat>(
+            game_reqs::chat(false, "전부 고쳐줘"),
             [npc_oid](auto& resp) -> bool {
                 if (resp.oid != npc_oid)
                     return false;
@@ -219,8 +223,8 @@ async::task<bool> chat_interaction_test::test_scenario_2(int index)
             },
             DEFAULT_TIMEOUT);
 
-        std::ignore = co_await bot->request<fb::protocol::game::response::item_update>(
-            fb::protocol::game::request::chat(false, "양첨목봉 이름을 채승현으로 명명"),
+        std::ignore = co_await bot->request<game_resp::item_update>(
+            game_reqs::chat(false, "양첨목봉 이름을 채승현으로 명명"),
             [npc_oid](auto& resp) -> bool {
                 if (resp.index != 0)
                     return false;
@@ -261,8 +265,8 @@ async::task<bool> chat_interaction_test::test_scenario_3(int index)
         fb::logger::debug("Spell index: {}", spell_index);
         co_await bot->change_mp(100000, DEFAULT_TIMEOUT);
 
-        std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, spell_index, "", bot->oid(), bot->position()),
+        std::ignore = co_await bot->request<game_resp::update_internal>(
+            game_reqs::spell_cast(SPELL_TYPE::TARGET, spell_index, "", bot->oid(), bot->position()),
             [](auto& resp) -> bool {
                 return resp.ch_hp == 0;
             },
@@ -270,8 +274,8 @@ async::task<bool> chat_interaction_test::test_scenario_3(int index)
 
         while (true)
         {
-            auto&& resp = co_await bot->request<fb::protocol::game::response::chat>(
-                fb::protocol::game::request::chat(false, "살려주세요"),
+            auto&& resp = co_await bot->request<game_resp::chat>(
+                game_reqs::chat(false, "살려주세요"),
                 [npc_oid](auto& resp) -> bool {
                     return resp.oid == npc_oid;
                 },
@@ -287,8 +291,8 @@ async::task<bool> chat_interaction_test::test_scenario_3(int index)
             co_await this->sleep(100ms);
         }
 
-        std::ignore = co_await bot->request<fb::protocol::game::response::update_internal>(
-            fb::protocol::game::request::chat(false, "감사합니다"),
+        std::ignore = co_await bot->request<game_resp::update_internal>(
+            game_reqs::chat(false, "감사합니다"),
             [bot, npc_oid](auto& resp) -> bool {
                 return resp.ch_hp == bot->base_hp();
             },
@@ -323,21 +327,21 @@ async::task<bool> chat_interaction_test::test_scenario_4(int index)
         co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_TIMEOUT);
 
         std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
-            fb::protocol::game::request::click(npc_oid),
+            game_reqs::click(npc_oid),
             [](auto& resp) -> bool {
                 return resp.type == dialog_ext_type::list;
             },
             DEFAULT_TIMEOUT);
 
         std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
-            fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST, 0, "", 0, 0, "", DIALOG_RESULT::NEXT),
+            game_reqs::dialog(game_reqs::dialog::INTERACTION::LIST, 0, "", 0, 0, "", DIALOG_RESULT::NEXT),
             [](auto& resp) -> bool {
                 return resp.type == dialog_ext_type::list;
             },
             DEFAULT_TIMEOUT);
 
         std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
-            fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::LIST, 0, "", 0, 0, "", DIALOG_RESULT::NEXT),
+            game_reqs::dialog(game_reqs::dialog::INTERACTION::LIST, 0, "", 0, 0, "", DIALOG_RESULT::NEXT),
             [](auto& resp) -> bool {
                 return resp.type == dialog_type::item;
             },
@@ -345,7 +349,7 @@ async::task<bool> chat_interaction_test::test_scenario_4(int index)
 
         auto   item_name = "unknown";
         auto&& resp      = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
-            fb::protocol::game::request::dialog(fb::protocol::game::request::dialog::INTERACTION::ITEM, 0, item_name, 0, 0, "", DIALOG_RESULT::NEXT),
+            game_reqs::dialog(game_reqs::dialog::INTERACTION::ITEM, 0, item_name, 0, 0, "", DIALOG_RESULT::NEXT),
             [](auto& resp) -> bool {
                 return resp.type == dialog_ext_type::normal;
             },

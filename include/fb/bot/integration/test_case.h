@@ -16,6 +16,9 @@
 
 namespace fb::bot::integration {
 
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
+
 class game_bot_controller;
 
 struct spawned_monster_info
@@ -28,7 +31,7 @@ struct spawned_monster_info
 class bot_integration_test
 {
 public:
-    using test_bots_t = std::vector<std::shared_ptr<fb::bot::game_bot>>;
+    using test_bots_t = std::vector<std::shared_ptr<game_bot>>;
     using scenario_t  = std::function<async::task<bool>()>;
 
     enum class test_state : uint8_t
@@ -80,20 +83,20 @@ protected:
     virtual generator<scenario_t> on_generate_scenario() = 0;
 
 public:
-    test_state                                      get_state() const;
-    void                                            set_state(test_state state);
-    bool                                            is_complete() const;
-    bool                                            is_running() const;
-    virtual void                                    on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot);
-    virtual void                                    on_bot_disconnected(std::shared_ptr<fb::bot::game_bot> bot);
-    void                                            notify_ready();
-    virtual bool                                    is_ready() const;
-    std::vector<std::shared_ptr<fb::bot::game_bot>> get_test_bots() const;
-    virtual async::task<void>                       on_active(game_bot_controller& controller);
-    virtual async::task<void>                       on_initialize(game_bot_controller& controller);
-    virtual async::task<void>                       on_finished();
-    async::task<bool>                               execute();
-    virtual std::string                             name() const = 0;
+    test_state                             get_state() const;
+    void                                   set_state(test_state state);
+    bool                                   is_complete() const;
+    bool                                   is_running() const;
+    virtual void                           on_bot_connected(std::shared_ptr<game_bot> bot);
+    virtual void                           on_bot_disconnected(std::shared_ptr<game_bot> bot);
+    void                                   notify_ready();
+    virtual bool                           is_ready() const;
+    std::vector<std::shared_ptr<game_bot>> get_test_bots() const;
+    virtual async::task<void>              on_active(game_bot_controller& controller);
+    virtual async::task<void>              on_initialize(game_bot_controller& controller);
+    virtual async::task<void>              on_finished();
+    async::task<bool>                      execute();
+    virtual std::string                    name() const = 0;
 
 protected:
     virtual async::task<void> on_scenario_started(uint32_t scenario_index);
@@ -101,13 +104,14 @@ protected:
     virtual async::task<void> on_parallel_scenario_started(uint32_t id);
     virtual async::task<void> on_parallel_scenario_finished(uint32_t id);
     async::task<bool>         parallel_scenarios(std::vector<std::pair<uint32_t, scenario_t>> scenarios);
-    virtual async::task<void> on_hook_sequence(fb::bot::game_bot& bot, const fb::protocol::game::response::id& response);
-    virtual async::task<void> on_hook_position(fb::bot::game_bot& bot, const fb::protocol::game::response::position& response);
-    virtual async::task<void> on_hook_update_external(fb::bot::game_bot& bot, const fb::protocol::game::response::update_external<true>& response);
+    virtual async::task<void> on_hook_sequence(game_bot& bot, const game_resp::id& response);
+    virtual async::task<void> on_hook_position(game_bot& bot, const game_resp::position& response);
+    virtual async::task<void> on_hook_update_external(game_bot& bot, const game_resp::update_external<true>& response);
 
     [[nodiscard]] async::task<void> sleep(std::chrono::milliseconds duration);
     [[nodiscard]] async::task<void> arrange_bots_in_line_formation();
-    [[nodiscard]] async::task<void> arrange_bots_in_grid_formation(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y);
+    [[nodiscard]] async::task<void>
+    arrange_bots_in_grid_formation(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y);
     [[nodiscard]] async::task<void> form_group();
     [[nodiscard]] async::task<void> cleanup_group();
 };

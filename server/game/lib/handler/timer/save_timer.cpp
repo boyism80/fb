@@ -1,7 +1,7 @@
 #include <fb/game/handler/timer/save_timer.h>
 #include <fb/game/thread_params.h>
 
-namespace fb::game::handler::timer {
+using namespace fb::game::handler::timer;
 
 save_timer::save_timer(fb::game::server& server) :
     fb::handler::timer<fb::game::server>(server)
@@ -19,5 +19,3 @@ async::task<void> save_timer::handle(const fb::model::datetime& now, std::thread
 
     co_return;
 }
-
-} // namespace fb::game::handler::timer

@@ -21,7 +21,8 @@ void server::assert_clan(uint32_t error) const
     }
 }
 
-async::task<void> server::ensure_clan(uint32_t id, std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn)
+async::task<void> server::ensure_clan(uint32_t                                                           id,
+                                      std::function<async::task<void>(std::shared_ptr<fb::game::clan>&)> fn)
 {
     auto thread = this->threads.current();
     if (thread == nullptr)
@@ -41,7 +42,8 @@ async::task<void> server::ensure_clan(uint32_t id, std::function<async::task<voi
                     co_await thread.switching();
                 },
                 [=, this]() -> async::task<std::shared_ptr<fb::game::clan>> {
-                    auto&& resp = co_await this->http.get<internal_resp::ClanDetails>("internal", std::format("/clan/{}", id));
+                    auto&& resp =
+                        co_await this->http.get<internal_resp::ClanDetails>("internal", std::format("/clan/{}", id));
                     switch (static_cast<ERROR_CODE>(resp.error))
                     {
                     case ERROR_CODE::NONE:
@@ -72,7 +74,9 @@ async::task<void> server::ensure_clan(uint32_t id, std::function<async::task<voi
     }
 }
 
-void server::update_clan(clan& clan, fb::protocol::internal::Clan& resp1, const std::vector<fb::protocol::internal::ClanMember>& resp2) const
+void server::update_clan(clan&                                                  clan,
+                         fb::protocol::internal::Clan&                          resp1,
+                         const std::vector<fb::protocol::internal::ClanMember>& resp2) const
 {
     auto members = std::unordered_map<std::string, clan_member>{};
     for (auto& member : resp2)
@@ -127,23 +131,24 @@ async::task<void> server::on_create_clan(const internal_resp::ClanDetails& resp)
             // Character may have moved to another server after API request, so we check at message receive time
             if (master_uid != 0)
             {
-                co_await this->characters.async_read([id, master_uid, &clan, this](auto& characters) -> async::task<void> {
-                    auto ch = characters.find(master_uid);
-                    if (ch != nullptr)
-                    {
-                        ch->clan_id(id);
-                        clan->attach(ch->template weak_from_this_as<character>());
+                co_await this->characters.async_read(
+                    [id, master_uid, &clan, this](auto& characters) -> async::task<void> {
+                        auto ch = characters.find(master_uid);
+                        if (ch != nullptr)
+                        {
+                            ch->clan_id(id);
+                            clan->attach(ch->template weak_from_this_as<character>());
 
-                        // Log clan create event only if master is in this server
-                        auto log_data              = Json::Value();
-                        log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-                        log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
-                        log_data["clan_id"]        = static_cast<Json::Int64>(id);
-                        log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
-                        this->log.write("clan_create", log_data);
-                    }
-                    co_return;
-                });
+                            // Log clan create event only if master is in this server
+                            auto log_data              = Json::Value();
+                            log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
+                            log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+                            log_data["clan_id"]        = static_cast<Json::Int64>(id);
+                            log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
+                            this->log.write("clan_create", log_data);
+                        }
+                        co_return;
+                    });
             }
             co_return;
         },
@@ -163,7 +168,9 @@ async::task<void> server::create_clan(character& me, std::string name)
             throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_CLAN));
 
         // Call API (clan name uniqueness check is done on server side)
-        auto&& resp = co_await this->http.post("internal", "/clan/create", CreateClan{fb::config<uint32_t>("id"), me.id, name});
+        auto&& resp = co_await this->http.post("internal",
+                                               "/clan/create",
+                                               internal_reqs::CreateClan{fb::config<uint32_t>("id"), me.id, name});
         co_await this->threads.switching(weak);
         co_await this->on_create_clan(resp);
     }
@@ -207,7 +214,9 @@ async::task<void> server::destroy_clan(character& me)
         });
 
         // Call API (checks passed)
-        auto&& resp = co_await this->http.post("internal", "/clan/destroy", DestroyClan{fb::config<uint32_t>("id"), me.id});
+        auto&& resp = co_await this->http.post("internal",
+                                               "/clan/destroy",
+                                               internal_reqs::DestroyClan{fb::config<uint32_t>("id"), me.id});
         co_await this->threads.switching(weak);
         co_await this->on_destroyed_clan(resp);
     }
@@ -244,7 +253,10 @@ async::task<void> server::join_clan_member(character& inviter, const std::string
         }
 
         // Call API (either target not found in same thread, or checks passed)
-        auto&& resp = co_await this->http.post("internal", "/clan/join", request::JoinClan{fb::config<uint32_t>("host"), inviter.id, target_name});
+        auto&& resp =
+            co_await this->http.post("internal",
+                                     "/clan/join",
+                                     internal_reqs::JoinClan{fb::config<uint32_t>("host"), inviter.id, target_name});
         co_await this->threads.switching(weak);
         co_await this->on_updated_clan(resp);
     }
@@ -278,7 +290,10 @@ async::task<void> server::leave_clan_member(character& leaver)
     });
 
     // Call API (checks passed)
-    auto&& resp = co_await this->http.post("internal", "/clan/leave", request::LeaveClan{fb::config<uint32_t>("host"), clan_id.value(), leaver.name()});
+    auto&& resp = co_await this->http.post(
+        "internal",
+        "/clan/leave",
+        internal_reqs::LeaveClan{fb::config<uint32_t>("host"), clan_id.value(), leaver.name()});
     co_await this->threads.switching(weak);
     co_await this->on_updated_clan(resp);
 }
@@ -309,7 +324,10 @@ async::task<void> server::kick_clan_member(character& kicker, const std::string&
     }
 
     // Call API (either target not found in same thread, or checks passed)
-    auto&& resp = co_await this->http.post("internal", "/clan/kick", request::KickClan{fb::config<uint32_t>("host"), kicker_clan_id.value(), kicker.name(), target_name});
+    auto&& resp = co_await this->http.post(
+        "internal",
+        "/clan/kick",
+        internal_reqs::KickClan{fb::config<uint32_t>("host"), kicker_clan_id.value(), kicker.name(), target_name});
     co_await this->threads.switching(weak);
     co_await this->on_updated_clan(resp);
 }
@@ -341,7 +359,11 @@ async::task<void> server::change_clan_role(character& changer, const std::string
     // Call API (either target not found in same thread, or checks passed)
     auto&& resp = co_await this->http.post("internal",
                                            "/clan/change-role",
-                                           request::ChangeClanRole{fb::config<uint32_t>("host"), changer.id, target_name, changer_clan_id.value(), static_cast<uint32_t>(role)});
+                                           internal_reqs::ChangeClanRole{fb::config<uint32_t>("host"),
+                                                                         changer.id,
+                                                                         target_name,
+                                                                         changer_clan_id.value(),
+                                                                         static_cast<uint32_t>(role)});
     co_await this->threads.switching(weak);
     co_await this->on_updated_clan(resp);
 }
@@ -360,7 +382,8 @@ async::task<void> server::set_clan_title(character& changer, const std::string& 
         if (member != nullptr)
         {
             // Check if changer has sufficient privileges (Master role or higher)
-            if (static_cast<uint32_t>(member->role) < static_cast<uint32_t>(fb::model::const_value::clan::MINIMUM_CHANGE_TITLE_PRIVILEGE))
+            if (static_cast<uint32_t>(member->role) <
+                static_cast<uint32_t>(fb::model::const_value::clan::MINIMUM_CHANGE_TITLE_PRIVILEGE))
                 throw std::runtime_error(_TEXT(MESSAGE_CLAN_NO_PRIVILEGE));
         }
 
@@ -376,14 +399,20 @@ async::task<void> server::set_clan_title(character& changer, const std::string& 
     });
 
     // Call API (checks passed)
-    auto&& resp = co_await this->http.post("internal", "/clan/title", request::SetClanTitle{fb::config<uint32_t>("host"), changer.id, title});
+    auto&& resp =
+        co_await this->http.post("internal",
+                                 "/clan/title",
+                                 internal_reqs::SetClanTitle{fb::config<uint32_t>("host"), changer.id, title});
     co_await this->threads.switching(weak);
     co_await this->on_updated_clan(resp);
 }
 
 async::task<void> server::broadcast_clan(uint32_t clan_id, const std::string& message, MESSAGE_TYPE type)
 {
-    auto&& resp = co_await this->http.post("internal", "/clan/broadcast", request::BroadcastClan{fb::config<uint32_t>("host"), clan_id, message, static_cast<uint8_t>(type)});
+    auto&& resp = co_await this->http.post(
+        "internal",
+        "/clan/broadcast",
+        internal_reqs::BroadcastClan{fb::config<uint32_t>("host"), clan_id, message, static_cast<uint8_t>(type)});
     co_await this->on_clan_broadcast(resp);
 }
 
@@ -437,8 +466,11 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
             auto log_data         = Json::Value();
             log_data["clan_id"]   = static_cast<Json::Int64>(clan->id());
             log_data["clan_name"] = UTF8(clan->name(), PLATFORM::WINDOWS);
-            log_data["old_title"] = old_title.has_value() ? Json::Value(UTF8(old_title.value(), PLATFORM::WINDOWS)) : Json::Value::null;
-            log_data["new_title"] = resp.new_title.has_value() ? Json::Value(UTF8(resp.new_title.value(), PLATFORM::WINDOWS)) : Json::Value::null;
+            log_data["old_title"] =
+                old_title.has_value() ? Json::Value(UTF8(old_title.value(), PLATFORM::WINDOWS)) : Json::Value::null;
+            log_data["new_title"] = resp.new_title.has_value()
+                                        ? Json::Value(UTF8(resp.new_title.value(), PLATFORM::WINDOWS))
+                                        : Json::Value::null;
             this->log.write("clan_title_change", log_data);
             break;
         }
@@ -472,7 +504,8 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
 
                 characters.foreach_enqueue(
                     [this, &resp](auto& member) -> async::task<void> {
-                        member->message(std::format(_TEXT(MESSAGE_CLAN_MEMBER_JOINED), resp.new_member.value().name), MESSAGE_TYPE::NOTIFY);
+                        member->message(std::format(_TEXT(MESSAGE_CLAN_MEMBER_JOINED), resp.new_member.value().name),
+                                        MESSAGE_TYPE::NOTIFY);
                         co_return;
                     },
                     members);
@@ -510,7 +543,9 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                     clan->detach(weak);
                     ch->clan_reset();
                     ch->update_external(false);
-                    ch->message(resp.action == internal::ClanActionType::Kick ? _TEXT(MESSAGE_CLAN_KICKED) : _TEXT(MESSAGE_CLAN_LEFT), MESSAGE_TYPE::NOTIFY);
+                    ch->message(resp.action == internal::ClanActionType::Kick ? _TEXT(MESSAGE_CLAN_KICKED)
+                                                                              : _TEXT(MESSAGE_CLAN_LEFT),
+                                MESSAGE_TYPE::NOTIFY);
 
                     // Log clan leave/kick event
                     auto log_data              = Json::Value();
@@ -518,7 +553,8 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                     log_data["character_name"] = UTF8(resp.deleted_member.value().name, PLATFORM::WINDOWS);
                     log_data["clan_id"]        = static_cast<Json::Int64>(clan->id());
                     log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
-                    this->log.write(resp.action == internal::ClanActionType::Kick ? "clan_kick" : "clan_leave", log_data);
+                    this->log.write(resp.action == internal::ClanActionType::Kick ? "clan_kick" : "clan_leave",
+                                    log_data);
                 }
 
                 clan->leave(resp.deleted_member.value().name);
@@ -531,8 +567,9 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                     members.push_back(shared_ptr);
                 }
 
-                auto message = resp.action == internal::ClanActionType::Kick ? std::format(_TEXT(MESSAGE_CLAN_MEMBER_KICKED), resp.deleted_member.value().name)
-                                                                             : std::format(_TEXT(MESSAGE_CLAN_MEMBER_LEFT), resp.deleted_member.value().name);
+                auto message = resp.action == internal::ClanActionType::Kick
+                                   ? std::format(_TEXT(MESSAGE_CLAN_MEMBER_KICKED), resp.deleted_member.value().name)
+                                   : std::format(_TEXT(MESSAGE_CLAN_MEMBER_LEFT), resp.deleted_member.value().name);
                 characters.foreach_enqueue(
                     [this, message](auto& member) -> async::task<void> {
                         member->message(message, MESSAGE_TYPE::NOTIFY);
@@ -556,7 +593,9 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                 auto target = characters.find(resp.target.value().uid);
                 if (target != nullptr && resp.old_role.has_value() && resp.new_role.has_value())
                 {
-                    target->message(std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED), resp.old_role.value(), resp.new_role.value()), MESSAGE_TYPE::NOTIFY);
+                    target->message(
+                        std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED), resp.old_role.value(), resp.new_role.value()),
+                        MESSAGE_TYPE::NOTIFY);
                 }
 
                 for (auto& [uid, weak] : clan->characters())
@@ -570,7 +609,10 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
 
                     if (resp.target.has_value() && resp.old_role.has_value() && resp.new_role.has_value())
                     {
-                        shared->message(std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED_DETAILED), resp.target.value().name, resp.old_role.value(), resp.new_role.value()),
+                        shared->message(std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED_DETAILED),
+                                                    resp.target.value().name,
+                                                    resp.old_role.value(),
+                                                    resp.new_role.value()),
                                         MESSAGE_TYPE::NOTIFY);
                     }
                 }

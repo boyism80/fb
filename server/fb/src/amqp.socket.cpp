@@ -16,7 +16,11 @@ socket::~socket()
     }
 }
 
-bool socket::connect(const std::string& hostname, uint16_t port, const std::string& id, const std::string& pw, const std::string& vhost)
+bool socket::connect(const std::string& hostname,
+                     uint16_t           port,
+                     const std::string& id,
+                     const std::string& pw,
+                     const std::string& vhost)
 {
     // Clean up any existing connection before creating a new one
     if (this->_conn != nullptr)
@@ -44,7 +48,8 @@ bool socket::connect(const std::string& hostname, uint16_t port, const std::stri
         return false;
     }
 
-    if (amqp_login(this->_conn, vhost.c_str(), 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, id.c_str(), pw.c_str()).reply_type != AMQP_RESPONSE_NORMAL)
+    if (amqp_login(this->_conn, vhost.c_str(), 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, id.c_str(), pw.c_str())
+            .reply_type != AMQP_RESPONSE_NORMAL)
     {
         amqp_connection_close(this->_conn, AMQP_REPLY_SUCCESS);
         amqp_destroy_connection(this->_conn);
@@ -84,7 +89,14 @@ queue& socket::declare_queue(bool durable, bool exclusive, bool auto_delete, boo
     }
 
     // Use empty bytes for auto-generated queue name
-    auto r     = amqp_queue_declare(this->_conn, 1, amqp_empty_bytes, 0, durable ? 1 : 0, exclusive ? 1 : 0, auto_delete ? 1 : 0, arguments);
+    auto r     = amqp_queue_declare(this->_conn,
+                                1,
+                                amqp_empty_bytes,
+                                0,
+                                durable ? 1 : 0,
+                                exclusive ? 1 : 0,
+                                auto_delete ? 1 : 0,
+                                arguments);
     auto reply = amqp_get_rpc_reply(this->_conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL)
     {
@@ -102,7 +114,9 @@ queue& socket::declare_queue(bool durable, bool exclusive, bool auto_delete, boo
             error_detail = "Unexpected reply type during queue declaration.";
         }
 
-        fb::logger::warn("Failed to declare auto-generated queue: {} (reply_type: {})", error_detail, static_cast<int>(reply.reply_type));
+        fb::logger::warn("Failed to declare auto-generated queue: {} (reply_type: {})",
+                         error_detail,
+                         static_cast<int>(reply.reply_type));
         throw std::runtime_error("Declaring auto-generated queue: " + error_detail);
     }
 
@@ -116,7 +130,10 @@ queue& socket::declare_queue(bool durable, bool exclusive, bool auto_delete, boo
     return *ptr;
 }
 
-bool socket::publish(const std::string& exchange, const std::string& routing_key, const std::vector<uint8_t>& message, const amqp_basic_properties_t* properties)
+bool socket::publish(const std::string&             exchange,
+                     const std::string&             routing_key,
+                     const std::vector<uint8_t>&    message,
+                     const amqp_basic_properties_t* properties)
 {
     if (this->_conn == nullptr)
         return false;
@@ -167,12 +184,14 @@ bool socket::select(const timeval* timeout)
     auto            ret = amqp_consume_message(this->_conn, &envelope, timeout, 0);
     if (ret.reply_type == AMQP_RESPONSE_NORMAL)
     {
-        auto consumer_tag = std::string((const char*)envelope.consumer_tag.bytes, (const char*)envelope.consumer_tag.bytes + envelope.consumer_tag.len);
+        auto consumer_tag_bytes_c = static_cast<char*>(envelope.consumer_tag.bytes);
+        auto consumer_tag         = std::string(consumer_tag_bytes_c, consumer_tag_bytes_c + envelope.consumer_tag.len);
         for (auto& queue : this->_queues)
         {
             if (queue->consumer_tag() == consumer_tag)
             {
-                auto message = std::vector<uint8_t>((uint8_t*)envelope.message.body.bytes, (uint8_t*)envelope.message.body.bytes + envelope.message.body.len);
+                auto message_bytes_c = static_cast<uint8_t*>(envelope.message.body.bytes);
+                auto message = std::vector<uint8_t>(message_bytes_c, message_bytes_c + envelope.message.body.len);
                 queue->invoke_async(message);
                 break;
             }

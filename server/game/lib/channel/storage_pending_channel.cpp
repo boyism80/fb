@@ -14,9 +14,11 @@ storage_pending_channel::storage_pending_channel(server& owner) :
 
 async::task<void> storage_pending_channel::fetch()
 {
+    namespace internal_resp = fb::protocol::internal::response;
+
     try
     {
-        auto&& resp = co_await this->_owner.http.get<fb::protocol::internal::response::GetStoragePending>("internal", "/storage/pending");
+        auto&& resp = co_await this->_owner.http.get<internal_resp::GetStoragePending>("internal", "/storage/pending");
         if (resp.error != 0)
             co_return;
 
@@ -82,12 +84,14 @@ async::task<void> storage_pending_channel::fetch()
     co_return;
 }
 
-void storage_pending_channel::read(std::function<void(const std::unordered_map<std::string, storage_box::pending_box>&)> fn)
+void storage_pending_channel::read(
+    std::function<void(const std::unordered_map<std::string, storage_box::pending_box>&)> fn)
 {
     this->_data.read(fn);
 }
 
-async::task<void> storage_pending_channel::read_async(std::function<async::task<void>(const std::unordered_map<std::string, storage_box::pending_box>&)> fn)
+async::task<void> storage_pending_channel::read_async(
+    std::function<async::task<void>(const std::unordered_map<std::string, storage_box::pending_box>&)> fn)
 {
     co_await this->_data.async_read(fn);
 }
@@ -96,4 +100,3 @@ void storage_pending_channel::write(std::function<void(std::unordered_map<std::s
 {
     this->_data.write(fn);
 }
-

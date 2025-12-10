@@ -5,9 +5,9 @@
 #include <fb/model/model.h>
 #include <fb/game/protocol/object/move.h>
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::request {
+
+using namespace fb::model::enum_value;
 
 class update_move : public move
 {

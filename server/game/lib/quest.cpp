@@ -12,7 +12,12 @@ quest::quest(uint32_t id, std::weak_ptr<fb::game::character> owner) :
     owner(owner)
 { }
 
-quest::quest(uint32_t id, std::weak_ptr<fb::game::character> owner, uint32_t step, uint32_t progress, bool completed, std::string param) :
+quest::quest(uint32_t                           id,
+             std::weak_ptr<fb::game::character> owner,
+             uint32_t                           step,
+             uint32_t                           progress,
+             bool                               completed,
+             std::string                        param) :
     id(id),
     owner(owner),
     _step(step),

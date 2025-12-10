@@ -33,7 +33,10 @@ std::optional<uint32_t> item::durability() const
 void item::durability(uint32_t value)
 { }
 
-async::task<bool> item::map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type, bool notify)
+async::task<bool> item::map(std::shared_ptr<fb::game::map> map,
+                            const fb::model::point16_t&    position,
+                            DESTROY_TYPE                   destroy_type,
+                            bool                           notify)
 {
     auto result = co_await object::map(map, position, destroy_type, notify);
     if (!result)

@@ -38,7 +38,9 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
     auto& model = table::npc[spawn_model.npc];
     auto  npc   = this->_server.make<fb::game::npc>(model);
     auto  weak  = npc->weak_from_this_as<fb::game::npc>();
-    auto  fn    = [](std::shared_ptr<fb::game::npc> npc, std::shared_ptr<fb::game::map> map, fb::model::npc_spawn& spawn_model) -> async::task<void> {
+    auto  fn    = [](std::shared_ptr<fb::game::npc> npc,
+                 std::shared_ptr<fb::game::map> map,
+                 fb::model::npc_spawn&          spawn_model) -> async::task<void> {
         std::ignore = co_await npc->map(map, spawn_model.position);
         npc->direction(spawn_model.direction);
     };

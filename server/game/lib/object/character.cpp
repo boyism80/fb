@@ -21,9 +21,11 @@ character::character(fb::game::server& server, const initial_params& params) :
               .direction = params.direction,
               }
 }),
-    listener(server.listener), id(params.id), socket(params.socket), _pw(params.pw), _created_date(params.created_date), _updated_date(params.updated_date), _name(params.name),
-    _role(params.role), _birthday(params.birthday), _look(params.look), _color(params.color), _armor_color(params.armor_color), _experience(params.exp), _sex(params.sex),
-    _state(params.state), _level(params.level), _class(params.class_type), _promotion(params.promotion), _money(params.money), _disguise(params.disguise), _title(params.title)
+    listener(server.listener), id(params.id), socket(params.socket), _pw(params.pw), _created_date(params.created_date),
+    _updated_date(params.updated_date), _name(params.name), _role(params.role), _birthday(params.birthday),
+    _look(params.look), _color(params.color), _armor_color(params.armor_color), _experience(params.exp),
+    _sex(params.sex), _state(params.state), _level(params.level), _class(params.class_type),
+    _promotion(params.promotion), _money(params.money), _disguise(params.disguise), _title(params.title)
 { }
 
 character::~character()
@@ -71,7 +73,10 @@ OBJECT_TYPE character::what() const
     return OBJECT_TYPE::CHARACTER;
 }
 
-async::task<bool> character::map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type, bool notify)
+async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
+                                 const fb::model::point16_t&    position,
+                                 DESTROY_TYPE                   destroy_type,
+                                 bool                           notify)
 {
     if (this->_thread == nullptr)
         co_return true;
@@ -265,8 +270,9 @@ void fb::game::character::birthday(const std::optional<uint32_t>& value)
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-    log_data["old_birthday"]   = old_birthday.has_value() ? static_cast<Json::Int64>(old_birthday.value()) : Json::Value::null;
-    log_data["new_birthday"]   = value.has_value() ? static_cast<Json::Int64>(value.value()) : Json::Value::null;
+    log_data["old_birthday"] =
+        old_birthday.has_value() ? static_cast<Json::Int64>(old_birthday.value()) : Json::Value::null;
+    log_data["new_birthday"] = value.has_value() ? static_cast<Json::Int64>(value.value()) : Json::Value::null;
     this->server.log.write("birthday_change", log_data);
 }
 
@@ -381,7 +387,8 @@ bool character::creature(CREATURE value)
 {
     this->assert_thread();
 
-    if (value != CREATURE::DRAGON && value != CREATURE::PHOENIX && value != CREATURE::TIGER && value != CREATURE::TURTLE)
+    if (value != CREATURE::DRAGON && value != CREATURE::PHOENIX && value != CREATURE::TIGER &&
+        value != CREATURE::TURTLE)
         return false;
 
     this->_creature = value;
@@ -773,7 +780,7 @@ void character::money(uint32_t value)
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["old_money"]      = static_cast<Json::Int64>(old_money);
     log_data["new_money"]      = static_cast<Json::Int64>(value);
-    log_data["amount"]         = static_cast<Json::Int64>(static_cast<int64_t>(value) - static_cast<int64_t>(old_money));
+    log_data["amount"] = static_cast<Json::Int64>(static_cast<int64_t>(value) - static_cast<int64_t>(old_money));
     this->server.log.write("money_changed", log_data);
 }
 
@@ -892,7 +899,10 @@ void character::update_map()
         this->update_map(*this->_map);
 }
 
-void character::update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size, uint16_t crc)
+void character::update_map(const fb::game::map&        map,
+                           const fb::model::point16_t& begin,
+                           const fb::model::size8_t&   size,
+                           uint16_t                    crc)
 {
     this->listener.on_update_map(*this, map, begin, size, crc);
 }
@@ -1205,86 +1215,95 @@ async::task<void> character::process_system_mails()
 {
     this->assert_thread();
 
-    co_await this->server.system_mail.read_async([&](const std::vector<fb::game::system_mail>& system_mails) -> async::task<void> {
-        if (system_mails.empty())
-            co_return;
+    co_await this->server.system_mail.read_async(
+        [&](const std::vector<fb::game::system_mail>& system_mails) -> async::task<void> {
+            if (system_mails.empty())
+                co_return;
 
-        auto now          = fb::model::datetime();
-        auto created_date = this->_created_date;
+            auto now          = fb::model::datetime();
+            auto created_date = this->_created_date;
 
-        const auto& system_mail_users = this->mail_box.get_system_mail_users();
-        auto        user_mail_ids     = std::set<uint32_t>();
-        for (const auto& [mail_id, smu] : system_mail_users)
-        {
-            user_mail_ids.insert(mail_id);
-        }
-
-        for (const auto& mail : system_mails)
-        {
-            if (mail.expire_date.has_value() && mail.expire_date.value() < now)
-                continue;
-
-            if (mail.created_date < created_date)
-                continue;
-
-            if (user_mail_ids.find(mail.id) == user_mail_ids.end())
+            const auto& system_mail_users = this->mail_box.get_system_mail_users();
+            auto        user_mail_ids     = std::set<uint32_t>();
+            for (const auto& [mail_id, smu] : system_mail_users)
             {
-                this->mail_box.add_system_mail_user(mail.id, mail.expire_date.has_value() ? std::make_optional(mail.expire_date.value().to_string()) : std::nullopt);
+                user_mail_ids.insert(mail_id);
             }
-        }
 
-        for (const auto& [mail_id, smu] : system_mail_users)
-        {
-            if (smu.read)
-                continue;
-
-            bool               mail_exists = false;
-            const system_mail* mail_ptr    = nullptr;
             for (const auto& mail : system_mails)
             {
-                if (mail.id == mail_id)
+                if (mail.expire_date.has_value() && mail.expire_date.value() < now)
+                    continue;
+
+                if (mail.created_date < created_date)
+                    continue;
+
+                if (user_mail_ids.find(mail.id) == user_mail_ids.end())
                 {
-                    if (mail.expire_date.has_value() && mail.expire_date.value() < now)
-                        break;
-
-                    if (mail.created_date < created_date)
-                        break;
-
-                    mail_exists = true;
-                    mail_ptr    = &mail;
-                    break;
+                    this->mail_box.add_system_mail_user(mail.id,
+                                                        mail.expire_date.has_value()
+                                                            ? std::make_optional(mail.expire_date.value().to_string())
+                                                            : std::nullopt);
                 }
             }
 
-            if (!mail_exists)
-                continue;
-
-            try
+            for (const auto& [mail_id, smu] : system_mail_users)
             {
-                if (!this->mail_box.try_mark_system_mail_user_as_sent(mail_id))
+                if (smu.read)
                     continue;
 
-                if (mail_ptr == nullptr)
+                bool               mail_exists = false;
+                const system_mail* mail_ptr    = nullptr;
+                for (const auto& mail : system_mails)
                 {
-                    this->mail_box.update_system_mail_user_read(mail_id, false);
-                    continue;
+                    if (mail.id == mail_id)
+                    {
+                        if (mail.expire_date.has_value() && mail.expire_date.value() < now)
+                            break;
+
+                        if (mail.created_date < created_date)
+                            break;
+
+                        mail_exists = true;
+                        mail_ptr    = &mail;
+                        break;
+                    }
                 }
 
-                const auto& mail = *mail_ptr;
-                auto&&      resp =
-                    co_await this->server.http.post("internal", "/mail/write", WriteMail{mail.sender, this->name(), mail.title, mail.contents, fb::config<uint32_t>("id")});
+                if (!mail_exists)
+                    continue;
 
-                if (resp.error != 0)
+                try
+                {
+                    if (!this->mail_box.try_mark_system_mail_user_as_sent(mail_id))
+                        continue;
+
+                    if (mail_ptr == nullptr)
+                    {
+                        this->mail_box.update_system_mail_user_read(mail_id, false);
+                        continue;
+                    }
+
+                    const auto& mail = *mail_ptr;
+                    auto&&      resp = co_await this->server.http.post("internal",
+                                                                  "/mail/write",
+                                                                  internal_reqs::WriteMail{mail.sender,
+                                                                                           this->name(),
+                                                                                           mail.title,
+                                                                                           mail.contents,
+                                                                                           fb::config<uint32_t>("id")});
+
+                    if (resp.error != 0)
+                        this->mail_box.update_system_mail_user_read(mail_id, false);
+                    else
+                        this->server.on_write_mail(resp);
+                }
+                catch (...)
+                {
                     this->mail_box.update_system_mail_user_read(mail_id, false);
-                else
-                    this->server.on_write_mail(resp);
+                }
             }
-            catch (...)
-            {
-                this->mail_box.update_system_mail_user_read(mail_id, false);
-            }
-        }
-    });
+        });
 
     co_return;
 }
@@ -1451,7 +1470,8 @@ bool character::detect() const
     return this->_detect;
 }
 
-std::shared_ptr<fb::game::mob> character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify)
+std::shared_ptr<fb::game::mob>
+character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify)
 {
     auto map = this->_map;
     if (map == nullptr)

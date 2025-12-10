@@ -4,11 +4,15 @@
 using namespace fb::game::handler::protocol;
 using namespace fb::model;
 
+namespace game_reqs = fb::protocol::game::request;
+
 move::move(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::move>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::move>(server)
 { }
 
-async::task<bool> move::handle(fb::socket<character>& session, DIRECTION direction, const fb::model::point16_t& position)
+async::task<bool> move::handle(fb::socket<character>&      session,
+                               DIRECTION                   direction,
+                               const fb::model::point16_t& position)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -82,7 +86,7 @@ async::task<bool> move::handle(fb::socket<character>& session, DIRECTION directi
     co_return true;
 }
 
-async::task<bool> move::handle(fb::socket<character>& session, fb::protocol::game::request::move& request)
+async::task<bool> move::handle(fb::socket<character>& session, game_reqs::move& request)
 {
     return this->handle(session, request.direction, request.position);
 }

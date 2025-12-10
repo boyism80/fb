@@ -6,6 +6,8 @@
 
 namespace fb::game::handler::amqp {
 
+namespace internal_resp = fb::protocol::internal::response;
+
 class create_group : public fb::handler::amqp<fb::game::server, internal_resp::GroupDetails>
 {
 public:
@@ -22,4 +24,3 @@ public:
 } // namespace fb::game::handler::amqp
 
 #endif // FB_GAME_HANDLER_AMQP_CREATE_GROUP_H
-

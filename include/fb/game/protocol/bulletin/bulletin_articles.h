@@ -7,9 +7,9 @@
 #include <fb/game/bulletin.h>
 #endif
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::response {
+
+using namespace fb::model::enum_value;
 
 class bulletin_articles : public fb::protocol::header
 {
@@ -39,7 +39,9 @@ public:
 
 public:
 #ifndef BOT
-    bulletin_articles(const fb::model::bulletin& bulletin, const std::list<fb::game::bulletin::article>& article_list, BULLETIN_BUTTON_ENABLE button_flags);
+    bulletin_articles(const fb::model::bulletin&                    bulletin,
+                      const std::list<fb::game::bulletin::article>& article_list,
+                      BULLETIN_BUTTON_ENABLE                        button_flags);
 #else
     bulletin_articles() = default;
 #endif

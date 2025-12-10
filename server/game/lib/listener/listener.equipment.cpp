@@ -3,9 +3,11 @@
 
 using namespace fb::game;
 
+namespace game_resp = fb::protocol::game::response;
+
 void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 {
-    me.send(fb_resp::item_update_slot(me, parts));
+    me.send(game_resp::item_update_slot(me, parts));
     me.sound(SOUND::EQUIPMENT_ON);
 
     std::stringstream sstream;
@@ -48,7 +50,10 @@ void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS p
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 
     sstream.str(std::string());
-    sstream << std::format(_TEXT(MESSAGE_EQUIPMENT_STAT_ARMOR), me.stat.phydef(), me.stat.regenerative(), me.stat.magdef());
+    sstream << std::format(_TEXT(MESSAGE_EQUIPMENT_STAT_ARMOR),
+                           me.stat.phydef(),
+                           me.stat.regenerative(),
+                           me.stat.magdef());
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 }
 

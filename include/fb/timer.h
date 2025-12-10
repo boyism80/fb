@@ -7,9 +7,9 @@
 #include <async/task.h>
 #include <thread>
 
-using namespace std::chrono_literals;
-
 namespace fb {
+
+using namespace std::chrono_literals;
 
 class thread;
 

@@ -1,7 +1,11 @@
 #include <fb/bot/integration/skill_test.h>
 #include <fb/bot/integration/game_controller.h>
 
-namespace fb::bot::integration {
+using namespace std::chrono_literals;
+using namespace fb::bot::integration;
+
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
 
 async::task<bool> skill_test::test_group_healing_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
@@ -13,8 +17,9 @@ async::task<bool> skill_test::test_group_healing_spells(std::shared_ptr<fb::bot:
     // Group healing spells with their test parameters
     struct group_healing_spell
     {
-        std::string                                             name;
-        std::function<std::tuple<int, int>(fb::bot::game_bot*)> calculator; // returns {expected_hp_gain, expected_mp_cost}
+        std::string name;
+        std::function<std::tuple<int, int>(fb::bot::game_bot*)>
+            calculator; // returns {expected_hp_gain, expected_mp_cost}
     };
 
     auto group_healing_spells = std::vector<group_healing_spell>{
@@ -55,7 +60,9 @@ async::task<bool> skill_test::test_group_healing_spells(std::shared_ptr<fb::bot:
         // Calculate expected values
         auto [expected_hp_gain, expected_mp_cost] = spell_info.calculator(caster.get());
 
-        fb::logger::debug("Group spell calculation: expected HP gain={}, expected MP cost={}", expected_hp_gain, expected_mp_cost);
+        fb::logger::debug("Group spell calculation: expected HP gain={}, expected MP cost={}",
+                          expected_hp_gain,
+                          expected_mp_cost);
 
         // Prepare other bots: set max HP to 10000, current HP to 50
         for (size_t i = 1; i < bots.size(); ++i)
@@ -79,8 +86,8 @@ async::task<bool> skill_test::test_group_healing_spells(std::shared_ptr<fb::bot:
         // Cast group healing spell
         auto member_count  = bots.size() - 1;
         auto receive_count = 0;
-        std::ignore        = co_await caster->request<fb::protocol::game::response::update_hp>(
-            fb::protocol::game::request::spell_cast(SPELL_TYPE::NORMAL, spell_slot, "", 0, {0, 0}),
+        std::ignore        = co_await caster->request<game_resp::update_hp>(
+            game_reqs::spell_cast(SPELL_TYPE::NORMAL, spell_slot, "", 0, {0, 0}),
             [member_count, &receive_count](auto& resp) -> bool {
                 receive_count++;
                 return receive_count == member_count;
@@ -90,7 +97,10 @@ async::task<bool> skill_test::test_group_healing_spells(std::shared_ptr<fb::bot:
 
         if (caster->mp() != before_caster_mp - expected_mp_cost)
         {
-            fb::logger::warn("Group healing spell {} test failed - caster MP mismatch: expected {}, actual {}", spell_info.name, before_caster_mp - expected_mp_cost, caster->mp());
+            fb::logger::warn("Group healing spell {} test failed - caster MP mismatch: expected {}, actual {}",
+                             spell_info.name,
+                             before_caster_mp - expected_mp_cost,
+                             caster->mp());
             success = false;
             continue;
         }
@@ -111,13 +121,15 @@ async::task<bool> skill_test::test_group_healing_spells(std::shared_ptr<fb::bot:
     // Cleanup group
     co_await this->cleanup_group();
 
-    fb::logger::debug("Group healing spell test completed successfully - {} spells tested", group_healing_spells.size());
+    fb::logger::debug("Group healing spell test completed successfully - {} spells tested",
+                      group_healing_spells.size());
     caster->chat("All group healing spell tests completed successfully!");
 
     co_return true;
 }
 
-async::task<bool> skill_test::verify_group_healing_effects(const std::vector<int>& before_hp_values, int expected_hp_gain)
+async::task<bool> skill_test::verify_group_healing_effects(const std::vector<int>& before_hp_values,
+                                                           int                     expected_hp_gain)
 {
     auto bots = this->get_test_bots();
     for (size_t i = 1; i < bots.size(); ++i)
@@ -131,11 +143,12 @@ async::task<bool> skill_test::verify_group_healing_effects(const std::vector<int
 
         if (actual_hp != expected_hp)
         {
-            fb::logger::warn("Group healing verification failed for bot {}: expected HP={}, actual HP={}", bot->name(), expected_hp, actual_hp);
+            fb::logger::warn("Group healing verification failed for bot {}: expected HP={}, actual HP={}",
+                             bot->name(),
+                             expected_hp,
+                             actual_hp);
             co_return false;
         }
     }
     co_return true;
 }
-
-} // namespace fb::bot::integration

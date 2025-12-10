@@ -21,4 +21,3 @@ async::task<void> create_clan::handle(const internal_resp::ClanDetails& message)
     // Create clan in memory from ClanDetails (no API call needed)
     co_await this->server.on_create_clan(message);
 }
-

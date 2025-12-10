@@ -6,7 +6,8 @@ agreement::agreement(fb::login::server& server) :
     fb::handler::protocol<fb::login::server, fb::protocol::login::request::agreement>(server)
 { }
 
-async::task<bool> agreement::handle(fb::socket<fb::login::session>& session, fb::protocol::login::request::agreement& request)
+async::task<bool> agreement::handle(fb::socket<fb::login::session>&          session,
+                                    fb::protocol::login::request::agreement& request)
 {
     try
     {

@@ -34,8 +34,9 @@ void log_collector::write(const std::string& event_type, const Json::Value& data
     try
     {
         // Create log entry
+        auto now                 = fb::model::datetime();
         auto log_entry           = Json::Value{};
-        log_entry["timestamp"]   = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        log_entry["timestamp"]   = now.to_string();
         log_entry["event"]       = event_type;
         log_entry["server_id"]   = this->_server_id;
         log_entry["server_name"] = this->_server_name;

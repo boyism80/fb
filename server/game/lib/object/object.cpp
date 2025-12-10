@@ -20,7 +20,10 @@ object::object(fb::game::server& server, const fb::model::object& model, const i
 }
 
 object::object(const object& right) :
-    object(right.server, right._model, initial_params{.id = right._oid, .position = right._position, .direction = right._direction, .map = right._map})
+    object(
+        right.server,
+        right._model,
+        initial_params{.id = right._oid, .position = right._position, .direction = right._direction, .map = right._map})
 { }
 
 object::~object()
@@ -768,7 +771,8 @@ uint32_t object::distance_sqrt(const object& right) const
 {
     this->assert_thread();
 
-    return (uint32_t)std::pow(this->_position.x - right._position.x, 2) + (uint32_t)std::pow(this->_position.y - right._position.y, 2);
+    return (uint32_t)std::pow(this->_position.x - right._position.x, 2) +
+           (uint32_t)std::pow(this->_position.y - right._position.y, 2);
 }
 
 bool object::condition(const std::vector<fb::model::dsl>& conditions) const

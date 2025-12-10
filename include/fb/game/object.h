@@ -11,9 +11,9 @@
 #include <async/task.h>
 #include <shared_mutex>
 
-using namespace fb::model::enum_value;
-
 namespace fb::game {
+
+using namespace fb::model::enum_value;
 
 class server;
 class map;
@@ -77,42 +77,46 @@ public:
     virtual void on_init();
 
 public:
-    [[nodiscard]] virtual async::task<void>        destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-    virtual async::task<size_t>                    send(const fb::stream& stream, bool encrypt = true, bool wrap = true);
-    virtual async::task<size_t>                    send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true);
-    uint32_t                                       oid() const;
-    void                                           oid(uint32_t value);
-    const fb::model::object&                       based() const;
-    bool                                           is(OBJECT_TYPE type) const;
-    virtual const std::string&                     name() const;
-    virtual uint16_t                               look() const;
-    virtual uint8_t                                color() const;
-    virtual OBJECT_TYPE                            what() const;
-    virtual void                                   update_external(bool detailed);
-    virtual void                                   update_external(object& you, bool detailed);
-    virtual bool                                   super_hide() const;
-    virtual bool                                   hidden(const object& target) const;
-    void                                           chat(const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
-    const fb::model::point16_t&                    position() const;
-    virtual bool                                   position(uint16_t x, uint16_t y, bool refresh = false);
-    virtual bool                                   position(const fb::model::point16_t position, bool refresh = false);
-    bool                                           move();
-    virtual bool                                   move(DIRECTION direction);
-    uint16_t                                       x() const;
-    bool                                           x(uint16_t value);
-    uint16_t                                       y() const;
-    bool                                           y(uint16_t value);
-    DIRECTION                                      direction() const;
-    bool                                           direction(DIRECTION value);
-    virtual async::task<bool>                      map(map_ptr map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-    virtual async::task<bool>                      map(map_ptr map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT, bool notify = true);
-    map_ptr                                        map() const;
-    bool                                           sight(const fb::model::point16_t& position) const;
-    bool                                           sight(const fb::game::object& object) const;
-    fb::model::point16_t                           side_position(DIRECTION direction, int step = 1) const;
-    fb::model::point16_t                           front_position(int step = 1) const;
-    std::shared_ptr<fb::game::object>              side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    std::vector<std::shared_ptr<fb::game::object>> sides(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    [[nodiscard]] virtual async::task<void> destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual async::task<size_t>             send(const fb::stream& stream, bool encrypt = true, bool wrap = true);
+    virtual async::task<size_t> send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true);
+    uint32_t                    oid() const;
+    void                        oid(uint32_t value);
+    const fb::model::object&    based() const;
+    bool                        is(OBJECT_TYPE type) const;
+    virtual const std::string&  name() const;
+    virtual uint16_t            look() const;
+    virtual uint8_t             color() const;
+    virtual OBJECT_TYPE         what() const;
+    virtual void                update_external(bool detailed);
+    virtual void                update_external(object& you, bool detailed);
+    virtual bool                super_hide() const;
+    virtual bool                hidden(const object& target) const;
+    void chat(const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
+    const fb::model::point16_t&       position() const;
+    virtual bool                      position(uint16_t x, uint16_t y, bool refresh = false);
+    virtual bool                      position(const fb::model::point16_t position, bool refresh = false);
+    bool                              move();
+    virtual bool                      move(DIRECTION direction);
+    uint16_t                          x() const;
+    bool                              x(uint16_t value);
+    uint16_t                          y() const;
+    bool                              y(uint16_t value);
+    DIRECTION                         direction() const;
+    bool                              direction(DIRECTION value);
+    virtual async::task<bool>         map(map_ptr map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual async::task<bool>         map(map_ptr                     map,
+                                          const fb::model::point16_t& position,
+                                          DESTROY_TYPE                destroy_type = DESTROY_TYPE::DEFAULT,
+                                          bool                        notify       = true);
+    map_ptr                           map() const;
+    bool                              sight(const fb::model::point16_t& position) const;
+    bool                              sight(const fb::game::object& object) const;
+    fb::model::point16_t              side_position(DIRECTION direction, int step = 1) const;
+    fb::model::point16_t              front_position(int step = 1) const;
+    std::shared_ptr<fb::game::object> side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<std::shared_ptr<fb::game::object>> sides(DIRECTION   direction,
+                                                         OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     std::shared_ptr<fb::game::object>              forward(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     std::vector<std::shared_ptr<fb::game::object>> forwards(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     double                                         distance(const object& right) const;
@@ -120,9 +124,10 @@ public:
     virtual bool                                   condition(const std::vector<fb::model::dsl>& conditions) const;
     virtual bool                                   available() const;
     virtual void                                   hide(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-    virtual void                                   hide(fb::game::object& to, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual void hide(fb::game::object& to, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     std::vector<std::shared_ptr<fb::game::object>> sight_in(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    std::vector<std::shared_ptr<fb::game::object>> nears(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN, bool contains_super_hide = false) const;
+    std::vector<std::shared_ptr<fb::game::object>> nears(OBJECT_TYPE type                = OBJECT_TYPE::UNKNOWN,
+                                                         bool        contains_super_hide = false) const;
     void                                           thread(fb::thread* value);
     virtual fb::thread*                            thread() const override;
     virtual void                                   update_id();

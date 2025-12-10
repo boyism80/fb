@@ -55,7 +55,8 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     for (int i = 0; i < spawn_count; i++)
     {
         // Use smart pointer for mob creation
-        auto mob = this->_server.make<fb::game::mob>(table::mob[this->model.mob], mob::initial_params{.alive = true, .rezen = this});
+        auto mob = this->_server.make<fb::game::mob>(table::mob[this->model.mob],
+                                                     mob::initial_params{.alive = true, .rezen = this});
 
         mob->direction(DIRECTION(std::rand() % 4));
         mob->stat.heal(mob->stat.base_hp());
@@ -65,7 +66,8 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
             auto width    = this->model.end.x - this->model.begin.x;
             auto height   = this->model.end.y - this->model.begin.y;
             auto map      = this->_server.maps[this->model.parent];
-            auto position = fb::model::point16_t(this->model.begin.x + (width > 0 ? std::rand() % width : 0), this->model.begin.y + (height > 0 ? std::rand() % height : 0));
+            auto position = fb::model::point16_t(this->model.begin.x + (width > 0 ? std::rand() % width : 0),
+                                                 this->model.begin.y + (height > 0 ? std::rand() % height : 0));
 
             if (position.x > map->width() - 1 || position.y > map->height() - 1)
                 continue;

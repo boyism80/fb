@@ -316,7 +316,9 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     return true;
 }
 
-std::shared_ptr<buff> buffs::push_back(const fb::model::spell& model, uint32_t seconds, const std::shared_ptr<fb::game::object>& caster)
+std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  model,
+                                       uint32_t                                 seconds,
+                                       const std::shared_ptr<fb::game::object>& caster)
 {
     this->_owner.assert_thread();
 

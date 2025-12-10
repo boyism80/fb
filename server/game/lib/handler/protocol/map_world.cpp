@@ -4,11 +4,13 @@
 using namespace fb::game::handler::protocol;
 using table = fb::model::table;
 
+namespace game_reqs = fb::protocol::game::request;
+
 map_world::map_world(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::map_world>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::map_world>(server)
 { }
 
-async::task<bool> map_world::handle(fb::socket<character>& session, fb::protocol::game::request::map_world& request)
+async::task<bool> map_world::handle(fb::socket<character>& session, game_reqs::map_world& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)

@@ -17,7 +17,7 @@ void login_bot_controller::initialize()
     // No timers needed for login bot_controller as it's reactive to connections
 }
 
-async::task<void> login_bot_controller::on_agreement(login_bot& bot, const fb::protocol::login::response::agreement& response)
+async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login_resp::agreement& response)
 {
     // Integration test: Validate authentication flow with controlled test accounts
     auto           id     = bot.generate_id();
@@ -31,7 +31,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const fb::p
         // TODO: Add authentication flow validation logic
         while (true)
         {
-            auto&& resp = co_await bot.request<fb::protocol::login::response::message>(fb::protocol::login::request::create(id, pw));
+            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::create(id, pw));
 
             if (resp.type == 0x00)
                 break;
@@ -65,7 +65,8 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const fb::p
 
             while (true)
             {
-                auto&& resp = co_await bot.request<fb::protocol::login::response::message>(fb::protocol::login::request::complete{hair, sex, nation, creature});
+                auto&& resp = co_await bot.request<login_resp::message>(
+                    fb::protocol::login::request::complete{hair, sex, nation, creature});
 
                 if (resp.type == 0x00)
                     break;
@@ -79,7 +80,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const fb::p
         // Integration test: Validate login authentication
         while (true)
         {
-            auto&& resp = co_await bot.request<fb::protocol::login::response::message>(fb::protocol::login::request::login{id, pw});
+            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::login{id, pw});
             if (resp.type == 0x00)
                 break;
 
@@ -97,7 +98,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const fb::p
     co_return;
 }
 
-async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb::protocol::response::transfer& response)
+async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb_resp::transfer& response)
 {
     // Integration test: Validate login-to-game server transition
     bot.close();
@@ -116,7 +117,7 @@ async::task<void> login_bot_controller::on_bot_connected(login_bot& bot)
 {
     // Integration test: Initialize authentication test scenario upon connection
     auto& encryption = bot.encryption();
-    bot.send(fb::protocol::login::request::agreement(encryption.pattern(), fb::encryption::KEY_SIZE, encryption.iv()), false, true);
+    bot.send(login_reqs::agreement(encryption.pattern(), fb::encryption::KEY_SIZE, encryption.iv()), false, true);
 
     // TODO: Set up login-specific test scenarios
     co_return;

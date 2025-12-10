@@ -14,4 +14,3 @@ async::task<void> updated_group::handle(const internal_resp::UpdatedGroup& messa
 
     co_await this->server.on_updated_group(message);
 }
-

@@ -6,12 +6,13 @@
 #include <fb/socket.h>
 #ifndef BOT
 #include <fb/game/character.h>
-using namespace fb::game;
 #endif
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::request {
+#ifndef BOT
+using namespace fb::game;
+#endif
+using namespace fb::model::enum_value;
 
 class user_list : public fb::protocol::header
 {
@@ -32,6 +33,9 @@ public:
 } // namespace fb::protocol::game::request
 
 namespace fb::protocol::game::response {
+#ifndef BOT
+using namespace fb::game;
+#endif
 
 class user_list : public fb::protocol::header
 {

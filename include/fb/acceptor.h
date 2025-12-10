@@ -12,9 +12,9 @@
 #include <iomanip>
 #include <boost/stacktrace.hpp>
 
-using namespace std::chrono_literals;
-
 namespace fb {
+
+using namespace std::chrono_literals;
 
 template <typename T>
 class acceptor : public fb::async_executor, public boost::asio::ip::tcp::acceptor
@@ -123,9 +123,10 @@ private:
                 }
                 else
                 {
-                    auto protocol = std::shared_ptr<fb::protocol::header>(co_await this->handler.protocol.get_deserializer(cmd)(reader));
-                    auto fd       = socket.fd();
-                    auto weak     = socket.template weak_from_this_as<fb::socket<T>>();
+                    auto protocol = std::shared_ptr<fb::protocol::header>(
+                        co_await this->handler.protocol.get_deserializer(cmd)(reader));
+                    auto fd   = socket.fd();
+                    auto weak = socket.template weak_from_this_as<fb::socket<T>>();
                     this->threads.enqueue(weak, [this, protocol, weak, fd, cmd](auto& thread) -> async::task<void> {
                         try
                         {
@@ -140,7 +141,8 @@ private:
                             auto& handler = this->handler.protocol.get_handler(cmd);
                             // Check both global socket TPS and per-command TPS limits
                             // If either limit is exceeded, ignore the packet
-                            if (this->assert_tps(*socket) && !socket->limiter.update(cmd, handler.duration, handler.limit))
+                            if (this->assert_tps(*socket) &&
+                                !socket->limiter.update(cmd, handler.duration, handler.limit))
                                 co_return;
 
                             [[maybe_unused]]
@@ -242,7 +244,9 @@ private:
 
     void accept()
     {
-        auto socket_ptr = std::make_shared<fb::socket<T>>(*this, std::bind_front(&acceptor::on_socket_received, this), std::bind_front(&acceptor::on_socket_closed, this));
+        auto socket_ptr = std::make_shared<fb::socket<T>>(*this,
+                                                          std::bind_front(&acceptor::on_socket_received, this),
+                                                          std::bind_front(&acceptor::on_socket_closed, this));
         this->async_accept(*socket_ptr, [this, socket_ptr](boost::system::error_code error) mutable {
             try
             {
@@ -275,14 +279,17 @@ private:
             }
             catch (std::exception& e)
             {
-                fb::logger::fatal("acceptor::accept: error={}\n{}", e.what(), boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
+                fb::logger::fatal("acceptor::accept: error={}\n{}",
+                                  e.what(),
+                                  boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
                 socket_ptr->close();
             }
         });
     }
 
 public:
-    [[nodiscard]] async::task<void> transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::Service from)
+    [[nodiscard]] async::task<void>
+    transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::Service from)
     {
         auto& encryption = socket.encryption();
         auto  params     = fb::stream();
@@ -305,7 +312,11 @@ public:
     }
 
 public:
-    [[nodiscard]] async::task<void> transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::Service from, const fb::stream& parameter)
+    [[nodiscard]] async::task<void> transfer(fb::socket<T>&                  socket,
+                                             uint32_t                        ip,
+                                             uint16_t                        port,
+                                             fb::protocol::internal::Service from,
+                                             const fb::stream&               parameter)
     {
         auto& encryption = socket.encryption();
         auto  header     = fb::stream();
@@ -329,13 +340,18 @@ public:
     }
 
 public:
-    [[nodiscard]] async::task<void> transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::Service from)
+    [[nodiscard]] async::task<void>
+    transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::Service from)
     {
         co_await this->transfer(socket, inet_addr(this->ipv4(ip).c_str()), port, from);
     }
 
 public:
-    [[nodiscard]] async::task<void> transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::Service from, const fb::stream& parameter)
+    [[nodiscard]] async::task<void> transfer(fb::socket<T>&                  socket,
+                                             const std::string&              ip,
+                                             uint16_t                        port,
+                                             fb::protocol::internal::Service from,
+                                             const fb::stream&               parameter)
     {
         co_await this->transfer(socket, inet_addr(this->ipv4(ip).c_str()), port, from, parameter);
     }
@@ -419,7 +435,8 @@ public:
     }
 
 public:
-    async::task<size_t> send(fb::socket<T>& socket, const fb::protocol::header& response, bool encrypt = true, bool wrap = true)
+    async::task<size_t>
+    send(fb::socket<T>& socket, const fb::protocol::header& response, bool encrypt = true, bool wrap = true)
     {
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);

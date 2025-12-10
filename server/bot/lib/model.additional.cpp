@@ -7,7 +7,8 @@
 #include <shared_mutex>
 #include <mutex>
 
-const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_value::CLASS cls, uint8_t promotion) const
+const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_value::CLASS cls,
+                                                                uint8_t                      promotion) const
 {
     try
     {
@@ -20,7 +21,9 @@ const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_
     }
 }
 
-bool fb::model::__promotion::name2class(const std::string& name, fb::model::enum_value::CLASS& cls, uint8_t& promotion) const
+bool fb::model::__promotion::name2class(const std::string&            name,
+                                        fb::model::enum_value::CLASS& cls,
+                                        uint8_t&                      promotion) const
 {
     static auto cache       = std::unordered_map<std::string, std::pair<fb::model::enum_value::CLASS, uint8_t>>{};
     static auto cache_mutex = std::shared_mutex{};

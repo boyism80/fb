@@ -7,8 +7,10 @@
 #include <functional>
 
 using namespace std::chrono_literals;
+using namespace fb::bot::integration;
 
-namespace fb::bot::integration {
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
 
 drop_loot_test::drop_loot_test(game_bot_controller& controller) :
     bot_integration_test(controller, 2)
@@ -107,8 +109,8 @@ async::task<bool> drop_loot_test::test_scenario_1()
     }
 
     // 4. Drop money
-    std::ignore = co_await bot1->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::item_drop_money(50000),
+    std::ignore = co_await bot1->request<game_resp::update_internal>(
+        game_reqs::item_drop_money(50000),
         [](auto& resp) -> bool {
             return resp.ch_money == 0;
         },
@@ -117,8 +119,8 @@ async::task<bool> drop_loot_test::test_scenario_1()
     bot1->chat("Scenario 1: Dropped all items and money");
 
     // 5. Loot request (no boost) - should get 0 items, only money
-    std::ignore = co_await bot1->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::loot(false),
+    std::ignore = co_await bot1->request<game_resp::update_internal>(
+        game_reqs::loot(false),
         [](auto& resp) -> bool {
             return resp.ch_money == 50000;
         },
@@ -134,8 +136,8 @@ async::task<bool> drop_loot_test::test_scenario_1()
     bot1->chat("Scenario 1: First loot - money recovered, no items");
 
     // 6. Loot request (no boost) - should get last dropped item (도토리)
-    std::ignore = co_await bot1->request<fb::protocol::game::response::item_update>(
-        fb::protocol::game::request::loot(false),
+    std::ignore = co_await bot1->request<game_resp::item_update>(
+        game_reqs::loot(false),
         [](auto& resp) -> bool {
             return resp.name.find("도토리") != std::string::npos && resp.count == 200;
         },
@@ -144,15 +146,16 @@ async::task<bool> drop_loot_test::test_scenario_1()
     bot1->chat("Scenario 1: Second loot - 도토리 recovered");
 
     // 7. Loot boost request - should get all remaining items
-    std::ignore = co_await bot1->request<fb::protocol::game::response::item_update>(
-        fb::protocol::game::request::loot(true),
+    std::ignore = co_await bot1->request<game_resp::item_update>(
+        game_reqs::loot(true),
         [](auto& resp) -> bool {
             return resp.index == 4;
         },
         DEFAULT_TIMEOUT);
 
     // Check that all items are recovered
-    if (!this->has_item(bot1, "목도") || !this->has_item(bot1, "목검") || !this->has_item(bot1, "양첨목봉") || !this->has_item(bot1, "현철중검"))
+    if (!this->has_item(bot1, "목도") || !this->has_item(bot1, "목검") || !this->has_item(bot1, "양첨목봉") ||
+        !this->has_item(bot1, "현철중검"))
     {
         fb::logger::fatal("Scenario 1: Third loot failed - missing items");
         co_return false;
@@ -181,8 +184,8 @@ async::task<bool> drop_loot_test::test_scenario_2()
     bot1->chat("Scenario 2: Inventory full, dropped 1 item, created 1 more");
 
     // 4. Try to loot - should fail with MESSAGE_ITEM_FULL
-    std::ignore = co_await bot1->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::loot(false),
+    std::ignore = co_await bot1->request<game_resp::message>(
+        game_reqs::loot(false),
         [](auto& resp) -> bool {
             return resp.text.find(_TEXT(MESSAGE_ITEM_FULL)) != std::string::npos;
         },
@@ -212,8 +215,8 @@ async::task<bool> drop_loot_test::test_scenario_3()
     bot1->chat("Scenario 3: Dropped 200 도토리, created 2 more");
 
     // 4. Try to loot - should fail with MESSAGE_ITEM_FULL and verify count stays at 2
-    auto&& response = co_await bot1->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::loot(false),
+    auto&& response = co_await bot1->request<game_resp::message>(
+        game_reqs::loot(false),
         [](auto& resp) -> bool {
             return resp.text.find(_TEXT(MESSAGE_ITEM_FULL)) != std::string::npos;
         },
@@ -222,7 +225,8 @@ async::task<bool> drop_loot_test::test_scenario_3()
     // Check that count stays at 2
     if (this->get_item_count(bot1, "도토리") != 201)
     {
-        fb::logger::fatal("Scenario 3: Item count check failed - expected 2, got {}", this->get_item_count(bot1, "도토리"));
+        fb::logger::fatal("Scenario 3: Item count check failed - expected 2, got {}",
+                          this->get_item_count(bot1, "도토리"));
         co_return false;
     }
 
@@ -249,8 +253,8 @@ async::task<bool> drop_loot_test::test_scenario_4()
     bot1->chat("Scenario 4: Dropped 1 money, set to max money");
 
     // 4. Try to loot - should fail with MESSAGE_MONEY_FULL
-    std::ignore = co_await bot1->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::loot(false),
+    std::ignore = co_await bot1->request<game_resp::message>(
+        game_reqs::loot(false),
         [](auto& resp) -> bool {
             return resp.text.find(_TEXT(MESSAGE_MONEY_FULL)) != std::string::npos;
         },
@@ -293,8 +297,8 @@ async::task<bool> drop_loot_test::test_scenario_5()
 
     // 5. Bot2 equips 목도 and check for weapon equipment message
     auto mokdo_slot = this->get_item_slot(bot2, "목도");
-    std::ignore     = co_await bot2->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::item_active(mokdo_slot),
+    std::ignore     = co_await bot2->request<game_resp::message>(
+        game_reqs::item_active(mokdo_slot),
         [](auto& resp) -> bool {
             return resp.text.find("w:무기  :") == 0;
         },
@@ -305,8 +309,8 @@ async::task<bool> drop_loot_test::test_scenario_5()
 
     // 7. Bot1 casts hellfire on bot2
     uint8_t hellfire_slot = 0; // First spell slot
-    std::ignore           = co_await bot1->request<fb::protocol::game::response::update_external<true>>(
-        fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, hellfire_slot, "", bot2->oid(), bot2->position()),
+    std::ignore           = co_await bot1->request<game_resp::update_external<true>>(
+        game_reqs::spell_cast(SPELL_TYPE::TARGET, hellfire_slot, "", bot2->oid(), bot2->position()),
         [bot2_oid = bot2->oid()](auto& resp) -> bool {
             if (resp.oid != bot2_oid)
                 return false;
@@ -327,8 +331,8 @@ async::task<bool> drop_loot_test::test_scenario_5()
     co_await bot1->move(DIRECTION::RIGHT);
 
     // 10. Bot1 loots and should get "죽은 자의 온기가 남아있습니다." message and some items
-    std::ignore = co_await bot1->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::loot(false),
+    std::ignore = co_await bot1->request<game_resp::message>(
+        game_reqs::loot(false),
         [](auto& resp) -> bool {
             return resp.text.find(_TEXT(MESSAGE_ITEM_DEATH_PENALTY_WARMTH)) != std::string::npos;
         },
@@ -350,5 +354,3 @@ std::string drop_loot_test::name() const
 {
     return "Drop Loot Test";
 }
-
-} // namespace fb::bot::integration

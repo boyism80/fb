@@ -3,11 +3,13 @@
 
 using namespace fb::game::handler::protocol;
 
+namespace game_reqs = fb::protocol::game::request;
+
 swap::swap(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::swap>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::swap>(server)
 { }
 
-async::task<bool> swap::handle(fb::socket<character>& session, fb::protocol::game::request::swap& request)
+async::task<bool> swap::handle(fb::socket<character>& session, game_reqs::swap& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)

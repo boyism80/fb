@@ -7,6 +7,10 @@
 
 namespace fb::bot::load {
 
+namespace gateway_resp = fb::protocol::gateway::response;
+namespace gateway_reqs = fb::protocol::gateway::request;
+namespace fb_resp      = fb::protocol::response;
+
 class gateway_bot_controller : public fb::bot::gateway_bot_controller
 {
 private:
@@ -21,10 +25,10 @@ public:
 
 private:
     async::task<void> on_bot_spawn();
-    async::task<void> on_welcome(gateway_bot& bot, const fb::protocol::gateway::response::welcome& response);
-    async::task<void> on_crt(gateway_bot& bot, const fb::protocol::gateway::response::encryption& response);
-    async::task<void> on_hosts(gateway_bot& bot, const fb::protocol::gateway::response::endpoint& response);
-    async::task<void> on_transfer(gateway_bot& bot, const fb::protocol::response::transfer& response);
+    async::task<void> on_welcome(gateway_bot& bot, const gateway_resp::welcome& response);
+    async::task<void> on_crt(gateway_bot& bot, const gateway_resp::encryption& response);
+    async::task<void> on_hosts(gateway_bot& bot, const gateway_resp::endpoint& response);
+    async::task<void> on_transfer(gateway_bot& bot, const fb_resp::transfer& response);
 
 public:
     void                      initialize() override;

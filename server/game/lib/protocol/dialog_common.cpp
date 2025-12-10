@@ -3,7 +3,12 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-dialog::dialog(const fb::model::object& object, const std::string& message, bool button_prev, bool button_next, uint32_t oid, fb::game::dialog::interaction interaction) :
+dialog::dialog(const fb::model::object&      object,
+               const std::string&            message,
+               bool                          button_prev,
+               bool                          button_next,
+               uint32_t                      oid,
+               fb::game::dialog::interaction interaction) :
     portrait(fb::game::portrait_factory::create(object)),
     message(message),
     button_prev(button_prev),
@@ -12,7 +17,12 @@ dialog::dialog(const fb::model::object& object, const std::string& message, bool
     interaction(interaction)
 { }
 
-dialog::dialog(const fb::game::object& object, const std::string& message, bool button_prev, bool button_next, uint32_t oid, fb::game::dialog::interaction interaction) :
+dialog::dialog(const fb::game::object&       object,
+               const std::string&            message,
+               bool                          button_prev,
+               bool                          button_next,
+               uint32_t                      oid,
+               fb::game::dialog::interaction interaction) :
     portrait(fb::game::portrait_factory::create(object)),
     message(message),
     button_prev(button_prev),

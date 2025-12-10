@@ -5,10 +5,10 @@
 #include <fb/model/model.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 
+namespace fb::protocol::game::response {
+
 using namespace fb::model::enum_value;
 using namespace fb::protocol::internal;
-
-namespace fb::protocol::game::response {
 
 class bulletin_mails : public fb::protocol::header
 {

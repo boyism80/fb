@@ -4,9 +4,9 @@
 #include <fb/model/model.h>
 #include <fb/stream_writer.h>
 
-using namespace fb::model::enum_value;
-
 namespace fb::game {
+
+using namespace fb::model::enum_value;
 
 class object;
 
