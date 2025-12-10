@@ -760,17 +760,29 @@ void character::money(uint32_t value)
 {
     this->assert_thread();
 
-    this->_money = value;
+    if (this->_money == value)
+        return;
+
+    auto old_money = this->_money;
+    this->_money   = value;
     this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+
+    // Log money changed event
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_money"]      = static_cast<Json::Int64>(old_money);
+    log_data["new_money"]      = static_cast<Json::Int64>(value);
+    log_data["amount"]         = static_cast<Json::Int64>(static_cast<int64_t>(value) - static_cast<int64_t>(old_money));
+    this->server.log.write("money_changed", log_data);
 }
 
 uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
 {
     this->assert_thread();
 
-    uint32_t capacity  = 0xFFFFFFFF - this->_money;
-    uint32_t lack      = 0;
-    auto     old_money = this->_money;
+    uint32_t capacity = 0xFFFFFFFF - this->_money;
+    uint32_t lack     = 0;
     if (value > capacity)
     {
         this->money(this->_money + capacity);
@@ -781,33 +793,14 @@ uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
         this->money(this->_money + value);
     }
 
-    // Log money gain event
-    auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
-    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-    log_data["amount"]         = static_cast<Json::Int64>(value - lack);
-    log_data["old_money"]      = static_cast<Json::Int64>(old_money);
-    log_data["new_money"]      = static_cast<Json::Int64>(this->_money);
-    this->server.log.write("money_gain", log_data);
-
     return lack;
 }
 
 void character::money_reduce(uint32_t value)
 {
     this->assert_thread();
-    value          = std::min(this->_money, value);
-    auto old_money = this->_money;
+    value = std::min(this->_money, value);
     this->money(this->_money - value);
-
-    // Log money reduce event
-    auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
-    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-    log_data["amount"]         = static_cast<Json::Int64>(value);
-    log_data["old_money"]      = static_cast<Json::Int64>(old_money);
-    log_data["new_money"]      = static_cast<Json::Int64>(this->_money);
-    this->server.log.write("money_reduce", log_data);
 }
 
 fb::game::cash* character::money_drop(uint32_t value)
