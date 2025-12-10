@@ -84,6 +84,8 @@ public:
     using group_ptr                    = std::shared_ptr<fb::game::group>;
     using npc_interaction_handler_ptr  = std::unique_ptr<fb::game::npc_interaction_handler>;
     using npc_interaction_handler_list = std::vector<npc_interaction_handler_ptr>;
+    using ensure_group_fn              = std::function<async::task<void>(group_ptr&)>;
+    using ensure_clan_fn               = std::function<async::task<void>(clan_ptr&)>;
 
 private:
     fb::model::datetime          _time;
@@ -107,9 +109,9 @@ public:
     ~server();
 
 public:
-    async::task<void> ensure_group(uint32_t id, std::function<async::task<void>(std::shared_ptr<group>&)> fn);
-    void update_clan(clan& clan, internal::Clan& resp1, const std::vector<internal::ClanMember>& resp2) const;
-    async::task<void> ensure_clan(uint32_t id, std::function<async::task<void>(std::shared_ptr<clan>&)> fn);
+    async::task<void> ensure_group(uint32_t id, ensure_group_fn fn);
+    void update_clan(clan& clan, internal::Clan& clan_dto, const std::vector<internal::ClanMember>& members_dto) const;
+    async::task<void> ensure_clan(uint32_t id, ensure_clan_fn fn);
 
 private:
     template <typename HandlerType> void bind_npc_interaction()

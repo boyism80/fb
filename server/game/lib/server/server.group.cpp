@@ -40,14 +40,11 @@ void server::assert_group(uint32_t error, const std::string& actor) const
     }
 }
 
-async::task<void> server::ensure_group(uint32_t                                                            id,
-                                       std::function<async::task<void>(std::shared_ptr<fb::game::group>&)> fn)
+async::task<void> server::ensure_group(uint32_t id, ensure_group_fn fn)
 {
     auto thread = this->threads.current();
     if (thread == nullptr)
-    {
         throw std::runtime_error(std::format("No thread available for ensure_group (group_id: {})", id));
-    }
 
     // Use try_async_write with retry mechanism
     // Note: We need to ensure we return to the original thread after try_async_write completes

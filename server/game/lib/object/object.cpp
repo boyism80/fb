@@ -264,7 +264,6 @@ bool object::move(DIRECTION direction)
     auto before = this->_position;
     this->position(after);
 
-    // Execute move script
     auto lua = fb::lua::new_context();
     if (lua != nullptr)
     {
@@ -276,7 +275,6 @@ bool object::move(DIRECTION direction)
         std::ignore = lua->call(1);
     }
 
-    // Call listener for packet response
     this->listener.on_move(*this, before);
 
     return true;
@@ -326,7 +324,6 @@ bool object::direction(DIRECTION value)
 
     this->_direction = value;
 
-    // Execute direction change script
     auto lua = fb::lua::new_context();
     if (lua != nullptr)
     {
@@ -338,7 +335,6 @@ bool object::direction(DIRECTION value)
         std::ignore = lua->call(1);
     }
 
-    // Call listener for packet response
     this->listener.on_direction(*this);
 
     return true;

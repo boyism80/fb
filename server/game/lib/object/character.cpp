@@ -205,13 +205,13 @@ void character::role(ROLE value)
     if (this->_role == value)
         return;
 
-    auto old_role = this->_role;
-    this->_role   = value;
+    auto old    = this->_role;
+    this->_role = value;
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-    log_data["old_role"]       = static_cast<int>(old_role);
+    log_data["old_role"]       = static_cast<int>(old);
     log_data["new_role"]       = static_cast<int>(value);
     this->server.log.write("role_change", log_data);
 }
@@ -264,15 +264,14 @@ void fb::game::character::birthday(const std::optional<uint32_t>& value)
     if (this->_birthday == value)
         return;
 
-    auto old_birthday = this->_birthday;
-    this->_birthday   = value;
+    auto old        = this->_birthday;
+    this->_birthday = value;
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-    log_data["old_birthday"] =
-        old_birthday.has_value() ? static_cast<Json::Int64>(old_birthday.value()) : Json::Value::null;
-    log_data["new_birthday"] = value.has_value() ? static_cast<Json::Int64>(value.value()) : Json::Value::null;
+    log_data["old_birthday"]   = old.has_value() ? static_cast<Json::Int64>(old.value()) : Json::Value::null;
+    log_data["new_birthday"]   = value.has_value() ? static_cast<Json::Int64>(value.value()) : Json::Value::null;
     this->server.log.write("birthday_change", log_data);
 }
 
@@ -738,22 +737,17 @@ float character::experience_percent() const
     this->assert_thread();
 
     if (this->max_level())
-    {
         return std::min(100.0f, (this->_experience / float(0xFFFFFFFF)) * 100.0f);
-    }
-    else
-    {
-        auto level    = this->level();
-        auto required = table::ability[this->_class][level].exp;
 
-        auto prev_stack_exp = uint32_t{0};
-        if (table::ability[this->_class].contains(level - 1))
-            prev_stack_exp = table::ability[this->_class][level - 1].stacked_exp;
-        else if (table::ability[CLASS::NONE].contains(level - 1))
-            prev_stack_exp = table::ability[CLASS::NONE][level - 1].stacked_exp;
+    auto level          = this->level();
+    auto required       = table::ability[this->_class][level].exp;
+    auto prev_stack_exp = uint32_t{0};
+    if (table::ability[this->_class].contains(level - 1))
+        prev_stack_exp = table::ability[this->_class][level - 1].stacked_exp;
+    else if (table::ability[CLASS::NONE].contains(level - 1))
+        prev_stack_exp = table::ability[CLASS::NONE][level - 1].stacked_exp;
 
-        return std::min(100.0f, ((this->_experience - prev_stack_exp) / float(required)) * 100.0f);
-    }
+    return std::min(100.0f, ((this->_experience - prev_stack_exp) / float(required)) * 100.0f);
 }
 
 uint32_t character::money() const
@@ -1581,7 +1575,7 @@ async::task<void> character::death_penalty()
     if (money > 0)
     {
         this->money_reduce(money);
-        // TODO: Phase 3 - Convert to smart pointer return type
+
         auto cash_shared = this->server.make<fb::game::cash>(money);
         auto cash        = cash_shared.get();
         cash->death_uid(this->id);
