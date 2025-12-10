@@ -121,8 +121,10 @@ std::vector<fb::model::item*> fb::model::__item::name2item_prefix(const std::str
 {
     static auto sorted_items = std::map<std::string, fb::model::item*>{};
     static auto once_flag    = std::once_flag{};
+    static auto read_mutex   = std::shared_mutex{};
 
     std::call_once(once_flag, [this]() {
+        auto lock = std::lock_guard(read_mutex);
         for (auto& [k, v] : *this)
         {
             sorted_items[v.name] = &v;
@@ -132,6 +134,7 @@ std::vector<fb::model::item*> fb::model::__item::name2item_prefix(const std::str
     auto result = std::vector<fb::model::item*>{};
 
     {
+        auto lock = std::shared_lock(read_mutex);
         if (prefix.empty())
         {
             result.reserve(sorted_items.size());
