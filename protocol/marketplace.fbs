@@ -1,0 +1,51 @@
+namespace fb.protocol.marketplace;
+
+table MarketplaceItem {
+    owner: uint;
+    model: uint;
+    count: ushort;
+    durability: uint?;
+    custom_name: string?;
+}
+
+table MarketplaceListing {
+    id: ulong;
+    seller_id: uint;
+    item: MarketplaceItem;
+    price: uint;
+    listing_fee: uint;
+    transaction_fee: uint;
+    expire_date: string;
+    created_date: string;
+}
+
+table MarketplaceSearchResult {
+    listings: [MarketplaceListing];
+    total_count: uint;
+    page: uint;
+    page_size: uint;
+}
+
+table PendingTransaction {
+    id: ulong;
+    listing_id: ulong;
+    buyer_id: uint;
+    seller_id: uint;
+    item_model: uint;
+    item_count: ushort;
+    price: uint;
+    seller_revenue: uint;
+    created_date: string;
+}
+
+table PendingReturn {
+    id: ulong;
+    listing_id: ulong;
+    seller_id: uint;
+    item_model: uint;
+    item_count: ushort;
+    item_durability: uint?;
+    item_custom_name: string?;
+    created_date: string;
+}
+

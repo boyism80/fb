@@ -1,0 +1,50 @@
+include "marketplace.fbs";
+
+namespace fb.protocol.marketplace.request;
+
+table MarketplaceList {
+    character_id: uint;
+    request_id: string;
+    item: fb.protocol.marketplace.MarketplaceItem;
+    price: uint;
+    expire_hours: ushort;
+}
+
+table MarketplaceCancel {
+    character_id: uint;
+    listing_id: ulong;
+}
+
+table MarketplacePurchase {
+    buyer_id: uint;
+    listing_id: ulong;
+    request_id: string;
+}
+
+table MarketplaceSearch {
+    item_name: string?;
+    min_price: uint?;
+    max_price: uint?;
+    seller_id: uint?;
+    sort_by: string?;
+    page: uint?;
+    page_size: uint?;
+}
+
+table MarketplaceCheckListingStatus {
+    request_id: string;
+}
+
+table MarketplaceGetPendingTransactions {
+    character_id: uint;
+    type: ubyte; // 0=Seller revenue, 1=Buyer item loss, 2=Expired returns
+}
+
+table MarketplaceCompletePendingTransaction {
+    transaction_id: ulong;
+}
+
+table MarketplaceCompletePendingReturn {
+    return_id: ulong;
+}
+
