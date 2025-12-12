@@ -159,17 +159,40 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
 {
     this->_owner.assert_thread();
 
-    // Get listing info first (needed for timeout recovery, but won't validate purchase eligibility)
+    // Get listing info first (needed for price validation and timeout recovery)
     auto listing_ids = std::vector<std::string>{id};
     auto listings    = co_await this->get_listings(listing_ids);
-    auto price       = uint32_t{0};
-    if (!listings.empty())
-    {
-        price = listings[0].price; // Buyer only pays price, not transaction_fee
-    }
 
+    if (listings.empty())
+        throw std::runtime_error("Listing not found");
+
+    auto& listing = listings[0];
+    if (listing.state != static_cast<uint8_t>(mp::ListingState::ACTIVE))
+        throw std::runtime_error("Listing is not available for purchase");
+
+    auto price = listing.price; // Buyer only pays price, not transaction_fee
+
+    // Validate money BEFORE API call
     if (this->_owner.money() < price)
         throw std::runtime_error("Insufficient money");
+
+    // Prepare DSL for pending purchase recovery (money only) BEFORE API call
+    auto dsls = std::vector<fb::model::dsl>{};
+    if (price > 0)
+    {
+        auto money_dsl = fb::model::dsl::money(price);
+        dsls.push_back(money_dsl.to_dsl());
+    }
+
+    // Store pending purchase for recovery in case of server failure
+    this->_pending_listings.emplace(id,
+                                    pending_listing_info{.type         = pending_type::PURCHASE,
+                                                         .listing_id   = id,
+                                                         .dsls         = std::move(dsls),
+                                                         .character_id = this->_owner.id});
+
+    // Deduct money BEFORE API call
+    this->_owner.money_reduce(price);
 
     // Send purchase request to marketplace server
     auto req             = mp_reqs::Purchase{this->_owner.id, id};
@@ -198,11 +221,10 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
             throw std::runtime_error(std::format("Failed to purchase item: error={}", enum_tostring(ec)));
         }
 
-        // Purchase succeeded - no money deduction needed (handled server-side)
-        // Item will be delivered via storage_box
+        // Purchase succeeded - remove from pending_listings
+        this->_pending_listings.erase(id);
 
         // Build and return listing (from response item data)
-        this->_owner.money_reduce(price);
         co_return marketplace::listing{
             .id              = id,
             .seller_id       = 0, // Not provided in response
@@ -224,22 +246,14 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
     {
         if (unhandled_error)
         {
-            // Prepare DSL for pending purchase recovery (money only)
-            auto dsls      = std::vector<fb::model::dsl>{};
-            auto money_dsl = fb::model::dsl::money(price);
-            dsls.push_back(money_dsl.to_dsl());
-
-            // Store pending purchase for recovery
-            this->_pending_listings.emplace(id,
-                                            pending_listing_info{
-                                                .type         = pending_type::PURCHASE,
-                                                .listing_id   = id,
-                                                .dsls         = std::move(dsls),
-                                                .character_id = this->_owner.id // buyer_id
-                                            });
-
-            // Deduct money
-            this->_owner.money_reduce(price);
+            // HTTP exception (timeout, connection error, etc.) - system error
+            // Money already deducted, DSL is already saved for recovery
+        }
+        else
+        {
+            // Logical error - restore money
+            this->_owner.money_add(price);
+            this->_pending_listings.erase(id); // Remove DSL as purchase definitely failed
         }
 
         throw std::runtime_error(std::format("Failed to purchase item: {}", e.what()));

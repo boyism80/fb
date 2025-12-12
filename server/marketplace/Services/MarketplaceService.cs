@@ -170,29 +170,26 @@ public class MarketplaceService : IMarketplaceService
             return null; // ListingExpired
         }
 
-        // Calculate fees and revenue
-        var transactionFee = CalculateTransactionFee(listing.Price);
-        var sellerRevenue = listing.Price - transactionFee;
-
-        // Update listing (mark as sold or reduce count)
-        await _repository.UpdateListingAsync(listing.Id, 1, DateTime.UtcNow, buyerId);
-
-        // Send seller revenue via storage_box
+        // Send seller revenue via storage_box (full price, no transaction fee deduction)
+        // Transaction fee is already deducted on game server side during listing
         var sellerCharacter = await _dbContext.Character.Get(listing.SellerId);
         if (sellerCharacter != null && !string.IsNullOrWhiteSpace(sellerCharacter.Name))
         {
             var attachments = new List<Fb.Model.Dsl>
             {
-                new Fb.Model.Dsl.Money { Value = sellerRevenue }.ToDSL()
+                new Fb.Model.Dsl.Money { Value = listing.Price }.ToDSL()
             };
 
             await _storageService.CreatePendingAsync(
                 "Marketplace Sale",
-                $"Your item has been sold for {listing.Price} gold. After transaction fee ({transactionFee} gold), you received {sellerRevenue} gold.",
+                $"Your item has been sold for {listing.Price} gold.",
                 sellerCharacter.Name,
                 DateTime.UtcNow.AddDays(30), // 30 days expiry
                 attachments);
         }
+
+        // Update listing (mark as sold or reduce count)
+        await _repository.UpdateListingAsync(listing.Id, 1, DateTime.UtcNow, buyerId);
 
         // Return original listing (status updated but we return the original for item data)
         // The listing is now sold, but we return it with the item information
