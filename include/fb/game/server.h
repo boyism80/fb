@@ -57,6 +57,14 @@ REGISTER_RESPONSE(fb::protocol::internal::request::GetStoragePending,
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol::internal::response::WriteSystemMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Ban, fb::protocol::internal::response::Ban)
 REGISTER_RESPONSE(fb::protocol::internal::request::Unban, fb::protocol::internal::response::Unban)
+REGISTER_RESPONSE(fb::protocol::marketplace::request::AllocateListingId,
+                  fb::protocol::marketplace::response::AllocateListingId)
+REGISTER_RESPONSE(fb::protocol::marketplace::request::List, fb::protocol::marketplace::response::List)
+REGISTER_RESPONSE(fb::protocol::marketplace::request::Cancel, fb::protocol::marketplace::response::Cancel)
+REGISTER_RESPONSE(fb::protocol::marketplace::request::Purchase, fb::protocol::marketplace::response::Purchase)
+REGISTER_RESPONSE(fb::protocol::marketplace::request::Search, fb::protocol::marketplace::response::Search)
+REGISTER_RESPONSE(fb::protocol::marketplace::request::CheckListingStatus,
+                  fb::protocol::marketplace::response::CheckListingStatus)
 
 namespace fb::game {
 

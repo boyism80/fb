@@ -2,6 +2,7 @@ using Fb.Model;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Reepository;
+using Http.Service;
 using Marketplace.Extension;
 using Marketplace.Model;
 
@@ -15,28 +16,48 @@ public class MarketplaceService : IMarketplaceService
 {
     private readonly MarketplaceRepository _repository;
     private readonly IConfiguration _configuration;
+    private readonly StorageService _storageService;
+    private readonly DbContext _dbContext;
     private readonly double _listingFeePercent;
     private readonly double _transactionFeePercent;
     private readonly uint _minFee;
 
     public MarketplaceService(
         MarketplaceRepository repository,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        StorageService storageService,
+        DbContext dbContext)
     {
         _repository = repository;
         _configuration = configuration;
+        _storageService = storageService;
+        _dbContext = dbContext;
         _listingFeePercent = _configuration.GetValue<double>("Marketplace:ListingFeePercent", 5.0);
         _transactionFeePercent = _configuration.GetValue<double>("Marketplace:TransactionFeePercent", 5.0);
         _minFee = _configuration.GetValue<uint>("Marketplace:MinFee", 100);
     }
 
     /// <summary>
-    /// Creates a new marketplace listing.
+    /// Allocates a new listing ID (UUID) for a character.
+    /// This ID is used to create the actual listing later.
     /// </summary>
+    /// <param name="characterId">The character ID requesting the listing ID.</param>
+    /// <returns>The allocated listing ID (UUID string).</returns>
+    public async Task<string> AllocateListingIdAsync(uint characterId)
+    {
+        // Generate UUID for listing_id
+        // This UUID will be used as the listing identifier and can be used for sharding
+        return Guid.NewGuid().ToString();
+    }
+
+    /// <summary>
+    /// Creates a new marketplace listing using a pre-allocated listing ID.
+    /// </summary>
+    /// <param name="listingId">The pre-allocated listing ID (UUID string).</param>
     /// <returns>MarketplaceListing if successful; null if failed.</returns>
     public async Task<MarketplaceListing> ListItemAsync(
         uint characterId,
-        string requestId,
+        string listingId,
         uint itemModel,
         ushort itemCount,
         uint? itemDurability,
@@ -44,10 +65,10 @@ public class MarketplaceService : IMarketplaceService
         uint price,
         ushort expireHours)
     {
-        // Check idempotency: if request_id already exists, return existing listing
-        if (!string.IsNullOrEmpty(requestId))
+        // Check idempotency: if listing_id already exists, return existing listing
+        if (!string.IsNullOrEmpty(listingId))
         {
-            var existing = await _repository.GetListingByRequestIdAsync(requestId);
+            var existing = await _repository.GetListingByIdAsync(listingId);
             if (existing != null)
             {
                 return existing;
@@ -58,10 +79,10 @@ public class MarketplaceService : IMarketplaceService
         var listingFee = CalculateListingFee(price);
         var transactionFee = CalculateTransactionFee(price);
 
-        // Create listing
-        var listingId = await _repository.CreateListingAsync(
+        // Create listing with listing_id as the primary key (BINARY(16))
+        await _repository.CreateListingAsync(
+            listingId,
             characterId,
-            requestId,
             itemModel,
             itemCount,
             itemDurability,
@@ -79,7 +100,7 @@ public class MarketplaceService : IMarketplaceService
     /// Cancels a marketplace listing.
     /// </summary>
     /// <exception cref="LogicException">Thrown when listing is not found, user is not the owner, or listing is already cancelled/sold.</exception>
-    public async Task CancelListingAsync(uint characterId, ulong listingId)
+    public async Task CancelListingAsync(uint characterId, string listingId)
     {
         var listing = await _repository.GetListingByIdAsync(listingId);
         if (listing == null)
@@ -107,6 +128,28 @@ public class MarketplaceService : IMarketplaceService
         }
 
         await _repository.UpdateListingStatusAsync(listing.Id, 2); // Cancelled
+
+        // Return item to seller via storage_box
+        var sellerCharacter = await _dbContext.Character.Get(listing.SellerId);
+        if (sellerCharacter != null && !string.IsNullOrWhiteSpace(sellerCharacter.Name))
+        {
+            var attachments = new List<Fb.Model.Dsl>
+            {
+                new Fb.Model.Dsl.Item
+                {
+                    Id = listing.ItemModel,
+                    Count = listing.ItemCount,
+                    Percent = 100.0
+                }.ToDSL()
+            };
+
+            await _storageService.CreatePendingAsync(
+                "Marketplace Listing Cancelled",
+                $"Your marketplace listing has been cancelled. The item has been returned to your storage box.",
+                sellerCharacter.Name,
+                DateTime.UtcNow.AddDays(30), // 30 days expiry
+                attachments);
+        }
     }
 
     /// <summary>
@@ -115,7 +158,7 @@ public class MarketplaceService : IMarketplaceService
     /// <returns>MarketplaceListing if successful; null if failed (listing not found or expired).</returns>
     public async Task<MarketplaceListing> PurchaseItemAsync(
         uint buyerId,
-        ulong listingId)
+        string listingId)
     {
         // Load listing with row lock to prevent double-purchase
         var listing = await _repository.GetListingByIdAsync(listingId);
@@ -148,16 +191,22 @@ public class MarketplaceService : IMarketplaceService
             transactionFee,
             sellerRevenue);
 
-        // Create pending transaction for seller revenue (if seller is on different server)
-        // This will be handled by game server reconciliation
-        await _repository.CreatePendingTransactionAsync(
-            listing.Id,
-            buyerId,
-            listing.SellerId,
-            listing.ItemModel,
-            listing.ItemCount,
-            listing.Price,
-            sellerRevenue);
+        // Send seller revenue via storage_box
+        var sellerCharacter = await _dbContext.Character.Get(listing.SellerId);
+        if (sellerCharacter != null && !string.IsNullOrWhiteSpace(sellerCharacter.Name))
+        {
+            var attachments = new List<Fb.Model.Dsl>
+            {
+                new Fb.Model.Dsl.Money { Value = sellerRevenue }.ToDSL()
+            };
+
+            await _storageService.CreatePendingAsync(
+                "Marketplace Sale",
+                $"Your item has been sold for {listing.Price} gold. After transaction fee ({transactionFee} gold), you received {sellerRevenue} gold.",
+                sellerCharacter.Name,
+                DateTime.UtcNow.AddDays(30), // 30 days expiry
+                attachments);
+        }
 
         // Return original listing (status updated but we return the original for item data)
         // The listing is now sold, but we return it with the item information
@@ -168,37 +217,40 @@ public class MarketplaceService : IMarketplaceService
     /// Searches marketplace listings.
     /// </summary>
     /// <returns>MarketplaceSearchResult.</returns>
-    public async Task<MarketplaceSearchResult> SearchItemsAsync(
-        string itemName,
-        uint? minPrice,
-        uint? maxPrice,
-        uint? sellerId,
-        string sortBy,
-        uint? page,
-        uint? pageSize)
+    /// <exception cref="LogicException">Thrown when page is less than 1.</exception>
+    public async Task<MarketplaceSearchResult> SearchItemsAsync(MarketplaceSearchOption option)
     {
+        // Validate page number
+        if (option.Page < 1)
+        {
+            throw new LogicException(ErrorCode.MarketplaceInvalidPageNumber);
+        }
+
         // Convert item name to item model IDs
         List<uint> itemModelIds = null;
-        if (!string.IsNullOrEmpty(itemName))
+        if (!string.IsNullOrEmpty(option.ItemName))
         {
-            itemModelIds = Table.Item.NameToItemModelIds(itemName);
+            itemModelIds = Table.Item.NameToItemModelIds(option.ItemName);
         }
+
+        // Get page size from configuration (default: 20)
+        var pageSize = _configuration.GetValue<int>("Marketplace:PageSize", 20);
 
         // Search listings
         var listings = await _repository.SearchListingsAsync(
             itemModelIds,
-            minPrice,
-            maxPrice,
-            sellerId,
-            string.IsNullOrEmpty(sortBy) ? "created_desc" : sortBy,
-            (int)(page ?? 1),
-            (int)(pageSize ?? 20));
+            option.MinPrice,
+            option.MaxPrice,
+            option.SellerId,
+            string.IsNullOrEmpty(option.SortBy) ? "created_desc" : option.SortBy,
+            (int)option.Page,
+            pageSize);
 
         var totalCount = await _repository.CountListingsAsync(
             itemModelIds,
-            minPrice,
-            maxPrice,
-            sellerId);
+            option.MinPrice,
+            option.MaxPrice,
+            option.SellerId);
 
         return new MarketplaceSearchResult
         {
@@ -208,69 +260,21 @@ public class MarketplaceService : IMarketplaceService
     }
 
     /// <summary>
-    /// Checks the status of a listing by request ID.
+    /// Checks the status of a listing by listing ID.
     /// </summary>
     /// <returns>MarketplaceListing if found; null if not found.</returns>
-    public async Task<MarketplaceListing> CheckListingStatusAsync(string requestId)
+    public async Task<MarketplaceListing> CheckListingStatusAsync(string listingId)
     {
-        return await _repository.GetListingByRequestIdAsync(requestId);
+        return await _repository.GetListingByIdAsync(listingId);
     }
 
     /// <summary>
     /// Gets a listing by ID.
     /// </summary>
     /// <returns>MarketplaceListing if found; null if not found.</returns>
-    public async Task<MarketplaceListing> GetListingByIdAsync(ulong listingId)
+    public async Task<MarketplaceListing> GetListingByIdAsync(string listingId)
     {
         return await _repository.GetListingByIdAsync(listingId);
-    }
-
-    /// <summary>
-    /// Gets pending transactions or returns for a character.
-    /// </summary>
-    /// <param name="type">0 = Seller revenue, 1 = Buyer item loss, 2 = Expired returns</param>
-    /// <returns>MarketplacePendingResult.</returns>
-    public async Task<MarketplacePendingResult> GetPendingTransactionsAsync(
-        uint characterId,
-        byte type)
-    {
-        List<PendingTransaction> transactions = null;
-        List<PendingReturn> returns = null;
-
-        switch (type)
-        {
-            case 0: // Seller revenue
-                transactions = await _repository.GetPendingTransactionsBySellerIdAsync(characterId);
-                break;
-            case 1: // Buyer item loss
-                transactions = await _repository.GetPendingTransactionsByBuyerIdAsync(characterId);
-                break;
-            case 2: // Expired returns
-                returns = await _repository.GetPendingReturnsBySellerIdAsync(characterId);
-                break;
-        }
-
-        return new MarketplacePendingResult
-        {
-            Transactions = transactions,
-            Returns = returns
-        };
-    }
-
-    /// <summary>
-    /// Completes a pending transaction by deleting it.
-    /// </summary>
-    public async Task<bool> CompletePendingTransactionAsync(ulong transactionId)
-    {
-        return await _repository.DeletePendingTransactionAsync(transactionId);
-    }
-
-    /// <summary>
-    /// Completes a pending return by deleting it.
-    /// </summary>
-    public async Task<bool> CompletePendingReturnAsync(ulong returnId)
-    {
-        return await _repository.DeletePendingReturnAsync(returnId);
     }
 
     /// <summary>

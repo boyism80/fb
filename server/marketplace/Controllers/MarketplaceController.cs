@@ -23,14 +23,38 @@ public class MarketplaceController : ControllerBase
         _marketplaceService = marketplaceService;
     }
 
+    [HttpPost("allocate-listing-id")]
+    public async Task<Response.AllocateListingId> AllocateListingId(Request.AllocateListingId request)
+    {
+        try
+        {
+            var listingId = await _marketplaceService.AllocateListingIdAsync(request.CharacterId);
+
+            return new Response.AllocateListingId
+            {
+                ListingId = listingId,
+                Error = (uint)ErrorCode.None
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to allocate listing ID for character {CharacterId}", request.CharacterId);
+            return new Response.AllocateListingId
+            {
+                ListingId = string.Empty,
+                Error = (uint)ErrorCode.Unhandled
+            };
+        }
+    }
+
     [HttpPost("list")]
-    public async Task<Response.MarketplaceList> ListItem(Request.MarketplaceList request)
+    public async Task<Response.List> ListItem(Request.List request)
     {
         try
         {
             var listing = await _marketplaceService.ListItemAsync(
                 request.CharacterId,
-                request.RequestId ?? string.Empty,
+                request.ListingId ?? string.Empty,
                 request.Item.Model,
                 request.Item.Count,
                 request.Item.Durability,
@@ -38,63 +62,57 @@ public class MarketplaceController : ControllerBase
                 request.Price,
                 request.ExpireHours) ?? throw new LogicException(ErrorCode.Unhandled);
 
-            return new Response.MarketplaceList
+            // Return listing_id (UUID)
+            return new Response.List
             {
-                Success = true,
-                ListingId = listing.Id,
+                ListingId = listing.Id ?? string.Empty,
                 ListingFee = listing.ListingFee,
-                RequestId = listing.RequestId ?? string.Empty,
                 Error = (uint)ErrorCode.None
             };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to create listing for character {CharacterId}", request.CharacterId);
-            return new Response.MarketplaceList
+            return new Response.List
             {
-                Success = false,
-                ListingId = 0,
+                ListingId = string.Empty,
                 ListingFee = 0,
-                RequestId = request.RequestId ?? string.Empty,
                 Error = (uint)ErrorCode.Unhandled
             };
         }
     }
 
     [HttpPost("cancel")]
-    public async Task<Response.MarketplaceCancel> CancelListing(Request.MarketplaceCancel request)
+    public async Task<Response.Cancel> CancelListing(Request.Cancel request)
     {
         try
         {
             await _marketplaceService.CancelListingAsync(request.CharacterId, request.ListingId);
 
-            return new Response.MarketplaceCancel
+            return new Response.Cancel
             {
-                Success = true,
                 Error = (uint)ErrorCode.None
             };
         }
         catch (LogicException e)
         {
-            return new Response.MarketplaceCancel
+            return new Response.Cancel
             {
-                Success = false,
                 Error = (uint)e.Error
             };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to cancel listing {ListingId}", request.ListingId);
-            return new Response.MarketplaceCancel
+            return new Response.Cancel
             {
-                Success = false,
                 Error = (uint)ErrorCode.Unhandled
             };
         }
     }
 
     [HttpPost("purchase")]
-    public async Task<Response.MarketplacePurchase> PurchaseItem(Request.MarketplacePurchase request)
+    public async Task<Response.Purchase> PurchaseItem(Request.Purchase request)
     {
         try
         {
@@ -102,10 +120,9 @@ public class MarketplaceController : ControllerBase
 
             if (listing != null)
             {
-                return new Response.MarketplacePurchase
+                return new Response.Purchase
                 {
-                    Success = true,
-                    Item = new Protocol.MarketplaceItem
+                    Item = new Protocol.Item
                     {
                         Owner = request.BuyerId,
                         Model = listing.ItemModel,
@@ -136,10 +153,9 @@ public class MarketplaceController : ControllerBase
                 }
             }
 
-            return new Response.MarketplacePurchase
+            return new Response.Purchase
             {
-                Success = false,
-                Item = new Protocol.MarketplaceItem
+                Item = new Protocol.Item
                 {
                     Owner = 0,
                     Model = 0,
@@ -153,10 +169,9 @@ public class MarketplaceController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to purchase listing {ListingId}", request.ListingId);
-            return new Response.MarketplacePurchase
+            return new Response.Purchase
             {
-                Success = false,
-                Item = new Protocol.MarketplaceItem
+                Item = new Protocol.Item
                 {
                     Owner = 0,
                     Model = 0,
@@ -170,24 +185,27 @@ public class MarketplaceController : ControllerBase
     }
 
     [HttpPost("search")]
-    public async Task<Response.MarketplaceSearch> SearchItems(Request.MarketplaceSearch request)
+    public async Task<Response.Search> SearchItems(Request.Search request)
     {
         try
         {
-            var result = await _marketplaceService.SearchItemsAsync(
-                request.ItemName ?? string.Empty,
-                request.MinPrice,
-                request.MaxPrice,
-                request.SellerId,
-                request.SortBy ?? string.Empty,
-                request.Page,
-                request.PageSize);
+            var option = new Marketplace.Model.MarketplaceSearchOption
+            {
+                ItemName = request.ItemName,
+                MinPrice = request.MinPrice,
+                MaxPrice = request.MaxPrice,
+                SellerId = request.SellerId,
+                SortBy = request.SortBy,
+                Page = request.Page
+            };
 
-            var protocolListings = result.Listings.Select(l => new Protocol.MarketplaceListing
+            var result = await _marketplaceService.SearchItemsAsync(option);
+
+            var protocolListings = result.Listings.Select(l => new Protocol.Listing
             {
                 Id = l.Id,
                 SellerId = l.SellerId,
-                Item = new Protocol.MarketplaceItem
+                Item = new Protocol.Item
                 {
                     Owner = l.SellerId,
                     Model = l.ItemModel,
@@ -202,33 +220,43 @@ public class MarketplaceController : ControllerBase
                 CreatedDate = l.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
             }).ToList();
 
-            var searchResult = new Protocol.MarketplaceSearchResult
+            var searchResult = new Protocol.SearchResult
             {
                 Listings = protocolListings,
                 TotalCount = (uint)result.TotalCount,
-                Page = request.Page ?? 1,
-                PageSize = request.PageSize ?? 20
+                Page = option.Page
             };
 
-            return new Response.MarketplaceSearch
+            return new Response.Search
             {
-                Success = true,
                 Result = searchResult,
                 Error = (uint)ErrorCode.None
+            };
+        }
+        catch (LogicException e)
+        {
+            _logger.LogWarning("Marketplace search validation error: {ErrorCode}", e.Error);
+            return new Response.Search
+            {
+                Result = new Protocol.SearchResult
+                {
+                    Listings = new List<Protocol.Listing>(),
+                    TotalCount = 0,
+                    Page = request.Page
+                },
+                Error = (uint)e.Error
             };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to search listings");
-            return new Response.MarketplaceSearch
+            return new Response.Search
             {
-                Success = false,
-                Result = new Protocol.MarketplaceSearchResult
+                Result = new Protocol.SearchResult
                 {
-                    Listings = new List<Protocol.MarketplaceListing>(),
+                    Listings = new List<Protocol.Listing>(),
                     TotalCount = 0,
-                    Page = request.Page ?? 1,
-                    PageSize = request.PageSize ?? 20
+                    Page = request.Page
                 },
                 Error = (uint)ErrorCode.Unhandled
             };
@@ -236,138 +264,39 @@ public class MarketplaceController : ControllerBase
     }
 
     [HttpPost("check-status")]
-    public async Task<Response.MarketplaceCheckListingStatus> CheckListingStatus(Request.MarketplaceCheckListingStatus request)
+    public async Task<Response.CheckListingStatus> CheckListingStatus(Request.CheckListingStatus request)
     {
         try
         {
-            var listing = await _marketplaceService.CheckListingStatusAsync(request.RequestId);
+            var listing = await _marketplaceService.CheckListingStatusAsync(request.ListingId);
 
             if (listing != null)
             {
-                return new Response.MarketplaceCheckListingStatus
+                return new Response.CheckListingStatus
                 {
-                    Success = true,
-                    ListingId = listing.Id,
+                    ListingId = listing.Id ?? string.Empty,
                     ListingFee = listing.ListingFee,
                     Error = (uint)ErrorCode.None
                 };
             }
 
-            return new Response.MarketplaceCheckListingStatus
+            return new Response.CheckListingStatus
             {
-                Success = true,
-                ListingId = 0,
+                ListingId = string.Empty,
                 ListingFee = 0,
                 Error = (uint)ErrorCode.None
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to check listing status for request {RequestId}", request.RequestId);
-            return new Response.MarketplaceCheckListingStatus
+            _logger.LogError(ex, "Failed to check listing status for listing {ListingId}", request.ListingId);
+            return new Response.CheckListingStatus
             {
-                Success = false,
-                ListingId = 0,
+                ListingId = string.Empty,
                 ListingFee = 0,
                 Error = (uint)ErrorCode.Unhandled
             };
         }
     }
 
-    [HttpPost("pending")]
-    public async Task<Response.MarketplaceGetPendingTransactions> GetPendingTransactions(Request.MarketplaceGetPendingTransactions request)
-    {
-        try
-        {
-            var result = await _marketplaceService.GetPendingTransactionsAsync(request.CharacterId, request.Type);
-
-            var protocolTransactions = (result.Transactions != null ? result.Transactions : new List<Marketplace.Model.PendingTransaction>()).Select(t => new Protocol.PendingTransaction
-            {
-                Id = t.Id,
-                ListingId = t.ListingId,
-                BuyerId = t.BuyerId,
-                SellerId = t.SellerId,
-                ItemModel = t.ItemModel,
-                ItemCount = t.ItemCount,
-                Price = t.Price,
-                SellerRevenue = t.SellerRevenue,
-                CreatedDate = t.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
-            }).ToList();
-
-            var protocolReturns = (result.Returns != null ? result.Returns : new List<Marketplace.Model.PendingReturn>()).Select(r => new Protocol.PendingReturn
-            {
-                Id = r.Id,
-                ListingId = r.ListingId,
-                SellerId = r.SellerId,
-                ItemModel = r.ItemModel,
-                ItemCount = r.ItemCount,
-                ItemDurability = r.ItemDurability,
-                ItemCustomName = r.ItemCustomName ?? string.Empty,
-                CreatedDate = r.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
-            }).ToList();
-
-            return new Response.MarketplaceGetPendingTransactions
-            {
-                Success = true,
-                Transactions = protocolTransactions,
-                Returns = protocolReturns,
-                Error = (uint)ErrorCode.None
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to get pending transactions for character {CharacterId}", request.CharacterId);
-            return new Response.MarketplaceGetPendingTransactions
-            {
-                Success = false,
-                Transactions = new List<Protocol.PendingTransaction>(),
-                Returns = new List<Protocol.PendingReturn>(),
-                Error = (uint)ErrorCode.Unhandled
-            };
-        }
-    }
-
-    [HttpPost("complete-transaction")]
-    public async Task<Response.MarketplaceCompletePendingTransaction> CompletePendingTransaction(Request.MarketplaceCompletePendingTransaction request)
-    {
-        try
-        {
-            var success = await _marketplaceService.CompletePendingTransactionAsync(request.TransactionId);
-
-            return new Response.MarketplaceCompletePendingTransaction
-            {
-                Success = success
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to complete pending transaction {TransactionId}", request.TransactionId);
-            return new Response.MarketplaceCompletePendingTransaction
-            {
-                Success = false
-            };
-        }
-    }
-
-    [HttpPost("complete-return")]
-    public async Task<Response.MarketplaceCompletePendingReturn> CompletePendingReturn(Request.MarketplaceCompletePendingReturn request)
-    {
-        try
-        {
-            var success = await _marketplaceService.CompletePendingReturnAsync(request.ReturnId);
-
-            return new Response.MarketplaceCompletePendingReturn
-            {
-                Success = success
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to complete pending return {ReturnId}", request.ReturnId);
-            return new Response.MarketplaceCompletePendingReturn
-            {
-                Success = false
-            };
-        }
-    }
 }

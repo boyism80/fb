@@ -29,6 +29,8 @@ public class Program
         builder.Services.AddSingleton<Http.Service.RabbitMqService>();
         builder.Services.AddSingleton<Http.Service.LogService>();
         builder.Services.AddScoped<Http.Service.DbContext>();
+        builder.Services.AddScoped<Http.Service.SessionService>();
+        builder.Services.AddScoped<Http.Service.StorageService>();
 
         // Marketplace services
         builder.Services.AddScoped<Http.Reepository.MarketplaceRepository>();

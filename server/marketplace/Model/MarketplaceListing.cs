@@ -4,9 +4,8 @@ namespace Marketplace.Model;
 
 public class MarketplaceListing : BaseModel
 {
-    public ulong Id { get; set; }
+    public string Id { get; set; }
     public uint SellerId { get; set; }
-    public string RequestId { get; set; }
     public uint ItemModel { get; set; }
     public ushort ItemCount { get; set; }
     public uint? ItemDurability { get; set; }

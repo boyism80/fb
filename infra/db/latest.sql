@@ -925,9 +925,8 @@ DROP TABLE IF EXISTS `marketplace_listing`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `marketplace_listing` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id` BINARY(16) NOT NULL,
   `seller_id` INT UNSIGNED NOT NULL,
-  `request_id` VARCHAR(36) DEFAULT NULL COMMENT 'UUID for idempotency (prevents duplicate processing)',
   `item_model` INT UNSIGNED NOT NULL,
   `item_count` SMALLINT UNSIGNED NOT NULL DEFAULT 1,
   `item_durability` INT UNSIGNED DEFAULT NULL,
@@ -946,7 +945,6 @@ CREATE TABLE `marketplace_listing` (
   KEY `idx_item_model` (`item_model`, `status`),
   KEY `idx_status_expire` (`status`, `expire_date`),
   KEY `idx_created` (`created_date`),
-  UNIQUE KEY `idx_request_id` (`request_id`) COMMENT 'For idempotency checks',
   CONSTRAINT `fk_marketplace_seller` FOREIGN KEY (`seller_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -960,7 +958,7 @@ DROP TABLE IF EXISTS `marketplace_transaction`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `marketplace_transaction` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `listing_id` BIGINT UNSIGNED NOT NULL,
+  `listing_id` BINARY(16) NOT NULL,
   `seller_id` INT UNSIGNED NOT NULL,
   `buyer_id` INT UNSIGNED NOT NULL,
   `item_model` INT UNSIGNED NOT NULL,
@@ -979,54 +977,6 @@ CREATE TABLE `marketplace_transaction` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `marketplace_pending_transaction`
---
-
-DROP TABLE IF EXISTS `marketplace_pending_transaction`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `marketplace_pending_transaction` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `listing_id` BIGINT UNSIGNED NOT NULL,
-  `buyer_id` INT UNSIGNED NOT NULL,
-  `seller_id` INT UNSIGNED NOT NULL,
-  `item_model` INT UNSIGNED NOT NULL,
-  `item_count` SMALLINT UNSIGNED NOT NULL,
-  `price` INT UNSIGNED NOT NULL,
-  `seller_revenue` INT UNSIGNED NOT NULL COMMENT 'Amount to give seller',
-  `created_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_seller` (`seller_id`, `created_date`),
-  KEY `idx_buyer` (`buyer_id`, `created_date`),
-  KEY `idx_listing` (`listing_id`),
-  CONSTRAINT `fk_pending_transaction_seller` FOREIGN KEY (`seller_id`) REFERENCES `user` (`id`),
-  CONSTRAINT `fk_pending_transaction_buyer` FOREIGN KEY (`buyer_id`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `marketplace_pending_return`
---
-
-DROP TABLE IF EXISTS `marketplace_pending_return`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `marketplace_pending_return` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `listing_id` BIGINT UNSIGNED NOT NULL,
-  `seller_id` INT UNSIGNED NOT NULL,
-  `item_model` INT UNSIGNED NOT NULL,
-  `item_count` SMALLINT UNSIGNED NOT NULL,
-  `item_durability` INT UNSIGNED DEFAULT NULL,
-  `item_custom_name` VARCHAR(32) DEFAULT NULL,
-  `created_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_seller` (`seller_id`, `created_date`),
-  KEY `idx_listing` (`listing_id`),
-  CONSTRAINT `fk_pending_return_seller` FOREIGN KEY (`seller_id`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `marketplace_statistics`

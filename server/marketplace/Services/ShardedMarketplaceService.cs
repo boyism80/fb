@@ -9,13 +9,26 @@ namespace Marketplace.Services;
 public class ShardedMarketplaceService : IMarketplaceService
 {
     /// <summary>
-    /// Creates a new marketplace listing.
+    /// Allocates a new listing ID (UUID) for a character.
+    /// This ID is used to create the actual listing later.
     /// </summary>
+    /// <param name="characterId">The character ID requesting the listing ID.</param>
+    /// <returns>The allocated listing ID (UUID string).</returns>
+    /// <exception cref="NotImplementedException">Thrown until Elasticsearch integration is implemented.</exception>
+    public Task<string> AllocateListingIdAsync(uint characterId)
+    {
+        throw new NotImplementedException("Sharded marketplace service is not yet implemented");
+    }
+
+    /// <summary>
+    /// Creates a new marketplace listing using a pre-allocated listing ID.
+    /// </summary>
+    /// <param name="listingId">The pre-allocated listing ID (UUID string).</param>
     /// <returns>MarketplaceListing if successful; null if failed.</returns>
     /// <exception cref="NotImplementedException">Thrown until Elasticsearch integration is implemented.</exception>
     public Task<MarketplaceListing> ListItemAsync(
         uint characterId,
-        string requestId,
+        string listingId,
         uint itemModel,
         ushort itemCount,
         uint? itemDurability,
@@ -30,7 +43,7 @@ public class ShardedMarketplaceService : IMarketplaceService
     /// Cancels a marketplace listing.
     /// </summary>
     /// <exception cref="NotImplementedException">Thrown until Elasticsearch integration is implemented.</exception>
-    public Task CancelListingAsync(uint characterId, ulong listingId)
+    public Task CancelListingAsync(uint characterId, string listingId)
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");
     }
@@ -42,7 +55,7 @@ public class ShardedMarketplaceService : IMarketplaceService
     /// <exception cref="NotImplementedException">Thrown until Elasticsearch integration is implemented.</exception>
     public Task<MarketplaceListing> PurchaseItemAsync(
         uint buyerId,
-        ulong listingId)
+        string listingId)
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");
     }
@@ -52,24 +65,17 @@ public class ShardedMarketplaceService : IMarketplaceService
     /// </summary>
     /// <returns>MarketplaceSearchResult.</returns>
     /// <exception cref="NotImplementedException">Thrown until Elasticsearch integration is implemented.</exception>
-    public Task<MarketplaceSearchResult> SearchItemsAsync(
-        string itemName,
-        uint? minPrice,
-        uint? maxPrice,
-        uint? sellerId,
-        string sortBy,
-        uint? page,
-        uint? pageSize)
+    public Task<MarketplaceSearchResult> SearchItemsAsync(MarketplaceSearchOption option)
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");
     }
 
     /// <summary>
-    /// Checks the status of a listing by request ID.
+    /// Checks the status of a listing by listing ID.
     /// </summary>
     /// <returns>MarketplaceListing if found; null if not found.</returns>
     /// <exception cref="NotImplementedException">Thrown until Elasticsearch integration is implemented.</exception>
-    public Task<MarketplaceListing> CheckListingStatusAsync(string requestId)
+    public Task<MarketplaceListing> CheckListingStatusAsync(string listingId)
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");
     }
@@ -79,38 +85,7 @@ public class ShardedMarketplaceService : IMarketplaceService
     /// </summary>
     /// <returns>MarketplaceListing if found; null if not found.</returns>
     /// <exception cref="NotImplementedException">Thrown until Elasticsearch integration is implemented.</exception>
-    public Task<MarketplaceListing> GetListingByIdAsync(ulong listingId)
-    {
-        throw new NotImplementedException("Sharded marketplace service is not yet implemented");
-    }
-
-    /// <summary>
-    /// Gets pending transactions or returns for a character.
-    /// </summary>
-    /// <param name="type">0 = Seller revenue, 1 = Buyer item loss, 2 = Expired returns</param>
-    /// <returns>MarketplacePendingResult.</returns>
-    /// <exception cref="NotImplementedException">Thrown until Elasticsearch integration is implemented.</exception>
-    public Task<MarketplacePendingResult> GetPendingTransactionsAsync(
-        uint characterId,
-        byte type)
-    {
-        throw new NotImplementedException("Sharded marketplace service is not yet implemented");
-    }
-
-    /// <summary>
-    /// Completes a pending transaction by deleting it.
-    /// </summary>
-    /// <exception cref="NotImplementedException">Thrown until Elasticsearch integration is implemented.</exception>
-    public Task<bool> CompletePendingTransactionAsync(ulong transactionId)
-    {
-        throw new NotImplementedException("Sharded marketplace service is not yet implemented");
-    }
-
-    /// <summary>
-    /// Completes a pending return by deleting it.
-    /// </summary>
-    /// <exception cref="NotImplementedException">Thrown until Elasticsearch integration is implemented.</exception>
-    public Task<bool> CompletePendingReturnAsync(ulong returnId)
+    public Task<MarketplaceListing> GetListingByIdAsync(string listingId)
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");
     }

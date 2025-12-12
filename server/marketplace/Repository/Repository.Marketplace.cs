@@ -24,9 +24,9 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves a marketplace listing by its unique identifier.
         /// </summary>
-        /// <param name="listingId">The unique identifier of the listing.</param>
+        /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
         /// <returns>The marketplace listing if found; otherwise, null.</returns>
-        public async Task<MarketplaceListing> GetListingByIdAsync(ulong listingId)
+        public async Task<MarketplaceListing> GetListingByIdAsync(string listingId)
         {
             await using var conn = _dbContext.Connection(-1);
             var sql = @"
@@ -36,26 +36,12 @@ namespace Http.Reepository
             return await conn.QueryFirstOrDefaultAsync<MarketplaceListing>(sql, new { ListingId = listingId });
         }
 
-        /// <summary>
-        /// Retrieves a marketplace listing by its request ID (for idempotency checks).
-        /// </summary>
-        /// <param name="requestId">The unique request identifier (UUID).</param>
-        /// <returns>The marketplace listing if found; otherwise, null.</returns>
-        public async Task<MarketplaceListing> GetListingByRequestIdAsync(string requestId)
-        {
-            await using var conn = _dbContext.Connection(-1);
-            var sql = @"
-                SELECT * FROM marketplace_listing 
-                WHERE request_id = @RequestId";
-
-            return await conn.QueryFirstOrDefaultAsync<MarketplaceListing>(sql, new { RequestId = requestId });
-        }
 
         /// <summary>
         /// Creates a new marketplace listing.
         /// </summary>
+        /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
         /// <param name="sellerId">The unique identifier of the seller.</param>
-        /// <param name="requestId">The unique request identifier (UUID) for idempotency.</param>
         /// <param name="itemModel">The item model identifier.</param>
         /// <param name="itemCount">The number of items being listed.</param>
         /// <param name="itemDurability">The durability of the item (nullable).</param>
@@ -64,10 +50,10 @@ namespace Http.Reepository
         /// <param name="listingFee">The fee paid when listing (refundable on cancel).</param>
         /// <param name="transactionFee">The fee deducted from seller on sale.</param>
         /// <param name="expireDate">The expiration date and time for the listing.</param>
-        /// <returns>The unique identifier of the created listing.</returns>
-        public async Task<ulong> CreateListingAsync(
+        /// <returns>The unique identifier of the created listing (UUID string).</returns>
+        public async Task<string> CreateListingAsync(
+            string listingId,
             uint sellerId,
-            string requestId,
             uint itemModel,
             ushort itemCount,
             uint? itemDurability,
@@ -80,17 +66,16 @@ namespace Http.Reepository
             await using var conn = _dbContext.Connection(-1);
             var sql = @"
                 INSERT INTO marketplace_listing 
-                (seller_id, request_id, item_model, item_count, item_durability, item_custom_name, 
+                (id, seller_id, item_model, item_count, item_durability, item_custom_name, 
                  price, listing_fee, transaction_fee, status, expire_date)
                 VALUES 
-                (@SellerId, @RequestId, @ItemModel, @ItemCount, @ItemDurability, @ItemCustomName,
-                 @Price, @ListingFee, @TransactionFee, 0, @ExpireDate);
-                SELECT LAST_INSERT_ID();";
+                (@ListingId, @SellerId, @ItemModel, @ItemCount, @ItemDurability, @ItemCustomName,
+                 @Price, @ListingFee, @TransactionFee, 0, @ExpireDate);";
 
-            var id = await conn.QuerySingleAsync<ulong>(sql, new
+            await conn.ExecuteAsync(sql, new
             {
+                ListingId = listingId,
                 SellerId = sellerId,
-                RequestId = requestId,
                 ItemModel = itemModel,
                 ItemCount = itemCount,
                 ItemDurability = itemDurability,
@@ -100,16 +85,16 @@ namespace Http.Reepository
                 TransactionFee = transactionFee,
                 ExpireDate = expireDate
             });
-            return id;
+            return listingId;
         }
 
         /// <summary>
         /// Updates the status of a marketplace listing.
         /// </summary>
-        /// <param name="listingId">The unique identifier of the listing.</param>
+        /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
         /// <param name="status">The new status (0=Active, 1=Sold, 2=Cancelled, 3=Expired).</param>
         /// <returns>True if the update was successful; otherwise, false.</returns>
-        public async Task<bool> UpdateListingStatusAsync(ulong listingId, byte status)
+        public async Task<bool> UpdateListingStatusAsync(string listingId, byte status)
         {
             await using var conn = _dbContext.Connection(-1);
             var sql = @"
@@ -125,12 +110,12 @@ namespace Http.Reepository
         /// <summary>
         /// Updates a marketplace listing with sale information.
         /// </summary>
-        /// <param name="listingId">The unique identifier of the listing.</param>
+        /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
         /// <param name="status">The new status (typically 1 for Sold).</param>
         /// <param name="soldDate">The date and time when the item was sold (nullable).</param>
         /// <param name="buyerId">The unique identifier of the buyer (nullable).</param>
         /// <returns>True if the update was successful; otherwise, false.</returns>
-        public async Task<bool> UpdateListingAsync(ulong listingId, byte status, DateTime? soldDate, uint? buyerId)
+        public async Task<bool> UpdateListingAsync(string listingId, byte status, DateTime? soldDate, uint? buyerId)
         {
             await using var conn = _dbContext.Connection(-1);
             var sql = @"
@@ -286,7 +271,7 @@ namespace Http.Reepository
         /// <summary>
         /// Creates a new marketplace transaction record.
         /// </summary>
-        /// <param name="listingId">The unique identifier of the listing.</param>
+        /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
         /// <param name="sellerId">The unique identifier of the seller.</param>
         /// <param name="buyerId">The unique identifier of the buyer.</param>
         /// <param name="itemModel">The item model identifier.</param>
@@ -297,7 +282,7 @@ namespace Http.Reepository
         /// <param name="sellerRevenue">The revenue received by the seller after fees.</param>
         /// <returns>The unique identifier of the created transaction.</returns>
         public async Task<ulong> CreateTransactionAsync(
-            ulong listingId,
+            string listingId,
             uint sellerId,
             uint buyerId,
             uint itemModel,
@@ -332,142 +317,6 @@ namespace Http.Reepository
             return id;
         }
 
-        /// <summary>
-        /// Creates a pending transaction record for cross-server reconciliation.
-        /// </summary>
-        /// <param name="listingId">The unique identifier of the listing.</param>
-        /// <param name="buyerId">The unique identifier of the buyer.</param>
-        /// <param name="sellerId">The unique identifier of the seller.</param>
-        /// <param name="itemModel">The item model identifier.</param>
-        /// <param name="itemCount">The number of items.</param>
-        /// <param name="price">The transaction price.</param>
-        /// <param name="sellerRevenue">The revenue received by the seller after fees.</param>
-        /// <returns>The unique identifier of the created pending transaction.</returns>
-        public async Task<ulong> CreatePendingTransactionAsync(
-            ulong listingId,
-            uint buyerId,
-            uint sellerId,
-            uint itemModel,
-            ushort itemCount,
-            uint price,
-            uint sellerRevenue)
-        {
-            await using var conn = _dbContext.Connection(-1);
-            var sql = @"
-                INSERT INTO marketplace_pending_transaction 
-                (listing_id, buyer_id, seller_id, item_model, item_count, price, seller_revenue)
-                VALUES 
-                (@ListingId, @BuyerId, @SellerId, @ItemModel, @ItemCount, @Price, @SellerRevenue);
-                SELECT LAST_INSERT_ID();";
-
-            var id = await conn.QuerySingleAsync<ulong>(sql, new
-            {
-                ListingId = listingId,
-                BuyerId = buyerId,
-                SellerId = sellerId,
-                ItemModel = itemModel,
-                ItemCount = itemCount,
-                Price = price,
-                SellerRevenue = sellerRevenue
-            });
-            return id;
-        }
-
-        /// <summary>
-        /// Retrieves pending transactions for a seller.
-        /// </summary>
-        /// <param name="sellerId">The unique identifier of the seller.</param>
-        /// <returns>A list of pending transactions for the seller.</returns>
-        public async Task<List<PendingTransaction>> GetPendingTransactionsBySellerIdAsync(uint sellerId)
-        {
-            await using var conn = _dbContext.Connection(-1);
-            var sql = @"
-                SELECT * FROM marketplace_pending_transaction 
-                WHERE seller_id = @SellerId
-                ORDER BY created_date ASC";
-
-            var results = await conn.QueryAsync<PendingTransaction>(sql, new { SellerId = sellerId });
-            return results.ToList();
-        }
-
-        /// <summary>
-        /// Retrieves pending transactions for a buyer.
-        /// </summary>
-        /// <param name="buyerId">The unique identifier of the buyer.</param>
-        /// <returns>A list of pending transactions for the buyer.</returns>
-        public async Task<List<PendingTransaction>> GetPendingTransactionsByBuyerIdAsync(uint buyerId)
-        {
-            await using var conn = _dbContext.Connection(-1);
-            var sql = @"
-                SELECT * FROM marketplace_pending_transaction 
-                WHERE buyer_id = @BuyerId
-                ORDER BY created_date ASC";
-
-            var results = await conn.QueryAsync<PendingTransaction>(sql, new { BuyerId = buyerId });
-            return results.ToList();
-        }
-
-        /// <summary>
-        /// Deletes a pending transaction record.
-        /// </summary>
-        /// <param name="transactionId">The unique identifier of the pending transaction.</param>
-        /// <returns>True if the deletion was successful; otherwise, false.</returns>
-        public async Task<bool> DeletePendingTransactionAsync(ulong transactionId)
-        {
-            await using var conn = _dbContext.Connection(-1);
-            var sql = "DELETE FROM marketplace_pending_transaction WHERE id = @TransactionId";
-            var rowsAffected = await conn.ExecuteAsync(sql, new { TransactionId = transactionId });
-            return rowsAffected > 0;
-        }
-
-        /// <summary>
-        /// Creates a pending return record for expired listings.
-        /// </summary>
-        /// <param name="pending">The pending return information.</param>
-        /// <returns>The unique identifier of the created pending return.</returns>
-        public async Task<ulong> CreatePendingReturnAsync(PendingReturn pending)
-        {
-            await using var conn = _dbContext.Connection(-1);
-            var sql = @"
-                INSERT INTO marketplace_pending_return 
-                (listing_id, seller_id, item_model, item_count, item_durability, item_custom_name)
-                VALUES 
-                (@ListingId, @SellerId, @ItemModel, @ItemCount, @ItemDurability, @ItemCustomName);
-                SELECT LAST_INSERT_ID();";
-
-            var id = await conn.QuerySingleAsync<ulong>(sql, pending);
-            return id;
-        }
-
-        /// <summary>
-        /// Retrieves pending returns for a seller.
-        /// </summary>
-        /// <param name="sellerId">The unique identifier of the seller.</param>
-        /// <returns>A list of pending returns for the seller.</returns>
-        public async Task<List<PendingReturn>> GetPendingReturnsBySellerIdAsync(uint sellerId)
-        {
-            await using var conn = _dbContext.Connection(-1);
-            var sql = @"
-                SELECT * FROM marketplace_pending_return 
-                WHERE seller_id = @SellerId
-                ORDER BY created_date ASC";
-
-            var results = await conn.QueryAsync<PendingReturn>(sql, new { SellerId = sellerId });
-            return results.ToList();
-        }
-
-        /// <summary>
-        /// Deletes a pending return record.
-        /// </summary>
-        /// <param name="returnId">The unique identifier of the pending return.</param>
-        /// <returns>True if the deletion was successful; otherwise, false.</returns>
-        public async Task<bool> DeletePendingReturnAsync(ulong returnId)
-        {
-            await using var conn = _dbContext.Connection(-1);
-            var sql = "DELETE FROM marketplace_pending_return WHERE id = @ReturnId";
-            var rowsAffected = await conn.ExecuteAsync(sql, new { ReturnId = returnId });
-            return rowsAffected > 0;
-        }
 
         /// <summary>
         /// Saves any pending changes to the underlying data store.

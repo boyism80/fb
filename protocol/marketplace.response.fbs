@@ -2,50 +2,34 @@ include "marketplace.fbs";
 
 namespace fb.protocol.marketplace.response;
 
-table MarketplaceList {
-    success: bool;
-    listing_id: ulong;
-    listing_fee: uint;
-    request_id: string;
+table AllocateListingId {
+    listing_id: string;
     error: uint;
 }
 
-table MarketplaceCancel {
-    success: bool;
-    error: uint;
-}
-
-table MarketplacePurchase {
-    success: bool;
-    item: fb.protocol.marketplace.MarketplaceItem;
-    error: uint;
-}
-
-table MarketplaceSearch {
-    success: bool;
-    result: fb.protocol.marketplace.MarketplaceSearchResult;
-    error: uint;
-}
-
-table MarketplaceCheckListingStatus {
-    success: bool;
-    listing_id: ulong;
+table List {
+    listing_id: string;
     listing_fee: uint;
     error: uint;
 }
 
-table MarketplaceGetPendingTransactions {
-    success: bool;
-    transactions: [fb.protocol.marketplace.PendingTransaction];
-    returns: [fb.protocol.marketplace.PendingReturn];
+table Cancel {
     error: uint;
 }
 
-table MarketplaceCompletePendingTransaction {
-    success: bool;
+table Purchase {
+    item: fb.protocol.marketplace.Item;
+    error: uint;
 }
 
-table MarketplaceCompletePendingReturn {
-    success: bool;
+table Search {
+    result: fb.protocol.marketplace.SearchResult;
+    error: uint;
+}
+
+table CheckListingStatus {
+    listing_id: string;
+    listing_fee: uint;
+    error: uint;
 }
 
