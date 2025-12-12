@@ -279,6 +279,7 @@
     "game": {
         "section-1": {
             "internal": "section-1",
+            "marketplace": "section-1",
             "login": "section-1",
             "db": "section-1",
             "redis": "section-1",
@@ -410,6 +411,18 @@
             "security": {
                 "elevationSecret": "admin-tool-dev-secret"
             }
+        }
+    },
+    "marketplace": {
+        "section-1": {
+            "replicas": 10,
+            "port": {
+                "cluster": 80,
+                "node": 30220
+            },
+            "mysql": "section-1",
+            "redis": "section-1",
+            "rabbitmq": "section-1"
         }
     }
 }

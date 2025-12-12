@@ -26,19 +26,19 @@ using System.Runtime.Serialization;
 namespace Fb.Model
 {
     public struct Point<T>
-    {
+    { 
         public T X { get; set; }
         public T Y { get; set; }
     }
 
     public struct Size<T>
-    {
+    { 
         public T Width { get; set; }
         public T Height { get; set; }
     }
 
     public struct Range<T>
-    {
+    { 
         public T Min { get; set; }
         public T Max { get; set; }
     }
@@ -58,17 +58,17 @@ namespace Fb.Model.EnumValue
     public enum Action
     {
         [EnumMember(Value = "ATTACK")]
-        Attack = 0x01,
+        Attack = 0x01, 
         [EnumMember(Value = "ARROW")]
-        Arrow = 0x03,
+        Arrow = 0x03, 
         [EnumMember(Value = "PICKUP")]
-        Pickup = 0x04,
+        Pickup = 0x04, 
         [EnumMember(Value = "PICKUP_SILENT")]
-        PickupSilent = 0x05,
+        PickupSilent = 0x05, 
         [EnumMember(Value = "CAST_SPELL")]
-        CastSpell = 0x06,
+        CastSpell = 0x06, 
         [EnumMember(Value = "EAT")]
-        Eat = 0x08,
+        Eat = 0x08, 
         [EnumMember(Value = "EMOTION")]
         Emotion = 0x0b
     }
@@ -77,7 +77,7 @@ namespace Fb.Model.EnumValue
     public enum BroadcastType
     {
         [EnumMember(Value = "WORLD")]
-        World = 1,
+        World = 1, 
         [EnumMember(Value = "GLOBAL")]
         Global = 2
     }
@@ -86,19 +86,19 @@ namespace Fb.Model.EnumValue
     public enum BulletinAction
     {
         [EnumMember(Value = "NONE")]
-        None = 0x00,
+        None = 0x00, 
         [EnumMember(Value = "SECTIONS")]
-        Sections = 0x01,
+        Sections = 0x01, 
         [EnumMember(Value = "ARTICLES")]
-        Articles = 0x02,
+        Articles = 0x02, 
         [EnumMember(Value = "ARTICLE")]
-        Article = 0x03,
+        Article = 0x03, 
         [EnumMember(Value = "WRITE")]
-        Write = 0x04,
+        Write = 0x04, 
         [EnumMember(Value = "DELETE")]
-        Delete = 0x05,
+        Delete = 0x05, 
         [EnumMember(Value = "SEND_MAIL")]
-        SendMail = 0x06,
+        SendMail = 0x06, 
         [EnumMember(Value = "MAIL")]
         Mail = 0x09
     }
@@ -107,11 +107,11 @@ namespace Fb.Model.EnumValue
     public enum BulletinButtonEnable
     {
         [EnumMember(Value = "NONE")]
-        None = 0x00,
+        None = 0x00, 
         [EnumMember(Value = "NEXT")]
-        Next = 0x01,
+        Next = 0x01, 
         [EnumMember(Value = "UP")]
-        Up = 0x01,
+        Up = 0x01, 
         [EnumMember(Value = "WRITE")]
         Write = 0x02
     }
@@ -120,9 +120,9 @@ namespace Fb.Model.EnumValue
     public enum BundleType
     {
         [EnumMember(Value = "NONE")]
-        None = 0,
+        None = 0, 
         [EnumMember(Value = "BUNDLE")]
-        Bundle = 1,
+        Bundle = 1, 
         [EnumMember(Value = "PACKAGE")]
         Package = 2
     }
@@ -131,11 +131,11 @@ namespace Fb.Model.EnumValue
     public enum CardinalDirection
     {
         [EnumMember(Value = "EAST")]
-        East = 1,
+        East = 1, 
         [EnumMember(Value = "WEST")]
-        West = 2,
+        West = 2, 
         [EnumMember(Value = "SOUTH")]
-        South = 3,
+        South = 3, 
         [EnumMember(Value = "NORTH")]
         North = 4
     }
@@ -144,11 +144,11 @@ namespace Fb.Model.EnumValue
     public enum ChatType
     {
         [EnumMember(Value = "NORMAL")]
-        Normal = 0x00,
+        Normal = 0x00, 
         [EnumMember(Value = "SHOUT")]
-        Shout = 0x01,
+        Shout = 0x01, 
         [EnumMember(Value = "BLUE")]
-        Blue = 0x02,
+        Blue = 0x02, 
         [EnumMember(Value = "LIGHT_BLUE")]
         LightBlue = 0x03
     }
@@ -157,11 +157,11 @@ namespace Fb.Model.EnumValue
     public enum ClanRole
     {
         [EnumMember(Value = "MATE")]
-        Mate = 0x00,
+        Mate = 0x00, 
         [EnumMember(Value = "OFFICER")]
-        Officer = 0x01,
+        Officer = 0x01, 
         [EnumMember(Value = "DEPUTY")]
-        Deputy = 0x02,
+        Deputy = 0x02, 
         [EnumMember(Value = "MASTER")]
         Master = 0x03
     }
@@ -170,13 +170,13 @@ namespace Fb.Model.EnumValue
     public enum Class
     {
         [EnumMember(Value = "NONE")]
-        None = 0,
+        None = 0, 
         [EnumMember(Value = "WARRIOR")]
-        Warrior = 1,
+        Warrior = 1, 
         [EnumMember(Value = "ROGUE")]
-        Rogue = 2,
+        Rogue = 2, 
         [EnumMember(Value = "MAGE")]
-        Mage = 3,
+        Mage = 3, 
         [EnumMember(Value = "POET")]
         Poet = 4
     }
@@ -185,11 +185,11 @@ namespace Fb.Model.EnumValue
     public enum Creature
     {
         [EnumMember(Value = "PHOENIX")]
-        Phoenix = 0x00,
+        Phoenix = 0x00, 
         [EnumMember(Value = "TIGER")]
-        Tiger = 0x01,
+        Tiger = 0x01, 
         [EnumMember(Value = "TURTLE")]
-        Turtle = 0x02,
+        Turtle = 0x02, 
         [EnumMember(Value = "DRAGON")]
         Dragon = 0x03
     }
@@ -198,15 +198,15 @@ namespace Fb.Model.EnumValue
     public enum CrowdControl
     {
         [EnumMember(Value = "NONE")]
-        None = 0x00,
+        None = 0x00, 
         [EnumMember(Value = "DIRECTION")]
-        Direction = 0x01,
+        Direction = 0x01, 
         [EnumMember(Value = "SIGHT")]
-        Sight = 0x02,
+        Sight = 0x02, 
         [EnumMember(Value = "HEAR")]
-        Hear = 0x04,
+        Hear = 0x04, 
         [EnumMember(Value = "CHAT")]
-        Chat = 0x08,
+        Chat = 0x08, 
         [EnumMember(Value = "MAP")]
         Map = 0x10
     }
@@ -215,9 +215,9 @@ namespace Fb.Model.EnumValue
     public enum DeathPenalty
     {
         [EnumMember(Value = "NONE")]
-        None = 0,
+        None = 0, 
         [EnumMember(Value = "DROP")]
-        Drop = 1,
+        Drop = 1, 
         [EnumMember(Value = "DESTROY")]
         Destroy = 2
     }
@@ -226,7 +226,7 @@ namespace Fb.Model.EnumValue
     public enum DestroyType
     {
         [EnumMember(Value = "DEFAULT")]
-        Default = 0,
+        Default = 0, 
         [EnumMember(Value = "DEAD")]
         Dead = 1
     }
@@ -235,9 +235,9 @@ namespace Fb.Model.EnumValue
     public enum DialogResult
     {
         [EnumMember(Value = "PREV")]
-        Prev = 0,
+        Prev = 0, 
         [EnumMember(Value = "QUIT")]
-        Quit = 1,
+        Quit = 1, 
         [EnumMember(Value = "NEXT")]
         Next = 2
     }
@@ -246,11 +246,11 @@ namespace Fb.Model.EnumValue
     public enum Direction
     {
         [EnumMember(Value = "TOP")]
-        Top = 0,
+        Top = 0, 
         [EnumMember(Value = "RIGHT")]
-        Right = 1,
+        Right = 1, 
         [EnumMember(Value = "BOTTOM")]
-        Bottom = 2,
+        Bottom = 2, 
         [EnumMember(Value = "LEFT")]
         Left = 3
     }
@@ -259,35 +259,35 @@ namespace Fb.Model.EnumValue
     public enum Dsl
     {
         [EnumMember(Value = "item")]
-        Item = 0,
+        Item = 0, 
         [EnumMember(Value = "money")]
-        Money = 1,
+        Money = 1, 
         [EnumMember(Value = "exp")]
-        Exp = 2,
+        Exp = 2, 
         [EnumMember(Value = "level")]
-        Level = 3,
+        Level = 3, 
         [EnumMember(Value = "sex")]
-        Sex = 4,
+        Sex = 4, 
         [EnumMember(Value = "strength")]
-        Strength = 5,
+        Strength = 5, 
         [EnumMember(Value = "intelligence")]
-        Intelligence = 6,
+        Intelligence = 6, 
         [EnumMember(Value = "dexterity")]
-        Dexterity = 7,
+        Dexterity = 7, 
         [EnumMember(Value = "promotion")]
-        Promotion = 8,
+        Promotion = 8, 
         [EnumMember(Value = "class_t")]
-        ClassT = 9,
+        ClassT = 9, 
         [EnumMember(Value = "role")]
-        Role = 10,
+        Role = 10, 
         [EnumMember(Value = "world")]
-        World = 11,
+        World = 11, 
         [EnumMember(Value = "map")]
-        Map = 12,
+        Map = 12, 
         [EnumMember(Value = "area")]
-        Area = 13,
+        Area = 13, 
         [EnumMember(Value = "point")]
-        Point = 14,
+        Point = 14, 
         [EnumMember(Value = "script")]
         Script = 15
     }
@@ -296,17 +296,17 @@ namespace Fb.Model.EnumValue
     public enum Duration
     {
         [EnumMember(Value = "FAST")]
-        Fast = 0x0f,
+        Fast = 0x0f, 
         [EnumMember(Value = "ATTACK")]
-        Attack = 0x14,
+        Attack = 0x14, 
         [EnumMember(Value = "SPELL")]
-        Spell = 0x20,
+        Spell = 0x20, 
         [EnumMember(Value = "EAT")]
-        Eat = 0x27,
+        Eat = 0x27, 
         [EnumMember(Value = "THROW")]
-        Throw = 0x28,
+        Throw = 0x28, 
         [EnumMember(Value = "PICKUP")]
-        Pickup = 0x32,
+        Pickup = 0x32, 
         [EnumMember(Value = "EMOTION")]
         Emotion = 0x4e
     }
@@ -315,21 +315,21 @@ namespace Fb.Model.EnumValue
     public enum EquipmentParts
     {
         [EnumMember(Value = "UNKNOWN")]
-        Unknown = 0,
+        Unknown = 0, 
         [EnumMember(Value = "WEAPON")]
-        Weapon = 1,
+        Weapon = 1, 
         [EnumMember(Value = "ARMOR")]
-        Armor = 2,
+        Armor = 2, 
         [EnumMember(Value = "SHIELD")]
-        Shield = 3,
+        Shield = 3, 
         [EnumMember(Value = "HELMET")]
-        Helmet = 4,
+        Helmet = 4, 
         [EnumMember(Value = "LEFT_HAND")]
-        LeftHand = 7,
+        LeftHand = 7, 
         [EnumMember(Value = "RIGHT_HAND")]
-        RightHand = 8,
+        RightHand = 8, 
         [EnumMember(Value = "LEFT_AUX")]
-        LeftAux = 20,
+        LeftAux = 20, 
         [EnumMember(Value = "RIGHT_AUX")]
         RightAux = 21
     }
@@ -338,7 +338,7 @@ namespace Fb.Model.EnumValue
     public enum EquipmentPosition
     {
         [EnumMember(Value = "LEFT")]
-        Left = 0,
+        Left = 0, 
         [EnumMember(Value = "RIGHT")]
         Right = 1
     }
@@ -347,111 +347,111 @@ namespace Fb.Model.EnumValue
     public enum ErrorCode
     {
         [EnumMember(Value = "NONE")]
-        None = 0,
+        None = 0, 
         [EnumMember(Value = "UNHANDLED")]
-        Unhandled = 1,
+        Unhandled = 1, 
         [EnumMember(Value = "GROUP_ALREADY_JOINED")]
-        GroupAlreadyJoined = 2,
+        GroupAlreadyJoined = 2, 
         [EnumMember(Value = "GROUP_TARGET_ALREADY_JOINED")]
-        GroupTargetAlreadyJoined = 3,
+        GroupTargetAlreadyJoined = 3, 
         [EnumMember(Value = "DISABLED_GROUP")]
-        DisabledGroup = 4,
+        DisabledGroup = 4, 
         [EnumMember(Value = "DISABLED_GROUP_TARGET")]
-        DisabledGroupTarget = 5,
+        DisabledGroupTarget = 5, 
         [EnumMember(Value = "PASSWORD_NOT_MATCHED")]
-        PasswordNotMatched = 6,
+        PasswordNotMatched = 6, 
         [EnumMember(Value = "BIRTHDAY_NOT_MATCHED")]
-        BirthdayNotMatched = 7,
+        BirthdayNotMatched = 7, 
         [EnumMember(Value = "OFFLINE")]
-        Offline = 8,
+        Offline = 8, 
         [EnumMember(Value = "SERVER_NOT_READY")]
-        ServerNotReady = 9,
+        ServerNotReady = 9, 
         [EnumMember(Value = "ALREADY_LOGIN")]
-        AlreadyLogin = 10,
+        AlreadyLogin = 10, 
         [EnumMember(Value = "NOT_FOUND_CHARACTER")]
-        NotFoundCharacter = 11,
+        NotFoundCharacter = 11, 
         [EnumMember(Value = "NOT_FOUND_OPTION")]
-        NotFoundOption = 12,
+        NotFoundOption = 12, 
         [EnumMember(Value = "DISABLED_WHISPER")]
-        DisabledWhisper = 13,
+        DisabledWhisper = 13, 
         [EnumMember(Value = "DISABLED_WHISPER_TARGET")]
-        DisabledWhisperTarget = 14,
+        DisabledWhisperTarget = 14, 
         [EnumMember(Value = "DISTRIBUTED_LOCK_FAILED")]
-        DistributedLockFailed = 15,
+        DistributedLockFailed = 15, 
         [EnumMember(Value = "GROUP_NOT_JOINED")]
-        GroupNotJoined = 16,
+        GroupNotJoined = 16, 
         [EnumMember(Value = "GROUP_NOT_FOUND")]
-        GroupNotFound = 17,
+        GroupNotFound = 17, 
         [EnumMember(Value = "CANNOT_GROUP_SELF")]
-        CannotGroupSelf = 18,
+        CannotGroupSelf = 18, 
         [EnumMember(Value = "NOT_FOUND_MAP")]
-        NotFoundMap = 19,
+        NotFoundMap = 19, 
         [EnumMember(Value = "NOT_GROUP_MASTER")]
-        NotGroupMaster = 20,
+        NotGroupMaster = 20, 
         [EnumMember(Value = "ARTICLE_NOT_EXISTS")]
-        ArticleNotExists = 21,
+        ArticleNotExists = 21, 
         [EnumMember(Value = "CLAN_NAME_ALREADY_EXISTS")]
-        ClanNameAlreadyExists = 22,
+        ClanNameAlreadyExists = 22, 
         [EnumMember(Value = "CLAN_ALREADY_JOINED")]
-        ClanAlreadyJoined = 23,
+        ClanAlreadyJoined = 23, 
         [EnumMember(Value = "CLAN_NOT_JOINED")]
-        ClanNotJoined = 24,
+        ClanNotJoined = 24, 
         [EnumMember(Value = "NOT_FOUND_CLAN")]
-        NotFoundClan = 25,
+        NotFoundClan = 25, 
         [EnumMember(Value = "CLAN_MEMBER_EXISTS")]
-        ClanMemberExists = 26,
+        ClanMemberExists = 26, 
         [EnumMember(Value = "CLAN_NO_PRIVILEGE")]
-        ClanNoPrivilege = 27,
+        ClanNoPrivilege = 27, 
         [EnumMember(Value = "NOT_FOUND_CLAN_MEMBER")]
-        NotFoundClanMember = 28,
+        NotFoundClanMember = 28, 
         [EnumMember(Value = "CLAN_NOT_MATCHED")]
-        ClanNotMatched = 29,
+        ClanNotMatched = 29, 
         [EnumMember(Value = "CLAN_CANNOT_LEAVEE_MASTER")]
-        ClanCannotLeaveeMaster = 30,
+        ClanCannotLeaveeMaster = 30, 
         [EnumMember(Value = "NOT_FOUND_CHARACTER_SYNC")]
-        NotFoundCharacterSync = 31,
+        NotFoundCharacterSync = 31, 
         [EnumMember(Value = "CLAN_TITLE_NOT_CHANGED")]
-        ClanTitleNotChanged = 32,
+        ClanTitleNotChanged = 32, 
         [EnumMember(Value = "CLAN_TITLE_TOO_SHORT")]
-        ClanTitleTooShort = 33,
+        ClanTitleTooShort = 33, 
         [EnumMember(Value = "MAIL_NOT_EXISTS")]
-        MailNotExists = 34,
+        MailNotExists = 34, 
         [EnumMember(Value = "NOT_FOUND_MAIL")]
-        NotFoundMail = 35,
+        NotFoundMail = 35, 
         [EnumMember(Value = "INVALID_CLAN_ROLE")]
-        InvalidClanRole = 36,
+        InvalidClanRole = 36, 
         [EnumMember(Value = "CANNOT_KICK_SELF")]
-        CannotKickSelf = 37,
+        CannotKickSelf = 37, 
         [EnumMember(Value = "CANNOT_CHANGE_CLAN_ROLE_SELF")]
-        CannotChangeClanRoleSelf = 38,
+        CannotChangeClanRoleSelf = 38, 
         [EnumMember(Value = "CANNOT_INVITE_SELF")]
-        CannotInviteSelf = 39,
+        CannotInviteSelf = 39, 
         [EnumMember(Value = "NOT_FOUND_BAN")]
-        NotFoundBan = 40,
+        NotFoundBan = 40, 
         [EnumMember(Value = "BANNED")]
-        Banned = 41,
+        Banned = 41, 
         [EnumMember(Value = "MARKETPLACE_LISTING_NOT_FOUND")]
-        MarketplaceListingNotFound = 42,
+        MarketplaceListingNotFound = 42, 
         [EnumMember(Value = "MARKETPLACE_LISTING_EXPIRED")]
-        MarketplaceListingExpired = 43,
+        MarketplaceListingExpired = 43, 
         [EnumMember(Value = "MARKETPLACE_NOT_LISTING_OWNER")]
-        MarketplaceNotListingOwner = 44,
+        MarketplaceNotListingOwner = 44, 
         [EnumMember(Value = "MARKETPLACE_LISTING_ALREADY_SOLD")]
-        MarketplaceListingAlreadySold = 45,
+        MarketplaceListingAlreadySold = 45, 
         [EnumMember(Value = "MARKETPLACE_LISTING_ALREADY_CANCELLED")]
-        MarketplaceListingAlreadyCancelled = 46,
+        MarketplaceListingAlreadyCancelled = 46, 
         [EnumMember(Value = "MARKETPLACE_INSUFFICIENT_FUNDS")]
-        MarketplaceInsufficientFunds = 47,
+        MarketplaceInsufficientFunds = 47, 
         [EnumMember(Value = "MARKETPLACE_INVALID_PRICE")]
-        MarketplaceInvalidPrice = 48,
+        MarketplaceInvalidPrice = 48, 
         [EnumMember(Value = "MARKETPLACE_INVALID_EXPIRE_HOURS")]
-        MarketplaceInvalidExpireHours = 49,
+        MarketplaceInvalidExpireHours = 49, 
         [EnumMember(Value = "MARKETPLACE_ITEM_NOT_FOUND")]
-        MarketplaceItemNotFound = 50,
+        MarketplaceItemNotFound = 50, 
         [EnumMember(Value = "MARKETPLACE_PENDING_TRANSACTION_NOT_FOUND")]
-        MarketplacePendingTransactionNotFound = 51,
+        MarketplacePendingTransactionNotFound = 51, 
         [EnumMember(Value = "MARKETPLACE_PENDING_RETURN_NOT_FOUND")]
-        MarketplacePendingReturnNotFound = 52,
+        MarketplacePendingReturnNotFound = 52, 
         [EnumMember(Value = "MARKETPLACE_INVALID_PAGE_NUMBER")]
         MarketplaceInvalidPageNumber = 53
     }
@@ -460,11 +460,11 @@ namespace Fb.Model.EnumValue
     public enum HeadMarker
     {
         [EnumMember(Value = "NONE")]
-        None = 0,
+        None = 0, 
         [EnumMember(Value = "RED")]
-        Red = 1,
+        Red = 1, 
         [EnumMember(Value = "YELLOW")]
-        Yellow = 2,
+        Yellow = 2, 
         [EnumMember(Value = "BLUE")]
         Blue = 3
     }
@@ -473,29 +473,29 @@ namespace Fb.Model.EnumValue
     public enum ItemAttribute
     {
         [EnumMember(Value = "NONE")]
-        None = 0x00000000,
+        None = 0x00000000, 
         [EnumMember(Value = "CONSUME")]
-        Consume = 0x00000001,
+        Consume = 0x00000001, 
         [EnumMember(Value = "BUNDLE")]
-        Bundle = 0x00000002,
+        Bundle = 0x00000002, 
         [EnumMember(Value = "SCRIPT")]
-        Script = 0x00000003,
+        Script = 0x00000003, 
         [EnumMember(Value = "CASH")]
-        Cash = 0x00000004,
+        Cash = 0x00000004, 
         [EnumMember(Value = "EQUIPMENT")]
-        Equipment = 0x10000000,
+        Equipment = 0x10000000, 
         [EnumMember(Value = "PACK")]
-        Pack = Consume | 0x00000100,
+        Pack = Consume | 0x00000100, 
         [EnumMember(Value = "WEAPON")]
-        Weapon = Equipment | 0x00000100,
+        Weapon = Equipment | 0x00000100, 
         [EnumMember(Value = "ARMOR")]
-        Armor = Equipment | 0x00000200,
+        Armor = Equipment | 0x00000200, 
         [EnumMember(Value = "SHIELD")]
-        Shield = Equipment | 0x00000400,
+        Shield = Equipment | 0x00000400, 
         [EnumMember(Value = "HELMET")]
-        Helmet = Equipment | 0x00000800,
+        Helmet = Equipment | 0x00000800, 
         [EnumMember(Value = "RING")]
-        Ring = Equipment | 0x00001000,
+        Ring = Equipment | 0x00001000, 
         [EnumMember(Value = "AUXILIARY")]
         Auxiliary = Equipment | 0x00002000
     }
@@ -504,29 +504,29 @@ namespace Fb.Model.EnumValue
     public enum ItemDeleteType
     {
         [EnumMember(Value = "REMOVED")]
-        Removed = 0x00,
+        Removed = 0x00, 
         [EnumMember(Value = "DROP")]
-        Drop = 0x01,
+        Drop = 0x01, 
         [EnumMember(Value = "EAT")]
-        Eat = 0x02,
+        Eat = 0x02, 
         [EnumMember(Value = "SMOKE")]
-        Smoke = 0x03,
+        Smoke = 0x03, 
         [EnumMember(Value = "THROW")]
-        Throw = 0x04,
+        Throw = 0x04, 
         [EnumMember(Value = "SHOOT")]
-        Shoot = 0x05,
+        Shoot = 0x05, 
         [EnumMember(Value = "REDUCE")]
-        Reduce = 0x06,
+        Reduce = 0x06, 
         [EnumMember(Value = "STICK")]
-        Stick = 0x07,
+        Stick = 0x07, 
         [EnumMember(Value = "DECAY")]
-        Decay = 0x08,
+        Decay = 0x08, 
         [EnumMember(Value = "GIVE")]
-        Give = 0x09,
+        Give = 0x09, 
         [EnumMember(Value = "SELL")]
-        Sell = 0x0a,
+        Sell = 0x0a, 
         [EnumMember(Value = "NONE")]
-        None = 0x0c,
+        None = 0x0c, 
         [EnumMember(Value = "DESTROY")]
         Destroy = 0x0d
     }
@@ -535,23 +535,23 @@ namespace Fb.Model.EnumValue
     public enum ItemType
     {
         [EnumMember(Value = "STUFF")]
-        Stuff = 1,
+        Stuff = 1, 
         [EnumMember(Value = "CASH")]
-        Cash = 2,
+        Cash = 2, 
         [EnumMember(Value = "CONSUME")]
-        Consume = 3,
+        Consume = 3, 
         [EnumMember(Value = "WEAPON")]
-        Weapon = 4,
+        Weapon = 4, 
         [EnumMember(Value = "ARMOR")]
-        Armor = 5,
+        Armor = 5, 
         [EnumMember(Value = "HELMET")]
-        Helmet = 6,
+        Helmet = 6, 
         [EnumMember(Value = "RING")]
-        Ring = 7,
+        Ring = 7, 
         [EnumMember(Value = "SHIELD")]
-        Shield = 8,
+        Shield = 8, 
         [EnumMember(Value = "AUXILIARY")]
-        Auxiliary = 9,
+        Auxiliary = 9, 
         [EnumMember(Value = "PACKAGE")]
         Package = 11
     }
@@ -560,9 +560,9 @@ namespace Fb.Model.EnumValue
     public enum MailButtonEnable
     {
         [EnumMember(Value = "NONE")]
-        None = 0x00,
+        None = 0x00, 
         [EnumMember(Value = "UP")]
-        Up = 0x01,
+        Up = 0x01, 
         [EnumMember(Value = "NEW")]
         New = 0x02
     }
@@ -571,9 +571,9 @@ namespace Fb.Model.EnumValue
     public enum MapEffectType
     {
         [EnumMember(Value = "NONE")]
-        None = 0x00,
+        None = 0x00, 
         [EnumMember(Value = "FIRE")]
-        Fire = 0x01,
+        Fire = 0x01, 
         [EnumMember(Value = "WATER")]
         Water = 0x02
     }
@@ -582,19 +582,19 @@ namespace Fb.Model.EnumValue
     public enum MapOption
     {
         [EnumMember(Value = "NONE")]
-        None = 0x00,
+        None = 0x00, 
         [EnumMember(Value = "BUILD_IN")]
-        BuildIn = 0x01,
+        BuildIn = 0x01, 
         [EnumMember(Value = "DISABLE_TALK")]
-        DisableTalk = 0x02,
+        DisableTalk = 0x02, 
         [EnumMember(Value = "DISABLE_WHISPER")]
-        DisableWhisper = 0x04,
+        DisableWhisper = 0x04, 
         [EnumMember(Value = "DISABLE_SPELL")]
-        DisableSpell = 0x08,
+        DisableSpell = 0x08, 
         [EnumMember(Value = "HUNTING_GROUND")]
-        HuntingGround = 0x10,
+        HuntingGround = 0x10, 
         [EnumMember(Value = "ENABLE_PK")]
-        EnablePk = 0x20,
+        EnablePk = 0x20, 
         [EnumMember(Value = "DISABLE_DIE_PENALTY")]
         DisableDiePenalty = 0x40
     }
@@ -603,19 +603,19 @@ namespace Fb.Model.EnumValue
     public enum MessageType
     {
         [EnumMember(Value = "NOTIFY")]
-        Notify = 0x00,
+        Notify = 0x00, 
         [EnumMember(Value = "BLUE")]
-        Blue = 0x01,
+        Blue = 0x01, 
         [EnumMember(Value = "STATE")]
-        State = 0x03,
+        State = 0x03, 
         [EnumMember(Value = "SHOUT")]
-        Shout = 0x04,
+        Shout = 0x04, 
         [EnumMember(Value = "WORLD")]
-        World = 0x05,
+        World = 0x05, 
         [EnumMember(Value = "POPUP")]
-        Popup = 0x08,
+        Popup = 0x08, 
         [EnumMember(Value = "YELLOW")]
-        Yellow = 0x0b,
+        Yellow = 0x0b, 
         [EnumMember(Value = "BROWN")]
         Brown = 0x0c
     }
@@ -624,13 +624,13 @@ namespace Fb.Model.EnumValue
     public enum MobAttackType
     {
         [EnumMember(Value = "NONE")]
-        None = 0,
+        None = 0, 
         [EnumMember(Value = "COUNTER")]
-        Counter = 1,
+        Counter = 1, 
         [EnumMember(Value = "CONTAINMENT")]
-        Containment = 2,
+        Containment = 2, 
         [EnumMember(Value = "RUN_AWAY")]
-        RunAway = 3,
+        RunAway = 3, 
         [EnumMember(Value = "NO_MOVE")]
         NoMove = 4
     }
@@ -639,9 +639,9 @@ namespace Fb.Model.EnumValue
     public enum MobSize
     {
         [EnumMember(Value = "SMALL")]
-        Small = 1,
+        Small = 1, 
         [EnumMember(Value = "LARGE")]
-        Large = 2,
+        Large = 2, 
         [EnumMember(Value = "ALL")]
         All = Small | Large
     }
@@ -650,7 +650,7 @@ namespace Fb.Model.EnumValue
     public enum Nation
     {
         [EnumMember(Value = "GOGURYEO")]
-        Goguryeo = 0x01,
+        Goguryeo = 0x01, 
         [EnumMember(Value = "BUYEO")]
         Buyeo = 0x02
     }
@@ -659,15 +659,15 @@ namespace Fb.Model.EnumValue
     public enum NpcInteraction
     {
         [EnumMember(Value = "NONE")]
-        None = 0x00,
+        None = 0x00, 
         [EnumMember(Value = "REPAIR")]
-        Repair = 0x01,
+        Repair = 0x01, 
         [EnumMember(Value = "RENAME")]
-        Rename = 0x02,
+        Rename = 0x02, 
         [EnumMember(Value = "DEPOSIT_MONEY")]
-        DepositMoney = 0x04,
+        DepositMoney = 0x04, 
         [EnumMember(Value = "STORE_ITEM")]
-        StoreItem = 0x08,
+        StoreItem = 0x08, 
         [EnumMember(Value = "REVIVE")]
         Revive = 0x10
     }
@@ -676,17 +676,17 @@ namespace Fb.Model.EnumValue
     public enum ObjectType
     {
         [EnumMember(Value = "UNKNOWN")]
-        Unknown = 0x00,
+        Unknown = 0x00, 
         [EnumMember(Value = "ITEM")]
-        Item = 0x01,
+        Item = 0x01, 
         [EnumMember(Value = "NPC")]
-        Npc = 0x02,
+        Npc = 0x02, 
         [EnumMember(Value = "MOB")]
-        Mob = 0x04,
+        Mob = 0x04, 
         [EnumMember(Value = "CHARACTER")]
-        Character = 0x08,
+        Character = 0x08, 
         [EnumMember(Value = "OBJECT")]
-        Object = Item | Npc | Mob,
+        Object = Item | Npc | Mob, 
         [EnumMember(Value = "LIFE")]
         Life = Mob | Character
     }
@@ -695,27 +695,27 @@ namespace Fb.Model.EnumValue
     public enum Option
     {
         [EnumMember(Value = "EXTENSION")]
-        Extension = 0x00,
+        Extension = 0x00, 
         [EnumMember(Value = "WHISPER")]
-        Whisper = 0x01,
+        Whisper = 0x01, 
         [EnumMember(Value = "GROUP")]
-        Group = 0x02,
+        Group = 0x02, 
         [EnumMember(Value = "ROAR")]
-        Roar = 0x03,
+        Roar = 0x03, 
         [EnumMember(Value = "ROAR_WORLDS")]
-        RoarWorlds = 0x04,
+        RoarWorlds = 0x04, 
         [EnumMember(Value = "MAGIC_EFFECT")]
-        MagicEffect = 0x05,
+        MagicEffect = 0x05, 
         [EnumMember(Value = "WEATHER_EFFECT")]
-        WeatherEffect = 0x06,
+        WeatherEffect = 0x06, 
         [EnumMember(Value = "FIXED_MOVE")]
-        FixedMove = 0x07,
+        FixedMove = 0x07, 
         [EnumMember(Value = "TRADE")]
-        Trade = 0x08,
+        Trade = 0x08, 
         [EnumMember(Value = "FAST_MOVE")]
-        FastMove = 0x09,
+        FastMove = 0x09, 
         [EnumMember(Value = "PK_PROTECT")]
-        PkProtect = 0x0b,
+        PkProtect = 0x0b, 
         [EnumMember(Value = "EFFECT_SOUND")]
         EffectSound = 0x0d
     }
@@ -724,33 +724,33 @@ namespace Fb.Model.EnumValue
     public enum Regex
     {
         [EnumMember(Value = "SELL")]
-        Sell = 0,
+        Sell = 0, 
         [EnumMember(Value = "BUY")]
-        Buy = 1,
+        Buy = 1, 
         [EnumMember(Value = "REPAIR")]
-        Repair = 2,
+        Repair = 2, 
         [EnumMember(Value = "DEPOSIT_MONEY")]
-        DepositMoney = 3,
+        DepositMoney = 3, 
         [EnumMember(Value = "WITHDRAW_MONEY")]
-        WithdrawMoney = 4,
+        WithdrawMoney = 4, 
         [EnumMember(Value = "DEPOSIT_ITEM")]
-        DepositItem = 5,
+        DepositItem = 5, 
         [EnumMember(Value = "WITHDRAW_ITEM")]
-        WithdrawItem = 6,
+        WithdrawItem = 6, 
         [EnumMember(Value = "SELL_LIST")]
-        SellList = 7,
+        SellList = 7, 
         [EnumMember(Value = "BUY_LIST")]
-        BuyList = 8,
+        BuyList = 8, 
         [EnumMember(Value = "SELL_PRICE")]
-        SellPrice = 9,
+        SellPrice = 9, 
         [EnumMember(Value = "BUY_PRICE")]
-        BuyPrice = 10,
+        BuyPrice = 10, 
         [EnumMember(Value = "DEPOSITED_MONEY")]
-        DepositedMoney = 11,
+        DepositedMoney = 11, 
         [EnumMember(Value = "RENAME_WEAPON")]
-        RenameWeapon = 12,
+        RenameWeapon = 12, 
         [EnumMember(Value = "HOLD_ITEM_LIST")]
-        HoldItemList = 13,
+        HoldItemList = 13, 
         [EnumMember(Value = "HOLD_ITEM_COUNT")]
         HoldItemCount = 14
     }
@@ -759,13 +759,13 @@ namespace Fb.Model.EnumValue
     public enum Role
     {
         [EnumMember(Value = "USER")]
-        User = 0,
+        User = 0, 
         [EnumMember(Value = "MODERATOR")]
-        Moderator = 1,
+        Moderator = 1, 
         [EnumMember(Value = "ADMIN")]
-        Admin = 2,
+        Admin = 2, 
         [EnumMember(Value = "SUPERADMIN")]
-        Superadmin = 3,
+        Superadmin = 3, 
         [EnumMember(Value = "OWNER")]
         Owner = 4
     }
@@ -774,7 +774,7 @@ namespace Fb.Model.EnumValue
     public enum Sex
     {
         [EnumMember(Value = "MAN")]
-        Man = 0,
+        Man = 0, 
         [EnumMember(Value = "WOMAN")]
         Woman = 1
     }
@@ -783,15 +783,15 @@ namespace Fb.Model.EnumValue
     public enum Sound
     {
         [EnumMember(Value = "EAT")]
-        Eat = 0x0006,
+        Eat = 0x0006, 
         [EnumMember(Value = "DISGUISE")]
-        Disguise = 0x0019,
+        Disguise = 0x0019, 
         [EnumMember(Value = "SWING")]
-        Swing = 0x014b,
+        Swing = 0x014b, 
         [EnumMember(Value = "DAMAGE")]
-        Damage = 0x015d,
+        Damage = 0x015d, 
         [EnumMember(Value = "EQUIPMENT_OFF")]
-        EquipmentOff = 0x019a,
+        EquipmentOff = 0x019a, 
         [EnumMember(Value = "EQUIPMENT_ON")]
         EquipmentOn = 0x019b
     }
@@ -800,15 +800,15 @@ namespace Fb.Model.EnumValue
     public enum SpellType
     {
         [EnumMember(Value = "INPUT")]
-        Input = 0x01,
+        Input = 0x01, 
         [EnumMember(Value = "TARGET")]
-        Target = 0x02,
+        Target = 0x02, 
         [EnumMember(Value = "NORMAL")]
-        Normal = 0x05,
+        Normal = 0x05, 
         [EnumMember(Value = "UNKNOWN1")]
-        Unknown1 = 8,
+        Unknown1 = 8, 
         [EnumMember(Value = "UNKNOWN2")]
-        Unknown2 = 9,
+        Unknown2 = 9, 
         [EnumMember(Value = "UNKNOWN3")]
         Unknown3 = 12
     }
@@ -817,17 +817,17 @@ namespace Fb.Model.EnumValue
     public enum State
     {
         [EnumMember(Value = "NORMAL")]
-        Normal = 0x00,
+        Normal = 0x00, 
         [EnumMember(Value = "GHOST")]
-        Ghost = 0x01,
+        Ghost = 0x01, 
         [EnumMember(Value = "TRANSLUCENCY")]
-        Translucency = 0x02,
+        Translucency = 0x02, 
         [EnumMember(Value = "RIDING")]
-        Riding = 0x03,
+        Riding = 0x03, 
         [EnumMember(Value = "DISGUISE")]
-        Disguise = 0x04,
+        Disguise = 0x04, 
         [EnumMember(Value = "HALF_CLOACK")]
-        HalfCloack = 0x05,
+        HalfCloack = 0x05, 
         [EnumMember(Value = "CLOACK")]
         Cloack = 0x06
     }
@@ -836,7 +836,7 @@ namespace Fb.Model.EnumValue
     public enum SwapType
     {
         [EnumMember(Value = "ITEM")]
-        Item = 0x00,
+        Item = 0x00, 
         [EnumMember(Value = "SPELL")]
         Spell = 0x01
     }
@@ -845,7 +845,7 @@ namespace Fb.Model.EnumValue
     public enum TimerType
     {
         [EnumMember(Value = "INCREASE")]
-        Increase = 0x01,
+        Increase = 0x01, 
         [EnumMember(Value = "DECREASE")]
         Decrease = 0x02
     }
@@ -854,15 +854,15 @@ namespace Fb.Model.EnumValue
     public enum UpdateStateLevel
     {
         [EnumMember(Value = "MINIMUM")]
-        Minimum = 0x00,
+        Minimum = 0x00, 
         [EnumMember(Value = "CROWD_CONTROL")]
-        CrowdControl = 0x08,
+        CrowdControl = 0x08, 
         [EnumMember(Value = "EXP_MONEY")]
-        ExpMoney = 0x10,
+        ExpMoney = 0x10, 
         [EnumMember(Value = "HP_MP")]
-        HpMp = 0x20,
+        HpMp = 0x20, 
         [EnumMember(Value = "BASED")]
-        Based = 0x40,
+        Based = 0x40, 
         [EnumMember(Value = "ALL")]
         All = Based | HpMp | ExpMoney | CrowdControl
     }
@@ -871,13 +871,13 @@ namespace Fb.Model.EnumValue
     public enum WeaponType
     {
         [EnumMember(Value = "NORMAL")]
-        Normal = 0,
+        Normal = 0, 
         [EnumMember(Value = "SPEAR")]
-        Spear = 1,
+        Spear = 1, 
         [EnumMember(Value = "BOW")]
-        Bow = 2,
+        Bow = 2, 
         [EnumMember(Value = "FAN")]
-        Fan = 3,
+        Fan = 3, 
         [EnumMember(Value = "UNKNOWN")]
         Unknown = 4
     }
@@ -886,11 +886,11 @@ namespace Fb.Model.EnumValue
     public enum WeatherType
     {
         [EnumMember(Value = "NORMAL")]
-        Normal = 0x00,
+        Normal = 0x00, 
         [EnumMember(Value = "RAIN")]
-        Rain = 0x01,
+        Rain = 0x01, 
         [EnumMember(Value = "SNOW")]
-        Snow = 0x02,
+        Snow = 0x02, 
         [EnumMember(Value = "BIRD")]
         Bird = 0x03
     }
@@ -1763,7 +1763,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Area,
-                    Params = new object[] { Left, Top, Right, Bottom }
+                    Params = new object[] {Left, Top, Right, Bottom}
                 };
             }
         }
@@ -1785,7 +1785,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.ClassT,
-                    Params = new object[] { Value }
+                    Params = new object[] {Value}
                 };
             }
         }
@@ -1807,7 +1807,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Dexterity,
-                    Params = new object[] { Value }
+                    Params = new object[] {Value}
                 };
             }
         }
@@ -1829,7 +1829,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Exp,
-                    Params = new object[] { Value }
+                    Params = new object[] {Value}
                 };
             }
         }
@@ -1851,7 +1851,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Intelligence,
-                    Params = new object[] { Value }
+                    Params = new object[] {Value}
                 };
             }
         }
@@ -1861,6 +1861,10 @@ namespace Fb.Model
             public uint Id { get; set; }
             [JsonProperty("count")]
             public uint Count { get; set; }
+            [JsonProperty("durability")]
+            public uint? Durability { get; set; }
+            [JsonProperty("custom_name")]
+            public string CustomName { get; set; }
             [JsonProperty("percent")]
             public double Percent { get; set; }
 
@@ -1870,7 +1874,9 @@ namespace Fb.Model
                 {
                     Id = (uint)parameters[0],
                     Count = (uint)parameters[1],
-                    Percent = (double)parameters[2]
+                    Durability = parameters[2] == null ? null : (uint?)(uint)parameters[2],
+                    CustomName = parameters[3]?.ToString(),
+                    Percent = (double)parameters[4]
                 };
             }
 
@@ -1879,7 +1885,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Item,
-                    Params = new object[] { Id, Count, Percent }
+                    Params = new object[] {Id, Count, Durability, CustomName, Percent}
                 };
             }
         }
@@ -1904,7 +1910,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Level,
-                    Params = new object[] { Min, Max }
+                    Params = new object[] {Min, Max}
                 };
             }
         }
@@ -1938,7 +1944,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Map,
-                    Params = new object[] { Id, X, Y, Right, Bottom }
+                    Params = new object[] {Id, X, Y, Right, Bottom}
                 };
             }
         }
@@ -1960,7 +1966,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Money,
-                    Params = new object[] { Value }
+                    Params = new object[] {Value}
                 };
             }
         }
@@ -1985,7 +1991,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Point,
-                    Params = new object[] { X, Y }
+                    Params = new object[] {X, Y}
                 };
             }
         }
@@ -2007,7 +2013,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Promotion,
-                    Params = new object[] { Value }
+                    Params = new object[] {Value}
                 };
             }
         }
@@ -2029,7 +2035,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Role,
-                    Params = new object[] { Value }
+                    Params = new object[] {Value}
                 };
             }
         }
@@ -2054,7 +2060,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Script,
-                    Params = new object[] { Path, Function }
+                    Params = new object[] {Path, Function}
                 };
             }
         }
@@ -2076,7 +2082,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Sex,
-                    Params = new object[] { Value }
+                    Params = new object[] {Value}
                 };
             }
         }
@@ -2098,7 +2104,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Strength,
-                    Params = new object[] { Value }
+                    Params = new object[] {Value}
                 };
             }
         }
@@ -2123,7 +2129,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.World,
-                    Params = new object[] { Id, Index }
+                    Params = new object[] {Id, Index}
                 };
             }
         }
@@ -2399,42 +2405,42 @@ namespace Fb.Model
 
         public static Container[] Containers { get; private set; } = new Container[]
         {
-            Ability,
-            AbilityAttribute,
-            Achievement,
-            Announce,
-            Bulletin,
-            Buy,
-            BuyAttribute,
-            Door,
-            DoorPair,
-            Drop,
-            Equipment,
-            Item,
-            Life,
-            Map,
-            Mob,
-            MobSpawn,
-            MobSpawnAttribute,
-            Npc,
-            NpcSpawn,
-            NpcSpawnAttribute,
-            Object,
-            Preset,
-            Promotion,
-            PromotionAttribute,
-            Quest,
-            QuestAttribute,
-            Recipe,
-            Reward,
-            Sell,
-            SellAttribute,
-            Soliloquy,
-            SoliloquyAttribute,
-            Spell,
-            Warp,
-            WarpAttribute,
-            World,
+            Ability, 
+            AbilityAttribute, 
+            Achievement, 
+            Announce, 
+            Bulletin, 
+            Buy, 
+            BuyAttribute, 
+            Door, 
+            DoorPair, 
+            Drop, 
+            Equipment, 
+            Item, 
+            Life, 
+            Map, 
+            Mob, 
+            MobSpawn, 
+            MobSpawnAttribute, 
+            Npc, 
+            NpcSpawn, 
+            NpcSpawnAttribute, 
+            Object, 
+            Preset, 
+            Promotion, 
+            PromotionAttribute, 
+            Quest, 
+            QuestAttribute, 
+            Recipe, 
+            Reward, 
+            Sell, 
+            SellAttribute, 
+            Soliloquy, 
+            SoliloquyAttribute, 
+            Spell, 
+            Warp, 
+            WarpAttribute, 
+            World, 
             WorldAttribute
         };
 
