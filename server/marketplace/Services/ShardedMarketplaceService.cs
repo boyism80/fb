@@ -71,16 +71,6 @@ public class ShardedMarketplaceService : IMarketplaceService
     }
 
     /// <summary>
-    /// Checks the status of a listing by listing ID.
-    /// </summary>
-    /// <returns>MarketplaceListing if found; null if not found.</returns>
-    /// <exception cref="NotImplementedException">Thrown until Elasticsearch integration is implemented.</exception>
-    public Task<MarketplaceListing> CheckListingStatusAsync(string listingId)
-    {
-        throw new NotImplementedException("Sharded marketplace service is not yet implemented");
-    }
-
-    /// <summary>
     /// Gets a listing by ID.
     /// </summary>
     /// <returns>MarketplaceListing if found; null if not found.</returns>

@@ -6,6 +6,7 @@
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/model/model.h>
 #include <fb/encoding.h>
+#include <json/json.h>
 #include <stdexcept>
 #include <sstream>
 #include <unordered_set>
@@ -84,6 +85,16 @@ marketplace::list(const std::string& id, uint8_t item_index, uint16_t count, uin
     std::ignore = this->_owner.items.remove(item_index, count, ITEM_DELETE_TYPE::REMOVED);
     this->_owner.money_reduce(listing_fee);
 
+    // Log before API call (after deduction)
+    auto log_data_before            = Json::Value();
+    log_data_before["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+    log_data_before["listing_id"]   = id;
+    log_data_before["item_model"]   = model.id;
+    log_data_before["item_count"]   = count;
+    log_data_before["price"]        = static_cast<Json::Int64>(price);
+    log_data_before["listing_fee"]  = static_cast<Json::Int64>(listing_fee);
+    this->_owner.server.log.write("marketplace_list", log_data_before);
+
     // Send request to marketplace server
     try
     {
@@ -113,6 +124,13 @@ marketplace::list(const std::string& id, uint8_t item_index, uint16_t count, uin
             this->_pending_listings.erase(resp.listing_id);
         }
 
+        // Log successful listing
+        auto log_data_success                 = Json::Value();
+        log_data_success["character_id"]      = static_cast<Json::Int64>(this->_owner.id);
+        log_data_success["listing_id"]        = id;
+        log_data_success["server_listing_id"] = resp.listing_id;
+        this->_owner.server.log.write("marketplace_list_success", log_data_success);
+
         // Build and return listing
         co_return marketplace::listing{
             .id              = resp.listing_id,
@@ -135,6 +153,11 @@ marketplace::list(const std::string& id, uint8_t item_index, uint16_t count, uin
     {
         // Any failure (system error or logical error) - items/money already deducted, keep DSL for recovery
         // DSL remains in _pending_listings for recovery on next login
+        auto log_data            = Json::Value();
+        log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+        log_data["listing_id"]   = id;
+        log_data["error"]        = e.what();
+        this->_owner.server.log.write("marketplace_list_failed", log_data);
         throw std::runtime_error(std::format("Failed to list item: {}", e.what()));
     }
 }
@@ -143,14 +166,33 @@ async::task<bool> marketplace::cancel(const std::string& id)
 {
     this->_owner.assert_thread();
 
+    // Log before API call
+    auto log_data_before            = Json::Value();
+    log_data_before["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+    log_data_before["listing_id"]   = id;
+    this->_owner.server.log.write("marketplace_cancel", log_data_before);
+
     auto req  = mp_reqs::Cancel{this->_owner.id, id};
     auto resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/cancel", req);
 
     if (resp.error != 0)
+    {
+        auto log_data            = Json::Value();
+        log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+        log_data["listing_id"]   = id;
+        log_data["error"]        = static_cast<Json::Int64>(resp.error);
+        this->_owner.server.log.write("marketplace_cancel_failed", log_data);
         throw std::runtime_error(std::format("Failed to cancel listing: error={}", resp.error));
+    }
 
     // Remove from pending_listings if it exists (in case listing was created but response was lost)
     this->_pending_listings.erase(id);
+
+    // Log successful cancellation
+    auto log_data_success            = Json::Value();
+    log_data_success["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+    log_data_success["listing_id"]   = id;
+    this->_owner.server.log.write("marketplace_cancel_success", log_data_success);
 
     co_return true;
 }
@@ -194,6 +236,14 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
     // Deduct money BEFORE API call
     this->_owner.money_reduce(price);
 
+    // Log before API call (after deduction)
+    auto log_data_before            = Json::Value();
+    log_data_before["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+    log_data_before["listing_id"]   = id;
+    log_data_before["seller_id"]    = static_cast<Json::Int64>(listing.seller_id);
+    log_data_before["price"]        = static_cast<Json::Int64>(price);
+    this->_owner.server.log.write("marketplace_purchase", log_data_before);
+
     // Send purchase request to marketplace server
     auto req             = mp_reqs::Purchase{this->_owner.id, id};
     auto unhandled_error = true;
@@ -224,6 +274,12 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
         // Purchase succeeded - remove from pending_listings
         this->_pending_listings.erase(id);
 
+        // Log successful purchase
+        auto log_data_success            = Json::Value();
+        log_data_success["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+        log_data_success["listing_id"]   = id;
+        this->_owner.server.log.write("marketplace_purchase_success", log_data_success);
+
         // Build and return listing (from response item data)
         co_return marketplace::listing{
             .id              = id,
@@ -248,12 +304,22 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
         {
             // HTTP exception (timeout, connection error, etc.) - system error
             // Money already deducted, DSL is already saved for recovery
+            auto log_data            = Json::Value();
+            log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+            log_data["listing_id"]   = id;
+            log_data["error"]        = e.what();
+            this->_owner.server.log.write("marketplace_purchase_failed", log_data);
         }
         else
         {
             // Logical error - restore money
             this->_owner.money_add(price);
             this->_pending_listings.erase(id); // Remove DSL as purchase definitely failed
+            auto log_data            = Json::Value();
+            log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+            log_data["listing_id"]   = id;
+            log_data["error"]        = e.what();
+            this->_owner.server.log.write("marketplace_purchase_failed", log_data);
         }
 
         throw std::runtime_error(std::format("Failed to purchase item: {}", e.what()));
@@ -496,7 +562,19 @@ async::task<void> marketplace::restore()
             pending_boxes.push_back(std::move(box));
             this->_owner.storage_box.apply_pending(pending_boxes);
 
+            // Log successful restore
+            auto log_data            = Json::Value();
+            log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+            log_data["listing_id"]   = listing_id;
+            log_data["type"]         = static_cast<Json::Int64>(pending_info.type);
+            this->_owner.server.log.write("marketplace_restore_success", log_data);
+
             // Remove from pending listings
+            to_remove.push_back(listing_id);
+        }
+        else
+        {
+            // Listing exists on server, removing pending (no log needed - normal case)
             to_remove.push_back(listing_id);
         }
     }

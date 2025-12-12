@@ -36,6 +36,36 @@ namespace Http.Reepository
             return await conn.QueryFirstOrDefaultAsync<MarketplaceListing>(sql, new { ListingId = listingId });
         }
 
+        /// <summary>
+        /// Retrieves a marketplace listing by its unique identifier with row lock for update.
+        /// Used for purchase operations to prevent concurrent purchases.
+        /// </summary>
+        /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
+        /// <param name="transaction">Optional database transaction.</param>
+        /// <returns>The marketplace listing if found; otherwise, null.</returns>
+        public async Task<MarketplaceListing> GetListingByIdForUpdateAsync(string listingId, System.Data.IDbTransaction transaction = null)
+        {
+            if (transaction != null)
+            {
+                var sql = @"
+                    SELECT * FROM marketplace_listing 
+                    WHERE id = @ListingId AND status = 0 AND expire_date > NOW()
+                    FOR UPDATE";
+
+                return await transaction.Connection.QueryFirstOrDefaultAsync<MarketplaceListing>(sql, new { ListingId = listingId }, transaction);
+            }
+            else
+            {
+                await using var conn = _dbContext.Connection(-1);
+                var sql = @"
+                    SELECT * FROM marketplace_listing 
+                    WHERE id = @ListingId AND status = 0 AND expire_date > NOW()
+                    FOR UPDATE";
+
+                return await conn.QueryFirstOrDefaultAsync<MarketplaceListing>(sql, new { ListingId = listingId });
+            }
+        }
+
 
         /// <summary>
         /// Creates a new marketplace listing.
@@ -111,26 +141,41 @@ namespace Http.Reepository
         /// <param name="status">The new status (typically 1 for Sold).</param>
         /// <param name="soldDate">The date and time when the item was sold (nullable).</param>
         /// <param name="buyerId">The unique identifier of the buyer (nullable).</param>
+        /// <param name="transaction">Optional database transaction.</param>
         /// <returns>True if the update was successful; otherwise, false.</returns>
-        public async Task<bool> UpdateListingAsync(string listingId, byte status, DateTime? soldDate, uint? buyerId)
+        public async Task<bool> UpdateListingAsync(string listingId, byte status, DateTime? soldDate, uint? buyerId, System.Data.IDbTransaction transaction = null)
         {
-            await using var conn = _dbContext.Connection(-1);
             var sql = @"
                 UPDATE marketplace_listing 
                 SET status = @Status,
                     sold_date = @SoldDate,
                     buyer_id = @BuyerId,
                     updated_date = NOW()
-                WHERE id = @Id";
+                WHERE id = @Id AND status = 0";
 
-            var rowsAffected = await conn.ExecuteAsync(sql, new
+            if (transaction != null)
             {
-                Id = listingId,
-                Status = status,
-                SoldDate = soldDate,
-                BuyerId = buyerId
-            });
-            return rowsAffected > 0;
+                var rowsAffected = await transaction.Connection.ExecuteAsync(sql, new
+                {
+                    Id = listingId,
+                    Status = status,
+                    SoldDate = soldDate,
+                    BuyerId = buyerId
+                }, transaction);
+                return rowsAffected > 0;
+            }
+            else
+            {
+                await using var conn = _dbContext.Connection(-1);
+                var rowsAffected = await conn.ExecuteAsync(sql, new
+                {
+                    Id = listingId,
+                    Status = status,
+                    SoldDate = soldDate,
+                    BuyerId = buyerId
+                });
+                return rowsAffected > 0;
+            }
         }
 
         /// <summary>

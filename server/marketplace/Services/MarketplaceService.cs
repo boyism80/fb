@@ -18,6 +18,7 @@ public class MarketplaceService : IMarketplaceService
     private readonly IConfiguration _configuration;
     private readonly StorageService _storageService;
     private readonly DbContext _dbContext;
+    private readonly LogService _logService;
     private readonly double _transactionFeePercent;
     private readonly uint _minFee;
 
@@ -25,12 +26,14 @@ public class MarketplaceService : IMarketplaceService
         MarketplaceRepository repository,
         IConfiguration configuration,
         StorageService storageService,
-        DbContext dbContext)
+        DbContext dbContext,
+        LogService logService)
     {
         _repository = repository;
         _configuration = configuration;
         _storageService = storageService;
         _dbContext = dbContext;
+        _logService = logService;
         _transactionFeePercent = _configuration.GetValue<double>("Marketplace:TransactionFeePercent", 5.0);
         _minFee = _configuration.GetValue<uint>("Marketplace:MinFee", 100);
     }
@@ -63,6 +66,17 @@ public class MarketplaceService : IMarketplaceService
         uint price,
         ushort expireHours)
     {
+        // Log before creating listing
+        _logService?.Write("marketplace_list", new
+        {
+            character_id = characterId,
+            listing_id = listingId,
+            item_model = itemModel,
+            item_count = itemCount,
+            price = price,
+            expire_hours = expireHours
+        });
+
         // Check idempotency: if listing_id already exists, return existing listing
         if (!string.IsNullOrEmpty(listingId))
         {
@@ -88,6 +102,13 @@ public class MarketplaceService : IMarketplaceService
             transactionFee,
             DateTime.UtcNow.AddHours(expireHours));
 
+        // Log successful listing creation
+        _logService?.Write("marketplace_list_success", new
+        {
+            character_id = characterId,
+            listing_id = listingId
+        });
+
         // Return created listing
         return await _repository.GetListingByIdAsync(listingId);
     }
@@ -98,14 +119,33 @@ public class MarketplaceService : IMarketplaceService
     /// <exception cref="LogicException">Thrown when listing is not found, user is not the owner, or listing is already cancelled/sold.</exception>
     public async Task CancelListingAsync(uint characterId, string listingId)
     {
+        // Log before cancel
+        _logService?.Write("marketplace_cancel", new
+        {
+            character_id = characterId,
+            listing_id = listingId
+        });
+
         var listing = await _repository.GetListingByIdAsync(listingId);
         if (listing == null)
         {
+            _logService?.Write("marketplace_cancel_failed", new
+            {
+                character_id = characterId,
+                listing_id = listingId,
+                error = "listing_not_found"
+            });
             throw new LogicException(ErrorCode.MarketplaceListingNotFound);
         }
 
         if (listing.SellerId != characterId)
         {
+            _logService?.Write("marketplace_cancel_failed", new
+            {
+                character_id = characterId,
+                listing_id = listingId,
+                error = "not_owner"
+            });
             throw new LogicException(ErrorCode.MarketplaceNotListingOwner);
         }
 
@@ -114,12 +154,30 @@ public class MarketplaceService : IMarketplaceService
             // Check if already cancelled or sold
             if (listing.Status == 2) // Cancelled
             {
+                _logService?.Write("marketplace_cancel_failed", new
+                {
+                    character_id = characterId,
+                    listing_id = listingId,
+                    error = "already_cancelled"
+                });
                 throw new LogicException(ErrorCode.MarketplaceListingAlreadyCancelled);
             }
             if (listing.Status == 1) // Sold
             {
+                _logService?.Write("marketplace_cancel_failed", new
+                {
+                    character_id = characterId,
+                    listing_id = listingId,
+                    error = "already_sold"
+                });
                 throw new LogicException(ErrorCode.MarketplaceListingAlreadySold);
             }
+            _logService?.Write("marketplace_cancel_failed", new
+            {
+                character_id = characterId,
+                listing_id = listingId,
+                error = "invalid_status"
+            });
             throw new LogicException(ErrorCode.MarketplaceListingNotFound);
         }
 
@@ -148,52 +206,111 @@ public class MarketplaceService : IMarketplaceService
                 DateTime.UtcNow.AddDays(30), // 30 days expiry
                 attachments);
         }
+
+        // Log successful cancellation
+        _logService?.Write("marketplace_cancel_success", new
+        {
+            character_id = characterId,
+            listing_id = listingId
+        });
     }
 
     /// <summary>
     /// Purchases an item from a marketplace listing.
+    /// Uses database transaction and row locking to prevent concurrent purchases.
     /// </summary>
     /// <returns>MarketplaceListing if successful; null if failed (listing not found or expired).</returns>
     public async Task<MarketplaceListing> PurchaseItemAsync(
         uint buyerId,
         string listingId)
     {
-        // Load listing with row lock to prevent double-purchase
-        var listing = await _repository.GetListingByIdAsync(listingId);
-        if (listing == null || listing.Status != 0) // Not Active
+        // Log before purchase
+        _logService?.Write("marketplace_purchase", new
         {
-            return null; // ListingNotFound
-        }
+            buyer_id = buyerId,
+            listing_id = listingId
+        });
 
-        if (listing.ExpireDate <= DateTime.UtcNow)
-        {
-            return null; // ListingExpired
-        }
+        // Use transaction to ensure atomicity
+        await using var conn = _dbContext.Connection(-1);
+        await using var transaction = await conn.BeginTransactionAsync();
 
-        // Send seller revenue via storage_box (full price, no transaction fee deduction)
-        // Transaction fee is already deducted on game server side during listing
-        var sellerCharacter = await _dbContext.Character.Get(listing.SellerId);
-        if (sellerCharacter != null && !string.IsNullOrWhiteSpace(sellerCharacter.Name))
+        try
         {
-            var attachments = new List<Fb.Model.Dsl>
+            // Load listing with row lock to prevent double-purchase
+            var listing = await _repository.GetListingByIdForUpdateAsync(listingId, transaction);
+            if (listing == null)
             {
-                new Fb.Model.Dsl.Money { Value = listing.Price }.ToDSL()
-            };
+                await transaction.RollbackAsync();
+                _logService?.Write("marketplace_purchase_failed", new
+                {
+                    buyer_id = buyerId,
+                    listing_id = listingId,
+                    error = "listing_not_found_or_inactive"
+                });
+                return null; // ListingNotFound or not Active or expired
+            }
 
-            await _storageService.CreatePendingAsync(
-                "Marketplace Sale",
-                $"Your item has been sold for {listing.Price} gold.",
-                sellerCharacter.Name,
-                DateTime.UtcNow.AddDays(30), // 30 days expiry
-                attachments);
+            // Send seller revenue via storage_box (full price, no transaction fee deduction)
+            // Transaction fee is already deducted on game server side during listing
+            var sellerCharacter = await _dbContext.Character.Get(listing.SellerId);
+            if (sellerCharacter != null && !string.IsNullOrWhiteSpace(sellerCharacter.Name))
+            {
+                var attachments = new List<Fb.Model.Dsl>
+                {
+                    new Fb.Model.Dsl.Money { Value = listing.Price }.ToDSL()
+                };
+
+                await _storageService.CreatePendingAsync(
+                    "Marketplace Sale",
+                    $"Your item has been sold for {listing.Price} gold.",
+                    sellerCharacter.Name,
+                    DateTime.UtcNow.AddDays(30), // 30 days expiry
+                    attachments);
+            }
+
+            // Update listing (mark as sold or reduce count) with status check
+            var updated = await _repository.UpdateListingAsync(listing.Id, 1, DateTime.UtcNow, buyerId, transaction);
+            if (!updated)
+            {
+                // Another transaction already purchased this listing
+                await transaction.RollbackAsync();
+                _logService?.Write("marketplace_purchase_failed", new
+                {
+                    buyer_id = buyerId,
+                    listing_id = listingId,
+                    error = "concurrent_purchase_conflict"
+                });
+                return null;
+            }
+
+            // Commit transaction
+            await transaction.CommitAsync();
+
+            // Log successful purchase
+            _logService?.Write("marketplace_purchase_success", new
+            {
+                buyer_id = buyerId,
+                listing_id = listingId,
+                seller_id = listing.SellerId,
+                price = listing.Price
+            });
+
+            // Return original listing (status updated but we return the original for item data)
+            // The listing is now sold, but we return it with the item information
+            return listing;
         }
-
-        // Update listing (mark as sold or reduce count)
-        await _repository.UpdateListingAsync(listing.Id, 1, DateTime.UtcNow, buyerId);
-
-        // Return original listing (status updated but we return the original for item data)
-        // The listing is now sold, but we return it with the item information
-        return listing;
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            _logService?.Write("marketplace_purchase_failed", new
+            {
+                buyer_id = buyerId,
+                listing_id = listingId,
+                error = ex.Message
+            });
+            throw;
+        }
     }
 
     /// <summary>
@@ -240,15 +357,6 @@ public class MarketplaceService : IMarketplaceService
             Listings = listings,
             TotalCount = totalCount
         };
-    }
-
-    /// <summary>
-    /// Checks the status of a listing by listing ID.
-    /// </summary>
-    /// <returns>MarketplaceListing if found; null if not found.</returns>
-    public async Task<MarketplaceListing> CheckListingStatusAsync(string listingId)
-    {
-        return await _repository.GetListingByIdAsync(listingId);
     }
 
     /// <summary>

@@ -265,7 +265,7 @@ public class MarketplaceController : ControllerBase
     {
         try
         {
-            var listing = await _marketplaceService.CheckListingStatusAsync(request.ListingId);
+            var listing = await _marketplaceService.GetListingByIdAsync(request.ListingId);
 
             if (listing != null)
             {

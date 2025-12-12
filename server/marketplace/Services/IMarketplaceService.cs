@@ -52,12 +52,6 @@ public interface IMarketplaceService
     Task<MarketplaceSearchResult> SearchItemsAsync(MarketplaceSearchOption option);
 
     /// <summary>
-    /// Checks the status of a listing by listing ID.
-    /// </summary>
-    /// <returns>MarketplaceListing if found; null if not found.</returns>
-    Task<MarketplaceListing> CheckListingStatusAsync(string listingId);
-
-    /// <summary>
     /// Gets a listing by ID.
     /// </summary>
     /// <returns>MarketplaceListing if found; null if not found.</returns>
