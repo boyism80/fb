@@ -26,14 +26,10 @@ struct List FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ListBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_LISTING_ID = 4,
-    VT_LISTING_FEE = 6,
-    VT_ERROR = 8
+    VT_ERROR = 6
   };
   const ::flatbuffers::String *listing_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_LISTING_ID);
-  }
-  uint32_t listing_fee() const {
-    return GetField<uint32_t>(VT_LISTING_FEE, 0);
   }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
@@ -42,7 +38,6 @@ struct List FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_LISTING_ID) &&
            verifier.VerifyString(listing_id()) &&
-           VerifyField<uint32_t>(verifier, VT_LISTING_FEE, 4) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -54,9 +49,6 @@ struct ListBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_listing_id(::flatbuffers::Offset<::flatbuffers::String> listing_id) {
     fbb_.AddOffset(List::VT_LISTING_ID, listing_id);
-  }
-  void add_listing_fee(uint32_t listing_fee) {
-    fbb_.AddElement<uint32_t>(List::VT_LISTING_FEE, listing_fee, 0);
   }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(List::VT_ERROR, error, 0);
@@ -75,11 +67,9 @@ struct ListBuilder {
 inline ::flatbuffers::Offset<List> CreateList(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
-    uint32_t listing_fee = 0,
     uint32_t error = 0) {
   ListBuilder builder_(_fbb);
   builder_.add_error(error);
-  builder_.add_listing_fee(listing_fee);
   builder_.add_listing_id(listing_id);
   return builder_.Finish();
 }
@@ -87,13 +77,11 @@ inline ::flatbuffers::Offset<List> CreateList(
 inline ::flatbuffers::Offset<List> CreateListDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *listing_id = nullptr,
-    uint32_t listing_fee = 0,
     uint32_t error = 0) {
   auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
   return fb::protocol::marketplace::response::raw::CreateList(
       _fbb,
       listing_id__,
-      listing_fee,
       error);
 }
 

@@ -14,7 +14,7 @@ public interface IMarketplaceService
     /// </summary>
     /// <param name="characterId">The character ID requesting the listing ID.</param>
     /// <returns>The allocated listing ID (UUID string).</returns>
-    Task<string> AllocateListingIdAsync(uint characterId);
+    string AllocateListingIdAsync(uint characterId);
 
     /// <summary>
     /// Creates a new marketplace listing using a pre-allocated listing ID.

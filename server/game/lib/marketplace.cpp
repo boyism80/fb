@@ -1,12 +1,14 @@
 #include <fb/game/marketplace.h>
 #include <fb/game/character.h>
 #include <fb/game/server.h>
+#include <fb/game/storage.h>
 #include <fb/game/item/weapon.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <stdexcept>
 #include <sstream>
+#include <unordered_set>
 
 using namespace fb::game;
 
@@ -46,55 +48,95 @@ marketplace::list(const std::string& id, uint8_t item_index, uint16_t count, uin
         throw std::runtime_error("Insufficient item count");
 
     // Build request item data
-    mp::Item req_item{};
-    req_item.owner  = this->_owner.id;
-    req_item.model  = model.id;
-    req_item.count  = count;
-    auto durability = item->durability();
-    if (durability.has_value())
-        req_item.durability = durability.value();
+    auto durability  = item->durability();
+    auto custom_name = std::optional<std::string>{};
 
     // Check if item is a weapon with custom name
     if (model.attr(ITEM_ATTRIBUTE::WEAPON))
     {
         auto weapon = static_cast<fb::game::weapon*>(item.get());
         if (weapon != nullptr && weapon->custom_name().has_value())
-            req_item.custom_name = weapon->custom_name().value();
+            custom_name = weapon->custom_name().value();
     }
 
-    // Send request
-    auto req  = mp_reqs::List{this->_owner.id, id, req_item, price, expire_hours};
-    auto resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/list", req);
+    // Calculate listing fee (10% of price)
+    auto listing_fee = static_cast<uint32_t>(price * 0.1);
 
-    if (resp.error != 0)
-        throw std::runtime_error(std::format("Failed to list item: error={}", resp.error));
+    // Prepare DSL for pending listing recovery (BEFORE API call)
+    auto item_dsl = fb::model::dsl::item(model.id, count, durability, custom_name, 100.0);
+    auto dsls     = std::vector<fb::model::dsl>{item_dsl.to_dsl()};
 
-    // Remove item from inventory and deduct listing fee
-    std::ignore = this->_owner.items.remove(item_index, count, ITEM_DELETE_TYPE::REMOVED);
-    this->_owner.money_reduce(resp.listing_fee);
-
-    // Build and return listing
-    marketplace::listing result{};
-    result.id              = resp.listing_id;
-    result.seller_id       = this->_owner.id;
-    result.item_data.owner = this->_owner.id;
-    result.item_data.model = model.id;
-    result.item_data.count = count;
-    if (durability.has_value())
-        result.item_data.durability = durability.value();
-
-    if (model.attr(ITEM_ATTRIBUTE::WEAPON))
+    // Add listing fee as money DSL for recovery
+    if (listing_fee > 0)
     {
-        auto weapon = static_cast<fb::game::weapon*>(item.get());
-        if (weapon != nullptr && weapon->custom_name().has_value())
-            result.item_data.custom_name = weapon->custom_name().value();
+        auto money_dsl = fb::model::dsl::money(listing_fee);
+        dsls.push_back(money_dsl.to_dsl());
     }
 
-    result.price           = price;
-    result.listing_fee     = resp.listing_fee;
-    result.transaction_fee = 0; // Will be calculated by server
+    // Store pending listing for recovery in case of server failure
+    this->_pending_listings.emplace(id,
+                                    pending_listing_info{.type         = pending_type::LIST,
+                                                         .listing_id   = id,
+                                                         .dsls         = std::move(dsls),
+                                                         .character_id = this->_owner.id});
 
-    co_return result;
+    // Remove item from inventory and deduct listing fee BEFORE API call
+    std::ignore = this->_owner.items.remove(item_index, count, ITEM_DELETE_TYPE::REMOVED);
+    this->_owner.money_reduce(listing_fee);
+
+    // Send request to marketplace server
+    try
+    {
+        auto resp = co_await this->_owner.server.http.post(
+            "marketplace",
+            "/marketplace/list",
+            mp_reqs::List{
+                this->_owner.id,
+                id,
+                mp::Item{this->_owner.id, model.id, count, durability, custom_name},
+                price,
+                expire_hours
+        });
+
+        if (resp.error != 0)
+        {
+            // API call returned an error - throw exception to handle in catch block
+            throw std::runtime_error(std::format("Failed to list item: error={}",
+                                                 enum_tostring((fb::model::enum_value::ERROR_CODE)resp.error)));
+        }
+
+        // API call succeeded - remove from pending_listings
+        this->_pending_listings.erase(id);
+        if (resp.listing_id != id)
+        {
+            // If the server returned a different listing_id, also remove that entry if it exists
+            this->_pending_listings.erase(resp.listing_id);
+        }
+
+        // Build and return listing
+        co_return marketplace::listing{
+            .id              = resp.listing_id,
+            .seller_id       = this->_owner.id,
+            .buyer_id        = 0,
+            .item_data       = {.owner       = this->_owner.id,
+                                .model       = model.id,
+                                .count       = count,
+                                .durability  = durability,
+                                .custom_name = custom_name},
+            .price           = price,
+            .listing_fee     = listing_fee,
+            .transaction_fee = 0, // Will be calculated by server
+            .state           = 0,
+            .expire_date     = std::nullopt,
+            .created_date    = std::nullopt
+        };
+    }
+    catch (const std::exception& e)
+    {
+        // Any failure (system error or logical error) - items/money already deducted, keep DSL for recovery
+        // DSL remains in _pending_listings for recovery on next login
+        throw std::runtime_error(std::format("Failed to list item: {}", e.what()));
+    }
 }
 
 async::task<bool> marketplace::cancel(const std::string& id)
@@ -107,6 +149,9 @@ async::task<bool> marketplace::cancel(const std::string& id)
     if (resp.error != 0)
         throw std::runtime_error(std::format("Failed to cancel listing: error={}", resp.error));
 
+    // Remove from pending_listings if it exists (in case listing was created but response was lost)
+    this->_pending_listings.erase(id);
+
     co_return true;
 }
 
@@ -114,96 +159,343 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
 {
     this->_owner.assert_thread();
 
-    auto req  = mp_reqs::Purchase{this->_owner.id, id};
-    auto resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/purchase", req);
+    // Get listing info first (needed for timeout recovery, but won't validate purchase eligibility)
+    auto listing_ids = std::vector<std::string>{id};
+    auto listings    = co_await this->get_listings(listing_ids);
+    auto price       = uint32_t{0};
+    if (!listings.empty())
+    {
+        price = listings[0].price; // Buyer only pays price, not transaction_fee
+    }
 
-    if (resp.error != 0)
-        throw std::runtime_error(std::format("Failed to purchase item: error={}", resp.error));
+    if (this->_owner.money() < price)
+        throw std::runtime_error("Insufficient money");
 
-    // Note: Item and money will be handled via storage_box
-    // The marketplace server will create a pending transaction in storage_box
+    // Send purchase request to marketplace server
+    auto req             = mp_reqs::Purchase{this->_owner.id, id};
+    auto unhandled_error = true;
 
-    // Build and return listing (from response item data)
-    marketplace::listing result{};
-    result.id              = id;
-    result.seller_id       = 0; // Not provided in response
-    result.item_data.owner = resp.item.owner;
-    result.item_data.model = resp.item.model;
-    result.item_data.count = resp.item.count;
-    if (resp.item.durability.has_value())
-        result.item_data.durability = resp.item.durability.value();
+    try
+    {
+        auto resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/purchase", req);
+        auto ec   = (fb::model::enum_value::ERROR_CODE)resp.error;
+        if (ec != fb::model::enum_value::ERROR_CODE::NONE)
+        {
+            // Check if this is a definite failure (logical error) or system error
+            switch (ec)
+            {
+            case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_NOT_FOUND:
+            case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_EXPIRED:
+            case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_ALREADY_SOLD:
+            case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_ALREADY_CANCELLED:
+                unhandled_error = false;
+                break;
 
-    if (resp.item.custom_name.has_value())
-        result.item_data.custom_name = resp.item.custom_name.value();
-    result.price           = 0; // Not provided in response
-    result.listing_fee     = 0;
-    result.transaction_fee = 0;
+            default:
+                unhandled_error = true;
+                break;
+            }
+            throw std::runtime_error(std::format("Failed to purchase item: error={}", enum_tostring(ec)));
+        }
 
-    co_return result;
+        // Purchase succeeded - no money deduction needed (handled server-side)
+        // Item will be delivered via storage_box
+
+        // Build and return listing (from response item data)
+        this->_owner.money_reduce(price);
+        co_return marketplace::listing{
+            .id              = id,
+            .seller_id       = 0, // Not provided in response
+            .buyer_id        = 0,
+            .item_data       = {.owner       = resp.item.owner,
+                                .model       = resp.item.model,
+                                .count       = resp.item.count,
+                                .durability  = resp.item.durability,
+                                .custom_name = resp.item.custom_name},
+            .price           = 0, // Not provided in response
+            .listing_fee     = 0,
+            .transaction_fee = 0,
+            .state           = 0,
+            .expire_date     = std::nullopt,
+            .created_date    = std::nullopt
+        };
+    }
+    catch (const std::exception& e)
+    {
+        if (unhandled_error)
+        {
+            // Prepare DSL for pending purchase recovery (money only)
+            auto dsls      = std::vector<fb::model::dsl>{};
+            auto money_dsl = fb::model::dsl::money(price);
+            dsls.push_back(money_dsl.to_dsl());
+
+            // Store pending purchase for recovery
+            this->_pending_listings.emplace(id,
+                                            pending_listing_info{
+                                                .type         = pending_type::PURCHASE,
+                                                .listing_id   = id,
+                                                .dsls         = std::move(dsls),
+                                                .character_id = this->_owner.id // buyer_id
+                                            });
+
+            // Deduct money
+            this->_owner.money_reduce(price);
+        }
+
+        throw std::runtime_error(std::format("Failed to purchase item: {}", e.what()));
+    }
 }
 
 async::task<marketplace::search_result> marketplace::search(const search_option& option)
 {
     this->_owner.assert_thread();
 
-    mp_reqs::Search req{};
-    req.item_name = option.item_name;
-    req.min_price = option.min_price;
-    req.max_price = option.max_price;
-    req.seller_id = option.seller_id;
-    req.sort_by   = option.sort_by;
-    req.page      = option.page;
-
-    auto resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/search", req);
-
+    auto resp = co_await this->_owner.server.http.post("marketplace",
+                                                       "/marketplace/search",
+                                                       mp_reqs::Search{option.item_name,
+                                                                       option.min_price,
+                                                                       option.max_price,
+                                                                       option.seller_id,
+                                                                       option.sort_by,
+                                                                       option.page});
     if (resp.error != 0)
-        throw std::runtime_error(std::format("Failed to search items: error={}", resp.error));
+        throw std::runtime_error(std::format("Failed to search items: error={}",
+                                             enum_tostring((fb::model::enum_value::ERROR_CODE)resp.error)));
 
-    search_result result{};
-    result.page        = resp.result.page;
-    result.total_count = resp.result.total_count;
+    search_result result{.listings = {}, .total_count = resp.result.total_count, .page = resp.result.page};
     result.listings.reserve(resp.result.listings.size());
 
     for (const auto& listing : resp.result.listings)
     {
-        marketplace::listing l{};
-        l.id              = listing.id;
-        l.seller_id       = listing.seller_id;
-        l.item_data.owner = listing.item.owner;
-        l.item_data.model = listing.item.model;
-        l.item_data.count = listing.item.count;
-        if (listing.item.durability.has_value())
-            l.item_data.durability = listing.item.durability.value();
-        if (listing.item.custom_name.has_value())
-            l.item_data.custom_name = listing.item.custom_name.value();
-        l.price           = listing.price;
-        l.listing_fee     = listing.listing_fee;
-        l.transaction_fee = listing.transaction_fee;
+        auto expire_date_opt = std::optional<fb::model::datetime>{};
         if (!listing.expire_date.empty())
-            l.expire_date = fb::model::datetime(listing.expire_date);
+            expire_date_opt = fb::model::datetime(listing.expire_date);
+
+        auto created_date_opt = std::optional<fb::model::datetime>{};
         if (!listing.created_date.empty())
-            l.created_date = fb::model::datetime(listing.created_date);
-        result.listings.push_back(l);
+            created_date_opt = fb::model::datetime(listing.created_date);
+
+        result.listings.push_back(marketplace::listing{
+            .id              = listing.id,
+            .seller_id       = listing.seller_id,
+            .buyer_id        = 0,
+            .item_data       = {.owner       = listing.item.owner,
+                                .model       = listing.item.model,
+                                .count       = listing.item.count,
+                                .durability  = listing.item.durability,
+                                .custom_name = listing.item.custom_name},
+            .price           = listing.price,
+            .listing_fee     = static_cast<uint32_t>(listing.price * 0.1), // Calculate listing fee (10% of price)
+            .transaction_fee = listing.transaction_fee,
+            .state           = 0,
+            .expire_date     = expire_date_opt,
+            .created_date    = created_date_opt
+        });
     }
 
     co_return result;
 }
 
-async::task<std::optional<marketplace::listing>> marketplace::check_status(const std::string& id)
+async::task<std::vector<marketplace::listing>> marketplace::get_listings(const std::vector<std::string>& listing_ids)
 {
     this->_owner.assert_thread();
 
-    auto req  = mp_reqs::CheckListingStatus{id};
-    auto resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/check-listing-status", req);
+    if (listing_ids.empty())
+        co_return std::vector<marketplace::listing>{};
+
+    // Call get_listings API to get all listing data
+    auto resp = co_await this->_owner.server.http.post("marketplace",
+                                                       "/marketplace/get-listings",
+                                                       mp_reqs::GetListings{listing_ids});
 
     if (resp.error != 0)
-        co_return std::nullopt;
+        throw std::runtime_error(std::format("Failed to get listings: error={}", resp.error));
 
-    // Note: The response only contains listing_id and listing_fee
-    // Full listing details are not provided in this endpoint
-    marketplace::listing result{};
-    result.id          = resp.listing_id;
-    result.listing_fee = resp.listing_fee;
+    // Convert response listings to marketplace::listing
+    std::vector<marketplace::listing> result;
+    result.reserve(resp.listings.size());
+
+    for (const auto& listing : resp.listings)
+    {
+        auto expire_date_opt = std::optional<fb::model::datetime>{};
+        if (!listing.expire_date.empty())
+            expire_date_opt = fb::model::datetime(listing.expire_date);
+
+        auto created_date_opt = std::optional<fb::model::datetime>{};
+        if (!listing.created_date.empty())
+            created_date_opt = fb::model::datetime(listing.created_date);
+
+        result.push_back(marketplace::listing{
+            .id              = listing.id,
+            .seller_id       = listing.seller_id,
+            .buyer_id        = listing.buyer_id,
+            .item_data       = {.owner       = listing.item.owner,
+                                .model       = listing.item.model,
+                                .count       = listing.item.count,
+                                .durability  = listing.item.durability,
+                                .custom_name = listing.item.custom_name},
+            .price           = listing.price,
+            .listing_fee     = static_cast<uint32_t>(listing.price * 0.1),
+            .transaction_fee = listing.transaction_fee,
+            .state           = static_cast<uint8_t>(listing.state),
+            .expire_date     = expire_date_opt,
+            .created_date    = created_date_opt
+        });
+    }
 
     co_return result;
+}
+
+void marketplace::set_pending_listings(std::unordered_map<std::string, pending_listing_info> pending_listings)
+{
+    this->_owner.assert_thread();
+
+    // Move pending listings to internal storage
+    this->_pending_listings = std::move(pending_listings);
+}
+
+async::task<void> marketplace::restore()
+{
+    this->_owner.assert_thread();
+
+    if (this->_pending_listings.empty())
+        co_return;
+
+    auto weak = this->_owner.weak_from_this_as<fb::game::character>();
+    if (weak.expired())
+        co_return;
+
+    // Collect all listing IDs
+    auto listing_ids = std::vector<std::string>{};
+    listing_ids.reserve(this->_pending_listings.size());
+    for (const auto& [listing_id, pending_info] : this->_pending_listings)
+    {
+        listing_ids.push_back(listing_id);
+    }
+
+    // Check status of all pending listings in batch to get full listing data
+    auto listings = std::vector<marketplace::listing>{};
+    try
+    {
+        listings = co_await this->get_listings(listing_ids);
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::warn("Failed to check marketplace listing status during restore: {}", e.what());
+        co_return; // Exit immediately on HTTP failure
+    }
+
+    // Thread switching after HTTP call
+    co_await this->_owner.server.threads.switching(weak);
+
+    // Verify character is still valid after thread switching
+    auto ch = weak.lock();
+    if (ch == nullptr)
+        co_return;
+
+    // Create map of listing_id -> listing for quick lookup
+    auto listing_map = std::unordered_map<std::string, marketplace::listing>{};
+    for (const auto& listing : listings)
+    {
+        listing_map[listing.id] = listing;
+    }
+
+    // Process each pending listing
+    auto to_remove = std::vector<std::string>{};
+    for (const auto& [listing_id, pending_info] : this->_pending_listings)
+    {
+        auto it             = listing_map.find(listing_id);
+        bool should_restore = false;
+
+        if (it == listing_map.end())
+        {
+            // Listing does not exist on marketplace server - restore
+            should_restore = true;
+        }
+        else
+        {
+            // Listing exists - check based on type
+            const auto& listing = it->second;
+
+            if (pending_info.type == pending_type::LIST)
+            {
+                // For LIST: Check if listing exists and seller_id matches
+                if (listing.seller_id == pending_info.character_id)
+                {
+                    // Listing exists and seller_id matches - remove from pending (success)
+                    to_remove.push_back(listing_id);
+                    continue;
+                }
+                else
+                {
+                    // Listing exists but seller_id doesn't match - restore
+                    should_restore = true;
+                }
+            }
+            else if (pending_info.type == pending_type::PURCHASE)
+            {
+                // For PURCHASE: Check if listing is SOLD and buyer_id matches
+                if (listing.buyer_id == pending_info.character_id &&
+                    listing.state == static_cast<uint8_t>(mp::ListingState::SOLD))
+                {
+                    // Purchase succeeded - remove from pending (item will come via storage_box)
+                    to_remove.push_back(listing_id);
+                    continue;
+                }
+                else
+                {
+                    // Purchase failed (listing still active, buyer_id doesn't match, or not sold) - restore money
+                    should_restore = true;
+                }
+            }
+        }
+
+        if (should_restore)
+        {
+            // Restore items/money to storage_box
+            std::string title;
+            std::string message;
+
+            if (pending_info.type == pending_type::LIST)
+            {
+                title   = "Marketplace Listing Recovery";
+                message = "Your marketplace listing failed. Items have been returned to your storage box.";
+            }
+            else
+            {
+                title   = "Marketplace Purchase Recovery";
+                message = "Your marketplace purchase failed. Money has been returned to your storage box.";
+            }
+
+            // Create storage pending box with DSL attachments
+            auto box = fb::game::storage_box::pending_box{
+                .id          = listing_id, // Use listing_id as pending box ID
+                .user        = this->_owner.id,
+                .title       = title,
+                .message     = message,
+                .attachments = pending_info.dsls, // Copy DSLs (will be moved in apply_pending)
+                .expire_date = std::nullopt       // No expiration date - keep until received
+            };
+
+            // Apply pending box to character's storage_box
+            auto pending_boxes = std::vector<storage_box::pending_box>{};
+            pending_boxes.push_back(std::move(box));
+            this->_owner.storage_box.apply_pending(pending_boxes);
+
+            // Remove from pending listings
+            to_remove.push_back(listing_id);
+        }
+    }
+
+    // Remove processed listings
+    for (const auto& listing_id : to_remove)
+    {
+        this->_pending_listings.erase(listing_id);
+    }
+}
+
+const std::unordered_map<std::string, marketplace::pending_listing_info>& marketplace::pending_listings() const
+{
+    this->_owner.assert_thread();
+    return this->_pending_listings;
 }

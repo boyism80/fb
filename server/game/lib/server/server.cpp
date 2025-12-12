@@ -224,6 +224,7 @@ async::task<void> server::on_start()
     this->bind_thread_timer<fb::game::handler::timer::gear_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
+    this->bind_thread_timer<fb::game::handler::timer::marketplace_restore_timer>(30s);
 
     this->bind_npc_interaction<fb::game::handler::npc_interaction::sell>();
     this->bind_npc_interaction<fb::game::handler::npc_interaction::buy>();

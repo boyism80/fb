@@ -508,6 +508,7 @@ CREATE TABLE `user` (
   `aux_bot_color` int unsigned DEFAULT NULL,
   `buffs` varchar(512) NOT NULL DEFAULT '[]',
   `title` varchar(32) NOT NULL DEFAULT '',
+  `pending_listings` json DEFAULT NULL,
   `deleted` tinyint unsigned NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
@@ -950,31 +951,6 @@ CREATE TABLE `marketplace_listing` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `marketplace_transaction`
---
-
-DROP TABLE IF EXISTS `marketplace_transaction`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `marketplace_transaction` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `listing_id` BINARY(16) NOT NULL,
-  `seller_id` INT UNSIGNED NOT NULL,
-  `buyer_id` INT UNSIGNED NOT NULL,
-  `item_model` INT UNSIGNED NOT NULL,
-  `item_count` SMALLINT UNSIGNED NOT NULL,
-  `price` INT UNSIGNED NOT NULL COMMENT 'Price paid by buyer',
-  `listing_fee` INT UNSIGNED NOT NULL COMMENT 'Fee paid when listing was created',
-  `transaction_fee` INT UNSIGNED NOT NULL COMMENT 'Fee deducted from seller on sale',
-  `seller_revenue` INT UNSIGNED NOT NULL COMMENT 'Amount seller received (price - transaction_fee)',
-  `transaction_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_seller` (`seller_id`, `transaction_date`),
-  KEY `idx_buyer` (`buyer_id`, `transaction_date`),
-  KEY `idx_listing` (`listing_id`),
-  CONSTRAINT `fk_transaction_seller` FOREIGN KEY (`seller_id`) REFERENCES `user` (`id`),
-  CONSTRAINT `fk_transaction_buyer` FOREIGN KEY (`buyer_id`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 

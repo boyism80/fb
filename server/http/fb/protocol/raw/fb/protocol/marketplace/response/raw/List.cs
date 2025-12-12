@@ -27,24 +27,20 @@ public struct List : IFlatbufferObject
   public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
   public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(4); }
-  public uint ListingFee { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Error { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Error { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.marketplace.response.raw.List> CreateList(FlatBufferBuilder builder,
       StringOffset listing_idOffset = default(StringOffset),
-      uint listing_fee = 0,
       uint error = 0) {
-    builder.StartTable(3);
+    builder.StartTable(2);
     List.AddError(builder, error);
-    List.AddListingFee(builder, listing_fee);
     List.AddListingId(builder, listing_idOffset);
     return List.EndList(builder);
   }
 
-  public static void StartList(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartList(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(0, listingIdOffset.Value, 0); }
-  public static void AddListingFee(FlatBufferBuilder builder, uint listingFee) { builder.AddUint(1, listingFee, 0); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(2, error, 0); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(1, error, 0); }
   public static Offset<fb.protocol.marketplace.response.raw.List> EndList(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.marketplace.response.raw.List>(o);
@@ -60,8 +56,7 @@ static public class ListVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyString(tablePos, 4 /*ListingId*/, false)
-      && verifier.VerifyField(tablePos, 6 /*ListingFee*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Error*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

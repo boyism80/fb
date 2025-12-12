@@ -28,7 +28,7 @@ public class MarketplaceController : ControllerBase
     {
         try
         {
-            var listingId = await _marketplaceService.AllocateListingIdAsync(request.CharacterId);
+            var listingId = _marketplaceService.AllocateListingIdAsync(request.CharacterId);
 
             return new Response.AllocateListingId
             {
@@ -66,7 +66,6 @@ public class MarketplaceController : ControllerBase
             return new Response.List
             {
                 ListingId = listing.Id ?? string.Empty,
-                ListingFee = listing.ListingFee,
                 Error = (uint)ErrorCode.None
             };
         }
@@ -76,7 +75,6 @@ public class MarketplaceController : ControllerBase
             return new Response.List
             {
                 ListingId = string.Empty,
-                ListingFee = 0,
                 Error = (uint)ErrorCode.Unhandled
             };
         }
@@ -214,7 +212,6 @@ public class MarketplaceController : ControllerBase
                     CustomName = l.ItemCustomName ?? string.Empty
                 },
                 Price = l.Price,
-                ListingFee = l.ListingFee,
                 TransactionFee = l.TransactionFee,
                 ExpireDate = l.ExpireDate.ToString("yyyy-MM-dd HH:mm:ss"),
                 CreatedDate = l.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
@@ -275,7 +272,6 @@ public class MarketplaceController : ControllerBase
                 return new Response.CheckListingStatus
                 {
                     ListingId = listing.Id ?? string.Empty,
-                    ListingFee = listing.ListingFee,
                     Error = (uint)ErrorCode.None
                 };
             }
@@ -283,7 +279,6 @@ public class MarketplaceController : ControllerBase
             return new Response.CheckListingStatus
             {
                 ListingId = string.Empty,
-                ListingFee = 0,
                 Error = (uint)ErrorCode.None
             };
         }
@@ -293,7 +288,6 @@ public class MarketplaceController : ControllerBase
             return new Response.CheckListingStatus
             {
                 ListingId = string.Empty,
-                ListingFee = 0,
                 Error = (uint)ErrorCode.Unhandled
             };
         }

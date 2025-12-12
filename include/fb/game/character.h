@@ -17,6 +17,7 @@
 #include <fb/game/stat.h>
 #include <fb/game/quest.h>
 #include <fb/game/storage.h>
+#include <fb/game/marketplace.h>
 #include <set>
 #include <unordered_map>
 
@@ -87,6 +88,7 @@ public:
     fb::game::bulletin     bulletin = fb::game::bulletin(*this);
     fb::game::mail_box     mail_box = fb::game::mail_box(*this);
     fb::game::storage_box  storage_box;
+    fb::game::marketplace  marketplace;
     fb::lua::context*      dialog = nullptr;
     achievement_map_t      achievements;
     listener_t&            listener;

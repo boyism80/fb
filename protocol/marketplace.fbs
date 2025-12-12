@@ -1,5 +1,12 @@
 namespace fb.protocol.marketplace;
 
+enum ListingState : ubyte {
+    ACTIVE = 0,
+    SOLD = 1,
+    CANCELLED = 2,
+    EXPIRED = 3
+}
+
 table Item {
     owner: uint;
     model: uint;
@@ -11,10 +18,11 @@ table Item {
 table Listing {
     id: string;
     seller_id: uint;
+    buyer_id: uint;
     item: Item;
     price: uint;
-    listing_fee: uint;
     transaction_fee: uint;
+    state: fb.protocol.marketplace.ListingState;
     expire_date: string;
     created_date: string;
 }

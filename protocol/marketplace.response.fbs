@@ -9,7 +9,6 @@ table AllocateListingId {
 
 table List {
     listing_id: string;
-    listing_fee: uint;
     error: uint;
 }
 
@@ -27,9 +26,8 @@ table Search {
     error: uint;
 }
 
-table CheckListingStatus {
-    listing_id: string;
-    listing_fee: uint;
+table GetListings {
+    listings: [fb.protocol.marketplace.Listing];
     error: uint;
 }
 

@@ -47,7 +47,6 @@ namespace Http.Reepository
         /// <param name="itemDurability">The durability of the item (nullable).</param>
         /// <param name="itemCustomName">The custom name of the item (nullable).</param>
         /// <param name="price">The listing price set by the seller.</param>
-        /// <param name="listingFee">The fee paid when listing (refundable on cancel).</param>
         /// <param name="transactionFee">The fee deducted from seller on sale.</param>
         /// <param name="expireDate">The expiration date and time for the listing.</param>
         /// <returns>The unique identifier of the created listing (UUID string).</returns>
@@ -59,7 +58,6 @@ namespace Http.Reepository
             uint? itemDurability,
             string itemCustomName,
             uint price,
-            uint listingFee,
             uint transactionFee,
             DateTime expireDate)
         {
@@ -67,10 +65,10 @@ namespace Http.Reepository
             var sql = @"
                 INSERT INTO marketplace_listing 
                 (id, seller_id, item_model, item_count, item_durability, item_custom_name, 
-                 price, listing_fee, transaction_fee, status, expire_date)
+                 price, transaction_fee, status, expire_date)
                 VALUES 
                 (@ListingId, @SellerId, @ItemModel, @ItemCount, @ItemDurability, @ItemCustomName,
-                 @Price, @ListingFee, @TransactionFee, 0, @ExpireDate);";
+                 @Price, @TransactionFee, 0, @ExpireDate);";
 
             await conn.ExecuteAsync(sql, new
             {
@@ -81,7 +79,6 @@ namespace Http.Reepository
                 ItemDurability = itemDurability,
                 ItemCustomName = itemCustomName,
                 Price = price,
-                ListingFee = listingFee,
                 TransactionFee = transactionFee,
                 ExpireDate = expireDate
             });
@@ -267,56 +264,6 @@ namespace Http.Reepository
             var sql = $"SELECT COUNT(*) FROM marketplace_listing WHERE {whereClause}";
             return await conn.QuerySingleAsync<int>(sql, parameters);
         }
-
-        /// <summary>
-        /// Creates a new marketplace transaction record.
-        /// </summary>
-        /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
-        /// <param name="sellerId">The unique identifier of the seller.</param>
-        /// <param name="buyerId">The unique identifier of the buyer.</param>
-        /// <param name="itemModel">The item model identifier.</param>
-        /// <param name="itemCount">The number of items sold.</param>
-        /// <param name="price">The transaction price.</param>
-        /// <param name="listingFee">The listing fee paid.</param>
-        /// <param name="transactionFee">The transaction fee deducted.</param>
-        /// <param name="sellerRevenue">The revenue received by the seller after fees.</param>
-        /// <returns>The unique identifier of the created transaction.</returns>
-        public async Task<ulong> CreateTransactionAsync(
-            string listingId,
-            uint sellerId,
-            uint buyerId,
-            uint itemModel,
-            ushort itemCount,
-            uint price,
-            uint listingFee,
-            uint transactionFee,
-            uint sellerRevenue)
-        {
-            await using var conn = _dbContext.Connection(-1);
-            var sql = @"
-                INSERT INTO marketplace_transaction 
-                (listing_id, seller_id, buyer_id, item_model, item_count, price, 
-                 listing_fee, transaction_fee, seller_revenue)
-                VALUES 
-                (@ListingId, @SellerId, @BuyerId, @ItemModel, @ItemCount, @Price,
-                 @ListingFee, @TransactionFee, @SellerRevenue);
-                SELECT LAST_INSERT_ID();";
-
-            var id = await conn.QuerySingleAsync<ulong>(sql, new
-            {
-                ListingId = listingId,
-                SellerId = sellerId,
-                BuyerId = buyerId,
-                ItemModel = itemModel,
-                ItemCount = itemCount,
-                Price = price,
-                ListingFee = listingFee,
-                TransactionFee = transactionFee,
-                SellerRevenue = sellerRevenue
-            });
-            return id;
-        }
-
 
         /// <summary>
         /// Saves any pending changes to the underlying data store.

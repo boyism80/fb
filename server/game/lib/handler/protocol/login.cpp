@@ -292,6 +292,56 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     this->init_system_mail(response.received_system_mails, *ch);
     this->init_storage(response, *ch);
     this->init_option(response.option, *ch);
+
+    // Restore pending marketplace listings if any
+    if (response.character.pending_listings.has_value() && !response.character.pending_listings.value().empty())
+    {
+        auto json   = Json::Value{};
+        auto reader = Json::Reader{};
+        if (reader.parse(response.character.pending_listings.value(), json) && json.isObject())
+        {
+            auto pending_listings = std::unordered_map<std::string, fb::game::marketplace::pending_listing_info>{};
+            for (auto it = json.begin(); it != json.end(); ++it)
+            {
+                auto  listing_id = it.key().asString();
+                auto& value      = *it;
+
+                if (value.isObject())
+                {
+                    fb::game::marketplace::pending_listing_info info{};
+                    info.listing_id = listing_id;
+
+                    // Parse type
+                    if (value.isMember("type") && value["type"].isUInt())
+                    {
+                        info.type = static_cast<fb::game::marketplace::pending_type>(value["type"].asUInt());
+                    }
+
+                    // Parse character_id
+                    if (value.isMember("character_id") && value["character_id"].isUInt())
+                    {
+                        info.character_id = value["character_id"].asUInt();
+                    }
+
+                    // Parse DSLs
+                    if (value.isMember("dsls") && value["dsls"].isArray())
+                    {
+                        for (const auto& dsl_json : value["dsls"])
+                        {
+                            info.dsls.push_back(fb::model::dsl(dsl_json));
+                        }
+                    }
+
+                    if (!info.dsls.empty())
+                        pending_listings[listing_id] = std::move(info);
+                }
+            }
+
+            if (!pending_listings.empty())
+                ch->marketplace.set_pending_listings(std::move(pending_listings));
+        }
+    }
+
     ch->init();
     ch->update_time(this->server.time().hours());
     if (request.from == internal::Service::Login)

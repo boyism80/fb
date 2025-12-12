@@ -63,8 +63,7 @@ REGISTER_RESPONSE(fb::protocol::marketplace::request::List, fb::protocol::market
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Cancel, fb::protocol::marketplace::response::Cancel)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Purchase, fb::protocol::marketplace::response::Purchase)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Search, fb::protocol::marketplace::response::Search)
-REGISTER_RESPONSE(fb::protocol::marketplace::request::CheckListingStatus,
-                  fb::protocol::marketplace::response::CheckListingStatus)
+REGISTER_RESPONSE(fb::protocol::marketplace::request::GetListings, fb::protocol::marketplace::response::GetListings)
 
 namespace fb::game {
 

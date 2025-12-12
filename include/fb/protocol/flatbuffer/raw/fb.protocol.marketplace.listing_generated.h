@@ -14,6 +14,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
              "Non-compatible flatbuffers version included");
 
 #include "fb.protocol.marketplace.item_generated.h"
+#include "fb.protocol.marketplace.listingstate_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -28,12 +29,13 @@ struct Listing FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ID = 4,
     VT_SELLER_ID = 6,
-    VT_ITEM = 8,
-    VT_PRICE = 10,
-    VT_LISTING_FEE = 12,
+    VT_BUYER_ID = 8,
+    VT_ITEM = 10,
+    VT_PRICE = 12,
     VT_TRANSACTION_FEE = 14,
-    VT_EXPIRE_DATE = 16,
-    VT_CREATED_DATE = 18
+    VT_STATE = 16,
+    VT_EXPIRE_DATE = 18,
+    VT_CREATED_DATE = 20
   };
   const ::flatbuffers::String *id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_ID);
@@ -41,17 +43,20 @@ struct Listing FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t seller_id() const {
     return GetField<uint32_t>(VT_SELLER_ID, 0);
   }
+  uint32_t buyer_id() const {
+    return GetField<uint32_t>(VT_BUYER_ID, 0);
+  }
   const fb::protocol::marketplace::raw::Item *item() const {
     return GetPointer<const fb::protocol::marketplace::raw::Item *>(VT_ITEM);
   }
   uint32_t price() const {
     return GetField<uint32_t>(VT_PRICE, 0);
   }
-  uint32_t listing_fee() const {
-    return GetField<uint32_t>(VT_LISTING_FEE, 0);
-  }
   uint32_t transaction_fee() const {
     return GetField<uint32_t>(VT_TRANSACTION_FEE, 0);
+  }
+  fb::protocol::marketplace::raw::ListingState state() const {
+    return static_cast<fb::protocol::marketplace::raw::ListingState>(GetField<uint8_t>(VT_STATE, 0));
   }
   const ::flatbuffers::String *expire_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_EXPIRE_DATE);
@@ -64,11 +69,12 @@ struct Listing FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_ID) &&
            verifier.VerifyString(id()) &&
            VerifyField<uint32_t>(verifier, VT_SELLER_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_BUYER_ID, 4) &&
            VerifyOffset(verifier, VT_ITEM) &&
            verifier.VerifyTable(item()) &&
            VerifyField<uint32_t>(verifier, VT_PRICE, 4) &&
-           VerifyField<uint32_t>(verifier, VT_LISTING_FEE, 4) &&
            VerifyField<uint32_t>(verifier, VT_TRANSACTION_FEE, 4) &&
+           VerifyField<uint8_t>(verifier, VT_STATE, 1) &&
            VerifyOffset(verifier, VT_EXPIRE_DATE) &&
            verifier.VerifyString(expire_date()) &&
            VerifyOffset(verifier, VT_CREATED_DATE) &&
@@ -87,17 +93,20 @@ struct ListingBuilder {
   void add_seller_id(uint32_t seller_id) {
     fbb_.AddElement<uint32_t>(Listing::VT_SELLER_ID, seller_id, 0);
   }
+  void add_buyer_id(uint32_t buyer_id) {
+    fbb_.AddElement<uint32_t>(Listing::VT_BUYER_ID, buyer_id, 0);
+  }
   void add_item(::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item) {
     fbb_.AddOffset(Listing::VT_ITEM, item);
   }
   void add_price(uint32_t price) {
     fbb_.AddElement<uint32_t>(Listing::VT_PRICE, price, 0);
   }
-  void add_listing_fee(uint32_t listing_fee) {
-    fbb_.AddElement<uint32_t>(Listing::VT_LISTING_FEE, listing_fee, 0);
-  }
   void add_transaction_fee(uint32_t transaction_fee) {
     fbb_.AddElement<uint32_t>(Listing::VT_TRANSACTION_FEE, transaction_fee, 0);
+  }
+  void add_state(fb::protocol::marketplace::raw::ListingState state) {
+    fbb_.AddElement<uint8_t>(Listing::VT_STATE, static_cast<uint8_t>(state), 0);
   }
   void add_expire_date(::flatbuffers::Offset<::flatbuffers::String> expire_date) {
     fbb_.AddOffset(Listing::VT_EXPIRE_DATE, expire_date);
@@ -120,21 +129,23 @@ inline ::flatbuffers::Offset<Listing> CreateListing(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> id = 0,
     uint32_t seller_id = 0,
+    uint32_t buyer_id = 0,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
     uint32_t price = 0,
-    uint32_t listing_fee = 0,
     uint32_t transaction_fee = 0,
+    fb::protocol::marketplace::raw::ListingState state = fb::protocol::marketplace::raw::ListingState_ACTIVE,
     ::flatbuffers::Offset<::flatbuffers::String> expire_date = 0,
     ::flatbuffers::Offset<::flatbuffers::String> created_date = 0) {
   ListingBuilder builder_(_fbb);
   builder_.add_created_date(created_date);
   builder_.add_expire_date(expire_date);
   builder_.add_transaction_fee(transaction_fee);
-  builder_.add_listing_fee(listing_fee);
   builder_.add_price(price);
   builder_.add_item(item);
+  builder_.add_buyer_id(buyer_id);
   builder_.add_seller_id(seller_id);
   builder_.add_id(id);
+  builder_.add_state(state);
   return builder_.Finish();
 }
 
@@ -142,10 +153,11 @@ inline ::flatbuffers::Offset<Listing> CreateListingDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *id = nullptr,
     uint32_t seller_id = 0,
+    uint32_t buyer_id = 0,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
     uint32_t price = 0,
-    uint32_t listing_fee = 0,
     uint32_t transaction_fee = 0,
+    fb::protocol::marketplace::raw::ListingState state = fb::protocol::marketplace::raw::ListingState_ACTIVE,
     const char *expire_date = nullptr,
     const char *created_date = nullptr) {
   auto id__ = id ? _fbb.CreateString(id) : 0;
@@ -155,10 +167,11 @@ inline ::flatbuffers::Offset<Listing> CreateListingDirect(
       _fbb,
       id__,
       seller_id,
+      buyer_id,
       item,
       price,
-      listing_fee,
       transaction_fee,
+      state,
       expire_date__,
       created_date__);
 }

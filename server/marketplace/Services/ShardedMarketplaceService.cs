@@ -15,7 +15,7 @@ public class ShardedMarketplaceService : IMarketplaceService
     /// <param name="characterId">The character ID requesting the listing ID.</param>
     /// <returns>The allocated listing ID (UUID string).</returns>
     /// <exception cref="NotImplementedException">Thrown until Elasticsearch integration is implemented.</exception>
-    public Task<string> AllocateListingIdAsync(uint characterId)
+    public string AllocateListingIdAsync(uint characterId)
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");
     }

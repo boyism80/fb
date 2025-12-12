@@ -11,7 +11,6 @@ public class MarketplaceListing : BaseModel
     public uint? ItemDurability { get; set; }
     public string ItemCustomName { get; set; }
     public uint Price { get; set; }
-    public uint ListingFee { get; set; }
     public uint TransactionFee { get; set; }
     public byte Status { get; set; } // 0=Active, 1=Sold, 2=Cancelled, 3=Expired
     public DateTime ExpireDate { get; set; }

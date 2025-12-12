@@ -11,6 +11,7 @@ using namespace fb::model;
 character::character(fb::game::server& server, const initial_params& params) :
     stat(*this),
     storage_box(*this),
+    marketplace(*this),
     life(server,
          table::life[0],
          stat,
@@ -1395,6 +1396,34 @@ fb::protocol::internal::Character character::to_protocol() const
         auto time = (uint32_t)(buff->time().count() / 1000);
         dto.buffs.push_back({buff->model.id, time});
     }
+
+    const auto& pending_listings = this->marketplace.pending_listings();
+    if (!pending_listings.empty())
+    {
+        auto json = Json::Value{Json::objectValue};
+        for (const auto& [listing_id, pending_info] : pending_listings)
+        {
+            auto info_json = Json::Value{Json::objectValue};
+            info_json["type"]         = static_cast<uint8_t>(pending_info.type);
+            info_json["character_id"] = pending_info.character_id;
+
+            auto dsl_array = Json::Value{Json::arrayValue};
+            for (const auto& dsl : pending_info.dsls)
+            {
+                dsl_array.append(dsl.to_json());
+            }
+            info_json["dsls"] = dsl_array;
+
+            json[listing_id] = info_json;
+        }
+        auto writer          = Json::FastWriter();
+        dto.pending_listings = writer.write(json);
+    }
+    else
+    {
+        dto.pending_listings = std::nullopt;
+    }
+
     return dto;
 }
 

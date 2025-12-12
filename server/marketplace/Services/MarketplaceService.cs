@@ -18,7 +18,6 @@ public class MarketplaceService : IMarketplaceService
     private readonly IConfiguration _configuration;
     private readonly StorageService _storageService;
     private readonly DbContext _dbContext;
-    private readonly double _listingFeePercent;
     private readonly double _transactionFeePercent;
     private readonly uint _minFee;
 
@@ -32,7 +31,6 @@ public class MarketplaceService : IMarketplaceService
         _configuration = configuration;
         _storageService = storageService;
         _dbContext = dbContext;
-        _listingFeePercent = _configuration.GetValue<double>("Marketplace:ListingFeePercent", 5.0);
         _transactionFeePercent = _configuration.GetValue<double>("Marketplace:TransactionFeePercent", 5.0);
         _minFee = _configuration.GetValue<uint>("Marketplace:MinFee", 100);
     }
@@ -43,7 +41,7 @@ public class MarketplaceService : IMarketplaceService
     /// </summary>
     /// <param name="characterId">The character ID requesting the listing ID.</param>
     /// <returns>The allocated listing ID (UUID string).</returns>
-    public async Task<string> AllocateListingIdAsync(uint characterId)
+    public string AllocateListingIdAsync(uint characterId)
     {
         // Generate UUID for listing_id
         // This UUID will be used as the listing identifier and can be used for sharding
@@ -75,8 +73,7 @@ public class MarketplaceService : IMarketplaceService
             }
         }
 
-        // Calculate fees
-        var listingFee = CalculateListingFee(price);
+        // Calculate transaction fee
         var transactionFee = CalculateTransactionFee(price);
 
         // Create listing with listing_id as the primary key (BINARY(16))
@@ -88,7 +85,6 @@ public class MarketplaceService : IMarketplaceService
             itemDurability,
             itemCustomName,
             price,
-            listingFee,
             transactionFee,
             DateTime.UtcNow.AddHours(expireHours));
 
@@ -139,6 +135,8 @@ public class MarketplaceService : IMarketplaceService
                 {
                     Id = listing.ItemModel,
                     Count = listing.ItemCount,
+                    Durability = listing.ItemDurability,
+                    CustomName = listing.ItemCustomName,
                     Percent = 100.0
                 }.ToDSL()
             };
@@ -178,18 +176,6 @@ public class MarketplaceService : IMarketplaceService
 
         // Update listing (mark as sold or reduce count)
         await _repository.UpdateListingAsync(listing.Id, 1, DateTime.UtcNow, buyerId);
-
-        // Create transaction record
-        await _repository.CreateTransactionAsync(
-            listing.Id,
-            listing.SellerId,
-            buyerId,
-            listing.ItemModel,
-            listing.ItemCount,
-            listing.Price,
-            listing.ListingFee,
-            transactionFee,
-            sellerRevenue);
 
         // Send seller revenue via storage_box
         var sellerCharacter = await _dbContext.Character.Get(listing.SellerId);
@@ -275,19 +261,6 @@ public class MarketplaceService : IMarketplaceService
     public async Task<MarketplaceListing> GetListingByIdAsync(string listingId)
     {
         return await _repository.GetListingByIdAsync(listingId);
-    }
-
-    /// <summary>
-    /// Calculates the listing fee based on the item price.
-    /// </summary>
-    /// <param name="price">The item price.</param>
-    /// <returns>The calculated listing fee.</returns>
-    private uint CalculateListingFee(uint price)
-    {
-        var fee = (uint)(price * _listingFeePercent / 100.0);
-        if (fee < _minFee)
-            fee = _minFee;
-        return fee;
     }
 
     /// <summary>

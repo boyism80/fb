@@ -33,7 +33,7 @@ table Search {
     page: uint;
 }
 
-table CheckListingStatus {
-    listing_id: string;
+table GetListings {
+    listing_ids: [string];
 }
 
