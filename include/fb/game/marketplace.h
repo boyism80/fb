@@ -3,6 +3,7 @@
 
 #include <fb/model/datetime.h>
 #include <fb/model/model.h>
+#include <fb/lua.h>
 #include <optional>
 #include <string>
 #include <map>
@@ -41,6 +42,8 @@ public:
         uint8_t                            state           = 0; // fb::protocol::marketplace::ListingState
         std::optional<fb::model::datetime> expire_date     = std::nullopt;
         std::optional<fb::model::datetime> created_date    = std::nullopt;
+
+        void to_lua(fb::lua::context* lua) const;
     };
 
     struct search_option
@@ -78,16 +81,17 @@ private:
     character&                                            _owner;
     std::unordered_map<std::string, pending_listing_info> _pending_listings;
 
-    async::task<std::string> allocate_id();
-
 public:
     explicit marketplace(character& owner);
 
-    async::task<listing>
-    list(const std::string& id, uint8_t item_index, uint16_t count, uint32_t price, uint16_t expire_hours = 72);
-    async::task<bool>                 cancel(const std::string& id);
-    async::task<listing>              purchase(const std::string& id);
-    async::task<search_result>        search(const search_option& option);
+private:
+    async::task<std::string> allocate_id();
+
+public:
+    async::task<listing>       list(uint8_t item_index, uint16_t count, uint32_t price, uint16_t expire_hours = 72);
+    async::task<bool>          cancel(const std::string& id);
+    async::task<listing>       purchase(const std::string& id);
+    async::task<search_result> search(const search_option& option);
     async::task<std::vector<listing>> get_listings(const std::vector<std::string>& listing_ids);
     void              set_pending_listings(std::unordered_map<std::string, pending_listing_info> pending_listings);
     async::task<void> restore();

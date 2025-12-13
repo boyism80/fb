@@ -25,8 +25,11 @@ async::task<std::string> marketplace::allocate_id()
 {
     this->_owner.assert_thread();
 
+    auto weak = this->_owner.weak_from_this_as<fb::game::character>();
     auto req  = mp_reqs::AllocateListingId{this->_owner.id};
     auto resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/allocate-listing-id", req);
+
+    co_await this->_owner.server.threads.switching(weak);
 
     if (resp.error != 0)
         throw std::runtime_error(std::format("Failed to allocate listing ID: error={}", resp.error));
@@ -35,9 +38,17 @@ async::task<std::string> marketplace::allocate_id()
 }
 
 async::task<marketplace::listing>
-marketplace::list(const std::string& id, uint8_t item_index, uint16_t count, uint32_t price, uint16_t expire_hours)
+marketplace::list(uint8_t item_index, uint16_t count, uint32_t price, uint16_t expire_hours)
 {
     this->_owner.assert_thread();
+
+    auto weak = this->_owner.weak_from_this_as<fb::game::character>();
+    if (weak.expired())
+        throw std::runtime_error("Character has expired");
+
+    auto id = co_await this->allocate_id();
+    if (weak.expired())
+        throw std::runtime_error("Character has expired");
 
     // Get item from inventory
     auto item = this->_owner.items.at(item_index);
@@ -62,6 +73,10 @@ marketplace::list(const std::string& id, uint8_t item_index, uint16_t count, uin
 
     // Calculate listing fee (10% of price)
     auto listing_fee = static_cast<uint32_t>(price * 0.1);
+
+    // Validate listing fee BEFORE API call
+    if (this->_owner.money() < listing_fee)
+        throw std::runtime_error("Insufficient money for listing fee");
 
     // Prepare DSL for pending listing recovery (BEFORE API call)
     auto item_dsl = fb::model::dsl::item(model.id, count, durability, custom_name, 100.0);
@@ -109,6 +124,8 @@ marketplace::list(const std::string& id, uint8_t item_index, uint16_t count, uin
                 expire_hours
         });
 
+        co_await this->_owner.server.threads.switching(weak);
+
         if (resp.error != 0)
         {
             // API call returned an error - throw exception to handle in catch block
@@ -151,6 +168,9 @@ marketplace::list(const std::string& id, uint8_t item_index, uint16_t count, uin
     }
     catch (const std::exception& e)
     {
+        if (weak.expired())
+            throw std::runtime_error("Character has expired");
+
         // Any failure (system error or logical error) - items/money already deducted, keep DSL for recovery
         // DSL remains in _pending_listings for recovery on next login
         auto log_data            = Json::Value();
@@ -172,8 +192,11 @@ async::task<bool> marketplace::cancel(const std::string& id)
     log_data_before["listing_id"]   = id;
     this->_owner.server.log.write("marketplace_cancel", log_data_before);
 
+    auto weak = this->_owner.weak_from_this_as<fb::game::character>();
     auto req  = mp_reqs::Cancel{this->_owner.id, id};
     auto resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/cancel", req);
+
+    co_await this->_owner.server.threads.switching(weak);
 
     if (resp.error != 0)
     {
@@ -202,6 +225,7 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
     this->_owner.assert_thread();
 
     // Get listing info first (needed for price validation and timeout recovery)
+    auto weak        = this->_owner.weak_from_this_as<fb::game::character>();
     auto listing_ids = std::vector<std::string>{id};
     auto listings    = co_await this->get_listings(listing_ids);
 
@@ -251,7 +275,10 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
     try
     {
         auto resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/purchase", req);
-        auto ec   = (fb::model::enum_value::ERROR_CODE)resp.error;
+
+        co_await this->_owner.server.threads.switching(weak);
+
+        auto ec = (fb::model::enum_value::ERROR_CODE)resp.error;
         if (ec != fb::model::enum_value::ERROR_CODE::NONE)
         {
             // Check if this is a definite failure (logical error) or system error
@@ -300,6 +327,9 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
     }
     catch (const std::exception& e)
     {
+        if (weak.expired())
+            throw std::runtime_error("Character has expired");
+
         if (unhandled_error)
         {
             // HTTP exception (timeout, connection error, etc.) - system error
@@ -330,6 +360,7 @@ async::task<marketplace::search_result> marketplace::search(const search_option&
 {
     this->_owner.assert_thread();
 
+    auto weak = this->_owner.weak_from_this_as<fb::game::character>();
     auto resp = co_await this->_owner.server.http.post("marketplace",
                                                        "/marketplace/search",
                                                        mp_reqs::Search{option.item_name,
@@ -338,6 +369,9 @@ async::task<marketplace::search_result> marketplace::search(const search_option&
                                                                        option.seller_id,
                                                                        option.sort_by,
                                                                        option.page});
+
+    co_await this->_owner.server.threads.switching(weak);
+
     if (resp.error != 0)
         throw std::runtime_error(std::format("Failed to search items: error={}",
                                              enum_tostring((fb::model::enum_value::ERROR_CODE)resp.error)));
@@ -383,10 +417,13 @@ async::task<std::vector<marketplace::listing>> marketplace::get_listings(const s
     if (listing_ids.empty())
         co_return std::vector<marketplace::listing>{};
 
+    auto weak = this->_owner.weak_from_this_as<fb::game::character>();
     // Call get_listings API to get all listing data
     auto resp = co_await this->_owner.server.http.post("marketplace",
                                                        "/marketplace/get-listings",
                                                        mp_reqs::GetListings{listing_ids});
+
+    co_await this->_owner.server.threads.switching(weak);
 
     if (resp.error != 0)
         throw std::runtime_error(std::format("Failed to get listings: error={}", resp.error));
@@ -590,4 +627,92 @@ const std::unordered_map<std::string, marketplace::pending_listing_info>& market
 {
     this->_owner.assert_thread();
     return this->_pending_listings;
+}
+
+void marketplace::listing::to_lua(fb::lua::context* lua) const
+{
+    lua->new_table();
+
+    lua->pushstring("id");
+    lua->pushstring(this->id);
+    lua_settable(*lua, -3);
+
+    lua->pushstring("seller_id");
+    lua->pushinteger(this->seller_id);
+    lua_settable(*lua, -3);
+
+    lua->pushstring("buyer_id");
+    lua->pushinteger(this->buyer_id);
+    lua_settable(*lua, -3);
+
+    lua->pushstring("item_data");
+    lua->new_table();
+    lua->pushstring("owner");
+    lua->pushinteger(this->item_data.owner);
+    lua_settable(*lua, -3);
+    lua->pushstring("model");
+    lua->pushinteger(this->item_data.model);
+    lua_settable(*lua, -3);
+    lua->pushstring("count");
+    lua->pushinteger(this->item_data.count);
+    lua_settable(*lua, -3);
+    lua->pushstring("durability");
+    if (this->item_data.durability.has_value())
+    {
+        lua->pushinteger(this->item_data.durability.value());
+    }
+    else
+    {
+        lua->pushnil();
+    }
+    lua_settable(*lua, -3);
+    lua->pushstring("custom_name");
+    if (this->item_data.custom_name.has_value())
+    {
+        lua->pushstring(this->item_data.custom_name.value());
+    }
+    else
+    {
+        lua->pushnil();
+    }
+    lua_settable(*lua, -3);
+    lua_settable(*lua, -3);
+
+    lua->pushstring("price");
+    lua->pushinteger(this->price);
+    lua_settable(*lua, -3);
+
+    lua->pushstring("listing_fee");
+    lua->pushinteger(this->listing_fee);
+    lua_settable(*lua, -3);
+
+    lua->pushstring("transaction_fee");
+    lua->pushinteger(this->transaction_fee);
+    lua_settable(*lua, -3);
+
+    lua->pushstring("state");
+    lua->pushinteger(this->state);
+    lua_settable(*lua, -3);
+
+    lua->pushstring("expire_date");
+    if (this->expire_date.has_value())
+    {
+        lua->pushstring(this->expire_date.value().to_string());
+    }
+    else
+    {
+        lua->pushnil();
+    }
+    lua_settable(*lua, -3);
+
+    lua->pushstring("created_date");
+    if (this->created_date.has_value())
+    {
+        lua->pushstring(this->created_date.value().to_string());
+    }
+    else
+    {
+        lua->pushnil();
+    }
+    lua_settable(*lua, -3);
 }

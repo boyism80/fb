@@ -30,3 +30,5 @@ public:
 
 #endif // FB_GAME_CHANNEL_SYSTEM_MAIL_CHANNEL_H
 
+
+
