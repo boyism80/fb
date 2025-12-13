@@ -1,7 +1,7 @@
 using Google.FlatBuffers;
 using Newtonsoft.Json;
-using Request = fb.protocol._internal.request;
-using Response = fb.protocol._internal.response;
+using Request = fb.protocol.marketplace.request;
+using Response = fb.protocol.marketplace.response;
 
 namespace Marketplace.Formatter;
 

@@ -1,4 +1,5 @@
 using Dapper;
+using Http.Extension;
 using Http.Service;
 using Marketplace.Model;
 
@@ -29,11 +30,11 @@ namespace Http.Reepository
         public async Task<MarketplaceListing> GetListingByIdAsync(string listingId)
         {
             await using var conn = _dbContext.Connection(-1);
-            var sql = @"
+            var sql = $@"
                 SELECT * FROM marketplace_listing 
-                WHERE id = @ListingId AND status != 3";
+                WHERE id = {listingId.Escape()} AND status != 3";
 
-            return await conn.QueryFirstOrDefaultAsync<MarketplaceListing>(sql, new { ListingId = listingId });
+            return await conn.QueryFirstOrDefaultAsync<MarketplaceListing>(sql);
         }
 
         /// <summary>
@@ -45,25 +46,42 @@ namespace Http.Reepository
         /// <returns>The marketplace listing if found; otherwise, null.</returns>
         public async Task<MarketplaceListing> GetListingByIdForUpdateAsync(string listingId, System.Data.IDbTransaction transaction = null)
         {
+            var sql = $@"
+                SELECT * FROM marketplace_listing 
+                WHERE id = {listingId.Escape()} AND status = 0 AND expire_date > NOW()
+                FOR UPDATE";
+
             if (transaction != null)
             {
-                var sql = @"
-                    SELECT * FROM marketplace_listing 
-                    WHERE id = @ListingId AND status = 0 AND expire_date > NOW()
-                    FOR UPDATE";
-
-                return await transaction.Connection.QueryFirstOrDefaultAsync<MarketplaceListing>(sql, new { ListingId = listingId }, transaction);
+                return await transaction.Connection.QueryFirstOrDefaultAsync<MarketplaceListing>(sql, null, transaction);
             }
             else
             {
                 await using var conn = _dbContext.Connection(-1);
-                var sql = @"
-                    SELECT * FROM marketplace_listing 
-                    WHERE id = @ListingId AND status = 0 AND expire_date > NOW()
-                    FOR UPDATE";
-
-                return await conn.QueryFirstOrDefaultAsync<MarketplaceListing>(sql, new { ListingId = listingId });
+                return await conn.QueryFirstOrDefaultAsync<MarketplaceListing>(sql);
             }
+        }
+
+        /// <summary>
+        /// Retrieves multiple marketplace listings by their unique identifiers.
+        /// </summary>
+        /// <param name="listingIds">List of unique identifiers of the listings (UUID strings).</param>
+        /// <returns>List of marketplace listings found; empty list if none found.</returns>
+        public async Task<List<MarketplaceListing>> GetListingsByIdsAsync(List<string> listingIds)
+        {
+            if (listingIds == null || listingIds.Count == 0)
+            {
+                return new List<MarketplaceListing>();
+            }
+
+            await using var conn = _dbContext.Connection(-1);
+            var escapedIds = string.Join(", ", listingIds.Select(id => id.Escape()));
+
+            var sql = $@"
+                SELECT * FROM marketplace_listing 
+                WHERE id IN ({escapedIds}) AND status != 3";
+
+            return (await conn.QueryAsync<MarketplaceListing>(sql)).ToList();
         }
 
 
@@ -92,26 +110,32 @@ namespace Http.Reepository
             DateTime expireDate)
         {
             await using var conn = _dbContext.Connection(-1);
-            var sql = @"
-                INSERT INTO marketplace_listing 
-                (id, seller_id, item_model, item_count, item_durability, item_custom_name, 
-                 price, transaction_fee, status, expire_date)
-                VALUES 
-                (@ListingId, @SellerId, @ItemModel, @ItemCount, @ItemDurability, @ItemCustomName,
-                 @Price, @TransactionFee, 0, @ExpireDate);";
+            var sql = $"""
+                INSERT INTO marketplace_listing (
+                    `id`,
+                    `seller_id`,
+                    `item_model`,
+                    `item_count`,
+                    `item_durability`,
+                    `item_custom_name`,
+                    `price`,
+                    `transaction_fee`,
+                    `status`,
+                    `expire_date`)
+                VALUES (
+                    {listingId.Escape()},
+                    {sellerId.Escape()},
+                    {itemModel.Escape()},
+                    {itemCount.Escape()},
+                    {(itemDurability.HasValue ? itemDurability.Value.Escape() : "NULL")},
+                    {(itemCustomName != null ? itemCustomName.Escape() : "NULL")},
+                    {price.Escape()},
+                    {transactionFee.Escape()},
+                    {0.Escape()},
+                    {expireDate.Escape()})
+                """;
 
-            await conn.ExecuteAsync(sql, new
-            {
-                ListingId = listingId,
-                SellerId = sellerId,
-                ItemModel = itemModel,
-                ItemCount = itemCount,
-                ItemDurability = itemDurability,
-                ItemCustomName = itemCustomName,
-                Price = price,
-                TransactionFee = transactionFee,
-                ExpireDate = expireDate
-            });
+            await conn.ExecuteAsync(sql);
             return listingId;
         }
 
@@ -124,13 +148,18 @@ namespace Http.Reepository
         public async Task<bool> UpdateListingStatusAsync(string listingId, byte status)
         {
             await using var conn = _dbContext.Connection(-1);
-            var sql = @"
-                UPDATE marketplace_listing 
-                SET status = @Status,
-                    updated_date = NOW()
-                WHERE id = @Id";
+            var sql = $@"
+                UPDATE marketplace_listing (
+                    `id`,
+                    `status`,
+                    `updated_date`)
+                VALUES (
+                    {listingId.Escape()},
+                    {status.Escape()},
+                    NOW())
+                WHERE id = {listingId.Escape()}";
 
-            var rowsAffected = await conn.ExecuteAsync(sql, new { Id = listingId, Status = status });
+            var rowsAffected = await conn.ExecuteAsync(sql);
             return rowsAffected > 0;
         }
 
@@ -145,35 +174,23 @@ namespace Http.Reepository
         /// <returns>True if the update was successful; otherwise, false.</returns>
         public async Task<bool> UpdateListingAsync(string listingId, byte status, DateTime? soldDate, uint? buyerId, System.Data.IDbTransaction transaction = null)
         {
-            var sql = @"
+            var sql = $@"
                 UPDATE marketplace_listing 
-                SET status = @Status,
-                    sold_date = @SoldDate,
-                    buyer_id = @BuyerId,
-                    updated_date = NOW()
-                WHERE id = @Id AND status = 0";
+                SET `status` = {status.Escape()},
+                    `sold_date` = {(soldDate.HasValue ? soldDate.Value.Escape() : "NULL")},
+                    `buyer_id` = {(buyerId.HasValue ? buyerId.Value.Escape() : "NULL")},
+                    `updated_date` = NOW()
+                WHERE `id` = {listingId.Escape()} AND `status` = 0";
 
             if (transaction != null)
             {
-                var rowsAffected = await transaction.Connection.ExecuteAsync(sql, new
-                {
-                    Id = listingId,
-                    Status = status,
-                    SoldDate = soldDate,
-                    BuyerId = buyerId
-                }, transaction);
+                var rowsAffected = await transaction.Connection.ExecuteAsync(sql, null, transaction);
                 return rowsAffected > 0;
             }
             else
             {
                 await using var conn = _dbContext.Connection(-1);
-                var rowsAffected = await conn.ExecuteAsync(sql, new
-                {
-                    Id = listingId,
-                    Status = status,
-                    SoldDate = soldDate,
-                    BuyerId = buyerId
-                });
+                var rowsAffected = await conn.ExecuteAsync(sql);
                 return rowsAffected > 0;
             }
         }
@@ -231,31 +248,24 @@ namespace Http.Reepository
 
             var whereClause = string.Join(" AND ", whereConditions);
 
-            // Query single database
+            // Build ORDER BY clause
+            var orderByClause = sortBy switch
+            {
+                "price_asc" => "ORDER BY price ASC",
+                "price_desc" => "ORDER BY price DESC",
+                "name_price_asc" => "ORDER BY item_model ASC, price ASC",
+                "created_desc" => "ORDER BY created_date DESC",
+                _ => "ORDER BY created_date DESC"
+            };
+
+            // Query single database with sorting
             var sql = $@"
                 SELECT * FROM marketplace_listing 
-                WHERE {whereClause}";
+                WHERE {whereClause}
+                {orderByClause}
+                LIMIT {pageSize} OFFSET {(page - 1) * pageSize}";
 
-            var allResults = (await conn.QueryAsync<MarketplaceListing>(sql, parameters)).ToList();
-
-            // Sort results in memory
-            switch (sortBy)
-            {
-                case "price_asc":
-                    allResults = allResults.OrderBy(x => x.Price).ToList();
-                    break;
-                case "price_desc":
-                    allResults = allResults.OrderByDescending(x => x.Price).ToList();
-                    break;
-                case "created_desc":
-                default:
-                    allResults = allResults.OrderByDescending(x => x.CreatedDate).ToList();
-                    break;
-            }
-
-            // Apply pagination
-            var offset = (page - 1) * pageSize;
-            return allResults.Skip(offset).Take(pageSize).ToList();
+            return (await conn.QueryAsync<MarketplaceListing>(sql, parameters)).ToList();
         }
 
         /// <summary>

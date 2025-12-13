@@ -79,5 +79,10 @@ public class ShardedMarketplaceService : IMarketplaceService
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");
     }
+
+    public Task<List<MarketplaceListing>> GetListingsByIdsAsync(List<string> listingIds)
+    {
+        throw new NotImplementedException();
+    }
 }
 

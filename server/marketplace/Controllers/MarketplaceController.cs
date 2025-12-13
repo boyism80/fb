@@ -293,4 +293,48 @@ public class MarketplaceController : ControllerBase
         }
     }
 
+    [HttpPost("get-listings")]
+    public async Task<Response.GetListings> GetListings(Request.GetListings request)
+    {
+        try
+        {
+            var listings = await _marketplaceService.GetListingsByIdsAsync(request.ListingIds ?? new List<string>());
+
+            var protocolListings = listings.Select(l => new Protocol.Listing
+            {
+                Id = l.Id,
+                SellerId = l.SellerId,
+                BuyerId = l.BuyerId ?? 0,
+                Item = new Protocol.Item
+                {
+                    Owner = l.SellerId,
+                    Model = l.ItemModel,
+                    Count = l.ItemCount,
+                    Durability = l.ItemDurability,
+                    CustomName = l.ItemCustomName ?? string.Empty
+                },
+                Price = l.Price,
+                TransactionFee = l.TransactionFee,
+                State = (Protocol.ListingState)l.Status,
+                ExpireDate = l.ExpireDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                CreatedDate = l.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+            }).ToList();
+
+            return new Response.GetListings
+            {
+                Listings = protocolListings,
+                Error = (uint)ErrorCode.None
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get listings");
+            return new Response.GetListings
+            {
+                Listings = new List<Protocol.Listing>(),
+                Error = (uint)ErrorCode.Unhandled
+            };
+        }
+    }
+
 }

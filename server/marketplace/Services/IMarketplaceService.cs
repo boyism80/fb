@@ -56,5 +56,12 @@ public interface IMarketplaceService
     /// </summary>
     /// <returns>MarketplaceListing if found; null if not found.</returns>
     Task<MarketplaceListing> GetListingByIdAsync(string listingId);
+
+    /// <summary>
+    /// Gets multiple listings by their IDs.
+    /// </summary>
+    /// <param name="listingIds">List of listing IDs to retrieve.</param>
+    /// <returns>List of marketplace listings found.</returns>
+    Task<List<MarketplaceListing>> GetListingsByIdsAsync(List<string> listingIds);
 }
 

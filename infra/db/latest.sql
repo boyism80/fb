@@ -408,7 +408,7 @@ DROP TABLE IF EXISTS `storage_pending_box`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `storage_pending_box` (
-  `id` binary(16) NOT NULL,
+  `id` varchar(36) NOT NULL,
   `user` int unsigned DEFAULT NULL,
   `title` varchar(128) NOT NULL DEFAULT '',
   `message` varchar(256) NOT NULL,
@@ -433,7 +433,7 @@ DROP TABLE IF EXISTS `storage_reward_mark`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `storage_reward_mark` (
   `user` int unsigned NOT NULL,
-  `pending_id` binary(16) NOT NULL,
+  `pending_id` varchar(36) NOT NULL,
   `expired_date` datetime DEFAULT NULL,
   `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -926,7 +926,7 @@ DROP TABLE IF EXISTS `marketplace_listing`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `marketplace_listing` (
-  `id` BINARY(16) NOT NULL,
+  `id` VARCHAR(36) NOT NULL,
   `seller_id` INT UNSIGNED NOT NULL,
   `item_model` INT UNSIGNED NOT NULL,
   `item_count` SMALLINT UNSIGNED NOT NULL DEFAULT 1,
@@ -945,8 +945,7 @@ CREATE TABLE `marketplace_listing` (
   KEY `idx_seller` (`seller_id`, `status`),
   KEY `idx_item_model` (`item_model`, `status`),
   KEY `idx_status_expire` (`status`, `expire_date`),
-  KEY `idx_created` (`created_date`),
-  CONSTRAINT `fk_marketplace_seller` FOREIGN KEY (`seller_id`) REFERENCES `user` (`id`)
+  KEY `idx_created` (`created_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

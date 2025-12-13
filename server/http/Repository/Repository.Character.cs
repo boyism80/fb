@@ -145,7 +145,7 @@ namespace Http.Reepository
                     {value.AuxBotColor.Escape()},
                     {JsonConvert.SerializeObject(value.Buffs).Escape()},
                     {value.Title.Escape()},
-                    {(value.PendingListings == null || value.PendingListings.Count == 0 ? "NULL" : JsonConvert.SerializeObject(value.PendingListings)).Escape()},
+                    {(value.PendingListings == null || value.PendingListings.Count == 0 ? null : JsonConvert.SerializeObject(value.PendingListings)).Escape()},
                     {value.Deleted.Escape()},
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})

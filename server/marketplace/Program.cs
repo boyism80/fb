@@ -1,3 +1,6 @@
+using Dapper;
+using Http.Extension;
+using Http.Service;
 using Marketplace.Formatter;
 
 namespace Marketplace;
@@ -24,13 +27,14 @@ public class Program
         builder.Services.AddSwaggerGen();
 
         // Add custom services from Http
-        builder.Services.AddSingleton<Http.Service.RedisService>();
-        builder.Services.AddSingleton<Http.Service.RedisDistributedLockService>();
-        builder.Services.AddSingleton<Http.Service.RabbitMqService>();
-        builder.Services.AddSingleton<Http.Service.LogService>();
-        builder.Services.AddScoped<Http.Service.DbContext>();
-        builder.Services.AddScoped<Http.Service.SessionService>();
-        builder.Services.AddScoped<Http.Service.StorageService>();
+        builder.Services.AddSingleton<WriteBackService>();
+        builder.Services.AddSingleton<RedisService>();
+        builder.Services.AddSingleton<RedisDistributedLockService>();
+        builder.Services.AddSingleton<RabbitMqService>();
+        builder.Services.AddSingleton<LogService>();
+        builder.Services.AddScoped<DbContext>();
+        builder.Services.AddScoped<SessionService>();
+        builder.Services.AddScoped<StorageService>();
 
         // Marketplace services
         builder.Services.AddScoped<Http.Reepository.MarketplaceRepository>();

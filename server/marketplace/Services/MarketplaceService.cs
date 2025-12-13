@@ -184,28 +184,24 @@ public class MarketplaceService : IMarketplaceService
         await _repository.UpdateListingStatusAsync(listing.Id, 2); // Cancelled
 
         // Return item to seller via storage_box
-        var sellerCharacter = await _dbContext.Character.Get(listing.SellerId);
-        if (sellerCharacter != null && !string.IsNullOrWhiteSpace(sellerCharacter.Name))
+        var attachments = new List<Fb.Model.Dsl>
         {
-            var attachments = new List<Fb.Model.Dsl>
+            new Fb.Model.Dsl.Item
             {
-                new Fb.Model.Dsl.Item
-                {
-                    Id = listing.ItemModel,
-                    Count = listing.ItemCount,
-                    Durability = listing.ItemDurability,
-                    CustomName = listing.ItemCustomName,
-                    Percent = 100.0
-                }.ToDSL()
-            };
+                Id = listing.ItemModel,
+                Count = listing.ItemCount,
+                Durability = listing.ItemDurability,
+                CustomName = listing.ItemCustomName,
+                Percent = 100.0
+            }.ToDSL()
+        };
 
-            await _storageService.CreatePendingAsync(
-                "Marketplace Listing Cancelled",
-                $"Your marketplace listing has been cancelled. The item has been returned to your storage box.",
-                sellerCharacter.Name,
-                DateTime.UtcNow.AddDays(30), // 30 days expiry
-                attachments);
-        }
+        await _storageService.CreatePendingAsync(
+            "Marketplace Listing Cancelled",
+            $"Your marketplace listing has been cancelled. The item has been returned to your storage box.",
+            listing.SellerId,
+            DateTime.UtcNow.AddDays(30), // 30 days expiry
+            attachments);
 
         // Log successful cancellation
         _logService?.Write("marketplace_cancel_success", new
@@ -233,6 +229,7 @@ public class MarketplaceService : IMarketplaceService
 
         // Use transaction to ensure atomicity
         await using var conn = _dbContext.Connection(-1);
+        await conn.OpenAsync();
         await using var transaction = await conn.BeginTransactionAsync();
 
         try
@@ -253,21 +250,31 @@ public class MarketplaceService : IMarketplaceService
 
             // Send seller revenue via storage_box (full price, no transaction fee deduction)
             // Transaction fee is already deducted on game server side during listing
-            var sellerCharacter = await _dbContext.Character.Get(listing.SellerId);
-            if (sellerCharacter != null && !string.IsNullOrWhiteSpace(sellerCharacter.Name))
-            {
-                var attachments = new List<Fb.Model.Dsl>
-                {
+            await _storageService.CreatePendingAsync(
+                "Marketplace Sale",
+                $"Your item has been sold for {listing.Price} gold.",
+                listing.SellerId,
+                DateTime.UtcNow.AddDays(30), // 30 days expiry
+                [
                     new Fb.Model.Dsl.Money { Value = listing.Price }.ToDSL()
-                };
+                ]);
 
-                await _storageService.CreatePendingAsync(
-                    "Marketplace Sale",
-                    $"Your item has been sold for {listing.Price} gold.",
-                    sellerCharacter.Name,
-                    DateTime.UtcNow.AddDays(30), // 30 days expiry
-                    attachments);
-            }
+            // Send purchased item to buyer via storage_box
+            await _storageService.CreatePendingAsync(
+                "Marketplace Purchase",
+                $"You have purchased an item from the marketplace.",
+                buyerId,
+                DateTime.UtcNow.AddDays(30), // 30 days expiry
+                [
+                    new Fb.Model.Dsl.Item
+                    {
+                        Id = listing.ItemModel,
+                        Count = listing.ItemCount,
+                        Durability = listing.ItemDurability,
+                        CustomName = listing.ItemCustomName,
+                        Percent = 100.0
+                    }.ToDSL()
+                ]);
 
             // Update listing (mark as sold or reduce count) with status check
             var updated = await _repository.UpdateListingAsync(listing.Id, 1, DateTime.UtcNow, buyerId, transaction);
@@ -342,7 +349,7 @@ public class MarketplaceService : IMarketplaceService
             option.MinPrice,
             option.MaxPrice,
             option.SellerId,
-            string.IsNullOrEmpty(option.SortBy) ? "created_desc" : option.SortBy,
+            string.IsNullOrEmpty(option.SortBy) ? "name_price_asc" : option.SortBy,
             (int)option.Page,
             pageSize);
 
@@ -366,6 +373,16 @@ public class MarketplaceService : IMarketplaceService
     public async Task<MarketplaceListing> GetListingByIdAsync(string listingId)
     {
         return await _repository.GetListingByIdAsync(listingId);
+    }
+
+    /// <summary>
+    /// Gets multiple listings by their IDs.
+    /// </summary>
+    /// <param name="listingIds">List of listing IDs to retrieve.</param>
+    /// <returns>List of marketplace listings found.</returns>
+    public async Task<List<MarketplaceListing>> GetListingsByIdsAsync(List<string> listingIds)
+    {
+        return await _repository.GetListingsByIdsAsync(listingIds);
     }
 
     /// <summary>

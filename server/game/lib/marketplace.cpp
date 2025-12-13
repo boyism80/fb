@@ -25,9 +25,9 @@ async::task<std::string> marketplace::allocate_id()
 {
     this->_owner.assert_thread();
 
-    auto weak = this->_owner.weak_from_this_as<fb::game::character>();
-    auto req  = mp_reqs::AllocateListingId{this->_owner.id};
-    auto resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/allocate-listing-id", req);
+    auto   weak = this->_owner.weak_from_this_as<fb::game::character>();
+    auto   req  = mp_reqs::AllocateListingId{this->_owner.id};
+    auto&& resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/allocate-listing-id", req);
 
     co_await this->_owner.server.threads.switching(weak);
 
@@ -113,7 +113,7 @@ marketplace::list(uint8_t item_index, uint16_t count, uint32_t price, uint16_t e
     // Send request to marketplace server
     try
     {
-        auto resp = co_await this->_owner.server.http.post(
+        auto&& resp = co_await this->_owner.server.http.post(
             "marketplace",
             "/marketplace/list",
             mp_reqs::List{
@@ -186,15 +186,18 @@ async::task<bool> marketplace::cancel(const std::string& id)
 {
     this->_owner.assert_thread();
 
+    // Copy id to local variable to ensure it survives across coroutine suspension
+    auto id_copy = id;
+
     // Log before API call
     auto log_data_before            = Json::Value();
     log_data_before["character_id"] = static_cast<Json::Int64>(this->_owner.id);
-    log_data_before["listing_id"]   = id;
+    log_data_before["listing_id"]   = id_copy;
     this->_owner.server.log.write("marketplace_cancel", log_data_before);
 
-    auto weak = this->_owner.weak_from_this_as<fb::game::character>();
-    auto req  = mp_reqs::Cancel{this->_owner.id, id};
-    auto resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/cancel", req);
+    auto   weak = this->_owner.weak_from_this_as<fb::game::character>();
+    auto   req  = mp_reqs::Cancel{this->_owner.id, id_copy};
+    auto&& resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/cancel", req);
 
     co_await this->_owner.server.threads.switching(weak);
 
@@ -202,19 +205,19 @@ async::task<bool> marketplace::cancel(const std::string& id)
     {
         auto log_data            = Json::Value();
         log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
-        log_data["listing_id"]   = id;
+        log_data["listing_id"]   = id_copy;
         log_data["error"]        = static_cast<Json::Int64>(resp.error);
         this->_owner.server.log.write("marketplace_cancel_failed", log_data);
         throw std::runtime_error(std::format("Failed to cancel listing: error={}", resp.error));
     }
 
     // Remove from pending_listings if it exists (in case listing was created but response was lost)
-    this->_pending_listings.erase(id);
+    this->_pending_listings.erase(id_copy);
 
     // Log successful cancellation
     auto log_data_success            = Json::Value();
     log_data_success["character_id"] = static_cast<Json::Int64>(this->_owner.id);
-    log_data_success["listing_id"]   = id;
+    log_data_success["listing_id"]   = id_copy;
     this->_owner.server.log.write("marketplace_cancel_success", log_data_success);
 
     co_return true;
@@ -224,9 +227,12 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
 {
     this->_owner.assert_thread();
 
+    // Copy id to local variable to ensure it survives across coroutine suspension
+    auto id_copy = id;
+
     // Get listing info first (needed for price validation and timeout recovery)
     auto weak        = this->_owner.weak_from_this_as<fb::game::character>();
-    auto listing_ids = std::vector<std::string>{id};
+    auto listing_ids = std::vector<std::string>{id_copy};
     auto listings    = co_await this->get_listings(listing_ids);
 
     if (listings.empty())
@@ -251,9 +257,9 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
     }
 
     // Store pending purchase for recovery in case of server failure
-    this->_pending_listings.emplace(id,
+    this->_pending_listings.emplace(id_copy,
                                     pending_listing_info{.type         = pending_type::PURCHASE,
-                                                         .listing_id   = id,
+                                                         .listing_id   = id_copy,
                                                          .dsls         = std::move(dsls),
                                                          .character_id = this->_owner.id});
 
@@ -263,18 +269,18 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
     // Log before API call (after deduction)
     auto log_data_before            = Json::Value();
     log_data_before["character_id"] = static_cast<Json::Int64>(this->_owner.id);
-    log_data_before["listing_id"]   = id;
+    log_data_before["listing_id"]   = id_copy;
     log_data_before["seller_id"]    = static_cast<Json::Int64>(listing.seller_id);
     log_data_before["price"]        = static_cast<Json::Int64>(price);
     this->_owner.server.log.write("marketplace_purchase", log_data_before);
 
     // Send purchase request to marketplace server
-    auto req             = mp_reqs::Purchase{this->_owner.id, id};
+    auto req             = mp_reqs::Purchase{this->_owner.id, id_copy};
     auto unhandled_error = true;
 
     try
     {
-        auto resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/purchase", req);
+        auto&& resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/purchase", req);
 
         co_await this->_owner.server.threads.switching(weak);
 
@@ -299,17 +305,17 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
         }
 
         // Purchase succeeded - remove from pending_listings
-        this->_pending_listings.erase(id);
+        this->_pending_listings.erase(id_copy);
 
         // Log successful purchase
         auto log_data_success            = Json::Value();
         log_data_success["character_id"] = static_cast<Json::Int64>(this->_owner.id);
-        log_data_success["listing_id"]   = id;
+        log_data_success["listing_id"]   = id_copy;
         this->_owner.server.log.write("marketplace_purchase_success", log_data_success);
 
         // Build and return listing (from response item data)
         co_return marketplace::listing{
-            .id              = id,
+            .id              = id_copy,
             .seller_id       = 0, // Not provided in response
             .buyer_id        = 0,
             .item_data       = {.owner       = resp.item.owner,
@@ -336,7 +342,7 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
             // Money already deducted, DSL is already saved for recovery
             auto log_data            = Json::Value();
             log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
-            log_data["listing_id"]   = id;
+            log_data["listing_id"]   = id_copy;
             log_data["error"]        = e.what();
             this->_owner.server.log.write("marketplace_purchase_failed", log_data);
         }
@@ -360,15 +366,15 @@ async::task<marketplace::search_result> marketplace::search(const search_option&
 {
     this->_owner.assert_thread();
 
-    auto weak = this->_owner.weak_from_this_as<fb::game::character>();
-    auto resp = co_await this->_owner.server.http.post("marketplace",
-                                                       "/marketplace/search",
-                                                       mp_reqs::Search{option.item_name,
-                                                                       option.min_price,
-                                                                       option.max_price,
-                                                                       option.seller_id,
-                                                                       option.sort_by,
-                                                                       option.page});
+    auto   weak = this->_owner.weak_from_this_as<fb::game::character>();
+    auto&& resp = co_await this->_owner.server.http.post("marketplace",
+                                                         "/marketplace/search",
+                                                         mp_reqs::Search{option.item_name,
+                                                                         option.min_price,
+                                                                         option.max_price,
+                                                                         option.seller_id,
+                                                                         option.sort_by,
+                                                                         option.page});
 
     co_await this->_owner.server.threads.switching(weak);
 
@@ -419,9 +425,9 @@ async::task<std::vector<marketplace::listing>> marketplace::get_listings(const s
 
     auto weak = this->_owner.weak_from_this_as<fb::game::character>();
     // Call get_listings API to get all listing data
-    auto resp = co_await this->_owner.server.http.post("marketplace",
-                                                       "/marketplace/get-listings",
-                                                       mp_reqs::GetListings{listing_ids});
+    auto&& resp = co_await this->_owner.server.http.post("marketplace",
+                                                         "/marketplace/get-listings",
+                                                         mp_reqs::GetListings{listing_ids});
 
     co_await this->_owner.server.threads.switching(weak);
 
