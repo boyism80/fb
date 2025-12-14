@@ -2,11 +2,6 @@ include "marketplace.fbs";
 
 namespace fb.protocol.marketplace.response;
 
-table AllocateListingId {
-    listing_id: string;
-    error: uint;
-}
-
 table List {
     listing_id: string;
     error: uint;
@@ -18,6 +13,8 @@ table Cancel {
 
 table Purchase {
     item: fb.protocol.marketplace.Item;
+    actual_purchase_count: ushort;
+    refund_amount: uint;
     error: uint;
 }
 
@@ -28,6 +25,11 @@ table Search {
 
 table GetListings {
     listings: [fb.protocol.marketplace.Listing];
+    error: uint;
+}
+
+table GetPurchases {
+    purchases: [fb.protocol.marketplace.Purchase];
     error: uint;
 }
 

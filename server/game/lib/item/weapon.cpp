@@ -57,17 +57,17 @@ const std::optional<std::string>& fb::game::weapon::custom_name() const
 
 void fb::game::weapon::custom_name(const std::string& name)
 {
-    auto owner = this->_container->owner();
-    if (owner == nullptr)
-        return;
+    this->_custom_name = name;
 
     if (this->_container == nullptr)
         return;
 
-    this->_custom_name = name;
+    auto owner = this->_container->owner();
+    if (owner == nullptr)
+        return;
 
     auto index = this->_container->index(this->shared_from_this_as<fb::game::item>());
-    if (index != 0xFF)
+    if (index != 0xFF && owner != nullptr)
         owner->listener.on_item_update(*owner, index);
 }
 

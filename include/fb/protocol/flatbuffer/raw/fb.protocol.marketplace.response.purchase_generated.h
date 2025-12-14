@@ -28,10 +28,18 @@ struct Purchase FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PurchaseBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ITEM = 4,
-    VT_ERROR = 6
+    VT_ACTUAL_PURCHASE_COUNT = 6,
+    VT_REFUND_AMOUNT = 8,
+    VT_ERROR = 10
   };
   const fb::protocol::marketplace::raw::Item *item() const {
     return GetPointer<const fb::protocol::marketplace::raw::Item *>(VT_ITEM);
+  }
+  uint16_t actual_purchase_count() const {
+    return GetField<uint16_t>(VT_ACTUAL_PURCHASE_COUNT, 0);
+  }
+  uint32_t refund_amount() const {
+    return GetField<uint32_t>(VT_REFUND_AMOUNT, 0);
   }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
@@ -40,6 +48,8 @@ struct Purchase FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_ITEM) &&
            verifier.VerifyTable(item()) &&
+           VerifyField<uint16_t>(verifier, VT_ACTUAL_PURCHASE_COUNT, 2) &&
+           VerifyField<uint32_t>(verifier, VT_REFUND_AMOUNT, 4) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -51,6 +61,12 @@ struct PurchaseBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_item(::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item) {
     fbb_.AddOffset(Purchase::VT_ITEM, item);
+  }
+  void add_actual_purchase_count(uint16_t actual_purchase_count) {
+    fbb_.AddElement<uint16_t>(Purchase::VT_ACTUAL_PURCHASE_COUNT, actual_purchase_count, 0);
+  }
+  void add_refund_amount(uint32_t refund_amount) {
+    fbb_.AddElement<uint32_t>(Purchase::VT_REFUND_AMOUNT, refund_amount, 0);
   }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(Purchase::VT_ERROR, error, 0);
@@ -69,10 +85,14 @@ struct PurchaseBuilder {
 inline ::flatbuffers::Offset<Purchase> CreatePurchase(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
+    uint16_t actual_purchase_count = 0,
+    uint32_t refund_amount = 0,
     uint32_t error = 0) {
   PurchaseBuilder builder_(_fbb);
   builder_.add_error(error);
+  builder_.add_refund_amount(refund_amount);
   builder_.add_item(item);
+  builder_.add_actual_purchase_count(actual_purchase_count);
   return builder_.Finish();
 }
 

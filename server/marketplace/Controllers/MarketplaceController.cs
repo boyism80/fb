@@ -23,42 +23,27 @@ public class MarketplaceController : ControllerBase
         _marketplaceService = marketplaceService;
     }
 
-    [HttpPost("allocate-listing-id")]
-    public async Task<Response.AllocateListingId> AllocateListingId(Request.AllocateListingId request)
-    {
-        try
-        {
-            var listingId = _marketplaceService.AllocateListingIdAsync(request.CharacterId);
-
-            return new Response.AllocateListingId
-            {
-                ListingId = listingId,
-                Error = (uint)ErrorCode.None
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to allocate listing ID for character {CharacterId}", request.CharacterId);
-            return new Response.AllocateListingId
-            {
-                ListingId = string.Empty,
-                Error = (uint)ErrorCode.Unhandled
-            };
-        }
-    }
-
     [HttpPost("list")]
     public async Task<Response.List> ListItem(Request.List request)
     {
         try
         {
+            if (string.IsNullOrEmpty(request.ListingId))
+            {
+                return new Response.List
+                {
+                    ListingId = string.Empty,
+                    Error = (uint)ErrorCode.MarketplaceListingNotFound
+                };
+            }
+
             var listing = await _marketplaceService.ListItemAsync(
                 request.CharacterId,
-                request.ListingId ?? string.Empty,
+                request.ListingId,
                 request.Item.Model,
                 request.Item.Count,
                 request.Item.Durability,
-                request.Item.CustomName ?? string.Empty,
+                request.Item.CustomName,
                 request.Price,
                 request.ExpireHours) ?? throw new LogicException(ErrorCode.Unhandled);
 
@@ -67,6 +52,15 @@ public class MarketplaceController : ControllerBase
             {
                 ListingId = listing.Id ?? string.Empty,
                 Error = (uint)ErrorCode.None
+            };
+        }
+        catch (LogicException e)
+        {
+            _logger.LogWarning("Marketplace list validation error: {ErrorCode}", e.Error);
+            return new Response.List
+            {
+                ListingId = string.Empty,
+                Error = (uint)e.Error
             };
         }
         catch (Exception ex)
@@ -114,43 +108,33 @@ public class MarketplaceController : ControllerBase
     {
         try
         {
-            var listing = await _marketplaceService.PurchaseItemAsync(request.BuyerId, request.ListingId);
+            if (string.IsNullOrEmpty(request.PurchaseId))
+                throw new LogicException(ErrorCode.MarketplaceListingNotFound);
 
-            if (listing != null)
+            var result = await _marketplaceService.PurchaseItemAsync(
+                request.BuyerId,
+                request.ListingId,
+                request.PurchaseCount,
+                request.PurchaseId);
+
+            return new Response.Purchase
             {
-                return new Response.Purchase
+                Item = new Protocol.Item
                 {
-                    Item = new Protocol.Item
-                    {
-                        Owner = request.BuyerId,
-                        Model = listing.ItemModel,
-                        Count = listing.ItemCount,
-                        Durability = listing.ItemDurability,
-                        CustomName = listing.ItemCustomName ?? string.Empty
-                    },
-                    Error = (uint)ErrorCode.None
-                };
-            }
-
-            // Try to get listing to determine specific error
-            var listingCheck = await _marketplaceService.GetListingByIdAsync(request.ListingId);
-            uint errorCode = (uint)ErrorCode.MarketplaceListingNotFound;
-            if (listingCheck != null)
-            {
-                if (listingCheck.ExpireDate <= DateTime.UtcNow)
-                {
-                    errorCode = (uint)ErrorCode.MarketplaceListingExpired;
-                }
-                else if (listingCheck.Status == 1)
-                {
-                    errorCode = (uint)ErrorCode.MarketplaceListingAlreadySold;
-                }
-                else if (listingCheck.Status == 2)
-                {
-                    errorCode = (uint)ErrorCode.MarketplaceListingAlreadyCancelled;
-                }
-            }
-
+                    Owner = request.BuyerId,
+                    Model = result.Listing.ItemModel,
+                    Count = result.ActualPurchaseCount,
+                    Durability = result.Listing.ItemDurability,
+                    CustomName = result.Listing.ItemCustomName ?? string.Empty
+                },
+                ActualPurchaseCount = result.ActualPurchaseCount,
+                RefundAmount = result.RefundAmount,
+                Error = (uint)ErrorCode.None
+            };
+        }
+        catch (LogicException e)
+        {
+            _logger.LogWarning("Marketplace purchase validation error: {ErrorCode}", e.Error);
             return new Response.Purchase
             {
                 Item = new Protocol.Item
@@ -161,7 +145,9 @@ public class MarketplaceController : ControllerBase
                     Durability = null,
                     CustomName = string.Empty
                 },
-                Error = errorCode
+                ActualPurchaseCount = 0,
+                RefundAmount = 0,
+                Error = (uint)e.Error
             };
         }
         catch (Exception ex)
@@ -177,6 +163,8 @@ public class MarketplaceController : ControllerBase
                     Durability = null,
                     CustomName = string.Empty
                 },
+                ActualPurchaseCount = 0,
+                RefundAmount = 0,
                 Error = (uint)ErrorCode.Unhandled
             };
         }
@@ -207,12 +195,11 @@ public class MarketplaceController : ControllerBase
                 {
                     Owner = l.SellerId,
                     Model = l.ItemModel,
-                    Count = l.ItemCount,
+                    Count = l.RemainingCount,
                     Durability = l.ItemDurability,
                     CustomName = l.ItemCustomName ?? string.Empty
                 },
                 Price = l.Price,
-                TransactionFee = l.TransactionFee,
                 ExpireDate = l.ExpireDate.ToString("yyyy-MM-dd HH:mm:ss"),
                 CreatedDate = l.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
             }).ToList();
@@ -260,64 +247,37 @@ public class MarketplaceController : ControllerBase
         }
     }
 
-    [HttpPost("check-status")]
-    public async Task<Response.CheckListingStatus> CheckListingStatus(Request.CheckListingStatus request)
-    {
-        try
-        {
-            var listing = await _marketplaceService.GetListingByIdAsync(request.ListingId);
-
-            if (listing != null)
-            {
-                return new Response.CheckListingStatus
-                {
-                    ListingId = listing.Id ?? string.Empty,
-                    Error = (uint)ErrorCode.None
-                };
-            }
-
-            return new Response.CheckListingStatus
-            {
-                ListingId = string.Empty,
-                Error = (uint)ErrorCode.None
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to check listing status for listing {ListingId}", request.ListingId);
-            return new Response.CheckListingStatus
-            {
-                ListingId = string.Empty,
-                Error = (uint)ErrorCode.Unhandled
-            };
-        }
-    }
-
     [HttpPost("get-listings")]
     public async Task<Response.GetListings> GetListings(Request.GetListings request)
     {
         try
         {
-            var listings = await _marketplaceService.GetListingsByIdsAsync(request.ListingIds ?? new List<string>());
+            var results = await _marketplaceService.GetListingsByIdsAsync(
+                request.ListingIds ?? new List<string>(),
+                request.BuyerId);
 
-            var protocolListings = listings.Select(l => new Protocol.Listing
+            var protocolListings = results.Select(r => new Protocol.Listing
             {
-                Id = l.Id,
-                SellerId = l.SellerId,
-                BuyerId = l.BuyerId ?? 0,
+                Id = r.Listing.Id,
+                SellerId = r.Listing.SellerId,
                 Item = new Protocol.Item
                 {
-                    Owner = l.SellerId,
-                    Model = l.ItemModel,
-                    Count = l.ItemCount,
-                    Durability = l.ItemDurability,
-                    CustomName = l.ItemCustomName ?? string.Empty
+                    Owner = r.Listing.SellerId,
+                    Model = r.Listing.ItemModel,
+                    Count = r.Listing.RemainingCount,
+                    Durability = r.Listing.ItemDurability,
+                    CustomName = r.Listing.ItemCustomName ?? string.Empty
                 },
-                Price = l.Price,
-                TransactionFee = l.TransactionFee,
-                State = (Protocol.ListingState)l.Status,
-                ExpireDate = l.ExpireDate.ToString("yyyy-MM-dd HH:mm:ss"),
-                CreatedDate = l.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                Price = r.Listing.Price,
+                State = (Protocol.ListingState)r.Listing.Status,
+                ExpireDate = r.Listing.ExpireDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                CreatedDate = r.Listing.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                PurchaseInfo = r.Purchase != null ? new Protocol.PurchaseInfo
+                {
+                    PurchaseCount = r.Purchase.PurchaseCount,
+                    PurchasePrice = r.Purchase.PurchasePrice,
+                    CreatedDate = r.Purchase.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                } : null
             }).ToList();
 
             return new Response.GetListings
@@ -332,6 +292,41 @@ public class MarketplaceController : ControllerBase
             return new Response.GetListings
             {
                 Listings = [],
+                Error = (uint)ErrorCode.Unhandled
+            };
+        }
+    }
+
+    [HttpPost("get-purchases")]
+    public async Task<Response.GetPurchases> GetPurchases(Request.GetPurchases request)
+    {
+        try
+        {
+            var purchases = await _marketplaceService.GetPurchasesByIdsAsync(
+                request.PurchaseIds ?? new List<string>());
+
+            var protocolPurchases = purchases.Values.Select(p => new Protocol.Purchase
+            {
+                Id = p.Id,
+                ListingId = p.ListingId,
+                BuyerId = p.BuyerId,
+                PurchaseCount = p.PurchaseCount,
+                PurchasePrice = p.PurchasePrice,
+                CreatedDate = p.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+            }).ToList();
+
+            return new Response.GetPurchases
+            {
+                Purchases = protocolPurchases,
+                Error = (uint)ErrorCode.None
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get purchases");
+            return new Response.GetPurchases
+            {
+                Purchases = [],
                 Error = (uint)ErrorCode.Unhandled
             };
         }

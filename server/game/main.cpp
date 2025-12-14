@@ -101,6 +101,9 @@ int main(int argc, char* argv[])
         fb::game::npc_spawner(*server).run();
 
         fb::console::set_mode(fb::console::mode::plain);
+#ifdef _WIN32
+        fb::model::option::decoding(nullptr);
+#endif
         server->run();
     }
     catch (std::exception& e)

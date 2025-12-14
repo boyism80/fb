@@ -352,6 +352,7 @@ function handle_marketplace_search(me, npc)
 
         purchase_count = tonumber(count_input)
         if purchase_count == nil or purchase_count <= 0 or purchase_count > selected_listing.item_data.count then
+            -- Note: item_data.count is now remaining_count, which may be less than original listing count
             local button = me:dialog(npc, '올바른 수량을 입력해주세요.', true, true)
             if button == DIALOG_RESULT.QUIT then
                 return false
@@ -363,7 +364,66 @@ function handle_marketplace_search(me, npc)
         end
     end
 
-    local purchase_error, purchase_result = me:marketplace_purchase(selected_listing.id)
+    -- Check if item is in perfect condition, show warning if not
+    local warning_messages = {}
+    if selected_model ~= nil then
+        -- Check equipment durability (must be 100%)
+        if selected_model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and selected_listing.item_data.durability ~= nil then
+            local max_durability = selected_model:durability()
+            if max_durability ~= nil and max_durability > 0 then
+                local durability_percent = (selected_listing.item_data.durability / max_durability) * 100
+                if durability_percent < 100 then
+                    table.insert(warning_messages, string.format('내구도: %d%%', math.floor(durability_percent)))
+                end
+            end
+        end
+
+        -- Check weapon custom_name
+        if selected_model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and selected_model:attr(ITEM_ATTRIBUTE.WEAPON) then
+            if selected_listing.item_data.custom_name ~= nil and selected_listing.item_data.custom_name ~= '' then
+                table.insert(warning_messages, string.format('별칭: %s', selected_listing.item_data.custom_name))
+            end
+        end
+
+        -- Check consume durability (must match model durability, which is typically 0 for consume items)
+        if selected_model:attr(ITEM_ATTRIBUTE.CONSUME) then
+            local model_durability = selected_model:durability()
+            if model_durability == nil then
+                model_durability = 0
+            end
+            -- If item has durability that differs from model (model is typically 0 for consume)
+            if selected_listing.item_data.durability ~= nil and selected_listing.item_data.durability ~= model_durability then
+                table.insert(warning_messages, string.format('내구도: %d (기본값: %d)', selected_listing.item_data.durability, model_durability))
+            end
+        end
+    end
+
+    -- Show warning dialog if item is not in perfect condition
+    if #warning_messages > 0 then
+        local warning_text = '이 아이템은 온전한 상태가 아닙니다:\n'
+        for i, msg in ipairs(warning_messages) do
+            warning_text = warning_text .. '- ' .. msg .. '\n'
+        end
+        warning_text = warning_text .. '\n정말 구매하시겠습니까?'
+
+        local confirm_selected, confirm_button = me:list(npc, warning_text, {'예', '아니오'}, true)
+        if confirm_button == DIALOG_RESULT.QUIT then
+            return false
+        end
+        if confirm_button == DIALOG_RESULT.PREV then
+            goto MARKETPLACE_SEARCH
+        end
+        if confirm_selected == nil then
+            goto MARKETPLACE_SEARCH
+        end
+
+        -- User selected "아니오" (No)
+        if confirm_selected ~= 0 then
+            goto MARKETPLACE_SEARCH
+        end
+    end
+
+    local purchase_error, purchase_result = me:marketplace_purchase(selected_listing.id, purchase_count)
     if purchase_error ~= nil then
         local button = me:dialog(npc, '구매 실패: ' .. purchase_error, true, true)
         if button == DIALOG_RESULT.QUIT then
@@ -459,6 +519,28 @@ function handle_marketplace_list(me, npc)
         if button == DIALOG_RESULT.PREV then
             goto MARKETPLACE_LIST
         end
+        goto MARKETPLACE_LIST
+    end
+
+    -- Calculate listing fee (5% of total sale amount: count * price)
+    local total_sale_amount = count * price
+    local listing_fee = math.floor(total_sale_amount * 0.05)
+    
+    -- Show confirmation dialog with fee information
+    local fee_message = string.format('판매금액의 5%%인 %d전이 수수료로 부과됩니다.\n등록하시겠습니까?', listing_fee)
+    local confirm_selected, confirm_button = me:list(npc, fee_message, {'예', '아니오'}, true)
+    if confirm_button == DIALOG_RESULT.QUIT then
+        return false
+    end
+    if confirm_button == DIALOG_RESULT.PREV then
+        goto MARKETPLACE_LIST
+    end
+    if confirm_selected == nil then
+        goto MARKETPLACE_LIST
+    end
+
+    -- User selected "아니오" (No)
+    if confirm_selected ~= 0 then
         goto MARKETPLACE_LIST
     end
 

@@ -2,6 +2,7 @@ using Dapper;
 using Http.Extension;
 using Http.Service;
 using Marketplace.Model;
+using MarketplacePurchase = Marketplace.Model.MarketplacePurchase;
 
 namespace Http.Reepository
 {
@@ -85,6 +86,34 @@ namespace Http.Reepository
             return (await conn.QueryAsync<MarketplaceListing>(sql, parameters)).ToList();
         }
 
+        /// <summary>
+        /// Retrieves purchase records for specific listings and buyer.
+        /// </summary>
+        /// <param name="listingIds">List of listing IDs to search purchases for.</param>
+        /// <param name="buyerId">Buyer ID to filter purchases.</param>
+        /// <returns>Dictionary mapping listing IDs to purchase records; empty dictionary if none found.</returns>
+        public async Task<Dictionary<string, MarketplacePurchase>> GetPurchasesByListingIdsAndBuyerAsync(
+            List<string> listingIds,
+            uint buyerId)
+        {
+            if (listingIds == null || listingIds.Count == 0)
+            {
+                return new Dictionary<string, MarketplacePurchase>();
+            }
+
+            await using var conn = _dbContext.Connection(-1);
+            var parameters = new DynamicParameters();
+            parameters.Add("ListingIds", listingIds);
+            parameters.Add("BuyerId", buyerId);
+
+            var sql = @"
+                SELECT * FROM marketplace_purchase 
+                WHERE listing_id IN @ListingIds AND buyer_id = @BuyerId";
+
+            var purchases = await conn.QueryAsync<MarketplacePurchase>(sql, parameters);
+            return purchases.ToDictionary(p => p.ListingId, p => p);
+        }
+
 
         /// <summary>
         /// Creates a new marketplace listing.
@@ -92,22 +121,20 @@ namespace Http.Reepository
         /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
         /// <param name="sellerId">The unique identifier of the seller.</param>
         /// <param name="itemModel">The item model identifier.</param>
-        /// <param name="itemCount">The number of items being listed.</param>
+        /// <param name="remainingCount">The number of items available for purchase.</param>
         /// <param name="itemDurability">The durability of the item (nullable).</param>
         /// <param name="itemCustomName">The custom name of the item (nullable).</param>
-        /// <param name="price">The listing price set by the seller.</param>
-        /// <param name="transactionFee">The fee deducted from seller on sale.</param>
+        /// <param name="price">The per unit price set by the seller.</param>
         /// <param name="expireDate">The expiration date and time for the listing.</param>
         /// <returns>The unique identifier of the created listing (UUID string).</returns>
         public async Task<string> CreateListingAsync(
             string listingId,
             uint sellerId,
             uint itemModel,
-            ushort itemCount,
+            ushort remainingCount,
             uint? itemDurability,
             string itemCustomName,
             uint price,
-            uint transactionFee,
             DateTime expireDate)
         {
             await using var conn = _dbContext.Connection(-1);
@@ -116,22 +143,20 @@ namespace Http.Reepository
                     `id`,
                     `seller_id`,
                     `item_model`,
-                    `item_count`,
+                    `remaining_count`,
                     `item_durability`,
                     `item_custom_name`,
                     `price`,
-                    `transaction_fee`,
                     `status`,
                     `expire_date`)
                 VALUES (
                     {listingId.Escape()},
                     {sellerId.Escape()},
                     {itemModel.Escape()},
-                    {itemCount.Escape()},
+                    {remainingCount.Escape()},
                     {(itemDurability.HasValue ? itemDurability.Value.Escape() : "NULL")},
                     {(itemCustomName != null ? itemCustomName.Escape() : "NULL")},
                     {price.Escape()},
-                    {transactionFee.Escape()},
                     {0.Escape()},
                     {expireDate.Escape()})
                 """;
@@ -160,35 +185,74 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Updates a marketplace listing with sale information.
+        /// Updates a marketplace listing with purchase information.
+        /// Decrements remaining_count and updates status/sold_date conditionally.
         /// </summary>
         /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
-        /// <param name="status">The new status (typically 1 for Sold).</param>
-        /// <param name="soldDate">The date and time when the item was sold (nullable).</param>
-        /// <param name="buyerId">The unique identifier of the buyer (nullable).</param>
+        /// <param name="purchaseCount">The number of items purchased (to be deducted from remaining_count).</param>
         /// <param name="transaction">Optional database transaction.</param>
-        /// <returns>True if the update was successful; otherwise, false.</returns>
-        public async Task<bool> UpdateListingAsync(string listingId, byte status, DateTime? soldDate, uint? buyerId, System.Data.IDbTransaction transaction = null)
+        /// <returns>Tuple containing (success: bool, new_remaining_count: ushort, is_sold: bool).</returns>
+        public async Task<(bool Success, ushort NewRemainingCount, bool IsSold)> UpdateListingAsync(
+            string listingId,
+            ushort purchaseCount,
+            System.Data.IDbTransaction transaction = null)
         {
+            // First, get current remaining_count with row lock
+            var listing = await GetListingByIdForUpdateAsync(listingId, transaction);
+            if (listing == null)
+            {
+                return (false, 0, false);
+            }
+
+            var currentRemaining = listing.RemainingCount;
+            if (currentRemaining < purchaseCount)
+            {
+                // Not enough items available
+                return (false, currentRemaining, false);
+            }
+
+            var newRemaining = (ushort)(currentRemaining - purchaseCount);
+            var isSold = newRemaining == 0;
+
             var sql = $@"
                 UPDATE marketplace_listing 
-                SET `status` = {status.Escape()},
-                    `sold_date` = {(soldDate.HasValue ? soldDate.Value.Escape() : "NULL")},
-                    `buyer_id` = {(buyerId.HasValue ? buyerId.Value.Escape() : "NULL")},
+                SET `remaining_count` = {newRemaining.Escape()},
+                    `status` = {(isSold ? 1 : 0).Escape()},
+                    `sold_date` = {(isSold ? "NOW()" : "NULL")},
                     `updated_date` = NOW()
-                WHERE `id` = {listingId.Escape()} AND `status` = 0";
+                WHERE `id` = {listingId.Escape()} 
+                    AND `status` = 0 
+                    AND `remaining_count` >= {purchaseCount.Escape()}";
 
+            int rowsAffected;
             if (transaction != null)
             {
-                var rowsAffected = await transaction.Connection.ExecuteAsync(sql, null, transaction);
-                return rowsAffected > 0;
+                rowsAffected = await transaction.Connection.ExecuteAsync(sql, null, transaction);
             }
             else
             {
                 await using var conn = _dbContext.Connection(-1);
-                var rowsAffected = await conn.ExecuteAsync(sql);
-                return rowsAffected > 0;
+                rowsAffected = await conn.ExecuteAsync(sql);
             }
+
+            return (rowsAffected > 0, newRemaining, isSold);
+        }
+
+        /// <summary>
+        /// Checks if a listing ID already exists in the database.
+        /// Used for ID duplication validation.
+        /// </summary>
+        /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
+        /// <returns>True if the listing ID exists; otherwise, false.</returns>
+        public async Task<bool> CheckListingIdExistsAsync(string listingId)
+        {
+            await using var conn = _dbContext.Connection(-1);
+            var sql = $@"
+                SELECT COUNT(*) FROM marketplace_listing 
+                WHERE id = {listingId.Escape()}";
+
+            var count = await conn.QuerySingleAsync<int>(sql);
+            return count > 0;
         }
 
         /// <summary>

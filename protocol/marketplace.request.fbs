@@ -2,10 +2,6 @@ include "marketplace.fbs";
 
 namespace fb.protocol.marketplace.request;
 
-table AllocateListingId {
-    character_id: uint;
-}
-
 table List {
     character_id: uint;
     listing_id: string;
@@ -22,6 +18,8 @@ table Cancel {
 table Purchase {
     buyer_id: uint;
     listing_id: string;
+    purchase_count: ushort;
+    purchase_id: string;
 }
 
 table Search {
@@ -35,5 +33,10 @@ table Search {
 
 table GetListings {
     listing_ids: [string];
+    buyer_id: uint?;
+}
+
+table GetPurchases {
+    purchase_ids: [string];
 }
 

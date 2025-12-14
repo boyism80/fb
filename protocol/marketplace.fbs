@@ -15,15 +15,29 @@ table Item {
     custom_name: string?;
 }
 
+table PurchaseInfo {
+    purchase_count: ushort;
+    purchase_price: uint;
+    created_date: string;
+}
+
 table Listing {
     id: string;
     seller_id: uint;
-    buyer_id: uint;
     item: Item;
     price: uint;
-    transaction_fee: uint;
     state: fb.protocol.marketplace.ListingState;
     expire_date: string;
+    created_date: string;
+    purchase_info: PurchaseInfo?;
+}
+
+table Purchase {
+    id: string;
+    listing_id: string;
+    buyer_id: uint;
+    purchase_count: ushort;
+    purchase_price: uint;
     created_date: string;
 }
 

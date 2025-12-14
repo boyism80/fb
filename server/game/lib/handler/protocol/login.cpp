@@ -300,7 +300,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         auto reader = Json::Reader{};
         if (reader.parse(response.character.pending_listings.value(), json) && json.isObject())
         {
-            auto pending_listings = std::unordered_map<std::string, fb::game::marketplace::pending_listing_info>{};
+            auto pending_listings = fb::game::marketplace::pending_listings_t{};
             for (auto it = json.begin(); it != json.end(); ++it)
             {
                 auto  listing_id = it.key().asString();

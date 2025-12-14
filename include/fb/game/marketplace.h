@@ -30,18 +30,24 @@ public:
         std::optional<std::string> custom_name = std::nullopt;
     };
 
+    struct purchase_info
+    {
+        uint16_t                           purchase_count = 0;
+        uint32_t                           purchase_price = 0;
+        std::optional<fb::model::datetime> created_date   = std::nullopt;
+    };
+
     struct listing
     {
         std::string                        id;
         uint32_t                           seller_id = 0;
-        uint32_t                           buyer_id  = 0;
         item                               item_data;
-        uint32_t                           price           = 0;
-        uint32_t                           listing_fee     = 0;
-        uint32_t                           transaction_fee = 0;
-        uint8_t                            state           = 0; // fb::protocol::marketplace::ListingState
-        std::optional<fb::model::datetime> expire_date     = std::nullopt;
-        std::optional<fb::model::datetime> created_date    = std::nullopt;
+        uint32_t                           price         = 0;
+        uint32_t                           listing_fee   = 0;
+        uint8_t                            state         = 0; // fb::protocol::marketplace::ListingState
+        std::optional<fb::model::datetime> expire_date   = std::nullopt;
+        std::optional<fb::model::datetime> created_date  = std::nullopt;
+        std::optional<purchase_info>       purchase_info = std::nullopt;
 
         void to_lua(fb::lua::context* lua) const;
     };
@@ -71,31 +77,40 @@ public:
 
     struct pending_listing_info
     {
-        pending_type                type; // LIST or PURCHASE
-        std::string                 listing_id;
+        pending_type type;        // LIST or PURCHASE
+        std::string  purchase_id; // For purchase: unique purchase ID (used as key), for list: same as listing_id
+        std::string  listing_id;  // Listing ID reference
         std::vector<fb::model::dsl> dsls;
-        uint32_t                    character_id; // For purchase: buyer_id, for list: seller_id
+        uint32_t                    character_id;                // For purchase: buyer_id, for list: seller_id
+        uint16_t                    expected_purchase_count = 0; // For purchase: expected count, for list: 0
+        uint32_t                    expected_total_price    = 0; // For purchase: expected total price, for list: 0
     };
 
+    // Type aliases for commonly used types
+    using purchase_map_t     = std::unordered_map<std::string, purchase_info>;
+    using pending_listings_t = std::unordered_map<std::string, pending_listing_info>;
+    using string_vector_t    = std::vector<std::string>;
+
 private:
-    character&                                            _owner;
-    std::unordered_map<std::string, pending_listing_info> _pending_listings;
+    character&         _owner;
+    pending_listings_t _pending_listings; // Key: purchase_id (for purchase) or listing_id (for list)
 
 public:
     explicit marketplace(character& owner);
 
 private:
-    async::task<std::string> allocate_id();
+    static std::string generate_uuid();
 
 public:
-    async::task<listing>       list(uint8_t item_index, uint16_t count, uint32_t price, uint16_t expire_hours = 72);
-    async::task<bool>          cancel(const std::string& id);
-    async::task<listing>       purchase(const std::string& id);
-    async::task<search_result> search(const search_option& option);
-    async::task<std::vector<listing>> get_listings(const std::vector<std::string>& listing_ids);
-    void              set_pending_listings(std::unordered_map<std::string, pending_listing_info> pending_listings);
-    async::task<void> restore();
-    const std::unordered_map<std::string, pending_listing_info>& pending_listings() const;
+    async::task<listing>              list(uint8_t slot, uint16_t count, uint32_t price, uint16_t expire_hours = 72);
+    async::task<bool>                 cancel(const std::string& id);
+    async::task<listing>              purchase(const std::string& listing_id, uint16_t purchase_count);
+    async::task<search_result>        search(const search_option& option);
+    async::task<std::vector<listing>> get_listings(const string_vector_t& listing_ids, uint32_t buyer_id = 0);
+    async::task<purchase_map_t>       get_purchases(const string_vector_t& purchase_ids);
+    void                              set_pending_listings(pending_listings_t pending_listings);
+    async::task<void>                 restore();
+    const pending_listings_t&         pending_listings() const;
 };
 
 } // namespace fb::game

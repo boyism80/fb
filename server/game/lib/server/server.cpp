@@ -4,6 +4,8 @@
 #include <fb/log_collector.h>
 #include <fb/encoding.h>
 #include <json/json.h>
+#include <json/writer.h>
+#include <sstream>
 
 using namespace fb::game;
 using namespace std::chrono_literals;
@@ -565,13 +567,14 @@ async::task<void> server::save(character& ch)
             {
                 json_array.append(dsl.to_json());
             }
-            Json::FastWriter writer;
-            attachments_json = writer.write(json_array);
-            // Remove trailing newline from FastWriter
-            if (!attachments_json.empty() && attachments_json.back() == '\n')
-            {
-                attachments_json.pop_back();
-            }
+            // Use StreamWriterBuilder to output UTF-8 characters without escape sequences
+            auto builder           = Json::StreamWriterBuilder{};
+            builder["emitUTF8"]    = true; // Output UTF-8 characters directly without escape sequences
+            builder["indentation"] = "";   // Compact output (no indentation)
+            auto writer            = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
+            auto stream            = std::ostringstream{};
+            writer->write(json_array, &stream);
+            attachments_json = stream.str();
         }
 
         storage_boxes.emplace_back(ch.id,

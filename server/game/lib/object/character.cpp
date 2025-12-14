@@ -4,6 +4,8 @@
 #include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
+#include <json/writer.h>
+#include <sstream>
 
 using namespace fb::game;
 using namespace fb::model;
@@ -1403,7 +1405,7 @@ fb::protocol::internal::Character character::to_protocol() const
         auto json = Json::Value{Json::objectValue};
         for (const auto& [listing_id, pending_info] : pending_listings)
         {
-            auto info_json = Json::Value{Json::objectValue};
+            auto info_json            = Json::Value{Json::objectValue};
             info_json["type"]         = static_cast<uint8_t>(pending_info.type);
             info_json["character_id"] = pending_info.character_id;
 
@@ -1416,8 +1418,14 @@ fb::protocol::internal::Character character::to_protocol() const
 
             json[listing_id] = info_json;
         }
-        auto writer          = Json::FastWriter();
-        dto.pending_listings = writer.write(json);
+        // Use StreamWriterBuilder to output UTF-8 characters without escape sequences
+        auto builder           = Json::StreamWriterBuilder{};
+        builder["emitUTF8"]    = true; // Output UTF-8 characters directly without escape sequences
+        builder["indentation"] = "";   // Compact output (no indentation)
+        auto writer            = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
+        auto stream            = std::ostringstream{};
+        writer->write(json, &stream);
+        dto.pending_listings = stream.str();
     }
     else
     {
@@ -1700,6 +1708,26 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
             auto  params = fb::model::dsl::item(item.params);
             auto& model  = table::item[params.id];
             auto  item   = model.make(this->server, params.count);
+            if (params.durability.has_value())
+            {
+                if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT))
+                {
+                    auto equipment = std::static_pointer_cast<fb::game::equipment>(item);
+                    equipment->durability(*params.durability);
+                }
+
+                if (model.attr(ITEM_ATTRIBUTE::CONSUME))
+                {
+                    auto consume = std::static_pointer_cast<fb::game::consume>(item);
+                    consume->durability(*params.durability);
+                }
+            }
+
+            if (params.custom_name.has_value() && model.attr(ITEM_ATTRIBUTE::WEAPON))
+            {
+                auto weapon = std::static_pointer_cast<fb::game::weapon>(item);
+                weapon->custom_name(*params.custom_name);
+            }
             this->items.add(item);
             break;
         }

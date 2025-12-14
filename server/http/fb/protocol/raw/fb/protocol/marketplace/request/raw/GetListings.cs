@@ -22,21 +22,25 @@ public struct GetListings : IFlatbufferObject
 
   public string ListingIds(int j) { int o = __p.__offset(4); return o != 0 ? __p.__string(__p.__vector(o) + j * 4) : null; }
   public int ListingIdsLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public nullable.nullable_uint? BuyerId { get { int o = __p.__offset(6); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol.marketplace.request.raw.GetListings> CreateGetListings(FlatBufferBuilder builder,
-      VectorOffset listing_idsOffset = default(VectorOffset)) {
-    builder.StartTable(1);
+      VectorOffset listing_idsOffset = default(VectorOffset),
+      Offset<nullable.nullable_uint> buyer_idOffset = default(Offset<nullable.nullable_uint>)) {
+    builder.StartTable(2);
+    GetListings.AddBuyerId(builder, buyer_idOffset);
     GetListings.AddListingIds(builder, listing_idsOffset);
     return GetListings.EndGetListings(builder);
   }
 
-  public static void StartGetListings(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void StartGetListings(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddListingIds(FlatBufferBuilder builder, VectorOffset listingIdsOffset) { builder.AddOffset(0, listingIdsOffset.Value, 0); }
   public static VectorOffset CreateListingIdsVector(FlatBufferBuilder builder, StringOffset[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateListingIdsVectorBlock(FlatBufferBuilder builder, StringOffset[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateListingIdsVectorBlock(FlatBufferBuilder builder, ArraySegment<StringOffset> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateListingIdsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<StringOffset>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartListingIdsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddBuyerId(FlatBufferBuilder builder, Offset<nullable.nullable_uint> buyerIdOffset) { builder.AddOffset(1, buyerIdOffset.Value, 0); }
   public static Offset<fb.protocol.marketplace.request.raw.GetListings> EndGetListings(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.marketplace.request.raw.GetListings>(o);
@@ -52,6 +56,7 @@ static public class GetListingsVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyVectorOfStrings(tablePos, 4 /*ListingIds*/, false)
+      && verifier.VerifyTable(tablePos, 6 /*BuyerId*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

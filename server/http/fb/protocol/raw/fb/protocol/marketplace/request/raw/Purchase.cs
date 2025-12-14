@@ -28,19 +28,33 @@ public struct Purchase : IFlatbufferObject
   public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
   public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(6); }
+  public ushort PurchaseCount { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public string PurchaseId { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetPurchaseIdBytes() { return __p.__vector_as_span<byte>(10, 1); }
+#else
+  public ArraySegment<byte>? GetPurchaseIdBytes() { return __p.__vector_as_arraysegment(10); }
+#endif
+  public byte[] GetPurchaseIdArray() { return __p.__vector_as_array<byte>(10); }
 
   public static Offset<fb.protocol.marketplace.request.raw.Purchase> CreatePurchase(FlatBufferBuilder builder,
       uint buyer_id = 0,
-      StringOffset listing_idOffset = default(StringOffset)) {
-    builder.StartTable(2);
+      StringOffset listing_idOffset = default(StringOffset),
+      ushort purchase_count = 0,
+      StringOffset purchase_idOffset = default(StringOffset)) {
+    builder.StartTable(4);
+    Purchase.AddPurchaseId(builder, purchase_idOffset);
     Purchase.AddListingId(builder, listing_idOffset);
     Purchase.AddBuyerId(builder, buyer_id);
+    Purchase.AddPurchaseCount(builder, purchase_count);
     return Purchase.EndPurchase(builder);
   }
 
-  public static void StartPurchase(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void StartPurchase(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddBuyerId(FlatBufferBuilder builder, uint buyerId) { builder.AddUint(0, buyerId, 0); }
   public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(1, listingIdOffset.Value, 0); }
+  public static void AddPurchaseCount(FlatBufferBuilder builder, ushort purchaseCount) { builder.AddUshort(2, purchaseCount, 0); }
+  public static void AddPurchaseId(FlatBufferBuilder builder, StringOffset purchaseIdOffset) { builder.AddOffset(3, purchaseIdOffset.Value, 0); }
   public static Offset<fb.protocol.marketplace.request.raw.Purchase> EndPurchase(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.marketplace.request.raw.Purchase>(o);
@@ -57,6 +71,8 @@ static public class PurchaseVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*BuyerId*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 6 /*ListingId*/, false)
+      && verifier.VerifyField(tablePos, 8 /*PurchaseCount*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyString(tablePos, 10 /*PurchaseId*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

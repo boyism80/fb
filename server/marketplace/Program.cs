@@ -42,6 +42,7 @@ public class Program
 
         // Marketplace services
         builder.Services.AddScoped<Http.Reepository.MarketplaceRepository>();
+        builder.Services.AddScoped<Http.Reepository.MarketplacePurchaseRepository>();
 
         // Register marketplace service implementation based on configuration
         var useSharding = builder.Configuration.GetValue<bool>("Marketplace:UseSharding", false);

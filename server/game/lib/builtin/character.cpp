@@ -3643,9 +3643,9 @@ int builtin::character::builtin_marketplace_purchase(lua_State* L)
         return 0;
 
     auto argc = lua->argc();
-    if (argc < 2)
+    if (argc < 3)
     {
-        lua->pushstring("Invalid arguments: marketplace_purchase(listing_id)");
+        lua->pushstring("Invalid arguments: marketplace_purchase(listing_id, purchase_count)");
         return 1;
     }
 
@@ -3656,17 +3656,25 @@ int builtin::character::builtin_marketplace_purchase(lua_State* L)
         return 1;
     }
 
+    auto purchase_count = lua->tointeger(3);
+    if (purchase_count <= 0 || purchase_count > 65535)
+    {
+        lua->pushstring("Invalid purchase_count (must be between 1 and 65535)");
+        return 1;
+    }
+
     static auto fn = [](fb::lua::context*                  lua,
                         fb::game::server*                  server,
                         std::weak_ptr<fb::game::character> weak,
-                        const std::string&                 listing_id) -> async::task<void> {
+                        const std::string&                 listing_id,
+                        uint16_t                           purchase_count) -> async::task<void> {
         try
         {
             auto shared = weak.lock();
             if (shared == nullptr)
                 throw std::runtime_error("Character is not alive");
 
-            auto listing = co_await shared->marketplace.purchase(listing_id);
+            auto listing = co_await shared->marketplace.purchase(listing_id, purchase_count);
             lua->pushnil(); // No error
             listing.to_lua(lua);
         }
@@ -3681,7 +3689,7 @@ int builtin::character::builtin_marketplace_purchase(lua_State* L)
 
     auto weak = ch->weak_from_this_as<fb::game::character>();
     server->threads.enqueue(weak, [=](auto&) -> async::task<void> {
-        co_await fn(lua, server, weak, listing_id);
+        co_await fn(lua, server, weak, listing_id, static_cast<uint16_t>(purchase_count));
     });
 
     return lua->yield(2);

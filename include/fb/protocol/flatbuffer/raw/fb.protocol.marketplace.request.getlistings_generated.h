@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "nullable_uint_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace marketplace {
@@ -25,16 +27,22 @@ struct GetListingsBuilder;
 struct GetListings FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef GetListingsBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_LISTING_IDS = 4
+    VT_LISTING_IDS = 4,
+    VT_BUYER_ID = 6
   };
   const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *listing_ids() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_LISTING_IDS);
+  }
+  const nullable::nullable_uint *buyer_id() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_BUYER_ID);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_LISTING_IDS) &&
            verifier.VerifyVector(listing_ids()) &&
            verifier.VerifyVectorOfStrings(listing_ids()) &&
+           VerifyOffset(verifier, VT_BUYER_ID) &&
+           verifier.VerifyTable(buyer_id()) &&
            verifier.EndTable();
   }
 };
@@ -45,6 +53,9 @@ struct GetListingsBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_listing_ids(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> listing_ids) {
     fbb_.AddOffset(GetListings::VT_LISTING_IDS, listing_ids);
+  }
+  void add_buyer_id(::flatbuffers::Offset<nullable::nullable_uint> buyer_id) {
+    fbb_.AddOffset(GetListings::VT_BUYER_ID, buyer_id);
   }
   explicit GetListingsBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -59,19 +70,23 @@ struct GetListingsBuilder {
 
 inline ::flatbuffers::Offset<GetListings> CreateGetListings(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> listing_ids = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> listing_ids = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> buyer_id = 0) {
   GetListingsBuilder builder_(_fbb);
+  builder_.add_buyer_id(buyer_id);
   builder_.add_listing_ids(listing_ids);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<GetListings> CreateGetListingsDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *listing_ids = nullptr) {
+    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *listing_ids = nullptr,
+    ::flatbuffers::Offset<nullable::nullable_uint> buyer_id = 0) {
   auto listing_ids__ = listing_ids ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*listing_ids) : 0;
   return fb::protocol::marketplace::request::raw::CreateGetListings(
       _fbb,
-      listing_ids__);
+      listing_ids__,
+      buyer_id);
 }
 
 inline const fb::protocol::marketplace::request::raw::GetListings *GetGetListings(const void *buf) {
