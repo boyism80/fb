@@ -7,6 +7,7 @@ namespace fb::game::builtin {
 
 struct character
 {
+    static int builtin_uid(lua_State* L);
     static int builtin_look(lua_State* L);
     static int builtin_color(lua_State* L);
     static int builtin_sex(lua_State* L);

@@ -7,6 +7,7 @@
 #include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
+#include <macro.h>
 #include <stdexcept>
 #include <sstream>
 #include <unordered_set>
@@ -32,7 +33,7 @@ async::task<std::string> marketplace::allocate_id()
     co_await this->_owner.server.threads.switching(weak);
 
     if (resp.error != 0)
-        throw std::runtime_error(std::format("Failed to allocate listing ID: error={}", resp.error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_ALLOCATE_LISTING_ID), resp.error));
 
     co_return resp.listing_id;
 }
@@ -44,20 +45,20 @@ marketplace::list(uint8_t item_index, uint16_t count, uint32_t price, uint16_t e
 
     auto weak = this->_owner.weak_from_this_as<fb::game::character>();
     if (weak.expired())
-        throw std::runtime_error("Character has expired");
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
 
     auto id = co_await this->allocate_id();
     if (weak.expired())
-        throw std::runtime_error("Character has expired");
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
 
     // Get item from inventory
     auto item = this->_owner.items.at(item_index);
     if (item == nullptr)
-        throw std::runtime_error("Item not found at index");
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_ITEM_NOT_FOUND_AT_INDEX));
 
     auto& model = item->based<fb::model::item>();
     if (item->count() < count)
-        throw std::runtime_error("Insufficient item count");
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_ITEM_COUNT));
 
     // Build request item data
     auto durability  = item->durability();
@@ -76,7 +77,7 @@ marketplace::list(uint8_t item_index, uint16_t count, uint32_t price, uint16_t e
 
     // Validate listing fee BEFORE API call
     if (this->_owner.money() < listing_fee)
-        throw std::runtime_error("Insufficient money for listing fee");
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_MONEY_FOR_LISTING_FEE));
 
     // Prepare DSL for pending listing recovery (BEFORE API call)
     auto item_dsl = fb::model::dsl::item(model.id, count, durability, custom_name, 100.0);
@@ -129,7 +130,7 @@ marketplace::list(uint8_t item_index, uint16_t count, uint32_t price, uint16_t e
         if (resp.error != 0)
         {
             // API call returned an error - throw exception to handle in catch block
-            throw std::runtime_error(std::format("Failed to list item: error={}",
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_LIST_ITEM),
                                                  enum_tostring((fb::model::enum_value::ERROR_CODE)resp.error)));
         }
 
@@ -169,7 +170,7 @@ marketplace::list(uint8_t item_index, uint16_t count, uint32_t price, uint16_t e
     catch (const std::exception& e)
     {
         if (weak.expired())
-            throw std::runtime_error("Character has expired");
+            throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
 
         // Any failure (system error or logical error) - items/money already deducted, keep DSL for recovery
         // DSL remains in _pending_listings for recovery on next login
@@ -178,7 +179,7 @@ marketplace::list(uint8_t item_index, uint16_t count, uint32_t price, uint16_t e
         log_data["listing_id"]   = id;
         log_data["error"]        = e.what();
         this->_owner.server.log.write("marketplace_list_failed", log_data);
-        throw std::runtime_error(std::format("Failed to list item: {}", e.what()));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_LIST_ITEM_WITH_ERROR), e.what()));
     }
 }
 
@@ -186,7 +187,7 @@ async::task<bool> marketplace::cancel(const std::string& id)
 {
     this->_owner.assert_thread();
 
-    // Copy id to local variable to ensure it survives across coroutine suspension
+    // Copy id to avoid coroutine lifetime issues
     auto id_copy = id;
 
     // Log before API call
@@ -208,7 +209,7 @@ async::task<bool> marketplace::cancel(const std::string& id)
         log_data["listing_id"]   = id_copy;
         log_data["error"]        = static_cast<Json::Int64>(resp.error);
         this->_owner.server.log.write("marketplace_cancel_failed", log_data);
-        throw std::runtime_error(std::format("Failed to cancel listing: error={}", resp.error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_CANCEL_LISTING), resp.error));
     }
 
     // Remove from pending_listings if it exists (in case listing was created but response was lost)
@@ -227,7 +228,7 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
 {
     this->_owner.assert_thread();
 
-    // Copy id to local variable to ensure it survives across coroutine suspension
+    // Copy id to avoid coroutine lifetime issues
     auto id_copy = id;
 
     // Get listing info first (needed for price validation and timeout recovery)
@@ -236,17 +237,17 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
     auto listings    = co_await this->get_listings(listing_ids);
 
     if (listings.empty())
-        throw std::runtime_error("Listing not found");
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_LISTING_NOT_FOUND));
 
     auto& listing = listings[0];
     if (listing.state != static_cast<uint8_t>(mp::ListingState::ACTIVE))
-        throw std::runtime_error("Listing is not available for purchase");
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_LISTING_NOT_AVAILABLE_FOR_PURCHASE));
 
     auto price = listing.price; // Buyer only pays price, not transaction_fee
 
     // Validate money BEFORE API call
     if (this->_owner.money() < price)
-        throw std::runtime_error("Insufficient money");
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_MONEY));
 
     // Prepare DSL for pending purchase recovery (money only) BEFORE API call
     auto dsls = std::vector<fb::model::dsl>{};
@@ -301,7 +302,8 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
                 unhandled_error = true;
                 break;
             }
-            throw std::runtime_error(std::format("Failed to purchase item: error={}", enum_tostring(ec)));
+            throw std::runtime_error(
+                std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM), enum_tostring(ec)));
         }
 
         // Purchase succeeded - remove from pending_listings
@@ -334,7 +336,7 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
     catch (const std::exception& e)
     {
         if (weak.expired())
-            throw std::runtime_error("Character has expired");
+            throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
 
         if (unhandled_error)
         {
@@ -350,15 +352,15 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& id)
         {
             // Logical error - restore money
             this->_owner.money_add(price);
-            this->_pending_listings.erase(id); // Remove DSL as purchase definitely failed
+            this->_pending_listings.erase(id_copy); // Remove DSL as purchase definitely failed
             auto log_data            = Json::Value();
             log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
-            log_data["listing_id"]   = id;
+            log_data["listing_id"]   = id_copy;
             log_data["error"]        = e.what();
             this->_owner.server.log.write("marketplace_purchase_failed", log_data);
         }
 
-        throw std::runtime_error(std::format("Failed to purchase item: {}", e.what()));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM_WITH_ERROR), e.what()));
     }
 }
 
@@ -379,7 +381,7 @@ async::task<marketplace::search_result> marketplace::search(const search_option&
     co_await this->_owner.server.threads.switching(weak);
 
     if (resp.error != 0)
-        throw std::runtime_error(std::format("Failed to search items: error={}",
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_SEARCH_ITEMS),
                                              enum_tostring((fb::model::enum_value::ERROR_CODE)resp.error)));
 
     search_result result{.listings = {}, .total_count = resp.result.total_count, .page = resp.result.page};
@@ -432,7 +434,7 @@ async::task<std::vector<marketplace::listing>> marketplace::get_listings(const s
     co_await this->_owner.server.threads.switching(weak);
 
     if (resp.error != 0)
-        throw std::runtime_error(std::format("Failed to get listings: error={}", resp.error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_GET_LISTINGS), resp.error));
 
     // Convert response listings to marketplace::listing
     std::vector<marketplace::listing> result;
@@ -581,13 +583,13 @@ async::task<void> marketplace::restore()
 
             if (pending_info.type == pending_type::LIST)
             {
-                title   = "Marketplace Listing Recovery";
-                message = "Your marketplace listing failed. Items have been returned to your storage box.";
+                title   = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_TITLE);
+                message = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_MESSAGE);
             }
             else
             {
-                title   = "Marketplace Purchase Recovery";
-                message = "Your marketplace purchase failed. Money has been returned to your storage box.";
+                title   = _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_TITLE);
+                message = _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_MESSAGE);
             }
 
             // Create storage pending box with DSL attachments

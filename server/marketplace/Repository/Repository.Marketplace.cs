@@ -75,13 +75,14 @@ namespace Http.Reepository
             }
 
             await using var conn = _dbContext.Connection(-1);
-            var escapedIds = string.Join(", ", listingIds.Select(id => id.Escape()));
+            var parameters = new DynamicParameters();
+            parameters.Add("ListingIds", listingIds);
 
-            var sql = $@"
+            var sql = @"
                 SELECT * FROM marketplace_listing 
-                WHERE id IN ({escapedIds}) AND status != 3";
+                WHERE id IN @ListingIds AND status != 3";
 
-            return (await conn.QueryAsync<MarketplaceListing>(sql)).ToList();
+            return (await conn.QueryAsync<MarketplaceListing>(sql, parameters)).ToList();
         }
 
 
@@ -149,15 +150,10 @@ namespace Http.Reepository
         {
             await using var conn = _dbContext.Connection(-1);
             var sql = $@"
-                UPDATE marketplace_listing (
-                    `id`,
-                    `status`,
-                    `updated_date`)
-                VALUES (
-                    {listingId.Escape()},
-                    {status.Escape()},
-                    NOW())
-                WHERE id = {listingId.Escape()}";
+                UPDATE marketplace_listing 
+                SET `status` = {status.Escape()},
+                    `updated_date` = NOW()
+                WHERE `id` = {listingId.Escape()}";
 
             var rowsAffected = await conn.ExecuteAsync(sql);
             return rowsAffected > 0;
@@ -224,8 +220,8 @@ namespace Http.Reepository
 
             if (itemModelIds != null && itemModelIds.Count > 0)
             {
-                whereConditions.Add("item_model IN @ItemModelIds");
-                parameters.Add("ItemModelIds", itemModelIds);
+                var escapedIds = string.Join(", ", itemModelIds.Select(id => id.Escape()));
+                whereConditions.Add($"item_model IN ({escapedIds})");
             }
 
             if (minPrice.HasValue)
@@ -291,8 +287,8 @@ namespace Http.Reepository
 
             if (itemModelIds != null && itemModelIds.Count > 0)
             {
-                whereConditions.Add("item_model IN @ItemModelIds");
-                parameters.Add("ItemModelIds", itemModelIds);
+                var escapedIds = string.Join(", ", itemModelIds.Select(id => id.Escape()));
+                whereConditions.Add($"item_model IN ({escapedIds})");
             }
 
             if (minPrice.HasValue)

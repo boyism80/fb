@@ -8,6 +8,7 @@ using table = fb::model::table;
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"__eq",                   builtin::object::builtin_eq},
+{"uid",                    builtin::character::builtin_uid},
 {"look",                   builtin::character::builtin_look},
 {"color",                  builtin::character::builtin_color},
 {"sex",                    builtin::character::builtin_sex},
@@ -88,6 +89,23 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marketplace_get_listings", builtin::character::builtin_marketplace_get_listings},
 {"marketplace_pending_listings", builtin::character::builtin_marketplace_pending_listings},
 END_LUA_EXTENSION; // clang-format on
+
+int builtin::character::builtin_uid(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    ch->assert_thread();
+
+    lua->pushinteger(ch->id);
+    return 1;
+}
 
 int builtin::character::builtin_look(lua_State* L)
 {

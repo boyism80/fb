@@ -410,10 +410,10 @@ command_funcs = {
                             
                             -- Validate position bounds
                             if target_x >= 0 and target_y >= 0 and target_x < 1000 and target_y < 1000 then
-                                local monster = me:spawn_mob(name, target_x, target_y, false, false)
-                                if monster then
+                                local mob = me:spawn_mob(name, target_x, target_y, false, false)
+                                if mob then
                                     spawned_count = spawned_count + 1
-                                    table.insert(oids, monster:id())
+                                    table.insert(oids, mob:oid())
                                 end
                             end
                         end

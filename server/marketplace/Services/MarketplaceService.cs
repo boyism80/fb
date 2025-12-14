@@ -197,8 +197,8 @@ public class MarketplaceService : IMarketplaceService
         };
 
         await _storageService.CreatePendingAsync(
-            "Marketplace Listing Cancelled",
-            $"Your marketplace listing has been cancelled. The item has been returned to your storage box.",
+            Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledTitle,
+            Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledMessage,
             listing.SellerId,
             DateTime.UtcNow.AddDays(30), // 30 days expiry
             attachments);
@@ -251,8 +251,8 @@ public class MarketplaceService : IMarketplaceService
             // Send seller revenue via storage_box (full price, no transaction fee deduction)
             // Transaction fee is already deducted on game server side during listing
             await _storageService.CreatePendingAsync(
-                "Marketplace Sale",
-                $"Your item has been sold for {listing.Price} gold.",
+                Fb.Model.ConstValue.String.MessageMarketplaceSaleTitle,
+                string.Format(Fb.Model.ConstValue.String.MessageMarketplaceSaleMessage.ToCSharpFormat(), listing.Price),
                 listing.SellerId,
                 DateTime.UtcNow.AddDays(30), // 30 days expiry
                 [
@@ -261,8 +261,8 @@ public class MarketplaceService : IMarketplaceService
 
             // Send purchased item to buyer via storage_box
             await _storageService.CreatePendingAsync(
-                "Marketplace Purchase",
-                $"You have purchased an item from the marketplace.",
+                Fb.Model.ConstValue.String.MessageMarketplacePurchaseTitle,
+                Fb.Model.ConstValue.String.MessageMarketplacePurchaseMessage,
                 buyerId,
                 DateTime.UtcNow.AddDays(30), // 30 days expiry
                 [

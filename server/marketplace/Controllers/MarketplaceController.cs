@@ -237,7 +237,7 @@ public class MarketplaceController : ControllerBase
             {
                 Result = new Protocol.SearchResult
                 {
-                    Listings = new List<Protocol.Listing>(),
+                    Listings = [],
                     TotalCount = 0,
                     Page = request.Page
                 },
@@ -251,7 +251,7 @@ public class MarketplaceController : ControllerBase
             {
                 Result = new Protocol.SearchResult
                 {
-                    Listings = new List<Protocol.Listing>(),
+                    Listings = [],
                     TotalCount = 0,
                     Page = request.Page
                 },
@@ -331,7 +331,7 @@ public class MarketplaceController : ControllerBase
             _logger.LogError(ex, "Failed to get listings");
             return new Response.GetListings
             {
-                Listings = new List<Protocol.Listing>(),
+                Listings = [],
                 Error = (uint)ErrorCode.Unhandled
             };
         }

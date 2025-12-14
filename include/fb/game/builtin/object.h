@@ -8,7 +8,7 @@ namespace fb::game::builtin {
 struct object
 {
     static int builtin_model(lua_State* L);
-    static int builtin_id(lua_State* L);
+    static int builtin_oid(lua_State* L);
     static int builtin_eq(lua_State* L);
     static int builtin_tostring(lua_State* L);
     static int builtin_destroy(lua_State* L);
