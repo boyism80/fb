@@ -37,12 +37,9 @@ public class Program
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<LogService>();
         builder.Services.AddScoped<DbContext>();
+        builder.Services.AddScoped<Marketplace.Service.DbContext>();
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<StorageService>();
-
-        // Marketplace services
-        builder.Services.AddScoped<Http.Reepository.MarketplaceRepository>();
-        builder.Services.AddScoped<Http.Reepository.MarketplacePurchaseRepository>();
 
         // Register marketplace service implementation based on configuration
         var useSharding = builder.Configuration.GetValue<bool>("Marketplace:UseSharding", false);
@@ -54,6 +51,10 @@ public class Program
         {
             builder.Services.AddScoped<Marketplace.Services.IMarketplaceService, Marketplace.Services.MarketplaceService>();
         }
+
+        // Marketplace archive services
+        builder.Services.AddScoped<Marketplace.Services.MarketplaceArchiveService>();
+        builder.Services.AddHostedService<Marketplace.Services.MarketplaceArchiveBackgroundService>();
 
         builder.Services.AddHealthChecks();
 

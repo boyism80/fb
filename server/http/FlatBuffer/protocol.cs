@@ -17,9 +17,6 @@
  *          Generation timestamp: 15 Dec 2025
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Google.FlatBuffers;
 using Microsoft.Extensions.ObjectPool;
 using nullable;
@@ -1514,7 +1511,7 @@ namespace fb.protocol._internal
     }
 
     public enum FlatBufferProtocolType
-    { 
+    {
         Position,
         Character,
         Item,
@@ -2957,7 +2954,7 @@ namespace fb.protocol._internal.request
     }
 
     public enum FlatBufferProtocolType
-    { 
+    {
         Shutdown,
         Login,
         Logout,
@@ -4419,7 +4416,7 @@ namespace fb.protocol._internal.response
     }
 
     public enum FlatBufferProtocolType
-    { 
+    {
         Shutdown,
         KickOut,
         Login,
@@ -5881,7 +5878,7 @@ namespace fb.protocol.marketplace
     }
 
     public enum FlatBufferProtocolType
-    { 
+    {
         Item,
         PurchaseInfo,
         Listing,
@@ -7308,7 +7305,7 @@ namespace fb.protocol.marketplace.request
     }
 
     public enum FlatBufferProtocolType
-    { 
+    {
         List,
         Cancel,
         Purchase,
@@ -8736,7 +8733,7 @@ namespace fb.protocol.marketplace.response
     }
 
     public enum FlatBufferProtocolType
-    { 
+    {
         List,
         Cancel,
         Purchase,

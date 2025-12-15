@@ -947,6 +947,35 @@ CREATE TABLE `marketplace_listing` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `marketplace_listing_archive`
+--
+
+DROP TABLE IF EXISTS `marketplace_listing_archive`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `marketplace_listing_archive` (
+  `id` VARCHAR(36) NOT NULL,
+  `seller_id` INT UNSIGNED NOT NULL,
+  `item_model` INT UNSIGNED NOT NULL,
+  `remaining_count` SMALLINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'Remaining item count available for purchase',
+  `item_durability` INT UNSIGNED DEFAULT NULL,
+  `item_custom_name` VARCHAR(32) DEFAULT NULL,
+  `price` INT UNSIGNED NOT NULL COMMENT 'Per unit price set by seller',
+  `status` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=Active, 1=Sold, 2=Cancelled, 3=Expired',
+  `expire_date` DATETIME NOT NULL,
+  `created_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `sold_date` DATETIME DEFAULT NULL COMMENT 'Set when remaining_count becomes 0',
+  `archived_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date when listing was archived',
+  PRIMARY KEY (`id`),
+  KEY `idx_seller` (`seller_id`, `status`),
+  KEY `idx_item_model` (`item_model`, `status`),
+  KEY `idx_status_expire` (`status`, `expire_date`),
+  KEY `idx_archived` (`archived_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `marketplace_purchase`
 --
 

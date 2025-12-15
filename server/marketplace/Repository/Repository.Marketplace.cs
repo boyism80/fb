@@ -1,11 +1,11 @@
 using Dapper;
-using Http.Extension;
-using Http.Service;
-using Marketplace.Model;
-using MarketplacePurchase = Marketplace.Model.MarketplacePurchase;
 using fb.protocol.marketplace;
+using Http.Extension;
+using Http.Reepository;
+using Marketplace.Model;
+using Marketplace.Service;
 
-namespace Http.Reepository
+namespace Marketplace.Reepository
 {
     /// <summary>
     /// Provides repository functionality for marketplace system data management.
@@ -387,7 +387,7 @@ namespace Http.Reepository
 
             // Query single database
             var sql = $"SELECT COUNT(*) FROM marketplace_listing WHERE {whereClause}";
-            
+
             if (transaction != null)
             {
                 return await transaction.Connection.QuerySingleAsync<int>(sql, parameters, transaction);
@@ -415,6 +415,101 @@ namespace Http.Reepository
                     AND expire_date > NOW()";
 
             return await conn.QuerySingleAsync<int>(sql);
+        }
+
+        /// <summary>
+        /// Retrieves listings to archive with row lock for update.
+        /// Includes listings with status SOLD, CANCELLED, EXPIRED, or ACTIVE listings that have expired.
+        /// </summary>
+        /// <param name="limit">Maximum number of listings to retrieve.</param>
+        /// <param name="transaction">Database transaction for atomic operations.</param>
+        /// <returns>List of marketplace listings to archive.</returns>
+        public async Task<List<MarketplaceListing>> GetListingsToArchiveForUpdateAsync(
+            int limit,
+            System.Data.IDbTransaction transaction)
+        {
+            var sql = $@"
+                SELECT * FROM marketplace_listing 
+                WHERE (status IN ({ListingState.SOLD.Escape()}, {ListingState.CANCELLED.Escape()}, {ListingState.EXPIRED.Escape()})
+                       OR (status = {ListingState.ACTIVE.Escape()} AND expire_date < NOW()))
+                ORDER BY updated_date ASC
+                LIMIT {limit}
+                FOR UPDATE";
+
+            return (await transaction.Connection.QueryAsync<MarketplaceListing>(sql, null, transaction)).ToList();
+        }
+
+        /// <summary>
+        /// Archives listings to the archive table.
+        /// </summary>
+        /// <param name="listings">List of listings to archive.</param>
+        /// <param name="transaction">Database transaction for atomic operations.</param>
+        /// <returns>Task representing the asynchronous operation.</returns>
+        public async Task ArchiveListingsAsync(
+            List<MarketplaceListing> listings,
+            System.Data.IDbTransaction transaction)
+        {
+            if (listings == null || listings.Count == 0)
+                return;
+
+            var values = listings.Select(listing =>
+            {
+                return $@"(
+                    {listing.Id.Escape()},
+                    {listing.SellerId.Escape()},
+                    {listing.ItemModel.Escape()},
+                    {listing.RemainingCount.Escape()},
+                    {(listing.ItemDurability.HasValue ? listing.ItemDurability.Value.Escape() : "NULL")},
+                    {(listing.ItemCustomName != null ? listing.ItemCustomName.Escape() : "NULL")},
+                    {listing.Price.Escape()},
+                    {listing.Status.Escape()},
+                    {listing.ExpireDate.Escape()},
+                    {listing.CreatedDate.Escape()},
+                    {(listing.SoldDate.HasValue ? listing.SoldDate.Value.Escape() : "NULL")},
+                    {listing.UpdatedDate.Escape()},
+                    NOW()
+                )";
+            });
+
+            var sql = $@"
+                INSERT INTO marketplace_listing_archive (
+                    id,
+                    seller_id,
+                    item_model,
+                    remaining_count,
+                    item_durability,
+                    item_custom_name,
+                    price,
+                    status,
+                    expire_date,
+                    created_date,
+                    sold_date,
+                    updated_date,
+                    archived_date)
+                VALUES {string.Join(",", values)}";
+
+            await transaction.Connection.ExecuteAsync(sql, null, transaction);
+        }
+
+        /// <summary>
+        /// Deletes listings from the original table.
+        /// </summary>
+        /// <param name="listingIds">List of listing IDs to delete.</param>
+        /// <param name="transaction">Database transaction for atomic operations.</param>
+        /// <returns>Task representing the asynchronous operation.</returns>
+        public async Task DeleteListingsAsync(
+            List<string> listingIds,
+            System.Data.IDbTransaction transaction)
+        {
+            if (listingIds == null || listingIds.Count == 0)
+                return;
+
+            var escapedIds = string.Join(", ", listingIds.Select(id => id.Escape()));
+            var sql = $@"
+                DELETE FROM marketplace_listing 
+                WHERE id IN ({escapedIds})";
+
+            await transaction.Connection.ExecuteAsync(sql, null, transaction);
         }
 
         /// <summary>

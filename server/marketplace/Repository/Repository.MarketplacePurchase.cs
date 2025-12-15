@@ -1,9 +1,10 @@
 using Dapper;
 using Http.Extension;
+using Http.Reepository;
 using Http.Service;
 using Marketplace.Model;
 
-namespace Http.Reepository
+namespace Marketplace.Reepository
 {
     /// <summary>
     /// Provides repository functionality for marketplace purchase records.

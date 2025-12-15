@@ -1,11 +1,10 @@
+using fb.protocol.marketplace;
 using Fb.Model;
 using Fb.Model.EnumValue;
 using Http;
-using Http.Reepository;
 using Http.Service;
 using Marketplace.Extension;
 using Marketplace.Model;
-using fb.protocol.marketplace;
 
 namespace Marketplace.Services;
 
@@ -34,24 +33,15 @@ public class ListingWithPurchase
 /// </summary>
 public class MarketplaceService : IMarketplaceService
 {
-    private readonly MarketplaceRepository _repository;
-    private readonly MarketplacePurchaseRepository _purchaseRepository;
-    private readonly IConfiguration _configuration;
     private readonly StorageService _storageService;
-    private readonly DbContext _dbContext;
+    private readonly Marketplace.Service.DbContext _dbContext;
     private readonly LogService _logService;
 
     public MarketplaceService(
-        MarketplaceRepository repository,
-        MarketplacePurchaseRepository purchaseRepository,
-        IConfiguration configuration,
         StorageService storageService,
-        DbContext dbContext,
+        Marketplace.Service.DbContext dbContext,
         LogService logService)
     {
-        _repository = repository;
-        _purchaseRepository = purchaseRepository;
-        _configuration = configuration;
         _storageService = storageService;
         _dbContext = dbContext;
         _logService = logService;
@@ -74,7 +64,7 @@ public class MarketplaceService : IMarketplaceService
         TimeSpan expireTime)
     {
         // Check if listing ID already exists
-        if (await _repository.CheckListingIdExistsAsync(listingId))
+        if (await _dbContext.Marketplace.CheckListingIdExistsAsync(listingId))
         {
             _logService?.Write("marketplace_list_failed", new
             {
@@ -86,7 +76,7 @@ public class MarketplaceService : IMarketplaceService
         }
 
         // Check listing limit for seller
-        var activeListingCount = await _repository.CountActiveListingsBySellerAsync(characterId);
+        var activeListingCount = await _dbContext.Marketplace.CountActiveListingsBySellerAsync(characterId);
         if (activeListingCount >= Fb.Model.ConstValue.Marketplace.ListingLimit)
         {
             _logService?.Write("marketplace_list_failed", new
@@ -112,7 +102,7 @@ public class MarketplaceService : IMarketplaceService
         });
 
         // Create listing with listing_id as the primary key
-        await _repository.CreateListingAsync(
+        await _dbContext.Marketplace.CreateListingAsync(
             listingId,
             characterId,
             itemModel,
@@ -130,7 +120,7 @@ public class MarketplaceService : IMarketplaceService
         });
 
         // Return created listing
-        return await _repository.GetListingByIdAsync(listingId);
+        return await _dbContext.Marketplace.GetListingByIdAsync(listingId);
     }
 
     /// <summary>
@@ -146,7 +136,7 @@ public class MarketplaceService : IMarketplaceService
             listing_id = listingId
         });
 
-        var listing = await _repository.GetListingByIdAsync(listingId);
+        var listing = await _dbContext.Marketplace.GetListingByIdAsync(listingId);
         if (listing == null)
         {
             _logService?.Write("marketplace_cancel_failed", new
@@ -201,7 +191,7 @@ public class MarketplaceService : IMarketplaceService
             throw new LogicException(ErrorCode.MarketplaceListingNotFound);
         }
 
-        await _repository.UpdateListingStatusAsync(listing.Id, ListingState.CANCELLED);
+        await _dbContext.Marketplace.UpdateListingStatusAsync(listing.Id, ListingState.CANCELLED);
 
         // Return remaining items to seller via storage_box
         var attachments = new List<Fb.Model.Dsl>
@@ -248,7 +238,7 @@ public class MarketplaceService : IMarketplaceService
         string purchaseId)
     {
         // Check if purchase ID already exists
-        if (await _purchaseRepository.CheckPurchaseIdExistsAsync(purchaseId))
+        if (await _dbContext.MarketplacePurchase.CheckPurchaseIdExistsAsync(purchaseId))
         {
             _logService?.Write("marketplace_purchase_failed", new
             {
@@ -277,7 +267,7 @@ public class MarketplaceService : IMarketplaceService
         try
         {
             // Load listing with row lock to prevent double-purchase
-            var listing = await _repository.GetListingByIdForUpdateAsync(listingId, transaction);
+            var listing = await _dbContext.Marketplace.GetListingByIdForUpdateAsync(listingId, transaction);
             if (listing == null)
             {
                 await transaction.RollbackAsync();
@@ -312,7 +302,7 @@ public class MarketplaceService : IMarketplaceService
             var refundAmount = expectedPrice - actualPrice;
 
             // Update listing (decrement remaining_count, update status/sold_date if needed)
-            var (updateSuccess, newRemainingCount, isSold) = await _repository.UpdateListingAsync(
+            var (updateSuccess, newRemainingCount, isSold) = await _dbContext.Marketplace.UpdateListingAsync(
                 listingId,
                 actualPurchaseCount,
                 transaction);
@@ -332,7 +322,7 @@ public class MarketplaceService : IMarketplaceService
             }
 
             // Create purchase record
-            await _purchaseRepository.CreatePurchaseAsync(
+            await _dbContext.MarketplacePurchase.CreatePurchaseAsync(
                 purchaseId,
                 listingId,
                 buyerId,
@@ -468,7 +458,7 @@ public class MarketplaceService : IMarketplaceService
         try
         {
             // Search listings and count within the same transaction
-            var listings = await _repository.SearchListingsAsync(
+            var listings = await _dbContext.Marketplace.SearchListingsAsync(
                 itemModelIds,
                 option.MinPrice,
                 option.MaxPrice,
@@ -478,7 +468,7 @@ public class MarketplaceService : IMarketplaceService
                 Fb.Model.ConstValue.Marketplace.PageSize,
                 transaction);
 
-            var totalCount = await _repository.CountListingsAsync(
+            var totalCount = await _dbContext.Marketplace.CountListingsAsync(
                 itemModelIds,
                 option.MinPrice,
                 option.MaxPrice,
@@ -506,7 +496,7 @@ public class MarketplaceService : IMarketplaceService
     /// <returns>MarketplaceListing if found; null if not found.</returns>
     public async Task<MarketplaceListing> GetListingByIdAsync(string listingId)
     {
-        return await _repository.GetListingByIdAsync(listingId);
+        return await _dbContext.Marketplace.GetListingByIdAsync(listingId);
     }
 
     /// <summary>
@@ -520,7 +510,7 @@ public class MarketplaceService : IMarketplaceService
         List<string> listingIds,
         uint? buyerId = null)
     {
-        var listings = await _repository.GetListingsByIdsAsync(listingIds);
+        var listings = await _dbContext.Marketplace.GetListingsByIdsAsync(listingIds);
 
         if (!buyerId.HasValue || listings.Count == 0)
         {
@@ -532,7 +522,7 @@ public class MarketplaceService : IMarketplaceService
         }
 
         // Get purchase records for the buyer
-        var purchases = await _repository.GetPurchasesByListingIdsAndBuyerAsync(listingIds, buyerId.Value);
+        var purchases = await _dbContext.Marketplace.GetPurchasesByListingIdsAndBuyerAsync(listingIds, buyerId.Value);
 
         return listings.Select(l =>
         {
@@ -552,7 +542,7 @@ public class MarketplaceService : IMarketplaceService
     /// <returns>Dictionary mapping purchase IDs to purchase records.</returns>
     public async Task<Dictionary<string, MarketplacePurchase>> GetPurchasesByIdsAsync(List<string> purchaseIds)
     {
-        return await _purchaseRepository.GetPurchasesByIdsAsync(purchaseIds);
+        return await _dbContext.MarketplacePurchase.GetPurchasesByIdsAsync(purchaseIds);
     }
 
 }

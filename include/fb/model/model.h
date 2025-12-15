@@ -2924,6 +2924,9 @@ public:
     inline static constexpr const char* MESSAGE_MARKETPLACE_PURCHASE_REFUND_MESSAGE = "{} {}개를 {}전에 구매하셨습니다. 요청한 수량보다 적게 구매되어 {}전이 환불되었습니다.";
     inline static constexpr const char* MESSAGE_MARKETPLACE_LISTING_CANCELLED_TITLE = "거래소 등록 취소";
     inline static constexpr const char* MESSAGE_MARKETPLACE_LISTING_CANCELLED_MESSAGE = "거래소 등록이 취소되었습니다. 아이템이 통합보관함으로 반환되었습니다.";
+    inline static constexpr const char* MESSAGE_MARKETPLACE_LISTING_EXPIRED_TITLE = "거래소 등록 만료";
+    inline static constexpr const char* MESSAGE_MARKETPLACE_LISTING_EXPIRED_MESSAGE = "{} {}개가 만료되어 반환되었습니다.";
+    inline static constexpr const char* MESSAGE_MARKETPLACE_LISTING_EXPIRED_MESSAGE_WITH_FEE = "{} {}개가 만료되어 반환되었습니다. 등록 수수료 {}전이 함께 반환되었습니다.";
     inline static constexpr const char* MESSAGE_MARKETPLACE_SALE_TITLE = "거래소 판매";
     inline static constexpr const char* MESSAGE_MARKETPLACE_SALE_MESSAGE = "{} {}개가 {}전에 판매되었습니다.";
     inline static constexpr const char* MESSAGE_MARKETPLACE_PURCHASE_TITLE = "거래소 구매";
