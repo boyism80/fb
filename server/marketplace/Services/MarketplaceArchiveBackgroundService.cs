@@ -1,3 +1,6 @@
+using Dapper;
+using fb.protocol.marketplace;
+using Http.Extension;
 using Http.Service;
 using StackExchange.Redis;
 
@@ -5,7 +8,7 @@ namespace Marketplace.Services
 {
     /// <summary>
     /// Provides a background service that periodically archives marketplace listings.
-    /// Uses Redis TTL with SET NX EX for atomic distributed locking to prevent concurrent execution across multiple instances.
+    /// Uses Redis TTL with Lua script for atomic distributed locking to prevent concurrent execution across multiple instances.
     /// </summary>
     public class MarketplaceArchiveBackgroundService : BackgroundService
     {
@@ -13,8 +16,8 @@ namespace Marketplace.Services
         private readonly RedisService _redisService;
         private readonly ILogger<MarketplaceArchiveBackgroundService> _logger;
 
-        private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(1);
-        private static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(10);
+        private static readonly TimeSpan RetryInterval = TimeSpan.FromMinutes(1);
         private const string LockKey = "marketplace:archive:lock";
 
         /// <summary>
@@ -66,10 +69,11 @@ namespace Marketplace.Services
                         {
                             // Create scope for service resolution
                             using var scope = _scopeFactory.CreateScope();
-                            var archiveService = scope.ServiceProvider.GetRequiredService<MarketplaceArchiveService>();
+                            var dbContext = scope.ServiceProvider.GetRequiredService<Marketplace.Service.DbContext>();
+                            var logService = scope.ServiceProvider.GetRequiredService<LogService>();
 
-                            // Process archive
-                            await archiveService.ArchiveListingsAsync(stoppingToken);
+                            // Archive listings
+                            await ArchiveListingsAsync(dbContext, logService, stoppingToken);
                         }
                         catch (Exception e)
                         {
@@ -89,12 +93,94 @@ namespace Marketplace.Services
                 catch (Exception e)
                 {
                     _logger.LogError(e, $"Error in marketplace archive background service: {e.Message}");
-                    
+
                     // Wait on error as well
                     await Task.Delay(RetryInterval, stoppingToken);
                 }
             }
         }
+
+        /// <summary>
+        /// Archives all non-active listings to the archive table in a single atomic operation.
+        /// </summary>
+        /// <param name="dbContext">Database context for marketplace operations.</param>
+        /// <param name="logService">Log service for logging operations.</param>
+        /// <param name="cancellationToken">Cancellation token for the operation.</param>
+        /// <returns>Task representing the asynchronous operation.</returns>
+        private async Task ArchiveListingsAsync(
+            Marketplace.Service.DbContext dbContext,
+            LogService logService,
+            CancellationToken cancellationToken)
+        {
+            await using var conn = dbContext.Connection(-1);
+            await conn.OpenAsync(cancellationToken);
+            await using var transaction = await conn.BeginTransactionAsync(cancellationToken);
+
+            try
+            {
+                // Archive all non-active listings in a single query
+                var archiveSql = $@"
+                    INSERT INTO `marketplace_listing_archive` (
+                        `id`,
+                        `seller_id`,
+                        `item_model`,
+                        `remaining_count`,
+                        `item_durability`,
+                        `item_custom_name`,
+                        `price`,
+                        `status`,
+                        `expire_date`,
+                        `created_date`,
+                        `sold_date`,
+                        `updated_date`,
+                        `archived_date`)
+                    SELECT 
+                        `id`,
+                        `seller_id`,
+                        `item_model`,
+                        `remaining_count`,
+                        `item_durability`,
+                        `item_custom_name`,
+                        `price`,
+                        `status`,
+                        `expire_date`,
+                        `created_date`,
+                        `sold_date`,
+                        `updated_date`,
+                        NOW() AS `archived_date`
+                    FROM `marketplace_listing`
+                    WHERE `status` != {ListingState.ACTIVE.Escape()}";
+
+                var archivedCount = await conn.ExecuteAsync(archiveSql, null, transaction);
+
+                if (archivedCount > 0)
+                {
+                    // Delete archived listings from original table
+                    var deleteSql = $@"
+                        DELETE FROM `marketplace_listing`
+                        WHERE `status` != {ListingState.ACTIVE.Escape()}";
+
+                    await conn.ExecuteAsync(deleteSql, null, transaction);
+                }
+
+                await transaction.CommitAsync(cancellationToken);
+
+                // Log success
+                logService?.Write("marketplace_archive_success", new
+                {
+                    archived_count = archivedCount
+                });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Error archiving marketplace listings");
+                logService?.Write("marketplace_archive_failed", new
+                {
+                    error = ex.Message
+                });
+                throw;
+            }
+        }
     }
 }
-

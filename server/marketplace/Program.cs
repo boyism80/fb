@@ -53,8 +53,10 @@ public class Program
         }
 
         // Marketplace archive services
-        builder.Services.AddScoped<Marketplace.Services.MarketplaceArchiveService>();
         builder.Services.AddHostedService<Marketplace.Services.MarketplaceArchiveBackgroundService>();
+
+        // Marketplace expire services
+        builder.Services.AddHostedService<Marketplace.Services.MarketplaceExpireBackgroundService>();
 
         builder.Services.AddHealthChecks();
 

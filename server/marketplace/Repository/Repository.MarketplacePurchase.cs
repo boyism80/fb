@@ -42,7 +42,7 @@ namespace Marketplace.Reepository
             System.Data.IDbTransaction transaction = null)
         {
             var sql = $"""
-                INSERT INTO marketplace_purchase (
+                INSERT INTO `marketplace_purchase` (
                     `id`,
                     `listing_id`,
                     `buyer_id`,
@@ -88,8 +88,8 @@ namespace Marketplace.Reepository
             parameters.Add("PurchaseIds", purchaseIds);
 
             var sql = @"
-                SELECT * FROM marketplace_purchase 
-                WHERE id IN @PurchaseIds";
+                SELECT * FROM `marketplace_purchase` 
+                WHERE `id` IN @PurchaseIds";
 
             var purchases = await conn.QueryAsync<MarketplacePurchase>(sql, parameters);
             return purchases.ToDictionary(p => p.Id, p => p);
@@ -104,9 +104,9 @@ namespace Marketplace.Reepository
         {
             await using var conn = _dbContext.Connection(-1);
             var sql = $@"
-                SELECT * FROM marketplace_purchase 
-                WHERE listing_id = {listingId.Escape()}
-                ORDER BY created_date DESC";
+                SELECT * FROM `marketplace_purchase` 
+                WHERE `listing_id` = {listingId.Escape()}
+                ORDER BY `created_date` DESC";
 
             return (await conn.QueryAsync<MarketplacePurchase>(sql)).ToList();
         }
@@ -121,8 +121,8 @@ namespace Marketplace.Reepository
         {
             await using var conn = _dbContext.Connection(-1);
             var sql = $@"
-                SELECT COUNT(*) FROM marketplace_purchase 
-                WHERE id = {purchaseId.Escape()}";
+                SELECT COUNT(*) FROM `marketplace_purchase` 
+                WHERE `id` = {purchaseId.Escape()}";
 
             var count = await conn.QuerySingleAsync<int>(sql);
             return count > 0;
