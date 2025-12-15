@@ -84,9 +84,13 @@ bool quest::inc_step(uint32_t value)
     for (int i = 0, remains = std::min(value, max_step - this->_step); i < remains; i++)
     {
         auto& model = table::quest[this->id][this->_step + i];
-        if (model.step_reward.empty() == false)
+        if (model.step_reward.has_value())
         {
-            auto& reward = table::reward[model.step_reward];
+            auto step_reward = model.step_reward.value();
+            if (table::reward.contains(step_reward) == false)
+                return false;
+
+            auto& reward = table::reward[step_reward];
             if (owner->reward(reward.dsl) == false)
                 return false;
         }

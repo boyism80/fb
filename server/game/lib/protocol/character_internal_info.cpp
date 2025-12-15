@@ -89,7 +89,7 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
         auto& model = achievement->model;
         writer.write<uint8_t>(model.look);
         writer.write<uint8_t>(model.color);
-        writer.write<std::string>(achievement->text.value_or(model.text));
+        writer.write<std::string>(achievement->text.value_or(model.text.value_or("")));
     }
     writer.write<uint8_t>(0x00);
 }

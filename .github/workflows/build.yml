@@ -433,12 +433,60 @@ jobs:
           build-args: |
             SERVICE=log
 
+  marketplace:
+    runs-on: [self-hosted, linux, build]
+    permissions:
+      contents: read
+      packages: write
+    needs: build-linux
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+         version: latest
+
+      - name: Login to ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/marketplace
+          flavor: |
+            latest=true
+
+      - name: Build marketplace server
+        uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+          DOCKER_BUILD_SUMMARY: false
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=marketplace
+          cache-to: type=gha,scope=marketplace,mode=max
+          file: server/http/Dockerfile
+          build-args: |
+            SERVICE=marketplace
+
   deploy:
     runs-on: [self-hosted, linux, build]
     permissions:
       contents: read
       packages: write
-    needs: [internal, write-back, bot, gateway, login, game, admin-tool, log]
+    needs: [internal, write-back, bot, gateway, login, game, admin-tool, log, marketplace]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -519,6 +567,9 @@ jobs:
       - name: Build log
         run: dotnet publish server/log/log.csproj -c Release -o build/log
 
+      - name: Build marketplace
+        run: dotnet publish server/marketplace/marketplace.csproj -c Release -o build/marketplace
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -531,6 +582,7 @@ jobs:
             build/write-back
             build/admin-tool
             build/log
+            build/marketplace
           retention-days: 7
 
       - name: Zip the downloaded artifact

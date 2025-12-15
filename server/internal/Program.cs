@@ -16,7 +16,7 @@ public class Program
         SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Model.Buff>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), new JsonTypeHandler());
-        SqlMapper.AddTypeHandler(typeof(string), new UuidStringTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(Dictionary<string, List<Fb.Model.Dsl>>), new JsonTypeHandler());
 
         var config = new MapperConfiguration(cfg =>
         {
@@ -26,7 +26,8 @@ public class Program
             .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
             .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => u.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
             .ForMember(x => x.Position, x => x.MapFrom(u => new Position { X = u.PositionX, Y = u.PositionY }))
-            .ForMember(x => x.Role, x => x.MapFrom(u => (byte)u.Role));
+            .ForMember(x => x.Role, x => x.MapFrom(u => (byte)u.Role))
+            .ForMember(x => x.PendingListings, x => x.MapFrom(u => u.PendingListings == null || u.PendingListings.Count == 0 ? null : JsonConvert.SerializeObject(u.PendingListings)));
 
             cfg.CreateMap<Character, Http.Model.Character>()
             .ForMember(x => x.Buffs, x => x.MapFrom(u => u.Buffs))
@@ -34,7 +35,8 @@ public class Program
             .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => DateTime.Parse(u.UpdatedDate)))
             .ForMember(x => x.PositionX, x => x.MapFrom(u => u.Position.X))
             .ForMember(x => x.PositionY, x => x.MapFrom(u => u.Position.Y))
-            .ForMember(x => x.Role, x => x.MapFrom(u => (Fb.Model.EnumValue.Role)u.Role));
+            .ForMember(x => x.Role, x => x.MapFrom(u => (Fb.Model.EnumValue.Role)u.Role))
+            .ForMember(x => x.PendingListings, x => x.MapFrom(u => string.IsNullOrEmpty(u.PendingListings) ? new Dictionary<string, List<Fb.Model.Dsl>>() : (JsonConvert.DeserializeObject<Dictionary<string, List<Fb.Model.Dsl>>>(u.PendingListings) ?? new Dictionary<string, List<Fb.Model.Dsl>>())));
 
 
             cfg.CreateMap<Http.Model.Spell, Spell>()

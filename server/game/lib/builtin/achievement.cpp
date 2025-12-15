@@ -33,6 +33,9 @@ int builtin::achievement::builtin_text(lua_State* L)
     if (achievement == nullptr)
         return 0;
 
-    lua->pushstring(achievement->text.value_or(achievement->model.text));
+    if (achievement->text.has_value())
+        lua->pushstring(achievement->text.value());
+    else
+        lua->pushstring(achievement->model.text.value_or(""));
     return 1;
 }

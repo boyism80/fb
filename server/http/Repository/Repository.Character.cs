@@ -102,6 +102,7 @@ namespace Http.Reepository
                     `aux_bot_color`,
                     `buffs`,
                     `title`,
+                    `pending_listings`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -144,6 +145,7 @@ namespace Http.Reepository
                     {value.AuxBotColor.Escape()},
                     {JsonConvert.SerializeObject(value.Buffs).Escape()},
                     {value.Title.Escape()},
+                    {(value.PendingListings == null || value.PendingListings.Count == 0 ? null : JsonConvert.SerializeObject(value.PendingListings)).Escape()},
                     {value.Deleted.Escape()},
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
@@ -184,6 +186,7 @@ namespace Http.Reepository
                     `aux_bot_color`=VALUES(`aux_bot_color`),
                     `buffs`=VALUES(`buffs`),
                     `title`=VALUES(`title`),
+                    `pending_listings`=VALUES(`pending_listings`),
                     `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;

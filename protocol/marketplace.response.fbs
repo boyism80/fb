@@ -1,0 +1,35 @@
+include "marketplace.fbs";
+
+namespace fb.protocol.marketplace.response;
+
+table List {
+    listing_id: string;
+    error: uint;
+}
+
+table Cancel {
+    error: uint;
+}
+
+table Purchase {
+    item: fb.protocol.marketplace.Item;
+    actual_purchase_count: ushort;
+    refund_amount: uint;
+    error: uint;
+}
+
+table Search {
+    result: fb.protocol.marketplace.SearchResult;
+    error: uint;
+}
+
+table GetListings {
+    listings: [fb.protocol.marketplace.Listing];
+    error: uint;
+}
+
+table GetPurchases {
+    purchases: [fb.protocol.marketplace.Purchase];
+    error: uint;
+}
+

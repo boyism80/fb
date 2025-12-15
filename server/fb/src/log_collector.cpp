@@ -2,6 +2,8 @@
 #include <fb/amqp.h>
 #include <fb/logger.h>
 #include <json/json.h>
+#include <json/writer.h>
+#include <sstream>
 #include <chrono>
 #include <format>
 #include <random.h>
@@ -71,14 +73,15 @@ void log_collector::write(const std::string& event_type, const Json::Value& data
 
 std::string log_collector::serialize_log_entry(const Json::Value& log_entry) const
 {
-    auto writer      = Json::FastWriter{};
-    auto json_string = writer.write(log_entry);
-    // Remove trailing newline from FastWriter
-    if (!json_string.empty() && json_string.back() == '\n')
-    {
-        json_string.pop_back();
-    }
-    return json_string;
+    // Use StreamWriterBuilder to output UTF-8 characters without escape sequences
+    auto builder           = Json::StreamWriterBuilder{};
+    builder["emitUTF8"]    = true; // Output UTF-8 characters directly without escape sequences
+    builder["indentation"] = "";   // Compact output (no indentation)
+
+    auto writer = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
+    auto stream = std::ostringstream{};
+    writer->write(log_entry, &stream);
+    return stream.str();
 }
 
 std::string log_collector::select_random_routing_key() const

@@ -12,9 +12,21 @@
             "default": 1
         },
         {
+            "name": "durability",
+            "type": "uint32_t?",
+            "desc": "item durability",
+            "default": null
+        },
+        {
+            "name": "custom_name",
+            "type": "string?",
+            "desc": "item custom name",
+            "default": null
+        },
+        {
             "name": "percent",
             "type": "double",
-            "desc": "percentage",
+            "desc": "drop percentage",
             "default": 100.0
         }
     ],

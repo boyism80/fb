@@ -58,7 +58,16 @@ namespace Http.Service
                 .ToList();
         }
 
-        public async Task<StoragePendingBox> CreatePendingAsync(string title, string message, string userName = null, DateTime? expiredDate = null, List<Dsl> attachments = null)
+        /// <summary>
+        /// Creates a new storage pending box entry with the specified user ID.
+        /// </summary>
+        /// <param name="title">The title of the pending box entry.</param>
+        /// <param name="message">The message content of the pending box entry.</param>
+        /// <param name="userId">The user ID to assign the pending box to (null for global).</param>
+        /// <param name="expiredDate">The expiration date for the pending box (optional).</param>
+        /// <param name="attachments">The list of attachments (items, money, exp) to include.</param>
+        /// <returns>The created storage pending box entry.</returns>
+        public async Task<StoragePendingBox> CreatePendingAsync(string title, string message, uint? userId = null, DateTime? expiredDate = null, List<Dsl> attachments = null)
         {
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Title is required", nameof(title));
@@ -73,17 +82,7 @@ namespace Http.Service
             var normalizedTitle = title.Trim();
             var normalizedMessage = message.Trim();
 
-            uint? userId = null;
-            if (string.IsNullOrWhiteSpace(userName) == false)
-            {
-                var id = await _dbContext.Character.GetCharacterId(userName.Trim());
-                if (id.HasValue == false)
-                    throw new KeyNotFoundException($"Character '{userName}' not found.");
-
-                userId = id.Value;
-            }
-
-            // Generate UUID for pending ID (as string, MySql.Escape() will convert to BINARY(16))
+            // Generate UUID for pending ID (as string, MySql.Escape() will convert to VARCHAR(36))
             var pendingId = Guid.NewGuid().ToString();
 
             // Create pending box entity
@@ -109,7 +108,6 @@ namespace Http.Service
             {
                 pending_id = pending.Id,
                 user_id = pending.User,
-                user_name = userName,
                 is_global = !pending.User.HasValue,
                 expired_date = expiredDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
             });
@@ -118,6 +116,43 @@ namespace Http.Service
                 await NotifyPersonalPendingAsync(pending.User.Value);
             else
                 await NotifyGlobalPendingAsync();
+
+            return pending;
+        }
+
+        /// <summary>
+        /// Creates a new storage pending box entry with the specified user name.
+        /// Converts the user name to user ID and calls the userId-based overload.
+        /// </summary>
+        /// <param name="title">The title of the pending box entry.</param>
+        /// <param name="message">The message content of the pending box entry.</param>
+        /// <param name="userName">The user name to assign the pending box to (null for global).</param>
+        /// <param name="expiredDate">The expiration date for the pending box (optional).</param>
+        /// <param name="attachments">The list of attachments (items, money, exp) to include.</param>
+        /// <returns>The created storage pending box entry.</returns>
+        public async Task<StoragePendingBox> CreatePendingAsync(string title, string message, string userName = null, DateTime? expiredDate = null, List<Dsl> attachments = null)
+        {
+            uint? userId = null;
+            if (string.IsNullOrWhiteSpace(userName) == false)
+            {
+                var id = await _dbContext.Character.GetCharacterId(userName.Trim());
+                if (id.HasValue == false)
+                    throw new KeyNotFoundException($"Character '{userName}' not found.");
+
+                userId = id.Value;
+            }
+
+            // Log storage pending creation event with user name
+            var pending = await CreatePendingAsync(title, message, userId, expiredDate, attachments);
+
+            _logService?.Write("storage_pending_create", new
+            {
+                pending_id = pending.Id,
+                user_id = pending.User,
+                user_name = userName,
+                is_global = !pending.User.HasValue,
+                expired_date = expiredDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
+            });
 
             return pending;
         }
