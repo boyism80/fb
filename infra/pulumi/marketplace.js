@@ -40,10 +40,6 @@ module.exports = {
                     "ServerName": "marketplace"
                 },
                 "Marketplace": {
-                    "MinFee": 100,
-                    "DefaultExpireHours": 72,
-                    "MaxListingsPerCharacter": 50,
-                    "PageSize": 20,
                     "UseSharding": false
                 }
             }

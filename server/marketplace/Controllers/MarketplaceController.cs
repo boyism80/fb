@@ -45,7 +45,7 @@ public class MarketplaceController : ControllerBase
                 request.Item.Durability,
                 request.Item.CustomName,
                 request.Price,
-                request.ExpireHours) ?? throw new LogicException(ErrorCode.Unhandled);
+                Fb.Model.ConstValue.Marketplace.ExpireTime) ?? throw new LogicException(ErrorCode.Unhandled);
 
             // Return listing_id (UUID)
             return new Response.List

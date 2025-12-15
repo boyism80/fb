@@ -120,8 +120,7 @@ async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count
                 this->_owner.id,
                 id,
                 mp::Item{this->_owner.id, model.id, count, durability, custom_name},
-                price,
-                expire_hours
+                price
         });
 
         co_await this->_owner.server.threads.switching(weak);

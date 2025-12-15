@@ -22,7 +22,7 @@ public class ShardedMarketplaceService : IMarketplaceService
         uint? itemDurability,
         string itemCustomName,
         uint price,
-        ushort expireHours)
+        TimeSpan expireTime)
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");
     }

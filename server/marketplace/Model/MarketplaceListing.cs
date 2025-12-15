@@ -1,4 +1,5 @@
 using Http.Model;
+using fb.protocol.marketplace;
 
 namespace Marketplace.Model;
 
@@ -11,7 +12,7 @@ public class MarketplaceListing : BaseModel
     public uint? ItemDurability { get; set; }
     public string ItemCustomName { get; set; }
     public uint Price { get; set; } // Per unit price
-    public byte Status { get; set; } // 0=Active, 1=Sold, 2=Cancelled, 3=Expired
+    public ListingState Status { get; set; }
     public DateTime ExpireDate { get; set; }
     public new DateTime CreatedDate { get; set; }
     public DateTime? SoldDate { get; set; } // Set when remaining_count becomes 0

@@ -5399,21 +5399,20 @@ public:
     std::string listing_id;
     fb::protocol::marketplace::Item item;
     uint32_t price = 0;
-    uint16_t expire_hours = 0;
 
 public:
     List() = default;
 
     List(const List& x)
-        : character_id(x.character_id), listing_id(x.listing_id), item(x.item), price(x.price), expire_hours(x.expire_hours)
+        : character_id(x.character_id), listing_id(x.listing_id), item(x.item), price(x.price)
     { }
 
-    List(uint32_t character_id, const std::string& listing_id, const fb::protocol::marketplace::Item& item, uint32_t price, uint16_t expire_hours)
-        : character_id(character_id), listing_id(listing_id), item(item), price(price), expire_hours(expire_hours)
+    List(uint32_t character_id, const std::string& listing_id, const fb::protocol::marketplace::Item& item, uint32_t price)
+        : character_id(character_id), listing_id(listing_id), item(item), price(price)
     { }
 
     List(const fb::protocol::marketplace::request::raw::List& raw)
-        : character_id(raw.character_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), item(*raw.item()), price(raw.price()), expire_hours(raw.expire_hours())
+        : character_id(raw.character_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), item(*raw.item()), price(raw.price())
     { }
 
 public:
@@ -6915,8 +6914,7 @@ flatbuffers::Offset<fb::protocol::marketplace::request::raw::List> build<fb::pro
             flatbuffers::build<uint32_t>(builder, value.character_id),
             flatbuffers::build<std::string>(builder, value.listing_id),
             flatbuffers::build<fb::protocol::marketplace::Item>(builder, value.item),
-            flatbuffers::build<uint32_t>(builder, value.price),
-            flatbuffers::build<uint16_t>(builder, value.expire_hours));
+            flatbuffers::build<uint32_t>(builder, value.price));
 }
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::request::raw::Cancel> build<fb::protocol::marketplace::request::Cancel>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::Cancel& value)

@@ -22,7 +22,7 @@ public interface IMarketplaceService
         uint? itemDurability,
         string itemCustomName,
         uint price,
-        ushort expireHours);
+        TimeSpan expireTime);
 
     /// <summary>
     /// Cancels a marketplace listing.

@@ -12,7 +12,7 @@ namespace Http.Extension
     {
         /// <summary>
         /// Escapes an object value for safe inclusion in MySQL SQL queries.
-        /// Handles null values, strings, booleans, DateTime objects, and other types appropriately.
+        /// Handles null values, strings, booleans, DateTime objects, enum types, and other types appropriately.
         /// </summary>
         /// <typeparam name="T">The type of the object to escape.</typeparam>
         /// <param name="obj">The object value to escape for SQL usage.</param>
@@ -21,6 +21,30 @@ namespace Http.Extension
         {
             if (obj == null)
                 return "NULL";
+
+            // Handle enum types by converting to their underlying integer value
+            if (obj is System.Enum enumValue)
+            {
+                var underlyingType = System.Enum.GetUnderlyingType(enumValue.GetType());
+                if (underlyingType == typeof(byte))
+                    return ((byte)(object)enumValue).ToString();
+                if (underlyingType == typeof(sbyte))
+                    return ((sbyte)(object)enumValue).ToString();
+                if (underlyingType == typeof(short))
+                    return ((short)(object)enumValue).ToString();
+                if (underlyingType == typeof(ushort))
+                    return ((ushort)(object)enumValue).ToString();
+                if (underlyingType == typeof(int))
+                    return ((int)(object)enumValue).ToString();
+                if (underlyingType == typeof(uint))
+                    return ((uint)(object)enumValue).ToString();
+                if (underlyingType == typeof(long))
+                    return ((long)(object)enumValue).ToString();
+                if (underlyingType == typeof(ulong))
+                    return ((ulong)(object)enumValue).ToString();
+                // Fallback to int conversion
+                return Convert.ToInt32(enumValue).ToString();
+            }
 
             return obj switch
             {

@@ -30,29 +30,25 @@ public struct List : IFlatbufferObject
   public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(6); }
   public fb.protocol.marketplace.raw.Item? Item { get { int o = __p.__offset(8); return o != 0 ? (fb.protocol.marketplace.raw.Item?)(new fb.protocol.marketplace.raw.Item()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public uint Price { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public ushort ExpireHours { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
 
   public static Offset<fb.protocol.marketplace.request.raw.List> CreateList(FlatBufferBuilder builder,
       uint character_id = 0,
       StringOffset listing_idOffset = default(StringOffset),
       Offset<fb.protocol.marketplace.raw.Item> itemOffset = default(Offset<fb.protocol.marketplace.raw.Item>),
-      uint price = 0,
-      ushort expire_hours = 0) {
-    builder.StartTable(5);
+      uint price = 0) {
+    builder.StartTable(4);
     List.AddPrice(builder, price);
     List.AddItem(builder, itemOffset);
     List.AddListingId(builder, listing_idOffset);
     List.AddCharacterId(builder, character_id);
-    List.AddExpireHours(builder, expire_hours);
     return List.EndList(builder);
   }
 
-  public static void StartList(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartList(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddCharacterId(FlatBufferBuilder builder, uint characterId) { builder.AddUint(0, characterId, 0); }
   public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(1, listingIdOffset.Value, 0); }
   public static void AddItem(FlatBufferBuilder builder, Offset<fb.protocol.marketplace.raw.Item> itemOffset) { builder.AddOffset(2, itemOffset.Value, 0); }
   public static void AddPrice(FlatBufferBuilder builder, uint price) { builder.AddUint(3, price, 0); }
-  public static void AddExpireHours(FlatBufferBuilder builder, ushort expireHours) { builder.AddUshort(4, expireHours, 0); }
   public static Offset<fb.protocol.marketplace.request.raw.List> EndList(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.marketplace.request.raw.List>(o);
@@ -71,7 +67,6 @@ static public class ListVerify
       && verifier.VerifyString(tablePos, 6 /*ListingId*/, false)
       && verifier.VerifyTable(tablePos, 8 /*Item*/, fb.protocol.marketplace.raw.ItemVerify.Verify, false)
       && verifier.VerifyField(tablePos, 10 /*Price*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 12 /*ExpireHours*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

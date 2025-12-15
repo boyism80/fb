@@ -1306,8 +1306,7 @@ namespace fb.protocol._internal
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price),
-                builder.Build(value.ExpireHours));
+                builder.Build(value.Price));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Cancel> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Cancel value)
         {
@@ -2750,8 +2749,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price),
-                builder.Build(value.ExpireHours));
+                builder.Build(value.Price));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Cancel> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Cancel value)
         {
@@ -4213,8 +4211,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price),
-                builder.Build(value.ExpireHours));
+                builder.Build(value.Price));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Cancel> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Cancel value)
         {
@@ -5676,8 +5673,7 @@ namespace fb.protocol.marketplace
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price),
-                builder.Build(value.ExpireHours));
+                builder.Build(value.Price));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Cancel> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Cancel value)
         {
@@ -7104,8 +7100,7 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price),
-                builder.Build(value.ExpireHours));
+                builder.Build(value.Price));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Cancel> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Cancel value)
         {
@@ -8533,8 +8528,7 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price),
-                builder.Build(value.ExpireHours));
+                builder.Build(value.Price));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Cancel> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Cancel value)
         {
@@ -13413,7 +13407,6 @@ namespace fb.protocol.marketplace.request
         public string ListingId { get; set; } = string.Empty;
         public fb.protocol.marketplace.Item Item { get; set; } = new fb.protocol.marketplace.Item();
         public uint Price { get; set; } = 0;
-        public ushort ExpireHours { get; set; } = 0;
 
         public List()
         { }
@@ -13424,7 +13417,6 @@ namespace fb.protocol.marketplace.request
             ListingId = raw.ListingId;
             Item = new fb.protocol.marketplace.Item(raw.Item.Value);
             Price = raw.Price;
-            ExpireHours = raw.ExpireHours;
         }
 
         public List(byte[] bytes) : this(fb.protocol.marketplace.request.raw.List.GetRootAsList(new ByteBuffer(bytes)))

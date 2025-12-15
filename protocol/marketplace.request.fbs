@@ -7,7 +7,6 @@ table List {
     listing_id: string;
     item: fb.protocol.marketplace.Item;
     price: uint;
-    expire_hours: ushort;
 }
 
 table Cancel {

@@ -3,6 +3,7 @@ using Http.Extension;
 using Http.Service;
 using Marketplace.Model;
 using MarketplacePurchase = Marketplace.Model.MarketplacePurchase;
+using fb.protocol.marketplace;
 
 namespace Http.Reepository
 {
@@ -33,7 +34,7 @@ namespace Http.Reepository
             await using var conn = _dbContext.Connection(-1);
             var sql = $@"
                 SELECT * FROM marketplace_listing 
-                WHERE id = {listingId.Escape()} AND status != 3";
+                WHERE id = {listingId.Escape()} AND status != {ListingState.EXPIRED.Escape()}";
 
             return await conn.QueryFirstOrDefaultAsync<MarketplaceListing>(sql);
         }
@@ -49,7 +50,7 @@ namespace Http.Reepository
         {
             var sql = $@"
                 SELECT * FROM marketplace_listing 
-                WHERE id = {listingId.Escape()} AND status = 0 AND expire_date > NOW()
+                WHERE id = {listingId.Escape()} AND status = {ListingState.ACTIVE.Escape()} AND expire_date > NOW()
                 FOR UPDATE";
 
             if (transaction != null)
@@ -79,9 +80,9 @@ namespace Http.Reepository
             var parameters = new DynamicParameters();
             parameters.Add("ListingIds", listingIds);
 
-            var sql = @"
+            var sql = $@"
                 SELECT * FROM marketplace_listing 
-                WHERE id IN @ListingIds AND status != 3";
+                WHERE id IN @ListingIds AND status != {ListingState.EXPIRED.Escape()}";
 
             return (await conn.QueryAsync<MarketplaceListing>(sql, parameters)).ToList();
         }
@@ -157,7 +158,7 @@ namespace Http.Reepository
                     {(itemDurability.HasValue ? itemDurability.Value.Escape() : "NULL")},
                     {(itemCustomName != null ? itemCustomName.Escape() : "NULL")},
                     {price.Escape()},
-                    {0.Escape()},
+                    {ListingState.ACTIVE.Escape()},
                     {expireDate.Escape()})
                 """;
 
@@ -169,9 +170,9 @@ namespace Http.Reepository
         /// Updates the status of a marketplace listing.
         /// </summary>
         /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
-        /// <param name="status">The new status (0=Active, 1=Sold, 2=Cancelled, 3=Expired).</param>
+        /// <param name="status">The new status.</param>
         /// <returns>True if the update was successful; otherwise, false.</returns>
-        public async Task<bool> UpdateListingStatusAsync(string listingId, byte status)
+        public async Task<bool> UpdateListingStatusAsync(string listingId, ListingState status)
         {
             await using var conn = _dbContext.Connection(-1);
             var sql = $@"
@@ -213,15 +214,16 @@ namespace Http.Reepository
 
             var newRemaining = (ushort)(currentRemaining - purchaseCount);
             var isSold = newRemaining == 0;
+            var newStatus = isSold ? ListingState.SOLD : ListingState.ACTIVE;
 
             var sql = $@"
                 UPDATE marketplace_listing 
                 SET `remaining_count` = {newRemaining.Escape()},
-                    `status` = {(isSold ? 1 : 0).Escape()},
+                    `status` = {newStatus.Escape()},
                     `sold_date` = {(isSold ? "NOW()" : "NULL")},
                     `updated_date` = NOW()
                 WHERE `id` = {listingId.Escape()} 
-                    AND `status` = 0 
+                    AND `status` = {ListingState.ACTIVE.Escape()} 
                     AND `remaining_count` >= {purchaseCount.Escape()}";
 
             int rowsAffected;
@@ -266,6 +268,7 @@ namespace Http.Reepository
         /// <param name="sortBy">Sort order (price_asc, price_desc, created_desc).</param>
         /// <param name="page">Page number (1-based).</param>
         /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="transaction">Optional database transaction for atomic operations.</param>
         /// <returns>A list of marketplace listings matching the criteria.</returns>
         public async Task<List<MarketplaceListing>> SearchListingsAsync(
             List<uint> itemModelIds,
@@ -274,12 +277,11 @@ namespace Http.Reepository
             uint? sellerId,
             string sortBy,
             int page,
-            int pageSize)
+            int pageSize,
+            System.Data.IDbTransaction transaction = null)
         {
-            await using var conn = _dbContext.Connection(-1);
-
             // Build WHERE conditions
-            var whereConditions = new List<string> { "status = 0", "expire_date > NOW()" };
+            var whereConditions = new List<string> { $"status = {ListingState.ACTIVE.Escape()}", "expire_date > NOW()" };
             var parameters = new DynamicParameters();
 
             if (itemModelIds != null && itemModelIds.Count > 0)
@@ -325,7 +327,15 @@ namespace Http.Reepository
                 {orderByClause}
                 LIMIT {pageSize} OFFSET {(page - 1) * pageSize}";
 
-            return (await conn.QueryAsync<MarketplaceListing>(sql, parameters)).ToList();
+            if (transaction != null)
+            {
+                return (await transaction.Connection.QueryAsync<MarketplaceListing>(sql, parameters, transaction)).ToList();
+            }
+            else
+            {
+                await using var conn = _dbContext.Connection(-1);
+                return (await conn.QueryAsync<MarketplaceListing>(sql, parameters)).ToList();
+            }
         }
 
         /// <summary>
@@ -336,17 +346,17 @@ namespace Http.Reepository
         /// <param name="minPrice">Minimum price filter (nullable).</param>
         /// <param name="maxPrice">Maximum price filter (nullable).</param>
         /// <param name="sellerId">Seller ID filter (nullable).</param>
+        /// <param name="transaction">Optional database transaction for atomic operations.</param>
         /// <returns>The total count of listings matching the criteria.</returns>
         public async Task<int> CountListingsAsync(
             List<uint> itemModelIds,
             uint? minPrice,
             uint? maxPrice,
-            uint? sellerId)
+            uint? sellerId,
+            System.Data.IDbTransaction transaction = null)
         {
-            await using var conn = _dbContext.Connection(-1);
-
             // Build WHERE conditions
-            var whereConditions = new List<string> { "status = 0", "expire_date > NOW()" };
+            var whereConditions = new List<string> { $"status = {ListingState.ACTIVE.Escape()}", "expire_date > NOW()" };
             var parameters = new DynamicParameters();
 
             if (itemModelIds != null && itemModelIds.Count > 0)
@@ -377,7 +387,34 @@ namespace Http.Reepository
 
             // Query single database
             var sql = $"SELECT COUNT(*) FROM marketplace_listing WHERE {whereClause}";
-            return await conn.QuerySingleAsync<int>(sql, parameters);
+            
+            if (transaction != null)
+            {
+                return await transaction.Connection.QuerySingleAsync<int>(sql, parameters, transaction);
+            }
+            else
+            {
+                await using var conn = _dbContext.Connection(-1);
+                return await conn.QuerySingleAsync<int>(sql, parameters);
+            }
+        }
+
+        /// <summary>
+        /// Counts active marketplace listings for a specific seller.
+        /// Active listings are those with status = ACTIVE and expire_date > NOW().
+        /// </summary>
+        /// <param name="sellerId">The unique identifier of the seller.</param>
+        /// <returns>The count of active listings for the seller.</returns>
+        public async Task<int> CountActiveListingsBySellerAsync(uint sellerId)
+        {
+            await using var conn = _dbContext.Connection(-1);
+            var sql = $@"
+                SELECT COUNT(*) FROM marketplace_listing 
+                WHERE seller_id = {sellerId.Escape()} 
+                    AND status = {ListingState.ACTIVE.Escape()} 
+                    AND expire_date > NOW()";
+
+            return await conn.QuerySingleAsync<int>(sql);
         }
 
         /// <summary>

@@ -457,7 +457,9 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "MARKETPLACE_ID_ALREADY_EXISTS")]
         MarketplaceIdAlreadyExists = 54, 
         [EnumMember(Value = "MARKETPLACE_INSUFFICIENT_STOCK")]
-        MarketplaceInsufficientStock = 55
+        MarketplaceInsufficientStock = 55, 
+        [EnumMember(Value = "MARKETPLACE_LISTING_LIMIT_EXCEEDED")]
+        MarketplaceListingLimitExceeded = 56
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -937,6 +939,9 @@ namespace Fb.Model.ConstValue
     public static class Marketplace
     {
         public const double ListingFee = 0.05;
+        public const int PageSize = 20;
+        public static readonly TimeSpan ExpireTime = TimeSpan.Parse("3.00:00:00");
+        public const int ListingLimit = 5;
     }
 
     public static class Mob

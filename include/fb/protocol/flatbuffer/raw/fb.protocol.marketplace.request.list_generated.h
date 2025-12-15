@@ -30,8 +30,7 @@ struct List FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CHARACTER_ID = 4,
     VT_LISTING_ID = 6,
     VT_ITEM = 8,
-    VT_PRICE = 10,
-    VT_EXPIRE_HOURS = 12
+    VT_PRICE = 10
   };
   uint32_t character_id() const {
     return GetField<uint32_t>(VT_CHARACTER_ID, 0);
@@ -45,9 +44,6 @@ struct List FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t price() const {
     return GetField<uint32_t>(VT_PRICE, 0);
   }
-  uint16_t expire_hours() const {
-    return GetField<uint16_t>(VT_EXPIRE_HOURS, 0);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_CHARACTER_ID, 4) &&
@@ -56,7 +52,6 @@ struct List FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_ITEM) &&
            verifier.VerifyTable(item()) &&
            VerifyField<uint32_t>(verifier, VT_PRICE, 4) &&
-           VerifyField<uint16_t>(verifier, VT_EXPIRE_HOURS, 2) &&
            verifier.EndTable();
   }
 };
@@ -77,9 +72,6 @@ struct ListBuilder {
   void add_price(uint32_t price) {
     fbb_.AddElement<uint32_t>(List::VT_PRICE, price, 0);
   }
-  void add_expire_hours(uint16_t expire_hours) {
-    fbb_.AddElement<uint16_t>(List::VT_EXPIRE_HOURS, expire_hours, 0);
-  }
   explicit ListBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -96,14 +88,12 @@ inline ::flatbuffers::Offset<List> CreateList(
     uint32_t character_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
-    uint32_t price = 0,
-    uint16_t expire_hours = 0) {
+    uint32_t price = 0) {
   ListBuilder builder_(_fbb);
   builder_.add_price(price);
   builder_.add_item(item);
   builder_.add_listing_id(listing_id);
   builder_.add_character_id(character_id);
-  builder_.add_expire_hours(expire_hours);
   return builder_.Finish();
 }
 
@@ -112,16 +102,14 @@ inline ::flatbuffers::Offset<List> CreateListDirect(
     uint32_t character_id = 0,
     const char *listing_id = nullptr,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
-    uint32_t price = 0,
-    uint16_t expire_hours = 0) {
+    uint32_t price = 0) {
   auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
   return fb::protocol::marketplace::request::raw::CreateList(
       _fbb,
       character_id,
       listing_id__,
       item,
-      price,
-      expire_hours);
+      price);
 }
 
 inline const fb::protocol::marketplace::request::raw::List *GetList(const void *buf) {
