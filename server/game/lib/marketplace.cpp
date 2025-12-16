@@ -325,19 +325,19 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& listi
 
         // Build and return listing (from response item data)
         co_return marketplace::listing{
-            .id            = listing_id_copy,
-            .seller_id     = 0, // Not provided in response
-            .item_data     = {.owner       = resp.item.owner,
-                              .model       = resp.item.model,
-                              .count       = resp.item.count,
-                              .durability  = resp.item.durability,
-                              .custom_name = resp.item.custom_name},
-            .price         = 0, // Not provided in response
-            .listing_fee   = 0,
-            .state         = 0,
-            .expire_date   = std::nullopt,
-            .created_date  = std::nullopt,
-            .purchase_info = std::nullopt
+            .id           = listing_id_copy,
+            .seller_id    = 0, // Not provided in response
+            .item_data    = {.owner       = resp.item.owner,
+                             .model       = resp.item.model,
+                             .count       = resp.item.count,
+                             .durability  = resp.item.durability,
+                             .custom_name = resp.item.custom_name},
+            .price        = 0, // Not provided in response
+            .listing_fee  = 0,
+            .state        = 0,
+            .expire_date  = std::nullopt,
+            .created_date = std::nullopt,
+            .purchase     = std::nullopt
         };
     }
     catch (const std::exception& e)
@@ -418,10 +418,10 @@ async::task<marketplace::search_result> marketplace::search(const search_option&
             .listing_fee = static_cast<uint32_t>(
                 listing.item.count * listing.price *
                 fb::model::const_value::marketplace::listing_fee), // Calculate listing fee based on total sale amount
-            .state         = 0,
-            .expire_date   = expire_date_opt,
-            .created_date  = created_date_opt,
-            .purchase_info = std::nullopt
+            .state        = 0,
+            .expire_date  = expire_date_opt,
+            .created_date = created_date_opt,
+            .purchase     = std::nullopt
         });
     }
 
@@ -487,10 +487,10 @@ marketplace::get_listings(const marketplace::string_vector_t& listing_ids, uint3
             .listing_fee = static_cast<uint32_t>(
                 listing.item.count * listing.price *
                 fb::model::const_value::marketplace::listing_fee), // Calculate listing fee based on total sale amount
-            .state         = static_cast<uint8_t>(listing.state),
-            .expire_date   = expire_date_opt,
-            .created_date  = created_date_opt,
-            .purchase_info = purchase_info_opt
+            .state        = static_cast<uint8_t>(listing.state),
+            .expire_date  = expire_date_opt,
+            .created_date = created_date_opt,
+            .purchase     = purchase_info_opt
         });
     }
 

@@ -42,12 +42,12 @@ public:
         std::string                        id;
         uint32_t                           seller_id = 0;
         item                               item_data;
-        uint32_t                           price         = 0;
-        uint32_t                           listing_fee   = 0;
-        uint8_t                            state         = 0; // fb::protocol::marketplace::ListingState
-        std::optional<fb::model::datetime> expire_date   = std::nullopt;
-        std::optional<fb::model::datetime> created_date  = std::nullopt;
-        std::optional<purchase_info>       purchase_info = std::nullopt;
+        uint32_t                           price        = 0;
+        uint32_t                           listing_fee  = 0;
+        uint8_t                            state        = 0; // fb::protocol::marketplace::ListingState
+        std::optional<fb::model::datetime> expire_date  = std::nullopt;
+        std::optional<fb::model::datetime> created_date = std::nullopt;
+        std::optional<purchase_info>       purchase     = std::nullopt;
 
         void to_lua(fb::lua::context* lua) const;
     };
