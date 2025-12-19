@@ -28,7 +28,8 @@ character::character(fb::game::server& server, const initial_params& params) :
     _updated_date(params.updated_date), _name(params.name), _role(params.role), _birthday(params.birthday),
     _look(params.look), _color(params.color), _armor_color(params.armor_color), _experience(params.exp),
     _sex(params.sex), _state(params.state), _level(params.level), _class(params.class_type),
-    _promotion(params.promotion), _money(params.money), _disguise(params.disguise), _title(params.title)
+    _promotion(params.promotion), _money(params.money), _disguise(params.disguise), _title(params.title),
+    _last_afk_time(fb::model::datetime())
 { }
 
 character::~character()
@@ -1594,6 +1595,18 @@ bool character::hidden(const fb::game::object& target) const
 bool character::hidden(ROLE role) const
 {
     return this->role() > role;
+}
+
+void character::update_last_afk_time()
+{
+    this->assert_thread();
+    this->_last_afk_time = fb::model::datetime();
+}
+
+fb::model::datetime& character::last_afk_time()
+{
+    this->assert_thread();
+    return this->_last_afk_time;
 }
 
 async::task<void> character::death_penalty()

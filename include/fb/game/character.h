@@ -55,26 +55,27 @@ private:
     const std::string         _name;
     ROLE                      _role;
     std::optional<uint32_t>   _birthday;
-    uint16_t                  _look              = 0;
-    uint8_t                   _color             = 0;
-    std::optional<uint8_t>    _armor_color       = 0;
-    uint32_t                  _experience        = 0;
-    NATION                    _nation            = NATION::GOGURYEO;
-    CREATURE                  _creature          = CREATURE::DRAGON;
-    SEX                       _sex               = SEX::MAN;
-    STATE                     _state             = STATE::NORMAL;
-    uint8_t                   _level             = 1;
-    CLASS                     _class             = CLASS::NONE;
-    uint8_t                   _promotion         = 0;
-    uint32_t                  _money             = 0;
-    std::optional<uint16_t>   _disguise          = 0;
-    std::string               _title             = "";
-    std::optional<uint32_t>   _group_id          = std::nullopt;
-    std::optional<uint32_t>   _clan_id           = std::nullopt;
-    uint16_t                  _weapon_damage     = 0;
-    bool                      _detect            = false;
-    mob_vector_t              _spawned_mobs      = {};
-    bool                      _super_hide        = false;
+    uint16_t                  _look          = 0;
+    uint8_t                   _color         = 0;
+    std::optional<uint8_t>    _armor_color   = 0;
+    uint32_t                  _experience    = 0;
+    NATION                    _nation        = NATION::GOGURYEO;
+    CREATURE                  _creature      = CREATURE::DRAGON;
+    SEX                       _sex           = SEX::MAN;
+    STATE                     _state         = STATE::NORMAL;
+    uint8_t                   _level         = 1;
+    CLASS                     _class         = CLASS::NONE;
+    uint8_t                   _promotion     = 0;
+    uint32_t                  _money         = 0;
+    std::optional<uint16_t>   _disguise      = 0;
+    std::string               _title         = "";
+    std::optional<uint32_t>   _group_id      = std::nullopt;
+    std::optional<uint32_t>   _clan_id       = std::nullopt;
+    uint16_t                  _weapon_damage = 0;
+    bool                      _detect        = false;
+    mob_vector_t              _spawned_mobs  = {};
+    bool                      _super_hide    = false;
+    fb::model::datetime       _last_afk_time;
     bool                      _options[0x0B + 1] = {
         1,
     };
@@ -128,32 +129,42 @@ public:
     character(fb::game::server& server, const initial_params& params);
     ~character();
 
-public:
-    void on_init() override final;
-
 private:
     uint32_t limited_exp(uint32_t exp) const;
 
 public:
-    async::task<size_t> send(const fb::stream& stream, bool encrypt = true, bool wrap = true) override final;
-    async::task<size_t> send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true) override final;
-    OBJECT_TYPE         what() const override final;
-    [[nodiscard]] async::task<bool>
-    map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT, bool notify = true) override final;
-
-public:
-    bool                                               inited() const;
-    ROLE                                               role() const;
-    void                                               role(ROLE value);
+    // clang-format off
+    void                                               on_init() override final;
+    async::task<size_t>                                send(const fb::stream& stream, bool encrypt = true, bool wrap = true) override final;
+    async::task<size_t>                                send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true) override final;
+    OBJECT_TYPE                                        what() const override final;
     async::task<void>                                  attack(DURATION duration = DURATION::ATTACK) override final;
     uint32_t                                           auto_attack_damage(MOB_SIZE size) const override final;
     void                                               action(ACTION action, DURATION duration, uint8_t sound = 0x00) override final;
     const std::string&                                 name() const override final;
+    uint16_t                                           look() const override final;
+    uint8_t                                            color() const override final;
+    [[nodiscard]] async::task<bool>                    map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT, bool notify = true) override final;
+    void                                               update_map(const fb::game::map& map) override final;
+    void                                               update_bgm(uint16_t bgm, uint8_t volume) override final;
+    void                                               update_position() override final;
+    bool                                               condition(const std::vector<fb::model::dsl>& conditions) const override final;
+    fb::thread*                                        thread() const override final;
+    void                                               assert_thread() const override final;
+    void                                               update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) override final;
+    void                                               update_id() override final;
+    bool                                               super_hide() const override final;
+    bool                                               hidden(const fb::game::object& target) const override final;
+    // clang-format on
+
+public:
+    // clang-format off
+    bool                                               inited() const;
+    ROLE                                               role() const;
+    void                                               role(ROLE value);
     const std::optional<uint32_t>&                     birthday() const;
     void                                               birthday(const std::optional<uint32_t>& value);
-    uint16_t                                           look() const override final;
     void                                               look(uint16_t value);
-    uint8_t                                            color() const override final;
     void                                               color(uint8_t value);
     std::optional<uint8_t>                             armor_color() const;
     void                                               armor_color(std::optional<uint8_t> value);
@@ -192,15 +203,12 @@ public:
     void                                               option(OPTION key, bool value, bool notify = true);
     bool                                               option_toggle(OPTION key, bool notify = true);
     void                                               update_option();
-    void                                               update_map(const fb::game::map& map) override final;
     void                                               update_map();
     void                                               update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size, uint16_t crc = 0);
-    void                                               update_bgm(uint16_t bgm, uint8_t volume) override final;
     void                                               update_buff();
     void                                               update_internal();
     void                                               update_time(uint16_t hours);
     void                                               init();
-    void                                               update_position() override final;
     const std::string&                                 title() const;
     void                                               title(const std::string& value);
     const std::optional<uint32_t>&                     group_id() const;
@@ -218,14 +226,10 @@ public:
     void                                               ride();
     void                                               unride();
     bool                                               alive() const;
-    bool                                               condition(const std::vector<fb::model::dsl>& conditions) const override final;
     void                                               message(const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
     async::task<void>                                  process_system_mails();
     void                                               process_storage_pending();
-    fb::thread*                                        thread() const override final;
     void                                               thread(fb::thread* value);
-    void                                               assert_thread() const override final;
-    void                                               update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) override final;
     void                                               browse_ch(const character& ch);
     void                                               item_tooltip(const item& iteem, uint16_t position);
     void                                               show_user_list();
@@ -233,7 +237,6 @@ public:
     void                                               timer(uint32_t time, TIMER_TYPE type);
     void                                               weather(WEATHER_TYPE weather);
     void                                               bright(uint8_t value);
-    void                                               update_id() override final;
     void                                               weapon_damage(uint16_t value);
     uint16_t                                           weapon_damage() const;
     void                                               detect(bool value);
@@ -244,10 +247,11 @@ public:
     async::task<void>                                  death_penalty();
     bool                                               reward(const std::vector<fb::model::dsl>& reward);
     fb::protocol::internal::Character                  to_protocol() const;
-    bool                                               super_hide() const override final;
     void                                               super_hide(bool enabled);
-    bool                                               hidden(const fb::game::object& target) const override final;
     bool                                               hidden(ROLE role) const;
+    void                                               update_last_afk_time();
+    fb::model::datetime&                               last_afk_time();
+    // clang-format on
 };
 
 class character::container
@@ -275,12 +279,13 @@ public:
     ~container() = default;
 
 public:
-    bool            insert(character_ptr_t ch);
-    void            remove(character_ptr_t ch);
-    character_ptr_t find(uint32_t uid) const;
-    character_ptr_t find(const std::string& name) const;
-    bool            contains(const std::string& name) const;
-    bool            contains(uint32_t uid) const;
+    // clang-format off
+    bool              insert(character_ptr_t ch);
+    void              remove(character_ptr_t ch);
+    character_ptr_t   find(uint32_t uid) const;
+    character_ptr_t   find(const std::string& name) const;
+    bool              contains(const std::string& name) const;
+    bool              contains(uint32_t uid) const;
     async::task<void> foreach (character_function_t&& fn, character_predicate_t predicate = nullptr);
     async::task<void> foreach (character_function_t&& fn, const std::vector<character_ptr_t>& characters);
     async::task<void> foreach_async(character_async_function_t&& fn, character_predicate_t predict = nullptr);
@@ -292,6 +297,7 @@ public:
     void              foreach_enqueue(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss = nullptr);
     async::task<void> invoke(const std::string& name, character_function_t fn, character_function_t_miss miss = nullptr);
     async::task<void> invoke_async(const std::string& name, character_async_function_t fn, character_function_t_miss miss = nullptr);
+    // clang-format on
 
 public:
     character_ptr_t operator[] (uint32_t uid);
@@ -306,9 +312,13 @@ public:
     const_iterator cend() const;
 };
 
-struct character::listener_t : public virtual life::listener_t, public virtual dialog::listener_t, public virtual trade::listener_t, public virtual equipment::listener_t
+struct character::listener_t : public virtual life::listener_t,
+                               public virtual dialog::listener_t,
+                               public virtual trade::listener_t,
+                               public virtual equipment::listener_t
 {
 public:
+    // clang-format off
     virtual void              on_message(character& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE)                                                 = 0;
     virtual void              on_option_changed(character& me, OPTION option, bool enabled)                                                                                  = 0;
     virtual void              on_update_option(character& me)                                                                                                                = 0;
@@ -337,6 +347,7 @@ public:
     virtual void              on_level_up(character& me)                                                                                                                     = 0;
     virtual void              on_update(character& me, UPDATE_STATE_LEVEL level = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL)                         = 0;
     virtual async::task<bool> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position)                                                           = 0;
+    // clang-format on
 };
 
 } // namespace fb::game

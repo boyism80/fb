@@ -113,6 +113,8 @@ private:
 
                 reader.flush(); // remove magic code and size
 
+                socket.update_last_packet_time();
+
                 if (!this->handler.protocol.has_deserializer(cmd))
                 {
                     fb::logger::warn(std::format("Undefined protocol. [{:#x}]", cmd));
