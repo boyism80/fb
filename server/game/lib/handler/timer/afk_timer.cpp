@@ -14,6 +14,13 @@ afk_timer::afk_timer(fb::game::server& server) :
 
 async::task<void> afk_timer::handle(const fb::model::datetime& now, std::thread::id id)
 {
+#if defined(DEBUG) || defined(_DEBUG)
+    constexpr auto idle_threshold = 30s;
+#else
+    constexpr auto idle_threshold = 5min;
+#endif
+    constexpr auto action_interval = 10s;
+
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
 
@@ -32,21 +39,19 @@ async::task<void> afk_timer::handle(const fb::model::datetime& now, std::thread:
         auto        elapsed          = now - last_packet_time;
 
         // Check if 5 minutes (300 seconds) have passed since last packet
-        constexpr auto idle_threshold = 5min;
         if (elapsed < idle_threshold)
             continue;
 
         // Check if 10 seconds have passed since last idle action
         auto action_elapsed = now - ch->last_afk_time();
 
-        constexpr auto action_interval = 10s;
         if (action_elapsed < action_interval)
             continue;
 
         // Execute attack action (temporary, will be changed to SLEEP when available)
         try
         {
-            ch->action(ACTION::ATTACK, DURATION::ATTACK, 0x00);
+            ch->action(ACTION::SLEEP, DURATION::EMOTION);
             // Update last idle action time only for timer-triggered actions
             ch->update_last_afk_time();
         }
