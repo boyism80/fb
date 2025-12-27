@@ -24,12 +24,12 @@ character::character(fb::game::server& server, const initial_params& params) :
               .direction = params.direction,
               }
 }),
-    listener(server.listener), id(params.id), socket(params.socket), _pw(params.pw), _created_date(params.created_date),
-    _updated_date(params.updated_date), _name(params.name), _role(params.role), _birthday(params.birthday),
-    _look(params.look), _color(params.color), _armor_color(params.armor_color), _experience(params.exp),
-    _sex(params.sex), _state(params.state), _level(params.level), _class(params.class_type),
+    listener(server.listener), id(params.id), _socket(params.socket), _pw(params.pw),
+    _created_date(params.created_date), _updated_date(params.updated_date), _name(params.name), _role(params.role),
+    _birthday(params.birthday), _look(params.look), _color(params.color), _armor_color(params.armor_color),
+    _experience(params.exp), _sex(params.sex), _state(params.state), _level(params.level), _class(params.class_type),
     _promotion(params.promotion), _money(params.money), _disguise(params.disguise), _title(params.title),
-    _last_afk_time(fb::model::datetime())
+    _nation(params.nation), _creature(params.creature), _last_afk_time(fb::model::datetime())
 { }
 
 character::~character()
@@ -50,24 +50,26 @@ async::task<size_t> character::send(const fb::stream& stream, bool encrypt, bool
 {
     this->assert_thread();
 
-    if (!this->socket.is_open())
+    auto socket_ptr = this->_socket.lock();
+    if (socket_ptr == nullptr || !socket_ptr->is_open())
     {
-        co_return 0; // Gracefully return 0 instead of throwing
+        co_return 0; // Socket has been destroyed or is not open
     }
 
-    co_return co_await this->socket.send(stream, encrypt, wrap);
+    co_return co_await socket_ptr->send(stream, encrypt, wrap);
 }
 
 async::task<size_t> character::send(const fb::protocol::header& response, bool encrypt, bool wrap)
 {
     this->assert_thread();
 
-    if (!this->socket.is_open())
+    auto socket_ptr = this->_socket.lock();
+    if (socket_ptr == nullptr || !socket_ptr->is_open())
     {
-        co_return 0; // Gracefully return 0 instead of throwing
+        co_return 0; // Socket has been destroyed or is not open
     }
 
-    co_return co_await this->socket.send(response, encrypt, wrap);
+    co_return co_await socket_ptr->send(response, encrypt, wrap);
 }
 
 OBJECT_TYPE character::what() const
@@ -388,10 +390,13 @@ CREATURE character::creature() const
 
 bool character::creature(CREATURE value)
 {
+    static const std::unordered_set<CREATURE> valid_creatures = {CREATURE::DRAGON,
+                                                                 CREATURE::PHOENIX,
+                                                                 CREATURE::TIGER,
+                                                                 CREATURE::TURTLE};
     this->assert_thread();
 
-    if (value != CREATURE::DRAGON && value != CREATURE::PHOENIX && value != CREATURE::TIGER &&
-        value != CREATURE::TURTLE)
+    if (valid_creatures.contains(value) == false)
         return false;
 
     this->_creature = value;
@@ -1364,14 +1369,14 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.role             = static_cast<uint8_t>(this->_role);
     dto.look             = this->_look;
     dto.color            = this->_color;
-    dto.sex              = (uint16_t)this->_sex;
-    dto.nation           = (uint16_t)this->_nation;
-    dto.creature         = (uint16_t)this->_creature;
+    dto.sex              = static_cast<uint8_t>(this->_sex);
+    dto.nation           = static_cast<uint8_t>(this->_nation);
+    dto.creature         = static_cast<uint8_t>(this->_creature);
     dto.map              = this->_map != nullptr ? this->_map->model.id : 0;
     dto.position         = fb::protocol::internal::Position{this->_position.x, this->_position.y};
-    dto.direction        = (uint8_t)this->_direction;
-    dto.state            = (uint8_t)this->_state;
-    dto.class_type       = (uint8_t)this->_class;
+    dto.direction        = static_cast<uint8_t>(this->_direction);
+    dto.state            = static_cast<uint8_t>(this->_state);
+    dto.class_type       = static_cast<uint8_t>(this->_class);
     dto.promotion        = this->_promotion;
     dto.level            = this->_level;
     dto.exp              = this->_experience;
@@ -1768,4 +1773,9 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
         this->money_add(money);
 
     return true;
+}
+
+std::shared_ptr<fb::socket<character>> character::socket_ptr() const
+{
+    return this->_socket.lock();
 }

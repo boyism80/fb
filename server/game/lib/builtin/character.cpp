@@ -1770,9 +1770,10 @@ int builtin::character::builtin_nation(lua_State* L)
         auto value = static_cast<NATION>(lua->tointeger(2));
         auto weak  = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->nation(value);
+            auto success = ch->nation(value);
             return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
+                lua->pushboolean(success);
+                return 1;
             });
         });
     }
@@ -2787,14 +2788,29 @@ int builtin::character::builtin_creature(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto weak = ch->weak_from_this_as<fb::game::character>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto creature = ch->creature();
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(creature);
-            return 1;
+    if (argc == 1)
+    {
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            auto creature = ch->creature();
+            return lua->ensure_resume(*server, weak, [=]() {
+                lua->pushinteger(static_cast<uint8_t>(creature));
+                return 1;
+            });
         });
-    });
+    }
+    else
+    {
+        auto value = static_cast<CREATURE>(lua->tointeger(2));
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            auto success = ch->creature(value);
+            return lua->ensure_resume(*server, weak, [=]() {
+                lua->pushboolean(success);
+                return 1;
+            });
+        });
+    }
 }
 
 int fb::game::builtin::character::builtin_teleport(lua_State* L)

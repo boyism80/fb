@@ -1,4 +1,6 @@
 #include <fb/game/protocol/bulletin/bulletin_sections.h>
+#include <algorithm>
+#include <vector>
 
 using table = fb::model::table;
 
@@ -19,10 +21,19 @@ async::task<void> bulletin_sections::serialize(fb::stream_writer<big_endian>& wr
     writer.write<uint8_t>(0x01);
     writer.write<uint16_t>(size);
 
-    for (const auto& [k, v] : table::bulletin)
+    auto sorted_items = std::vector<std::pair<uint32_t, const fb::model::bulletin*>>{};
+    for (const auto& pair : table::bulletin)
+    {
+        sorted_items.emplace_back(pair.first, &pair.second);
+    }
+    std::sort(sorted_items.begin(), sorted_items.end(), [](const auto& a, const auto& b) {
+        return a.first < b.first;
+    });
+
+    for (const auto& [k, v] : sorted_items)
     {
         writer.write<uint16_t>(k);
-        writer.write<std::string>(v.name);
+        writer.write<std::string>(v->name);
     }
 }
 #else

@@ -79,21 +79,21 @@ private:
     bool                      _options[0x0B + 1] = {
         1,
     };
+    std::weak_ptr<fb::socket<character>> _socket;
 
 public:
-    const uint32_t         id;
-    fb::socket<character>& socket;
-    fb::game::trade        trade;
-    fb::game::items        items;
-    fb::game::quests       quests;
-    fb::game::bulletin     bulletin = fb::game::bulletin(*this);
-    fb::game::mail_box     mail_box = fb::game::mail_box(*this);
-    fb::game::storage_box  storage_box;
-    fb::game::marketplace  marketplace;
-    fb::lua::context*      dialog = nullptr;
-    achievement_map_t      achievements;
-    listener_t&            listener;
-    character_stat         stat;
+    const uint32_t        id;
+    fb::game::trade       trade;
+    fb::game::items       items;
+    fb::game::quests      quests;
+    fb::game::bulletin    bulletin = fb::game::bulletin(*this);
+    fb::game::mail_box    mail_box = fb::game::mail_box(*this);
+    fb::game::storage_box storage_box;
+    fb::game::marketplace marketplace;
+    fb::lua::context*     dialog = nullptr;
+    achievement_map_t     achievements;
+    listener_t&           listener;
+    character_stat        stat;
 
 private:
     using object::based;
@@ -102,27 +102,29 @@ public:
     struct initial_params : fb::game::life::initial_params
     {
     public:
-        fb::socket<character>&  socket;
-        uint32_t                id = 0;
-        std::string             name;
-        std::string             pw;
-        std::optional<uint32_t> birthday = std::nullopt;
-        fb::model::datetime     created_date;
-        fb::model::datetime     updated_date;
-        ROLE                    role       = ROLE::USER;
-        CLASS                   class_type = CLASS::NONE;
-        uint8_t                 promotion  = 0;
-        uint16_t                color      = 0;
-        DIRECTION               direction  = DIRECTION::BOTTOM;
-        uint16_t                look       = 0;
-        uint32_t                money      = 0;
-        SEX                     sex        = SEX::MAN;
-        uint8_t                 level      = 1;
-        uint32_t                exp        = 0;
-        STATE                   state      = STATE::NORMAL;
-        std::string             title;
-        std::optional<uint8_t>  armor_color = std::nullopt;
-        std::optional<uint16_t> disguise    = std::nullopt;
+        std::shared_ptr<fb::socket<character>> socket;
+        uint32_t                               id = 0;
+        std::string                            name;
+        std::string                            pw;
+        std::optional<uint32_t>                birthday = std::nullopt;
+        fb::model::datetime                    created_date;
+        fb::model::datetime                    updated_date;
+        ROLE                                   role       = ROLE::USER;
+        CLASS                                  class_type = CLASS::NONE;
+        uint8_t                                promotion  = 0;
+        uint16_t                               color      = 0;
+        DIRECTION                              direction  = DIRECTION::BOTTOM;
+        uint16_t                               look       = 0;
+        uint32_t                               money      = 0;
+        SEX                                    sex        = SEX::MAN;
+        uint8_t                                level      = 1;
+        uint32_t                               exp        = 0;
+        STATE                                  state      = STATE::NORMAL;
+        std::string                            title;
+        std::optional<uint8_t>                 armor_color = std::nullopt;
+        std::optional<uint16_t>                disguise    = std::nullopt;
+        NATION                                 nation      = NATION::GOGURYEO;
+        CREATURE                               creature    = CREATURE::DRAGON;
     };
 
 public:
@@ -251,6 +253,7 @@ public:
     bool                                               hidden(ROLE role) const;
     void                                               update_last_afk_time();
     fb::model::datetime&                               last_afk_time();
+    std::shared_ptr<fb::socket<character>>             socket_ptr() const;
     // clang-format on
 };
 
