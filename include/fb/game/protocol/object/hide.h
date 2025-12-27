@@ -7,9 +7,9 @@
 #include <fb/game/object.h>
 #endif
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::response {
+
+using namespace fb::model::enum_value;
 
 class hide : public fb::protocol::header
 {

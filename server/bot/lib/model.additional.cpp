@@ -7,7 +7,8 @@
 #include <shared_mutex>
 #include <mutex>
 
-const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_value::CLASS cls, uint8_t promotion) const
+const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_value::CLASS cls,
+                                                                uint8_t                      promotion) const
 {
     try
     {
@@ -20,7 +21,9 @@ const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_
     }
 }
 
-bool fb::model::__promotion::name2class(const std::string& name, fb::model::enum_value::CLASS& cls, uint8_t& promotion) const
+bool fb::model::__promotion::name2class(const std::string&            name,
+                                        fb::model::enum_value::CLASS& cls,
+                                        uint8_t&                      promotion) const
 {
     static auto cache       = std::unordered_map<std::string, std::pair<fb::model::enum_value::CLASS, uint8_t>>{};
     static auto cache_mutex = std::shared_mutex{};
@@ -121,8 +124,10 @@ std::vector<fb::model::item*> fb::model::__item::name2item_prefix(const std::str
 {
     static auto sorted_items = std::map<std::string, fb::model::item*>{};
     static auto once_flag    = std::once_flag{};
+    static auto read_mutex   = std::shared_mutex{};
 
     std::call_once(once_flag, [this]() {
+        auto lock = std::lock_guard(read_mutex);
         for (auto& [k, v] : *this)
         {
             sorted_items[v.name] = &v;
@@ -132,6 +137,7 @@ std::vector<fb::model::item*> fb::model::__item::name2item_prefix(const std::str
     auto result = std::vector<fb::model::item*>{};
 
     {
+        auto lock = std::shared_lock(read_mutex);
         if (prefix.empty())
         {
             result.reserve(sorted_items.size());

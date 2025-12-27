@@ -3,11 +3,13 @@
 
 using namespace fb::game::handler::protocol;
 
+namespace game_reqs = fb::protocol::game::request;
+
 update_option::update_option(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::update_option>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::update_option>(server)
 { }
 
-async::task<bool> update_option::handle(fb::socket<character>& session, fb::protocol::game::request::update_option& request)
+async::task<bool> update_option::handle(fb::socket<character>& session, game_reqs::update_option& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -41,8 +43,8 @@ async::task<bool> update_option::handle(fb::socket<character>& session, fb::prot
             auto group_id = ch->group_id();
             if (group_id.has_value())
             {
-                // Currently in a group - use handle_group_action to handle both master (destroy) and member (leave) cases
-                // Note: handle_group_action checks OPTION::GROUP, but at this point it's still true
+                // Currently in a group - use handle_group_action to handle both master (destroy) and member (leave)
+                // cases Note: handle_group_action checks OPTION::GROUP, but at this point it's still true
                 try
                 {
                     co_await this->server.handle_group_action(*ch, ch->name());
@@ -54,7 +56,10 @@ async::task<bool> update_option::handle(fb::socket<character>& session, fb::prot
             }
         }
 
-        auto&& resp = co_await this->server.http.post("internal", "/in-game/option", SetOption{ch->id, static_cast<uint8_t>(option), next});
+        auto&& resp =
+            co_await this->server.http.post("internal",
+                                            "/in-game/option",
+                                            internal_reqs::SetOption{ch->id, static_cast<uint8_t>(option), next});
         co_await this->server.threads.switching(weak);
 
         if (resp.success == false)

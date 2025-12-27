@@ -4,11 +4,14 @@
 
 using namespace fb::login::handler::protocol;
 
+namespace internal_reqs = fb::protocol::internal::request;
+
 change_password::change_password(fb::login::server& server) :
     fb::handler::protocol<fb::login::server, fb::protocol::login::request::update_pw>(server)
 { }
 
-async::task<bool> change_password::handle(fb::socket<fb::login::session>& session, fb::protocol::login::request::update_pw& request)
+async::task<bool> change_password::handle(fb::socket<fb::login::session>&          session,
+                                          fb::protocol::login::request::update_pw& request)
 {
     auto weak = session.weak_from_this_as<fb::socket<fb::login::session>>();
     try
@@ -18,40 +21,49 @@ async::task<bool> change_password::handle(fb::socket<fb::login::session>& sessio
         auto delay = fb::config<uint32_t>("transfer delay");
         co_await this->server.sleep(std::chrono::seconds(delay));
 
-        if (request.name.length() < fb::config("name_size:min").asInt() || request.name.length() > fb::config("name_size:max").asInt())
+        if (request.name.length() < fb::config("name_size:min").asInt() ||
+            request.name.length() > fb::config("name_size:max").asInt())
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
         // Name must be full-hangul characters
-        if (fb::config<bool>("login:account option:allow other language") == false && assert_korean(request.name) == false)
+        if (fb::config<bool>("login:account option:allow other language") == false &&
+            assert_korean(request.name) == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
         // Name cannot contains subcharacters in forbidden list
         if (this->server.is_forbidden(request.name))
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
-        if (request.pw.length() < fb::config("pw_size:min").asInt() || request.pw.length() > fb::config("pw_size:max").asInt())
+        if (request.pw.length() < fb::config("pw_size:min").asInt() ||
+            request.pw.length() > fb::config("pw_size:max").asInt())
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
 
-        if (request.new_pw.length() < fb::config("pw_size:min").asInt() || request.new_pw.length() > fb::config("pw_size:max").asInt())
+        if (request.new_pw.length() < fb::config("pw_size:min").asInt() ||
+            request.new_pw.length() > fb::config("pw_size:max").asInt())
             throw newpw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
 
         // TODO : 너무 쉬운 비밀번호인지 체크
         if (request.pw == request.new_pw)
             throw newpw_exception(_TEXT(MESSAGE_ACCOUNT_NEW_PW_EQUALIZATION));
 
-        auto&& response = co_await this->server.http.get<internal::response::GetUid>("internal", std::format("/account/uid/{}", request.name));
+        auto&& resp1 =
+            co_await this->server.http.get<internal::response::GetUid>("internal",
+                                                                       std::format("/account/uid/{}", request.name));
         co_await this->server.threads.switching(weak);
 
-        if (response.success == false)
+        if (resp1.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
-        auto uid = response.uid;
+        auto uid = resp1.uid;
 
-        auto&& response2 = co_await this->server.http.post("internal", "/account/change-pw", ChangePw{uid, request.pw, request.new_pw, request.birthday});
+        auto&& resp2 =
+            co_await this->server.http.post("internal",
+                                            "/account/change-pw",
+                                            internal_reqs::ChangePw{uid, request.pw, request.new_pw, request.birthday});
 
         co_await this->server.threads.switching(weak);
 
-        switch (static_cast<ERROR_CODE>(response2.error_code))
+        switch (static_cast<ERROR_CODE>(resp2.error_code))
         {
         case ERROR_CODE::NOT_FOUND_CHARACTER: // id wrong
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));

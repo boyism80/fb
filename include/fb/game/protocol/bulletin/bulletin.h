@@ -8,9 +8,9 @@
 #undef DELETE
 #endif
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::request {
+
+using namespace fb::model::enum_value;
 
 class bulletin : public fb::protocol::header
 {

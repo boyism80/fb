@@ -59,11 +59,12 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     auto& class_name = table::promotion[this->ch.cls()][this->ch.promotion()].name;
     writer.write<std::string>(class_name);
 
-    auto equipments = std::array<std::shared_ptr<fb::game::equipment>, 5>{this->ch.items.helmet(),
-                                                                          this->ch.items.ring(EQUIPMENT_POSITION::LEFT),
-                                                                          this->ch.items.ring(EQUIPMENT_POSITION::RIGHT),
-                                                                          this->ch.items.auxiliary(EQUIPMENT_POSITION::LEFT),
-                                                                          this->ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT)};
+    auto equipments =
+        std::array<std::shared_ptr<fb::game::equipment>, 5>{this->ch.items.helmet(),
+                                                            this->ch.items.ring(EQUIPMENT_POSITION::LEFT),
+                                                            this->ch.items.ring(EQUIPMENT_POSITION::RIGHT),
+                                                            this->ch.items.auxiliary(EQUIPMENT_POSITION::LEFT),
+                                                            this->ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT)};
     for (int i = 0, size = equipments.size(); i < size; i++)
     {
         if (equipments[i] == nullptr)
@@ -88,7 +89,7 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
         auto& model = achievement->model;
         writer.write<uint8_t>(model.look);
         writer.write<uint8_t>(model.color);
-        writer.write<std::string>(achievement->text.value_or(model.text));
+        writer.write<std::string>(achievement->text.value_or(model.text.value_or("")));
     }
     writer.write<uint8_t>(0x00);
 }

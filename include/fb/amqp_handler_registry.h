@@ -10,9 +10,9 @@
 #include <chrono>
 #include <thread>
 
-using namespace std::chrono_literals;
-
 namespace fb {
+
+using namespace std::chrono_literals;
 
 template <typename T>
 class acceptor;
@@ -25,9 +25,10 @@ public:
     using initialize_handler = std::function<void(fb::amqp::socket&)>; ///< Type for AMQP initialization handler
 
 private:
-    fb::acceptor<T>&                                                            _owner;    ///< Reference to the owner acceptor
-    std::unordered_map<std::string, std::unordered_map<uint32_t, handler_func>> _handlers; ///< Maps exchange+routing_key to handlers
-    std::unique_ptr<fb::amqp::socket>                                           _amqp;     ///< AMQP connection for inter-service communication
+    fb::acceptor<T>& _owner; ///< Reference to the owner acceptor
+    std::unordered_map<std::string, std::unordered_map<uint32_t, handler_func>>
+                                      _handlers; ///< Maps exchange+routing_key to handlers
+    std::unique_ptr<fb::amqp::socket> _amqp;     ///< AMQP connection for inter-service communication
 
 public:
     initialize_handler on_initialize; ///< Handler called after AMQP connection is established
@@ -61,7 +62,9 @@ public:
 
                 if (connected == false)
                 {
-                    fb::logger::warn("Failed to connect to RabbitMQ at {}:{}", fb::config<std::string>("amqp:internal:ip"), fb::config<uint16_t>("amqp:internal:port"));
+                    fb::logger::warn("Failed to connect to RabbitMQ at {}:{}",
+                                     fb::config<std::string>("amqp:internal:ip"),
+                                     fb::config<uint16_t>("amqp:internal:port"));
                     // Clean up failed connection before retry
                     this->_amqp.reset();
                     std::this_thread::sleep_for(1s); // Wait before retry
@@ -114,8 +117,8 @@ public:
         auto cmd = static_cast<uint32_t>(message_type::FlatBufferProtocolType);
         this->_handlers[route].insert({cmd, [this](const uint8_t* ptr) -> async::task<void> {
                                            auto  protocol = message_type::Deserialize(ptr);
-                                           auto& server   = static_cast<typename HandlerType::server_type&>(this->_owner);
-                                           auto  handler  = std::make_shared<HandlerType>(server);
+                                           auto& server = static_cast<typename HandlerType::server_type&>(this->_owner);
+                                           auto  handler = std::make_shared<HandlerType>(server);
                                            co_await handler->handle(protocol);
                                        }});
     }
@@ -140,7 +143,10 @@ public:
         }
         catch (const std::exception& e)
         {
-            fb::logger::fatal("Failed to declare queue with route key '{}' for exchange '{}': {}", route_key, exchange, e.what());
+            fb::logger::fatal("Failed to declare queue with route key '{}' for exchange '{}': {}",
+                              route_key,
+                              exchange,
+                              e.what());
             throw;
         }
     }

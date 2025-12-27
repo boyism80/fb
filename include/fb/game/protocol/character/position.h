@@ -8,9 +8,9 @@
 #include <fb/game/map.h>
 #endif
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::response {
+
+using namespace fb::model::enum_value;
 
 class position : public fb::protocol::header
 {

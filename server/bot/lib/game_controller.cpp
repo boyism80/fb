@@ -1,7 +1,7 @@
 #include <fb/bot/game_controller.h>
 #include <fb/bot/container.h>
 
-namespace fb::bot {
+using namespace fb::bot;
 
 game_bot_controller::game_bot_controller(bot_container& container) :
     bot_controller<game_bot>(container)
@@ -52,18 +52,18 @@ async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
     co_return;
 }
 
-async::task<void> game_bot_controller::on_time(game_bot& bot, const fb::protocol::game::response::time& response)
+async::task<void> game_bot_controller::on_time(game_bot& bot, const game_resp::time& response)
 {
     co_return;
 }
 
-async::task<void> game_bot_controller::on_map_config(game_bot& bot, const fb::protocol::game::response::map_config& response)
+async::task<void> game_bot_controller::on_map_config(game_bot& bot, const game_resp::map_config& response)
 {
     bot.set_map(response.id);
     co_return;
 }
 
-async::task<void> game_bot_controller::on_state(game_bot& bot, const fb::protocol::game::response::update_internal& response)
+async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal& response)
 {
     // Update character information based on the state level received
     if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::BASED))
@@ -101,16 +101,16 @@ async::task<void> game_bot_controller::on_state(game_bot& bot, const fb::protoco
     co_return;
 }
 
-async::task<void> game_bot_controller::on_option(game_bot& bot, const fb::protocol::game::response::option& response)
+async::task<void> game_bot_controller::on_option(game_bot& bot, const game_resp::option& response)
 {
     co_return;
 }
 
-async::task<void> game_bot_controller::on_message(game_bot& bot, const fb::protocol::game::response::message& response)
+async::task<void> game_bot_controller::on_message(game_bot& bot, const game_resp::message& response)
 {
     // if (response.text == fb::model::const_value::string::MESSAGE_NOT_READY_GAME_SERVER)
     //{
-    //     bot.send(fb::protocol::game::request::chat(false, "/랜덤이동"));
+    //     bot.send(game_reqs::chat(false, "/랜덤이동"));
     // }
 
     if (response.type == MESSAGE_TYPE::NOTIFY)
@@ -122,43 +122,43 @@ async::task<void> game_bot_controller::on_message(game_bot& bot, const fb::proto
 
         auto id  = what["id"].str();
         auto msg = std::format("\"{}\"에 대한 응답입니다.", what["msg"].str());
-        bot.send(fb::protocol::game::request::whisper(id, msg));
+        bot.send(game_reqs::whisper(id, msg));
     }
 
     co_return;
 }
 
-async::task<void> game_bot_controller::on_sequence(game_bot& bot, const fb::protocol::game::response::id& response)
+async::task<void> game_bot_controller::on_sequence(game_bot& bot, const game_resp::id& response)
 {
     bot.set_oid(response.oid);
     co_return;
 }
 
-async::task<void> game_bot_controller::on_spell_update(game_bot& bot, const fb::protocol::game::response::spell_update& response)
+async::task<void> game_bot_controller::on_spell_update(game_bot& bot, const game_resp::spell_update& response)
 {
     // Update the bot's spell inventory with the new or updated spell
     bot.update_spell(response.index, response.name, response.type);
     co_return;
 }
 
-async::task<void> game_bot_controller::on_spell_remove(game_bot& bot, const fb::protocol::game::response::spell_remove& response)
+async::task<void> game_bot_controller::on_spell_remove(game_bot& bot, const game_resp::spell_remove& response)
 {
     // Remove the spell from the bot's spell inventory
     bot.remove_spell(response.index);
     co_return;
 }
 
-async::task<void> game_bot_controller::on_chat(game_bot& bot, const fb::protocol::game::response::chat& response)
+async::task<void> game_bot_controller::on_chat(game_bot& bot, const game_resp::chat& response)
 {
     co_return;
 }
 
-async::task<void> game_bot_controller::on_action(game_bot& bot, const fb::protocol::game::response::action& response)
+async::task<void> game_bot_controller::on_action(game_bot& bot, const game_resp::action& response)
 {
     co_return;
 }
 
-async::task<void> game_bot_controller::on_direction(game_bot& bot, const fb::protocol::game::response::direction& response)
+async::task<void> game_bot_controller::on_direction(game_bot& bot, const game_resp::direction& response)
 {
     // Update the bot's direction from the server response
     // Only update if the response is for this bot (matching oid)
@@ -170,13 +170,13 @@ async::task<void> game_bot_controller::on_direction(game_bot& bot, const fb::pro
     co_return;
 }
 
-async::task<void> game_bot_controller::on_position(game_bot& bot, const fb::protocol::game::response::position& response)
+async::task<void> game_bot_controller::on_position(game_bot& bot, const game_resp::position& response)
 {
     bot.set_position(response.abs);
     co_return;
 }
 
-async::task<void> game_bot_controller::on_move(game_bot& bot, const fb::protocol::game::response::move& response)
+async::task<void> game_bot_controller::on_move(game_bot& bot, const game_resp::move& response)
 {
     if (bot.oid() != response.id)
         co_return;
@@ -185,11 +185,11 @@ async::task<void> game_bot_controller::on_move(game_bot& bot, const fb::protocol
     co_return;
 }
 
-async::task<void> game_bot_controller::on_map(game_bot& bot, const fb::protocol::game::response::map_config& response)
+async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config& response)
 {
     if (response.id == 1)
     {
-        // bot.send(fb::protocol::game::request::chat(false, "/랜덤이동"));
+        // bot.send(game_reqs::chat(false, "/랜덤이동"));
     }
     else
     {
@@ -209,19 +209,19 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     co_return;
 }
 
-async::task<void> game_bot_controller::on_effect(game_bot& bot, const fb::protocol::game::response::effect& response)
+async::task<void> game_bot_controller::on_effect(game_bot& bot, const game_resp::effect& response)
 {
     // Effect is a one-time event, no need to store state
     co_return;
 }
 
-async::task<void> game_bot_controller::on_hide(game_bot& bot, const fb::protocol::game::response::hide& response)
+async::task<void> game_bot_controller::on_hide(game_bot& bot, const game_resp::hide& response)
 {
     // Hide events are for other players disappearing, not relevant for bot's own state
     co_return;
 }
 
-async::task<void> game_bot_controller::on_die(game_bot& bot, const fb::protocol::game::response::die& response)
+async::task<void> game_bot_controller::on_die(game_bot& bot, const game_resp::die& response)
 {
     // Update the bot's death state if the response is for this bot
     if (bot.oid() == response.oid)
@@ -231,40 +231,40 @@ async::task<void> game_bot_controller::on_die(game_bot& bot, const fb::protocol:
     co_return;
 }
 
-async::task<void> game_bot_controller::on_buff(game_bot& bot, const fb::protocol::game::response::spell_buff& response)
+async::task<void> game_bot_controller::on_buff(game_bot& bot, const game_resp::spell_buff& response)
 {
     // Add the buff to the bot's active buffs by name
     bot.add_buff(response.name);
     co_return;
 }
 
-async::task<void> game_bot_controller::on_unbuff(game_bot& bot, const fb::protocol::game::response::spell_unbuff& response)
+async::task<void> game_bot_controller::on_unbuff(game_bot& bot, const game_resp::spell_unbuff& response)
 {
     // Remove the buff from the bot's active buffs by name
     bot.remove_buff(response.buff_name);
     co_return;
 }
 
-async::task<void> game_bot_controller::on_update(game_bot& bot, const fb::protocol::game::response::update& response)
+async::task<void> game_bot_controller::on_update(game_bot& bot, const game_resp::update& response)
 {
     co_return;
 }
 
-async::task<void> game_bot_controller::on_item_update(game_bot& bot, const fb::protocol::game::response::item_update& response)
+async::task<void> game_bot_controller::on_item_update(game_bot& bot, const game_resp::item_update& response)
 {
     // Update the bot's inventory with the new or updated item
     bot.update_item(response.index, response.name, response.count);
     co_return;
 }
 
-async::task<void> game_bot_controller::on_item_remove(game_bot& bot, const fb::protocol::game::response::item_remove& response)
+async::task<void> game_bot_controller::on_item_remove(game_bot& bot, const game_resp::item_remove& response)
 {
     // Remove the item from the bot's inventory
     bot.remove_item(static_cast<uint8_t>(response.index));
     co_return;
 }
 
-async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const fb::protocol::game::response::internal_info& response)
+async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const game_resp::internal_info& response)
 {
     bot.set_clan_name(response.clan_name);
     bot.set_clan_title(response.clan_title);
@@ -275,7 +275,8 @@ async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const fb:
     co_return;
 }
 
-bool game_bot_controller::register_transfer_context(const fb::protocol::header& protocol, std::shared_ptr<transfer_context> context)
+bool game_bot_controller::register_transfer_context(const fb::protocol::header&       protocol,
+                                                    std::shared_ptr<transfer_context> context)
 {
     auto name = context->name;
     if (this->_transfer_contexts.contains(name))
@@ -301,10 +302,14 @@ bool game_bot_controller::invoke_transfer_context(std::string name, std::shared_
     return true;
 }
 
-async::task<std::shared_ptr<game_bot>> game_bot::transfer(const fb::protocol::header& protocol, const fb::model::timespan& timeout, bool encrypt, bool wrap)
+async::task<std::shared_ptr<game_bot>>
+game_bot::transfer(const fb::protocol::header& protocol, const fb::model::timespan& timeout, bool encrypt, bool wrap)
 {
-    auto  promise    = std::make_shared<async::task_completion_source<std::shared_ptr<game_bot>>>();
-    auto  context    = std::make_shared<game_bot_controller::transfer_context>(promise, this->name(), this->controller.weak_from_this_as<game_bot_controller>());
+    auto promise = std::make_shared<async::task_completion_source<std::shared_ptr<game_bot>>>();
+    auto context = std::make_shared<game_bot_controller::transfer_context>(
+        promise,
+        this->name(),
+        this->controller.weak_from_this_as<game_bot_controller>());
     auto& controller = static_cast<game_bot_controller&>(this->controller);
     controller.register_transfer_context(protocol, context);
 
@@ -327,5 +332,3 @@ async::task<std::shared_ptr<game_bot>> game_bot::transfer(const fb::protocol::he
     this->send(protocol, encrypt, wrap);
     return promise->task();
 }
-
-} // namespace fb::bot

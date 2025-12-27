@@ -6,6 +6,8 @@
 
 using namespace fb::login;
 
+namespace internal_reqs = fb::protocol::internal::request;
+
 server::server(boost::asio::io_context& io_context, uint16_t port) :
     fb::acceptor<session>(io_context, "LOGIN", port),
     log(fb::config<std::string>("amqp:log:ip"),
@@ -55,7 +57,11 @@ async::task<void> server::update_status()
     {
         std::ignore = co_await this->http.post("internal",
                                                "/server/heartbeat",
-                                               Heartbeat{internal::Service::Login, this->id(), this->name(), fb::config<std::string>("ip"), fb::config<uint16_t>("port")});
+                                               internal_reqs::Heartbeat{internal::Service::Login,
+                                                                        this->id(),
+                                                                        this->name(),
+                                                                        fb::config<std::string>("ip"),
+                                                                        fb::config<uint16_t>("port")});
     }
     catch (const std::exception& e)
     {

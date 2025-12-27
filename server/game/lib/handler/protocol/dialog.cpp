@@ -1,11 +1,13 @@
 #include <fb/game/handler/protocol/dialog.h>
 #include <fb/game/server.h>
 
-fb::game::handler::protocol::dialog::dialog(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::dialog>(server)
+using namespace fb::game::handler::protocol;
+
+dialog::dialog(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::dialog>(server)
 { }
 
-async::task<bool> fb::game::handler::protocol::dialog::handle(fb::socket<character>& session, fb::protocol::game::request::dialog& request)
+async::task<bool> dialog::handle(fb::socket<character>& session, game_reqs::dialog& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)

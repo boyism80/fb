@@ -19,10 +19,17 @@ queue::~queue()
 
 bool queue::bind(const std::string& exchange, const std::string& route)
 {
-    amqp_queue_bind(this->_owner, 1, this->_raw_name, amqp_cstring_bytes(exchange.c_str()), amqp_cstring_bytes(route.c_str()), amqp_empty_table);
+    amqp_queue_bind(this->_owner,
+                    1,
+                    this->_raw_name,
+                    amqp_cstring_bytes(exchange.c_str()),
+                    amqp_cstring_bytes(route.c_str()),
+                    amqp_empty_table);
     if (amqp_get_rpc_reply(this->_owner).reply_type != AMQP_RESPONSE_NORMAL)
         return false;
-    this->_name = std::string((const char*)this->_raw_name.bytes, (const char*)this->_raw_name.bytes + this->_raw_name.len);
+
+    auto name_bytes_c = static_cast<char*>(this->_raw_name.bytes);
+    this->_name       = std::string(name_bytes_c, name_bytes_c + this->_raw_name.len);
 
     auto r = amqp_basic_consume(this->_owner, 1, this->_raw_name, amqp_empty_bytes, 0, 1, 0, amqp_empty_table);
     if (amqp_get_rpc_reply(this->_owner).reply_type != AMQP_RESPONSE_NORMAL)
@@ -31,7 +38,9 @@ bool queue::bind(const std::string& exchange, const std::string& route)
     this->_raw_tag = amqp_bytes_malloc_dup(r->consumer_tag);
     if (this->_raw_tag.bytes == nullptr)
         throw std::runtime_error("Out of memory while copying consumer tag");
-    this->_tag = std::string((const char*)this->_raw_tag.bytes, (const char*)this->_raw_tag.bytes + this->_raw_tag.len);
+
+    auto tag_bytes_c = static_cast<char*>(this->_raw_tag.bytes);
+    this->_tag       = std::string(tag_bytes_c, tag_bytes_c + this->_raw_tag.len);
 
     this->_route = route;
     return true;

@@ -5,11 +5,13 @@
 
 using namespace fb::game::handler::protocol;
 
+namespace game_reqs = fb::protocol::game::request;
+
 chat::chat(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::chat>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::chat>(server)
 { }
 
-async::task<bool> chat::handle(fb::socket<character>& session, fb::protocol::game::request::chat& request)
+async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)

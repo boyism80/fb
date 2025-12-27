@@ -96,8 +96,18 @@ module.exports = function () {
                                         },
                                     },
                                     spec: {
-                                        nodeSelector: {
-                                            "kubernetes.io/hostname": "ubuntu-1"
+                                        affinity: {
+                                            nodeAffinity: {
+                                                requiredDuringSchedulingIgnoredDuringExecution: {
+                                                    nodeSelectorTerms: [{
+                                                        matchExpressions: [{
+                                                            key: "infra",
+                                                            operator: "In",
+                                                            values: ["true"]
+                                                        }]
+                                                    }]
+                                                }
+                                            }
                                         },
                                         containers: [
                                             {
@@ -235,8 +245,18 @@ module.exports = function () {
                                         },
                                     },
                                     spec: {
-                                        nodeSelector: {
-                                            "kubernetes.io/hostname": "ubuntu-1"
+                                        affinity: {
+                                            nodeAffinity: {
+                                                requiredDuringSchedulingIgnoredDuringExecution: {
+                                                    nodeSelectorTerms: [{
+                                                        matchExpressions: [{
+                                                            key: "infra",
+                                                            operator: "In",
+                                                            values: ["true"]
+                                                        }]
+                                                    }]
+                                                }
+                                            }
                                         },
                                         containers: [
                                             {

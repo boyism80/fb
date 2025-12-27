@@ -84,5 +84,7 @@
 #include <fb/game/handler/timer/mob_respawn_timer.h>
 #include <fb/game/handler/timer/soliloquy_timer.h>
 #include <fb/game/handler/timer/save_timer.h>
+#include <fb/game/handler/timer/marketplace_restore_timer.h>
+#include <fb/game/handler/timer/afk_timer.h>
 
 #endif // FB_GAME_HANDLER_H

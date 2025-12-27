@@ -721,7 +721,7 @@ int builtin::server::builtin_shutdown(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    std::ignore = server->http.post("internal", "/system/shutdown", Shutdown{});
+    std::ignore = server->http.post("internal", "/system/shutdown", internal_reqs::Shutdown{});
     return 0;
 }
 
@@ -788,8 +788,11 @@ int builtin::server::builtin_ban(lua_State* L)
     if (argc >= 4 && lua->is_nil(4) == false && lua->is_number(4))
         days = static_cast<uint32_t>(lua->tointeger(4));
 
-    static auto fn =
-        [](fb::game::server* server, fb::lua::context* lua, const std::string& name, const std::string& reason, const std::optional<uint32_t>& days) -> async::task<void> {
+    static auto fn = [](fb::game::server*              server,
+                        fb::lua::context*              lua,
+                        const std::string&             name,
+                        const std::string&             reason,
+                        const std::optional<uint32_t>& days) -> async::task<void> {
         auto   success = false;
         auto   error   = std::string{};
         auto&& resp    = co_await server->ban(name, reason, days);

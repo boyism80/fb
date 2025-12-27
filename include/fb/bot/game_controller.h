@@ -7,6 +7,10 @@
 
 namespace fb::bot {
 
+using namespace fb::model::enum_value;
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
+
 class game_bot_controller : public bot_controller<game_bot>
 {
 public:
@@ -23,7 +27,9 @@ public:
         std::atomic<bool>                  completed;
         std::weak_ptr<game_bot_controller> controller_weak;
 
-        transfer_context(std::shared_ptr<promise_type> promise, std::string name, std::weak_ptr<game_bot_controller> controller) :
+        transfer_context(std::shared_ptr<promise_type>      promise,
+                         std::string                        name,
+                         std::weak_ptr<game_bot_controller> controller) :
             promise(promise),
             name(name),
             controller_weak(controller)
@@ -72,28 +78,29 @@ public:
     bool                      decrypt_policy(int cmd) const override final;
 
 private:
-    async::task<void>                          on_time(game_bot& bot, const fb::protocol::game::response::time& response);
-    async::task<void>                          on_map_config(game_bot& bot, const fb::protocol::game::response::map_config& response);
-    async::task<void>                          on_state(game_bot& bot, const fb::protocol::game::response::update_internal& response);
-    async::task<void>                          on_option(game_bot& bot, const fb::protocol::game::response::option& response);
-    async::task<void>                          on_message(game_bot& bot, const fb::protocol::game::response::message& response);
-    async::task<void>                          on_sequence(game_bot& bot, const fb::protocol::game::response::id& response);
-    async::task<void>                          on_spell_update(game_bot& bot, const fb::protocol::game::response::spell_update& response);
-    async::task<void>                          on_spell_remove(game_bot& bot, const fb::protocol::game::response::spell_remove& response);
-    async::task<void>                          on_chat(game_bot& bot, const fb::protocol::game::response::chat& response);
-    async::task<void>                          on_action(game_bot& bot, const fb::protocol::game::response::action& response);
-    async::task<void>                          on_direction(game_bot& bot, const fb::protocol::game::response::direction& response);
-    async::task<void>                          on_position(game_bot& bot, const fb::protocol::game::response::position& response);
-    async::task<void>                          on_move(game_bot& bot, const fb::protocol::game::response::move& response);
-    async::task<void>                          on_effect(game_bot& bot, const fb::protocol::game::response::effect& response);
-    async::task<void>                          on_hide(game_bot& bot, const fb::protocol::game::response::hide& response);
-    async::task<void>                          on_die(game_bot& bot, const fb::protocol::game::response::die& response);
-    async::task<void>                          on_buff(game_bot& bot, const fb::protocol::game::response::spell_buff& response);
-    async::task<void>                          on_unbuff(game_bot& bot, const fb::protocol::game::response::spell_unbuff& response);
-    async::task<void>                          on_update(game_bot& bot, const fb::protocol::game::response::update& response);
-    async::task<void>                          on_map(game_bot& bot, const fb::protocol::game::response::map_config& response);
-    async::task<void>                          on_transfer(game_bot& bot, const fb::protocol::response::transfer& response);
-    template <bool Detailed> async::task<void> on_update_external(game_bot& bot, const fb::protocol::game::response::update_external<Detailed>& response)
+    async::task<void> on_time(game_bot& bot, const game_resp::time& response);
+    async::task<void> on_map_config(game_bot& bot, const game_resp::map_config& response);
+    async::task<void> on_state(game_bot& bot, const game_resp::update_internal& response);
+    async::task<void> on_option(game_bot& bot, const game_resp::option& response);
+    async::task<void> on_message(game_bot& bot, const game_resp::message& response);
+    async::task<void> on_sequence(game_bot& bot, const game_resp::id& response);
+    async::task<void> on_spell_update(game_bot& bot, const game_resp::spell_update& response);
+    async::task<void> on_spell_remove(game_bot& bot, const game_resp::spell_remove& response);
+    async::task<void> on_chat(game_bot& bot, const game_resp::chat& response);
+    async::task<void> on_action(game_bot& bot, const game_resp::action& response);
+    async::task<void> on_direction(game_bot& bot, const game_resp::direction& response);
+    async::task<void> on_position(game_bot& bot, const game_resp::position& response);
+    async::task<void> on_move(game_bot& bot, const game_resp::move& response);
+    async::task<void> on_effect(game_bot& bot, const game_resp::effect& response);
+    async::task<void> on_hide(game_bot& bot, const game_resp::hide& response);
+    async::task<void> on_die(game_bot& bot, const game_resp::die& response);
+    async::task<void> on_buff(game_bot& bot, const game_resp::spell_buff& response);
+    async::task<void> on_unbuff(game_bot& bot, const game_resp::spell_unbuff& response);
+    async::task<void> on_update(game_bot& bot, const game_resp::update& response);
+    async::task<void> on_map(game_bot& bot, const game_resp::map_config& response);
+    async::task<void> on_transfer(game_bot& bot, const fb::protocol::response::transfer& response);
+    template <bool Detailed> async::task<void> on_update_external(game_bot&                                   bot,
+                                                                  const game_resp::update_external<Detailed>& response)
     {
         if (bot.oid() != response.oid)
             co_return;
@@ -123,9 +130,9 @@ private:
     }
 
 private:
-    async::task<void> on_item_update(game_bot& bot, const fb::protocol::game::response::item_update& response);
-    async::task<void> on_item_remove(game_bot& bot, const fb::protocol::game::response::item_remove& response);
-    async::task<void> on_internal_info(game_bot& bot, const fb::protocol::game::response::internal_info& response);
+    async::task<void> on_item_update(game_bot& bot, const game_resp::item_update& response);
+    async::task<void> on_item_remove(game_bot& bot, const game_resp::item_remove& response);
+    async::task<void> on_internal_info(game_bot& bot, const game_resp::internal_info& response);
 
 public:
     bool register_transfer_context(const fb::protocol::header& protocol, std::shared_ptr<transfer_context> context);

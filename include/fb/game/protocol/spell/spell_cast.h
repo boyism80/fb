@@ -4,9 +4,9 @@
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::request {
+
+using namespace fb::model::enum_value;
 
 class spell_cast : public fb::protocol::header
 {
@@ -34,7 +34,11 @@ public:
 #ifndef BOT
     spell_cast() = default;
 #else
-    spell_cast(SPELL_TYPE type, uint8_t slot, const std::string& message, uint32_t oid, const fb::model::point<uint16_t>& position) :
+    spell_cast(SPELL_TYPE                        type,
+               uint8_t                           slot,
+               const std::string&                message,
+               uint32_t                          oid,
+               const fb::model::point<uint16_t>& position) :
         type(type),
         slot(slot),
         message(message),

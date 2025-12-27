@@ -5,9 +5,9 @@
 #include <fb/game/item.h>
 #include <async/task.h>
 
-using namespace std::chrono_literals;
-
 namespace fb::game {
+
+using namespace std::chrono_literals;
 
 class character;
 class ai;
@@ -92,7 +92,8 @@ public:
     std::shared_ptr<fb::game::life>                     update_target();
     virtual bool                                        available() const;
     uint32_t                                            auto_attack_damage(MOB_SIZE size) const override final;
-    void                                                kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    void                                                kill(std::shared_ptr<fb::game::object> from = nullptr,
+                                                             DESTROY_TYPE                      destroy_type = DESTROY_TYPE::DEFAULT) override final;
     async::task<void>                                   drop_items();
     void                                                assert_thread() const override final;
     bool                                                move(DIRECTION direction) override final;

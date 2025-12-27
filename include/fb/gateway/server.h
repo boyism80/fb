@@ -8,17 +8,16 @@
 #include <fb/log_collector.h>
 #include <memory>
 
-using namespace fb::protocol::internal;
-using namespace fb::protocol::internal::request;
-
-namespace internal      = fb::protocol::internal;
-namespace internal_resp = fb::protocol::internal::response;
-
 REGISTER_RESPONSE(fb::protocol::internal::request::Heartbeat, fb::protocol::internal::response::Heartbeat)
 
 namespace fb::gateway {
 
+using namespace fb::protocol::internal;
+using namespace fb::protocol::internal::request;
 using namespace fb::protocol::gateway;
+
+namespace internal      = fb::protocol::internal;
+namespace internal_resp = fb::protocol::internal::response;
 
 class server : public fb::acceptor<fb::gateway::session>
 {

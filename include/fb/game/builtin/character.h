@@ -7,6 +7,7 @@ namespace fb::game::builtin {
 
 struct character
 {
+    static int builtin_uid(lua_State* L);
     static int builtin_look(lua_State* L);
     static int builtin_color(lua_State* L);
     static int builtin_sex(lua_State* L);
@@ -81,6 +82,12 @@ struct character
     static int builtin_send_system_mail(lua_State* L);
     static int builtin_storage_entries(lua_State* L);
     static int builtin_receive_storage_reward(lua_State* L);
+    static int builtin_marketplace_list(lua_State* L);
+    static int builtin_marketplace_cancel(lua_State* L);
+    static int builtin_marketplace_purchase(lua_State* L);
+    static int builtin_marketplace_search(lua_State* L);
+    static int builtin_marketplace_get_listings(lua_State* L);
+    static int builtin_marketplace_pending_listings(lua_State* L);
 };
 
 } // namespace fb::game::builtin

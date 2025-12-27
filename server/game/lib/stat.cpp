@@ -799,7 +799,9 @@ uint32_t mob_stat::damage(uint32_t value, std::shared_ptr<object> from, bool cri
     // Handle damage in AI strategy
     if (this->owner._ai_strategy && from && from->is(OBJECT_TYPE::LIFE))
     {
-        this->owner._ai_strategy->on_damage(this->owner, std::static_pointer_cast<fb::game::life>(from), fb::model::datetime());
+        this->owner._ai_strategy->on_damage(this->owner,
+                                            std::static_pointer_cast<fb::game::life>(from),
+                                            fb::model::datetime());
     }
 
     return result;

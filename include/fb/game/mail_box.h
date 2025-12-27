@@ -9,9 +9,9 @@
 #include <fb/model/model.h>
 #include <fb/game/system_mail_user.h>
 
-using namespace fb::model::enum_value;
-
 namespace fb::game {
+
+using namespace fb::model::enum_value;
 
 class character;
 
@@ -40,9 +40,9 @@ public:
     void     unread_count(uint16_t value);
 
     // System mail user management
-    void                                        add_system_mail_user(uint32_t mail_id, const std::optional<std::string>& expire_date);
-    void                                        update_system_mail_user_read(uint32_t mail_id, bool read);
-    bool                                        try_mark_system_mail_user_as_sent(uint32_t mail_id);
+    void add_system_mail_user(uint32_t mail_id, const std::optional<std::string>& expire_date);
+    void update_system_mail_user_read(uint32_t mail_id, bool read);
+    bool try_mark_system_mail_user_as_sent(uint32_t mail_id);
     const std::map<uint32_t, system_mail_user>& get_system_mail_users() const;
 };
 

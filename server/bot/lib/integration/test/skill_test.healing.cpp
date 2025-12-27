@@ -4,6 +4,9 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
+
 async::task<bool> skill_test::test_healing_spells(std::shared_ptr<fb::bot::game_bot> caster)
 {
     fb::logger::debug("Bot {} starting healing spell test", caster->oid());
@@ -67,8 +70,8 @@ async::task<bool> skill_test::test_healing_spells(std::shared_ptr<fb::bot::game_
             fb::logger::debug("Casting {} on self - before: hp={}, mp={}", spell.name, before_hp, before_mp);
 
             caster->chat(std::format("Testing {}", spell.name));
-            std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
-                fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", 0, {0, 0}),
+            std::ignore = co_await caster->request<game_resp::update_internal>(
+                game_reqs::spell_cast(spell.type, spell_slot, "", 0, {0, 0}),
                 [before_hp, spell](auto& resp) -> bool {
                     return resp.ch_hp == before_hp + spell.expected_hp_gain;
                 },
@@ -89,8 +92,8 @@ async::task<bool> skill_test::test_healing_spells(std::shared_ptr<fb::bot::game_
 
             // Caster casts spell on caster
             caster->chat(std::format("Testing {}", spell.name));
-            std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
-                fb::protocol::game::request::spell_cast(spell.type, spell_slot, "", caster->oid(), caster->position()),
+            std::ignore = co_await caster->request<game_resp::update_internal>(
+                game_reqs::spell_cast(spell.type, spell_slot, "", caster->oid(), caster->position()),
                 [before_caster_mp, before_caster_hp, spell](auto& resp) -> bool {
                     if (resp.ch_mp != before_caster_mp - spell.expected_mp_cost)
                         return false;
@@ -170,8 +173,8 @@ async::task<bool> skill_test::test_healing_spells(std::shared_ptr<fb::bot::game_
                       before_caster_mp);
 
     // Cast the dynamic spell
-    std::ignore = co_await caster->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, spell_slot, "", caster->oid(), caster->position()),
+    std::ignore = co_await caster->request<game_resp::update_internal>(
+        game_reqs::spell_cast(SPELL_TYPE::TARGET, spell_slot, "", caster->oid(), caster->position()),
         [before_caster_mp, before_caster_hp, actual_expected_hp_gain, expected_mp_cost](auto& resp) -> bool {
             if (resp.ch_mp != before_caster_mp - expected_mp_cost)
                 return false;

@@ -1,11 +1,15 @@
 #include <fb/game/handler/protocol/door.h>
 #include <fb/game/server.h>
 
-fb::game::handler::protocol::door::door(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::door>(server)
+using namespace fb::game::handler::protocol;
+
+namespace game_reqs = fb::protocol::game::request;
+
+door::door(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::door>(server)
 { }
 
-async::task<bool> fb::game::handler::protocol::door::handle(fb::socket<character>& session, fb::protocol::game::request::door& request)
+async::task<bool> door::handle(fb::socket<character>& session, game_reqs::door& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)

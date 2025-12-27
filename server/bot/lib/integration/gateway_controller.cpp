@@ -17,7 +17,7 @@ gateway_bot_controller::gateway_bot_controller(bot_container& container) :
 void gateway_bot_controller::initialize()
 { }
 
-async::task<void> gateway_bot_controller::on_welcome(gateway_bot& bot, const fb::protocol::gateway::response::welcome& response)
+async::task<void> gateway_bot_controller::on_welcome(gateway_bot& bot, const gateway_resp::welcome& response)
 {
     // Integration test: Validate welcome message protocol compliance
     // TODO: Add welcome message validation logic
@@ -28,7 +28,7 @@ async::task<void> gateway_bot_controller::on_welcome(gateway_bot& bot, const fb:
     co_return;
 }
 
-async::task<void> gateway_bot_controller::on_crt(gateway_bot& bot, const fb::protocol::gateway::response::encryption& response)
+async::task<void> gateway_bot_controller::on_crt(gateway_bot& bot, const gateway_resp::encryption& response)
 {
     // Integration test: Validate cryptographic setup
     // TODO: Add encryption parameter validation logic
@@ -40,7 +40,7 @@ async::task<void> gateway_bot_controller::on_crt(gateway_bot& bot, const fb::pro
     co_return;
 }
 
-async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const fb::protocol::gateway::response::endpoint& response)
+async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const gateway_resp::endpoint& response)
 {
     // Integration test: Validate endpoint discovery
     // TODO: Add endpoint information validation logic
@@ -51,7 +51,7 @@ async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const fb::p
     co_return;
 }
 
-async::task<void> gateway_bot_controller::on_transfer(gateway_bot& bot, const fb::protocol::response::transfer& response)
+async::task<void> gateway_bot_controller::on_transfer(gateway_bot& bot, const fb_resp::transfer& response)
 {
     // Integration test: Validate server transfer mechanics
     // TODO: Add transfer validation and test continuation logic

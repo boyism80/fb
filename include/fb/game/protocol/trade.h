@@ -7,9 +7,9 @@
 #include <fb/game/trade.h>
 #endif
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::request {
+
+using namespace fb::model::enum_value;
 
 class trade : public fb::protocol::header
 {

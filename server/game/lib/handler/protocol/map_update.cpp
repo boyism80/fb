@@ -3,11 +3,13 @@
 
 using namespace fb::game::handler::protocol;
 
+namespace game_reqs = fb::protocol::game::request;
+
 map_update::map_update(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::map_update>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::map_update>(server)
 { }
 
-async::task<bool> map_update::handle(fb::socket<character>& session, fb::protocol::game::request::map_update& request)
+async::task<bool> map_update::handle(fb::socket<character>& session, game_reqs::map_update& request)
 {
     auto ch = session.data();
     if (ch == nullptr)

@@ -7,6 +7,10 @@
 
 namespace fb::bot::integration {
 
+namespace login_resp = fb::protocol::login::response;
+namespace login_reqs = fb::protocol::login::request;
+namespace fb_resp    = fb::protocol::response;
+
 class login_bot_controller : public fb::bot::login_bot_controller
 {
 private:
@@ -23,8 +27,8 @@ public:
     virtual async::task<void> on_bot_disconnected(login_bot& bot) override;
 
 private:
-    async::task<void> on_agreement(login_bot& bot, const fb::protocol::login::response::agreement& response);
-    async::task<void> on_transfer(login_bot& bot, const fb::protocol::response::transfer& response);
+    async::task<void> on_agreement(login_bot& bot, const login_resp::agreement& response);
+    async::task<void> on_transfer(login_bot& bot, const fb_resp::transfer& response);
 };
 
 } // namespace fb::bot::integration

@@ -3,11 +3,13 @@
 
 using namespace fb::game::handler::protocol;
 
+namespace game_reqs = fb::protocol::game::request;
+
 emotion::emotion(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::emotion>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::emotion>(server)
 { }
 
-async::task<bool> emotion::handle(fb::socket<character>& session, fb::protocol::game::request::emotion& request)
+async::task<bool> emotion::handle(fb::socket<character>& session, game_reqs::emotion& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)

@@ -51,7 +51,8 @@ void mail_box::add_system_mail_user(uint32_t mail_id, const std::optional<std::s
     else
     {
         // Update expire_date if it changed
-        it->second.expire_date = expire_date.has_value() ? std::make_optional<fb::model::datetime>(expire_date.value()) : std::nullopt;
+        it->second.expire_date =
+            expire_date.has_value() ? std::make_optional<fb::model::datetime>(expire_date.value()) : std::nullopt;
     }
 }
 

@@ -3,11 +3,14 @@
 
 using namespace fb::game::handler::protocol;
 
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
+
 click::click(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::click>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::click>(server)
 { }
 
-async::task<bool> click::handle(fb::socket<character>& session, fb::protocol::game::request::click& request)
+async::task<bool> click::handle(fb::socket<character>& session, game_reqs::click& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -68,7 +71,7 @@ async::task<bool> click::handle(fb::socket<character>& session, fb::protocol::ga
 
     case OBJECT_TYPE::MOB:
     {
-        ch->send(fb_resp::message(static_cast<mob&>(*you).name(), MESSAGE_TYPE::STATE));
+        ch->send(game_resp::message(static_cast<mob&>(*you).name(), MESSAGE_TYPE::STATE));
     }
     break;
 

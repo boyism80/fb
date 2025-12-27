@@ -114,8 +114,18 @@ RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
                             metadata: { labels: { app: "rabbitmq", section: section, type: type } },
                             spec: {
                                 serviceAccountName: serviceAccount.metadata.name,
-                                nodeSelector: {
-                                    "kubernetes.io/hostname": "ubuntu-1"
+                                affinity: {
+                                    nodeAffinity: {
+                                        requiredDuringSchedulingIgnoredDuringExecution: {
+                                            nodeSelectorTerms: [{
+                                                matchExpressions: [{
+                                                    key: "infra",
+                                                    operator: "In",
+                                                    values: ["true"]
+                                                }]
+                                            }]
+                                        }
+                                    }
                                 },
                                 containers: [{
                                     name: "rabbitmq",

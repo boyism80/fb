@@ -1,11 +1,15 @@
 #include <fb/game/handler/protocol/trade.h>
 #include <fb/game/server.h>
 
-fb::game::handler::protocol::trade::trade(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::trade>(server)
+using namespace fb::game::handler::protocol;
+
+namespace game_reqs = fb::protocol::game::request;
+
+trade::trade(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::trade>(server)
 { }
 
-async::task<bool> fb::game::handler::protocol::trade::handle(fb::socket<character>& session, fb::protocol::game::request::trade& request)
+async::task<bool> trade::handle(fb::socket<character>& session, game_reqs::trade& request)
 {
     auto me = session.data();
     if (me->inited() == false)

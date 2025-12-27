@@ -76,7 +76,9 @@ void storage_box::apply_pending(const std::vector<pending_box>& pending)
             attachments_array.append(attachment.to_json());
         }
         log_data["attachments"] = attachments_array;
-        log_data["expire_date"] = e.expire_date.has_value() ? Json::Value(UTF8(e.expire_date.value().to_string(), PLATFORM::WINDOWS)) : Json::Value::null;
+        log_data["expire_date"] = e.expire_date.has_value()
+                                      ? Json::Value(UTF8(e.expire_date.value().to_string(), PLATFORM::WINDOWS))
+                                      : Json::Value::null;
         this->_owner.server.log.write("storage_box_entry_add", log_data);
 
         // Notify player about new storage box entry

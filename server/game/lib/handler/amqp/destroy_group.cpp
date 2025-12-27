@@ -14,4 +14,3 @@ async::task<void> destroy_group::handle(const internal_resp::DestroyGroup& messa
 
     co_await this->server.on_destroyed_group(message);
 }
-

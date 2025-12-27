@@ -22,7 +22,9 @@ async::task<void> item_throws::deserialize(fb::stream_reader<big_endian>& reader
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-item_throws::item_throws(const fb::game::character& ch, const fb::game::item& item, const fb::model::point<uint16_t>& to) :
+item_throws::item_throws(const fb::game::character&        ch,
+                         const fb::game::item&             item,
+                         const fb::model::point<uint16_t>& to) :
     ch(ch),
     item(item),
     to(to)

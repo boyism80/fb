@@ -9,9 +9,9 @@
 #include <fb/bot/bulletin.h>
 #endif
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::response {
+
+using namespace fb::model::enum_value;
 
 class bulletin_article : public fb::protocol::header
 {

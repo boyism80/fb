@@ -11,6 +11,7 @@ const game = require('./game')
 const bot = require('./bot')
 const adminTool = require('./admin-tool')
 const log = require('./log')
+const marketplace = require('./marketplace')
 const fs = require('fs');
 const path = require('path')
 
@@ -34,14 +35,16 @@ const rabbitmqResources = rabbitmq.setup(namespace, conf)
 // Flatten all resources for dependsOn
 const allInfraResources = [].concat(mysqlResources || [], redisResources || [], rabbitmqResources || [])
 
-// Setup internal, write-back, admin-tool, log after mysql, redis, rabbitmq are ready
+// Setup internal, write-back, admin-tool, log, marketplace after mysql, redis, rabbitmq are ready
 const internalResources = internal.setup(namespace, conf, allInfraResources)
 const writeBackResources = wb.setup(namespace, conf, allInfraResources)
 const adminToolResources = adminTool.setup(namespace, conf, allInfraResources)
 const logResources = log.setup(namespace, conf, allInfraResources)
+const marketplaceResources = marketplace.setup(namespace, conf, allInfraResources)
 
-// Setup login, gateway, game after internal is ready
-const gatewayResources = gateway.setup(namespace, conf, internalResources || [])
-const loginResources = login.setup(namespace, conf, internalResources || [])
-const gameResources = game.setup(namespace, conf, internalResources || [])
+// Setup login, gateway, game after internal and marketplace are ready
+const allHttpResources = [].concat(internalResources || [], marketplaceResources || [])
+const gatewayResources = gateway.setup(namespace, conf, allHttpResources)
+const loginResources = login.setup(namespace, conf, allHttpResources)
+const gameResources = game.setup(namespace, conf, allHttpResources)
 // bot.setup(namespace, conf, [].concat(gatewayResources || [], loginResources || [], gameResources || []))

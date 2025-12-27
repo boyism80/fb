@@ -1,5 +1,5 @@
-#ifndef __USER_LIST_TEST_H__
-#define __USER_LIST_TEST_H__
+#ifndef __BOT_INTEGRATION_USER_LIST_TEST_H__
+#define __BOT_INTEGRATION_USER_LIST_TEST_H__
 
 #include <fb/bot/integration/test_case.h>
 #include <fb/game/protocol.h>
@@ -26,4 +26,4 @@ private:
 
 } // namespace fb::bot::integration
 
-#endif // __USER_LIST_TEST_H__
+#endif // __BOT_INTEGRATION_USER_LIST_TEST_H__

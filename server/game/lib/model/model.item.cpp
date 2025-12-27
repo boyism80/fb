@@ -8,6 +8,8 @@
 #include <shared_mutex>
 #include <mutex>
 
+using namespace fb::model::enum_value;
+
 ITEM_ATTRIBUTE fb::model::item::attr() const
 {
     auto attr = ITEM_ATTRIBUTE::NONE;
@@ -53,6 +55,7 @@ std::vector<fb::model::item*> fb::model::__item::name2item_prefix(const std::str
     static auto read_mutex   = std::shared_mutex{};
 
     std::call_once(once_flag, [this]() {
+        auto lock = std::lock_guard(read_mutex);
         for (auto& [k, v] : *this)
         {
             sorted_items[v.name] = &v;

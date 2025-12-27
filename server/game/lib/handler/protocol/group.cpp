@@ -1,11 +1,15 @@
 #include <fb/game/handler/protocol/group.h>
 #include <fb/game/server.h>
 
-fb::game::handler::protocol::group::group(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::group>(server)
+using namespace fb::game::handler::protocol;
+
+namespace game_reqs = fb::protocol::game::request;
+
+group::group(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::group>(server)
 { }
 
-async::task<bool> fb::game::handler::protocol::group::handle(fb::socket<character>& session, fb::protocol::game::request::group& request)
+async::task<bool> group::handle(fb::socket<character>& session, game_reqs::group& request)
 {
     auto me = session.data();
     if (me->inited() == false)

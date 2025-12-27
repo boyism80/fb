@@ -4,6 +4,8 @@
 #include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
+#include <json/writer.h>
+#include <sstream>
 
 using namespace fb::game;
 using namespace fb::model;
@@ -11,6 +13,7 @@ using namespace fb::model;
 character::character(fb::game::server& server, const initial_params& params) :
     stat(*this),
     storage_box(*this),
+    marketplace(*this),
     life(server,
          table::life[0],
          stat,
@@ -21,9 +24,12 @@ character::character(fb::game::server& server, const initial_params& params) :
               .direction = params.direction,
               }
 }),
-    listener(server.listener), id(params.id), socket(params.socket), _pw(params.pw), _created_date(params.created_date), _updated_date(params.updated_date), _name(params.name),
-    _role(params.role), _birthday(params.birthday), _look(params.look), _color(params.color), _armor_color(params.armor_color), _experience(params.exp), _sex(params.sex),
-    _state(params.state), _level(params.level), _class(params.class_type), _promotion(params.promotion), _money(params.money), _disguise(params.disguise), _title(params.title)
+    listener(server.listener), id(params.id), socket(params.socket), _pw(params.pw), _created_date(params.created_date),
+    _updated_date(params.updated_date), _name(params.name), _role(params.role), _birthday(params.birthday),
+    _look(params.look), _color(params.color), _armor_color(params.armor_color), _experience(params.exp),
+    _sex(params.sex), _state(params.state), _level(params.level), _class(params.class_type),
+    _promotion(params.promotion), _money(params.money), _disguise(params.disguise), _title(params.title),
+    _last_afk_time(fb::model::datetime())
 { }
 
 character::~character()
@@ -71,7 +77,10 @@ OBJECT_TYPE character::what() const
     return OBJECT_TYPE::CHARACTER;
 }
 
-async::task<bool> character::map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type, bool notify)
+async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
+                                 const fb::model::point16_t&    position,
+                                 DESTROY_TYPE                   destroy_type,
+                                 bool                           notify)
 {
     if (this->_thread == nullptr)
         co_return true;
@@ -200,13 +209,13 @@ void character::role(ROLE value)
     if (this->_role == value)
         return;
 
-    auto old_role = this->_role;
-    this->_role   = value;
+    auto old    = this->_role;
+    this->_role = value;
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-    log_data["old_role"]       = static_cast<int>(old_role);
+    log_data["old_role"]       = static_cast<int>(old);
     log_data["new_role"]       = static_cast<int>(value);
     this->server.log.write("role_change", log_data);
 }
@@ -259,13 +268,13 @@ void fb::game::character::birthday(const std::optional<uint32_t>& value)
     if (this->_birthday == value)
         return;
 
-    auto old_birthday = this->_birthday;
-    this->_birthday   = value;
+    auto old        = this->_birthday;
+    this->_birthday = value;
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-    log_data["old_birthday"]   = old_birthday.has_value() ? static_cast<Json::Int64>(old_birthday.value()) : Json::Value::null;
+    log_data["old_birthday"]   = old.has_value() ? static_cast<Json::Int64>(old.value()) : Json::Value::null;
     log_data["new_birthday"]   = value.has_value() ? static_cast<Json::Int64>(value.value()) : Json::Value::null;
     this->server.log.write("birthday_change", log_data);
 }
@@ -381,7 +390,8 @@ bool character::creature(CREATURE value)
 {
     this->assert_thread();
 
-    if (value != CREATURE::DRAGON && value != CREATURE::PHOENIX && value != CREATURE::TIGER && value != CREATURE::TURTLE)
+    if (value != CREATURE::DRAGON && value != CREATURE::PHOENIX && value != CREATURE::TIGER &&
+        value != CREATURE::TURTLE)
         return false;
 
     this->_creature = value;
@@ -731,22 +741,17 @@ float character::experience_percent() const
     this->assert_thread();
 
     if (this->max_level())
-    {
         return std::min(100.0f, (this->_experience / float(0xFFFFFFFF)) * 100.0f);
-    }
-    else
-    {
-        auto level    = this->level();
-        auto required = table::ability[this->_class][level].exp;
 
-        auto prev_stack_exp = uint32_t{0};
-        if (table::ability[this->_class].contains(level - 1))
-            prev_stack_exp = table::ability[this->_class][level - 1].stacked_exp;
-        else if (table::ability[CLASS::NONE].contains(level - 1))
-            prev_stack_exp = table::ability[CLASS::NONE][level - 1].stacked_exp;
+    auto level          = this->level();
+    auto required       = table::ability[this->_class][level].exp;
+    auto prev_stack_exp = uint32_t{0};
+    if (table::ability[this->_class].contains(level - 1))
+        prev_stack_exp = table::ability[this->_class][level - 1].stacked_exp;
+    else if (table::ability[CLASS::NONE].contains(level - 1))
+        prev_stack_exp = table::ability[CLASS::NONE][level - 1].stacked_exp;
 
-        return std::min(100.0f, ((this->_experience - prev_stack_exp) / float(required)) * 100.0f);
-    }
+    return std::min(100.0f, ((this->_experience - prev_stack_exp) / float(required)) * 100.0f);
 }
 
 uint32_t character::money() const
@@ -760,17 +765,29 @@ void character::money(uint32_t value)
 {
     this->assert_thread();
 
-    this->_money = value;
+    if (this->_money == value)
+        return;
+
+    auto old_money = this->_money;
+    this->_money   = value;
     this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+
+    // Log money changed event
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_money"]      = static_cast<Json::Int64>(old_money);
+    log_data["new_money"]      = static_cast<Json::Int64>(value);
+    log_data["amount"] = static_cast<Json::Int64>(static_cast<int64_t>(value) - static_cast<int64_t>(old_money));
+    this->server.log.write("money_changed", log_data);
 }
 
 uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
 {
     this->assert_thread();
 
-    uint32_t capacity  = 0xFFFFFFFF - this->_money;
-    uint32_t lack      = 0;
-    auto     old_money = this->_money;
+    uint32_t capacity = 0xFFFFFFFF - this->_money;
+    uint32_t lack     = 0;
     if (value > capacity)
     {
         this->money(this->_money + capacity);
@@ -781,33 +798,14 @@ uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
         this->money(this->_money + value);
     }
 
-    // Log money gain event
-    auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
-    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-    log_data["amount"]         = static_cast<Json::Int64>(value - lack);
-    log_data["old_money"]      = static_cast<Json::Int64>(old_money);
-    log_data["new_money"]      = static_cast<Json::Int64>(this->_money);
-    this->server.log.write("money_gain", log_data);
-
     return lack;
 }
 
 void character::money_reduce(uint32_t value)
 {
     this->assert_thread();
-    value          = std::min(this->_money, value);
-    auto old_money = this->_money;
+    value = std::min(this->_money, value);
     this->money(this->_money - value);
-
-    // Log money reduce event
-    auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
-    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-    log_data["amount"]         = static_cast<Json::Int64>(value);
-    log_data["old_money"]      = static_cast<Json::Int64>(old_money);
-    log_data["new_money"]      = static_cast<Json::Int64>(this->_money);
-    this->server.log.write("money_reduce", log_data);
 }
 
 fb::game::cash* character::money_drop(uint32_t value)
@@ -899,7 +897,10 @@ void character::update_map()
         this->update_map(*this->_map);
 }
 
-void character::update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size, uint16_t crc)
+void character::update_map(const fb::game::map&        map,
+                           const fb::model::point16_t& begin,
+                           const fb::model::size8_t&   size,
+                           uint16_t                    crc)
 {
     this->listener.on_update_map(*this, map, begin, size, crc);
 }
@@ -1212,86 +1213,95 @@ async::task<void> character::process_system_mails()
 {
     this->assert_thread();
 
-    co_await this->server.system_mail.read_async([&](const std::vector<fb::game::system_mail>& system_mails) -> async::task<void> {
-        if (system_mails.empty())
-            co_return;
+    co_await this->server.system_mail.read_async(
+        [&](const std::vector<fb::game::system_mail>& system_mails) -> async::task<void> {
+            if (system_mails.empty())
+                co_return;
 
-        auto now          = fb::model::datetime();
-        auto created_date = this->_created_date;
+            auto now          = fb::model::datetime();
+            auto created_date = this->_created_date;
 
-        const auto& system_mail_users = this->mail_box.get_system_mail_users();
-        auto        user_mail_ids     = std::set<uint32_t>();
-        for (const auto& [mail_id, smu] : system_mail_users)
-        {
-            user_mail_ids.insert(mail_id);
-        }
-
-        for (const auto& mail : system_mails)
-        {
-            if (mail.expire_date.has_value() && mail.expire_date.value() < now)
-                continue;
-
-            if (mail.created_date < created_date)
-                continue;
-
-            if (user_mail_ids.find(mail.id) == user_mail_ids.end())
+            const auto& system_mail_users = this->mail_box.get_system_mail_users();
+            auto        user_mail_ids     = std::set<uint32_t>();
+            for (const auto& [mail_id, smu] : system_mail_users)
             {
-                this->mail_box.add_system_mail_user(mail.id, mail.expire_date.has_value() ? std::make_optional(mail.expire_date.value().to_string()) : std::nullopt);
+                user_mail_ids.insert(mail_id);
             }
-        }
 
-        for (const auto& [mail_id, smu] : system_mail_users)
-        {
-            if (smu.read)
-                continue;
-
-            bool               mail_exists = false;
-            const system_mail* mail_ptr    = nullptr;
             for (const auto& mail : system_mails)
             {
-                if (mail.id == mail_id)
+                if (mail.expire_date.has_value() && mail.expire_date.value() < now)
+                    continue;
+
+                if (mail.created_date < created_date)
+                    continue;
+
+                if (user_mail_ids.find(mail.id) == user_mail_ids.end())
                 {
-                    if (mail.expire_date.has_value() && mail.expire_date.value() < now)
-                        break;
-
-                    if (mail.created_date < created_date)
-                        break;
-
-                    mail_exists = true;
-                    mail_ptr    = &mail;
-                    break;
+                    this->mail_box.add_system_mail_user(mail.id,
+                                                        mail.expire_date.has_value()
+                                                            ? std::make_optional(mail.expire_date.value().to_string())
+                                                            : std::nullopt);
                 }
             }
 
-            if (!mail_exists)
-                continue;
-
-            try
+            for (const auto& [mail_id, smu] : system_mail_users)
             {
-                if (!this->mail_box.try_mark_system_mail_user_as_sent(mail_id))
+                if (smu.read)
                     continue;
 
-                if (mail_ptr == nullptr)
+                bool               mail_exists = false;
+                const system_mail* mail_ptr    = nullptr;
+                for (const auto& mail : system_mails)
                 {
-                    this->mail_box.update_system_mail_user_read(mail_id, false);
-                    continue;
+                    if (mail.id == mail_id)
+                    {
+                        if (mail.expire_date.has_value() && mail.expire_date.value() < now)
+                            break;
+
+                        if (mail.created_date < created_date)
+                            break;
+
+                        mail_exists = true;
+                        mail_ptr    = &mail;
+                        break;
+                    }
                 }
 
-                const auto& mail = *mail_ptr;
-                auto&&      resp =
-                    co_await this->server.http.post("internal", "/mail/write", WriteMail{mail.sender, this->name(), mail.title, mail.contents, fb::config<uint32_t>("id")});
+                if (!mail_exists)
+                    continue;
 
-                if (resp.error != 0)
+                try
+                {
+                    if (!this->mail_box.try_mark_system_mail_user_as_sent(mail_id))
+                        continue;
+
+                    if (mail_ptr == nullptr)
+                    {
+                        this->mail_box.update_system_mail_user_read(mail_id, false);
+                        continue;
+                    }
+
+                    const auto& mail = *mail_ptr;
+                    auto&&      resp = co_await this->server.http.post("internal",
+                                                                  "/mail/write",
+                                                                  internal_reqs::WriteMail{mail.sender,
+                                                                                           this->name(),
+                                                                                           mail.title,
+                                                                                           mail.contents,
+                                                                                           fb::config<uint32_t>("id")});
+
+                    if (resp.error != 0)
+                        this->mail_box.update_system_mail_user_read(mail_id, false);
+                    else
+                        this->server.on_write_mail(resp);
+                }
+                catch (...)
+                {
                     this->mail_box.update_system_mail_user_read(mail_id, false);
-                else
-                    this->server.on_write_mail(resp);
+                }
             }
-            catch (...)
-            {
-                this->mail_box.update_system_mail_user_read(mail_id, false);
-            }
-        }
-    });
+        });
 
     co_return;
 }
@@ -1389,6 +1399,40 @@ fb::protocol::internal::Character character::to_protocol() const
         auto time = (uint32_t)(buff->time().count() / 1000);
         dto.buffs.push_back({buff->model.id, time});
     }
+
+    const auto& pending_listings = this->marketplace.pending_listings();
+    if (!pending_listings.empty())
+    {
+        auto json = Json::Value{Json::objectValue};
+        for (const auto& [listing_id, pending_info] : pending_listings)
+        {
+            auto info_json            = Json::Value{Json::objectValue};
+            info_json["type"]         = static_cast<uint8_t>(pending_info.type);
+            info_json["character_id"] = pending_info.character_id;
+
+            auto dsl_array = Json::Value{Json::arrayValue};
+            for (const auto& dsl : pending_info.dsls)
+            {
+                dsl_array.append(dsl.to_json());
+            }
+            info_json["dsls"] = dsl_array;
+
+            json[listing_id] = info_json;
+        }
+        // Use StreamWriterBuilder to output UTF-8 characters without escape sequences
+        auto builder           = Json::StreamWriterBuilder{};
+        builder["emitUTF8"]    = true; // Output UTF-8 characters directly without escape sequences
+        builder["indentation"] = "";   // Compact output (no indentation)
+        auto writer            = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
+        auto stream            = std::ostringstream{};
+        writer->write(json, &stream);
+        dto.pending_listings = stream.str();
+    }
+    else
+    {
+        dto.pending_listings = std::nullopt;
+    }
+
     return dto;
 }
 
@@ -1458,7 +1502,8 @@ bool character::detect() const
     return this->_detect;
 }
 
-std::shared_ptr<fb::game::mob> character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify)
+std::shared_ptr<fb::game::mob>
+character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify)
 {
     auto map = this->_map;
     if (map == nullptr)
@@ -1552,6 +1597,18 @@ bool character::hidden(ROLE role) const
     return this->role() > role;
 }
 
+void character::update_last_afk_time()
+{
+    this->assert_thread();
+    this->_last_afk_time = fb::model::datetime();
+}
+
+fb::model::datetime& character::last_afk_time()
+{
+    this->assert_thread();
+    return this->_last_afk_time;
+}
+
 async::task<void> character::death_penalty()
 {
     auto buff_keys = std::vector<uint32_t>{};
@@ -1568,7 +1625,7 @@ async::task<void> character::death_penalty()
     if (money > 0)
     {
         this->money_reduce(money);
-        // TODO: Phase 3 - Convert to smart pointer return type
+
         auto cash_shared = this->server.make<fb::game::cash>(money);
         auto cash        = cash_shared.get();
         cash->death_uid(this->id);
@@ -1664,6 +1721,26 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
             auto  params = fb::model::dsl::item(item.params);
             auto& model  = table::item[params.id];
             auto  item   = model.make(this->server, params.count);
+            if (params.durability.has_value())
+            {
+                if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT))
+                {
+                    auto equipment = std::static_pointer_cast<fb::game::equipment>(item);
+                    equipment->durability(*params.durability);
+                }
+
+                if (model.attr(ITEM_ATTRIBUTE::CONSUME))
+                {
+                    auto consume = std::static_pointer_cast<fb::game::consume>(item);
+                    consume->durability(*params.durability);
+                }
+            }
+
+            if (params.custom_name.has_value() && model.attr(ITEM_ATTRIBUTE::WEAPON))
+            {
+                auto weapon = std::static_pointer_cast<fb::game::weapon>(item);
+                weapon->custom_name(*params.custom_name);
+            }
             this->items.add(item);
             break;
         }

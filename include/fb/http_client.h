@@ -25,9 +25,9 @@
 template <typename Request>
 struct response_of;
 
-using namespace std::chrono_literals;
-
 namespace fb {
+
+using namespace std::chrono_literals;
 
 class http_client
 {
@@ -44,8 +44,10 @@ public:
     ~http_client()                              = default;
 
 private:
-    boost::asio::awaitable<std::vector<uint8_t>>
-    boost_get_async(std::string host, std::string path, std::map<std::string, std::string> headers, std::chrono::steady_clock::duration timeout)
+    boost::asio::awaitable<std::vector<uint8_t>> boost_get_async(std::string                         host,
+                                                                 std::string                         path,
+                                                                 std::map<std::string, std::string>  headers,
+                                                                 std::chrono::steady_clock::duration timeout)
     {
         try
         {
@@ -57,7 +59,7 @@ private:
 
             auto const colon_pos = raw_host.find(':');
             auto const host_name = (colon_pos == std::string::npos ? raw_host : raw_host.substr(0, colon_pos));
-            auto const port      = (colon_pos == std::string::npos ? std::string("80") : raw_host.substr(colon_pos + 1));
+            auto const port = (colon_pos == std::string::npos ? std::string("80") : raw_host.substr(colon_pos + 1));
 
             auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
             auto  resolver   = boost::asio::ip::tcp::resolver{io_context};
@@ -67,7 +69,10 @@ private:
             auto const results = co_await resolver.async_resolve(host_name, port, boost::asio::use_awaitable);
             co_await stream.async_connect(results, boost::asio::use_awaitable);
 
-            auto req = boost::beast::http::request<boost::beast::http::empty_body>{boost::beast::http::verb::get, url_encode(UTF8(path, PLATFORM::WINDOWS)), 11};
+            auto req =
+                boost::beast::http::request<boost::beast::http::empty_body>{boost::beast::http::verb::get,
+                                                                            url_encode(UTF8(path, PLATFORM::WINDOWS)),
+                                                                            11};
             req.set(boost::beast::http::field::host, host_name);
             req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
             for (auto const& h : headers)
@@ -111,8 +116,11 @@ private:
     }
 
 private:
-    boost::asio::awaitable<std::vector<uint8_t>>
-    boost_post_async(std::string host, std::string path, std::map<std::string, std::string> headers, std::chrono::steady_clock::duration timeout, std::vector<uint8_t> body)
+    boost::asio::awaitable<std::vector<uint8_t>> boost_post_async(std::string                         host,
+                                                                  std::string                         path,
+                                                                  std::map<std::string, std::string>  headers,
+                                                                  std::chrono::steady_clock::duration timeout,
+                                                                  std::vector<uint8_t>                body)
     {
         try
         {
@@ -124,7 +132,7 @@ private:
 
             auto const colon_pos = raw_host.find(':');
             auto const host_name = (colon_pos == std::string::npos ? raw_host : raw_host.substr(0, colon_pos));
-            auto const port      = (colon_pos == std::string::npos ? std::string("80") : raw_host.substr(colon_pos + 1));
+            auto const port = (colon_pos == std::string::npos ? std::string("80") : raw_host.substr(colon_pos + 1));
 
             auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
             auto  resolver   = boost::asio::ip::tcp::resolver{io_context};
@@ -134,7 +142,10 @@ private:
             auto const results = co_await resolver.async_resolve(host_name, port, boost::asio::use_awaitable);
             co_await stream.async_connect(results, boost::asio::use_awaitable);
 
-            auto req = boost::beast::http::request<boost::beast::http::vector_body<uint8_t>>{boost::beast::http::verb::post, url_encode(UTF8(path, PLATFORM::WINDOWS)), 11};
+            auto req = boost::beast::http::request<boost::beast::http::vector_body<uint8_t>>{
+                boost::beast::http::verb::post,
+                url_encode(UTF8(path, PLATFORM::WINDOWS)),
+                11};
 
             req.set(boost::beast::http::field::host, host_name);
             req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
@@ -195,7 +206,8 @@ public:
     }
 
 private:
-    template <typename Response> [[nodiscard]] async::task<Response> boost_get_async(const std::string& host, const std::string& path)
+    template <typename Response> [[nodiscard]] async::task<Response> boost_get_async(const std::string& host,
+                                                                                     const std::string& path)
     {
         auto promise = std::make_shared<async::task_completion_source<Response>>();
         auto headers = std::map<std::string, std::string>{
@@ -203,39 +215,42 @@ private:
         };
 
         auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
-        boost::asio::co_spawn(io_context, this->boost_get_async(host, path, headers, 5s), [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
-            if (ep)
-            {
-                try
-                {
-                    std::rethrow_exception(ep);
-                }
-                catch (...)
-                {
-                    promise->set_exception(std::current_exception());
-                    return;
-                }
-            }
+        boost::asio::co_spawn(io_context,
+                              this->boost_get_async(host, path, headers, 5s),
+                              [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+                                  if (ep)
+                                  {
+                                      try
+                                      {
+                                          std::rethrow_exception(ep);
+                                      }
+                                      catch (...)
+                                      {
+                                          promise->set_exception(std::current_exception());
+                                          return;
+                                      }
+                                  }
 
-            try
-            {
-                auto reader        = fb::stream_reader<big_endian>(bytes);
-                auto protocol_type = reader.read<uint32_t>();
-                auto protocol_size = reader.read<uint32_t>();
-                auto offset        = bytes.data() + sizeof(uint32_t) + sizeof(uint32_t);
-                promise->set_value(Response::Deserialize(offset));
-            }
-            catch (std::exception& e)
-            {
-                promise->set_exception(std::make_exception_ptr(e));
-            }
-        });
+                                  try
+                                  {
+                                      auto reader        = fb::stream_reader<big_endian>(bytes);
+                                      auto protocol_type = reader.read<uint32_t>();
+                                      auto protocol_size = reader.read<uint32_t>();
+                                      auto offset        = bytes.data() + sizeof(uint32_t) + sizeof(uint32_t);
+                                      promise->set_value(Response::Deserialize(offset));
+                                  }
+                                  catch (std::exception& e)
+                                  {
+                                      promise->set_exception(std::make_exception_ptr(e));
+                                  }
+                              });
 
         return promise->task();
     }
 
 public:
-    template <typename Request> [[nodiscard]] async::task<typename response_of<Request>::type> post(const std::string& service, const std::string& path, const Request& request)
+    template <typename Request> [[nodiscard]] async::task<typename response_of<Request>::type>
+    post(const std::string& service, const std::string& path, const Request& request)
     {
         auto& config = fb::config<>(service);
         auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
@@ -262,9 +277,8 @@ public:
     }
 
 private:
-    template <typename Request> [[nodiscard]] async::task<typename response_of<Request>::type> boost_post_async(std::string const& host,
-                                                                                                                std::string const& path,
-                                                                                                                Request const&     body)
+    template <typename Request> [[nodiscard]] async::task<typename response_of<Request>::type>
+    boost_post_async(std::string const& host, std::string const& path, Request const& body)
     {
         auto const serialized_payload = body.Serialize();
         auto       stream_req         = fb::stream();
@@ -310,7 +324,9 @@ private:
     /// <summary>
     /// Internal method to send POST request with binary data.
     /// </summary>
-    [[nodiscard]] async::task<void> boost_post_binary_async(const std::string& url, const std::string& path, const fb::stream& data)
+    [[nodiscard]] async::task<void> boost_post_binary_async(const std::string& url,
+                                                            const std::string& path,
+                                                            const fb::stream&  data)
     {
         auto promise = std::make_shared<async::task_completion_source<void>>();
         auto headers = std::map<std::string, std::string>{
@@ -321,14 +337,16 @@ private:
         auto body = std::vector<uint8_t>(data.begin(), data.end());
 
         auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
-        boost::asio::co_spawn(io_context, this->boost_post_async(url, path, headers, std::chrono::seconds{30}, body), [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
-            if (ep)
-            {
-                promise->set_exception(ep);
-                return;
-            }
-            promise->set_value();
-        });
+        boost::asio::co_spawn(io_context,
+                              this->boost_post_async(url, path, headers, std::chrono::seconds{30}, body),
+                              [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+                                  if (ep)
+                                  {
+                                      promise->set_exception(ep);
+                                      return;
+                                  }
+                                  promise->set_value();
+                              });
 
         return promise->task();
     }

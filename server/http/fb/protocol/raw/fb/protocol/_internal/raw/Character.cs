@@ -76,20 +76,27 @@ public struct Character : IFlatbufferObject
   public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(76); }
 #endif
   public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(76); }
-  public string CreatedDate { get { int o = __p.__offset(78); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string PendingListings { get { int o = __p.__offset(78); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetCreatedDateBytes() { return __p.__vector_as_span<byte>(78, 1); }
+  public Span<byte> GetPendingListingsBytes() { return __p.__vector_as_span<byte>(78, 1); }
 #else
-  public ArraySegment<byte>? GetCreatedDateBytes() { return __p.__vector_as_arraysegment(78); }
+  public ArraySegment<byte>? GetPendingListingsBytes() { return __p.__vector_as_arraysegment(78); }
 #endif
-  public byte[] GetCreatedDateArray() { return __p.__vector_as_array<byte>(78); }
-  public string UpdatedDate { get { int o = __p.__offset(80); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetPendingListingsArray() { return __p.__vector_as_array<byte>(78); }
+  public string CreatedDate { get { int o = __p.__offset(80); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(80, 1); }
+  public Span<byte> GetCreatedDateBytes() { return __p.__vector_as_span<byte>(80, 1); }
 #else
-  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(80); }
+  public ArraySegment<byte>? GetCreatedDateBytes() { return __p.__vector_as_arraysegment(80); }
 #endif
-  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(80); }
+  public byte[] GetCreatedDateArray() { return __p.__vector_as_array<byte>(80); }
+  public string UpdatedDate { get { int o = __p.__offset(82); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(82, 1); }
+#else
+  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(82); }
+#endif
+  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(82); }
 
   public static Offset<fb.protocol._internal.raw.Character> CreateCharacter(FlatBufferBuilder builder,
       uint id = 0,
@@ -129,11 +136,13 @@ public struct Character : IFlatbufferObject
       Offset<nullable.nullable_ubyte> aux_bot_colorOffset = default(Offset<nullable.nullable_ubyte>),
       VectorOffset buffsOffset = default(VectorOffset),
       StringOffset titleOffset = default(StringOffset),
+      StringOffset pending_listingsOffset = default(StringOffset),
       StringOffset created_dateOffset = default(StringOffset),
       StringOffset updated_dateOffset = default(StringOffset)) {
-    builder.StartTable(39);
+    builder.StartTable(40);
     Character.AddUpdatedDate(builder, updated_dateOffset);
     Character.AddCreatedDate(builder, created_dateOffset);
+    Character.AddPendingListings(builder, pending_listingsOffset);
     Character.AddTitle(builder, titleOffset);
     Character.AddBuffs(builder, buffsOffset);
     Character.AddAuxBotColor(builder, aux_bot_colorOffset);
@@ -174,7 +183,7 @@ public struct Character : IFlatbufferObject
     return Character.EndCharacter(builder);
   }
 
-  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(39); }
+  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(40); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static void AddPw(FlatBufferBuilder builder, StringOffset pwOffset) { builder.AddOffset(2, pwOffset.Value, 0); }
@@ -217,8 +226,9 @@ public struct Character : IFlatbufferObject
   public static VectorOffset CreateBuffsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.Buff>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartBuffsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(36, titleOffset.Value, 0); }
-  public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(37, createdDateOffset.Value, 0); }
-  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(38, updatedDateOffset.Value, 0); }
+  public static void AddPendingListings(FlatBufferBuilder builder, StringOffset pendingListingsOffset) { builder.AddOffset(37, pendingListingsOffset.Value, 0); }
+  public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(38, createdDateOffset.Value, 0); }
+  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(39, updatedDateOffset.Value, 0); }
   public static Offset<fb.protocol._internal.raw.Character> EndCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Character>(o);
@@ -270,8 +280,9 @@ static public class CharacterVerify
       && verifier.VerifyTable(tablePos, 72 /*AuxBotColor*/, nullable.nullable_ubyteVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 74 /*Buffs*/, fb.protocol._internal.raw.BuffVerify.Verify, false)
       && verifier.VerifyString(tablePos, 76 /*Title*/, false)
-      && verifier.VerifyString(tablePos, 78 /*CreatedDate*/, false)
-      && verifier.VerifyString(tablePos, 80 /*UpdatedDate*/, false)
+      && verifier.VerifyString(tablePos, 78 /*PendingListings*/, false)
+      && verifier.VerifyString(tablePos, 80 /*CreatedDate*/, false)
+      && verifier.VerifyString(tablePos, 82 /*UpdatedDate*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

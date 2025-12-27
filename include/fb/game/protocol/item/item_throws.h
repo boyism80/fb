@@ -8,12 +8,11 @@
 #include <fb/game/character.h>
 #endif
 
+namespace fb::protocol::game::request {
 #ifndef BOT
 using namespace fb::game;
 #endif
 using namespace fb::model::enum_value;
-
-namespace fb::protocol::game::request {
 
 class item_throws : public fb::protocol::header
 {

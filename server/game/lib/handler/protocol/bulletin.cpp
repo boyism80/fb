@@ -3,13 +3,17 @@
 #include <fb/encoding.h>
 #include <json/json.h>
 
-using namespace fb::model;
+using namespace fb::game::handler::protocol;
+using table = fb::model::table;
 
-fb::game::handler::protocol::bulletin::bulletin(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::bulletin>(server)
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
+
+bulletin::bulletin(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::bulletin>(server)
 { }
 
-async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<character>& session, fb::protocol::game::request::bulletin& request)
+async::task<bool> bulletin::handle(fb::socket<character>& session, game_reqs::bulletin& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -41,7 +45,12 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 auto dao = std::vector<mail_box::summary>();
                 for (auto& summary : resp.summary_list)
                 {
-                    dao.push_back(mail_box::summary{summary.id, summary.user, summary.sender, summary.read, summary.title, summary.created_date});
+                    dao.push_back(mail_box::summary{summary.id,
+                                                    summary.user,
+                                                    summary.sender,
+                                                    summary.read,
+                                                    summary.title,
+                                                    summary.created_date});
                 }
 
                 ch->mail_box.show(dao, flag);
@@ -81,7 +90,13 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
                 if (ch->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
                     flag |= MAIL_BUTTON_ENABLE::NEW;
 
-                ch->mail_box.show(mail_box::mail{resp.mail.id, resp.mail.user, resp.mail.sender, resp.mail.title, resp.mail.contents, resp.mail.read, resp.mail.created_date},
+                ch->mail_box.show(mail_box::mail{resp.mail.id,
+                                                 resp.mail.user,
+                                                 resp.mail.sender,
+                                                 resp.mail.title,
+                                                 resp.mail.contents,
+                                                 resp.mail.read,
+                                                 resp.mail.created_date},
                                   flag);
 
                 // Log mail read event (only if not read before)
@@ -209,7 +224,12 @@ async::task<bool> fb::game::handler::protocol::bulletin::handle(fb::socket<chara
             auto dao = std::vector<mail_box::summary>();
             for (auto& summary : resp.summary_list)
             {
-                dao.push_back(mail_box::summary{summary.id, summary.user, summary.sender, summary.read, summary.title, summary.created_date});
+                dao.push_back(mail_box::summary{summary.id,
+                                                summary.user,
+                                                summary.sender,
+                                                summary.read,
+                                                summary.title,
+                                                summary.created_date});
             }
 
             ch->mail_box.show(dao, flag);

@@ -79,8 +79,19 @@ module.exports = function () {
                             },
                         },
                         spec: {
-                            nodeSelector: {
-                                cpu: "epyc"
+                            affinity: {
+                                nodeAffinity: {
+                                    preferredDuringSchedulingIgnoredDuringExecution: [{
+                                        weight: 100,
+                                        preference: {
+                                            matchExpressions: [{
+                                                key: "cpu",
+                                                operator: "In",
+                                                values: ["epyc"]
+                                            }]
+                                        }
+                                    }]
+                                }
                             },
                             containers: [
                                 {

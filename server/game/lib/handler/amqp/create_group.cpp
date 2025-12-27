@@ -17,4 +17,3 @@ async::task<void> create_group::handle(const internal_resp::GroupDetails& messag
 
     co_await this->server.on_create_group(message);
 }
-

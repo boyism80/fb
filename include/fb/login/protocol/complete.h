@@ -4,9 +4,9 @@
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::login::request {
+
+using namespace fb::model::enum_value;
 
 class complete : public fb::protocol::header
 {

@@ -14,4 +14,3 @@ async::task<void> updated_clan::handle(const internal_resp::UpdatedClan& message
 
     co_await this->server.on_updated_clan(message);
 }
-

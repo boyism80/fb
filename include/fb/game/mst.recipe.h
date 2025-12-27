@@ -6,9 +6,9 @@
 #include <fb/game/item.h>
 #include <fb/generator.h>
 
-using namespace fb::model::enum_value;
-
 namespace fb { namespace model {
+
+using namespace fb::model::enum_value;
 
 class recipe_node : public fb::mst<const fb::model::dsl::item&>
 {
@@ -32,7 +32,7 @@ private:
     recipe_node*                   find(uint32_t id) const;
     recipe_node*                   find(const fb::model::dsl::item& item) const;
     recipe_node&                   add(const fb::model::dsl::item& item);
-    void                           compact(const std::vector<fb::model::dsl::item>& source, std::vector<fb::model::dsl::item>& dest);
+    void compact(const std::vector<fb::model::dsl::item>& source, std::vector<fb::model::dsl::item>& dest);
 
 public:
     void                           add(const fb::model::recipe& recipe);

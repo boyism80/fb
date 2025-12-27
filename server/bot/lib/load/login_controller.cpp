@@ -18,7 +18,7 @@ void login_bot_controller::initialize()
     // No timers needed for login bot_controller as it's reactive
 }
 
-async::task<void> login_bot_controller::on_agreement(login_bot& bot, const fb::protocol::login::response::agreement& response)
+async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login_resp::agreement& response)
 {
     auto           id     = bot.generate_id();
     auto           exists = false;
@@ -30,7 +30,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const fb::p
 
         while (true)
         {
-            auto&& resp = co_await bot.request<fb::protocol::login::response::message>(fb::protocol::login::request::create(id, pw));
+            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::create(id, pw));
 
             if (resp.type == 0x00)
                 break;
@@ -63,7 +63,8 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const fb::p
 
             while (true)
             {
-                auto&& resp = co_await bot.request<fb::protocol::login::response::message>(fb::protocol::login::request::complete{hair, sex, nation, creature});
+                auto&& resp = co_await bot.request<login_resp::message>(
+                    fb::protocol::login::request::complete{hair, sex, nation, creature});
 
                 if (resp.type == 0x00)
                     break;
@@ -74,7 +75,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const fb::p
 
         while (true)
         {
-            auto&& resp = co_await bot.request<fb::protocol::login::response::message>(fb::protocol::login::request::login{id, pw});
+            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::login{id, pw});
             if (resp.type == 0x00)
                 break;
 
@@ -89,7 +90,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const fb::p
     co_return;
 }
 
-async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb::protocol::response::transfer& response)
+async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb_resp::transfer& response)
 {
     bot.close();
 
@@ -104,7 +105,7 @@ async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb::pr
 async::task<void> login_bot_controller::on_bot_connected(login_bot& bot)
 {
     auto& encryption = bot.encryption();
-    bot.send(fb::protocol::login::request::agreement(encryption.pattern(), fb::encryption::KEY_SIZE, encryption.iv()), false, true);
+    bot.send(login_reqs::agreement(encryption.pattern(), fb::encryption::KEY_SIZE, encryption.iv()), false, true);
 
     // Bot is now managed by bot_controller's thread-safe collection
     co_return;

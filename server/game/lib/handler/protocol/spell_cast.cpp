@@ -3,11 +3,13 @@
 
 using namespace fb::game::handler::protocol;
 
+namespace game_reqs = fb::protocol::game::request;
+
 spell_cast::spell_cast(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::spell_cast>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::spell_cast>(server)
 { }
 
-async::task<bool> spell_cast::handle(fb::socket<character>& session, fb::protocol::game::request::spell_cast& request)
+async::task<bool> spell_cast::handle(fb::socket<character>& session, game_reqs::spell_cast& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)

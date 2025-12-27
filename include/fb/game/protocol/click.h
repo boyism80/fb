@@ -4,9 +4,9 @@
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::request {
+
+using namespace fb::model::enum_value;
 
 class click : public fb::protocol::header
 {

@@ -6,6 +6,8 @@
 
 namespace fb::game::handler::amqp {
 
+namespace internal_resp = fb::protocol::internal::response;
+
 class shutdown : public fb::handler::amqp<fb::game::server, internal_resp::Shutdown>
 {
 public:

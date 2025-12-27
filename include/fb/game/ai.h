@@ -4,10 +4,10 @@
 #include <fb/model/model.h>
 #include <unordered_map>
 
+namespace fb::game {
+
 using namespace std::chrono_literals;
 using namespace fb::model::enum_value;
-
-namespace fb::game {
 
 class mob;
 class life;

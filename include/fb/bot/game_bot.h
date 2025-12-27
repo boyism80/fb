@@ -13,6 +13,8 @@
 
 namespace fb::bot {
 
+using namespace fb::model::enum_value;
+
 class game_bot_controller;
 template <typename ControllerType> class bot;
 
@@ -76,57 +78,52 @@ private:
     } pattern_params;
 
 private:
-    bool                        _inited = false;
-    std::vector<pattern_params> _pattern_params;
-    datetime                    _next_action_time;
-
-    uint16_t        _map = 0xFFFF;
-    uint32_t        _oid = 0;
-    point<uint16_t> _position;
-    fb::stream      _transfer_buffer;
-    DIRECTION       _direction = DIRECTION::BOTTOM;
-
-    uint16_t              _look  = 0;
-    uint8_t               _color = 0;
-    bool                  _dead  = false;
-    std::set<std::string> _active_buffs;
-
+    bool                            _inited = false;
+    std::vector<pattern_params>     _pattern_params;
+    datetime                        _next_action_time;
+    uint16_t                        _map = 0xFFFF;
+    uint32_t                        _oid = 0;
+    point<uint16_t>                 _position;
+    fb::stream                      _transfer_buffer;
+    DIRECTION                       _direction = DIRECTION::BOTTOM;
+    uint16_t                        _look      = 0;
+    uint8_t                         _color     = 0;
+    bool                            _dead      = false;
+    std::set<std::string>           _active_buffs;
     std::map<uint8_t, simple_item>  _items;
     std::map<uint8_t, simple_spell> _spells;
-
-    uint8_t  _nation        = 0;
-    uint8_t  _creature      = 0;
-    uint8_t  _level         = 0;
-    uint32_t _base_hp       = 0;
-    uint32_t _base_mp       = 0;
-    uint8_t  _strength      = 0;
-    uint8_t  _intelligence  = 0;
-    uint8_t  _dexterity     = 0;
-    uint32_t _hp            = 0;
-    uint32_t _mp            = 0;
-    uint32_t _exp           = 0;
-    uint32_t _money         = 0;
-    uint32_t _crowd_control = 0;
-    uint8_t  _mail_count    = 0;
-    uint8_t  _fast_move     = 0;
-
-    uint8_t     _disguised    = 0;
-    SEX         _sex          = SEX::MAN;
-    STATE       _state        = STATE::NORMAL;
-    uint8_t     _armor_dress  = 0;
-    uint8_t     _armor_color  = 0;
-    uint16_t    _weapon_dress = 0;
-    uint8_t     _weapon_color = 0;
-    uint8_t     _shield_dress = 0;
-    uint8_t     _shield_color = 0;
-    uint8_t     _head_marker  = 0;
-    std::string _name;
-    std::string _clan_name;
-    std::string _clan_title;
-    std::string _title;
-    std::string _group_info;
-    uint8_t     _group_option = 0;
-    uint32_t    _remained_exp = 0;
+    uint8_t                         _nation        = 0;
+    uint8_t                         _creature      = 0;
+    uint8_t                         _level         = 0;
+    uint32_t                        _base_hp       = 0;
+    uint32_t                        _base_mp       = 0;
+    uint8_t                         _strength      = 0;
+    uint8_t                         _intelligence  = 0;
+    uint8_t                         _dexterity     = 0;
+    uint32_t                        _hp            = 0;
+    uint32_t                        _mp            = 0;
+    uint32_t                        _exp           = 0;
+    uint32_t                        _money         = 0;
+    uint32_t                        _crowd_control = 0;
+    uint8_t                         _mail_count    = 0;
+    uint8_t                         _fast_move     = 0;
+    uint8_t                         _disguised     = 0;
+    SEX                             _sex           = SEX::MAN;
+    STATE                           _state         = STATE::NORMAL;
+    uint8_t                         _armor_dress   = 0;
+    uint8_t                         _armor_color   = 0;
+    uint16_t                        _weapon_dress  = 0;
+    uint8_t                         _weapon_color  = 0;
+    uint8_t                         _shield_dress  = 0;
+    uint8_t                         _shield_color  = 0;
+    uint8_t                         _head_marker   = 0;
+    std::string                     _name;
+    std::string                     _clan_name;
+    std::string                     _clan_title;
+    std::string                     _title;
+    std::string                     _group_info;
+    uint8_t                         _group_option = 0;
+    uint32_t                        _remained_exp = 0;
 
 public:
     game_bot(bot_controller<game_bot>& bot_controller, uint32_t id);
@@ -134,7 +131,9 @@ public:
     ~game_bot();
 
 private:
-    template <typename Class> void pattern(async::task<void> (Class::*fn)(), const std::chrono::steady_clock::duration& min, const std::chrono::steady_clock::duration& max)
+    template <typename Class> void pattern(async::task<void> (Class::*fn)(),
+                                           const std::chrono::steady_clock::duration& min,
+                                           const std::chrono::steady_clock::duration& max)
     {
         this->_pattern_params.push_back(pattern_params{std::bind(fn, static_cast<Class*>(this)), min, max});
     }
@@ -278,41 +277,54 @@ public:
     uint8_t                               get_spell_slot_by_name(const std::string& name) const;
     void                                  remove_buffs();
     void                                  chat(const std::string& message);
-    async::task<void>                     create_item(const std::string& item_name, uint32_t count, std::chrono::milliseconds timeout);
-    async::task<simple_npc>               create_npc(const std::string& npc_name, std::chrono::milliseconds timeout);
-    async::task<void>                     change_money(uint32_t amount, std::chrono::milliseconds timeout);
-    async::task<void>                     drop_item(uint8_t index, bool all, std::chrono::milliseconds timeout);
-    async::task<void>                     drop_money(uint32_t amount, std::chrono::milliseconds timeout);
-    async::task<bool>                     equip(uint8_t slot, std::chrono::milliseconds timeout);
-    async::task<bool>                     unequip(EQUIPMENT_PARTS parts, std::chrono::milliseconds timeout);
-    async::task<void>                     sleep(std::chrono::milliseconds timeout);
-    async::task<void>                     change_class(const std::string& class_name, std::chrono::milliseconds timeout);
-    async::task<spawned_monster_info>     spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot>                               bot,
-                                                                       const std::string&                                               monster_name,
-                                                                       uint16_t                                                         x,
-                                                                       uint16_t                                                         y,
-                                                                       std::function<bool(const fb::protocol::game::response::update&)> validator,
-                                                                       std::chrono::milliseconds                                        timeout);
+    async::task<void> create_item(const std::string& item_name, uint32_t count, std::chrono::milliseconds timeout);
+    async::task<simple_npc> create_npc(const std::string& npc_name, std::chrono::milliseconds timeout);
+    async::task<void>       change_money(uint32_t amount, std::chrono::milliseconds timeout);
+    async::task<void>       drop_item(uint8_t index, bool all, std::chrono::milliseconds timeout);
+    async::task<void>       drop_money(uint32_t amount, std::chrono::milliseconds timeout);
+    async::task<bool>       equip(uint8_t slot, std::chrono::milliseconds timeout);
+    async::task<bool>       unequip(EQUIPMENT_PARTS parts, std::chrono::milliseconds timeout);
+    async::task<void>       sleep(std::chrono::milliseconds timeout);
+    async::task<void>       change_class(const std::string& class_name, std::chrono::milliseconds timeout);
+    async::task<spawned_monster_info>
+    spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot>                               bot,
+                                 const std::string&                                               monster_name,
+                                 uint16_t                                                         x,
+                                 uint16_t                                                         y,
+                                 std::function<bool(const fb::protocol::game::response::update&)> validator,
+                                 std::chrono::milliseconds                                        timeout);
 
-    async::task<spawned_monster_info> spawn_monster(const std::string& monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
+    async::task<spawned_monster_info>
+    spawn_monster(const std::string& monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
 
-    async::task<void> spawn_monsters_bulk(const std::string& monster_name, uint8_t range, std::chrono::milliseconds timeout);
+    async::task<void> spawn_monsters_bulk(const std::string&        monster_name,
+                                          uint8_t                   range,
+                                          std::chrono::milliseconds timeout);
 
-    async::task<std::vector<spawned_monster_info>> spawn_monsters_relative_with_validator(std::shared_ptr<fb::bot::game_bot>                               bot,
-                                                                                          const std::string&                                               monster_name,
-                                                                                          const std::vector<std::pair<int, int>>&                          relative_positions,
-                                                                                          std::function<bool(const fb::protocol::game::response::update&)> validator,
-                                                                                          std::chrono::milliseconds                                        timeout);
+    async::task<std::vector<spawned_monster_info>>
+    spawn_monsters_relative_with_validator(std::shared_ptr<fb::bot::game_bot>      bot,
+                                           const std::string&                      monster_name,
+                                           const std::vector<std::pair<int, int>>& relative_positions,
+                                           std::function<bool(const fb::protocol::game::response::update&)> validator,
+                                           std::chrono::milliseconds                                        timeout);
 
-    async::task<std::vector<spawned_monster_info>> spawn_monsters_relative(const std::string&                      monster_name,
-                                                                           const std::vector<std::pair<int, int>>& relative_positions,
-                                                                           std::chrono::milliseconds               timeout);
+    async::task<std::vector<spawned_monster_info>>
+    spawn_monsters_relative(const std::string&                      monster_name,
+                            const std::vector<std::pair<int, int>>& relative_positions,
+                            std::chrono::milliseconds               timeout);
 
-    async::task<spawned_monster_info> spawn_monster_relative(const std::string& monster_name, int relative_x, int relative_y, std::chrono::milliseconds timeout);
+    async::task<spawned_monster_info> spawn_monster_relative(const std::string&        monster_name,
+                                                             int                       relative_x,
+                                                             int                       relative_y,
+                                                             std::chrono::milliseconds timeout);
 
     async::task<bool> set_max_hp_mp(int max_hp, int max_mp, std::chrono::milliseconds timeout);
     async::task<bool> set_current_hp_mp(int current_hp, int current_mp, std::chrono::milliseconds timeout);
-    async::task<bool> setup_bot_stats(int max_hp, int max_mp, std::optional<int> current_hp, std::optional<int> current_mp, std::chrono::milliseconds timeout);
+    async::task<bool> setup_bot_stats(int                       max_hp,
+                                      int                       max_mp,
+                                      std::optional<int>        current_hp,
+                                      std::optional<int>        current_mp,
+                                      std::chrono::milliseconds timeout);
 
     async::task<uint8_t> learn_spell(const std::string& spell_name, std::chrono::milliseconds timeout);
     async::task<size_t>  learn_spells(const std::vector<std::string>& spell_names, std::chrono::milliseconds timeout);
@@ -320,23 +332,31 @@ public:
     async::task<void>    clear_all_drop_items(std::chrono::milliseconds timeout);
     async::task<void>    clear_inventory(std::chrono::milliseconds timeout);
     async::task<void>    fill_inventory(const std::string& name, std::chrono::milliseconds timeout);
-    async::task<void>    move_bot_back_to_position(const fb::model::point<uint16_t>& original_position, std::chrono::milliseconds interval, std::chrono::milliseconds timeout);
+    async::task<void>    move_bot_back_to_position(const fb::model::point<uint16_t>& original_position,
+                                                   std::chrono::milliseconds         interval,
+                                                   std::chrono::milliseconds         timeout);
 
-    async::task<void> reverse_condition(const std::vector<fb::model::dsl>& conditions, std::chrono::milliseconds timeout);
+    async::task<void> reverse_condition(const std::vector<fb::model::dsl>& conditions,
+                                        std::chrono::milliseconds          timeout);
 
     async::task<void> apply_condition(const std::vector<fb::model::dsl>& conditions, std::chrono::milliseconds timeout);
     async::task<void> update_internal_info(std::chrono::milliseconds timeout);
     async::task<bool> invite_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
     async::task<bool> leave_group(std::chrono::milliseconds timeout);
     async::task<bool> kick_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
-    async::task<bool> change_clan_role(std::shared_ptr<game_bot> target, CLAN_ROLE role, std::chrono::milliseconds timeout);
+    async::task<bool> change_clan_role(std::shared_ptr<game_bot> target,
+                                       CLAN_ROLE                 role,
+                                       std::chrono::milliseconds timeout);
 
-    async::task<bool>                      invite_to_clan(std::shared_ptr<game_bot> invitee, std::chrono::milliseconds timeout);
-    async::task<bool>                      kick_from_clan(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
-    async::task<bool>                      leave_clan(std::chrono::milliseconds timeout);
-    async::task<bool>                      destroy_clan(std::chrono::milliseconds timeout);
-    async::task<bool>                      change_clan_title(const std::string& title, std::chrono::milliseconds timeout);
-    async::task<std::shared_ptr<game_bot>> transfer(const fb::protocol::header& protocol, const fb::model::timespan& timeout = 15s, bool encrypt = true, bool wrap = true);
+    async::task<bool> invite_to_clan(std::shared_ptr<game_bot> invitee, std::chrono::milliseconds timeout);
+    async::task<bool> kick_from_clan(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
+    async::task<bool> leave_clan(std::chrono::milliseconds timeout);
+    async::task<bool> destroy_clan(std::chrono::milliseconds timeout);
+    async::task<bool> change_clan_title(const std::string& title, std::chrono::milliseconds timeout);
+    async::task<std::shared_ptr<game_bot>> transfer(const fb::protocol::header& protocol,
+                                                    const fb::model::timespan&  timeout = 15s,
+                                                    bool                        encrypt = true,
+                                                    bool                        wrap    = true);
 };
 
 } // namespace fb::bot

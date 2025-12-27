@@ -459,7 +459,10 @@ void context::pending(bool value)
     this->_state = value ? LUA_PENDING : LUA_YIELD;
 }
 
-int context::ensure_yield(fb::async_executor& executor, std::weak_ptr<fb::thread_switchable> weak, std::function<int(bool)> fn, bool no_yield)
+int context::ensure_yield(fb::async_executor&                  executor,
+                          std::weak_ptr<fb::thread_switchable> weak,
+                          std::function<int(bool)>             fn,
+                          bool                                 no_yield)
 {
     auto shared = weak.lock();
     if (shared == nullptr)
@@ -491,7 +494,10 @@ int context::ensure_yield(fb::async_executor& executor, std::weak_ptr<fb::thread
     }
 }
 
-int fb::lua::context::ensure_resume(fb::async_executor& executor, std::weak_ptr<fb::thread_switchable> weak, std::function<int()> fn, bool force_resume)
+int fb::lua::context::ensure_resume(fb::async_executor&                  executor,
+                                    std::weak_ptr<fb::thread_switchable> weak,
+                                    std::function<int()>                 fn,
+                                    bool                                 force_resume)
 {
     auto shared = weak.lock();
     if (shared == nullptr)

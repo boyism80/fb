@@ -2,14 +2,16 @@
 
 using namespace fb::game;
 
-async::task<internal_resp::Ban> server::ban(const std::string& name, const std::string& reason, const std::optional<uint32_t>& days)
+async::task<internal_resp::Ban> server::ban(const std::string&             name,
+                                            const std::string&             reason,
+                                            const std::optional<uint32_t>& days)
 {
-    auto&& resp = co_await this->http.post("internal", "/ban/add", Ban{name, reason, days});
+    auto&& resp = co_await this->http.post("internal", "/ban/add", internal_reqs::Ban{name, reason, days});
     co_return std::move(resp);
 }
 
 async::task<internal_resp::Unban> server::unban(const std::string& name)
 {
-    auto&& resp = co_await this->http.post("internal", "/ban/remove", Unban{name});
+    auto&& resp = co_await this->http.post("internal", "/ban/remove", internal_reqs::Unban{name});
     co_return std::move(resp);
 }

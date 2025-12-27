@@ -3,11 +3,13 @@
 
 using namespace fb::game::handler::protocol;
 
+namespace game_reqs = fb::protocol::game::request;
+
 give_item::give_item(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::give_item>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::give_item>(server)
 { }
 
-async::task<bool> give_item::handle(fb::socket<character>& session, fb::protocol::game::request::give_item& request)
+async::task<bool> give_item::handle(fb::socket<character>& session, game_reqs::give_item& request)
 {
     auto me = session.data();
     if (me->inited() == false)
@@ -54,7 +56,8 @@ async::task<bool> give_item::handle(fb::socket<character>& session, fb::protocol
             if (count == 1)
                 you->message(std::format(_TEXT(MESSAGE_ITEM_GIVE_SINGLE), me->name(), name_with(item->name())));
             else
-                you->message(std::format(_TEXT(MESSAGE_ITEM_GIVE_MULTIPLE), me->name(), name_with(item->name()), count));
+                you->message(
+                    std::format(_TEXT(MESSAGE_ITEM_GIVE_MULTIPLE), me->name(), name_with(item->name()), count));
             you->items.add(item);
         }
         break;

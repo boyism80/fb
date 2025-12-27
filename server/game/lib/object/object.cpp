@@ -20,7 +20,10 @@ object::object(fb::game::server& server, const fb::model::object& model, const i
 }
 
 object::object(const object& right) :
-    object(right.server, right._model, initial_params{.id = right._oid, .position = right._position, .direction = right._direction, .map = right._map})
+    object(
+        right.server,
+        right._model,
+        initial_params{.id = right._oid, .position = right._position, .direction = right._direction, .map = right._map})
 { }
 
 object::~object()
@@ -261,7 +264,6 @@ bool object::move(DIRECTION direction)
     auto before = this->_position;
     this->position(after);
 
-    // Execute move script
     auto lua = fb::lua::new_context();
     if (lua != nullptr)
     {
@@ -273,7 +275,6 @@ bool object::move(DIRECTION direction)
         std::ignore = lua->call(1);
     }
 
-    // Call listener for packet response
     this->listener.on_move(*this, before);
 
     return true;
@@ -323,7 +324,6 @@ bool object::direction(DIRECTION value)
 
     this->_direction = value;
 
-    // Execute direction change script
     auto lua = fb::lua::new_context();
     if (lua != nullptr)
     {
@@ -335,7 +335,6 @@ bool object::direction(DIRECTION value)
         std::ignore = lua->call(1);
     }
 
-    // Call listener for packet response
     this->listener.on_direction(*this);
 
     return true;
@@ -768,7 +767,8 @@ uint32_t object::distance_sqrt(const object& right) const
 {
     this->assert_thread();
 
-    return (uint32_t)std::pow(this->_position.x - right._position.x, 2) + (uint32_t)std::pow(this->_position.y - right._position.y, 2);
+    return (uint32_t)std::pow(this->_position.x - right._position.x, 2) +
+           (uint32_t)std::pow(this->_position.y - right._position.y, 2);
 }
 
 bool object::condition(const std::vector<fb::model::dsl>& conditions) const

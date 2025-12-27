@@ -13,4 +13,3 @@ async::task<void> heart_beat::handle()
 }
 
 } // namespace fb::gateway::handler::timer
-

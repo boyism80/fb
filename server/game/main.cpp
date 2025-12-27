@@ -22,7 +22,9 @@ int main(int argc, char* argv[])
     try
     {
         po::options_description desc("Game Server Options");
-        desc.add_options()("help,h", "Show help message")("config,c", po::value<std::string>()->default_value("config.json"), "Configuration file path");
+        desc.add_options()("help,h", "Show help message")("config,c",
+                                                          po::value<std::string>()->default_value("config.json"),
+                                                          "Configuration file path");
 
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -99,6 +101,9 @@ int main(int argc, char* argv[])
         fb::game::npc_spawner(*server).run();
 
         fb::console::set_mode(fb::console::mode::plain);
+#ifdef _WIN32
+        fb::model::option::decoding(nullptr);
+#endif
         server->run();
     }
     catch (std::exception& e)

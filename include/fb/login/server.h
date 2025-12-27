@@ -22,13 +22,6 @@
 
 #define MAX_NXCLUB_SIZE 14
 
-using namespace fb::protocol::login;
-using namespace fb::model::enum_value;
-using namespace fb::protocol::internal::request;
-
-namespace internal      = fb::protocol::internal;
-namespace internal_resp = fb::protocol::internal::response;
-
 REGISTER_RESPONSE(fb::protocol::internal::request::ReserveName, fb::protocol::internal::response::ReserveName)
 REGISTER_RESPONSE(fb::protocol::internal::request::Heartbeat, fb::protocol::internal::response::Heartbeat)
 REGISTER_RESPONSE(fb::protocol::internal::request::InitCharacter, fb::protocol::internal::response::InitCharacter)
@@ -38,6 +31,13 @@ REGISTER_RESPONSE(fb::protocol::internal::request::ChangePw, fb::protocol::inter
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
 
 namespace fb::login {
+
+using namespace fb::protocol::login;
+using namespace fb::model::enum_value;
+using namespace fb::protocol::internal::request;
+
+namespace internal      = fb::protocol::internal;
+namespace internal_resp = fb::protocol::internal::response;
 
 class login_exception : public std::runtime_error
 {

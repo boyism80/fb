@@ -56,7 +56,8 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
         writer.write<uint16_t>(this->ch.look());
         writer.write<uint8_t>(this->ch.color());
 
-        writer.write<uint8_t>(armor != nullptr ? armor->based<fb::model::armor>().dress : static_cast<uint8_t>(this->ch.sex()));
+        writer.write<uint8_t>(armor != nullptr ? armor->based<fb::model::armor>().dress
+                                               : static_cast<uint8_t>(this->ch.sex()));
         writer.write<uint8_t>(this->ch.armor_color().value_or(0x00));
 
         writer.write<uint16_t>(weapon != nullptr ? weapon->based<fb::model::weapon>().dress : 0xFFFF);
@@ -111,7 +112,7 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
         auto& model = achievement->model;
         writer.write<uint8_t>(achievement->icon.value_or(model.look));
         writer.write<uint8_t>(achievement->color.value_or(model.color));
-        writer.write<std::string>(achievement->text.value_or(model.text));
+        writer.write<std::string>(achievement->text.value_or(model.text.value_or("")));
     }
     writer.write<uint8_t>(0x00);
 }

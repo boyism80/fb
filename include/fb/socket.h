@@ -15,6 +15,7 @@
 #include <async/awaitable_get.h>
 #include <fb/async_executor.h>
 #include <fb/thread.h>
+#include <fb/model/datetime.h>
 
 namespace fb {
 
@@ -96,6 +97,7 @@ private:
     handle_read_event   _handle_received;
     handler_event       _handle_closed;
     fb::stream          _stream;
+    fb::model::datetime _last_packet_time;
 
 protected:
     std::array<char, MAX_BUFFER_SIZE> _buffer;
@@ -109,16 +111,21 @@ public:
         boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(executor)),
         _executor(executor),
         _handle_received(handle_received),
-        _handle_closed(handle_closed)
+        _handle_closed(handle_closed),
+        _last_packet_time(fb::model::datetime())
     { }
 
 public:
-    socket(fb::async_executor& executor, const fb::encryption& encryption, const handle_read_event& handle_received, const handler_event& handle_closed) :
+    socket(fb::async_executor&      executor,
+           const fb::encryption&    encryption,
+           const handle_read_event& handle_received,
+           const handler_event&     handle_closed) :
         boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(executor)),
         _executor(executor),
         _handle_received(handle_received),
         _handle_closed(handle_closed),
-        _encryption(encryption)
+        _encryption(encryption),
+        _last_packet_time(fb::model::datetime())
     { }
 
 public:
@@ -216,7 +223,8 @@ public:
         {
             while (true)
             {
-                auto bytes_transferred = co_await this->async_read_some(boost::asio::buffer(this->_buffer), boost::asio::use_awaitable);
+                auto bytes_transferred =
+                    co_await this->async_read_some(boost::asio::buffer(this->_buffer), boost::asio::use_awaitable);
 
                 auto writer = fb::stream_writer<big_endian>(this->_stream);
                 writer.write(this->_buffer.data(), bytes_transferred);
@@ -327,6 +335,18 @@ public:
         {
             return this->_executor.threads.modular(this->fd());
         }
+    }
+
+public:
+    void update_last_packet_time()
+    {
+        this->_last_packet_time = fb::model::datetime();
+    }
+
+public:
+    const fb::model::datetime& last_packet_time() const
+    {
+        return this->_last_packet_time;
     }
 };
 

@@ -4,11 +4,19 @@
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
+
 async::task<bool> item_test::test_equipment(uint32_t index)
 {
     fb::logger::debug("Starting scenario 1-2: Equipment test with conditions");
 
-    static auto equipment_types = std::unordered_set<ITEM_TYPE>{ITEM_TYPE::WEAPON, ITEM_TYPE::ARMOR, ITEM_TYPE::HELMET, ITEM_TYPE::RING, ITEM_TYPE::SHIELD, ITEM_TYPE::AUXILIARY};
+    static auto equipment_types = std::unordered_set<ITEM_TYPE>{ITEM_TYPE::WEAPON,
+                                                                ITEM_TYPE::ARMOR,
+                                                                ITEM_TYPE::HELMET,
+                                                                ITEM_TYPE::RING,
+                                                                ITEM_TYPE::SHIELD,
+                                                                ITEM_TYPE::AUXILIARY};
 
     static auto equipment_parts = std::unordered_map<ITEM_TYPE, EQUIPMENT_PARTS>{
         {ITEM_TYPE::WEAPON,    EQUIPMENT_PARTS::WEAPON   },
@@ -48,7 +56,7 @@ async::task<bool> item_test::test_equipment(uint32_t index)
             }
 
             // Send item_info request and wait for response
-            auto&& resp = co_await bot->request<fb::protocol::game::response::item_tip>(fb::protocol::game::request::item_info(0, 0), DEFAULT_TIMEOUT);
+            auto&& resp = co_await bot->request<game_resp::item_tip>(game_reqs::item_info(0, 0), DEFAULT_TIMEOUT);
 
             // Compare received tooltip with expected info
             if (resp.message != expected_info || resp.position != 0)
@@ -87,7 +95,8 @@ async::task<bool> item_test::test_equipment(uint32_t index)
                 {
                     equipped = true;
                     bot->chat(std::format("[{}] Unexpectedly equipped: {} (condition reversed)", seq, item.name));
-                    throw std::runtime_error(std::format("Scenario 1-2: Unexpectedly succeeded to equip {} with conditions", item.name));
+                    throw std::runtime_error(
+                        std::format("Scenario 1-2: Unexpectedly succeeded to equip {} with conditions", item.name));
                 }
 
                 co_await bot->apply_condition(item.condition, DEFAULT_TIMEOUT);
@@ -101,7 +110,8 @@ async::task<bool> item_test::test_equipment(uint32_t index)
                 if (equipment_parts.contains(item.type) == false)
                 {
                     bot->chat(std::format("[{}] Equip part not found: {}", seq, item.name));
-                    throw std::runtime_error(std::format("Scenario 1-2: Unexpectedly succeeded to equip {} with conditions", item.name));
+                    throw std::runtime_error(
+                        std::format("Scenario 1-2: Unexpectedly succeeded to equip {} with conditions", item.name));
                 }
             }
         }
@@ -139,8 +149,8 @@ async::task<bool> item_test::test_equipment_overflow()
     co_await bot->create_item("목도", 1, DEFAULT_TIMEOUT);
     bot->chat(std::format("Scenario 3-1: Full inventory again"));
 
-    auto&& resp = co_await bot->request<fb::protocol::game::response::message>(
-        fb::protocol::game::request::item_inactive(EQUIPMENT_PARTS::WEAPON),
+    auto&& resp = co_await bot->request<game_resp::message>(
+        game_reqs::item_inactive(EQUIPMENT_PARTS::WEAPON),
         [](auto& resp) -> bool {
             return resp.type == MESSAGE_TYPE::STATE;
         },

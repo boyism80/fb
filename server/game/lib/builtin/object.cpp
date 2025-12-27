@@ -11,7 +11,7 @@ IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
 {"__eq",                builtin::object::builtin_eq},
 {"__tostring",          builtin::object::builtin_tostring},
 {"destroy",             builtin::object::builtin_destroy},
-{"id",                  builtin::object::builtin_id},
+{"oid",                 builtin::object::builtin_oid},
 {"name",                builtin::object::builtin_name},
 {"sound",               builtin::object::builtin_sound},
 {"position",            builtin::object::builtin_position},
@@ -52,7 +52,7 @@ int builtin::object::builtin_model(lua_State* L)
     return 1;
 }
 
-int builtin::object::builtin_id(lua_State* L)
+int builtin::object::builtin_oid(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -546,8 +546,9 @@ int builtin::object::builtin_map(lua_State* L)
         }
     }
 
-    static auto static_func =
-        [](std::weak_ptr<fb::game::object> weak, std::shared_ptr<fb::game::map> map, const std::optional<fb::model::point16_t>& position) -> async::task<bool> {
+    static auto static_func = [](std::weak_ptr<fb::game::object>            weak,
+                                 std::shared_ptr<fb::game::map>             map,
+                                 const std::optional<fb::model::point16_t>& position) -> async::task<bool> {
         auto shared = weak.lock();
         if (shared == nullptr)
             co_return false;

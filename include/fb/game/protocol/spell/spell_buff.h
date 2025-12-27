@@ -7,9 +7,9 @@
 #include <fb/game/spell.h>
 #endif
 
-using namespace fb::model::enum_value;
-
 namespace fb::protocol::game::response {
+
+using namespace fb::model::enum_value;
 
 class spell_buff : public fb::protocol::header
 {

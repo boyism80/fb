@@ -10,10 +10,13 @@
 #include <chrono>
 
 using namespace fb::game::handler::protocol;
+using namespace fb::game;
 using table = fb::model::table;
 
+namespace game_reqs = fb::protocol::game::request;
+
 login::login(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, fb::protocol::game::request::login>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::login>(server)
 { }
 
 void login::init_option(const internal::Option& response, fb::game::character& ch)
@@ -86,16 +89,22 @@ void login::init_achievements(const std::vector<fb::protocol::internal::Achievem
         if (table::achievement.contains(achievement.model) == false)
             continue;
 
-        auto ptr = std::make_unique<fb::game::achievement>(table::achievement[achievement.model], achievement.text, achievement.icon, achievement.color);
+        auto ptr = std::make_unique<fb::game::achievement>(table::achievement[achievement.model],
+                                                           achievement.text,
+                                                           achievement.icon,
+                                                           achievement.color);
         ch.achievements.insert({achievement.model, std::move(ptr)});
     }
 }
 
-void login::init_system_mail(const std::vector<fb::protocol::internal::SystemMailUser>& response, fb::game::character& ch)
+void login::init_system_mail(const std::vector<fb::protocol::internal::SystemMailUser>& response,
+                             fb::game::character&                                       ch)
 {
     for (auto& smu : response)
     {
-        ch.mail_box.add_system_mail_user(smu.mail_id, smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value()) : std::nullopt);
+        ch.mail_box.add_system_mail_user(smu.mail_id,
+                                         smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value())
+                                                                     : std::nullopt);
         if (smu.read)
         {
             ch.mail_box.update_system_mail_user_read(smu.mail_id, true);
@@ -185,10 +194,11 @@ void login::init_storage(const fb::protocol::internal::response::Init& response,
     }
 }
 
-async::task<std::shared_ptr<character>> login::init(const fb::protocol::game::request::login& request, fb::socket<character>& session)
+async::task<std::shared_ptr<character>> login::init(const game_reqs::login& request, fb::socket<character>& session)
 {
-    auto&& response = co_await this->server.http.get<internal_resp::Init>("internal", std::format("/in-game/init/{}", request.id));
-    auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
+    auto&& response =
+        co_await this->server.http.get<internal_resp::Init>("internal", std::format("/in-game/init/{}", request.id));
+    auto map = request.transfer.has_value() ? request.transfer->map : response.character.map;
 
     auto params         = character::initial_params{.socket = session};
     params.id           = response.character.id;
@@ -268,7 +278,9 @@ async::task<std::shared_ptr<character>> login::init(const fb::protocol::game::re
     });
     if (inserted == false)
     {
-        fb::logger::fatal("Character {} already exists in server during initial insert - disconnecting duplicate session", ch->name());
+        fb::logger::fatal(
+            "Character {} already exists in server during initial insert - disconnecting duplicate session",
+            ch->name());
         co_return nullptr;
     }
 
@@ -280,6 +292,56 @@ async::task<std::shared_ptr<character>> login::init(const fb::protocol::game::re
     this->init_system_mail(response.received_system_mails, *ch);
     this->init_storage(response, *ch);
     this->init_option(response.option, *ch);
+
+    // Restore pending marketplace listings if any
+    if (response.character.pending_listings.has_value() && !response.character.pending_listings.value().empty())
+    {
+        auto json   = Json::Value{};
+        auto reader = Json::Reader{};
+        if (reader.parse(response.character.pending_listings.value(), json) && json.isObject())
+        {
+            auto pending_listings = fb::game::marketplace::pending_listings_t{};
+            for (auto it = json.begin(); it != json.end(); ++it)
+            {
+                auto  listing_id = it.key().asString();
+                auto& value      = *it;
+
+                if (value.isObject())
+                {
+                    fb::game::marketplace::pending_listing_info info{};
+                    info.listing_id = listing_id;
+
+                    // Parse type
+                    if (value.isMember("type") && value["type"].isUInt())
+                    {
+                        info.type = static_cast<fb::game::marketplace::pending_type>(value["type"].asUInt());
+                    }
+
+                    // Parse character_id
+                    if (value.isMember("character_id") && value["character_id"].isUInt())
+                    {
+                        info.character_id = value["character_id"].asUInt();
+                    }
+
+                    // Parse DSLs
+                    if (value.isMember("dsls") && value["dsls"].isArray())
+                    {
+                        for (const auto& dsl_json : value["dsls"])
+                        {
+                            info.dsls.push_back(fb::model::dsl(dsl_json));
+                        }
+                    }
+
+                    if (!info.dsls.empty())
+                        pending_listings[listing_id] = std::move(info);
+                }
+            }
+
+            if (!pending_listings.empty())
+                ch->marketplace.set_pending_listings(std::move(pending_listings));
+        }
+    }
+
     ch->init();
     ch->update_time(this->server.time().hours());
     if (request.from == internal::Service::Login)
@@ -307,9 +369,12 @@ async::task<std::shared_ptr<character>> login::init(const fb::protocol::game::re
     co_return ch;
 }
 
-async::task<bool> login::assert_login(const fb::protocol::game::request::login& request)
+async::task<bool> login::assert_login(const game_reqs::login& request)
 {
-    auto&& resp = co_await this->server.http.post("internal", "/in-game/login", Login{request.id, request.name, fb::config<uint8_t>("id"), false});
+    auto&& resp = co_await this->server.http.post(
+        "internal",
+        "/in-game/login",
+        internal_reqs::Login{request.id, request.name, fb::config<uint8_t>("id"), false});
     switch (static_cast<ERROR_CODE>(resp.error))
     {
     case ERROR_CODE::NONE:
@@ -348,7 +413,7 @@ std::string login::elapsed_message(const std::string& dt)
     return sstream.str();
 }
 
-async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::game::request::login& request)
+async::task<bool> login::handle(fb::socket<character>& session, game_reqs::login& request)
 {
     session.encryption(request.enc_type, request.enc_key);
     fb::logger::info("{} has connected.", request.name);
@@ -358,7 +423,9 @@ async::task<bool> login::handle(fb::socket<character>& session, fb::protocol::ga
     });
     if (exists)
     {
-        fb::logger::fatal("Character {} already exists in server during initial insert - disconnecting duplicate session", request.name);
+        fb::logger::fatal(
+            "Character {} already exists in server during initial insert - disconnecting duplicate session",
+            request.name);
         co_return false;
     }
 

@@ -9,9 +9,9 @@
 #include <fb/protocol/header.h>
 #include <fb/model/datetime.h>
 
-using namespace std::chrono_literals;
-
 namespace fb {
+
+using namespace std::chrono_literals;
 
 template <typename T>
 class socket;
@@ -39,7 +39,9 @@ private:
 
         rate_limited_command() = default;
 
-        rate_limited_command(const handle_func& fn, const std::chrono::steady_clock::duration& duration, uint32_t limit = 0xFFFFFFFF) :
+        rate_limited_command(const handle_func&                         fn,
+                             const std::chrono::steady_clock::duration& duration,
+                             uint32_t                                   limit = 0xFFFFFFFF) :
             fn(fn),
             duration(duration),
             limit(limit)
@@ -83,16 +85,17 @@ public:
                                          co_return protocol;
                                      }});
 
-        this->_handlers.insert({cmd,
-                                rate_limited_command(
-                                    [this, &server](fb::socket<T>& socket, fb::protocol::header& header) -> async::task<bool> {
-                                        auto* protocol = static_cast<typename HandlerType::protocol_type*>(&header);
-                                        auto& session  = static_cast<typename HandlerType::session_type&>(socket);
-                                        auto  handler  = std::make_shared<HandlerType>(server);
-                                        co_return co_await handler->handle(session, *protocol);
-                                    },
-                                    duration,
-                                    limit)});
+        this->_handlers.insert(
+            {cmd,
+             rate_limited_command(
+                 [this, &server](fb::socket<T>& socket, fb::protocol::header& header) -> async::task<bool> {
+                     auto* protocol = static_cast<typename HandlerType::protocol_type*>(&header);
+                     auto& session  = static_cast<typename HandlerType::session_type&>(socket);
+                     auto  handler  = std::make_shared<HandlerType>(server);
+                     co_return co_await handler->handle(session, *protocol);
+                 },
+                 duration,
+                 limit)});
     }
 
     bool has_handler(uint8_t cmd) const

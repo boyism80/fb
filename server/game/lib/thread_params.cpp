@@ -6,4 +6,3 @@ using namespace fb::game;
 thread_params::thread_params(server& server) :
     characters(server)
 { }
-

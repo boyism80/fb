@@ -55,6 +55,11 @@ if [ $? -ne 0 ]; then
     echo "build fb/log failed"
     exit $?
 fi
+sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/marketplace:latest --build-arg BUILD_TYPE=$BUILD_TYPE --build-arg SERVICE=marketplace -f server/http/Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/marketplace failed"
+    exit $?
+fi
 pushd infra/pulumi
 pulumi config set --secret host "$EXTERNAL_IP"
 pulumi down -y && pulumi up -y

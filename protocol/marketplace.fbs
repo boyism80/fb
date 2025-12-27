@@ -1,0 +1,49 @@
+namespace fb.protocol.marketplace;
+
+enum ListingState : ubyte {
+    ACTIVE = 0,
+    SOLD = 1,
+    CANCELLED = 2,
+    EXPIRED = 3
+}
+
+table Item {
+    owner: uint;
+    model: uint;
+    count: ushort;
+    durability: uint?;
+    custom_name: string?;
+}
+
+table PurchaseInfo {
+    purchase_count: ushort;
+    purchase_price: uint;
+    created_date: string;
+}
+
+table Listing {
+    id: string;
+    seller_id: uint;
+    item: Item;
+    price: uint;
+    state: fb.protocol.marketplace.ListingState;
+    expire_date: string;
+    created_date: string;
+    purchase_info: PurchaseInfo?;
+}
+
+table Purchase {
+    id: string;
+    listing_id: string;
+    buyer_id: uint;
+    purchase_count: ushort;
+    purchase_price: uint;
+    created_date: string;
+}
+
+table SearchResult {
+    listings: [Listing];
+    total_count: uint;
+    page: uint;
+}
+

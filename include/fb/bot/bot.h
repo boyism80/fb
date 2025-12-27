@@ -9,10 +9,10 @@
 #include <fb/model/model.h>
 #include <fb/bot/hook_params.h>
 
+namespace fb::bot {
+
 using namespace std::chrono_literals;
 using namespace fb::model;
-
-namespace fb::bot {
 
 // Forward declarations
 class bot_container;
@@ -113,12 +113,13 @@ protected:
     bot(bot_controller<BotType>& controller, uint32_t id);
 
 public:
-    template <typename ResponseType> async::task<ResponseType> request(std::shared_ptr<BotType>                             target,
-                                                                       const fb::protocol::header&                          protocol,
-                                                                       const std::function<bool(const ResponseType& resp)>& condition,
-                                                                       const fb::model::timespan&                           timeout = 0s,
-                                                                       bool                                                 encrypt = true,
-                                                                       bool                                                 wrap    = true);
+    template <typename ResponseType> async::task<ResponseType>
+    request(std::shared_ptr<BotType>                             target,
+            const fb::protocol::header&                          protocol,
+            const std::function<bool(const ResponseType& resp)>& condition,
+            const fb::model::timespan&                           timeout = 0s,
+            bool                                                 encrypt = true,
+            bool                                                 wrap    = true);
 
     template <typename ResponseType>
     async::task<ResponseType> request(const fb::protocol::header&                          protocol,
@@ -127,11 +128,17 @@ public:
                                       bool                                                 encrypt = true,
                                       bool                                                 wrap    = true);
 
-    template <typename ResponseType> async::task<ResponseType>
-    request(std::shared_ptr<BotType> target, const fb::protocol::header& protocol, const fb::model::timespan& timeout = 0s, bool encrypt = true, bool wrap = true);
+    template <typename ResponseType> async::task<ResponseType> request(std::shared_ptr<BotType>    target,
+                                                                       const fb::protocol::header& protocol,
+                                                                       const fb::model::timespan&  timeout = 0s,
+                                                                       bool                        encrypt = true,
+                                                                       bool                        wrap    = true);
 
     template <typename ResponseType>
-    async::task<ResponseType> request(const fb::protocol::header& protocol, const fb::model::timespan& timeout = 0s, bool encrypt = true, bool wrap = true);
+    async::task<ResponseType> request(const fb::protocol::header& protocol,
+                                      const fb::model::timespan&  timeout = 0s,
+                                      bool                        encrypt = true,
+                                      bool                        wrap    = true);
 };
 
 } // namespace fb::bot

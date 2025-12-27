@@ -5,9 +5,9 @@
 #include <fb/model/model.h>
 #include <fb/bot/bulletin.h>
 
-using namespace fb::model::enum_value;
-
 namespace fb::bot::integration {
+
+using namespace fb::model::enum_value;
 
 class bulletin_bot : public fb::protocol::header
 {

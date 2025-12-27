@@ -4,9 +4,9 @@
 #include <fb/lua.h>
 #include <fb/model/model.h>
 
-using namespace fb::model::enum_value;
-
 namespace fb::game {
+
+using namespace fb::model::enum_value;
 
 class clan_member : public lua::luable
 {

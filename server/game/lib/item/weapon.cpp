@@ -17,8 +17,10 @@ std::string fb::game::weapon::mid_message() const
     std::stringstream sstream;
     auto&             model = this->based<fb::model::weapon>();
 
-    sstream << "파괴력: 　　 S:　" << std::to_string(model.damage_small.min) << 'm' << std::to_string(model.damage_small.max) << std::endl;
-    sstream << "　　　  　 　L:　" << std::to_string(model.damage_large.min) << 'm' << std::to_string(model.damage_large.max) << std::endl;
+    sstream << "파괴력: 　　 S:　" << std::to_string(model.damage_small.min) << 'm'
+            << std::to_string(model.damage_small.max) << std::endl;
+    sstream << "　　　  　 　L:　" << std::to_string(model.damage_large.min) << 'm'
+            << std::to_string(model.damage_large.max) << std::endl;
     return sstream.str();
 }
 
@@ -42,7 +44,8 @@ std::string fb::game::weapon::trade_name() const
     auto& model      = this->based<fb::model::equipment>();
     float percentage = this->_durability / float(model.durability) * 100;
 
-    sstream << this->_custom_name.value_or(model.name) << '(' << std::fixed << std::setprecision(1) << percentage << "%)";
+    sstream << this->_custom_name.value_or(model.name) << '(' << std::fixed << std::setprecision(1) << percentage
+            << "%)";
 
     return sstream.str();
 }
@@ -54,17 +57,17 @@ const std::optional<std::string>& fb::game::weapon::custom_name() const
 
 void fb::game::weapon::custom_name(const std::string& name)
 {
-    auto owner = this->_container->owner();
-    if (owner == nullptr)
-        return;
+    this->_custom_name = name;
 
     if (this->_container == nullptr)
         return;
 
-    this->_custom_name = name;
+    auto owner = this->_container->owner();
+    if (owner == nullptr)
+        return;
 
     auto index = this->_container->index(this->shared_from_this_as<fb::game::item>());
-    if (index != 0xFF)
+    if (index != 0xFF && owner != nullptr)
         owner->listener.on_item_update(*owner, index);
 }
 

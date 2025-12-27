@@ -1,12 +1,12 @@
 #include <fb/game/mst.recipe.h>
 
 fb::model::recipe_node::recipe_node(uint32_t id, uint32_t count, const recipe_node* parent) :
-    _dsl(id, count, 0.0),
+    _dsl(id, count, std::nullopt, std::nullopt, 100.0),
     fb::mst<const fb::model::dsl::item&>(_dsl, parent)
 { }
 
 fb::model::recipe_node::recipe_node(const fb::model::dsl::item& data, const recipe_node* parent) :
-    _dsl(data.id, data.count, data.percent),
+    _dsl(data.id, data.count, std::nullopt, std::nullopt, data.percent),
     fb::mst<const fb::model::dsl::item&>(_dsl, parent)
 { }
 
@@ -70,7 +70,8 @@ fb::model::recipe_node& fb::model::recipe_node::add(const fb::model::dsl::item& 
     }
 }
 
-void fb::model::recipe_node::compact(const std::vector<fb::model::dsl::item>& source, std::vector<fb::model::dsl::item>& dest)
+void fb::model::recipe_node::compact(const std::vector<fb::model::dsl::item>& source,
+                                     std::vector<fb::model::dsl::item>&       dest)
 {
     auto buffer = std::unordered_map<uint32_t, uint32_t>();
     for (auto& params : source)
@@ -91,7 +92,7 @@ void fb::model::recipe_node::compact(const std::vector<fb::model::dsl::item>& so
     dest.clear();
     for (auto k : keys)
     {
-        dest.push_back(fb::model::dsl::item(k, buffer.at(k), 0.0));
+        dest.push_back(fb::model::dsl::item(k, buffer.at(k), std::nullopt, std::nullopt, 100.0));
     }
 }
 
@@ -110,7 +111,7 @@ void fb::model::recipe_node::add(const fb::model::recipe& recipe)
     auto dsls = std::vector<fb::model::dsl::item>();
     for (auto& [id, count] : buffer)
     {
-        dsls.push_back(fb::model::dsl::item(id, count, 0.0));
+        dsls.push_back(fb::model::dsl::item(id, count, std::nullopt, std::nullopt, 100.0));
     }
 
     auto ptrs = std::vector<fb::model::dsl::item*>();
@@ -131,7 +132,8 @@ void fb::model::recipe_node::add(const fb::model::recipe& recipe)
     node->_recipes.push_back(recipe);
 }
 
-fb::generator<fb::model::recipe_node::recipe_ref_type> fb::model::recipe_node::find(const std::vector<fb::model::dsl::item>& source, int i)
+fb::generator<fb::model::recipe_node::recipe_ref_type>
+fb::model::recipe_node::find(const std::vector<fb::model::dsl::item>& source, int i)
 {
     if (source.size() <= i)
         co_return;
@@ -159,7 +161,8 @@ fb::generator<fb::model::recipe_node::recipe_ref_type> fb::model::recipe_node::f
     }
 }
 
-fb::generator<fb::model::recipe_node::recipe_ref_type> fb::model::recipe_node::find(const std::vector<fb::model::dsl::item>& source)
+fb::generator<fb::model::recipe_node::recipe_ref_type>
+fb::model::recipe_node::find(const std::vector<fb::model::dsl::item>& source)
 {
     auto buffer = std::unordered_map<uint32_t, uint32_t>();
     for (auto& params : source)

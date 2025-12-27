@@ -5,25 +5,28 @@
 #include <fb/encoding.h>
 #include <json/json.h>
 
+using namespace fb::model::enum_value;
+using namespace fb::game;
+
 using table = fb::model::table;
 
-fb::game::items::items()
+items::items()
 { }
 
-fb::game::items::~items()
+items::~items()
 { }
 
-void fb::game::items::owner(std::shared_ptr<fb::game::character> owner)
+void items::owner(std::shared_ptr<character> owner)
 {
-    this->_owner = owner->weak_from_this_as<fb::game::character>();
+    this->_owner = owner->weak_from_this_as<character>();
 }
 
-std::shared_ptr<fb::game::character> fb::game::items::owner() const
+std::shared_ptr<character> items::owner() const
 {
     return this->_owner.lock();
 }
 
-std::shared_ptr<fb::game::equipment> fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
+std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -111,7 +114,7 @@ std::shared_ptr<fb::game::equipment> fb::game::items::equipment_off(EQUIPMENT_PA
     return equipment;
 }
 
-uint8_t fb::game::items::add(std::shared_ptr<fb::game::item> item)
+uint8_t items::add(std::shared_ptr<item> item)
 {
     auto&& result = this->add(std::vector<std::shared_ptr<fb::game::item>>{item});
     if (result.empty())
@@ -120,14 +123,14 @@ uint8_t fb::game::items::add(std::shared_ptr<fb::game::item> item)
         return result[0];
 }
 
-std::vector<uint8_t> fb::game::items::add(const std::vector<std::shared_ptr<fb::game::item>>& items, bool stop_if_remained)
+std::vector<uint8_t> items::add(const std::vector<std::shared_ptr<item>>& items, bool stop_if_remained)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
         return std::vector<uint8_t>();
 
     auto indices = std::vector<uint8_t>();
-    auto updates = std::unordered_map<uint8_t, std::shared_ptr<fb::game::item>>();
+    auto updates = std::unordered_map<uint8_t, std::shared_ptr<item>>();
 
     for (auto& item : items)
     {
@@ -215,7 +218,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<std::shared_ptr<fb::
     return std::ref(indices);
 }
 
-uint8_t fb::game::items::add(std::shared_ptr<fb::game::item> item, uint8_t index)
+uint8_t items::add(std::shared_ptr<item> item, uint8_t index)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -248,7 +251,7 @@ uint8_t fb::game::items::add(std::shared_ptr<fb::game::item> item, uint8_t index
     return index;
 }
 
-bool fb::game::items::store(std::shared_ptr<fb::game::item> item)
+bool items::store(std::shared_ptr<item> item)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -263,10 +266,12 @@ bool fb::game::items::store(std::shared_ptr<fb::game::item> item)
 
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
     {
-        auto found = std::find_if(this->_stored.begin(), this->_stored.end(), [&item](const std::shared_ptr<fb::game::item>& stored) {
-            auto& model = stored->template based<fb::model::item>();
-            return item->based<fb::model::item>() == model;
-        });
+        auto found = std::find_if(this->_stored.begin(),
+                                  this->_stored.end(),
+                                  [&item](const std::shared_ptr<fb::game::item>& stored) {
+                                      auto& model = stored->template based<fb::model::item>();
+                                      return item->based<fb::model::item>() == model;
+                                  });
 
         if (found == this->_stored.end())
         {
@@ -301,7 +306,7 @@ bool fb::game::items::store(std::shared_ptr<fb::game::item> item)
     return true;
 }
 
-bool fb::game::items::store(uint8_t index, uint16_t count)
+bool items::store(uint8_t index, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -324,7 +329,7 @@ bool fb::game::items::store(uint8_t index, uint16_t count)
     return result;
 }
 
-bool fb::game::items::store(const std::string& name, uint16_t count)
+bool items::store(const std::string& name, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -343,7 +348,7 @@ bool fb::game::items::store(const std::string& name, uint16_t count)
     return this->store(index, count);
 }
 
-std::shared_ptr<fb::game::item> fb::game::items::stored(const fb::model::item& item) const
+std::shared_ptr<item> items::stored(const fb::model::item& item) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -359,7 +364,7 @@ std::shared_ptr<fb::game::item> fb::game::items::stored(const fb::model::item& i
     return nullptr;
 }
 
-const std::vector<std::shared_ptr<fb::game::item>>& fb::game::items::stored() const
+const std::vector<std::shared_ptr<item>>& items::stored() const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -370,7 +375,7 @@ const std::vector<std::shared_ptr<fb::game::item>>& fb::game::items::stored() co
     return this->_stored;
 }
 
-std::shared_ptr<fb::game::item> fb::game::items::retrieve(uint8_t index, uint16_t count)
+std::shared_ptr<item> items::retrieve(uint8_t index, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -444,7 +449,7 @@ std::shared_ptr<fb::game::item> fb::game::items::retrieve(uint8_t index, uint16_
     }
 }
 
-std::shared_ptr<fb::game::item> fb::game::items::retrieve(const std::string& name, uint16_t count)
+std::shared_ptr<item> items::retrieve(const std::string& name, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -461,7 +466,7 @@ std::shared_ptr<fb::game::item> fb::game::items::retrieve(const std::string& nam
     return nullptr;
 }
 
-std::shared_ptr<fb::game::item> fb::game::items::retrieve(const fb::model::item& item, uint16_t count)
+std::shared_ptr<item> items::retrieve(const fb::model::item& item, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -478,7 +483,7 @@ std::shared_ptr<fb::game::item> fb::game::items::retrieve(const fb::model::item&
     return nullptr;
 }
 
-uint32_t fb::game::items::deposited() const
+uint32_t items::deposited() const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -489,7 +494,7 @@ uint32_t fb::game::items::deposited() const
     return this->_deposited;
 }
 
-void fb::game::items::deposited(uint32_t value)
+void items::deposited(uint32_t value)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -500,7 +505,7 @@ void fb::game::items::deposited(uint32_t value)
     this->_deposited = value;
 }
 
-uint32_t fb::game::items::deposit(uint32_t value)
+uint32_t items::deposit(uint32_t value)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -537,7 +542,7 @@ uint32_t fb::game::items::deposit(uint32_t value)
     return lack;
 }
 
-uint32_t fb::game::items::withdraw(uint32_t value)
+uint32_t items::withdraw(uint32_t value)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -573,7 +578,7 @@ uint32_t fb::game::items::withdraw(uint32_t value)
     return lack;
 }
 
-std::shared_ptr<fb::game::item> fb::game::items::active(uint8_t index)
+std::shared_ptr<item> items::active(uint8_t index)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -609,7 +614,7 @@ std::shared_ptr<fb::game::item> fb::game::items::active(uint8_t index)
     return nullptr;
 }
 
-uint8_t fb::game::items::inactive(EQUIPMENT_PARTS parts)
+uint8_t items::inactive(EQUIPMENT_PARTS parts)
 {
     if (this->free() == false)
         return 0xFF;
@@ -622,7 +627,7 @@ uint8_t fb::game::items::inactive(EQUIPMENT_PARTS parts)
     return slot;
 }
 
-uint8_t fb::game::items::index(const fb::model::item& model) const
+uint8_t items::index(const fb::model::item& model) const
 {
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -638,7 +643,7 @@ uint8_t fb::game::items::index(const fb::model::item& model) const
     return 0xFF;
 }
 
-uint8_t fb::game::items::index(const std::shared_ptr<fb::game::item>& item) const
+uint8_t items::index(const std::shared_ptr<item>& item) const
 {
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -650,7 +655,7 @@ uint8_t fb::game::items::index(const std::shared_ptr<fb::game::item>& item) cons
     return 0xFF;
 }
 
-std::vector<uint8_t> fb::game::items::index_all(const std::shared_ptr<fb::game::item>& item) const
+std::vector<uint8_t> items::index_all(const std::shared_ptr<item>& item) const
 {
     auto result = std::vector<uint8_t>();
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
@@ -667,7 +672,7 @@ std::vector<uint8_t> fb::game::items::index_all(const std::shared_ptr<fb::game::
     return result;
 }
 
-bool fb::game::items::update(uint8_t index) const
+bool items::update(uint8_t index) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -685,7 +690,7 @@ bool fb::game::items::update(uint8_t index) const
     return true;
 }
 
-std::shared_ptr<fb::game::equipment> fb::game::items::wear(EQUIPMENT_PARTS parts, std::shared_ptr<fb::game::equipment> item)
+std::shared_ptr<equipment> items::wear(EQUIPMENT_PARTS parts, std::shared_ptr<equipment> item)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -725,7 +730,7 @@ std::shared_ptr<fb::game::equipment> fb::game::items::wear(EQUIPMENT_PARTS parts
     }
 }
 
-std::shared_ptr<fb::game::weapon> fb::game::items::weapon() const
+std::shared_ptr<weapon> items::weapon() const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -734,7 +739,7 @@ std::shared_ptr<fb::game::weapon> fb::game::items::weapon() const
     return this->_weapon;
 }
 
-std::shared_ptr<fb::game::weapon> fb::game::items::weapon(std::shared_ptr<fb::game::weapon> weapon)
+std::shared_ptr<weapon> items::weapon(std::shared_ptr<fb::game::weapon> weapon)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -747,7 +752,7 @@ std::shared_ptr<fb::game::weapon> fb::game::items::weapon(std::shared_ptr<fb::ga
     return before;
 }
 
-std::shared_ptr<fb::game::armor> fb::game::items::armor() const
+std::shared_ptr<armor> items::armor() const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -756,7 +761,7 @@ std::shared_ptr<fb::game::armor> fb::game::items::armor() const
     return this->_armor;
 }
 
-std::shared_ptr<fb::game::armor> fb::game::items::armor(std::shared_ptr<fb::game::armor> armor)
+std::shared_ptr<armor> items::armor(std::shared_ptr<fb::game::armor> armor)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -770,7 +775,7 @@ std::shared_ptr<fb::game::armor> fb::game::items::armor(std::shared_ptr<fb::game
     return before;
 }
 
-std::shared_ptr<fb::game::shield> fb::game::items::shield() const
+std::shared_ptr<shield> items::shield() const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -779,7 +784,7 @@ std::shared_ptr<fb::game::shield> fb::game::items::shield() const
     return this->_shield;
 }
 
-std::shared_ptr<fb::game::shield> fb::game::items::shield(std::shared_ptr<fb::game::shield> shield)
+std::shared_ptr<shield> items::shield(std::shared_ptr<fb::game::shield> shield)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -793,7 +798,7 @@ std::shared_ptr<fb::game::shield> fb::game::items::shield(std::shared_ptr<fb::ga
     return before;
 }
 
-std::shared_ptr<fb::game::helmet> fb::game::items::helmet() const
+std::shared_ptr<helmet> items::helmet() const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -802,7 +807,7 @@ std::shared_ptr<fb::game::helmet> fb::game::items::helmet() const
     return this->_helmet;
 }
 
-std::shared_ptr<fb::game::helmet> fb::game::items::helmet(std::shared_ptr<fb::game::helmet> helmet)
+std::shared_ptr<helmet> items::helmet(std::shared_ptr<fb::game::helmet> helmet)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -816,7 +821,7 @@ std::shared_ptr<fb::game::helmet> fb::game::items::helmet(std::shared_ptr<fb::ga
     return before;
 }
 
-std::shared_ptr<fb::game::ring> fb::game::items::ring(EQUIPMENT_POSITION position) const
+std::shared_ptr<ring> items::ring(EQUIPMENT_POSITION position) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -825,7 +830,7 @@ std::shared_ptr<fb::game::ring> fb::game::items::ring(EQUIPMENT_POSITION positio
     return this->_rings[static_cast<int>(position)];
 }
 
-std::shared_ptr<fb::game::ring> fb::game::items::ring(std::shared_ptr<fb::game::ring> ring)
+std::shared_ptr<ring> items::ring(std::shared_ptr<fb::game::ring> ring)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -844,7 +849,7 @@ std::shared_ptr<fb::game::ring> fb::game::items::ring(std::shared_ptr<fb::game::
     return before;
 }
 
-std::shared_ptr<fb::game::ring> fb::game::items::ring(std::shared_ptr<fb::game::ring> ring, EQUIPMENT_POSITION position)
+std::shared_ptr<ring> items::ring(std::shared_ptr<fb::game::ring> ring, EQUIPMENT_POSITION position)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -858,7 +863,7 @@ std::shared_ptr<fb::game::ring> fb::game::items::ring(std::shared_ptr<fb::game::
     return before;
 }
 
-std::shared_ptr<fb::game::auxiliary> fb::game::items::auxiliary(EQUIPMENT_POSITION position) const
+std::shared_ptr<auxiliary> items::auxiliary(EQUIPMENT_POSITION position) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -867,7 +872,7 @@ std::shared_ptr<fb::game::auxiliary> fb::game::items::auxiliary(EQUIPMENT_POSITI
     return this->_auxiliaries[static_cast<int>(position)];
 }
 
-std::shared_ptr<fb::game::auxiliary> fb::game::items::auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary)
+std::shared_ptr<auxiliary> items::auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -887,7 +892,7 @@ std::shared_ptr<fb::game::auxiliary> fb::game::items::auxiliary(std::shared_ptr<
     return before;
 }
 
-std::shared_ptr<fb::game::auxiliary> fb::game::items::auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary, EQUIPMENT_POSITION position)
+std::shared_ptr<auxiliary> items::auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary, EQUIPMENT_POSITION position)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -900,7 +905,7 @@ std::shared_ptr<fb::game::auxiliary> fb::game::items::auxiliary(std::shared_ptr<
     return before;
 }
 
-std::shared_ptr<fb::game::item> fb::game::items::find(const std::string& name) const
+std::shared_ptr<item> items::find(const std::string& name) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -920,7 +925,7 @@ std::shared_ptr<fb::game::item> fb::game::items::find(const std::string& name) c
     return nullptr;
 }
 
-std::shared_ptr<fb::game::item> fb::game::items::find(const fb::model::item& model) const
+std::shared_ptr<item> items::find(const fb::model::item& model) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -948,7 +953,7 @@ std::shared_ptr<fb::game::item> fb::game::items::find(const fb::model::item& mod
     return nullptr;
 }
 
-std::shared_ptr<fb::game::item> fb::game::items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
+std::shared_ptr<item> items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -985,7 +990,7 @@ std::shared_ptr<fb::game::item> fb::game::items::drop(uint8_t index, uint8_t cou
     return nullptr;
 }
 
-void fb::game::items::loot(bool boost)
+void items::loot(bool boost)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1012,9 +1017,9 @@ void fb::game::items::loot(bool boost)
         owner->action(ACTION::PICKUP, DURATION::PICKUP);
 
         // Pick up items in reverse order
-        auto belows = std::vector<std::shared_ptr<fb::game::item>>();
+        auto belows = std::vector<std::shared_ptr<item>>();
         for (auto& below : map->belows(owner->position(), OBJECT_TYPE::ITEM))
-            belows.push_back(std::static_pointer_cast<fb::game::item>(below));
+            belows.push_back(std::static_pointer_cast<item>(below));
 
         if (belows.size() == 0)
         {
@@ -1034,7 +1039,7 @@ void fb::game::items::loot(bool boost)
     }
 }
 
-bool fb::game::items::throws(uint8_t index, bool all)
+bool items::throws(uint8_t index, bool all)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1079,7 +1084,7 @@ bool fb::game::items::throws(uint8_t index, bool all)
     return false;
 }
 
-std::shared_ptr<fb::game::item> fb::game::items::remove(uint8_t index, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
+std::shared_ptr<item> items::remove(uint8_t index, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1095,7 +1100,7 @@ std::shared_ptr<fb::game::item> fb::game::items::remove(uint8_t index, uint16_t 
         if (detach)
             splitted->_container = nullptr;
 
-        std::ignore = fb::game::inventory<fb::game::item>::remove(index);
+        std::ignore = inventory<fb::game::item>::remove(index);
         owner->listener.on_item_remove(*owner, index, attr);
 
         // Log item remove event (only for non-cash items)
@@ -1119,7 +1124,7 @@ std::shared_ptr<fb::game::item> fb::game::items::remove(uint8_t index, uint16_t 
     return splitted;
 }
 
-std::shared_ptr<fb::game::item> fb::game::items::remove(std::shared_ptr<fb::game::item> item, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
+std::shared_ptr<item> items::remove(std::shared_ptr<item> item, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1132,13 +1137,13 @@ std::shared_ptr<fb::game::item> fb::game::items::remove(std::shared_ptr<fb::game
     return this->remove(index, count, attr, detach);
 }
 
-bool fb::game::items::swap(uint8_t src, uint8_t dst)
+bool items::swap(uint8_t src, uint8_t dst)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
         return false;
 
-    if (fb::game::inventory<fb::game::item>::swap(src, dst) == false)
+    if (inventory<item>::swap(src, dst) == false)
         return false;
 
     const auto right = this->at(src);
@@ -1157,7 +1162,7 @@ bool fb::game::items::swap(uint8_t src, uint8_t dst)
     return true;
 }
 
-bool fb::game::items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint32_t money) const
+bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint32_t money) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1200,7 +1205,7 @@ bool fb::game::items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>
     return free_size >= required_size;
 }
 
-bool fb::game::items::is_rewardable(const std::vector<fb::model::dsl>& items) const
+bool items::is_rewardable(const std::vector<fb::model::dsl>& items) const
 {
     auto buffer = std::unordered_map<uint32_t, uint16_t>{};
     auto money  = 0;
@@ -1227,9 +1232,9 @@ bool fb::game::items::is_rewardable(const std::vector<fb::model::dsl>& items) co
     return this->is_rewardable(buffer, money);
 }
 
-std::map<EQUIPMENT_PARTS, std::shared_ptr<fb::game::equipment>> fb::game::items::equipments() const
+std::map<EQUIPMENT_PARTS, std::shared_ptr<equipment>> items::equipments() const
 {
-    return std::map<EQUIPMENT_PARTS, std::shared_ptr<fb::game::equipment>>{
+    return std::map<EQUIPMENT_PARTS, std::shared_ptr<equipment>>{
         {EQUIPMENT_PARTS::WEAPON,     _weapon                                                  },
         {EQUIPMENT_PARTS::ARMOR,      _armor                                                   },
         {EQUIPMENT_PARTS::SHIELD,     _shield                                                  },

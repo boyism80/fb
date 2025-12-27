@@ -3,8 +3,10 @@
 #include <fb/bot/integration/gateway_controller.h>
 
 using namespace std::chrono_literals;
+using namespace fb::bot::integration;
 
-namespace fb::bot::integration {
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
 
 group_test::group_test(game_bot_controller& controller) :
     bot_integration_test(controller, 6)
@@ -49,12 +51,13 @@ async::task<bool> group_test::scenario_1()
     co_await caster->change_mp(1000, DEFAULT_TIMEOUT);
 
     fb::logger::debug("Spawning monster 다람쥐 for solo test");
-    auto mob_info1 = co_await caster->spawn_monster("다람쥐", caster->position().x, caster->position().y + 1, DEFAULT_TIMEOUT);
+    auto mob_info1 =
+        co_await caster->spawn_monster("다람쥐", caster->position().x, caster->position().y + 1, DEFAULT_TIMEOUT);
 
     auto before_exp = caster->exp();
     fb::logger::debug("Solo attack - Before exp: {}", before_exp);
-    auto&& resp1 = co_await caster->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, spell_slot, "", mob_info1.oid, mob_info1.position),
+    auto&& resp1 = co_await caster->request<game_resp::update_internal>(
+        game_reqs::spell_cast(SPELL_TYPE::TARGET, spell_slot, "", mob_info1.oid, mob_info1.position),
         [before_exp](auto& resp) -> bool {
             if (ENUM_IN(resp.level, UPDATE_STATE_LEVEL::EXP_MONEY) == false)
                 return false;
@@ -73,12 +76,13 @@ async::task<bool> group_test::scenario_1()
 
     fb::logger::debug("Setting up MP and spawning monster for group test");
     co_await caster->change_mp(1000, DEFAULT_TIMEOUT);
-    auto mob_info2 = co_await caster->spawn_monster("다람쥐", caster->position().x, caster->position().y + 1, DEFAULT_TIMEOUT);
+    auto mob_info2 =
+        co_await caster->spawn_monster("다람쥐", caster->position().x, caster->position().y + 1, DEFAULT_TIMEOUT);
     co_await this->sleep(DEFAULT_INTERVAL);
 
     fb::logger::debug("Group attack - Before exp: {}", before_exp);
-    auto&& resp2 = co_await caster->request<fb::protocol::game::response::update_internal>(
-        fb::protocol::game::request::spell_cast(SPELL_TYPE::TARGET, spell_slot, "", mob_info2.oid, mob_info2.position),
+    auto&& resp2 = co_await caster->request<game_resp::update_internal>(
+        game_reqs::spell_cast(SPELL_TYPE::TARGET, spell_slot, "", mob_info2.oid, mob_info2.position),
         [before_exp](auto& resp) -> bool {
             if (ENUM_IN(resp.level, UPDATE_STATE_LEVEL::EXP_MONEY) == false)
                 return false;
@@ -182,5 +186,3 @@ std::string group_test::name() const
 {
     return "Group Test";
 }
-
-} // namespace fb::bot::integration

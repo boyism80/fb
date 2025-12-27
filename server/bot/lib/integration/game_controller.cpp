@@ -164,7 +164,9 @@ async::task<void> game_bot_controller::start_current_test()
     this->_test_results.push_back(result);
 
     if (success)
-        fb::logger::info(fb::console::color::light_green, "Test '{}' completed successfully", this->_current_test->name());
+        fb::logger::info(fb::console::color::light_green,
+                         "Test '{}' completed successfully",
+                         this->_current_test->name());
     else
         fb::logger::fatal(fb::console::color::light_red, "Test '{}' failed", this->_current_test->name());
 
@@ -188,21 +190,21 @@ async::task<void> game_bot_controller::on_timer()
     co_return;
 }
 
-async::task<void> game_bot_controller::on_time(game_bot& bot, const fb::protocol::game::response::time& response)
+async::task<void> game_bot_controller::on_time(game_bot& bot, const game_resp::time& response)
 {
     // Integration test: Validate time synchronization
     // TODO: Add time validation logic
     co_return;
 }
 
-async::task<void> game_bot_controller::on_state(game_bot& bot, const fb::protocol::game::response::update_internal& response)
+async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal& response)
 {
     // Integration test: Validate state consistency
     // TODO: Add state validation logic
     co_return;
 }
 
-async::task<void> game_bot_controller::on_message(game_bot& bot, const fb::protocol::game::response::message& response)
+async::task<void> game_bot_controller::on_message(game_bot& bot, const game_resp::message& response)
 {
     // Integration test: Validate message handling and trigger test responses
     if (response.type == MESSAGE_TYPE::NOTIFY)
@@ -213,7 +215,7 @@ async::task<void> game_bot_controller::on_message(game_bot& bot, const fb::proto
     co_return;
 }
 
-async::task<void> game_bot_controller::on_sequence(game_bot& bot, const fb::protocol::game::response::id& response)
+async::task<void> game_bot_controller::on_sequence(game_bot& bot, const game_resp::id& response)
 {
     // Integration test: Validate object ID consistency
     bot.set_oid(response.oid);
@@ -221,7 +223,7 @@ async::task<void> game_bot_controller::on_sequence(game_bot& bot, const fb::prot
     co_return;
 }
 
-async::task<void> game_bot_controller::on_position(game_bot& bot, const fb::protocol::game::response::position& response)
+async::task<void> game_bot_controller::on_position(game_bot& bot, const game_resp::position& response)
 {
     // Integration test: Validate position updates
     bot.set_position(response.abs);
@@ -229,7 +231,7 @@ async::task<void> game_bot_controller::on_position(game_bot& bot, const fb::prot
     co_return;
 }
 
-async::task<void> game_bot_controller::on_move(game_bot& bot, const fb::protocol::game::response::move& response)
+async::task<void> game_bot_controller::on_move(game_bot& bot, const game_resp::move& response)
 {
     // Integration test: Validate movement mechanics
     if (bot.oid() != response.id)
@@ -243,7 +245,7 @@ async::task<void> game_bot_controller::on_move(game_bot& bot, const fb::protocol
     co_return;
 }
 
-async::task<void> game_bot_controller::on_map(game_bot& bot, const fb::protocol::game::response::map_config& response)
+async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config& response)
 {
     // TODO: Execute map-specific test scenarios
     // Example: Test NPC interactions, item spawning, area transitions, etc.
@@ -281,7 +283,9 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
         {
             // Let the current test decide whether to store this bot or not
             this->_current_test->on_bot_connected(bot_shared);
-            fb::logger::debug("Game bot {} connection notified to current test '{}'", bot.id, this->_current_test->name());
+            fb::logger::debug("Game bot {} connection notified to current test '{}'",
+                              bot.id,
+                              this->_current_test->name());
         }
     }
 
@@ -300,7 +304,9 @@ async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
     co_return;
 }
 
-async::task<void> game_bot_controller::on_integration_hook_execution(uint8_t cmd, game_bot& bot, const fb::protocol::header& header)
+async::task<void> game_bot_controller::on_integration_hook_execution(uint8_t                     cmd,
+                                                                     game_bot&                   bot,
+                                                                     const fb::protocol::header& header)
 {
     // Only execute hooks if there's a current test
     if (!this->_current_test)
@@ -402,11 +408,14 @@ void game_bot_controller::print_final_test_results()
     // Print overall result
     if (failed_tests == 0)
     {
-        fb::logger::info(fb::console::color::light_green, "ALL TESTS PASSED! Integration test suite completed successfully.");
+        fb::logger::info(fb::console::color::light_green,
+                         "ALL TESTS PASSED! Integration test suite completed successfully.");
     }
     else
     {
-        fb::logger::fatal(fb::console::color::light_red, "{} TEST(S) FAILED! Integration test suite has failures.", failed_tests);
+        fb::logger::fatal(fb::console::color::light_red,
+                          "{} TEST(S) FAILED! Integration test suite has failures.",
+                          failed_tests);
     }
 
     fb::logger::info(fb::console::color::cyan, "=== END OF INTEGRATION TEST RESULTS ===");

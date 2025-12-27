@@ -26,6 +26,10 @@ module.exports = function () {
                             ip: `internal-${sectionConf.internal}`, 
                             port: conf.internal[sectionConf.internal].port.cluster
                         },
+                        marketplace: {
+                            ip: `marketplace-${sectionConf.marketplace}`, 
+                            port: conf.marketplace[sectionConf.marketplace].port.cluster
+                        },
                         login: { ip: conf.host, port: conf.login[sectionConf.login].port },
                         amqp: {
                             internal: {
@@ -76,8 +80,19 @@ module.exports = function () {
                                     },
                                 },
                                 spec: {
-                                    nodeSelector: {
-                                        cpu: "epyc"
+                                    affinity: {
+                                        nodeAffinity: {
+                                            preferredDuringSchedulingIgnoredDuringExecution: [{
+                                                weight: 100,
+                                                preference: {
+                                                    matchExpressions: [{
+                                                        key: "cpu",
+                                                        operator: "In",
+                                                        values: ["epyc"]
+                                                    }]
+                                                }
+                                            }]
+                                        }
                                     },
                                     containers: [
                                         {

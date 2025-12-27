@@ -7,7 +7,11 @@ using namespace fb::game;
 using namespace fb::model;
 using namespace fb::protocol::internal;
 
-clan::clan(server& server, uint32_t id, const std::string& name, const std::optional<std::string>& title, const std::unordered_map<std::string, clan_member>& members) :
+clan::clan(server&                                             server,
+           uint32_t                                            id,
+           const std::string&                                  name,
+           const std::optional<std::string>&                   title,
+           const std::unordered_map<std::string, clan_member>& members) :
     _server(server),
     _id(id),
     _name(name),

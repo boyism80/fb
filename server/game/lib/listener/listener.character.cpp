@@ -3,9 +3,11 @@
 
 using namespace fb::game;
 
+namespace game_resp = fb::protocol::game::response;
+
 void listener_impl::on_message(character& me, const std::string& message, MESSAGE_TYPE type)
 {
-    me.send(fb_resp::message(message, type));
+    me.send(game_resp::message(message, type));
 }
 
 void listener_impl::on_option_changed(character& me, OPTION option, bool enabled)
@@ -70,13 +72,18 @@ void listener_impl::on_option_changed(character& me, OPTION option, bool enabled
 
 void listener_impl::on_update_option(character& ch)
 {
-    ch.send(fb_resp::option(ch));
+    ch.send(game_resp::option(ch));
 }
 
-void listener_impl::on_update_map(character& ch, const map& map, const fb::model::point16_t& position, const fb::model::size8_t& size, uint16_t crc)
+void listener_impl::on_update_map(character&                  ch,
+                                  const map&                  map,
+                                  const fb::model::point16_t& position,
+                                  const fb::model::size8_t&   size,
+                                  uint16_t                    crc)
 {
-    auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 | static_cast<uint64_t>(position.y) << 16 |
-                static_cast<uint64_t>(size.width) << 8 | static_cast<uint64_t>(size.height);
+    auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 |
+                static_cast<uint64_t>(position.y) << 16 | static_cast<uint64_t>(size.width) << 8 |
+                static_cast<uint64_t>(size.height);
 
     this->server.map_update_cache.write(
         hash,
@@ -90,7 +97,7 @@ void listener_impl::on_update_map(character& ch, const map& map, const fb::model
             bytes.crc  = 0;
 
             auto writer = fb::stream_writer<big_endian>(bytes.bytes);
-            auto resp   = fb::protocol::game::response::map_update(map, position, size);
+            auto resp   = game_resp::map_update(map, position, size);
             std::ignore = resp.serialize(writer);
             bytes.crc   = resp.crc;
             return bytes;
@@ -100,22 +107,22 @@ void listener_impl::on_update_map(character& ch, const map& map, const fb::model
 void listener_impl::on_update_buff(character& ch, const buffs& buffs)
 {
     for (auto& [id, buff] : buffs)
-        ch.send(fb_resp::spell_buff(*buff));
+        ch.send(game_resp::spell_buff(*buff));
 }
 
 void listener_impl::on_update_internal(character& ch)
 {
-    ch.send(fb_resp::internal_info(ch));
+    ch.send(game_resp::internal_info(ch));
 }
 
 void listener_impl::on_level_up(character& me)
 {
-    std::ignore = this->server.send(me, fb_resp::effect(me, 0x02), scope::PIVOT);
+    std::ignore = this->server.send(me, game_resp::effect(me, 0x02), scope::PIVOT);
 }
 
 void listener_impl::on_update(character& me, UPDATE_STATE_LEVEL level)
 {
-    me.send(fb_resp::update_internal(me, level));
+    me.send(game_resp::update_internal(me, level));
 }
 
 async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::model::point16_t& position)
@@ -128,9 +135,12 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
     auto p     = fb::model::point16_t{position};
     try
     {
-        auto&& response = co_await this->server.http.post("internal", "/in-game/transfer", Transfer{fb::protocol::internal::Service::Game, map.model.host, me.name(), false});
+        auto&& resp = co_await this->server.http.post(
+            "internal",
+            "/in-game/transfer",
+            internal_reqs::Transfer{internal::Service::Game, map.model.host, me.name(), false});
         co_await this->server.threads.switching(weak);
-        switch (static_cast<ERROR_CODE>(response.error))
+        switch (static_cast<ERROR_CODE>(resp.error))
         {
         case ERROR_CODE::NONE:
             break;
@@ -140,11 +150,12 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
 
         case ERROR_CODE::BANNED:
         {
-            throw std::runtime_error(fb::game::handler::amqp::ban::build_ban_message(response.ban_reason, response.ban_expire_date));
+            throw std::runtime_error(
+                fb::game::handler::amqp::ban::build_ban_message(resp.ban_reason, resp.ban_expire_date));
         }
 
         default:
-            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), response.error));
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
         }
 
         std::ignore = co_await me.map(nullptr);
@@ -158,7 +169,7 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
         writer.write<uint16_t>(p.x);
         writer.write<uint16_t>(p.y);
 
-        std::ignore = this->server.transfer(me.socket, response.ip, response.port, fb::protocol::internal::Service::Game, stream);
+        std::ignore = this->server.transfer(me.socket, resp.ip, resp.port, internal::Service::Game, stream);
         co_return true;
     }
     catch (std::exception& e)
@@ -187,37 +198,37 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
 
 void listener_impl::on_update_map(character& ch, const fb::game::map& map)
 {
-    ch.send(fb_resp::map_config(map));
+    ch.send(game_resp::map_config(map));
 }
 
 void listener_impl::on_update_bgm(character& ch, uint16_t bgm, uint8_t volume)
 {
-    ch.send(fb_resp::map_bgm(bgm, volume));
+    ch.send(game_resp::map_bgm(bgm, volume));
 }
 
 void listener_impl::on_update_time(character& ch, uint16_t hours)
 {
-    ch.send(fb_resp::time(hours));
+    ch.send(game_resp::time(hours));
 }
 
 void listener_impl::on_character_init(character& ch)
 {
-    ch.send(fb_resp::init());
+    ch.send(game_resp::init());
 }
 
 void listener_impl::on_update_position(character& ch)
 {
-    ch.send(fb_resp::position(ch));
+    ch.send(game_resp::position(ch));
 }
 
 void listener_impl::on_browse_character(character& ch, const character& target)
 {
-    ch.send(fb_resp::external_info(target));
+    ch.send(game_resp::external_info(target));
 }
 
 void listener_impl::on_item_tooltip(character& ch, const item& item, uint16_t position)
 {
-    ch.send(fb_resp::item_tip(position, item.tip_message()));
+    ch.send(game_resp::item_tip(position, item.tip_message()));
 }
 
 void listener_impl::on_show_user_list(character& ch)
@@ -233,49 +244,59 @@ void listener_impl::on_show_user_list(character& ch)
             users.push_back(ptr);
         };
 
-        ch.send(fb_resp::user_list(ch, std::move(users)));
+        ch.send(game_resp::user_list(ch, std::move(users)));
     });
 }
 
 void listener_impl::on_show_bulletin(character& ch)
 {
-    ch.send(fb_resp::bulletin_sections());
+    ch.send(game_resp::bulletin_sections());
 }
 
-void listener_impl::on_show_bulletin(character& ch, const fb::model::bulletin& section, const std::list<bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag)
+void listener_impl::on_show_bulletin(character&                          ch,
+                                     const fb::model::bulletin&          section,
+                                     const std::list<bulletin::article>& articles,
+                                     BULLETIN_BUTTON_ENABLE              flag)
 {
-    ch.send(fb_resp::bulletin_articles(section, articles, flag));
+    ch.send(game_resp::bulletin_articles(section, articles, flag));
 }
 
 void listener_impl::on_show_bulletin(character& ch, const bulletin::article& article, BULLETIN_BUTTON_ENABLE flag)
 {
-    ch.send(fb_resp::bulletin_article(article, flag));
+    ch.send(game_resp::bulletin_article(article, flag));
 }
 
-void listener_impl::on_show_mail_box(character& ch, const std::vector<mail_box::summary>& mails, MAIL_BUTTON_ENABLE flag)
+void listener_impl::on_show_mail_box(character&                            ch,
+                                     const std::vector<mail_box::summary>& mails,
+                                     MAIL_BUTTON_ENABLE                    flag)
 {
-    auto dto = std::vector<MailSummary>();
+    auto dto = std::vector<internal::MailSummary>();
     for (auto& summary : mails)
     {
-        dto.push_back(MailSummary{summary.id, summary.user, summary.sender, summary.read, summary.title, summary.created_date});
+        dto.push_back(internal::MailSummary{summary.id,
+                                            summary.user,
+                                            summary.sender,
+                                            summary.read,
+                                            summary.title,
+                                            summary.created_date});
     }
-    ch.send(fb_resp::bulletin_mails(dto, flag));
+    ch.send(game_resp::bulletin_mails(dto, flag));
 }
 
 void listener_impl::on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag)
 {
-    auto dto = Mail{mail.id, mail.user, mail.sender, mail.title, mail.contents, mail.read, mail.created_date};
-    ch.send(fb_resp::bulletin_mail(dto, flag));
+    auto dto = internal::Mail{mail.id, mail.user, mail.sender, mail.title, mail.contents, mail.read, mail.created_date};
+    ch.send(game_resp::bulletin_mail(dto, flag));
 }
 
 void listener_impl::on_show_bulletin_message(character& ch, const std::string& message, bool success, bool unknown)
 {
-    ch.send(fb_resp::bulletin_message(message, success, unknown));
+    ch.send(game_resp::bulletin_message(message, success, unknown));
 }
 
 void listener_impl::on_show_world_map(character& ch, uint32_t id, uint16_t index)
 {
-    ch.send(fb_resp::map_worlds(id, index));
+    ch.send(game_resp::map_worlds(id, index));
 }
 
 void listener_impl::on_timer(character& ch, uint32_t time, TIMER_TYPE type)
@@ -290,10 +311,10 @@ void listener_impl::on_weather(character& ch, WEATHER_TYPE weather)
 
 void listener_impl::on_bright(character& ch, uint8_t value)
 {
-    std::ignore = this->server.send(ch, fb_resp::bright(value), scope::PIVOT);
+    std::ignore = this->server.send(ch, game_resp::bright(value), scope::PIVOT);
 }
 
 void listener_impl::on_update_id(character& ch)
 {
-    ch.send(fb_resp::id(ch));
+    ch.send(game_resp::id(ch));
 }
