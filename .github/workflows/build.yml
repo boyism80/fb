@@ -482,7 +482,7 @@ jobs:
             SERVICE=marketplace
 
   deploy:
-    runs-on: [self-hosted, linux, build]
+    runs-on: [self-hosted, linux, master]
     permissions:
       contents: read
       packages: write

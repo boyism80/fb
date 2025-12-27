@@ -70,10 +70,21 @@ module.exports = {
                     template: {
                         metadata: { labels: appLabels },
                         spec: {
+                            affinity: {
+                                nodeAffinity: {
+                                    preferredDuringSchedulingIgnoredDuringExecution: [{
+                                        weight: 100,
+                                        preference: {
+                                            matchExpressions: [{
+                                                key: "cpu",
+                                                operator: "In",
+                                                values: ["epyc"]
+                                            }]
+                                        }
+                                    }]
+                                }
+                            },
                             containers: [{
-                                nodeSelector: {
-                                    cpu: "epyc"
-                                },
                                 name: "marketplace",
                                 image: "ghcr.io/boyism80/fb/marketplace:latest",
                                 imagePullPolicy: "Always",
