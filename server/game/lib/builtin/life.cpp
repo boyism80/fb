@@ -8,55 +8,56 @@ using namespace fb::model;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
-{"__eq",                builtin::object::builtin_eq},
-{"message",             builtin::life::builtin_message},
-{"hp",                  builtin::life::builtin_hp},
-{"mp",                  builtin::life::builtin_mp},
-{"heal",                builtin::life::builtin_heal},
-{"damage",              builtin::life::builtin_damage},
-{"mp_up",               builtin::life::builtin_mp_up},
-{"mp_down",             builtin::life::builtin_mp_down},
-{"action",              builtin::life::builtin_action},
-{"spell",               builtin::life::builtin_spell},
-{"spells",              builtin::life::builtin_spells},
-{"cast",                builtin::life::builtin_cast},
-{"cc",                  builtin::life::builtin_cc},
-{"add_cc",              builtin::life::builtin_add_cc},
-{"remove_cc",           builtin::life::builtin_remove_cc},
-{"attack",              builtin::life::builtin_attack},
-{"damage_rate",         builtin::life::builtin_damage_rate},
-{"damage_derate",       builtin::life::builtin_damage_derate},
-{"skill_damage_rate",   builtin::life::builtin_skill_damage_rate},
-{"paralysis",           builtin::life::builtin_paralysis},
-{"invincible",          builtin::life::builtin_invincible},
-{"cover",               builtin::life::builtin_cover},
-{"base_hp",             builtin::life::builtin_base_hp},
-{"buff_hp",             builtin::life::builtin_buff_hp},
-{"maxhp",               builtin::life::builtin_maxhp},
-{"base_mp",             builtin::life::builtin_base_mp},
-{"buff_mp",             builtin::life::builtin_buff_mp},
-{"maxmp",               builtin::life::builtin_maxmp},
-{"base_str",            builtin::life::builtin_base_str},
-{"buff_str",            builtin::life::builtin_buff_str},
-{"str",                 builtin::life::builtin_str},
-{"base_dex",            builtin::life::builtin_base_dex},
-{"buff_dex",            builtin::life::builtin_buff_dex},
-{"dex",                 builtin::life::builtin_dex},
-{"base_int",            builtin::life::builtin_base_int},
-{"buff_int",            builtin::life::builtin_buff_int},
-{"int",                 builtin::life::builtin_intelligence},
-{"base_phydef",         builtin::life::builtin_base_phydef},
-{"buff_phydef",         builtin::life::builtin_buff_phydef},
-{"phydef",              builtin::life::builtin_phydef},
-{"base_magdef",         builtin::life::builtin_base_magdef},
-{"buff_magdef",         builtin::life::builtin_buff_magdef},
-{"magdef",              builtin::life::builtin_magdef},
-{"base_dam",            builtin::life::builtin_base_dam},
-{"buff_dam",            builtin::life::builtin_buff_dam},
-{"dam",                 builtin::life::builtin_dam},
-{"base_hit",            builtin::life::builtin_base_hit},
-{"buff_hit",            builtin::life::builtin_buff_hit},
-{"hit",                 builtin::life::builtin_hit},
+{"__eq",                 builtin::object::builtin_eq},
+{"message",              builtin::life::builtin_message},
+{"hp",                   builtin::life::builtin_hp},
+{"mp",                   builtin::life::builtin_mp},
+{"heal",                 builtin::life::builtin_heal},
+{"damage",               builtin::life::builtin_damage},
+{"mp_up",                builtin::life::builtin_mp_up},
+{"mp_down",              builtin::life::builtin_mp_down},
+{"action",               builtin::life::builtin_action},
+{"spell",                builtin::life::builtin_spell},
+{"spells",               builtin::life::builtin_spells},
+{"cast",                 builtin::life::builtin_cast},
+{"cc",                   builtin::life::builtin_cc},
+{"add_cc",               builtin::life::builtin_add_cc},
+{"remove_cc",            builtin::life::builtin_remove_cc},
+{"attack",               builtin::life::builtin_attack},
+{"damage_rate",          builtin::life::builtin_damage_rate},
+{"damage_derate",        builtin::life::builtin_damage_derate},
+{"skill_damage_rate",    builtin::life::builtin_skill_damage_rate},
+{"paralysis",            builtin::life::builtin_paralysis},
+{"invincible",           builtin::life::builtin_invincible},
+{"cover",                builtin::life::builtin_cover},
+{"base_hp",              builtin::life::builtin_base_hp},
+{"buff_hp",              builtin::life::builtin_buff_hp},
+{"maxhp",                builtin::life::builtin_maxhp},
+{"base_mp",              builtin::life::builtin_base_mp},
+{"buff_mp",              builtin::life::builtin_buff_mp},
+{"maxmp",                builtin::life::builtin_maxmp},
+{"base_str",             builtin::life::builtin_base_str},
+{"buff_str",             builtin::life::builtin_buff_str},
+{"str",                  builtin::life::builtin_str},
+{"base_dex",             builtin::life::builtin_base_dex},
+{"buff_dex",             builtin::life::builtin_buff_dex},
+{"dex",                  builtin::life::builtin_dex},
+{"base_int",             builtin::life::builtin_base_int},
+{"buff_int",             builtin::life::builtin_buff_int},
+{"int",                  builtin::life::builtin_intelligence},
+{"base_phydef",          builtin::life::builtin_base_phydef},
+{"buff_phydef",          builtin::life::builtin_buff_phydef},
+{"phydef",               builtin::life::builtin_phydef},
+{"base_magdef",          builtin::life::builtin_base_magdef},
+{"buff_magdef",          builtin::life::builtin_buff_magdef},
+{"magdef",               builtin::life::builtin_magdef},
+{"base_dam",             builtin::life::builtin_base_dam},
+{"buff_dam",             builtin::life::builtin_buff_dam},
+{"dam",                  builtin::life::builtin_dam},
+{"base_hit",             builtin::life::builtin_base_hit},
+{"buff_hit",             builtin::life::builtin_buff_hit},
+{"hit",                  builtin::life::builtin_hit},
+{"normal_attack_damage", builtin::life::builtin_normal_attack_damage},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::life::builtin_message(lua_State* L)
@@ -1532,6 +1533,30 @@ int builtin::life::builtin_hit(lua_State* L)
 
         return lua->ensure_resume(*server, weak, [=]() {
             lua->pushinteger(hit_value);
+            return 1;
+        });
+    });
+}
+
+int builtin::life::builtin_normal_attack_damage(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto obj    = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    obj->assert_thread();
+
+    auto size = lua->toenum(2, MOB_SIZE::SMALL);
+    auto weak = obj->weak_from_this();
+    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto damage = obj->normal_attack_damage(size);
+        return lua->ensure_resume(*server, weak, [=]() {
+            lua->pushinteger(damage);
             return 1;
         });
     });

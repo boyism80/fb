@@ -59,23 +59,7 @@ function damage(me, you, rate, sound)
         size = model:size()
     end
 
-    local damage = 0
-    if me:is(OBJECT_TYPE.CHARACTER) then
-        local weapon = me:weapon()
-        if weapon == nil then
-            damage = math.random(1, 5)
-        elseif size == MOB_SIZE.SMALL then
-            local min, max = weapon:model():damage_small()
-            damage = math.random(min, max) + me:weapon_damage()
-        else
-            local min, max = weapon:model():damage_large()
-            damage = math.random(min, max) + me:weapon_damage()
-        end
-    else
-        local min, max = me:model():damage()
-        damage = math.random(min, max)
-    end
-
+    local damage = me:normal_attack_damage(size)
     local damage_rate = me:damage_rate() / 1000.0
     if is_back_attack(me, you) then
         damage_rate = damage_rate * 2

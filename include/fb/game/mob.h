@@ -34,7 +34,8 @@ public:
 class mob : public life
 {
 public:
-    using model_type = fb::model::mob;
+    using model_type    = fb::model::mob;
+    using item_vector_t = std::vector<std::shared_ptr<fb::game::item>>;
 
     friend class mob_stat;
 
@@ -54,14 +55,14 @@ public:
     };
 
 private:
-    fb::model::datetime                          _action_time;
-    std::weak_ptr<life>                          _target;
-    std::weak_ptr<life>                          _oblivion;
-    rezen*                                       _rezen         = nullptr;
-    lua::context*                                _attack_thread = nullptr;
-    std::vector<std::shared_ptr<fb::game::item>> _items;
-    bool                                         _hidden = false;
-    std::unique_ptr<ai>                          _ai_strategy;
+    fb::model::datetime _action_time;
+    std::weak_ptr<life> _target;
+    std::weak_ptr<life> _oblivion;
+    rezen*              _rezen         = nullptr;
+    lua::context*       _attack_thread = nullptr;
+    item_vector_t       _items;
+    bool                _hidden = false;
+    std::unique_ptr<ai> _ai_strategy;
 
 public:
     const std::weak_ptr<character> owner;
@@ -82,25 +83,26 @@ public:
     bool move_step(const fb::model::point16_t& position);
 
 public:
-    [[nodiscard]] async::task<void>                     action(fb::model::datetime now);
-    const fb::model::datetime&                          action_time() const;
-    void                                                action_time(const fb::model::datetime& dt);
-    std::shared_ptr<fb::game::life>                     target() const;
-    void                                                target(std::shared_ptr<fb::game::life> value);
-    std::shared_ptr<fb::game::life>                     oblivion() const;
-    void                                                oblivion(std::shared_ptr<fb::game::life> value);
-    std::shared_ptr<fb::game::life>                     update_target();
-    virtual bool                                        available() const;
-    uint32_t                                            auto_attack_damage(MOB_SIZE size) const override final;
-    void                                                kill(std::shared_ptr<fb::game::object> from = nullptr,
-                                                             DESTROY_TYPE                      destroy_type = DESTROY_TYPE::DEFAULT) override final;
-    async::task<void>                                   drop_items();
-    void                                                assert_thread() const override final;
-    bool                                                move(DIRECTION direction) override final;
-    const std::vector<std::shared_ptr<fb::game::item>>& items() const;
-    bool                                                push_item(std::shared_ptr<fb::game::item> item);
-    bool                                                hidden(const fb::game::object& target) const override final;
-    void                                                hidden(bool enabled);
+    // clang-format off
+    [[nodiscard]] async::task<void> action(fb::model::datetime now);
+    const fb::model::datetime&      action_time() const;
+    void                            action_time(const fb::model::datetime& dt);
+    std::shared_ptr<fb::game::life> target() const;
+    void                            target(std::shared_ptr<fb::game::life> value);
+    std::shared_ptr<fb::game::life> oblivion() const;
+    void                            oblivion(std::shared_ptr<fb::game::life> value);
+    std::shared_ptr<fb::game::life> update_target();
+    virtual bool                    available() const;
+    uint32_t                        normal_attack_damage(MOB_SIZE size) const override final;
+    void                            kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    async::task<void>               drop_items();
+    void                            assert_thread() const override final;
+    bool                            move(DIRECTION direction) override final;
+    const item_vector_t&            items() const;
+    bool                            push_item(std::shared_ptr<fb::game::item> item);
+    bool                            hidden(const fb::game::object& target) const override final;
+    void                            hidden(bool enabled);
+    // clang-format on
 };
 
 struct mob::listener_t : public virtual fb::game::life::listener_t

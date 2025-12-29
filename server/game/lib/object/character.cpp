@@ -174,7 +174,7 @@ uint32_t character::limited_exp(uint32_t exp) const
 #endif
 }
 
-uint32_t character::auto_attack_damage(MOB_SIZE size) const
+uint32_t character::normal_attack_damage(MOB_SIZE size) const
 {
     this->assert_thread();
 

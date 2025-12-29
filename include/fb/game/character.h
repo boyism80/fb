@@ -141,7 +141,7 @@ public:
     async::task<size_t>                                send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true) override final;
     OBJECT_TYPE                                        what() const override final;
     async::task<void>                                  attack(DURATION duration = DURATION::ATTACK) override final;
-    uint32_t                                           auto_attack_damage(MOB_SIZE size) const override final;
+    uint32_t                                           normal_attack_damage(MOB_SIZE size) const override final;
     void                                               action(ACTION action, DURATION duration, uint8_t sound = 0x00) override final;
     const std::string&                                 name() const override final;
     uint16_t                                           look() const override final;
