@@ -53,11 +53,12 @@ public:
     bool              valid(thread* thread) const;
 
 public:
-    template <typename ReturnType, typename T> void enqueue(std::weak_ptr<T>                                           pivot,
-                                                            const std::function<bool(fb::thread&)>&                    condition,
-                                                            const std::function<async::task<ReturnType>(fb::thread&)>& fn,
-                                                            const std::function<void(std::exception&)>&                error,
-                                                            const std::function<void(ReturnType&&)>&                   callback)
+    template <typename ReturnType, typename T> void
+    enqueue(std::weak_ptr<T>                                           pivot,
+            const std::function<bool(fb::thread&)>&                    condition,
+            const std::function<async::task<ReturnType>(fb::thread&)>& fn,
+            const std::function<void(std::exception&)>&                error,
+            const std::function<void(ReturnType&&)>&                   callback)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
@@ -88,9 +89,10 @@ public:
             callback);
     }
 
-    template <typename ReturnType, typename T> void enqueue(std::weak_ptr<T>                                           pivot,
-                                                            const std::function<bool(fb::thread&)>&                    condition,
-                                                            const std::function<async::task<ReturnType>(fb::thread&)>& fn)
+    template <typename ReturnType, typename T> void
+    enqueue(std::weak_ptr<T>                                           pivot,
+            const std::function<bool(fb::thread&)>&                    condition,
+            const std::function<async::task<ReturnType>(fb::thread&)>& fn)
     {
         return this->enqueue<ReturnType, T>(
             pivot,
@@ -102,7 +104,8 @@ public:
             });
     }
 
-    template <typename ReturnType, typename T> void enqueue(std::weak_ptr<T> pivot, const std::function<async::task<ReturnType>(fb::thread&)>& fn)
+    template <typename ReturnType, typename T> void
+    enqueue(std::weak_ptr<T> pivot, const std::function<async::task<ReturnType>(fb::thread&)>& fn)
     {
         return this->enqueue<ReturnType, T>(
             pivot,
@@ -155,7 +158,9 @@ public:
             callback);
     }
 
-    template <typename T> void enqueue(std::weak_ptr<T> pivot, const std::function<bool(fb::thread&)>& condition, const thread::handle_func_type<void>& fn)
+    template <typename T> void enqueue(std::weak_ptr<T>                        pivot,
+                                       const std::function<bool(fb::thread&)>& condition,
+                                       const thread::handle_func_type<void>&   fn)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
@@ -185,9 +190,10 @@ public:
             });
     }
 
-    template <typename ReturnType, typename T> [[nodiscard]] async::task<ReturnType> dispatch(std::weak_ptr<T>                                           pivot,
-                                                                                              const std::function<bool(fb::thread&)>&                    condition,
-                                                                                              const std::function<async::task<ReturnType>(fb::thread&)>& fn)
+    template <typename ReturnType, typename T> [[nodiscard]] async::task<ReturnType>
+    dispatch(std::weak_ptr<T>                                           pivot,
+             const std::function<bool(fb::thread&)>&                    condition,
+             const std::function<async::task<ReturnType>(fb::thread&)>& fn)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
@@ -221,7 +227,8 @@ public:
         co_return co_await promise->task();
     }
 
-    template <typename ReturnType, typename T> [[nodiscard]] async::task<ReturnType> dispatch(std::weak_ptr<T> pivot, const std::function<async::task<ReturnType>(fb::thread&)>& fn)
+    template <typename ReturnType, typename T> [[nodiscard]] async::task<ReturnType>
+    dispatch(std::weak_ptr<T> pivot, const std::function<async::task<ReturnType>(fb::thread&)>& fn)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
@@ -254,7 +261,9 @@ public:
         co_return co_await promise->task();
     }
 
-    template <typename T> async::task<void> dispatch(std::weak_ptr<T> pivot, const std::function<bool(fb::thread&)>& condition, const thread::handle_func_type<void>& fn)
+    template <typename T> async::task<void> dispatch(std::weak_ptr<T>                        pivot,
+                                                     const std::function<bool(fb::thread&)>& condition,
+                                                     const thread::handle_func_type<void>&   fn)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 

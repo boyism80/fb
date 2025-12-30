@@ -221,7 +221,9 @@ public:
             // With callback version - callback receives the element before erasure
             // Callback signature: (const T&) -> async::task<void> or void
             using callback_result = decltype(callback(std::declval<const T&>()));
-            using task_type       = std::conditional_t<std::is_same_v<callback_result, async::task<void>>, async::task<void>, async::task<callback_result>>;
+            using task_type       = std::conditional_t<std::is_same_v<callback_result, async::task<void>>,
+                                                       async::task<void>,
+                                                       async::task<callback_result>>;
 
             auto callback_holder = std::make_shared<std::decay_t<Callback>>(std::forward<Callback>(callback));
 
@@ -331,12 +333,13 @@ public:
 
         if constexpr (std::is_same_v<task_type, async::task<void>>)
         {
-            co_return co_await this->_data.async_read([hash, func_holder](const map_type& data) mutable -> async::task<void> {
-                if (!data.contains(hash))
-                    throw std::runtime_error("Element not found");
+            co_return co_await this->_data.async_read(
+                [hash, func_holder](const map_type& data) mutable -> async::task<void> {
+                    if (!data.contains(hash))
+                        throw std::runtime_error("Element not found");
 
-                co_await (*func_holder)(data.at(hash));
-            });
+                    co_await (*func_holder)(data.at(hash));
+                });
         }
         else
         {
@@ -412,53 +415,59 @@ public:
 
         if constexpr (std::is_same_v<task_type, async::task<void>>)
         {
-            return this->_data.try_async_write([hash, func_holder, factory_holder](map_type& data) mutable -> async::task<void> {
-                if (!data.contains(hash))
-                {
-                    // Create element using factory
-                    if constexpr (std::is_invocable_r_v<T, Factory>)
+            return this->_data.try_async_write(
+                [hash, func_holder, factory_holder](map_type& data) mutable -> async::task<void> {
+                    if (!data.contains(hash))
                     {
-                        // Regular function returning T
-                        data.insert(hash, (*factory_holder)());
+                        // Create element using factory
+                        if constexpr (std::is_invocable_r_v<T, Factory>)
+                        {
+                            // Regular function returning T
+                            data.insert(hash, (*factory_holder)());
+                        }
+                        else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
+                        {
+                            // Coroutine function returning async::task<T>
+                            data.insert(hash, co_await (*factory_holder)());
+                        }
+                        else
+                        {
+                            static_assert(std::is_invocable_r_v<T, Factory> ||
+                                              std::is_invocable_r_v<async::task<T>, Factory>,
+                                          "Factory must return T or async::task<T>");
+                        }
                     }
-                    else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
-                    {
-                        // Coroutine function returning async::task<T>
-                        data.insert(hash, co_await (*factory_holder)());
-                    }
-                    else
-                    {
-                        static_assert(std::is_invocable_r_v<T, Factory> || std::is_invocable_r_v<async::task<T>, Factory>, "Factory must return T or async::task<T>");
-                    }
-                }
 
-                co_await (*func_holder)(data.at(hash));
-            });
+                    co_await (*func_holder)(data.at(hash));
+                });
         }
         else
         {
-            return this->_data.try_async_write([hash, func_holder, factory_holder](map_type& data) mutable -> async::task<void> {
-                if (!data.contains(hash))
-                {
-                    // Create element using factory
-                    if constexpr (std::is_invocable_r_v<T, Factory>)
+            return this->_data.try_async_write(
+                [hash, func_holder, factory_holder](map_type& data) mutable -> async::task<void> {
+                    if (!data.contains(hash))
                     {
-                        // Regular function returning T
-                        data.insert(hash, (*factory_holder)());
+                        // Create element using factory
+                        if constexpr (std::is_invocable_r_v<T, Factory>)
+                        {
+                            // Regular function returning T
+                            data.insert(hash, (*factory_holder)());
+                        }
+                        else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
+                        {
+                            // Coroutine function returning async::task<T>
+                            data.insert(hash, co_await (*factory_holder)());
+                        }
+                        else
+                        {
+                            static_assert(std::is_invocable_r_v<T, Factory> ||
+                                              std::is_invocable_r_v<async::task<T>, Factory>,
+                                          "Factory must return T or async::task<T>");
+                        }
                     }
-                    else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
-                    {
-                        // Coroutine function returning async::task<T>
-                        data.insert(hash, co_await (*factory_holder)());
-                    }
-                    else
-                    {
-                        static_assert(std::is_invocable_r_v<T, Factory> || std::is_invocable_r_v<async::task<T>, Factory>, "Factory must return T or async::task<T>");
-                    }
-                }
 
-                co_await (*func_holder)(data.at(hash));
-            });
+                    co_await (*func_holder)(data.at(hash));
+                });
         }
     }
 
@@ -472,28 +481,31 @@ public:
 
         if constexpr (std::is_same_v<task_type, async::task<void>>)
         {
-            return this->_data.async_write([hash, func_holder, factory_holder](map_type& data) mutable -> async::task<void> {
-                if (!data.contains(hash))
-                {
-                    // Create element using factory
-                    if constexpr (std::is_invocable_r_v<T, Factory>)
+            return this->_data.async_write(
+                [hash, func_holder, factory_holder](map_type& data) mutable -> async::task<void> {
+                    if (!data.contains(hash))
                     {
-                        // Regular function returning T
-                        data.insert(hash, (*factory_holder)());
+                        // Create element using factory
+                        if constexpr (std::is_invocable_r_v<T, Factory>)
+                        {
+                            // Regular function returning T
+                            data.insert(hash, (*factory_holder)());
+                        }
+                        else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
+                        {
+                            // Coroutine function returning async::task<T>
+                            data.insert(hash, co_await (*factory_holder)());
+                        }
+                        else
+                        {
+                            static_assert(std::is_invocable_r_v<T, Factory> ||
+                                              std::is_invocable_r_v<async::task<T>, Factory>,
+                                          "Factory must return T or async::task<T>");
+                        }
                     }
-                    else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
-                    {
-                        // Coroutine function returning async::task<T>
-                        data.insert(hash, co_await (*factory_holder)());
-                    }
-                    else
-                    {
-                        static_assert(std::is_invocable_r_v<T, Factory> || std::is_invocable_r_v<async::task<T>, Factory>, "Factory must return T or async::task<T>");
-                    }
-                }
 
-                co_await (*func_holder)(data.at(hash));
-            });
+                    co_await (*func_holder)(data.at(hash));
+                });
         }
         else
         {
@@ -513,7 +525,9 @@ public:
                     }
                     else
                     {
-                        static_assert(std::is_invocable_r_v<T, Factory> || std::is_invocable_r_v<async::task<T>, Factory>, "Factory must return T or async::task<T>");
+                        static_assert(std::is_invocable_r_v<T, Factory> ||
+                                          std::is_invocable_r_v<async::task<T>, Factory>,
+                                      "Factory must return T or async::task<T>");
                     }
                 }
 

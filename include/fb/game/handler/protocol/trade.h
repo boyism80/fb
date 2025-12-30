@@ -6,7 +6,9 @@
 
 namespace fb::game::handler::protocol {
 
-class trade : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::trade>
+namespace game_reqs = fb::protocol::game::request;
+
+class trade : public fb::handler::protocol<fb::game::server, game_reqs::trade>
 {
 public:
     trade(fb::game::server& server);
@@ -15,7 +17,7 @@ public:
     trade& operator= (const trade&) = delete;
     trade& operator= (trade&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>& session, fb::protocol::game::request::trade& request) override;
+    async::task<bool> handle(fb::socket<character>& session, game_reqs::trade& request) override;
 };
 
 } // namespace fb::game::handler::protocol

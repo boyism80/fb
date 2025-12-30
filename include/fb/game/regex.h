@@ -11,7 +11,9 @@ bool match_repair_message(const std::string& message, const fb::model::item* ite
 bool match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money);
 bool match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money);
 bool match_store_item_message(const std::string& message, const fb::model::item* item, std::optional<uint16_t>& count);
-bool match_retrieve_item_message(const std::string& message, const fb::model::item* item, std::optional<uint16_t>& count);
+bool match_retrieve_item_message(const std::string&       message,
+                                 const fb::model::item*   item,
+                                 std::optional<uint16_t>& count);
 bool match_sell_list(const std::string& message);
 bool match_buy_list(const std::string& message);
 bool match_sell_price(const std::string& message, const fb::model::item* item);

@@ -26,12 +26,17 @@ private:
     character_map              _characters;
 
 public:
-    clan(server& server, uint32_t id, const std::string& name, const std::optional<std::string>& title, const member_map& members);
+    clan(server&                           server,
+         uint32_t                          id,
+         const std::string&                name,
+         const std::optional<std::string>& title,
+         const member_map&                 members);
     clan(const clan&) = delete;
     clan(clan&&);
     ~clan() = default;
 
 public:
+    // clang-format off
     void                              update(const std::string& name, const std::optional<std::string>& title, const member_map& members);
     uint32_t                          id() const;
     const std::string&                name() const;
@@ -46,6 +51,7 @@ public:
     void                              attach(character_weak_ptr ch);
     void                              detach(character_weak_ptr ch);
     std::vector<character_ptr_t>      nears(const fb::game::map& map, const fb::model::point16_t& position) const;
+    // clang-format on
 };
 
 } // namespace fb::game

@@ -81,9 +81,13 @@ public:
                                              const fb::model::timespan&             duration,
                                              fb::timer::repeat_type                 repeat = fb::timer::repeat_type::repeat);
     [[nodiscard]] async::task<void> sleep(const fb::model::timespan& duration);
-    void                            enqueue(const handle_func_type<void>& fn, const handle_error_type& error, const std::function<void()>& callback);
+    void                            enqueue(const handle_func_type<void>& fn,
+                                            const handle_error_type&      error,
+                                            const std::function<void()>&  callback);
 
-    template <typename ReturnType> void enqueue(const handle_func_type<ReturnType>& fn, const handle_error_type& error, const std::function<void(ReturnType&&)>& callback)
+    template <typename ReturnType> void enqueue(const handle_func_type<ReturnType>&      fn,
+                                                const handle_error_type&                 error,
+                                                const std::function<void(ReturnType&&)>& callback)
     {
         this->_queue.write([=, this](auto& queue) {
             queue.push([=, this]() {
@@ -138,7 +142,8 @@ public:
         const handle_error_type& error       = [](std::exception& e) {
         })
     {
-        static_assert(std::is_same_v<decltype(fn(*this)), async::task<bool>>, "RetryFunc must return async::task<bool>");
+        static_assert(std::is_same_v<decltype(fn(*this)), async::task<bool>>,
+                      "RetryFunc must return async::task<bool>");
 
         auto           promise     = std::make_shared<async::task_completion_source<bool>>();
         auto           retry_count = std::make_shared<size_t>(0);
@@ -158,25 +163,27 @@ public:
                     {
                         (*retry_count)++;
                         // Sleep before retry
-                        async::awaitable_then(this->sleep(retry_delay), [=, this](async::awaitable_result<void> sleep_result) {
-                            try
-                            {
-                                sleep_result();
-                                // Re-enqueue after sleep
-                                this->_queue.write([retry_func](auto& queue) {
-                                    queue.push(*retry_func);
-                                });
-                            }
-                            catch (std::exception& e)
-                            {
-                                error(e);
-                                promise->set_exception(std::make_exception_ptr(e));
-                            }
-                            catch (...)
-                            {
-                                promise->set_exception(std::make_exception_ptr(std::runtime_error("unknown error")));
-                            }
-                        });
+                        async::awaitable_then(this->sleep(retry_delay),
+                                              [=, this](async::awaitable_result<void> sleep_result) {
+                                                  try
+                                                  {
+                                                      sleep_result();
+                                                      // Re-enqueue after sleep
+                                                      this->_queue.write([retry_func](auto& queue) {
+                                                          queue.push(*retry_func);
+                                                      });
+                                                  }
+                                                  catch (std::exception& e)
+                                                  {
+                                                      error(e);
+                                                      promise->set_exception(std::make_exception_ptr(e));
+                                                  }
+                                                  catch (...)
+                                                  {
+                                                      promise->set_exception(
+                                                          std::make_exception_ptr(std::runtime_error("unknown error")));
+                                                  }
+                                              });
                     }
                     else
                     {

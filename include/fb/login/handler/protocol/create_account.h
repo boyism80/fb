@@ -6,7 +6,9 @@
 
 namespace fb::login::handler::protocol {
 
-class create_account : public fb::handler::protocol<fb::login::server, fb::protocol::login::request::create>
+namespace login_reqs = fb::protocol::login::request;
+
+class create_account : public fb::handler::protocol<fb::login::server, login_reqs::create>
 {
 public:
     create_account(fb::login::server& server);
@@ -15,7 +17,7 @@ public:
     create_account& operator= (const create_account&) = delete;
     create_account& operator= (create_account&&)      = delete;
 
-    async::task<bool> handle(fb::socket<fb::login::session>& session, fb::protocol::login::request::create& request) override;
+    async::task<bool> handle(fb::socket<fb::login::session>& session, login_reqs::create& request) override;
 };
 
 } // namespace fb::login::handler::protocol

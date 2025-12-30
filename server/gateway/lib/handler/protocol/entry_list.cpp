@@ -4,11 +4,10 @@
 using namespace fb::gateway::handler::protocol;
 
 entry_list::entry_list(fb::gateway::server& server) :
-    fb::handler::protocol<fb::gateway::server, fb::protocol::gateway::request::endpoint>(server)
+    fb::handler::protocol<fb::gateway::server, gateway_reqs::endpoint>(server)
 { }
 
-async::task<bool> entry_list::handle(fb::socket<fb::gateway::session>&         session,
-                                     fb::protocol::gateway::request::endpoint& request)
+async::task<bool> entry_list::handle(fb::socket<fb::gateway::session>& session, gateway_reqs::endpoint& request)
 {
     switch (request.action)
     {

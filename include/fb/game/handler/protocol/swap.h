@@ -6,7 +6,9 @@
 
 namespace fb::game::handler::protocol {
 
-class swap : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::swap>
+namespace game_reqs = fb::protocol::game::request;
+
+class swap : public fb::handler::protocol<fb::game::server, game_reqs::swap>
 {
 public:
     swap(fb::game::server& server);
@@ -15,7 +17,7 @@ public:
     swap& operator= (const swap&) = delete;
     swap& operator= (swap&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>& session, fb::protocol::game::request::swap& request) override;
+    async::task<bool> handle(fb::socket<character>& session, game_reqs::swap& request) override;
 };
 
 } // namespace fb::game::handler::protocol

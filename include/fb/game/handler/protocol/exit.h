@@ -6,7 +6,9 @@
 
 namespace fb::game::handler::protocol {
 
-class exit : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::exit>
+namespace game_reqs = fb::protocol::game::request;
+
+class exit : public fb::handler::protocol<fb::game::server, game_reqs::exit>
 {
 public:
     exit(fb::game::server& server);
@@ -15,7 +17,7 @@ public:
     exit& operator= (const exit&) = delete;
     exit& operator= (exit&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>& session, fb::protocol::game::request::exit& request) override;
+    async::task<bool> handle(fb::socket<character>& session, game_reqs::exit& request) override;
 };
 
 } // namespace fb::game::handler::protocol

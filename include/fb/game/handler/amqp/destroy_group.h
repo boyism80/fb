@@ -10,10 +10,10 @@ class destroy_group : public fb::handler::amqp<fb::game::server, internal_resp::
 {
 public:
     destroy_group(fb::game::server& server);
-    destroy_group(const destroy_group&)             = delete;
-    destroy_group(destroy_group&&)                  = delete;
-    destroy_group& operator= (const destroy_group&) = delete;
-    destroy_group& operator= (const destroy_group&&)      = delete;
+    destroy_group(const destroy_group&)              = delete;
+    destroy_group(destroy_group&&)                   = delete;
+    destroy_group& operator= (const destroy_group&)  = delete;
+    destroy_group& operator= (const destroy_group&&) = delete;
 
 public:
     async::task<void> handle(const internal_resp::DestroyGroup& message) override;
@@ -22,4 +22,3 @@ public:
 } // namespace fb::game::handler::amqp
 
 #endif // FB_GAME_HANDLER_AMQP_DESTROY_GROUP_H
-

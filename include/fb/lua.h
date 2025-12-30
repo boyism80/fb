@@ -300,7 +300,8 @@ public:
             }
 
             // Store as weak_ptr - preserves exact type
-            auto allocated = static_cast<std::weak_ptr<element_type>*>(lua_newuserdata(*this, sizeof(std::weak_ptr<element_type>)));
+            auto allocated =
+                static_cast<std::weak_ptr<element_type>*>(lua_newuserdata(*this, sizeof(std::weak_ptr<element_type>)));
             new (allocated) std::weak_ptr<element_type>(value);
 
             auto& metaname = value->metaname();
@@ -313,7 +314,8 @@ public:
         {
             // Handle luable*
             using element_type = std::remove_cv_t<std::remove_pointer_t<T>>;
-            static_assert(std::is_base_of_v<luable, element_type>, "pointer type must point to a type that inherits from luable");
+            static_assert(std::is_base_of_v<luable, element_type>,
+                          "pointer type must point to a type that inherits from luable");
 
             if (value == nullptr)
             {
@@ -331,7 +333,8 @@ public:
                     auto typed_shared = std::const_pointer_cast<element_type>(const_shared);
 
                     // Store as weak_ptr with the EXACT element_type
-                    auto allocated = static_cast<std::weak_ptr<element_type>*>(lua_newuserdata(*this, sizeof(std::weak_ptr<element_type>)));
+                    auto allocated = static_cast<std::weak_ptr<element_type>*>(
+                        lua_newuserdata(*this, sizeof(std::weak_ptr<element_type>)));
                     new (allocated) std::weak_ptr<element_type>(typed_shared);
 
                     auto& metaname = value->metaname();
@@ -343,8 +346,9 @@ public:
                 catch (const std::bad_weak_ptr&)
                 {
                     // Fall back to raw pointer
-                    auto allocated = static_cast<const element_type**>(lua_newuserdata(*this, sizeof(const element_type*)));
-                    *allocated     = value;
+                    auto allocated =
+                        static_cast<const element_type**>(lua_newuserdata(*this, sizeof(const element_type*)));
+                    *allocated = value;
 
                     auto& metaname = value->metaname();
                     luaL_getmetatable(*this, metaname.c_str());
@@ -370,7 +374,8 @@ public:
         {
             // Handle luable&
             using element_type = std::remove_cv_t<std::remove_reference_t<T>>;
-            static_assert(std::is_base_of_v<luable, element_type>, "reference type must refer to a type that inherits from luable");
+            static_assert(std::is_base_of_v<luable, element_type>,
+                          "reference type must refer to a type that inherits from luable");
 
             // Try to use shared_from_this if available
             if constexpr (std::is_base_of_v<fb::thread_switchable, element_type>)
@@ -382,7 +387,8 @@ public:
                     auto typed_shared = std::const_pointer_cast<element_type>(const_shared);
 
                     // Store as weak_ptr with the EXACT element_type
-                    auto allocated = static_cast<std::weak_ptr<element_type>*>(lua_newuserdata(*this, sizeof(std::weak_ptr<element_type>)));
+                    auto allocated = static_cast<std::weak_ptr<element_type>*>(
+                        lua_newuserdata(*this, sizeof(std::weak_ptr<element_type>)));
                     new (allocated) std::weak_ptr<element_type>(typed_shared);
 
                     auto& metaname = value.metaname();
@@ -394,8 +400,9 @@ public:
                 catch (const std::bad_weak_ptr&)
                 {
                     // Fall back to raw pointer
-                    auto allocated = static_cast<const element_type**>(lua_newuserdata(*this, sizeof(const element_type*)));
-                    *allocated     = &value;
+                    auto allocated =
+                        static_cast<const element_type**>(lua_newuserdata(*this, sizeof(const element_type*)));
+                    *allocated = &value;
 
                     auto& metaname = value.metaname();
                     luaL_getmetatable(*this, metaname.c_str());
@@ -527,8 +534,14 @@ public:
     void                            pending(bool value);
     void                            parent(context* parent);
     context*                        parent() const;
-    int                             ensure_yield(fb::async_executor& executor, std::weak_ptr<fb::thread_switchable> weak, std::function<int(bool)> fn, bool no_yield = false);
-    int                             ensure_resume(fb::async_executor& executor, std::weak_ptr<fb::thread_switchable> weak, std::function<int()> fn, bool force_resume = false);
+    int                             ensure_yield(fb::async_executor&                  executor,
+                                                 std::weak_ptr<fb::thread_switchable> weak,
+                                                 std::function<int(bool)>             fn,
+                                                 bool                                 no_yield = false);
+    int                             ensure_resume(fb::async_executor&                  executor,
+                                                  std::weak_ptr<fb::thread_switchable> weak,
+                                                  std::function<int()>                 fn,
+                                                  bool                                 force_resume = false);
 
 public:
     operator lua_State* () const;

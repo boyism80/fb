@@ -6,7 +6,9 @@
 
 namespace fb::login::handler::protocol {
 
-class change_password : public fb::handler::protocol<fb::login::server, fb::protocol::login::request::update_pw>
+namespace login_reqs = fb::protocol::login::request;
+
+class change_password : public fb::handler::protocol<fb::login::server, login_reqs::update_pw>
 {
 public:
     change_password(fb::login::server& server);
@@ -15,7 +17,7 @@ public:
     change_password& operator= (const change_password&) = delete;
     change_password& operator= (change_password&&)      = delete;
 
-    async::task<bool> handle(fb::socket<fb::login::session>& session, fb::protocol::login::request::update_pw& request) override;
+    async::task<bool> handle(fb::socket<fb::login::session>& session, login_reqs::update_pw& request) override;
 };
 
 } // namespace fb::login::handler::protocol

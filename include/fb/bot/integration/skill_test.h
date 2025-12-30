@@ -12,6 +12,7 @@ class skill_test : public bot_integration_test
 private:
     using super         = bot_integration_test;
     using test_function = std::function<async::task<bool>(std::vector<std::shared_ptr<fb::bot::game_bot>>&)>;
+    using bot_ptr_t     = std::shared_ptr<fb::bot::game_bot>;
 
     struct healing_spell_test
     {
@@ -53,7 +54,8 @@ private:
         bool             has_preprocess;
     };
 
-    using multi_target_spell_calculator = std::function<std::tuple<int, int, std::optional<fb::model::point<uint16_t>>>(const std::shared_ptr<fb::bot::game_bot>&)>;
+    using multi_target_spell_calculator = std::function<std::tuple<int, int, std::optional<fb::model::point<uint16_t>>>(
+        const std::shared_ptr<fb::bot::game_bot>&)>;
 
     struct multi_target_attack_cast_spell_test
     {
@@ -85,25 +87,25 @@ private:
     async::task<bool> scenario_1();
 
 private:
-    async::task<bool> test_healing_spells(std::shared_ptr<fb::bot::game_bot> caster);
-    async::task<bool> test_damage_spells(std::shared_ptr<fb::bot::game_bot> caster);
-    async::task<bool> test_near_damage_spells(std::shared_ptr<fb::bot::game_bot> caster);
-    async::task<bool> test_attack_cast_spells(std::shared_ptr<fb::bot::game_bot> caster);
-    async::task<bool> test_near_target_damage_spells(std::shared_ptr<fb::bot::game_bot> caster);
-    async::task<bool> test_area_damage_spells(std::shared_ptr<fb::bot::game_bot> caster);
-    async::task<bool> test_buff_debuff_spells(std::shared_ptr<fb::bot::game_bot> caster, std::shared_ptr<fb::bot::game_bot> target);
-    async::task<bool> test_target_spells(std::shared_ptr<fb::bot::game_bot> caster, std::shared_ptr<fb::bot::game_bot> target);
-    async::task<bool> test_special_spells(std::shared_ptr<fb::bot::game_bot> caster);
-    async::task<bool> test_multi_target_attack_cast_spells(std::shared_ptr<fb::bot::game_bot> caster);
-    async::task<bool> test_teleport_spells(std::shared_ptr<fb::bot::game_bot> caster, std::shared_ptr<fb::bot::game_bot> target);
-    async::task<bool> test_disguise_spells(std::shared_ptr<fb::bot::game_bot> caster);
-    async::task<bool> test_shout_spells(std::shared_ptr<fb::bot::game_bot> caster);
-    async::task<bool> test_loot_spell(std::shared_ptr<fb::bot::game_bot> caster);
-    async::task<bool> test_group_healing_spells(std::shared_ptr<fb::bot::game_bot> caster);
+    async::task<bool> test_healing_spells(bot_ptr_t caster);
+    async::task<bool> test_damage_spells(bot_ptr_t caster);
+    async::task<bool> test_near_damage_spells(bot_ptr_t caster);
+    async::task<bool> test_attack_cast_spells(bot_ptr_t caster);
+    async::task<bool> test_near_target_damage_spells(bot_ptr_t caster);
+    async::task<bool> test_area_damage_spells(bot_ptr_t caster);
+    async::task<bool> test_buff_debuff_spells(bot_ptr_t caster, bot_ptr_t target);
+    async::task<bool> test_target_spells(bot_ptr_t caster, bot_ptr_t target);
+    async::task<bool> test_special_spells(bot_ptr_t caster);
+    async::task<bool> test_multi_target_attack_cast_spells(bot_ptr_t caster);
+    async::task<bool> test_teleport_spells(bot_ptr_t caster, bot_ptr_t target);
+    async::task<bool> test_disguise_spells(bot_ptr_t caster);
+    async::task<bool> test_shout_spells(bot_ptr_t caster);
+    async::task<bool> test_loot_spell(bot_ptr_t caster);
+    async::task<bool> test_group_healing_spells(bot_ptr_t caster);
     async::task<bool> verify_group_healing_effects(const std::vector<int>& before_hp_values, int expected_hp_gain);
-    async::task<void> test_chuldu_spell(std::shared_ptr<fb::bot::game_bot> caster, std::shared_ptr<fb::bot::game_bot> target, uint8_t spell_slot, int expected_mp_cost);
-    async::task<void> test_sohwan_spell(std::shared_ptr<fb::bot::game_bot> caster, std::shared_ptr<fb::bot::game_bot> target, uint8_t spell_slot, int expected_mp_cost);
-    async::task<bool> test_skill_cooldown_delays(std::shared_ptr<fb::bot::game_bot> caster);
+    async::task<void> test_chuldu_spell(bot_ptr_t caster, bot_ptr_t target, uint8_t spell_slot, int expected_mp_cost);
+    async::task<void> test_sohwan_spell(bot_ptr_t caster, bot_ptr_t target, uint8_t spell_slot, int expected_mp_cost);
+    async::task<bool> test_skill_cooldown_delays(bot_ptr_t caster);
 };
 
 } // namespace fb::bot::integration

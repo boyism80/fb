@@ -6,7 +6,9 @@
 
 namespace fb::login::handler::protocol {
 
-class agreement : public fb::handler::protocol<fb::login::server, fb::protocol::login::request::agreement>
+namespace login_reqs = fb::protocol::login::request;
+
+class agreement : public fb::handler::protocol<fb::login::server, login_reqs::agreement>
 {
 public:
     agreement(fb::login::server& server);
@@ -15,7 +17,7 @@ public:
     agreement& operator= (const agreement&) = delete;
     agreement& operator= (agreement&&)      = delete;
 
-    async::task<bool> handle(fb::socket<fb::login::session>& session, fb::protocol::login::request::agreement& request) override;
+    async::task<bool> handle(fb::socket<fb::login::session>& session, login_reqs::agreement& request) override;
 };
 
 } // namespace fb::login::handler::protocol

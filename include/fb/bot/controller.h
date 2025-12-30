@@ -31,8 +31,9 @@ template <typename BotType>
 class bot_controller : public base_bot_controller
 {
 public:
-    using handle_func    = std::function<async::task<void>(BotType&, fb::protocol::header&)>;
-    using deserilze_func = std::function<async::task<std::shared_ptr<fb::protocol::header>>(fb::stream_reader<big_endian>&)>;
+    using handle_func = std::function<async::task<void>(BotType&, fb::protocol::header&)>;
+    using deserilze_func =
+        std::function<async::task<std::shared_ptr<fb::protocol::header>>(fb::stream_reader<big_endian>&)>;
 
 private:
     std::unordered_map<uint8_t, handle_func>    _handler;
@@ -60,9 +61,12 @@ protected:
     }
 
     template <typename Class>
-    void bind_thread_timer(async::task<void> (Class::*fn)(const fb::model::datetime&, std::thread::id), std::chrono::steady_clock::duration interval)
+    void bind_thread_timer(async::task<void> (Class::*fn)(const fb::model::datetime&, std::thread::id),
+                           std::chrono::steady_clock::duration interval)
     {
-        this->container.bind_thread_timer(std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2), interval);
+        this->container.bind_thread_timer(
+            std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2),
+            interval);
     }
 
     virtual async::task<void> on_bot_connected(base_bot& bot) override
@@ -92,7 +96,8 @@ protected:
         if (this->_deserializer.contains(cmd))
             return;
 
-        this->_deserializer[cmd] = [](fb::stream_reader<big_endian>& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
+        this->_deserializer[cmd] =
+            [](fb::stream_reader<big_endian>& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
             co_return nullptr;
         };
 
@@ -203,7 +208,8 @@ public:
                     }
                     else
                     {
-                        deserializer = [](fb::stream_reader<big_endian>& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
+                        deserializer = [](fb::stream_reader<big_endian>& reader)
+                            -> async::task<std::shared_ptr<fb::protocol::header>> {
                             co_return nullptr;
                         };
                     }
@@ -234,7 +240,9 @@ public:
                                       e.what(),
                                       boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
                 else
-                    fb::logger::fatal("bot_controller::on_receive: error={}\n{}", e.what(), boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
+                    fb::logger::fatal("bot_controller::on_receive: error={}\n{}",
+                                      e.what(),
+                                      boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
                 reader.clear();
                 break;
             }
@@ -245,7 +253,8 @@ public:
                                       processed_cmd.value(),
                                       boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
                 else
-                    fb::logger::fatal("bot_controller::on_receive: error=unknown\n{}", boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
+                    fb::logger::fatal("bot_controller::on_receive: error=unknown\n{}",
+                                      boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
 
                 reader.clear();
                 break;
@@ -271,35 +280,43 @@ public:
 
     template <typename ResponseType> void bind(const std::function<async::task<void>(BotType&, ResponseType&)>& fn)
     {
-        static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>, "ResponseType must inherit from fb::protocol::header");
-        static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>, "ResponseType must have 'static constexpr uint8_t header' member");
+        static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>,
+                      "ResponseType must inherit from fb::protocol::header");
+        static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>,
+                      "ResponseType must have 'static constexpr uint8_t header' member");
 
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_handler_mutex);
 
-        this->_deserializer.insert({ResponseType::header, [](auto& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
-                                        auto protocol = std::make_shared<ResponseType>();
-                                        co_await protocol->deserialize(reader);
-                                        co_return protocol;
-                                    }});
+        this->_deserializer.insert(
+            {ResponseType::header, [](auto& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
+                 auto protocol = std::make_shared<ResponseType>();
+                 co_await protocol->deserialize(reader);
+                 co_return protocol;
+             }});
 
-        this->_handler.insert({ResponseType::header, [this, fn](auto& bot, auto& header) -> async::task<void> {
-                                   auto          protocol   = static_cast<ResponseType&>(header);
-                                   volatile auto controller = this;
+        this->_handler.insert(
+            {ResponseType::header, [this, fn](auto& bot, auto& header) -> async::task<void> {
+                 auto          protocol   = static_cast<ResponseType&>(header);
+                 volatile auto controller = this;
 
-                                   co_await fn(bot, protocol);
+                 co_await fn(bot, protocol);
 
-                                   co_await controller->on_integration_hook_execution(ResponseType::header, bot, header);
+                 co_await controller->on_integration_hook_execution(ResponseType::header, bot, header);
 
-                                   bot.process_hooks(ResponseType::header, header);
-                               }});
+                 bot.process_hooks(ResponseType::header, header);
+             }});
     }
 
-    template <typename Class, typename ResponseType> void bind(async::task<void> (Class::*fn)(BotType&, const ResponseType&))
+    template <typename Class, typename ResponseType> void bind(async::task<void> (Class::*fn)(BotType&,
+                                                                                              const ResponseType&))
     {
-        static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>, "ResponseType must inherit from fb::protocol::header");
-        static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>, "ResponseType must have 'static constexpr uint8_t header' member");
+        static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>,
+                      "ResponseType must inherit from fb::protocol::header");
+        static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>,
+                      "ResponseType must have 'static constexpr uint8_t header' member");
 
-        this->bind<ResponseType>(std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2));
+        this->bind<ResponseType>(
+            std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2));
     }
 
     virtual async::task<void> on_bot_connected(BotType& bot)
@@ -319,12 +336,14 @@ public:
         });
     }
 
-    template <typename Func> auto read_bots(Func&& fn) const -> decltype(fn(std::declval<const std::unordered_map<uint32_t, std::shared_ptr<BotType>>&>()))
+    template <typename Func> auto read_bots(Func&& fn) const
+        -> decltype(fn(std::declval<const std::unordered_map<uint32_t, std::shared_ptr<BotType>>&>()))
     {
         return this->_bots.read(std::forward<Func>(fn));
     }
 
-    template <typename Func> auto write_bots(Func&& fn) -> decltype(fn(std::declval<std::unordered_map<uint32_t, std::shared_ptr<BotType>>&>()))
+    template <typename Func> auto write_bots(Func&& fn)
+        -> decltype(fn(std::declval<std::unordered_map<uint32_t, std::shared_ptr<BotType>>&>()))
     {
         return this->_bots.write(std::forward<Func>(fn));
     }
@@ -334,7 +353,9 @@ public:
         this->_bots.write(fn);
     }
 
-    virtual async::task<void> on_integration_hook_execution(uint8_t cmd, BotType& bot, const fb::protocol::header& header)
+    virtual async::task<void> on_integration_hook_execution(uint8_t                     cmd,
+                                                            BotType&                    bot,
+                                                            const fb::protocol::header& header)
     {
         co_return;
     }
@@ -362,7 +383,8 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
     target->controller.template ensure_handler_registered<ResponseType>();
 
     auto self_ptr = std::static_pointer_cast<BotType>(target->shared_from_this());
-    auto context  = std::make_shared<typename BotType::template request_context<ResponseType>>(self_ptr, ResponseType::header);
+    auto context =
+        std::make_shared<typename BotType::template request_context<ResponseType>>(self_ptr, ResponseType::header);
 
     if (timeout > 0s)
     {
@@ -384,12 +406,14 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
 
     target->_hooks[ResponseType::header].push_back(hook_params{.condition =
                                                                    [context, condition](const auto& header) {
-                                                                       auto& protocol = static_cast<const ResponseType&>(header);
+                                                                       auto& protocol =
+                                                                           static_cast<const ResponseType&>(header);
                                                                        return condition(protocol);
                                                                    },
                                                                .matched =
                                                                    [context](const auto& header) {
-                                                                       auto& protocol = static_cast<const ResponseType&>(header);
+                                                                       auto& protocol =
+                                                                           static_cast<const ResponseType&>(header);
                                                                        context->complete_success(protocol);
                                                                    },
                                                                .context_ptr = context.get()});
@@ -415,12 +439,17 @@ async::task<ResponseType> bot<BotType>::request(const fb::protocol::header&     
                                                 bool                                                 encrypt,
                                                 bool                                                 wrap)
 {
-    co_return co_await this->request<ResponseType>(this->shared_from_this_as<BotType>(), protocol, condition, timeout, encrypt, wrap);
+    co_return co_await this
+        ->request<ResponseType>(this->shared_from_this_as<BotType>(), protocol, condition, timeout, encrypt, wrap);
 }
 
 template <typename BotType>
 template <typename ResponseType>
-async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType> target, const fb::protocol::header& protocol, const fb::model::timespan& timeout, bool encrypt, bool wrap)
+async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>    target,
+                                                const fb::protocol::header& protocol,
+                                                const fb::model::timespan&  timeout,
+                                                bool                        encrypt,
+                                                bool                        wrap)
 {
     co_return co_await this->request<ResponseType>(
         target,
@@ -435,7 +464,8 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType> target,
 
 template <typename BotType>
 template <typename ResponseType>
-async::task<ResponseType> bot<BotType>::request(const fb::protocol::header& protocol, const fb::model::timespan& timeout, bool encrypt, bool wrap)
+async::task<ResponseType>
+bot<BotType>::request(const fb::protocol::header& protocol, const fb::model::timespan& timeout, bool encrypt, bool wrap)
 {
     co_return co_await this->request<ResponseType>(
         protocol,

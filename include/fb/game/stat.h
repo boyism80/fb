@@ -158,7 +158,9 @@ public:
     uint8_t         base_hit() const;
     virtual uint8_t hit() const;
     uint32_t        base_regenerative() const;
-    uint32_t        damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false) override final;
+    uint32_t        damage(uint32_t                          value,
+                           std::shared_ptr<fb::game::object> from     = nullptr,
+                           bool                              critical = false) override final;
 };
 
 class mob_stat : public stat
@@ -183,7 +185,9 @@ public:
     uint8_t  base_dam() const override final;
     uint8_t  base_hit() const override final;
     uint32_t base_regenerative() const override final;
-    uint32_t damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false) override final;
+    uint32_t damage(uint32_t                          value,
+                    std::shared_ptr<fb::game::object> from     = nullptr,
+                    bool                              critical = false) override final;
 };
 
 } // namespace fb::game

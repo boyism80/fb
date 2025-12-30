@@ -6,7 +6,9 @@
 
 namespace fb::game::handler::protocol {
 
-class front_info : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::front_info>
+namespace game_reqs = fb::protocol::game::request;
+
+class front_info : public fb::handler::protocol<fb::game::server, game_reqs::front_info>
 {
 public:
     front_info(fb::game::server& server);
@@ -15,7 +17,7 @@ public:
     front_info& operator= (const front_info&) = delete;
     front_info& operator= (front_info&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>& session, fb::protocol::game::request::front_info& request) override;
+    async::task<bool> handle(fb::socket<character>& session, game_reqs::front_info& request) override;
 };
 
 } // namespace fb::game::handler::protocol
