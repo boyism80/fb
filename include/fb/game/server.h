@@ -114,11 +114,6 @@ public:
     server(server&&)      = delete;
     ~server();
 
-public:
-    async::task<void> ensure_group(uint32_t id, ensure_group_fn fn);
-    void update_clan(clan& clan, internal::Clan& clan_dto, const std::vector<internal::ClanMember>& members_dto) const;
-    async::task<void> ensure_clan(uint32_t id, ensure_clan_fn fn);
-
 private:
     template <typename HandlerType> void bind_npc_interaction()
     {
@@ -146,6 +141,7 @@ public:
     async::task<void> on_whisper(const internal_resp::Whisper& resp);
 
 public:
+    // clang-format off
     template <typename T, typename... Args> std::shared_ptr<T> make(Args&&... args)
     {
         auto ptr = std::make_shared<T>(*this, std::forward<Args>(args)...);
@@ -156,12 +152,7 @@ public:
         return ptr;
     }
 
-    void rezen_force();
-    void rezen_force(const fb::game::map& map);
-
-public:
-    template <typename T> [[nodiscard]] async::task<void> destroy(T&           obj,
-                                                                  DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)
+    template <typename T> async::task<void> destroy(T& obj, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)
     {
         if constexpr (std::is_same_v<T, object>)
         {
@@ -170,77 +161,63 @@ public:
         }
         co_return;
     }
-
-public:
-    async::task<void>               send(object&                     obj,
-                                         const fb::protocol::header& header,
-                                         fb::game::scope             scope,
-                                         bool                        exclude_self = false,
-                                         bool                        encrypt      = true);
-    [[nodiscard]] async::task<void> save(character& ch);
-    void                            save();
-
-public:
-    virtual uint32_t                thread_id(const fb::socket<character>& socket) const;
-    fb::thread*                     thread(const fb::game::map& map);
-    const fb::model::datetime&      time() const;
-    [[nodiscard]] async::task<void> broadcast(const std::string& message,
-                                              MESSAGE_TYPE       type,
-                                              BROADCAST_TYPE     broadcast_type);
-    [[nodiscard]] async::task<void> create_group(character& me, const std::string& target_name);
-    [[nodiscard]] async::task<void> destroy_group(character& me);
-    [[nodiscard]] async::task<void> handle_group_action(character& actor, const std::string& target_name);
-    [[nodiscard]] async::task<void> toggle_group_member(character& actor, const std::string& target_name);
-    [[nodiscard]] async::task<void> leave_group_member(character& leaver);
-    [[nodiscard]] async::task<void> broadcast_group(uint32_t group_id, const std::string& message, MESSAGE_TYPE type);
-    [[nodiscard]] async::task<void> create_clan(character& me, std::string name);
-    [[nodiscard]] async::task<void> destroy_clan(character& me);
-    [[nodiscard]] async::task<void> join_clan_member(character& inviter, const std::string& target_name);
-    [[nodiscard]] async::task<void> leave_clan_member(character& leaver);
-    [[nodiscard]] async::task<void> kick_clan_member(character& kicker, const std::string& target_name);
-    [[nodiscard]] async::task<void> change_clan_role(character&         changer,
-                                                     const std::string& target_name,
-                                                     CLAN_ROLE          role);
-    [[nodiscard]] async::task<void> set_clan_title(character& changer, const std::string& title);
-    [[nodiscard]] async::task<void> broadcast_clan(uint32_t clan_id, const std::string& message, MESSAGE_TYPE type);
-    [[nodiscard]] async::task<internal_resp::WriteMail>
-    send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents);
-    [[nodiscard]] async::task<internal_resp::GetMailList>   mail_list(const character& ch,
-                                                                      uint16_t         offset,
-                                                                      uint16_t         count);
-    [[nodiscard]] async::task<internal_resp::GetMail>       read_mail(character& ch, uint16_t id);
-    [[nodiscard]] async::task<internal_resp::DeleteMail>    delete_mail(character& ch, uint16_t id);
-    [[nodiscard]] async::task<std::list<bulletin::article>> bulletin_list(uint16_t section, uint16_t offset);
-    [[nodiscard]] async::task<bulletin::article>            read_bulletin(uint16_t section, uint16_t id);
-    [[nodiscard]] async::task<void>
-    write_bulletin(character& ch, uint16_t section, const std::string& title, const std::string& contents);
-    [[nodiscard]] async::task<void> delete_bulletin(character& ch, uint16_t section, uint16_t id);
-    [[nodiscard]] async::task<void> whisper(character& sender, std::string receiver_name, std::string message);
-    [[nodiscard]] async::task<internal_resp::Ban>   ban(const std::string&             name,
-                                                        const std::string&             reason,
-                                                        const std::optional<uint32_t>& days);
-    [[nodiscard]] async::task<internal_resp::Unban> unban(const std::string& name);
-
-protected:
-    bool                            decrypt_policy(uint8_t cmd) const override final;
-    bool                            assert_tps(const fb::socket<character>& socket) const override final;
-    void                            on_init_amqp(fb::amqp::socket& amqp) override final;
-    [[nodiscard]] async::task<void> on_start() override final;
-    [[nodiscard]] async::task<bool> on_connected(fb::socket<character>& ch) override final;
-    [[nodiscard]] async::task<bool> on_disconnected(fb::socket<character>& ch) override final;
+    // clang-format on
 
 protected:
     uint8_t           id() const override final;
     internal::Service service() const override final;
+    bool              decrypt_policy(uint8_t cmd) const override final;
+    bool              assert_tps(const fb::socket<character>& socket) const override final;
+    void              on_init_amqp(fb::amqp::socket& amqp) override final;
+    async::task<void> on_start() override final;
+    async::task<bool> on_connected(fb::socket<character>& ch) override final;
+    async::task<bool> on_disconnected(fb::socket<character>& ch) override final;
 
 public:
-    async::task<void>               update_status();
-    void                            update_time();
-    async::task<bool>               npc_interaction(character&                               ch,
-                                                    const std::string&                       message,
-                                                    const std::vector<std::shared_ptr<npc>>& npcs);
-    [[nodiscard]] async::task<void> leave_clan_member(const clan& clan, const std::string& name);
-    [[nodiscard]] async::task<void> join_clan_member(const clan& clan, character& inviter, character& invitee);
+    // clang-format off
+    async::task<void>                          send(object& obj, const fb::protocol::header& header, fb::game::scope scope, bool exclude_self = false, bool encrypt = true);
+    async::task<void>                          save(character& ch);
+    void                                       save();
+    virtual uint32_t                           thread_id(const fb::socket<character>& socket) const;
+    fb::thread*                                thread(const fb::game::map& map);
+    const fb::model::datetime&                 time() const;
+    async::task<void>                          broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type);
+    async::task<void>                          create_group(character& me, const std::string& target_name);
+    async::task<void>                          destroy_group(character& me);
+    async::task<void>                          handle_group_action(character& actor, const std::string& target_name);
+    async::task<void>                          toggle_group_member(character& actor, const std::string& target_name);
+    async::task<void>                          leave_group_member(character& leaver);
+    async::task<void>                          broadcast_group(uint32_t group_id, const std::string& message, MESSAGE_TYPE type);
+    async::task<void>                          create_clan(character& me, std::string name);
+    async::task<void>                          destroy_clan(character& me);
+    async::task<void>                          join_clan_member(character& inviter, const std::string& target_name);
+    async::task<void>                          leave_clan_member(character& leaver);
+    async::task<void>                          kick_clan_member(character& kicker, const std::string& target_name);
+    async::task<void>                          change_clan_role(character& changer, const std::string& target_name, CLAN_ROLE role);
+    async::task<void>                          set_clan_title(character& changer, const std::string& title);
+    async::task<void>                          broadcast_clan(uint32_t clan_id, const std::string& message, MESSAGE_TYPE type);
+    async::task<internal_resp::WriteMail>      send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents);
+    async::task<internal_resp::GetMailList>    mail_list(const character& ch, uint16_t offset, uint16_t count);
+    async::task<internal_resp::GetMail>        read_mail(character& ch, uint16_t id);
+    async::task<internal_resp::DeleteMail>     delete_mail(character& ch, uint16_t id);
+    async::task<std::list<bulletin::article>>  bulletin_list(uint16_t section, uint16_t offset);
+    async::task<bulletin::article>             read_bulletin(uint16_t section, uint16_t id);
+    async::task<void>                          write_bulletin(character& ch, uint16_t section, const std::string& title, const std::string& contents);
+    async::task<void>                          delete_bulletin(character& ch, uint16_t section, uint16_t id);
+    async::task<void>                          whisper(character& sender, std::string receiver_name, std::string message);
+    async::task<internal_resp::Ban>            ban(const std::string& name, const std::string& reason, const std::optional<uint32_t>& days);
+    async::task<internal_resp::Unban>          unban(const std::string& name);
+    async::task<void>                          update_status();
+    void                                       update_time();
+    async::task<bool>                          npc_interaction(character& ch, const std::string& message, const std::vector<std::shared_ptr<npc>>& npcs);
+    async::task<void>                          leave_clan_member(const clan& clan, const std::string& name);
+    async::task<void>                          join_clan_member(const clan& clan, character& inviter, character& invitee);
+    void                                       rezen_force();
+    void                                       rezen_force(const fb::game::map& map);
+    async::task<void>                          ensure_group(uint32_t id, ensure_group_fn fn);
+    void                                       update_clan(clan& clan, internal::Clan& clan_dto, const std::vector<internal::ClanMember>& members_dto) const;
+    async::task<void>                          ensure_clan(uint32_t id, ensure_clan_fn fn);
+    // clang-format on
 };
 
 } // namespace fb::game
