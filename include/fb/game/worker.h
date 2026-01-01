@@ -50,6 +50,8 @@ protected:
 
 class script_loader : public fb::parallel_worker<std::function<async::task<void>()>>
 {
+    using ready_func_generator = fb::generator<std::function<async::task<void>()>>;
+
 private:
     fb::game::server& _server;
 
@@ -58,11 +60,11 @@ public:
     ~script_loader() = default;
 
 protected:
-    fb::generator<std::function<async::task<void>()>> on_ready() override final;
-    void                                              on_work(const std::function<async::task<void>()>& value) override final;
-    void                                              on_worked(const std::function<async::task<void>()>& input, double percent) override final;
-    void                                              on_error(const std::function<async::task<void>()>& input, std::exception& e) override final;
-    void                                              on_finish() override final;
+    ready_func_generator on_ready() override final;
+    void                 on_work(const std::function<async::task<void>()>& value) override final;
+    void                 on_worked(const std::function<async::task<void>()>& input, double percent) override final;
+    void                 on_error(const std::function<async::task<void>()>& input, std::exception& e) override final;
+    void                 on_finish() override final;
 };
 
 } // namespace fb::game

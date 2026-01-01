@@ -6,7 +6,9 @@
 
 namespace fb::game::handler::protocol {
 
-class item_inactive : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::item_inactive>
+namespace game_reqs = fb::protocol::game::request;
+
+class item_inactive : public fb::handler::protocol<fb::game::server, game_reqs::item_inactive>
 {
 public:
     item_inactive(fb::game::server& server);
@@ -15,7 +17,7 @@ public:
     item_inactive& operator= (const item_inactive&) = delete;
     item_inactive& operator= (item_inactive&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>& session, fb::protocol::game::request::item_inactive& request) override;
+    async::task<bool> handle(fb::socket<character>& session, game_reqs::item_inactive& request) override;
 };
 
 } // namespace fb::game::handler::protocol

@@ -31,11 +31,12 @@ async::task<void> afk_timer::handle(const fb::model::datetime& now, std::thread:
             continue;
 
         // Check if socket is still open
-        if (!ch->socket.is_open())
+        auto socket_ptr = ch->socket_ptr();
+        if (socket_ptr == nullptr || !socket_ptr->is_open())
             continue;
 
         // Calculate elapsed time since last packet
-        const auto& last_packet_time = ch->socket.last_packet_time();
+        const auto& last_packet_time = socket_ptr->last_packet_time();
         auto        elapsed          = now - last_packet_time;
 
         // Check if 5 minutes (300 seconds) have passed since last packet

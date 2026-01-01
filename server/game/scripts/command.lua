@@ -1286,6 +1286,70 @@ command_funcs = {
         end,
     },
 
+    ['신수바꾸기'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '<신수> - 신수 변경 (청룡, 주작, 백호, 현무)',
+        ['command'] = function (me, args)
+            local creature_name = table.unpack(args)
+            if not creature_name then
+                me:message("사용법: /신수바꾸기 <신수> (청룡, 주작, 백호, 현무 중 하나)")
+                return true
+            end
+            
+            local creature_value = nil
+            if creature_name == '청룡' then
+                creature_value = CREATURE.DRAGON
+            elseif creature_name == '주작' then
+                creature_value = CREATURE.PHOENIX
+            elseif creature_name == '백호' then
+                creature_value = CREATURE.TIGER
+            elseif creature_name == '현무' then
+                creature_value = CREATURE.TURTLE
+            else
+                me:message("신수는 청룡, 주작, 백호, 현무 중 하나여야 합니다.")
+                return true
+            end
+            
+            local success = me:creature(creature_value)
+            if success then
+                me:message(string.format("신수가 %s 변경되었습니다. 재접속 후 변경사항을 확인할 수 있습니다.", name_with(creature_name, '으로', '로')), MESSAGE_TYPE.BROWN)
+            else
+                me:message("신수 변경에 실패했습니다.", MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
+
+    ['국적바꾸기'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '<국적> - 국적 변경 (고구려, 부여)',
+        ['command'] = function (me, args)
+            local nation_name = table.unpack(args)
+            if not nation_name then
+                me:message("사용법: /국적바꾸기 <국적> (고구려, 부여 중 하나)")
+                return true
+            end
+            
+            local nation_value = nil
+            if nation_name == '고구려' then
+                nation_value = NATION.GOGURYEO
+            elseif nation_name == '부여' then
+                nation_value = NATION.BUYEO
+            else
+                me:message("국적은 고구려, 부여 중 하나여야 합니다.")
+                return true
+            end
+            
+            local success = me:nation(nation_value)
+            if success then
+                me:message(string.format("국적이 %s 변경되었습니다. 재접속 후 변경사항을 확인할 수 있습니다.", name_with(nation_name, '으로', '로')), MESSAGE_TYPE.BROWN)
+            else
+                me:message("국적 변경에 실패했습니다.", MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
+
     ['서버종료'] = {
         ['privilege'] = ROLE.SUPERADMIN,
         ['usage'] = '[지연시간] - 서버 종료',

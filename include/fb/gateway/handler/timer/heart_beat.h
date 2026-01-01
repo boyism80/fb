@@ -17,4 +17,3 @@ public:
 } // namespace fb::gateway::handler::timer
 
 #endif // FB_GATEWAY_HANDLER_TIMER_HEART_BEAT_H
-

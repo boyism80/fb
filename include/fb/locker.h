@@ -101,7 +101,8 @@ public:
     async::task<void> lock()
     {
         auto expected = false;
-        if (this->_reader_count.load(std::memory_order_acquire) == 0 && this->_writer.compare_exchange_strong(expected, true, std::memory_order_acq_rel))
+        if (this->_reader_count.load(std::memory_order_acquire) == 0 &&
+            this->_writer.compare_exchange_strong(expected, true, std::memory_order_acq_rel))
         {
             co_return;
         }
@@ -150,7 +151,8 @@ public:
     bool try_lock()
     {
         auto expected = false;
-        if (this->_reader_count.load(std::memory_order_acquire) == 0 && this->_writer.compare_exchange_strong(expected, true, std::memory_order_acq_rel))
+        if (this->_reader_count.load(std::memory_order_acquire) == 0 &&
+            this->_writer.compare_exchange_strong(expected, true, std::memory_order_acq_rel))
         {
             return true;
         }

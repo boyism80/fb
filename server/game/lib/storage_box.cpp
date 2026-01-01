@@ -7,7 +7,7 @@
 #include <json/json.h>
 #include <algorithm>
 
-namespace fb::game {
+using namespace fb::game;
 
 storage_box::storage_box(character& owner) :
     _owner(owner)
@@ -129,13 +129,13 @@ bool storage_box::receive_reward(uint32_t entry_id)
     return true;
 }
 
-const std::map<uint32_t, storage_box::entry>& storage_box::entries() const
+const storage_box::entry_map& storage_box::entries() const
 {
     this->_owner.assert_thread();
     return this->_entries;
 }
 
-const std::unordered_map<std::string, storage_box::reward_mark>& storage_box::reward_marks() const
+const storage_box::reward_mark_map& storage_box::reward_marks() const
 {
     this->_owner.assert_thread();
     return this->_reward_marks;
@@ -152,5 +152,3 @@ void storage_box::set_sequence(uint32_t value)
     this->_owner.assert_thread();
     this->_sequence = value;
 }
-
-} // namespace fb::game

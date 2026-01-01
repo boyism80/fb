@@ -384,7 +384,7 @@ bool mob::available() const
     return this->alive();
 }
 
-uint32_t mob::auto_attack_damage(MOB_SIZE size) const
+uint32_t mob::normal_attack_damage(MOB_SIZE size) const
 {
     this->assert_thread();
 

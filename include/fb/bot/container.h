@@ -68,7 +68,8 @@ private:
         return bot;
     }
 
-    template <typename T, typename Controller> std::shared_ptr<T> create(Controller& bot_controller, const fb::stream& params)
+    template <typename T, typename Controller> std::shared_ptr<T> create(Controller&       bot_controller,
+                                                                         const fb::stream& params)
     {
         auto id     = this->_sequence++;
         auto bot    = std::make_shared<T>(bot_controller, id, params);

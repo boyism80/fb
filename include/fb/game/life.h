@@ -38,6 +38,7 @@ public:
     virtual void on_init() override;
 
 public:
+    // clang-format off
     virtual async::task<void> attack(DURATION duration = DURATION::ATTACK);
     virtual uint32_t          exp() const;
     virtual void              update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
@@ -49,7 +50,7 @@ public:
     bool                      active(fb::game::spell& spell, const std::string& message);
     bool                      active(fb::game::spell& spell, fb::game::object& to);
     virtual void              action(ACTION action, DURATION duration, uint8_t sound = 0x00);
-    virtual uint32_t          auto_attack_damage(MOB_SIZE size) const = 0;
+    virtual uint32_t          normal_attack_damage(MOB_SIZE size) const = 0;
     virtual bool              calculate_critical(life& you) const;
     virtual uint32_t          calculate_damage(uint32_t damage, const life& you, bool critical) const;
     virtual bool              calculate_miss(life& you) const;
@@ -65,6 +66,7 @@ public:
     bool                      invincible() const;
     void                      cover(bool value);
     bool                      cover() const;
+    // clang-format on
 };
 
 struct life::listener_t : public virtual fb::game::object::listener_t, public virtual fb::game::spells::listener_t

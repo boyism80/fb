@@ -169,7 +169,9 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
         writer.write<uint16_t>(p.x);
         writer.write<uint16_t>(p.y);
 
-        std::ignore = this->server.transfer(me.socket, resp.ip, resp.port, internal::Service::Game, stream);
+        auto socket_ptr = me.socket_ptr();
+        if (socket_ptr != nullptr)
+            std::ignore = this->server.transfer(*socket_ptr, resp.ip, resp.port, internal::Service::Game, stream);
         co_return true;
     }
     catch (std::exception& e)

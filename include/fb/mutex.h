@@ -37,8 +37,11 @@ public:
 
 private:
     template <typename T>
-    [[nodiscard]] async::task<T>
-    on_locked(std::shared_ptr<async::task_completion_source<T>> promise, const async_wait_func<T>& fn, fb::dead_lock_detector& current, const std::string key, std::mutex& mutex)
+    [[nodiscard]] async::task<T> on_locked(std::shared_ptr<async::task_completion_source<T>> promise,
+                                           const async_wait_func<T>&                         fn,
+                                           fb::dead_lock_detector&                           current,
+                                           const std::string                                 key,
+                                           std::mutex&                                       mutex)
     {
         {
             auto _ = std::lock_guard(mutex);
@@ -97,8 +100,11 @@ private:
     }
 
     template <typename T>
-    async::task<bool>
-    lock(const std::string& key, std::shared_ptr<async::task_completion_source<T>> promise, const async_wait_func<T>& fn, fb::thread* thread, fb::dead_lock_detector& trans)
+    async::task<bool> lock(const std::string&                                key,
+                           std::shared_ptr<async::task_completion_source<T>> promise,
+                           const async_wait_func<T>&                         fn,
+                           fb::thread*                                       thread,
+                           fb::dead_lock_detector&                           trans)
     {
         std::mutex* mutex = nullptr;
         {
@@ -135,7 +141,10 @@ private:
     }
 
     template <typename T>
-    void try_lock(const std::string& key, std::shared_ptr<async::task_completion_source<T>> promise, const async_peek_func<T>& fn, fb::thread* thread)
+    void try_lock(const std::string&                                key,
+                  std::shared_ptr<async::task_completion_source<T>> promise,
+                  const async_peek_func<T>&                         fn,
+                  fb::thread*                                       thread)
     {
         std::mutex* mutex = nullptr;
         {
@@ -193,7 +202,9 @@ private:
 
 public:
     template <typename T>
-    [[nodiscard]] async::task<T> sync(const std::string& key, const async_wait_func<T>& fn, fb::dead_lock_detector& trans)
+    [[nodiscard]] async::task<T> sync(const std::string&        key,
+                                      const async_wait_func<T>& fn,
+                                      fb::dead_lock_detector&   trans)
     {
         auto thread  = this->_executor.threads.current();
         auto promise = std::make_shared<async::task_completion_source<T>>();

@@ -26,7 +26,10 @@ public:
     const fb::model::spell& model;
 
 public:
-    spell(const fb::game::server& server, const fb::game::life& owner, const fb::model::spell& model, uint16_t delay = 0);
+    spell(const fb::game::server& server,
+          const fb::game::life&   owner,
+          const fb::model::spell& model,
+          uint16_t                delay = 0);
     ~spell();
 
 public:
@@ -84,7 +87,10 @@ public:
     const fb::game::object* caster;
 
 public:
-    buff(const fb::game::server& server, const fb::model::spell& model, const fb::game::object* caster, uint32_t seconds);
+    buff(const fb::game::server& server,
+         const fb::model::spell& model,
+         const fb::game::object* caster,
+         uint32_t                seconds);
     ~buff();
 
 public:
@@ -126,7 +132,9 @@ private:
 
 public:
     bool                  contains(const fb::model::spell& model) const;
-    std::shared_ptr<buff> push_back(const fb::model::spell& spell, uint32_t seconds, const std::shared_ptr<fb::game::object>& caster = nullptr);
+    std::shared_ptr<buff> push_back(const fb::model::spell&                  spell,
+                                    uint32_t                                 seconds,
+                                    const std::shared_ptr<fb::game::object>& caster = nullptr);
     bool                  remove(uint32_t id);
     bool                  remove(const fb::model::spell& spell);
 

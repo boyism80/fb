@@ -6,7 +6,9 @@
 
 namespace fb::game::handler::protocol {
 
-class direction : public fb::handler::protocol<fb::game::server, fb::protocol::game::request::direction>
+namespace game_reqs = fb::protocol::game::request;
+
+class direction : public fb::handler::protocol<fb::game::server, game_reqs::direction>
 {
 public:
     direction(fb::game::server& server);
@@ -15,7 +17,7 @@ public:
     direction& operator= (const direction&) = delete;
     direction& operator= (direction&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>& session, fb::protocol::game::request::direction& request) override;
+    async::task<bool> handle(fb::socket<character>& session, game_reqs::direction& request) override;
 };
 
 } // namespace fb::game::handler::protocol

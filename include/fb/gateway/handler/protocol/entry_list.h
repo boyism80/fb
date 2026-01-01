@@ -6,7 +6,9 @@
 
 namespace fb::gateway::handler::protocol {
 
-class entry_list : public fb::handler::protocol<fb::gateway::server, fb::protocol::gateway::request::endpoint>
+namespace gateway_reqs = fb::protocol::gateway::request;
+
+class entry_list : public fb::handler::protocol<fb::gateway::server, gateway_reqs::endpoint>
 {
 public:
     entry_list(fb::gateway::server& server);
@@ -15,7 +17,7 @@ public:
     entry_list& operator= (const entry_list&) = delete;
     entry_list& operator= (entry_list&&)      = delete;
 
-    async::task<bool> handle(fb::socket<fb::gateway::session>& session, fb::protocol::gateway::request::endpoint& request) override;
+    async::task<bool> handle(fb::socket<fb::gateway::session>& session, gateway_reqs::endpoint& request) override;
 };
 
 } // namespace fb::gateway::handler::protocol

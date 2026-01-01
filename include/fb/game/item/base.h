@@ -44,6 +44,7 @@ public:
 
 public:
     using nullable_time = std::optional<fb::model::datetime>;
+    using map_ptr_t     = std::shared_ptr<fb::game::map>;
 
 protected:
     uint16_t                _count        = 0;
@@ -56,7 +57,9 @@ public:
     listener_t& listener;
 
 public:
-    item(fb::game::server& server, const fb::model::item& model, const initial_params& params = initial_params{.count = 1});
+    item(fb::game::server&      server,
+         const fb::model::item& model,
+         const initial_params&  params = initial_params{.count = 1});
     item(const item& right);
     virtual ~item();
 
@@ -82,8 +85,10 @@ public:
     virtual bool                            active();
     virtual std::shared_ptr<fb::game::item> split(uint16_t count = 1);
     virtual void                            merge(std::shared_ptr<fb::game::item> item);
-    virtual async::task<bool>
-    map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT, bool notify = true) override;
+    virtual async::task<bool>               map(map_ptr_t                   map,
+                                                const fb::model::point16_t& position,
+                                                DESTROY_TYPE                destroy_type = DESTROY_TYPE::DEFAULT,
+                                                bool                        notify       = true) override;
 
 public:
     void container(fb::game::items* container);

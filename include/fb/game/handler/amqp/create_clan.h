@@ -22,4 +22,3 @@ public:
 } // namespace fb::game::handler::amqp
 
 #endif // FB_GAME_HANDLER_AMQP_CREATE_CLAN_H
-

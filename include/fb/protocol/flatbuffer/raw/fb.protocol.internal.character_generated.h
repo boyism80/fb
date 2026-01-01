@@ -92,14 +92,14 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint16_t color() const {
     return GetField<uint16_t>(VT_COLOR, 0);
   }
-  uint16_t sex() const {
-    return GetField<uint16_t>(VT_SEX, 0);
+  uint8_t sex() const {
+    return GetField<uint8_t>(VT_SEX, 0);
   }
-  uint16_t nation() const {
-    return GetField<uint16_t>(VT_NATION, 0);
+  uint8_t nation() const {
+    return GetField<uint8_t>(VT_NATION, 0);
   }
-  const nullable::nullable_ushort *creature() const {
-    return GetPointer<const nullable::nullable_ushort *>(VT_CREATURE);
+  uint8_t creature() const {
+    return GetField<uint8_t>(VT_CREATURE, 0);
   }
   uint32_t map() const {
     return GetField<uint32_t>(VT_MAP, 0);
@@ -203,10 +203,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
            VerifyField<uint16_t>(verifier, VT_LOOK, 2) &&
            VerifyField<uint16_t>(verifier, VT_COLOR, 2) &&
-           VerifyField<uint16_t>(verifier, VT_SEX, 2) &&
-           VerifyField<uint16_t>(verifier, VT_NATION, 2) &&
-           VerifyOffset(verifier, VT_CREATURE) &&
-           verifier.VerifyTable(creature()) &&
+           VerifyField<uint8_t>(verifier, VT_SEX, 1) &&
+           VerifyField<uint8_t>(verifier, VT_NATION, 1) &&
+           VerifyField<uint8_t>(verifier, VT_CREATURE, 1) &&
            VerifyField<uint32_t>(verifier, VT_MAP, 4) &&
            VerifyOffset(verifier, VT_POSITION) &&
            verifier.VerifyTable(position()) &&
@@ -282,14 +281,14 @@ struct CharacterBuilder {
   void add_color(uint16_t color) {
     fbb_.AddElement<uint16_t>(Character::VT_COLOR, color, 0);
   }
-  void add_sex(uint16_t sex) {
-    fbb_.AddElement<uint16_t>(Character::VT_SEX, sex, 0);
+  void add_sex(uint8_t sex) {
+    fbb_.AddElement<uint8_t>(Character::VT_SEX, sex, 0);
   }
-  void add_nation(uint16_t nation) {
-    fbb_.AddElement<uint16_t>(Character::VT_NATION, nation, 0);
+  void add_nation(uint8_t nation) {
+    fbb_.AddElement<uint8_t>(Character::VT_NATION, nation, 0);
   }
-  void add_creature(::flatbuffers::Offset<nullable::nullable_ushort> creature) {
-    fbb_.AddOffset(Character::VT_CREATURE, creature);
+  void add_creature(uint8_t creature) {
+    fbb_.AddElement<uint8_t>(Character::VT_CREATURE, creature, 0);
   }
   void add_map(uint32_t map) {
     fbb_.AddElement<uint32_t>(Character::VT_MAP, map, 0);
@@ -401,9 +400,9 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     uint8_t role = 0,
     uint16_t look = 0,
     uint16_t color = 0,
-    uint16_t sex = 0,
-    uint16_t nation = 0,
-    ::flatbuffers::Offset<nullable::nullable_ushort> creature = 0,
+    uint8_t sex = 0,
+    uint8_t nation = 0,
+    uint8_t creature = 0,
     uint32_t map = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Position> position = 0,
     uint8_t direction = 0,
@@ -460,13 +459,10 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_exp(exp);
   builder_.add_position(position);
   builder_.add_map(map);
-  builder_.add_creature(creature);
   builder_.add_birth(birth);
   builder_.add_pw(pw);
   builder_.add_name(name);
   builder_.add_id(id);
-  builder_.add_nation(nation);
-  builder_.add_sex(sex);
   builder_.add_color(color);
   builder_.add_look(look);
   builder_.add_level(level);
@@ -474,6 +470,9 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_class_type(class_type);
   builder_.add_state(state);
   builder_.add_direction(direction);
+  builder_.add_creature(creature);
+  builder_.add_nation(nation);
+  builder_.add_sex(sex);
   builder_.add_role(role);
   return builder_.Finish();
 }
@@ -487,9 +486,9 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     uint8_t role = 0,
     uint16_t look = 0,
     uint16_t color = 0,
-    uint16_t sex = 0,
-    uint16_t nation = 0,
-    ::flatbuffers::Offset<nullable::nullable_ushort> creature = 0,
+    uint8_t sex = 0,
+    uint8_t nation = 0,
+    uint8_t creature = 0,
     uint32_t map = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Position> position = 0,
     uint8_t direction = 0,

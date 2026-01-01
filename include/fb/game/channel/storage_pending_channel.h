@@ -15,24 +15,21 @@ class storage_box;
 
 class storage_pending_channel
 {
+    using pending_map = std::unordered_map<std::string, storage_box::pending_box>;
+
 private:
-    server&                                                               _owner;
-    fb::locker<std::unordered_map<std::string, storage_box::pending_box>> _data;
+    server&                 _owner;
+    fb::locker<pending_map> _data;
 
 public:
     explicit storage_pending_channel(server& owner);
 
-    [[nodiscard]] async::task<void> fetch();
-    void                            read(std::function<void(const std::unordered_map<std::string, storage_box::pending_box>&)> fn);
-    [[nodiscard]] async::task<void> read_async(std::function<async::task<void>(const std::unordered_map<std::string, storage_box::pending_box>&)> fn);
-    void                            write(std::function<void(std::unordered_map<std::string, storage_box::pending_box>&)> fn);
+    async::task<void> fetch();
+    void              read(std::function<void(const pending_map&)> fn);
+    async::task<void> read_async(std::function<async::task<void>(const pending_map&)> fn);
+    void              write(std::function<void(pending_map&)> fn);
 };
 
 } // namespace fb::game
 
 #endif // FB_GAME_CHANNEL_STORAGE_PENDING_CHANNEL_H
-
-
-
-
-

@@ -30,9 +30,9 @@ table Character {
     role: ubyte;
     look: ushort;
     color: ushort;
-    sex: ushort;
-    nation: ushort;
-    creature: ushort?;
+    sex: ubyte;
+    nation: ubyte;
+    creature: ubyte;
     map: uint;
     position: Position;
     direction: ubyte;
