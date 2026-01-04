@@ -77,7 +77,7 @@ table Init {
 table MakeCharacter {
   uid: uint;
   hair: ushort;
-  sex: ubyte;
+  gender: ubyte;
   nation: ubyte;
   creature: ubyte;
 }

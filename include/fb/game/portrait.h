@@ -25,7 +25,7 @@ public:
 class character_portrait : public portrait
 {
 public:
-    SEX                     sex          = SEX::MAN;
+    GENDER                  gender       = GENDER::MAN;
     STATE                   state        = STATE::NORMAL;
     uint16_t                hair         = 0;
     uint8_t                 hair_color   = 0;
@@ -39,7 +39,7 @@ public:
 
 public:
     character_portrait() = default;
-    character_portrait(SEX                     sex,
+    character_portrait(GENDER                  gender,
                        STATE                   state,
                        uint16_t                hair,
                        uint8_t                 hair_color,

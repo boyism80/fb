@@ -37,7 +37,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ROLE = 12,
     VT_LOOK = 14,
     VT_COLOR = 16,
-    VT_SEX = 18,
+    VT_GENDER = 18,
     VT_NATION = 20,
     VT_CREATURE = 22,
     VT_MAP = 24,
@@ -92,8 +92,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint16_t color() const {
     return GetField<uint16_t>(VT_COLOR, 0);
   }
-  uint8_t sex() const {
-    return GetField<uint8_t>(VT_SEX, 0);
+  uint8_t gender() const {
+    return GetField<uint8_t>(VT_GENDER, 0);
   }
   uint8_t nation() const {
     return GetField<uint8_t>(VT_NATION, 0);
@@ -203,7 +203,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
            VerifyField<uint16_t>(verifier, VT_LOOK, 2) &&
            VerifyField<uint16_t>(verifier, VT_COLOR, 2) &&
-           VerifyField<uint8_t>(verifier, VT_SEX, 1) &&
+           VerifyField<uint8_t>(verifier, VT_GENDER, 1) &&
            VerifyField<uint8_t>(verifier, VT_NATION, 1) &&
            VerifyField<uint8_t>(verifier, VT_CREATURE, 1) &&
            VerifyField<uint32_t>(verifier, VT_MAP, 4) &&
@@ -281,8 +281,8 @@ struct CharacterBuilder {
   void add_color(uint16_t color) {
     fbb_.AddElement<uint16_t>(Character::VT_COLOR, color, 0);
   }
-  void add_sex(uint8_t sex) {
-    fbb_.AddElement<uint8_t>(Character::VT_SEX, sex, 0);
+  void add_gender(uint8_t gender) {
+    fbb_.AddElement<uint8_t>(Character::VT_GENDER, gender, 0);
   }
   void add_nation(uint8_t nation) {
     fbb_.AddElement<uint8_t>(Character::VT_NATION, nation, 0);
@@ -400,7 +400,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     uint8_t role = 0,
     uint16_t look = 0,
     uint16_t color = 0,
-    uint8_t sex = 0,
+    uint8_t gender = 0,
     uint8_t nation = 0,
     uint8_t creature = 0,
     uint32_t map = 0,
@@ -472,7 +472,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_direction(direction);
   builder_.add_creature(creature);
   builder_.add_nation(nation);
-  builder_.add_sex(sex);
+  builder_.add_gender(gender);
   builder_.add_role(role);
   return builder_.Finish();
 }
@@ -486,7 +486,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     uint8_t role = 0,
     uint16_t look = 0,
     uint16_t color = 0,
-    uint8_t sex = 0,
+    uint8_t gender = 0,
     uint8_t nation = 0,
     uint8_t creature = 0,
     uint32_t map = 0,
@@ -535,7 +535,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       role,
       look,
       color,
-      sex,
+      gender,
       nation,
       creature,
       map,

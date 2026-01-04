@@ -268,8 +268,8 @@ namespace Fb.Model.EnumValue
         Exp = 2, 
         [EnumMember(Value = "level")]
         Level = 3, 
-        [EnumMember(Value = "sex")]
-        Sex = 4, 
+        [EnumMember(Value = "gender")]
+        Gender = 4, 
         [EnumMember(Value = "strength")]
         Strength = 5, 
         [EnumMember(Value = "intelligence")]
@@ -779,7 +779,7 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum Sex
+    public enum Gender
     {
         [EnumMember(Value = "MAN")]
         Man = 0, 
@@ -1430,8 +1430,8 @@ namespace Fb.Model
     {
         [JsonProperty("id")]
         public uint Id { get; set; }
-        [JsonProperty("sex")]
-        public Fb.Model.EnumValue.Sex Sex { get; set; }
+        [JsonProperty("gender")]
+        public Fb.Model.EnumValue.Gender Gender { get; set; }
         [JsonProperty("hair")]
         public ushort Hair { get; set; }
         [JsonProperty("hair_color")]
@@ -2110,16 +2110,16 @@ namespace Fb.Model
                 };
             }
         }
-        public class Sex
+        public class Gender
         {
             [JsonProperty("value")]
-            public Fb.Model.EnumValue.Sex Value { get; set; }
+            public Fb.Model.EnumValue.Gender Value { get; set; }
 
-            public static Sex Parse(object[] parameters)
+            public static Gender Parse(object[] parameters)
             {
-                return new Sex
+                return new Gender
                 {
-                    Value = (Fb.Model.EnumValue.Sex)Enum.Parse(typeof(Fb.Model.EnumValue.Sex), parameters[0].ToString())
+                    Value = (Fb.Model.EnumValue.Gender)Enum.Parse(typeof(Fb.Model.EnumValue.Gender), parameters[0].ToString())
                 };
             }
 
@@ -2127,7 +2127,7 @@ namespace Fb.Model
             {
                 return new Dsl
                 {
-                    Header = Fb.Model.EnumValue.Dsl.Sex,
+                    Header = Fb.Model.EnumValue.Dsl.Gender,
                     Params = new object[] {Value}
                 };
             }

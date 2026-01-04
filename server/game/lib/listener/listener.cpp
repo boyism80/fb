@@ -17,7 +17,7 @@ void listener_impl::send_update_preset(object& obj, const fb::model::preset& pre
                                                          .direction   = obj.direction(),
                                                          .head_marker = HEAD_MARKER::NONE,
                                                          .name        = obj.name(),
-                                                         .portrait    = character_portrait(preset.sex,
+                                                         .portrait    = character_portrait(preset.gender,
                                                                                         preset.state,
                                                                                         preset.hair,
                                                                                         preset.hair_color,

@@ -4,7 +4,7 @@
 using namespace fb::game;
 using table = fb::model::table;
 
-character_portrait::character_portrait(SEX                     sex,
+character_portrait::character_portrait(GENDER                  gender,
                                        STATE                   state,
                                        uint16_t                hair,
                                        uint8_t                 hair_color,
@@ -15,7 +15,7 @@ character_portrait::character_portrait(SEX                     sex,
                                        std::optional<uint8_t>  shield,
                                        std::optional<uint8_t>  shield_color,
                                        std::optional<uint16_t> disguise) :
-    sex(sex),
+    gender(gender),
     state(state),
     hair(hair),
     hair_color(hair_color),
@@ -29,7 +29,7 @@ character_portrait::character_portrait(SEX                     sex,
 { }
 
 character_portrait::character_portrait(const character_portrait& right) :
-    sex(right.sex),
+    gender(right.gender),
     state(right.state),
     hair(right.hair),
     hair_color(right.hair_color),
@@ -46,11 +46,11 @@ void character_portrait::serialize(fb::stream_writer<big_endian>& writer) const
 {
     writer.write<uint8_t>(0x01);
     writer.write<uint8_t>(0x00);
-    writer.write<uint8_t>(static_cast<uint8_t>(this->sex));
+    writer.write<uint8_t>(static_cast<uint8_t>(this->gender));
     writer.write<uint8_t>(static_cast<uint8_t>(this->state));
     writer.write<uint16_t>(this->hair);
     writer.write<uint8_t>(this->hair_color);
-    writer.write<uint8_t>(this->armor.value_or(static_cast<uint8_t>(this->sex)));
+    writer.write<uint8_t>(this->armor.value_or(static_cast<uint8_t>(this->gender)));
     writer.write<uint8_t>(this->armor_color.value_or(0x00));
     writer.write<uint16_t>(this->weapon.value_or(0xFFFF));
     writer.write<uint8_t>(this->weapon_color.value_or(0x00));
@@ -91,7 +91,7 @@ std::unique_ptr<portrait> portrait_factory::create(const fb::model::object& obj)
         {
             auto& preset      = table::preset[npc_model.preset.value()];
             auto  ptr         = new character_portrait();
-            ptr->sex          = preset.sex;
+            ptr->gender       = preset.gender;
             ptr->state        = preset.state;
             ptr->hair         = preset.hair;
             ptr->hair_color   = preset.hair_color;
@@ -130,7 +130,7 @@ std::unique_ptr<portrait> portrait_factory::create(const fb::game::object& obj)
     {
         auto& ch        = static_cast<const fb::game::character&>(obj);
         auto  ptr       = new character_portrait();
-        ptr->sex        = ch.sex();
+        ptr->gender     = ch.gender();
         ptr->state      = ch.state();
         ptr->hair       = ch.look();
         ptr->hair_color = ch.color();

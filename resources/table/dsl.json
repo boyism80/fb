@@ -57,11 +57,11 @@
             "default": null
         }
     ],
-    "sex": [
+    "gender": [
         {
             "name": "value",
-            "type": "SEX",
-            "desc": "sex type"
+            "type": "GENDER",
+            "desc": "gender type"
         }
     ],
     "strength": [

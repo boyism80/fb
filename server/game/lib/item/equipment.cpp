@@ -92,10 +92,10 @@ bool fb::game::equipment::active()
         }
         break;
 
-        case DSL::sex:
+        case DSL::gender:
         {
-            auto params = fb::model::dsl::sex(dsl.params);
-            if (owner->sex() != params.value)
+            auto params = fb::model::dsl::gender(dsl.params);
+            if (owner->gender() != params.value)
                 throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_CANNOT_EQUIP));
         }
         break;

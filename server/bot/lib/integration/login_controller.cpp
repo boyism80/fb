@@ -59,14 +59,14 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
             std::mt19937       gen(rd());
 
             uint8_t hair     = std::uniform_int_distribution<>(0, 101)(gen);
-            uint8_t sex      = std::uniform_int_distribution<>(0, 1)(gen);
+            uint8_t gender   = std::uniform_int_distribution<>(0, 1)(gen);
             uint8_t nation   = std::uniform_int_distribution<>(0, 1)(gen);
             uint8_t creature = std::uniform_int_distribution<>(0, 3)(gen);
 
             while (true)
             {
                 auto&& resp = co_await bot.request<login_resp::message>(
-                    fb::protocol::login::request::complete{hair, sex, nation, creature});
+                    fb::protocol::login::request::complete{hair, gender, nation, creature});
 
                 if (resp.type == 0x00)
                     break;

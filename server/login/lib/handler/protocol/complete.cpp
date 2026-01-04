@@ -25,7 +25,7 @@ async::task<bool> complete::handle(fb::socket<fb::login::session>&         sessi
                                                           "/account/make",
                                                           internal_reqs::MakeCharacter{session_data->pk,
                                                                                        request.hair,
-                                                                                       request.sex,
+                                                                                       request.gender,
                                                                                        request.nation,
                                                                                        request.creature});
         co_await this->server.threads.switching(weak);

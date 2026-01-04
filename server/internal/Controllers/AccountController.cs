@@ -212,7 +212,7 @@ namespace Internal.Controllers
                     throw new Exception($"user {request.Uid} not found");
 
                 ch.Look = request.Hair;
-                ch.Sex = request.Sex;
+                ch.Gender = request.Gender;
                 ch.Nation = request.Nation;
                 ch.Creature = request.Creature;
                 _dbContext.Character.Set(ch);

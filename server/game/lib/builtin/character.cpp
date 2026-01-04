@@ -11,7 +11,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"uid",                    builtin::character::builtin_uid},
 {"look",                   builtin::character::builtin_look},
 {"color",                  builtin::character::builtin_color},
-{"sex",                    builtin::character::builtin_sex},
+{"gender",                 builtin::character::builtin_sex},
 {"money",                  builtin::character::builtin_money},
 {"exp",                    builtin::character::builtin_exp},
 {"item",                   builtin::character::builtin_item},
@@ -195,19 +195,19 @@ int builtin::character::builtin_sex(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto sex = ch->sex();
+            auto gender = ch->gender();
             return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(sex);
+                lua->pushinteger(gender);
                 return 1;
             });
         });
     }
     else
     {
-        auto sex  = static_cast<SEX>(lua->tointeger(2));
-        auto weak = ch->weak_from_this_as<fb::game::character>();
+        auto gender = static_cast<GENDER>(lua->tointeger(2));
+        auto weak   = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->sex(sex);
+            ch->gender(gender);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
@@ -2951,9 +2951,9 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     else if (lua->is_table(2))
     {
         portrait = new fb::game::character_portrait();
-        lua->pushstring("sex");
+        lua->pushstring("gender");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            portrait->sex = static_cast<SEX>(lua->tointeger(-1));
+            portrait->gender = static_cast<GENDER>(lua->tointeger(-1));
 
         lua->pushstring("state");
         if (lua_rawget(L, 2) == LUA_TNUMBER)

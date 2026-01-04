@@ -326,12 +326,12 @@ void game_bot::set_disguised(uint8_t value)
     this->_disguised = value;
 }
 
-SEX game_bot::sex() const
+GENDER game_bot::gender() const
 {
     return this->_sex;
 }
 
-void game_bot::set_sex(SEX value)
+void game_bot::set_sex(GENDER value)
 {
     this->_sex = value;
 }
@@ -608,13 +608,13 @@ async::task<void> game_bot::change_int(uint8_t intelligence, std::chrono::millis
         timeout);
 }
 
-async::task<void> game_bot::change_sex(SEX sex, std::chrono::milliseconds timeout)
+async::task<void> game_bot::change_sex(GENDER gender, std::chrono::milliseconds timeout)
 {
-    auto command = std::format("/성별바꾸기 {}", (uint8_t)sex);
+    auto command = std::format("/성별바꾸기 {}", (uint8_t)gender);
     std::ignore  = co_await this->request<game_resp::update_external<true>>(
         game_reqs::chat{false, command},
-        [sex](auto& resp) -> bool {
-            return resp.sex == sex;
+        [gender](auto& resp) -> bool {
+            return resp.gender == gender;
         },
         timeout);
 }
@@ -1443,13 +1443,13 @@ async::task<void> game_bot::reverse_condition(const std::vector<fb::model::dsl>&
     {
         switch (condition.header)
         {
-        case fb::model::enum_value::DSL::sex:
+        case fb::model::enum_value::DSL::gender:
         {
-            auto params = dsl::sex(condition.params);
-            if (params.value == SEX::MAN)
-                co_await this->change_sex(SEX::WOMAN, timeout);
+            auto params = dsl::gender(condition.params);
+            if (params.value == GENDER::MAN)
+                co_await this->change_sex(GENDER::WOMAN, timeout);
             else
-                co_await this->change_sex(SEX::MAN, timeout);
+                co_await this->change_sex(GENDER::MAN, timeout);
         }
         break;
 
@@ -1502,9 +1502,9 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
     {
         switch (condition.header)
         {
-        case fb::model::enum_value::DSL::sex:
+        case fb::model::enum_value::DSL::gender:
         {
-            auto params = dsl::sex(condition.params);
+            auto params = dsl::gender(condition.params);
             co_await this->change_sex(params.value, timeout);
         }
         break;
