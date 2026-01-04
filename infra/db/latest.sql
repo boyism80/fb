@@ -477,7 +477,7 @@ CREATE TABLE `user` (
   `role` smallint unsigned NOT NULL DEFAULT '0',
   `look` smallint unsigned NOT NULL DEFAULT '0',
   `color` tinyint unsigned NOT NULL DEFAULT '0',
-  `sex` tinyint unsigned NOT NULL DEFAULT '0',
+  `gender` tinyint unsigned NOT NULL DEFAULT '0',
   `nation` smallint unsigned NOT NULL DEFAULT '0',
   `creature` smallint unsigned DEFAULT NULL,
   `map` smallint unsigned NOT NULL DEFAULT '0',

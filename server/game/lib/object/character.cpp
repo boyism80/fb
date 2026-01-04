@@ -27,7 +27,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     listener(server.listener), id(params.id), _socket(params.socket), _pw(params.pw),
     _created_date(params.created_date), _updated_date(params.updated_date), _name(params.name), _role(params.role),
     _birthday(params.birthday), _look(params.look), _color(params.color), _armor_color(params.armor_color),
-    _experience(params.exp), _sex(params.sex), _state(params.state), _level(params.level), _class(params.class_type),
+    _experience(params.exp), _sex(params.gender), _state(params.state), _level(params.level), _class(params.class_type),
     _promotion(params.promotion), _money(params.money), _disguise(params.disguise), _title(params.title),
     _nation(params.nation), _creature(params.creature), _last_afk_time(fb::model::datetime())
 { }
@@ -471,14 +471,14 @@ bool character::max_level() const
     return table::ability[this->_class].contains(this->_level + 1) == false;
 }
 
-SEX character::sex() const
+GENDER character::gender() const
 {
     this->assert_thread();
 
     return this->_sex;
 }
 
-void character::sex(SEX value)
+void character::gender(GENDER value)
 {
     this->assert_thread();
 
@@ -1148,9 +1148,9 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
         }
         break;
 
-        case DSL::sex:
+        case DSL::gender:
         {
-            auto params = fb::model::dsl::sex(dsl.params);
+            auto params = fb::model::dsl::gender(dsl.params);
             if (ENUM_IN(params.value, this->_sex) == false)
                 return false;
         }
@@ -1369,7 +1369,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.role             = static_cast<uint8_t>(this->_role);
     dto.look             = this->_look;
     dto.color            = this->_color;
-    dto.sex              = static_cast<uint8_t>(this->_sex);
+    dto.gender           = static_cast<uint8_t>(this->_sex);
     dto.nation           = static_cast<uint8_t>(this->_nation);
     dto.creature         = static_cast<uint8_t>(this->_creature);
     dto.map              = this->_map != nullptr ? this->_map->model.id : 0;

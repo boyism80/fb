@@ -108,7 +108,7 @@ private:
     uint8_t                         _mail_count    = 0;
     uint8_t                         _fast_move     = 0;
     uint8_t                         _disguised     = 0;
-    SEX                             _sex           = SEX::MAN;
+    GENDER                          _sex           = GENDER::MAN;
     STATE                           _state         = STATE::NORMAL;
     uint8_t                         _armor_dress   = 0;
     uint8_t                         _armor_color   = 0;
@@ -210,8 +210,8 @@ public:
     void               set_fast_move(uint8_t value);
     uint8_t            disguised() const;
     void               set_disguised(uint8_t value);
-    SEX                sex() const;
-    void               set_sex(SEX value);
+    GENDER             gender() const;
+    void               set_sex(GENDER value);
     STATE              state() const;
     void               set_state(STATE value);
     uint8_t            armor_dress() const;
@@ -250,7 +250,7 @@ public:
     async::task<void>  change_dex(uint8_t dex, std::chrono::milliseconds timeout);
     async::task<void>  change_int(uint8_t intelligence, std::chrono::milliseconds timeout);
 
-    async::task<void> change_sex(SEX sex, std::chrono::milliseconds timeout);
+    async::task<void> change_sex(GENDER gender, std::chrono::milliseconds timeout);
     async::task<void> change_base_hp(uint32_t hp, std::chrono::milliseconds timeout);
     async::task<void> change_base_mp(uint32_t mp, std::chrono::milliseconds timeout);
     async::task<void> change_hp(uint32_t hp, std::chrono::milliseconds timeout);

@@ -77,8 +77,8 @@ async::task<void> item_test::on_parallel_scenario_finished(uint32_t id)
     // Reset all stats to 1
     co_await bot->change_stats(1, 1, 1, DEFAULT_TIMEOUT);
 
-    // Reset sex to male
-    co_await bot->change_sex(fb::model::enum_value::SEX::MAN, DEFAULT_TIMEOUT);
+    // Reset gender to male
+    co_await bot->change_sex(fb::model::enum_value::GENDER::MAN, DEFAULT_TIMEOUT);
 
     // Reset base HP and MP to reasonable defaults
     co_await bot->change_base_hp(1000, DEFAULT_TIMEOUT);

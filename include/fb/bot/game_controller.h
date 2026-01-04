@@ -112,7 +112,7 @@ private:
         }
 
         bot.set_disguised(response.disguised);
-        bot.set_sex(response.sex);
+        bot.set_sex(response.gender);
         bot.set_state(response.state);
         bot.set_look(response.look);
         bot.set_color(response.color);

@@ -27,7 +27,7 @@ struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_UID = 4,
     VT_HAIR = 6,
-    VT_SEX = 8,
+    VT_GENDER = 8,
     VT_NATION = 10,
     VT_CREATURE = 12
   };
@@ -37,8 +37,8 @@ struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint16_t hair() const {
     return GetField<uint16_t>(VT_HAIR, 0);
   }
-  uint8_t sex() const {
-    return GetField<uint8_t>(VT_SEX, 0);
+  uint8_t gender() const {
+    return GetField<uint8_t>(VT_GENDER, 0);
   }
   uint8_t nation() const {
     return GetField<uint8_t>(VT_NATION, 0);
@@ -50,7 +50,7 @@ struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
            VerifyField<uint16_t>(verifier, VT_HAIR, 2) &&
-           VerifyField<uint8_t>(verifier, VT_SEX, 1) &&
+           VerifyField<uint8_t>(verifier, VT_GENDER, 1) &&
            VerifyField<uint8_t>(verifier, VT_NATION, 1) &&
            VerifyField<uint8_t>(verifier, VT_CREATURE, 1) &&
            verifier.EndTable();
@@ -67,8 +67,8 @@ struct MakeCharacterBuilder {
   void add_hair(uint16_t hair) {
     fbb_.AddElement<uint16_t>(MakeCharacter::VT_HAIR, hair, 0);
   }
-  void add_sex(uint8_t sex) {
-    fbb_.AddElement<uint8_t>(MakeCharacter::VT_SEX, sex, 0);
+  void add_gender(uint8_t gender) {
+    fbb_.AddElement<uint8_t>(MakeCharacter::VT_GENDER, gender, 0);
   }
   void add_nation(uint8_t nation) {
     fbb_.AddElement<uint8_t>(MakeCharacter::VT_NATION, nation, 0);
@@ -91,7 +91,7 @@ inline ::flatbuffers::Offset<MakeCharacter> CreateMakeCharacter(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t uid = 0,
     uint16_t hair = 0,
-    uint8_t sex = 0,
+    uint8_t gender = 0,
     uint8_t nation = 0,
     uint8_t creature = 0) {
   MakeCharacterBuilder builder_(_fbb);
@@ -99,7 +99,7 @@ inline ::flatbuffers::Offset<MakeCharacter> CreateMakeCharacter(
   builder_.add_hair(hair);
   builder_.add_creature(creature);
   builder_.add_nation(nation);
-  builder_.add_sex(sex);
+  builder_.add_gender(gender);
   return builder_.Finish();
 }
 

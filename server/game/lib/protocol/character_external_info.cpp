@@ -40,7 +40,7 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
 
     auto disguised = (this->ch.state() == STATE::DISGUISE);
     writer.write<uint8_t>(disguised);
-    writer.write<uint8_t>(static_cast<uint8_t>(this->ch.sex()));
+    writer.write<uint8_t>(static_cast<uint8_t>(this->ch.gender()));
     writer.write<uint8_t>(static_cast<uint8_t>(this->ch.state()));
 
     auto armor  = this->ch.items.armor();  // 갑옷
@@ -57,7 +57,7 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
         writer.write<uint8_t>(this->ch.color());
 
         writer.write<uint8_t>(armor != nullptr ? armor->based<fb::model::armor>().dress
-                                               : static_cast<uint8_t>(this->ch.sex()));
+                                               : static_cast<uint8_t>(this->ch.gender()));
         writer.write<uint8_t>(this->ch.armor_color().value_or(0x00));
 
         writer.write<uint16_t>(weapon != nullptr ? weapon->based<fb::model::weapon>().dress : 0xFFFF);
@@ -127,7 +127,7 @@ async::task<void> external_info::deserialize(fb::stream_reader<big_endian>& read
     this->name       = reader.read<std::string, uint8_t>();
 
     this->disguised = reader.read<uint8_t>();
-    this->sex       = reader.read<uint8_t>();
+    this->gender    = reader.read<uint8_t>();
     this->state     = reader.read<uint8_t>();
 
     this->look  = reader.read<uint16_t>();

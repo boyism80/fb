@@ -35,7 +35,7 @@ struct preset_serializer
 
         writer.write<uint32_t>(this->oid);
         writer.write<uint8_t>(this->portrait.state == STATE::DISGUISE);
-        writer.write<uint8_t>(static_cast<uint8_t>(this->portrait.sex));
+        writer.write<uint8_t>(static_cast<uint8_t>(this->portrait.gender));
         writer.write<uint8_t>(static_cast<uint8_t>(this->portrait.state));
         if (this->portrait.state == STATE::DISGUISE)
         {
@@ -54,7 +54,7 @@ struct preset_serializer
             }
             else
             {
-                writer.write<uint8_t>(static_cast<uint8_t>(this->portrait.sex));
+                writer.write<uint8_t>(static_cast<uint8_t>(this->portrait.gender));
                 writer.write<uint8_t>(0x00);
             }
 
@@ -103,7 +103,7 @@ public:
     uint8_t     direction;
     uint32_t    oid;
     uint8_t     disguised;
-    SEX         sex;
+    GENDER      gender;
     STATE       state;
     uint16_t    look;
     uint8_t     color;
@@ -125,7 +125,7 @@ public:
                                            .direction   = ch.direction(),
                                            .head_marker = head_marker(ch, to),
                                            .name        = ch.name(),
-                                           .portrait    = character_portrait(ch.sex(),
+                                           .portrait    = character_portrait(ch.gender(),
                                                                           ch.state(),
                                                                           ch.look(),
                                                                           ch.color(),
@@ -211,7 +211,7 @@ public:
 
         this->oid       = reader.read<uint32_t>();
         this->disguised = reader.read<uint8_t>();
-        this->sex       = static_cast<SEX>(reader.read<uint8_t>());
+        this->gender    = static_cast<GENDER>(reader.read<uint8_t>());
         this->state     = static_cast<STATE>(reader.read<uint8_t>());
 
         if (this->disguised)

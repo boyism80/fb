@@ -45,7 +45,7 @@ globs: ["wiki/**/*.md"]
 - **Default values**: Check for default values and document them. Mark optional parameters with brackets `[parameter]` in function signatures
 - **IMPLEMENTATION VALIDATION**: Every parameter type, count, and behavior MUST match the actual C++ implementation exactly
 - **Enum Type Documentation**: When documenting parameters that use enum types:
-  - ALWAYS use the actual enum type name from C++ implementation (e.g., `SEX`, `STATE`, `CLASS`)
+  - ALWAYS use the actual enum type name from C++ implementation (e.g., `GENDER`, `STATE`, `CLASS`)
   - NEVER use generic `number` type for enum parameters
   - Include example enum values in parentheses after the type
   - Format: `parameter:ENUM_TYPE: Description (ENUM_VALUE_1, ENUM_VALUE_2)`

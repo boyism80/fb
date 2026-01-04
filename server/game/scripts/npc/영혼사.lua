@@ -139,7 +139,7 @@ function NPC_28(me, npc)
             local portrait = {
                 ['hair'] = hair,
                 ['hair_color'] = me:color(),
-                ['sex'] = me:sex()
+                ['gender'] = me:gender()
             }
 
             local equipments = me:equipments()
@@ -261,10 +261,10 @@ function NPC_28(me, npc)
             return
         end
 
-        local sex = me:sex()
+        local gender = me:gender()
         local sex_from = nil
         local sex_to = nil
-        if sex == SEX.MAN then
+        if gender == SEX.MAN then
             sex_from = '남자'
             sex_to = '여자'
         else
@@ -286,10 +286,10 @@ function NPC_28(me, npc)
         end
 
         me:money(money - price)
-        if sex == SEX.MAN then
-            me:sex(SEX.WOMAN)
+        if gender == SEX.MAN then
+            me:gender(SEX.WOMAN)
         else
-            me:sex(SEX.MAN)
+            me:gender(SEX.MAN)
         end
         button = me:dialog(npc, string.format('자네 지금부터는 %s 되었네. %s용 의복을 갖추고 있는지는 몰라도, 하여간 자네는 이제 %s의 몸을 갖게 되었으니 그렇게 알고 돌아고도록 하게.', sex_to, sex_from, sex_to), false, true)
         if button == DIALOG_RESULT.QUIT then

@@ -215,7 +215,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     params.direction    = static_cast<DIRECTION>(resp.character.direction);
     params.look         = resp.character.look;
     params.money        = resp.character.money;
-    params.sex          = static_cast<SEX>(resp.character.sex);
+    params.gender       = static_cast<GENDER>(resp.character.gender);
     params.level        = resp.character.level;
     params.exp          = resp.character.exp;
     params.state        = static_cast<STATE>(resp.character.state);

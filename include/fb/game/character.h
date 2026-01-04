@@ -61,7 +61,7 @@ private:
     uint32_t                  _experience    = 0;
     NATION                    _nation        = NATION::GOGURYEO;
     CREATURE                  _creature      = CREATURE::DRAGON;
-    SEX                       _sex           = SEX::MAN;
+    GENDER                    _sex           = GENDER::MAN;
     STATE                     _state         = STATE::NORMAL;
     uint8_t                   _level         = 1;
     CLASS                     _class         = CLASS::NONE;
@@ -116,7 +116,7 @@ public:
         DIRECTION                              direction  = DIRECTION::BOTTOM;
         uint16_t                               look       = 0;
         uint32_t                               money      = 0;
-        SEX                                    sex        = SEX::MAN;
+        GENDER                                 gender     = GENDER::MAN;
         uint8_t                                level      = 1;
         uint32_t                               exp        = 0;
         STATE                                  state      = STATE::NORMAL;
@@ -181,8 +181,8 @@ public:
     void                                               level(uint8_t value);
     bool                                               level_up();
     bool                                               max_level() const;
-    SEX                                                sex() const;
-    void                                               sex(SEX value);
+    GENDER                                             gender() const;
+    void                                               gender(GENDER value);
     STATE                                              state() const;
     STATE                                              state_to(const fb::game::object& to) const;
     void                                               state(STATE value);

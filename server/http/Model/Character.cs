@@ -18,7 +18,7 @@ namespace Http.Model
         public Fb.Model.EnumValue.Role Role { get; set; }
         public ushort Look { get; set; }
         public byte Color { get; set; }
-        public byte Sex { get; set; }
+        public byte Gender { get; set; }
         public byte Nation { get; set; }
         public byte? Creature { get; set; }
         public uint Map { get; set; }

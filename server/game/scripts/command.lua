@@ -1101,10 +1101,10 @@ command_funcs = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 성별 변경',
         ['command'] = function (me, args)
-            if me:sex() == SEX.MAN then
-                me:sex(SEX.WOMAN)
+            if me:gender() == GENDER.MAN then
+                me:gender(GENDER.WOMAN)
             else
-                me:sex(SEX.MAN)
+                me:gender(GENDER.MAN)
             end
             return true
         end,
@@ -1114,18 +1114,18 @@ command_funcs = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<성별> - 성별 변경',
         ['command'] = function (me, args)
-            local sex = table.unpack(args)
-            if not sex then
+            local gender = table.unpack(args)
+            if not gender then
                 me:message("사용법: /성별바꾸기 <성별>")
                 return true
             end
 
-            sex = tonumber(sex)
-            if not sex or sex < 0 or sex > 1 then
+            gender = tonumber(gender)
+            if not gender or gender < 0 or gender > 1 then
                 me:message("성별은 0 또는 1이어야 합니다.")
                 return true
             end
-            me:sex(sex)
+            me:gender(gender)
             return true
         end,
     },

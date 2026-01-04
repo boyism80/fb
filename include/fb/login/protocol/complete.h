@@ -16,12 +16,12 @@ public:
 public:
 #ifndef BOT
     uint8_t hair;
-    uint8_t sex;
+    uint8_t gender;
     uint8_t nation;
     uint8_t creature;
 #else
     const uint8_t hair;
-    const uint8_t sex;
+    const uint8_t gender;
     const uint8_t nation;
     const uint8_t creature;
 #endif
@@ -30,7 +30,7 @@ public:
 #ifndef BOT
     complete() = default;
 #else
-    complete(uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
+    complete(uint8_t hair, uint8_t gender, uint8_t nation, uint8_t creature);
 #endif
 
 public:

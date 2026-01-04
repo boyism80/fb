@@ -43,7 +43,7 @@ public:
     std::string class_name;
     std::string name;
     uint8_t     disguised;
-    uint8_t     sex;
+    uint8_t     gender;
     uint8_t     state;
     uint16_t    look;
     uint8_t     color;
