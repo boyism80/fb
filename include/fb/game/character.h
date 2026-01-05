@@ -61,7 +61,7 @@ private:
     uint32_t                  _experience    = 0;
     NATION                    _nation        = NATION::GOGURYEO;
     CREATURE                  _creature      = CREATURE::DRAGON;
-    GENDER                    _sex           = GENDER::MAN;
+    GENDER                    _gender        = GENDER::MAN;
     STATE                     _state         = STATE::NORMAL;
     uint8_t                   _level         = 1;
     CLASS                     _class         = CLASS::NONE;

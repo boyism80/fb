@@ -262,16 +262,16 @@ function NPC_28(me, npc)
         end
 
         local gender = me:gender()
-        local sex_from = nil
-        local sex_to = nil
+        local gender_from = nil
+        local gender_to = nil
         if gender == SEX.MAN then
-            sex_from = '남자'
-            sex_to = '여자'
+            gender_from = '남자'
+            gender_to = '여자'
         else
-            sex_from = '여자'
-            sex_to = '남자'
+            gender_from = '여자'
+            gender_to = '남자'
         end
-        index, button = me:list(npc, string.format('자네 %s가 되고 싶다는 것이지?', sex_to), {'예', '아니오'})
+        index, button = me:list(npc, string.format('자네 %s가 되고 싶다는 것이지?', gender_to), {'예', '아니오'})
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -291,7 +291,7 @@ function NPC_28(me, npc)
         else
             me:gender(SEX.MAN)
         end
-        button = me:dialog(npc, string.format('자네 지금부터는 %s 되었네. %s용 의복을 갖추고 있는지는 몰라도, 하여간 자네는 이제 %s의 몸을 갖게 되었으니 그렇게 알고 돌아고도록 하게.', sex_to, sex_from, sex_to), false, true)
+        button = me:dialog(npc, string.format('자네 지금부터는 %s 되었네. %s용 의복을 갖추고 있는지는 몰라도, 하여간 자네는 이제 %s의 몸을 갖게 되었으니 그렇게 알고 돌아고도록 하게.', gender_to, gender_from, gender_to), false, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end

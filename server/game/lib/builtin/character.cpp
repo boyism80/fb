@@ -11,7 +11,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"uid",                    builtin::character::builtin_uid},
 {"look",                   builtin::character::builtin_look},
 {"color",                  builtin::character::builtin_color},
-{"gender",                 builtin::character::builtin_sex},
+{"gender",                 builtin::character::builtin_gender},
 {"money",                  builtin::character::builtin_money},
 {"exp",                    builtin::character::builtin_exp},
 {"item",                   builtin::character::builtin_item},
@@ -179,7 +179,7 @@ int builtin::character::builtin_color(lua_State* L)
     }
 }
 
-int builtin::character::builtin_sex(lua_State* L)
+int builtin::character::builtin_gender(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

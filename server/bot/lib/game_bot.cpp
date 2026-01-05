@@ -328,12 +328,12 @@ void game_bot::set_disguised(uint8_t value)
 
 GENDER game_bot::gender() const
 {
-    return this->_sex;
+    return this->_gender;
 }
 
-void game_bot::set_sex(GENDER value)
+void game_bot::set_gender(GENDER value)
 {
-    this->_sex = value;
+    this->_gender = value;
 }
 
 STATE game_bot::state() const
@@ -608,7 +608,7 @@ async::task<void> game_bot::change_int(uint8_t intelligence, std::chrono::millis
         timeout);
 }
 
-async::task<void> game_bot::change_sex(GENDER gender, std::chrono::milliseconds timeout)
+async::task<void> game_bot::change_gender(GENDER gender, std::chrono::milliseconds timeout)
 {
     auto command = std::format("/성별바꾸기 {}", (uint8_t)gender);
     std::ignore  = co_await this->request<game_resp::update_external<true>>(
@@ -1447,9 +1447,9 @@ async::task<void> game_bot::reverse_condition(const std::vector<fb::model::dsl>&
         {
             auto params = dsl::gender(condition.params);
             if (params.value == GENDER::MAN)
-                co_await this->change_sex(GENDER::WOMAN, timeout);
+                co_await this->change_gender(GENDER::WOMAN, timeout);
             else
-                co_await this->change_sex(GENDER::MAN, timeout);
+                co_await this->change_gender(GENDER::MAN, timeout);
         }
         break;
 
@@ -1505,7 +1505,7 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
         case fb::model::enum_value::DSL::gender:
         {
             auto params = dsl::gender(condition.params);
-            co_await this->change_sex(params.value, timeout);
+            co_await this->change_gender(params.value, timeout);
         }
         break;
 
