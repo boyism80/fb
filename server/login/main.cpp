@@ -54,6 +54,7 @@ int main(int argc, char** argv)
 #ifdef _WIN32
         ::set_console_icon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
+        fb::model::option::decoding(cp949);
         flatbuffers::option::encoding(utf8);
         flatbuffers::option::decoding(cp949);
 #endif
