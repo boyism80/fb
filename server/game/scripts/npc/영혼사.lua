@@ -195,7 +195,7 @@ function NPC_28(me, npc)
             end
         end
     elseif index == 6 then
-::ROUTINE_CHANGE_SEX.1::
+::ROUTINE_CHANGE_GENDER_1::
         button = me:dialog(npc, '이건 아직 해 줄 수가 없네...', false, true)
         if button == DIALOG_RESULT.QUIT then
             return
@@ -207,7 +207,7 @@ function NPC_28(me, npc)
         end
 
         if button == DIALOG_RESULT.PREV then
-            goto ROUTINE_CHANGE_SEX.1
+            goto ROUTINE_CHANGE_GENDER_1
         end
 
         index, button = me:list(npc, '아니 돌아가라고 하는데, 왜 이렇게 나를 귀찮게 하지? 이것을 꼭 해야 할 사정이 있나? 비용도 만만치 않게 들고, 그리고 실패할 확률도 많은데, 그래도 꼭 해야 되겠나?', {'예', '아니오. 그럼 나중에...'})
