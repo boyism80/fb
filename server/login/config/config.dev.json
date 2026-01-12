@@ -4,10 +4,9 @@
     "ip": "127.0.0.1",
     "port": 3002,
     "transfer delay": 0,
-    "allow other language": false,
-    "forbidden": [],
+    "allow_foreign_name": false,
     "agreement": "안녕하세요",
-    "admin_mode": true,
+    "admin_mode": false,
     "thread": {
         "logic": 12,
         "io": 12,

@@ -677,7 +677,7 @@
                                               Grid.Column="1"
                                               Foreground="{StaticResource MainTextBrush}"
                                               Margin="0 5 0 5"
-                                              IsChecked="{Binding AllowOtherLanguage}" />
+                                              IsChecked="{Binding AllowForeignName}" />
 
                                     <TextBlock Text="관리자 권한"
                                                VerticalAlignment="Center"

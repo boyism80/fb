@@ -191,10 +191,9 @@ if exist "%LOGIN_CONFIG_PATH%" del /f /q "%LOGIN_CONFIG_PATH%"
     echo     "ip": "!IP!",
     echo     "port": 3002,
     echo     "transfer delay": 0,
-    echo     "allow other language": false,
-    echo     "forbidden": [],
+    echo     "allow_foreign_name": false,
     echo     "agreement": "안녕하세요",
-    echo     "admin_mode": true,
+    echo     "admin_mode": false,
     echo     "thread": {
     echo         "logic": 12,
     echo         "io": 12

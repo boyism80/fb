@@ -356,10 +356,10 @@ namespace Runner.ViewModel
             set => Model.AdditionalMP = value;
         }
 
-        public bool AllowOtherLanguage
+        public bool AllowForeignName
         {
-            get => Model.AllowOtherLanguage;
-            set => Model.AllowOtherLanguage = value;
+            get => Model.AllowForeignName;
+            set => Model.AllowForeignName = value;
         }
 
         public bool AdminMode
@@ -727,8 +727,7 @@ namespace Runner.ViewModel
                     conf["ip"] = ExternalIP;
                     conf["port"] = setting.Port;
                     conf["transfer delay"] = 0;
-                    conf["allow other language"] = AllowOtherLanguage;
-                    conf["forbidden"] = new JArray();
+                    conf["allow_foreign_name"] = AllowForeignName;
                     conf["agreement"] = Agreement;
                     conf["admin_mode"] = AdminMode;
                     conf["thread"] = JObject.FromObject(new
