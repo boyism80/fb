@@ -86,6 +86,9 @@ void server::assert_account(const std::string& id, const std::string& pw) const
     if (fb::model::table::blocked_name.contains_substring(id))
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
+    if (fb::model::table::blocked_word.contains_substring(id))
+        throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
+
     // Read character's password
     if (pw.length() < fb::config<int>("pw_size:min") || pw.length() > fb::config<int>("pw_size:max"))
         throw pw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
