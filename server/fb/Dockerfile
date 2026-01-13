@@ -28,7 +28,7 @@ WORKDIR /app/jsoncpp
 RUN git checkout 1.9.6
 WORKDIR /app/jsoncpp/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
-RUN cmake --build . --parallel
+RUN cmake --build . --parallel 32
 RUN make install
 
 WORKDIR /app
@@ -37,14 +37,14 @@ WORKDIR /app/rabbitmq-c
 RUN git checkout v0.14.0
 WORKDIR /app/rabbitmq-c/build
 RUN cmake .. -DENABLE_SSL_SUPPORT=OFF
-RUN cmake --build . --config Release --parallel
+RUN cmake --build . --config Release --parallel 32
 RUN make install
 
 WORKDIR /app
 RUN git clone --recursive https://github.com/boyism80/lua
 WORKDIR /app/lua/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
-RUN cmake --build . --parallel
+RUN cmake --build . --parallel 32
 RUN make install
 
 WORKDIR /app
@@ -53,14 +53,14 @@ WORKDIR /app/zlib
 RUN git checkout v1.2.9
 WORKDIR /app/zlib/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
-RUN cmake --build . --parallel
+RUN cmake --build . --parallel 32
 RUN make install
 
 WORKDIR /app
 RUN git clone https://github.com/boyism80/flatbuffers
 WORKDIR /app/flatbuffers/build
 RUN cmake .. -DFLATBUFFERS_BUILD_FLATC=OFF -DFLATBUFFERS_BUILD_TESTS=OFF
-RUN cmake --build . --config Release --parallel
+RUN cmake --build . --config Release --parallel 32
 RUN make install
 
 WORKDIR /app
@@ -84,7 +84,7 @@ WORKDIR /app/hiredis
 RUN git checkout v1.2.0
 WORKDIR /app/hiredis/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
-RUN cmake --build . --parallel
+RUN cmake --build . --parallel 32
 RUN make install
 
 # fb.lib
@@ -93,7 +93,7 @@ COPY include ./include
 COPY server/fb ./fb
 WORKDIR /app/fb/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} .. 
-RUN cmake --build . --parallel
+RUN cmake --build . --parallel 32
 RUN make install
 
 RUN rm -rf /app
