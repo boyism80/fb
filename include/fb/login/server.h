@@ -93,10 +93,7 @@ class server : public fb::acceptor<fb::login::session>
 {
 private:
     fb::protocol::login::response::agreement _agreement = CP949(fb::config<std::string>("agreement"), PLATFORM::BOTH);
-    std::vector<std::string>                 _forbiddens;
     std::vector<boost::asio::deadline_timer> _timers;
-
-    bool is_forbidden_impl(const std::string& str) const;
 
 public:
     fb::log_collector log;
@@ -108,7 +105,6 @@ public:
     ~server();
 
     const fb::protocol::login::response::agreement& agreement() const;
-    bool                                            is_forbidden(const std::string& str) const;
     void                                            assert_account(const std::string& id, const std::string& pw) const;
 
 protected:

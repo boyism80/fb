@@ -67,7 +67,7 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
     if (stop)
         co_return true;
 
-    auto message = std::string{request.message};
+    auto message = fb::model::table::blocked_word.filter(request.message);
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
     ch->chat(message, type, true);
 

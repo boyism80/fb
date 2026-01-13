@@ -84,7 +84,7 @@ namespace Runner.Model
         public uint AdditionalHP { get; set; } = 10;
         public uint BaseMP { get; set; } = 50;
         public uint AdditionalMP { get; set; } = 10;
-        public bool AllowOtherLanguage { get; set; } = false;
+        public bool AllowForeignName { get; set; } = false;
         public bool AdminMode { get; set; } = false;
         public byte MinIdLength { get; set; } = 2;
         public byte MaxIdLength { get; set; } = 12;

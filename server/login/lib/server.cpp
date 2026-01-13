@@ -18,9 +18,6 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<std::string>("name"),
         fb::config<size_t>("amqp:log:queue_size"))
 {
-    for (auto& x : fb::config<>("forbidden"))
-        this->_forbiddens.push_back(x.asString());
-
     this->handler.protocol.bind<fb::login::handler::protocol::login>();
     this->handler.protocol.bind<fb::login::handler::protocol::agreement>();
     this->handler.protocol.bind<fb::login::handler::protocol::create_account>();
@@ -74,13 +71,6 @@ const fb::protocol::login::response::agreement& server::agreement() const
     return this->_agreement;
 }
 
-bool server::is_forbidden(const std::string& str) const
-{
-    return std::any_of(this->_forbiddens.cbegin(), this->_forbiddens.cend(), [str](const auto& x) {
-        return x == str;
-    });
-}
-
 void server::assert_account(const std::string& id, const std::string& pw) const
 {
     auto cp949     = CP949(id);
@@ -90,11 +80,13 @@ void server::assert_account(const std::string& id, const std::string& pw) const
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
     // Name must be full-hangul characters
-    if (fb::config<bool>("allow other language") == false && assert_korean(cp949) == false)
+    if (fb::config<bool>("allow_foreign_name") == false && assert_korean(cp949) == false)
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
-    // Name cannot contains subcharacters in forbidden list
-    if (this->is_forbidden(id))
+    if (fb::model::table::blocked_name.contains_substring(id))
+        throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
+
+    if (fb::model::table::blocked_word.contains_substring(id))
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
     // Read character's password

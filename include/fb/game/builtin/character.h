@@ -10,7 +10,7 @@ struct character
     static int builtin_uid(lua_State* L);
     static int builtin_look(lua_State* L);
     static int builtin_color(lua_State* L);
-    static int builtin_sex(lua_State* L);
+    static int builtin_gender(lua_State* L);
     static int builtin_money(lua_State* L);
     static int builtin_exp(lua_State* L);
     static int builtin_item(lua_State* L);
