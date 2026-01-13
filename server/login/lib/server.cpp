@@ -83,7 +83,7 @@ void server::assert_account(const std::string& id, const std::string& pw) const
     if (fb::config<bool>("allow_foreign_name") == false && assert_korean(cp949) == false)
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
-    if (fb::model::table::blocked_name.contains(id))
+    if (fb::model::table::blocked_name.contains_substring(id))
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
     // Read character's password

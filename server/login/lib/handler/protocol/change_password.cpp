@@ -31,7 +31,7 @@ async::task<bool> change_password::handle(fb::socket<fb::login::session>&       
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
         // Name cannot contains subcharacters in forbidden list
-        if (fb::model::table::blocked_name.contains(request.name))
+        if (fb::model::table::blocked_name.contains_substring(request.name))
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
         if (request.pw.length() < fb::config("pw_size:min").asInt() ||
