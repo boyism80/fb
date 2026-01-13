@@ -9,7 +9,7 @@ COPY server/login ./login
 
 WORKDIR /app/login/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
-RUN cmake --build . --config ${BUILD_TYPE} --parallel
+RUN cmake --build . --config ${BUILD_TYPE} --parallel 32
 
 FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
 WORKDIR /app
