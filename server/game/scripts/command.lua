@@ -76,7 +76,7 @@ command_funcs = {
         ['command'] = function (me, args)
             local name, role = table.unpack(args)
             if not name or not role then
-                me:message("사용법: /권한변경 <직책이름> <직책>")
+                me:message("사용법: /권한변경 <유저이름> <직책>")
                 return true
             end
 
@@ -476,16 +476,16 @@ command_funcs = {
 
     ['레벨바꾸기'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '<레벨> - 레벨 설정',
+        ['usage'] = '<레벨> - 레벨 설정 (0~255)',
         ['command'] = function (me, args)
             local level = table.unpack(args)
             if not level then
-                me:message("사용법: /레벨바꾸기 <레벨>")
+                me:message("사용법: /레벨바꾸기 <레벨> (0~255)")
                 return true
             end
             level = tonumber(level)
-            if not level or level < 1 then
-                me:message("레벨은 1 이상의 숫자여야 합니다.")
+            if not level or level < 0 or level > 255 then
+                me:message("레벨은 0~255 사이의 숫자여야 합니다.")
                 return true
             end
             me:level(level)
@@ -823,7 +823,7 @@ command_funcs = {
                 me:message("이동할 수 있는 맵이 없습니다.")
                 return true
             end
-            local map = maps[math.random(0, #maps-1)]
+            local map = maps[math.random(1, #maps)]
             local x = math.random(0, map:width())
             local y = math.random(0, map:height())
             me:map(map, x, y)
@@ -835,18 +835,19 @@ command_funcs = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<NPC이름> [맵이름] [x] [y] - NPC 생성',
         ['command'] = function (me, args)
-            local name, map, x, y = table.unpack(args)
+            local name, map_name, x, y = table.unpack(args)
             if not name then
                 me:message("사용법: /엔피씨생성 <NPC이름> [맵이름] [x] [y]")
                 return true
             end
             
-            if map == nil then
+            local map = nil
+            if map_name == nil then
                 map = me:map()
             else
-                map = name2map(map)
+                map = name2map(map_name)
                 if not map then
-                    me:message(string.format("존재하지 않는 맵입니다: %s", map))
+                    me:message(string.format("존재하지 않는 맵입니다: %s", map_name))
                     return true
                 end
             end
@@ -912,11 +913,11 @@ command_funcs = {
 
     ['sleep'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '<시간(초)> - 대기',
+        ['usage'] = '<시간(ms)> - 대기',
         ['command'] = function (me, args)
             local time = table.unpack(args)
             if not time then
-                me:message("사용법: /sleep <시간(초)>")
+                me:message("사용법: /sleep <시간(ms)>")
                 return true
             end
             time = tonumber(time)
@@ -1173,7 +1174,7 @@ command_funcs = {
         ['command'] = function (me, args)
             local achievements = me:achievements()
             for id, achievement in pairs(achievements) do
-                me:erase_achievement(id-1)
+                me:erase_achievement(achievement:model():id())
             end
             return true
         end,
