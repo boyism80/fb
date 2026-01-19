@@ -125,7 +125,8 @@
                 });
 
                 successMessage = "Broadcast sent successfully.";
-                ResetForm();
+                // Clear only the message, keep the message type
+                broadcastModel.Message = string.Empty;
             }
         }
         catch (Exception ex)
