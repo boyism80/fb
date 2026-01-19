@@ -8,41 +8,47 @@
 
 <PageTitle>Login - Admin Tool</PageTitle>
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-4">
-            <div class="card shadow-lg">
-                <div class="card-header">
-                    <h3 class="mb-0">Admin Tool Login</h3>
+<div class="login-container">
+    <div class="container">
+        <div class="row justify-content-center align-items-center min-vh-100">
+            <div class="col-md-5 col-lg-4">
+                <div class="text-center mb-4">
+                    <h1 class="mb-2">Admin Tool</h1>
+                    <p class="text-muted">Sign in to access the administration panel</p>
                 </div>
-                <div class="card-body">
-                    @if (!string.IsNullOrEmpty(ErrorMessage))
-                    {
-                        <div class="alert alert-danger" role="alert">
-                            @ErrorMessage
-                        </div>
-                    }
+                <div class="card">
+                    <div class="card-body p-4">
+                        @if (!string.IsNullOrEmpty(ErrorMessage))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                @ErrorMessage
+                                <button type="button" class="btn-close" @onclick="() => ErrorMessage = null"></button>
+                            </div>
+                        }
 
-                    <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
-                        <DataAnnotationsValidator />
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Character Name</label>
-                            <InputText id="username" class="form-control" @bind-Value="loginModel.Username" />
-                            <ValidationMessage For="@(() => loginModel.Username)" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <InputText id="password" type="password" class="form-control" @bind-Value="loginModel.Password" />
-                            <ValidationMessage For="@(() => loginModel.Password)" />
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
-                            @if (isLoading)
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            }
-                            Login
-                        </button>
-                    </EditForm>
+                        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+                            <DataAnnotationsValidator />
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Character Name</label>
+                                <InputText id="username" class="form-control" @bind-Value="loginModel.Username" 
+                                           placeholder="Enter your character name" />
+                                <ValidationMessage For="@(() => loginModel.Username)" />
+                            </div>
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Password</label>
+                                <InputText id="password" type="password" class="form-control" @bind-Value="loginModel.Password" 
+                                           placeholder="Enter your password" />
+                                <ValidationMessage For="@(() => loginModel.Password)" />
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
+                                @if (isLoading)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                }
+                                Sign In
+                            </button>
+                        </EditForm>
+                    </div>
                 </div>
             </div>
         </div>

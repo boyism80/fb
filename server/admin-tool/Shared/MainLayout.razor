@@ -1,19 +1,117 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@implements IDisposable
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components
+@using AdminTool.Authentication
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
 
-<PageTitle>admin-tool</PageTitle>
+<PageTitle>Admin Tool</PageTitle>
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <span class="text-muted">Admin Tool</span>
+<div class="app-container">
+    <header class="app-header">
+        <div class="header-top">
+            <div class="header-top-container">
+                <a class="logo" href="/">ADMIN TOOL</a>
+                <div class="header-center">
+                    <div class="header-search">
+                        <span class="oi oi-magnifying-glass"></span>
+                        <input type="text" class="search-input" placeholder="Search users..." 
+                               @bind="globalSearchTerm" @bind:event="oninput" 
+                               @onkeypress="HandleSearchKeyPress" />
+                    </div>
+                </div>
+                <div class="header-actions">
+                    @if (isAuthenticated)
+                    {
+                        <button class="btn btn-outline-secondary" @onclick="HandleLogout">Logout</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary" @onclick="NavigateToLogin">Login</button>
+                    }
+                    <a href="https://github.com/boyism80/fb" target="_blank" rel="noopener noreferrer" class="header-link">Contact</a>
+                </div>
+            </div>
         </div>
+        <div class="header-info">
+            <div class="header-info-container">
+                <div class="info-text">
+                    <p>fb is a 2D MMORPG game server written in C++20. High-performance, microservices architecture with Lua scripting support.</p>
+                    <p>Created by <a href="https://github.com/boyism80" target="_blank" rel="noopener noreferrer" class="info-link">boyism80</a>. <a href="https://github.com/boyism80/fb" target="_blank" rel="noopener noreferrer" class="info-link">View on GitHub</a></p>
+                </div>
+            </div>
+        </div>
+        <div class="header-nav">
+            <div class="header-nav-container">
+                <NavMenu />
+            </div>
+        </div>
+    </header>
 
-        <article class="content px-4">
+    <main class="app-main">
+        <div class="content-wrapper">
             @Body
-        </article>
+        </div>
     </main>
 </div>
+
+@code {
+    private bool isAuthenticated = false;
+    private string globalSearchTerm = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckAuthenticationState();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        }
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        await CheckAuthenticationState();
+        StateHasChanged();
+    }
+
+    private async Task CheckAuthenticationState()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authState.User.Identity?.IsAuthenticated == true;
+    }
+
+    private async Task HandleSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(globalSearchTerm))
+        {
+            Navigation.NavigateTo($"/users?search={Uri.EscapeDataString(globalSearchTerm)}");
+        }
+    }
+
+    private void NavigateToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+
+    private async Task HandleLogout()
+    {
+        if (AuthenticationStateProvider is CustomAuthenticationStateProvider customProvider)
+        {
+            await customProvider.MarkUserAsLoggedOut();
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+    }
+
+    public void Dispose()
+    {
+        if (AuthenticationStateProvider != null)
+        {
+            AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        }
+    }
+}

@@ -13,11 +13,9 @@
 
 <PageTitle>Bulletin - Admin Tool</PageTitle>
 
-<div class="container-fluid mt-4">
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <h2>Bulletin Management</h2>
-        </div>
+<div>
+    <div class="page-header mb-4">
+        <h1>Bulletin Management</h1>
     </div>
 
     @if (!string.IsNullOrEmpty(errorMessage))
@@ -38,29 +36,27 @@
 
     <div class="row">
         <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Sections</h5>
-                </div>
-                <div class="card-body">
-                    @if (sections != null && sections.Any())
-                    {
-                        <div class="list-group">
-                            @foreach (var sectionItem in sections)
-                            {
+            <div class="section-sidebar">
+                <h5 class="section-sidebar-title">Sections</h5>
+                @if (sections != null && sections.Any())
+                {
+                    <ul class="section-list">
+                        @foreach (var sectionItem in sections)
+                        {
+                            <li>
                                 <button type="button"
-                                    class="list-group-item list-group-item-action @(selectedSection == sectionItem.Key ? "active" : "")"
+                                    class="section-item @(selectedSection == sectionItem.Key ? "active" : "")"
                                     @onclick="() => SelectSection(sectionItem.Key)">
                                     @sectionItem.Value.Name
                                 </button>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <p class="text-muted">No sections available</p>
-                    }
-                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">No sections available</p>
+                }
             </div>
         </div>
 
@@ -111,54 +107,48 @@
                         }
                         else if (articles != null && articles.Any())
                         {
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 40px;">
-                                                <input type="checkbox" @onchange="ToggleSelectAll" checked="@IsAllSelected" />
-                                            </th>
-                                            <th>ID</th>
-                                            <th>Title</th>
-                                            <th>Author</th>
-                                            <th>Created Date</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var article in articles)
-                                        {
-                                            <tr>
-                                                <td>
-                                                    <input type="checkbox" checked="@selectedArticleIds.Contains(article.Id)" 
-                                                           @onchange="() => ToggleArticleSelection(article.Id)" />
-                                                </td>
-                                                <td>@article.Id</td>
-                                                <td>
-                                                    <a href="#" class="text-decoration-none text-primary" 
-                                                       @onclick="() => ShowViewModal(article)" 
-                                                       @onclick:preventDefault 
-                                                       style="cursor: pointer;">
-                                                        @article.Title
-                                                    </a>
-                                                </td>
-                                                <td>@article.UserName</td>
-                                                <td>@article.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-secondary me-2"
-                                                        @onclick="() => ShowEditModal(article)" disabled="@isProcessing">
-                                                        Edit
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-secondary"
-                                                        @onclick="() => ShowDeleteModal(article)" disabled="@isProcessing">
-                                                        Delete
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
+                            <div class="mb-3">
+                                <input type="checkbox" @onchange="ToggleSelectAll" checked="@IsAllSelected" />
+                                <label class="ms-2 text-muted">Select All</label>
                             </div>
+                            <ul class="clean-list">
+                                @{
+                                    int index = (currentPage - 1) * pageSize + 1;
+                                }
+                                @foreach (var article in articles)
+                                {
+                                    <li class="clean-list-item">
+                                        <input type="checkbox" checked="@selectedArticleIds.Contains(article.Id)" 
+                                               @onchange="() => ToggleArticleSelection(article.Id)"
+                                               style="flex-shrink: 0;" />
+                                        <span class="clean-list-item-number">@index</span>
+                                        <div class="clean-list-item-content">
+                                            <div class="clean-list-item-main">
+                                                <a href="#" class="text-decoration-none" 
+                                                   @onclick="() => ShowViewModal(article)" 
+                                                   @onclick:preventDefault 
+                                                   style="color: var(--text-primary); cursor: pointer;">
+                                                    @article.Title
+                                                </a>
+                                            </div>
+                                            <div class="clean-list-item-secondary">
+                                                @article.UserName · @article.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                                            </div>
+                                        </div>
+                                        <div class="clean-list-item-actions">
+                                            <button class="btn btn-sm btn-outline-secondary"
+                                                @onclick="() => ShowEditModal(article)" disabled="@isProcessing">
+                                                Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary"
+                                                @onclick="() => ShowDeleteModal(article)" disabled="@isProcessing">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </li>
+                                    index++;
+                                }
+                            </ul>
 
                             @if (currentPage > 1 || (articles != null && articles.Count == pageSize))
                             {
