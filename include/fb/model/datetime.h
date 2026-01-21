@@ -292,7 +292,7 @@ public:
         return this->total_milliseconds() == 0;
     }
 
-    std::string to_string()
+    std::string to_string() const
     {
         auto sstream = std::stringstream();
         if (this->_ms.count() < 0)

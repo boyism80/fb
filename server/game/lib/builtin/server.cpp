@@ -1,4 +1,7 @@
 #include <fb/game/builtin/server.h>
+#include <boost/xpressive/xpressive.hpp>
+#include <unordered_map>
+#include <regex>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -863,4 +866,65 @@ int builtin::server::builtin_unban(lua_State* L)
     });
 
     return lua->yield(1);
+}
+
+int builtin::server::builtin_regex(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    if (argc < 2)
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto pattern = lua->tostring(1);
+    auto message = lua->tostring(2);
+
+    if (pattern.empty() || message.empty())
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    static thread_local auto regex_cache = std::unordered_map<std::string, boost::xpressive::sregex>{};
+    auto                     it          = regex_cache.find(pattern);
+    if (it == regex_cache.end())
+    {
+        regex_cache[pattern] = boost::xpressive::sregex::compile(pattern);
+        it                   = regex_cache.find(pattern);
+    }
+    auto& regex = it->second;
+
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    lua->new_table();
+
+    std::regex           named_group_regex(R"((\?P<(\w+)>))");
+    std::sregex_iterator iter(pattern.begin(), pattern.end(), named_group_regex);
+    std::sregex_iterator end;
+
+    while (iter != end)
+    {
+        auto  match      = *iter;
+        auto  group_name = match[2].str();
+        auto& sub        = what[group_name];
+        if (sub.matched)
+        {
+            lua->pushstring(group_name.c_str());
+            lua->pushstring(sub.str().c_str());
+            lua_settable(L, -3);
+        }
+        ++iter;
+    }
+
+    return 1;
 }

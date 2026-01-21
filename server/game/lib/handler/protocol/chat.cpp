@@ -32,6 +32,7 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
 #if defined DEBUG | defined _DEBUG
         lua->load("scripts/interaction.lua");
         lua->load("scripts/command.lua");
+        lua->load("scripts/npc.lua");
 #endif
         lua->func("on_chat");
         lua->pushobject(ch);
@@ -83,25 +84,5 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
     }
     this->server.log.write("chat", log_data);
 
-    auto npcs = std::vector<std::shared_ptr<fb::game::npc>>();
-    if (type == CHAT_TYPE::SHOUT)
-    {
-        for (auto& [fd, obj] : ch->map()->objects)
-        {
-            if (obj->is(OBJECT_TYPE::NPC))
-            {
-                npcs.push_back(std::static_pointer_cast<fb::game::npc>(obj));
-            }
-        }
-    }
-    else
-    {
-        for (auto npc : ch->sight_in(OBJECT_TYPE::NPC))
-        {
-            npcs.push_back(std::static_pointer_cast<fb::game::npc>(npc));
-        }
-    }
-
-    std::ignore = co_await this->server.npc_interaction(*ch, request.message, npcs);
     co_return true;
 }

@@ -57,24 +57,6 @@
 #include <fb/game/handler/amqp/storage_pending_personal.h>
 #include <fb/game/handler/amqp/storage_pending_fetch.h>
 
-#include <fb/game/handler/npc_interaction/appreciate.h>
-#include <fb/game/handler/npc_interaction/buy.h>
-#include <fb/game/handler/npc_interaction/buy_list.h>
-#include <fb/game/handler/npc_interaction/buy_price.h>
-#include <fb/game/handler/npc_interaction/deposit_money.h>
-#include <fb/game/handler/npc_interaction/retrieve_item.h>
-#include <fb/game/handler/npc_interaction/repair.h>
-#include <fb/game/handler/npc_interaction/rename_weapon.h>
-#include <fb/game/handler/npc_interaction/sell.h>
-#include <fb/game/handler/npc_interaction/sell_list.h>
-#include <fb/game/handler/npc_interaction/sell_price.h>
-#include <fb/game/handler/npc_interaction/show_deposited_money.h>
-#include <fb/game/handler/npc_interaction/store_item.h>
-#include <fb/game/handler/npc_interaction/store_item_count.h>
-#include <fb/game/handler/npc_interaction/store_item_list.h>
-#include <fb/game/handler/npc_interaction/revive.h>
-#include <fb/game/handler/npc_interaction/withdraw_money.h>
-
 #include <fb/game/handler/timer/heart_beat.h>
 #include <fb/game/handler/timer/update_time.h>
 #include <fb/game/handler/timer/announce.h>

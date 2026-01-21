@@ -113,12 +113,14 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("shutdown", builtin::server::builtin_shutdown);
     lua::build("ban", builtin::server::builtin_ban);
     lua::build("unban", builtin::server::builtin_unban);
+    lua::build("regex", builtin::server::builtin_regex);
 
     for (auto& [_, root] : ist)
     {
         auto& thread = root->initial_thread();
         std::ignore  = thread.dispatch([root](auto&) -> async::task<void> {
             fb::model::lua::map_enum(*root);
+            fb::model::lua::map_const(*root);
             co_return;
         });
     }
@@ -228,24 +230,6 @@ async::task<void> server::on_start()
     this->bind_thread_timer<fb::game::handler::timer::afk_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
     this->bind_thread_timer<fb::game::handler::timer::marketplace_restore_timer>(30s);
-
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::sell>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::buy>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::repair>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::deposit_money>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::withdraw_money>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::store_item>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::retrieve_item>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::sell_list>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::buy_list>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::sell_price>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::buy_price>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::show_deposited_money>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::rename_weapon>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::store_item_list>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::store_item_count>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::revive>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::appreciate>();
 
     auto host_name = std::format("fb.game.{}", config<uint32_t>("id"));
     this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(host_name);
@@ -760,26 +744,4 @@ void server::update_time()
     }
 
     this->_time = updated;
-}
-
-async::task<bool> server::npc_interaction(character&                                         ch,
-                                          const std::string&                                 message,
-                                          const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
-{
-    ch.assert_thread();
-
-    if (npcs.size() == 0)
-        co_return false;
-
-    // Try new handler system first
-    for (auto& handler : this->_npc_interaction_handlers)
-    {
-        if (handler->matches(message))
-        {
-            co_await handler->handle(ch, message, npcs);
-            co_return true;
-        }
-    }
-
-    co_return false;
 }

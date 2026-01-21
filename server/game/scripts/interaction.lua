@@ -294,38 +294,165 @@ function any_action(me)
     end
 end
 
-function on_chat(me, message)
+function on_chat(me, message, shout)
 
-    if string.sub(message, 1, 1) ~= '/' then
-        return false
+    if string.sub(message, 1, 1) == '/' then
+        message = string.sub(message, 2, string.len(message))
+        args = string_split(message, ' ')
+
+        local cmd = args[1]
+        if command_funcs[cmd] == nil then
+            return false
+        end
+        
+        local cmd_data = command_funcs[cmd]
+        local cmd_func = nil
+        local required_privilege = ROLE.USER
+        
+        if type(cmd_data) == 'table' then
+            cmd_func = cmd_data['command']
+            required_privilege = cmd_data['privilege'] or ROLE.USER
+        else
+            cmd_func = cmd_data
+        end
+        
+        if me:role() < required_privilege then
+            me:message("권한이 부족합니다.")
+            return true
+        end
+        
+        table.remove(args, 1)
+        return cmd_func(me, args)
     end
+    
+    return on_npc_chat(me, message, shout)
+end
 
-    message = string.sub(message, 2, string.len(message))
-    args = string_split(message, ' ')
-
-    local cmd = args[1]
-    if command_funcs[cmd] == nil then
+function on_npc_chat(me, message, shout)
+    local map = me:map()
+    if map == nil then
         return false
     end
     
-    local cmd_data = command_funcs[cmd]
-    local cmd_func = nil
-    local required_privilege = ROLE.USER
-    
-    if type(cmd_data) == 'table' then
-        cmd_func = cmd_data['command']
-        required_privilege = cmd_data['privilege'] or ROLE.USER
+    local npcs = {}
+    if shout then
+        npcs = map:objects(OBJECT_TYPE.NPC)
     else
-        cmd_func = cmd_data
+        local x, y = me:position()
+        npcs = map:nears({x, y}, OBJECT_TYPE.NPC)
     end
     
-    if me:role() < required_privilege then
-        me:message("권한이 부족합니다.")
-        return true
+    if #npcs == 0 then
+        return false
     end
     
-    table.remove(args, 1)
-    return cmd_func(me, args)
+    local regex_handlers = {
+        { pattern = CONST.REGEX.BUY, func = function(npc, params)
+            local name = params.name
+            local count = 1
+            if params.count ~= nil then
+                count = tonumber(params.count)
+            end
+            return npc_buy_item(me, npc, name, count)
+        end },
+        { pattern = CONST.REGEX.SELL, func = function(npc, params)
+            local name = params.name
+            local count = nil
+            if params.count ~= nil then
+                count = tonumber(params.count)
+            elseif params.all ~= nil then
+                count = nil
+            end
+            return npc_sell_item(me, npc, name, count)
+        end },
+        { pattern = CONST.REGEX.REPAIR, func = function(npc, params)
+            if params.all ~= nil then
+                return npc_repair(me, npc, nil)
+            elseif params.name ~= nil then
+                return npc_repair(me, npc, params.name)
+            end
+            return false
+        end },
+        { pattern = CONST.REGEX.DEPOSIT_MONEY, func = function(npc, params)
+            local money = tonumber(params.money)
+            if money == nil then
+                return false
+            end
+            return npc_deposit_money(me, npc, money)
+        end },
+        { pattern = CONST.REGEX.WITHDRAW_MONEY, func = function(npc, params)
+            local money = tonumber(params.money)
+            if money == nil then
+                return false
+            end
+            return npc_withdraw_money(me, npc, money)
+        end },
+        { pattern = CONST.REGEX.STORE_ITEM, func = function(npc, params)
+            local name = params.name
+            local count = 1
+            if params.count ~= nil then
+                count = tonumber(params.count)
+            end
+            return npc_store_item(me, npc, name, count)
+        end },
+        { pattern = CONST.REGEX.RETRIEVE_ITEM, func = function(npc, params)
+            local name = params.name
+            local count = 1
+            if params.count ~= nil then
+                count = tonumber(params.count)
+            end
+            return npc_retrieve_item(me, npc, name, count)
+        end },
+        { pattern = CONST.REGEX.SELL_LIST, func = function(npc, params)
+            return npc_sell_item_list(me, npc)
+        end },
+        { pattern = CONST.REGEX.BUY_LIST, func = function(npc, params)
+            return npc_buy_item_list(me, npc)
+        end },
+        { pattern = CONST.REGEX.SELL_PRICE, func = function(npc, params)
+            local name = params.name
+            return npc_sell_item_price(me, npc, name)
+        end },
+        { pattern = CONST.REGEX.BUY_PRICE, func = function(npc, params)
+            local name = params.name
+            return npc_buy_item_price(me, npc, name)
+        end },
+        { pattern = CONST.REGEX.DEPOSITED_MONEY, func = function(npc, params)
+            return npc_deposited_money(me, npc)
+        end },
+        { pattern = CONST.REGEX.RENAME_WEAPON, func = function(npc, params)
+            local from = params.from
+            local to = params.to
+            return npc_rename_weapon(me, npc, from, to)
+        end },
+        { pattern = CONST.REGEX.HOLD_ITEM_LIST, func = function(npc, params)
+            return npc_store_item_list(me, npc)
+        end },
+        { pattern = CONST.REGEX.HOLD_ITEM_COUNT, func = function(npc, params)
+            local name = params.name
+            return npc_store_item_count(me, npc, name)
+        end },
+        { pattern = CONST.REGEX.REVIVE, func = function(npc, params)
+            local discourteous = params.discourteous ~= nil
+            return npc_revive(me, npc, discourteous)
+        end },
+        { pattern = CONST.REGEX.APPRECIATE, func = function(npc, params)
+            return npc_appreciate(me, npc)
+        end },
+    }
+    
+    for _, handler in ipairs(regex_handlers) do
+        local params = regex(handler.pattern, message)
+        if params ~= nil then
+            for _, npc in ipairs(npcs) do
+                if handler.func(npc, params) then
+                    return true
+                end
+            end
+        end
+    end
+    
+    return false
 end
 
 function on_login(me)

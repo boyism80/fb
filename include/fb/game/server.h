@@ -14,7 +14,6 @@
 #include <fb/redis.h>
 #include <fb/shard_container.h>
 #include <fb/game/clan.h>
-#include <fb/game/npc_interaction_handler.h>
 #include <fb/game/system_mail.h>
 #include <fb/game/storage.h>
 #include <fb/game/channel/system_mail_channel.h>
@@ -84,18 +83,15 @@ public:
     LUA_PROTOTYPE
 
 public:
-    using object_set                   = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
-    using protocol_generator           = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
-    using clan_ptr                     = std::shared_ptr<fb::game::clan>;
-    using group_ptr                    = std::shared_ptr<fb::game::group>;
-    using npc_interaction_handler_ptr  = std::unique_ptr<fb::game::npc_interaction_handler>;
-    using npc_interaction_handler_list = std::vector<npc_interaction_handler_ptr>;
-    using ensure_group_fn              = std::function<async::task<void>(group_ptr&)>;
-    using ensure_clan_fn               = std::function<async::task<void>(clan_ptr&)>;
+    using object_set         = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
+    using protocol_generator = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
+    using clan_ptr           = std::shared_ptr<fb::game::clan>;
+    using group_ptr          = std::shared_ptr<fb::game::group>;
+    using ensure_group_fn    = std::function<async::task<void>(group_ptr&)>;
+    using ensure_clan_fn     = std::function<async::task<void>(clan_ptr&)>;
 
 private:
-    fb::model::datetime          _time;
-    npc_interaction_handler_list _npc_interaction_handlers;
+    fb::model::datetime _time;
 
 public:
     fb::log_collector                                       log;
@@ -113,13 +109,6 @@ public:
     server(const server&) = delete;
     server(server&&)      = delete;
     ~server();
-
-private:
-    template <typename HandlerType> void bind_npc_interaction()
-    {
-        auto handler = std::make_unique<HandlerType>(*this);
-        this->_npc_interaction_handlers.push_back(std::move(handler));
-    }
 
 public:
     void assert_whisper(const internal_resp::Whisper& response) const;
@@ -209,7 +198,6 @@ public:
     async::task<internal_resp::Unban>          unban(const std::string& name);
     async::task<void>                          update_status();
     void                                       update_time();
-    async::task<bool>                          npc_interaction(character& ch, const std::string& message, const std::vector<std::shared_ptr<npc>>& npcs);
     async::task<void>                          leave_clan_member(const clan& clan, const std::string& name);
     async::task<void>                          join_clan_member(const clan& clan, character& inviter, character& invitee);
     void                                       rezen_force();
