@@ -25,8 +25,7 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
     if (ch->role() == ROLE::USER && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_TALK))
         co_return true;
 
-    auto stop = false;
-    auto lua  = fb::lua::new_context();
+    auto lua = fb::lua::new_context();
     if (lua != nullptr)
     {
 #if defined DEBUG | defined _DEBUG
@@ -46,7 +45,7 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
         }
         co_await ch->thread()->switching();
 
-        stop = lua->toboolean(1);
+        auto stop = lua->toboolean(1);
         lua->release();
 
         if (stop)
@@ -64,23 +63,17 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
             co_return true;
         }
     }
-    if (stop)
-        co_return true;
 
     auto message = fb::model::table::blocked_word.filter(request.message);
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
     ch->chat(message, type, true);
 
-    // Log chat event
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
     log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
     log_data["message"]        = UTF8(message, PLATFORM::WINDOWS);
     log_data["chat_type"]      = request.shout ? "shout" : "normal";
-    if (map != nullptr)
-    {
-        log_data["map"] = map->model.id;
-    }
+    log_data["map"]            = map->model.id;
     this->server.log.write("chat", log_data);
 
     co_return true;
