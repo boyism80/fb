@@ -49,7 +49,6 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
         stop = lua->toboolean(1);
         lua->release();
 
-        // Log command execution event (script executed via chat)
         if (stop)
         {
             auto log_data              = Json::Value();

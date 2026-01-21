@@ -325,7 +325,8 @@ function on_chat(me, message, shout)
         return cmd_func(me, args)
     end
     
-    return on_npc_chat(me, message, shout)
+    on_npc_chat(me, message, shout)
+    return false
 end
 
 function on_npc_chat(me, message, shout)
