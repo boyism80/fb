@@ -49,6 +49,7 @@ struct npc
     static int builtin_sell_price(lua_State* L);
     static int builtin_buy(lua_State* L);
     static int builtin_buy_price(lua_State* L);
+    static int builtin_interaction(lua_State* L);
 };
 
 struct mob

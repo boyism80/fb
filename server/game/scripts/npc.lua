@@ -538,6 +538,10 @@ function npc_sell_item_list(me, npc)
         end
     end
 
+    if #names == 0 then
+        return false
+    end
+
     local message = table.concat(names, ", ")
     if overflow then
         message = message .. ' 등 여러가지를'

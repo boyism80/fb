@@ -295,7 +295,6 @@ function any_action(me)
 end
 
 function on_chat(me, message, shout)
-
     if string.sub(message, 1, 1) == '/' then
         message = string.sub(message, 2, string.len(message))
         args = string_split(message, ' ')
@@ -348,15 +347,23 @@ function on_npc_chat(me, message, shout)
     end
     
     local regex_handlers = {
-        { pattern = CONST.REGEX.BUY, func = function(npc, params)
+        { pattern = CONST.REGEX.BUY, condition = function(npc)
+            local model = npc:model()
+            local sell = model:sell()
+            return #sell > 0
+        end, func = function(npc, params)
             local name = params.name
             local count = 1
             if params.count ~= nil then
                 count = tonumber(params.count)
             end
-            return npc_buy_item(me, npc, name, count)
+            return npc_sell_item(me, npc, name, count)
         end },
-        { pattern = CONST.REGEX.SELL, func = function(npc, params)
+        { pattern = CONST.REGEX.SELL, condition = function(npc)
+            local model = npc:model()
+            local buy = model:buy()
+            return buy ~= nil
+        end, func = function(npc, params)
             local name = params.name
             local count = nil
             if params.count ~= nil then
@@ -364,9 +371,13 @@ function on_npc_chat(me, message, shout)
             elseif params.all ~= nil then
                 count = nil
             end
-            return npc_sell_item(me, npc, name, count)
+            return npc_buy_item(me, npc, name, count)
         end },
-        { pattern = CONST.REGEX.REPAIR, func = function(npc, params)
+        { pattern = CONST.REGEX.REPAIR, condition = function(npc)
+            local model = npc:model()
+            local interaction = model:interaction()
+            return (interaction & NPC_INTERACTION.REPAIR) == NPC_INTERACTION.REPAIR
+        end, func = function(npc, params)
             if params.all ~= nil then
                 return npc_repair(me, npc, nil)
             elseif params.name ~= nil then
@@ -374,21 +385,33 @@ function on_npc_chat(me, message, shout)
             end
             return false
         end },
-        { pattern = CONST.REGEX.DEPOSIT_MONEY, func = function(npc, params)
+        { pattern = CONST.REGEX.DEPOSIT_MONEY, condition = function(npc)
+            local model = npc:model()
+            local interaction = model:interaction()
+            return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
+        end, func = function(npc, params)
             local money = tonumber(params.money)
             if money == nil then
                 return false
             end
             return npc_deposit_money(me, npc, money)
         end },
-        { pattern = CONST.REGEX.WITHDRAW_MONEY, func = function(npc, params)
+        { pattern = CONST.REGEX.WITHDRAW_MONEY, condition = function(npc)
+            local model = npc:model()
+            local interaction = model:interaction()
+            return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
+        end, func = function(npc, params)
             local money = tonumber(params.money)
             if money == nil then
                 return false
             end
             return npc_withdraw_money(me, npc, money)
         end },
-        { pattern = CONST.REGEX.STORE_ITEM, func = function(npc, params)
+        { pattern = CONST.REGEX.STORE_ITEM, condition = function(npc)
+            local model = npc:model()
+            local interaction = model:interaction()
+            return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
+        end, func = function(npc, params)
             local name = params.name
             local count = 1
             if params.count ~= nil then
@@ -396,7 +419,11 @@ function on_npc_chat(me, message, shout)
             end
             return npc_store_item(me, npc, name, count)
         end },
-        { pattern = CONST.REGEX.RETRIEVE_ITEM, func = function(npc, params)
+        { pattern = CONST.REGEX.RETRIEVE_ITEM, condition = function(npc)
+            local model = npc:model()
+            local interaction = model:interaction()
+            return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
+        end, func = function(npc, params)
             local name = params.name
             local count = 1
             if params.count ~= nil then
@@ -404,51 +431,97 @@ function on_npc_chat(me, message, shout)
             end
             return npc_retrieve_item(me, npc, name, count)
         end },
-        { pattern = CONST.REGEX.SELL_LIST, func = function(npc, params)
+        { pattern = CONST.REGEX.SELL_LIST, condition = function(npc)
+            local model = npc:model()
+            local sell = model:sell()
+            return #sell > 0
+        end, func = function(npc, params)
             return npc_sell_item_list(me, npc)
         end },
-        { pattern = CONST.REGEX.BUY_LIST, func = function(npc, params)
+        { pattern = CONST.REGEX.BUY_LIST, condition = function(npc)
+            local model = npc:model()
+            local buy = model:buy()
+            return buy ~= nil
+        end, func = function(npc, params)
             return npc_buy_item_list(me, npc)
         end },
-        { pattern = CONST.REGEX.SELL_PRICE, func = function(npc, params)
+        { pattern = CONST.REGEX.SELL_PRICE, condition = function(npc)
+            local model = npc:model()
+            local sell = model:sell()
+            return #sell > 0
+        end, func = function(npc, params)
             local name = params.name
             return npc_sell_item_price(me, npc, name)
         end },
-        { pattern = CONST.REGEX.BUY_PRICE, func = function(npc, params)
+        { pattern = CONST.REGEX.BUY_PRICE, condition = function(npc)
+            local model = npc:model()
+            local buy = model:buy()
+            return buy ~= nil
+        end, func = function(npc, params)
             local name = params.name
             return npc_buy_item_price(me, npc, name)
         end },
-        { pattern = CONST.REGEX.DEPOSITED_MONEY, func = function(npc, params)
+        { pattern = CONST.REGEX.DEPOSITED_MONEY, condition = function(npc)
+            local model = npc:model()
+            local interaction = model:interaction()
+            return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
+        end, func = function(npc, params)
             return npc_deposited_money(me, npc)
         end },
-        { pattern = CONST.REGEX.RENAME_WEAPON, func = function(npc, params)
+        { pattern = CONST.REGEX.RENAME_WEAPON, condition = function(npc)
+            local model = npc:model()
+            local interaction = model:interaction()
+            return (interaction & NPC_INTERACTION.RENAME) == NPC_INTERACTION.RENAME
+        end, func = function(npc, params)
             local from = params.from
             local to = params.to
             return npc_rename_weapon(me, npc, from, to)
         end },
-        { pattern = CONST.REGEX.HOLD_ITEM_LIST, func = function(npc, params)
+        { pattern = CONST.REGEX.HOLD_ITEM_LIST, condition = function(npc)
+            local model = npc:model()
+            local interaction = model:interaction()
+            return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
+        end, func = function(npc, params)
             return npc_store_item_list(me, npc)
         end },
-        { pattern = CONST.REGEX.HOLD_ITEM_COUNT, func = function(npc, params)
+        { pattern = CONST.REGEX.HOLD_ITEM_COUNT, condition = function(npc)
+            local model = npc:model()
+            local interaction = model:interaction()
+            return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
+        end, func = function(npc, params)
             local name = params.name
             return npc_store_item_count(me, npc, name)
         end },
-        { pattern = CONST.REGEX.REVIVE, func = function(npc, params)
+        { pattern = CONST.REGEX.REVIVE, condition = function(npc)
+            local model = npc:model()
+            local interaction = model:interaction()
+            return (interaction & NPC_INTERACTION.REVIVE) == NPC_INTERACTION.REVIVE
+        end, func = function(npc, params)
             local discourteous = params.discourteous ~= nil
             return npc_revive(me, npc, discourteous)
         end },
-        { pattern = CONST.REGEX.APPRECIATE, func = function(npc, params)
+        { pattern = CONST.REGEX.APPRECIATE, condition = function(npc)
+            local model = npc:model()
+            local interaction = model:interaction()
+            return (interaction & NPC_INTERACTION.REVIVE) == NPC_INTERACTION.REVIVE
+        end, func = function(npc, params)
             return npc_appreciate(me, npc)
         end },
     }
-    
+
     for _, handler in ipairs(regex_handlers) do
         local params = regex(handler.pattern, message)
         if params ~= nil then
             for _, npc in ipairs(npcs) do
+                if handler.condition ~= nil then
+                    if not handler.condition(npc) then
+                        goto continue
+                    end
+                end
                 if handler.func(npc, params) then
                     return true
                 end
+                ::continue::
             end
         end
     end
