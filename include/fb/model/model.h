@@ -6495,6 +6495,44 @@ DECLARE_REWARD_INITIALIZER
 DECLARE_REWARD_EXTENSION
 #endif
 }; // end of class 'reward'
+class schedule
+#ifdef DECLARE_SCHEDULE_INHERIT
+DECLARE_SCHEDULE_INHERIT
+#endif
+{
+#ifdef DECLARE_SCHEDULE_FIELDS
+DECLARE_SCHEDULE_FIELDS
+#else
+public:
+    const uint32_t id;
+    const fb::model::date_range date;
+    const std::optional<timespan> repeat;
+    const std::string script;
+#endif
+
+#ifdef DECLARE_SCHEDULE_CUSTOM_CONSTRUCTOR
+DECLARE_SCHEDULE_CUSTOM_CONSTRUCTOR
+#else
+public:
+    schedule(const Json::Value& json) : 
+#ifdef DECLARE_SCHEDULE_CONSTRUCTOR
+DECLARE_SCHEDULE_CONSTRUCTOR
+#endif
+        id(fb::model::build<uint32_t>(json["id"])),
+        date(fb::model::build<fb::model::date_range>(json["date"])),
+        repeat(fb::model::build<std::optional<timespan>>(json["repeat"])),
+        script(fb::model::build<std::string>(json["script"]))
+#ifdef DECLARE_SCHEDULE_INITIALIZER
+DECLARE_SCHEDULE_INITIALIZER
+#endif
+    { }
+    schedule(const schedule&) = delete;
+    virtual ~schedule() = default;
+#endif
+#ifdef DECLARE_SCHEDULE_EXTENSION
+DECLARE_SCHEDULE_EXTENSION
+#endif
+}; // end of class 'schedule'
 class sell
 #ifdef DECLARE_SELL_INHERIT
 DECLARE_SELL_INHERIT
@@ -8025,6 +8063,22 @@ DECLARE_REWARD_CONTAINER_EXTENSION
 #endif
 };
 
+class __schedule : public fb::model::array_container<fb::model::schedule>
+{
+public:
+#ifdef DECLARE_SCHEDULE_CONTAINER_CUSTOM_CONSTRUCTOR
+DECLARE_SCHEDULE_CONTAINER_CUSTOM_CONSTRUCTOR
+#else
+    __schedule() : fb::model::array_container<fb::model::schedule>(std::string("json/schedule.json"))
+    { }
+    __schedule(const __schedule&) = delete;
+    ~__schedule() = default;
+#endif
+#ifdef DECLARE_SCHEDULE_CONTAINER_EXTENSION
+DECLARE_SCHEDULE_CONTAINER_EXTENSION
+#endif
+};
+
 class __sell : public fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::sell>>
 {
 public:
@@ -8203,6 +8257,7 @@ public:
     inline static fb::model::__quest_attribute quest_attribute;
     inline static fb::model::__recipe recipe;
     inline static fb::model::__reward reward;
+    inline static fb::model::__schedule schedule;
     inline static fb::model::__sell sell;
     inline static fb::model::__sell_attribute sell_attribute;
     inline static fb::model::__soliloquy soliloquy;
@@ -8246,6 +8301,7 @@ private:
         &quest_attribute,
         &recipe,
         &reward,
+        &schedule,
         &sell,
         &sell_attribute,
         &soliloquy,

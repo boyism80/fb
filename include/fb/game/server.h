@@ -97,6 +97,7 @@ private:
     fb::model::datetime _time;
     double              _exp_multiplier;
     double              _drop_rate_multiplier;
+    std::unordered_map<uint32_t, fb::model::datetime> _schedule_last_execution;
 
 public:
     fb::log_collector                                       log;
@@ -214,6 +215,8 @@ public:
     void                                       exp_multiplier(double value);
     double                                     drop_rate_multiplier() const;
     void                                       drop_rate_multiplier(double value);
+    fb::model::datetime                        schedule_last_execution(uint32_t schedule_id) const;
+    void                                       schedule_last_execution(uint32_t schedule_id, const fb::model::datetime& time);
     // clang-format on
 };
 

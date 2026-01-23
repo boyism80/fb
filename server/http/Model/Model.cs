@@ -1524,6 +1524,18 @@ namespace Fb.Model
         public List<Dsl> Dsl { get; set; }
     }
 
+    public class Schedule
+    {
+        [JsonProperty("id")]
+        public uint Id { get; set; }
+        [JsonProperty("date")]
+        public DateRange Date { get; set; }
+        [JsonProperty("repeat")]
+        public TimeSpan? Repeat { get; set; }
+        [JsonProperty("script")]
+        public string Script { get; set; }
+    }
+
     public class Sell
     {
         [JsonProperty("parent")]
@@ -2434,6 +2446,10 @@ namespace Fb.Model
         public partial class RewardTable : KeyValueContainer<string, Reward>
         { }
         public static RewardTable Reward { get; private set; } = new RewardTable();
+        [Table("json/schedule.json")]
+        public partial class ScheduleTable : ArrayContainer<Schedule>
+        { }
+        public static ScheduleTable Schedule { get; private set; } = new ScheduleTable();
         [Table("json/sell.json")]
         public partial class SellTable : KeyValueContainer<uint, ArrayContainer<Sell>>
         { }
@@ -2503,6 +2519,7 @@ namespace Fb.Model
             QuestAttribute, 
             Recipe, 
             Reward, 
+            Schedule, 
             Sell, 
             SellAttribute, 
             Soliloquy, 

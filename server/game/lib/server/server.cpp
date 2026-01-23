@@ -3,6 +3,7 @@
 #include <fb/game/builtin/server.h>
 #include <fb/game/handler/amqp/set_exp_multiplier.h>
 #include <fb/game/handler/amqp/set_drop_rate_multiplier.h>
+#include <fb/game/handler/timer/schedule_timer.h>
 #include <fb/log_collector.h>
 #include <fb/encoding.h>
 #include <json/json.h>
@@ -224,6 +225,7 @@ async::task<void> server::on_start()
 
     this->bind_timer<fb::game::handler::timer::heart_beat>(1s);
     this->bind_timer<fb::game::handler::timer::update_time>(1s);
+    this->bind_timer<fb::game::handler::timer::schedule_timer>(1s);
     this->bind_timer<fb::game::handler::timer::announce>(
         std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
     // log_flush timer removed - logs are now published immediately to RabbitMQ
@@ -772,4 +774,17 @@ double server::drop_rate_multiplier() const
 void server::drop_rate_multiplier(double value)
 {
     this->_drop_rate_multiplier = value;
+}
+
+fb::model::datetime server::schedule_last_execution(uint32_t schedule_id) const
+{
+    auto it = this->_schedule_last_execution.find(schedule_id);
+    if (it != this->_schedule_last_execution.end())
+        return it->second;
+    return fb::model::datetime();
+}
+
+void server::schedule_last_execution(uint32_t schedule_id, const fb::model::datetime& time)
+{
+    this->_schedule_last_execution[schedule_id] = time;
 }
