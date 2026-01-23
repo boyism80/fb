@@ -255,6 +255,32 @@ namespace Internal.Controllers
             return Task.FromResult(response);
         }
 
+        [HttpPost("set-exp-multiplier")]
+        public Task<Response.SetExpMultiplier> SetExpMultiplier(Request.SetExpMultiplier request)
+        {
+            var response = new Response.SetExpMultiplier
+            {
+                Value = request.Value,
+                Error = (uint)ErrorCode.None
+            };
+
+            _rabbitMqService.Publish(response, "amq.direct", $"fb.global");
+            return Task.FromResult(response);
+        }
+
+        [HttpPost("set-drop-rate-multiplier")]
+        public Task<Response.SetDropRateMultiplier> SetDropRateMultiplier(Request.SetDropRateMultiplier request)
+        {
+            var response = new Response.SetDropRateMultiplier
+            {
+                Value = request.Value,
+                Error = (uint)ErrorCode.None
+            };
+
+            _rabbitMqService.Publish(response, "amq.direct", $"fb.global");
+            return Task.FromResult(response);
+        }
+
         [HttpPost("update-friends")]
         public Task<Response.UpdateFriends> UpdateFriends(Request.UpdateFriends request)
         {

@@ -1406,5 +1406,49 @@ command_funcs = {
             shutdown()
             return true
         end,
+    },
+
+    ['경험치배율'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '[배율] - 경험치 배율 조회/설정',
+        ['command'] = function (me, args)
+            if #args == 0 then
+                -- Get multiplier
+                local multiplier = exp_multiplier()
+                me:message(string.format("현재 경험치 배율: %.2fx", multiplier), MESSAGE_TYPE.BROWN)
+            else
+                -- Set multiplier
+                local value = tonumber(table.unpack(args))
+                if not value or value < 0 then
+                    me:message("배율은 0 이상의 숫자여야 합니다.")
+                    return true
+                end
+                exp_multiplier(value)
+                me:message(string.format("경험치 배율을 %.2fx로 설정했습니다. (모든 게임 서버에 적용됩니다)", value), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
+
+    ['드롭률배율'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '[배율] - 드롭률 배율 조회/설정',
+        ['command'] = function (me, args)
+            if #args == 0 then
+                -- Get multiplier
+                local multiplier = drop_rate_multiplier()
+                me:message(string.format("현재 드롭률 배율: %.2fx", multiplier), MESSAGE_TYPE.BROWN)
+            else
+                -- Set multiplier
+                local value = tonumber(table.unpack(args))
+                if not value or value < 0 then
+                    me:message("배율은 0 이상의 숫자여야 합니다.")
+                    return true
+                end
+                drop_rate_multiplier(value)
+                me:message(string.format("드롭률 배율을 %.2fx로 설정했습니다. (모든 게임 서버에 적용됩니다)", value), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
     }
 }

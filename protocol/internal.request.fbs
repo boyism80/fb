@@ -259,3 +259,11 @@ table Heartbeat {
   ip: string;
   port: ushort;
 }
+
+table SetExpMultiplier {
+  value: double;
+}
+
+table SetDropRateMultiplier {
+  value: double;
+}

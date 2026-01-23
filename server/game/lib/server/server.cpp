@@ -1,6 +1,8 @@
 #include <fb/game/server.h>
 #include <fb/game/handler.h>
 #include <fb/game/builtin/server.h>
+#include <fb/game/handler/amqp/set_exp_multiplier.h>
+#include <fb/game/handler/amqp/set_drop_rate_multiplier.h>
 #include <fb/log_collector.h>
 #include <fb/encoding.h>
 #include <json/json.h>
@@ -41,7 +43,9 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<std::string>("amqp:log:pwd"),
         std::to_string(fb::config<uint32_t>("id")),
         fb::config<std::string>("name"),
-        fb::config<size_t>("amqp:log:queue_size"))
+        fb::config<size_t>("amqp:log:queue_size")),
+    _exp_multiplier(fb::config<double>("exp_multiplier")),
+    _drop_rate_multiplier(fb::config<double>("drop_rate_multiplier"))
 {
     auto& ist = fb::lua::context_pool::ist();
     ist.setup(this->threads);
@@ -114,6 +118,8 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("ban", builtin::server::builtin_ban);
     lua::build("unban", builtin::server::builtin_unban);
     lua::build("regex", builtin::server::builtin_regex);
+    lua::build("exp_multiplier", builtin::server::builtin_exp_multiplier);
+    lua::build("drop_rate_multiplier", builtin::server::builtin_drop_rate_multiplier);
 
     for (auto& [_, root] : ist)
     {
@@ -249,6 +255,8 @@ async::task<void> server::on_start()
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>("fb.clan");
     this->handler.amqp.bind<fb::game::handler::amqp::write_mail>("fb.mail");
     this->handler.amqp.bind<fb::game::handler::amqp::ban>("fb.ban");
+    this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>("fb.global");
+    this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>("fb.global");
 
     // Fetch system mails on server startup
     co_await this->system_mail.fetch();
@@ -744,4 +752,24 @@ void server::update_time()
     }
 
     this->_time = updated;
+}
+
+double server::exp_multiplier() const
+{
+    return this->_exp_multiplier;
+}
+
+void server::exp_multiplier(double value)
+{
+    this->_exp_multiplier = value;
+}
+
+double server::drop_rate_multiplier() const
+{
+    return this->_drop_rate_multiplier;
+}
+
+void server::drop_rate_multiplier(double value)
+{
+    this->_drop_rate_multiplier = value;
 }

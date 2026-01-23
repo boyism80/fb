@@ -928,3 +928,107 @@ int builtin::server::builtin_regex(lua_State* L)
 
     return 1;
 }
+
+int builtin::server::builtin_exp_multiplier(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+
+    if (argc == 0)
+    {
+        // Get multiplier
+        auto multiplier = server->exp_multiplier();
+        lua->pushnumber(multiplier);
+        return 1;
+    }
+    else
+    {
+        // Set multiplier - send request to internal server
+        auto value = lua->tonumber(1);
+
+        static auto fn = [](fb::game::server* server, fb::lua::context* lua, double value) -> async::task<void> {
+            auto   success = false;
+            auto   error   = std::string{};
+            auto&& resp    = co_await server->http.post("internal",
+                                                     "/in-game/set-exp-multiplier",
+                                                     internal_reqs::SetExpMultiplier{value});
+            if (resp.error == 0)
+            {
+                success = true;
+            }
+            else
+            {
+                error = std::format("Set exp multiplier failed with error code: {}", resp.error);
+            }
+
+            co_await lua->switching();
+            lua->pushboolean(success);
+            if (!success)
+                lua->pushstring(error);
+            lua->resume(success ? 1 : 2);
+        };
+
+        async::awaitable_then(fn(server, lua, value), [lua](auto result) {
+            result();
+        });
+
+        return lua->yield(1);
+    }
+}
+
+int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+
+    if (argc == 0)
+    {
+        // Get multiplier
+        auto multiplier = server->drop_rate_multiplier();
+        lua->pushnumber(multiplier);
+        return 1;
+    }
+    else
+    {
+        // Set multiplier - send request to internal server
+        auto value = lua->tonumber(1);
+
+        static auto fn = [](fb::game::server* server, fb::lua::context* lua, double value) -> async::task<void> {
+            auto   success = false;
+            auto   error   = std::string{};
+            auto&& resp    = co_await server->http.post("internal",
+                                                     "/in-game/set-drop-rate-multiplier",
+                                                     internal_reqs::SetDropRateMultiplier{value});
+
+            lua->pushboolean(resp.error == 0);
+            if (resp.error == 0)
+            {
+                success = true;
+            }
+            else
+            {
+                error = std::format("Set drop rate multiplier failed with error code: {}", resp.error);
+            }
+
+            co_await lua->switching();
+            lua->pushboolean(success);
+            if (!success)
+                lua->pushstring(error);
+            lua->resume(success ? 1 : 2);
+        };
+
+        async::awaitable_then(fn(server, lua, value), [lua](auto result) {
+            result();
+        });
+
+        return lua->yield(1);
+    }
+}

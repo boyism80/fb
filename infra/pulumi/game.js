@@ -50,7 +50,9 @@ module.exports = function () {
                             ip: `log-${sectionConf.log}`,
                             port: conf.log[sectionConf.log].port.cluster,
                             level: ["info", "warn", "fatal"]
-                        }
+                        },
+                        exp_multiplier: 1.0,
+                        drop_rate_multiplier: 1.0
                     }
 
                     const configMap = new k8s.core.v1.ConfigMap(`game-${section}-${i}`, {

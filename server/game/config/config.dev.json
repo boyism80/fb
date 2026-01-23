@@ -46,5 +46,7 @@
             "pwd": "guest",
             "queue_size": 128
         }
-    }
+    },
+    "exp_multiplier": 100.0,
+    "drop_rate_multiplier": 100.0
 }

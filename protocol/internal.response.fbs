@@ -276,3 +276,13 @@ table Unban {
 table Heartbeat {
   success: bool;
 }
+
+table SetExpMultiplier {
+  value: double;
+  error: uint;
+}
+
+table SetDropRateMultiplier {
+  value: double;
+  error: uint;
+}

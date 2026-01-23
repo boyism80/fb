@@ -56,6 +56,9 @@ REGISTER_RESPONSE(fb::protocol::internal::request::GetStoragePending,
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol::internal::response::WriteSystemMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Ban, fb::protocol::internal::response::Ban)
 REGISTER_RESPONSE(fb::protocol::internal::request::Unban, fb::protocol::internal::response::Unban)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetExpMultiplier, fb::protocol::internal::response::SetExpMultiplier)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetDropRateMultiplier,
+                  fb::protocol::internal::response::SetDropRateMultiplier)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::List, fb::protocol::marketplace::response::List)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Cancel, fb::protocol::marketplace::response::Cancel)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Purchase, fb::protocol::marketplace::response::Purchase)
@@ -92,6 +95,8 @@ public:
 
 private:
     fb::model::datetime _time;
+    double              _exp_multiplier;
+    double              _drop_rate_multiplier;
 
 public:
     fb::log_collector                                       log;
@@ -205,6 +210,10 @@ public:
     async::task<void>                          ensure_group(uint32_t id, ensure_group_fn fn);
     void                                       update_clan(clan& clan, internal::Clan& clan_dto, const std::vector<internal::ClanMember>& members_dto) const;
     async::task<void>                          ensure_clan(uint32_t id, ensure_clan_fn fn);
+    double                                     exp_multiplier() const;
+    void                                       exp_multiplier(double value);
+    double                                     drop_rate_multiplier() const;
+    void                                       drop_rate_multiplier(double value);
     // clang-format on
 };
 
