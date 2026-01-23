@@ -226,6 +226,8 @@ async::task<void> server::on_start()
     this->bind_timer<fb::game::handler::timer::heart_beat>(1s);
     this->bind_timer<fb::game::handler::timer::update_time>(1s);
     this->bind_timer<fb::game::handler::timer::schedule_timer>(1s);
+
+    this->initialize_schedules();
     this->bind_timer<fb::game::handler::timer::announce>(
         std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
     // log_flush timer removed - logs are now published immediately to RabbitMQ
@@ -776,15 +778,21 @@ void server::drop_rate_multiplier(double value)
     this->_drop_rate_multiplier = value;
 }
 
-fb::model::datetime server::schedule_last_execution(uint32_t schedule_id) const
+void server::initialize_schedules()
 {
-    auto it = this->_schedule_last_execution.find(schedule_id);
-    if (it != this->_schedule_last_execution.end())
-        return it->second;
-    return fb::model::datetime();
+    auto now = fb::model::datetime();
+
+    for (const auto& schedule : table::schedule)
+    {
+        auto next = schedule.next_execution(now);
+        if (next.has_value())
+        {
+            this->_scheduled_tasks[schedule.id] = next.value();
+        }
+    }
 }
 
-void server::schedule_last_execution(uint32_t schedule_id, const fb::model::datetime& time)
+std::unordered_map<uint32_t, fb::model::datetime>& server::scheduled_tasks()
 {
-    this->_schedule_last_execution[schedule_id] = time;
+    return this->_scheduled_tasks;
 }

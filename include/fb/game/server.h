@@ -94,10 +94,10 @@ public:
     using ensure_clan_fn     = std::function<async::task<void>(clan_ptr&)>;
 
 private:
-    fb::model::datetime _time;
-    double              _exp_multiplier;
-    double              _drop_rate_multiplier;
-    std::unordered_map<uint32_t, fb::model::datetime> _schedule_last_execution;
+    fb::model::datetime                               _time;
+    double                                            _exp_multiplier;
+    double                                            _drop_rate_multiplier;
+    std::unordered_map<uint32_t, fb::model::datetime> _scheduled_tasks;
 
 public:
     fb::log_collector                                       log;
@@ -215,8 +215,8 @@ public:
     void                                       exp_multiplier(double value);
     double                                     drop_rate_multiplier() const;
     void                                       drop_rate_multiplier(double value);
-    fb::model::datetime                        schedule_last_execution(uint32_t schedule_id) const;
-    void                                       schedule_last_execution(uint32_t schedule_id, const fb::model::datetime& time);
+    void                                       initialize_schedules();
+    std::unordered_map<uint32_t, fb::model::datetime>& scheduled_tasks();
     // clang-format on
 };
 

@@ -10,103 +10,76 @@ schedule_timer::schedule_timer(fb::game::server& server) :
 
 async::task<void> schedule_timer::handle()
 {
-    auto now = fb::model::datetime();
-
-    for (const auto& schedule : table::schedule)
+    // Get the least loaded logic thread for Lua script execution
+    auto* logic_thread = this->server.threads.least_loaded();
+    if (logic_thread == nullptr)
     {
-        if (schedule.date.begin.has_value() && now < schedule.date.begin.value())
-            continue;
+        fb::logger::warn("No logic thread available for schedule execution");
+        co_return;
+    }
 
-        if (schedule.date.end.has_value() && now > schedule.date.end.value())
-            continue;
+    // Switch to logic thread context
+    co_await logic_thread->switching();
 
-        if (schedule.script.empty())
-            continue;
+    auto now       = fb::model::datetime();
+    auto to_remove = std::vector<uint32_t>{};
 
-        if (!schedule.repeat.has_value())
-        {
-            if (!schedule.date.begin.has_value() || !schedule.date.end.has_value())
-                continue;
-
-            if (schedule.date.begin.value() != schedule.date.end.value())
-                continue;
-
-            auto last_execution = this->server.schedule_last_execution(schedule.id);
-            if (last_execution != fb::model::datetime())
-                continue;
-
-            if (now < schedule.date.begin.value())
-                continue;
-
-            auto lua = fb::lua::new_context();
-            if (lua == nullptr)
-                continue;
-
-            try
-            {
-                lua->execute(schedule.script);
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::warn(std::format("Schedule {} script execution failed: {}", schedule.id, e.what()));
-            }
-
-            this->server.schedule_last_execution(schedule.id, now);
-            continue;
-        }
-
-        auto last_execution  = this->server.schedule_last_execution(schedule.id);
-        auto repeat_interval = schedule.repeat.value();
-        auto schedule_begin  = schedule.date.begin.value();
-
-        if (last_execution == fb::model::datetime())
-        {
-            if (now < schedule_begin)
-                continue;
-
-            auto elapsed          = now - schedule_begin;
-            auto intervals_passed = elapsed.total_milliseconds() / repeat_interval.total_milliseconds();
-            auto next_execution   = schedule_begin + fb::model::timespan(std::chrono::milliseconds(
-                                                       (intervals_passed + 1) * repeat_interval.total_milliseconds()));
-
-            if (now < next_execution)
-                continue;
-
-            auto lua = fb::lua::new_context();
-            if (lua == nullptr)
-                continue;
-
-            try
-            {
-                lua->execute(schedule.script);
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::warn(std::format("Schedule {} script execution failed: {}", schedule.id, e.what()));
-            }
-
-            this->server.schedule_last_execution(schedule.id, next_execution);
-            continue;
-        }
-
-        auto next_execution = last_execution + repeat_interval;
+    for (auto& [schedule_id, next_execution] : this->server.scheduled_tasks())
+    {
         if (now < next_execution)
             continue;
 
+        // Execution time reached
+        const auto& schedule = table::schedule[schedule_id];
+
+        // Execute script (now running on logic thread)
         auto lua = fb::lua::new_context();
-        if (lua == nullptr)
-            continue;
-
-        try
+        if (lua != nullptr)
         {
-            lua->execute(schedule.script);
-        }
-        catch (std::exception& e)
-        {
-            fb::logger::warn(std::format("Schedule {} script execution failed: {}", schedule.id, e.what()));
+            try
+            {
+                lua->load(schedule.script);
+                lua->func(schedule.func);
+                std::ignore = co_await lua->call(0);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::warn(std::format("Schedule {} script execution failed: {}", schedule_id, e.what()));
+            }
         }
 
-        this->server.schedule_last_execution(schedule.id, now);
+        // Calculate next execution time
+        if (!schedule.date.end.has_value())
+        {
+            // One-time schedule - no more executions
+            to_remove.push_back(schedule_id);
+        }
+        else if (schedule.repeat.has_value())
+        {
+            // Repeating schedule
+            auto next_time = next_execution + schedule.repeat.value();
+
+            if (schedule.date.end.has_value() && next_time > schedule.date.end.value())
+            {
+                // End time passed - no more executions
+                to_remove.push_back(schedule_id);
+            }
+            else
+            {
+                next_execution = next_time;
+            }
+        }
+        else
+        {
+            // Invalid schedule - remove
+            to_remove.push_back(schedule_id);
+        }
+    }
+
+    // Remove schedules that are no longer executable
+    for (auto schedule_id : to_remove)
+    {
+        this->server.scheduled_tasks().erase(schedule_id);
     }
 
     co_return;
