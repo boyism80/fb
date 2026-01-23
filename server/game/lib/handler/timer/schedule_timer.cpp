@@ -57,10 +57,19 @@ async::task<void> schedule_timer::handle()
 
         auto last_execution  = this->server.schedule_last_execution(schedule.id);
         auto repeat_interval = schedule.repeat.value();
+        auto schedule_begin  = schedule.date.begin.value();
 
         if (last_execution == fb::model::datetime())
         {
-            if (schedule.date.begin.has_value() && now < schedule.date.begin.value())
+            if (now < schedule_begin)
+                continue;
+
+            auto elapsed          = now - schedule_begin;
+            auto intervals_passed = elapsed.total_milliseconds() / repeat_interval.total_milliseconds();
+            auto next_execution   = schedule_begin + fb::model::timespan(std::chrono::milliseconds(
+                                                       (intervals_passed + 1) * repeat_interval.total_milliseconds()));
+
+            if (now < next_execution)
                 continue;
 
             auto lua = fb::lua::new_context();
@@ -76,7 +85,7 @@ async::task<void> schedule_timer::handle()
                 fb::logger::warn(std::format("Schedule {} script execution failed: {}", schedule.id, e.what()));
             }
 
-            this->server.schedule_last_execution(schedule.id, now);
+            this->server.schedule_last_execution(schedule.id, next_execution);
             continue;
         }
 
