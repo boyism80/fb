@@ -11,6 +11,7 @@ IMPLEMENT_LUA_EXTENSION(fb::model::npc, "fb.model.npc")
 {"sell_price",          builtin::model::npc::builtin_sell_price},
 {"buy",                 builtin::model::npc::builtin_buy},
 {"buy_price",           builtin::model::npc::builtin_buy_price},
+{"interaction",         builtin::model::npc::builtin_interaction},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::model::npc::builtin_sell(lua_State* L)
@@ -112,5 +113,19 @@ int builtin::model::npc::builtin_buy(lua_State* L)
     else
         lua->pushnil();
 
+    return 1;
+}
+
+int builtin::model::npc::builtin_interaction(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto npc = lua->touserdata<fb::model::npc>(1);
+    if (npc == nullptr)
+        return 0;
+
+    lua->pushinteger(static_cast<uint8_t>(npc->interaction));
     return 1;
 }
