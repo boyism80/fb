@@ -3,6 +3,7 @@ include "marketplace.fbs";
 namespace fb.protocol.marketplace.request;
 
 table List {
+    section: string;
     character_id: uint;
     listing_id: string;
     item: fb.protocol.marketplace.Item;
@@ -10,11 +11,13 @@ table List {
 }
 
 table Cancel {
+    section: string;
     character_id: uint;
     listing_id: string;
 }
 
 table Purchase {
+    section: string;
     buyer_id: uint;
     listing_id: string;
     purchase_count: ushort;

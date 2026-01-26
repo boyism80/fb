@@ -20,31 +20,41 @@ public struct CreateClan : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public CreateClan __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Master { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Name { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
 #else
-  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
-  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(8); }
+  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Master { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Name { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(10, 1); }
+#else
+  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(10); }
+#endif
+  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(10); }
 
   public static Offset<fb.protocol._internal.request.raw.CreateClan> CreateCreateClan(FlatBufferBuilder builder,
+      StringOffset sectionOffset = default(StringOffset),
       uint host = 0,
       uint master = 0,
       StringOffset nameOffset = default(StringOffset)) {
-    builder.StartTable(3);
+    builder.StartTable(4);
     CreateClan.AddName(builder, nameOffset);
     CreateClan.AddMaster(builder, master);
     CreateClan.AddHost(builder, host);
+    CreateClan.AddSection(builder, sectionOffset);
     return CreateClan.EndCreateClan(builder);
   }
 
-  public static void StartCreateClan(FlatBufferBuilder builder) { builder.StartTable(3); }
-  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
-  public static void AddMaster(FlatBufferBuilder builder, uint master) { builder.AddUint(1, master, 0); }
-  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
+  public static void StartCreateClan(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
+  public static void AddMaster(FlatBufferBuilder builder, uint master) { builder.AddUint(2, master, 0); }
+  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(3, nameOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.CreateClan> EndCreateClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.CreateClan>(o);
@@ -59,9 +69,10 @@ static public class CreateClanVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Master*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*Name*/, false)
+      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Master*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 10 /*Name*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

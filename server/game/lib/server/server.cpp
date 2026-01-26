@@ -312,7 +312,8 @@ async::task<bool> server::on_disconnected(fb::socket<character>& socket)
     try
     {
         co_await this->save(*ch);
-        std::ignore = co_await this->http.post("internal", "/in-game/logout", internal_reqs::Logout{ch->name()});
+        auto section = fb::config<std::string>("section");
+        std::ignore = co_await this->http.post("internal", "/in-game/logout", internal_reqs::Logout{section, ch->name()});
     }
     catch (std::exception& e)
     {
@@ -595,9 +596,11 @@ async::task<void> server::save(character& ch)
         storage_reward_marks.emplace_back(mark.user, pending_id, expired_date_str);
     }
 
+    auto section = fb::config<std::string>("section");
     std::ignore = co_await this->http.post("internal",
                                            "/in-game/save",
-                                           internal_reqs::Save{ch.to_protocol(),
+                                           internal_reqs::Save{section,
+                                                               ch.to_protocol(),
                                                                items,
                                                                spells,
                                                                achievements,
@@ -669,10 +672,11 @@ async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE typ
     {
     case BROADCAST_TYPE::GLOBAL:
     {
+        auto section = fb::config<std::string>("section");
         auto&& resp = co_await this->http.post(
             "internal",
             "/in-game/broadcast",
-            internal_reqs::Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
+            internal_reqs::Broadcast{section, fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
         co_await this->on_broadcast(resp);
     }
     break;
@@ -728,9 +732,11 @@ async::task<void> server::update_status()
 {
     try
     {
+        auto section = fb::config<std::string>("section");
         std::ignore = co_await this->http.post("internal",
                                                "/server/heartbeat",
-                                               internal_reqs::Heartbeat{internal::Service::Game,
+                                               internal_reqs::Heartbeat{section,
+                                                                        internal::Service::Game,
                                                                         this->id(),
                                                                         this->name(),
                                                                         fb::config<std::string>("ip"),

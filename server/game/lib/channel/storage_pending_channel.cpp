@@ -18,7 +18,9 @@ async::task<void> storage_pending_channel::fetch()
 
     try
     {
-        auto&& resp = co_await this->_owner.http.get<internal_resp::GetStoragePending>("internal", "/storage/pending");
+        auto   section = fb::config<std::string>("section");
+        auto&& resp    = co_await this->_owner.http.get<internal_resp::GetStoragePending>(
+            "internal", std::format("/storage/pending/{}", section));
         if (resp.error != 0)
             co_return;
 

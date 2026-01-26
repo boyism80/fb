@@ -20,29 +20,37 @@ public struct InitCharacter : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public InitCharacter __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Uid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Name { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(6, 1); }
+  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
 #else
-  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
+  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
-  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
-  public string Pw { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint Uid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Name { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetPwBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(8, 1); }
 #else
-  public ArraySegment<byte>? GetPwBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
-  public byte[] GetPwArray() { return __p.__vector_as_array<byte>(8); }
-  public uint Hp { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Mp { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public ushort Map { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public ushort X { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public ushort Y { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public byte Role { get { int o = __p.__offset(20); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(8); }
+  public string Pw { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetPwBytes() { return __p.__vector_as_span<byte>(10, 1); }
+#else
+  public ArraySegment<byte>? GetPwBytes() { return __p.__vector_as_arraysegment(10); }
+#endif
+  public byte[] GetPwArray() { return __p.__vector_as_array<byte>(10); }
+  public uint Hp { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Mp { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ushort Map { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public ushort X { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public ushort Y { get { int o = __p.__offset(20); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public byte Role { get { int o = __p.__offset(22); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.InitCharacter> CreateInitCharacter(FlatBufferBuilder builder,
+      StringOffset sectionOffset = default(StringOffset),
       uint uid = 0,
       StringOffset nameOffset = default(StringOffset),
       StringOffset pwOffset = default(StringOffset),
@@ -52,12 +60,13 @@ public struct InitCharacter : IFlatbufferObject
       ushort x = 0,
       ushort y = 0,
       byte role = 0) {
-    builder.StartTable(9);
+    builder.StartTable(10);
     InitCharacter.AddMp(builder, mp);
     InitCharacter.AddHp(builder, hp);
     InitCharacter.AddPw(builder, pwOffset);
     InitCharacter.AddName(builder, nameOffset);
     InitCharacter.AddUid(builder, uid);
+    InitCharacter.AddSection(builder, sectionOffset);
     InitCharacter.AddY(builder, y);
     InitCharacter.AddX(builder, x);
     InitCharacter.AddMap(builder, map);
@@ -65,16 +74,17 @@ public struct InitCharacter : IFlatbufferObject
     return InitCharacter.EndInitCharacter(builder);
   }
 
-  public static void StartInitCharacter(FlatBufferBuilder builder) { builder.StartTable(9); }
-  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(0, uid, 0); }
-  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
-  public static void AddPw(FlatBufferBuilder builder, StringOffset pwOffset) { builder.AddOffset(2, pwOffset.Value, 0); }
-  public static void AddHp(FlatBufferBuilder builder, uint hp) { builder.AddUint(3, hp, 0); }
-  public static void AddMp(FlatBufferBuilder builder, uint mp) { builder.AddUint(4, mp, 0); }
-  public static void AddMap(FlatBufferBuilder builder, ushort map) { builder.AddUshort(5, map, 0); }
-  public static void AddX(FlatBufferBuilder builder, ushort x) { builder.AddUshort(6, x, 0); }
-  public static void AddY(FlatBufferBuilder builder, ushort y) { builder.AddUshort(7, y, 0); }
-  public static void AddRole(FlatBufferBuilder builder, byte role) { builder.AddByte(8, role, 0); }
+  public static void StartInitCharacter(FlatBufferBuilder builder) { builder.StartTable(10); }
+  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(1, uid, 0); }
+  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
+  public static void AddPw(FlatBufferBuilder builder, StringOffset pwOffset) { builder.AddOffset(3, pwOffset.Value, 0); }
+  public static void AddHp(FlatBufferBuilder builder, uint hp) { builder.AddUint(4, hp, 0); }
+  public static void AddMp(FlatBufferBuilder builder, uint mp) { builder.AddUint(5, mp, 0); }
+  public static void AddMap(FlatBufferBuilder builder, ushort map) { builder.AddUshort(6, map, 0); }
+  public static void AddX(FlatBufferBuilder builder, ushort x) { builder.AddUshort(7, x, 0); }
+  public static void AddY(FlatBufferBuilder builder, ushort y) { builder.AddUshort(8, y, 0); }
+  public static void AddRole(FlatBufferBuilder builder, byte role) { builder.AddByte(9, role, 0); }
   public static Offset<fb.protocol._internal.request.raw.InitCharacter> EndInitCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.InitCharacter>(o);
@@ -89,15 +99,16 @@ static public class InitCharacterVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Uid*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 6 /*Name*/, false)
-      && verifier.VerifyString(tablePos, 8 /*Pw*/, false)
-      && verifier.VerifyField(tablePos, 10 /*Hp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 12 /*Mp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 14 /*Map*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 16 /*X*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 18 /*Y*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 20 /*Role*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 6 /*Uid*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 8 /*Name*/, false)
+      && verifier.VerifyString(tablePos, 10 /*Pw*/, false)
+      && verifier.VerifyField(tablePos, 12 /*Hp*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*Mp*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 16 /*Map*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 18 /*X*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 20 /*Y*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 22 /*Role*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

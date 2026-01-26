@@ -25,9 +25,13 @@ struct UpdateFriendsBuilder;
 struct UpdateFriends FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef UpdateFriendsBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_USER = 4,
-    VT_NAMES = 6
+    VT_SECTION = 4,
+    VT_USER = 6,
+    VT_NAMES = 8
   };
+  const ::flatbuffers::String *section() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  }
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
@@ -36,6 +40,8 @@ struct UpdateFriends FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SECTION) &&
+           verifier.VerifyString(section()) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyOffset(verifier, VT_NAMES) &&
            verifier.VerifyVector(names()) &&
@@ -48,6 +54,9 @@ struct UpdateFriendsBuilder {
   typedef UpdateFriends Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
+    fbb_.AddOffset(UpdateFriends::VT_SECTION, section);
+  }
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(UpdateFriends::VT_USER, user, 0);
   }
@@ -67,21 +76,26 @@ struct UpdateFriendsBuilder {
 
 inline ::flatbuffers::Offset<UpdateFriends> CreateUpdateFriends(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
     uint32_t user = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> names = 0) {
   UpdateFriendsBuilder builder_(_fbb);
   builder_.add_names(names);
   builder_.add_user(user);
+  builder_.add_section(section);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<UpdateFriends> CreateUpdateFriendsDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *section = nullptr,
     uint32_t user = 0,
     const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *names = nullptr) {
+  auto section__ = section ? _fbb.CreateString(section) : 0;
   auto names__ = names ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*names) : 0;
   return fb::protocol::internal::request::raw::CreateUpdateFriends(
       _fbb,
+      section__,
       user,
       names__);
 }

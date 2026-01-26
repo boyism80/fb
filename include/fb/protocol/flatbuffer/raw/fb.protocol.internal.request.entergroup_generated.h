@@ -25,10 +25,14 @@ struct EnterGroupBuilder;
 struct EnterGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef EnterGroupBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HOST = 4,
-    VT_MASTER = 6,
-    VT_MEMBER = 8
+    VT_SECTION = 4,
+    VT_HOST = 6,
+    VT_MASTER = 8,
+    VT_MEMBER = 10
   };
+  const ::flatbuffers::String *section() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
@@ -40,6 +44,8 @@ struct EnterGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SECTION) &&
+           verifier.VerifyString(section()) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_MASTER, 4) &&
            VerifyOffset(verifier, VT_MEMBER) &&
@@ -52,6 +58,9 @@ struct EnterGroupBuilder {
   typedef EnterGroup Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
+    fbb_.AddOffset(EnterGroup::VT_SECTION, section);
+  }
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(EnterGroup::VT_HOST, host, 0);
   }
@@ -74,6 +83,7 @@ struct EnterGroupBuilder {
 
 inline ::flatbuffers::Offset<EnterGroup> CreateEnterGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
     uint32_t host = 0,
     uint32_t master = 0,
     ::flatbuffers::Offset<::flatbuffers::String> member = 0) {
@@ -81,17 +91,21 @@ inline ::flatbuffers::Offset<EnterGroup> CreateEnterGroup(
   builder_.add_member(member);
   builder_.add_master(master);
   builder_.add_host(host);
+  builder_.add_section(section);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<EnterGroup> CreateEnterGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *section = nullptr,
     uint32_t host = 0,
     uint32_t master = 0,
     const char *member = nullptr) {
+  auto section__ = section ? _fbb.CreateString(section) : 0;
   auto member__ = member ? _fbb.CreateString(member) : 0;
   return fb::protocol::internal::request::raw::CreateEnterGroup(
       _fbb,
+      section__,
       host,
       master,
       member__);

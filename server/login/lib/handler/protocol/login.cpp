@@ -32,9 +32,11 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
         if (resp1.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
-        auto   uid = resp1.uid;
-        auto&& resp2 =
-            co_await this->server.http.post("internal", "/account/authenticate", internal_reqs::Authenticate{uid, pw});
+        auto   uid     = resp1.uid;
+        auto   section = fb::config<std::string>("section");
+        auto&& resp2   = co_await this->server.http.post("internal",
+                                                       "/account/authenticate",
+                                                       internal_reqs::Authenticate{section, uid, pw});
         co_await this->server.threads.switching(weak);
 
         switch (resp2.error_code)
@@ -50,7 +52,7 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
         auto&& resp3 = co_await this->server.http.post(
             "internal",
             "/in-game/transfer",
-            internal_reqs::Transfer{fb::protocol::internal::Service ::Game, table::map[map].host, name, true});
+            internal_reqs::Transfer{section, fb::protocol::internal::Service ::Game, table::map[map].host, name, true});
         co_await this->server.threads.switching(weak);
 
         switch (static_cast<ERROR_CODE>(resp3.error))

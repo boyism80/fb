@@ -25,13 +25,19 @@ struct AccountBuilder;
 struct Account FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef AccountBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_UID = 4
+    VT_SECTION = 4,
+    VT_UID = 6
   };
+  const ::flatbuffers::String *section() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  }
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SECTION) &&
+           verifier.VerifyString(section()) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
            verifier.EndTable();
   }
@@ -41,6 +47,9 @@ struct AccountBuilder {
   typedef Account Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
+    fbb_.AddOffset(Account::VT_SECTION, section);
+  }
   void add_uid(uint32_t uid) {
     fbb_.AddElement<uint32_t>(Account::VT_UID, uid, 0);
   }
@@ -57,10 +66,23 @@ struct AccountBuilder {
 
 inline ::flatbuffers::Offset<Account> CreateAccount(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
     uint32_t uid = 0) {
   AccountBuilder builder_(_fbb);
   builder_.add_uid(uid);
+  builder_.add_section(section);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Account> CreateAccountDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *section = nullptr,
+    uint32_t uid = 0) {
+  auto section__ = section ? _fbb.CreateString(section) : 0;
+  return fb::protocol::internal::request::raw::CreateAccount(
+      _fbb,
+      section__,
+      uid);
 }
 
 inline const fb::protocol::internal::request::raw::Account *GetAccount(const void *buf) {

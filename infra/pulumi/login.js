@@ -13,6 +13,7 @@ module.exports = function () {
                 const config = {
                     id: 0,
                     name: `login-${section}`,
+                    section: section,
                     ip: conf.host,
                     port: sectionConf.port,
                     thread: {
@@ -35,8 +36,8 @@ module.exports = function () {
                         }
                     },
                     internal: {
-                        ip: `internal-${sectionConf.internal}`,
-                        port: conf.internal[sectionConf.internal].port.cluster
+                        ip: "internal",
+                        port: conf.internal.port.cluster
                     },
                     'transfer delay': 0,
                     'allow_foreign_name': false,

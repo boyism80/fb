@@ -20,41 +20,51 @@ public struct ChangePw : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public ChangePw __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Uid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Before { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetBeforeBytes() { return __p.__vector_as_span<byte>(6, 1); }
+  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
 #else
-  public ArraySegment<byte>? GetBeforeBytes() { return __p.__vector_as_arraysegment(6); }
+  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
-  public byte[] GetBeforeArray() { return __p.__vector_as_array<byte>(6); }
-  public string After { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint Uid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Before { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetAfterBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetBeforeBytes() { return __p.__vector_as_span<byte>(8, 1); }
 #else
-  public ArraySegment<byte>? GetAfterBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetBeforeBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
-  public byte[] GetAfterArray() { return __p.__vector_as_array<byte>(8); }
-  public uint Birthday { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public byte[] GetBeforeArray() { return __p.__vector_as_array<byte>(8); }
+  public string After { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetAfterBytes() { return __p.__vector_as_span<byte>(10, 1); }
+#else
+  public ArraySegment<byte>? GetAfterBytes() { return __p.__vector_as_arraysegment(10); }
+#endif
+  public byte[] GetAfterArray() { return __p.__vector_as_array<byte>(10); }
+  public uint Birthday { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.ChangePw> CreateChangePw(FlatBufferBuilder builder,
+      StringOffset sectionOffset = default(StringOffset),
       uint uid = 0,
       StringOffset beforeOffset = default(StringOffset),
       StringOffset afterOffset = default(StringOffset),
       uint birthday = 0) {
-    builder.StartTable(4);
+    builder.StartTable(5);
     ChangePw.AddBirthday(builder, birthday);
     ChangePw.AddAfter(builder, afterOffset);
     ChangePw.AddBefore(builder, beforeOffset);
     ChangePw.AddUid(builder, uid);
+    ChangePw.AddSection(builder, sectionOffset);
     return ChangePw.EndChangePw(builder);
   }
 
-  public static void StartChangePw(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(0, uid, 0); }
-  public static void AddBefore(FlatBufferBuilder builder, StringOffset beforeOffset) { builder.AddOffset(1, beforeOffset.Value, 0); }
-  public static void AddAfter(FlatBufferBuilder builder, StringOffset afterOffset) { builder.AddOffset(2, afterOffset.Value, 0); }
-  public static void AddBirthday(FlatBufferBuilder builder, uint birthday) { builder.AddUint(3, birthday, 0); }
+  public static void StartChangePw(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(1, uid, 0); }
+  public static void AddBefore(FlatBufferBuilder builder, StringOffset beforeOffset) { builder.AddOffset(2, beforeOffset.Value, 0); }
+  public static void AddAfter(FlatBufferBuilder builder, StringOffset afterOffset) { builder.AddOffset(3, afterOffset.Value, 0); }
+  public static void AddBirthday(FlatBufferBuilder builder, uint birthday) { builder.AddUint(4, birthday, 0); }
   public static Offset<fb.protocol._internal.request.raw.ChangePw> EndChangePw(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.ChangePw>(o);
@@ -69,10 +79,11 @@ static public class ChangePwVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Uid*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 6 /*Before*/, false)
-      && verifier.VerifyString(tablePos, 8 /*After*/, false)
-      && verifier.VerifyField(tablePos, 10 /*Birthday*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 6 /*Uid*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 8 /*Before*/, false)
+      && verifier.VerifyString(tablePos, 10 /*After*/, false)
+      && verifier.VerifyField(tablePos, 12 /*Birthday*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

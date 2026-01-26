@@ -25,14 +25,15 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves a specific system mail user record by user ID and mail ID.
+        /// Retrieves a specific system mail user record by section, user ID and mail ID.
         /// </summary>
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
         /// <param name="user">The unique identifier of the user.</param>
         /// <param name="mailId">The unique identifier of the system mail.</param>
         /// <returns>The system mail user record if found; otherwise, null.</returns>
-        public async Task<SystemMailUser> Get(uint user, uint mailId)
+        public async Task<SystemMailUser> Get(string section, uint user, uint mailId)
         {
-            return await Get(new SystemMailUserKey
+            return await base.Get(section, new SystemMailUserKey
             {
                 User = user,
                 MailId = mailId
@@ -42,11 +43,12 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves all system mail user records for a specific user.
         /// </summary>
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
         /// <param name="user">The unique identifier of the user.</param>
         /// <returns>A collection of all system mail user records for the specified user.</returns>
-        public async Task<IEnumerable<SystemMailUser>> Get(uint user)
+        public async Task<IEnumerable<SystemMailUser>> Get(string section, uint user)
         {
-            return await GetAll(new SystemMailUserKey
+            return await base.GetAll(section, new SystemMailUserKey
             {
                 User = user,
                 MailId = 0

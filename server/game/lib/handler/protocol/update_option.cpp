@@ -56,10 +56,11 @@ async::task<bool> update_option::handle(fb::socket<character>& session, game_req
             }
         }
 
+        auto section = fb::config<std::string>("section");
         auto&& resp =
             co_await this->server.http.post("internal",
                                             "/in-game/option",
-                                            internal_reqs::SetOption{ch->id, static_cast<uint8_t>(option), next});
+                                            internal_reqs::SetOption{section, ch->id, static_cast<uint8_t>(option), next});
         co_await this->server.threads.switching(weak);
 
         if (resp.success == false)

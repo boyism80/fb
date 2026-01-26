@@ -68,10 +68,10 @@ namespace Http.Service
         /// <param name="key">The Redis key associated with this operation.</param>
         /// <param name="hash">The hash value for sharding.</param>
         /// <returns>A task representing the asynchronous queue operation.</returns>
-        public async Task Post(int db, string sql, string key, uint? hash)
+        public async Task Post(string section, int db, string sql, string key, uint? hash)
         {
             var bufferKey = $"{Const.RedisBufferKey}:{db}";
-            var redis = _redisService.Redis(bufferKey).Connection;
+            var redis = _redisService.Redis(section, bufferKey).Connection;
             await redis.ListRightPushAsync(
                 new RedisKey(bufferKey),
                 new RedisValue(JsonConvert.SerializeObject(new BackgroundCommitEntry
@@ -90,10 +90,11 @@ namespace Http.Service
         /// <param name="sql">The SQL statement to execute.</param>
         /// <param name="key">The Redis key associated with this operation.</param>
         /// <returns>A task representing the asynchronous queue operation.</returns>
-        public async Task Post(uint? hash, string sql, string key)
+        public async Task Post(string section, uint? hash, string sql, string key)
         {
-            int db = hash != null ? (int)(hash % _dbContext.SharedDbSize) : -1;
-            await Post(db, sql, key, hash);
+            var sharedSize = _dbContext.GetSharedDbSize(section);
+            int db = hash != null ? (int)(hash % sharedSize) : -1;
+            await Post(section, db, sql, key, hash);
         }
     }
 }

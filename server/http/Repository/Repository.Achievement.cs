@@ -28,12 +28,13 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves a specific achievement for a character by user ID and achievement model.
         /// </summary>
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
         /// <param name="uid">The unique identifier of the character.</param>
         /// <param name="model">The achievement model identifier.</param>
         /// <returns>The achievement if found; otherwise, null.</returns>
-        public async Task<Achievement> Get(uint uid, uint model)
+        public async Task<Achievement> Get(string section, uint uid, uint model)
         {
-            return await base.Get(new AchievementKey
+            return await base.Get(section, new AchievementKey
             {
                 Uid = uid,
                 Model = model
@@ -43,11 +44,12 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves all achievements for a specific character by user ID.
         /// </summary>
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
         /// <param name="uid">The unique identifier of the character.</param>
         /// <returns>A collection of all achievements for the specified character.</returns>
-        public async Task<IEnumerable<Achievement>> Get(uint uid)
+        public async Task<IEnumerable<Achievement>> Get(string section, uint uid)
         {
-            return await base.GetAll(new AchievementKey
+            return await base.GetAll(section, new AchievementKey
             {
                 Uid = uid
             });

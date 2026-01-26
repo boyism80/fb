@@ -20,17 +20,27 @@ public struct GetStoragePending : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public GetStoragePending __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint User { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
+#else
+  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
+#endif
+  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.GetStoragePending> CreateGetStoragePending(FlatBufferBuilder builder,
+      StringOffset sectionOffset = default(StringOffset),
       uint user = 0) {
-    builder.StartTable(1);
+    builder.StartTable(2);
     GetStoragePending.AddUser(builder, user);
+    GetStoragePending.AddSection(builder, sectionOffset);
     return GetStoragePending.EndGetStoragePending(builder);
   }
 
-  public static void StartGetStoragePending(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
+  public static void StartGetStoragePending(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
   public static Offset<fb.protocol._internal.request.raw.GetStoragePending> EndGetStoragePending(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.GetStoragePending>(o);
@@ -45,7 +55,8 @@ static public class GetStoragePendingVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -24,14 +24,16 @@ namespace Http.Reepository
         {
         }
 
+
         /// <summary>
-        /// Retrieves user options by their unique identifier.
+        /// Retrieves user options by section and their unique identifier.
         /// </summary>
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
         /// <param name="uid">The unique identifier of the user whose options to retrieve.</param>
         /// <returns>The user options if found; otherwise, null.</returns>
-        public async Task<Option> Get(uint uid)
+        public async Task<Option> Get(string section, uint uid)
         {
-            return await Get(new OptionKey { Uid = uid });
+            return await base.Get(section, new OptionKey { Uid = uid });
         }
 
         /// <summary>

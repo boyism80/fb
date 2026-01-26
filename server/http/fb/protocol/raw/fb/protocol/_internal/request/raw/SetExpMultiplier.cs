@@ -20,17 +20,27 @@ public struct SetExpMultiplier : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public SetExpMultiplier __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public double Value { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetDouble(o + __p.bb_pos) : (double)0.0; } }
+  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
+#else
+  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
+#endif
+  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public double Value { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetDouble(o + __p.bb_pos) : (double)0.0; } }
 
   public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> CreateSetExpMultiplier(FlatBufferBuilder builder,
+      StringOffset sectionOffset = default(StringOffset),
       double value = 0.0) {
-    builder.StartTable(1);
+    builder.StartTable(2);
     SetExpMultiplier.AddValue(builder, value);
+    SetExpMultiplier.AddSection(builder, sectionOffset);
     return SetExpMultiplier.EndSetExpMultiplier(builder);
   }
 
-  public static void StartSetExpMultiplier(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddValue(FlatBufferBuilder builder, double value) { builder.AddDouble(0, value, 0.0); }
+  public static void StartSetExpMultiplier(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddValue(FlatBufferBuilder builder, double value) { builder.AddDouble(1, value, 0.0); }
   public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> EndSetExpMultiplier(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.SetExpMultiplier>(o);
@@ -45,7 +55,8 @@ static public class SetExpMultiplierVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Value*/, 8 /*double*/, 8, false)
+      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 6 /*Value*/, 8 /*double*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

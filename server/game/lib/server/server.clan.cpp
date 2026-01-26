@@ -36,8 +36,9 @@ async::task<void> server::ensure_clan(uint32_t id, ensure_clan_fn fn)
                     co_await thread.switching();
                 },
                 [=, this]() -> async::task<clan_ptr> {
-                    auto&& resp =
-                        co_await this->http.get<internal_resp::ClanDetails>("internal", std::format("/clan/{}", id));
+                    auto   section = fb::config<std::string>("section");
+                    auto&& resp    = co_await this->http.get<internal_resp::ClanDetails>(
+                        "internal", std::format("/clan/{}/{}", section, id));
                     switch (static_cast<ERROR_CODE>(resp.error))
                     {
                     case ERROR_CODE::NONE:
@@ -147,9 +148,10 @@ async::task<void> server::create_clan(character& me, std::string name)
         if (me.clan_id().has_value())
             throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_CLAN));
 
+        auto section = fb::config<std::string>("section");
         auto&& resp = co_await this->http.post("internal",
                                                "/clan/create",
-                                               internal_reqs::CreateClan{fb::config<uint32_t>("id"), me.id, name});
+                                               internal_reqs::CreateClan{section, fb::config<uint32_t>("id"), me.id, name});
         co_await this->threads.switching(weak);
         co_await this->on_create_clan(resp);
     }
@@ -186,9 +188,10 @@ async::task<void> server::destroy_clan(character& me)
             co_return;
         });
 
+        auto section = fb::config<std::string>("section");
         auto&& resp = co_await this->http.post("internal",
                                                "/clan/destroy",
-                                               internal_reqs::DestroyClan{fb::config<uint32_t>("id"), me.id});
+                                               internal_reqs::DestroyClan{section, fb::config<uint32_t>("id"), me.id});
         co_await this->threads.switching(weak);
         co_await this->on_destroyed_clan(resp);
     }
@@ -221,10 +224,11 @@ async::task<void> server::join_clan_member(character& inviter, const std::string
             }
         }
 
+        auto section = fb::config<std::string>("section");
         auto&& resp =
             co_await this->http.post("internal",
                                      "/clan/join",
-                                     internal_reqs::JoinClan{fb::config<uint32_t>("host"), inviter.id, target_name});
+                                     internal_reqs::JoinClan{section, fb::config<uint32_t>("host"), inviter.id, target_name});
         co_await this->threads.switching(weak);
         co_await this->on_updated_clan(resp);
     }
@@ -254,10 +258,11 @@ async::task<void> server::leave_clan_member(character& leaver)
         co_return;
     });
 
+    auto section = fb::config<std::string>("section");
     auto&& resp = co_await this->http.post(
         "internal",
         "/clan/leave",
-        internal_reqs::LeaveClan{fb::config<uint32_t>("host"), clan_id.value(), leaver.name()});
+        internal_reqs::LeaveClan{section, fb::config<uint32_t>("host"), clan_id.value(), leaver.name()});
     co_await this->threads.switching(weak);
     co_await this->on_updated_clan(resp);
 }
@@ -284,10 +289,11 @@ async::task<void> server::kick_clan_member(character& kicker, const std::string&
         }
     }
 
+    auto section = fb::config<std::string>("section");
     auto&& resp = co_await this->http.post(
         "internal",
         "/clan/kick",
-        internal_reqs::KickClan{fb::config<uint32_t>("host"), kicker_clan_id.value(), kicker.name(), target_name});
+        internal_reqs::KickClan{section, fb::config<uint32_t>("host"), kicker_clan_id.value(), kicker.name(), target_name});
     co_await this->threads.switching(weak);
     co_await this->on_updated_clan(resp);
 }
@@ -313,9 +319,11 @@ async::task<void> server::change_clan_role(character& changer, const std::string
         }
     }
 
+    auto section = fb::config<std::string>("section");
     auto&& resp = co_await this->http.post("internal",
                                            "/clan/change-role",
-                                           internal_reqs::ChangeClanRole{fb::config<uint32_t>("host"),
+                                           internal_reqs::ChangeClanRole{section,
+                                                                         fb::config<uint32_t>("host"),
                                                                          changer.id,
                                                                          target_name,
                                                                          changer_clan_id.value(),
@@ -349,20 +357,22 @@ async::task<void> server::set_clan_title(character& changer, const std::string& 
         co_return;
     });
 
+    auto section = fb::config<std::string>("section");
     auto&& resp =
         co_await this->http.post("internal",
                                  "/clan/title",
-                                 internal_reqs::SetClanTitle{fb::config<uint32_t>("host"), changer.id, title});
+                                 internal_reqs::SetClanTitle{section, fb::config<uint32_t>("host"), changer.id, title});
     co_await this->threads.switching(weak);
     co_await this->on_updated_clan(resp);
 }
 
 async::task<void> server::broadcast_clan(uint32_t clan_id, const std::string& message, MESSAGE_TYPE type)
 {
+    auto section = fb::config<std::string>("section");
     auto&& resp = co_await this->http.post(
         "internal",
         "/clan/broadcast",
-        internal_reqs::BroadcastClan{fb::config<uint32_t>("host"), clan_id, message, static_cast<uint8_t>(type)});
+        internal_reqs::BroadcastClan{section, fb::config<uint32_t>("host"), clan_id, message, static_cast<uint8_t>(type)});
     co_await this->on_clan_broadcast(resp);
 }
 

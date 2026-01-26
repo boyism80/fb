@@ -25,9 +25,13 @@ struct DeleteMailBuilder;
 struct DeleteMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef DeleteMailBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_USER = 4,
-    VT_ID = 6
+    VT_SECTION = 4,
+    VT_USER = 6,
+    VT_ID = 8
   };
+  const ::flatbuffers::String *section() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  }
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
@@ -36,6 +40,8 @@ struct DeleteMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SECTION) &&
+           verifier.VerifyString(section()) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyField<uint16_t>(verifier, VT_ID, 2) &&
            verifier.EndTable();
@@ -46,6 +52,9 @@ struct DeleteMailBuilder {
   typedef DeleteMail Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
+    fbb_.AddOffset(DeleteMail::VT_SECTION, section);
+  }
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(DeleteMail::VT_USER, user, 0);
   }
@@ -65,12 +74,27 @@ struct DeleteMailBuilder {
 
 inline ::flatbuffers::Offset<DeleteMail> CreateDeleteMail(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
     uint32_t user = 0,
     uint16_t id = 0) {
   DeleteMailBuilder builder_(_fbb);
   builder_.add_user(user);
+  builder_.add_section(section);
   builder_.add_id(id);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<DeleteMail> CreateDeleteMailDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *section = nullptr,
+    uint32_t user = 0,
+    uint16_t id = 0) {
+  auto section__ = section ? _fbb.CreateString(section) : 0;
+  return fb::protocol::internal::request::raw::CreateDeleteMail(
+      _fbb,
+      section__,
+      user,
+      id);
 }
 
 inline const fb::protocol::internal::request::raw::DeleteMail *GetDeleteMail(const void *buf) {

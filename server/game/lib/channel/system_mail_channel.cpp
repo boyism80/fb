@@ -15,7 +15,9 @@ async::task<void> system_mail_channel::fetch()
     namespace internal_resp = fb::protocol::internal::response;
     try
     {
-        auto&& resp = co_await this->_owner.http.get<internal_resp::GetSystemMails>("internal", "/mail/system");
+        auto   section = fb::config<std::string>("section");
+        auto&& resp    = co_await this->_owner.http.get<internal_resp::GetSystemMails>(
+            "internal", std::format("/mail/system/{}", section));
         if (resp.error != 0)
             co_return;
 

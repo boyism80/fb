@@ -20,31 +20,41 @@ public struct Broadcast : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Broadcast __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Message { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(6, 1); }
+  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
 #else
-  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(6); }
+  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
-  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(6); }
-  public byte Type { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Message { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(8, 1); }
+#else
+  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(8); }
+#endif
+  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(8); }
+  public byte Type { get { int o = __p.__offset(10); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.Broadcast> CreateBroadcast(FlatBufferBuilder builder,
+      StringOffset sectionOffset = default(StringOffset),
       uint host = 0,
       StringOffset messageOffset = default(StringOffset),
       byte type = 0) {
-    builder.StartTable(3);
+    builder.StartTable(4);
     Broadcast.AddMessage(builder, messageOffset);
     Broadcast.AddHost(builder, host);
+    Broadcast.AddSection(builder, sectionOffset);
     Broadcast.AddType(builder, type);
     return Broadcast.EndBroadcast(builder);
   }
 
-  public static void StartBroadcast(FlatBufferBuilder builder) { builder.StartTable(3); }
-  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
-  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(1, messageOffset.Value, 0); }
-  public static void AddType(FlatBufferBuilder builder, byte type) { builder.AddByte(2, type, 0); }
+  public static void StartBroadcast(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
+  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(2, messageOffset.Value, 0); }
+  public static void AddType(FlatBufferBuilder builder, byte type) { builder.AddByte(3, type, 0); }
   public static Offset<fb.protocol._internal.request.raw.Broadcast> EndBroadcast(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Broadcast>(o);
@@ -59,9 +69,10 @@ static public class BroadcastVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 6 /*Message*/, false)
-      && verifier.VerifyField(tablePos, 8 /*Type*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 8 /*Message*/, false)
+      && verifier.VerifyField(tablePos, 10 /*Type*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

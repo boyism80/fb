@@ -6,20 +6,81 @@ module.exports = {
 
         const resources = []
         const ports = []
-        for(const [section, sectionConf] of Object.entries(conf["admin-tool"])) {
-            const appLabels = { app: `admin-tool-${section}` }
-            const config = {
-                "Logging": {
-                    "LogLevel": {
-                        "Default": "Information",
-                        "Microsoft.AspNetCore": "Warning"
+        const adminToolConf = conf["admin-tool"]
+        const appLabels = { app: "admin-tool" }
+        const config = {
+            "Logging": {
+                "LogLevel": {
+                    "Default": "Information",
+                    "Microsoft.AspNetCore": "Warning"
+                }
+            },
+            "ConnectionStrings": {
+                "MySql": {}
+            },
+            "Redis": {},
+            "RabbitMQ": {},
+            "Log": {
+                "Enabled": true,
+                "ServerId": "0",
+                "ServerName": "admin-tool"
+            },
+            "Security": {
+                "ElevationSecret": ""
+            }
+        }
+
+        // Build MySQL connections for all sections (nested structure: MySql:{section}:{id})
+        for(const [sectionName, sectionConf] of Object.entries(adminToolConf.sections)) {
+            if (sectionConf.mysql && conf.mysql[sectionConf.mysql]) {
+                if (!config.ConnectionStrings.MySql[sectionName]) {
+                    config.ConnectionStrings.MySql[sectionName] = {}
+                }
+                for(const [id, mysqlConf] of Object.entries(conf.mysql[sectionConf.mysql].data)) {
+                    config.ConnectionStrings.MySql[sectionName][id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                }
+            }
+            if (sectionConf.redis && conf.redis[sectionConf.redis]) {
+                if (!config.Redis[sectionName]) {
+                    config.Redis[sectionName] = {}
+                }
+                for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
+                    config.Redis[sectionName][id] = {
+                        Host: `redis-${sectionConf.redis}`,
+                        Port: conf.redis[sectionConf.redis][id].port.cluster
                     }
-                },
-                "ConnectionStrings": {
-                    "MySql": {}
-                },
-                "Redis": {},
-                "RabbitMQ": {
+                }
+            }
+        }
+
+        // Add unified-global MySQL and Redis (nested structure)
+        if (adminToolConf["unified-global"]) {
+            const unifiedGlobal = adminToolConf["unified-global"]
+            if (unifiedGlobal.mysql && conf.mysql[unifiedGlobal.mysql]) {
+                if (!config.ConnectionStrings.MySql["unified-global"]) {
+                    config.ConnectionStrings.MySql["unified-global"] = {}
+                }
+                for(const [id, mysqlConf] of Object.entries(conf.mysql[unifiedGlobal.mysql].data)) {
+                    config.ConnectionStrings.MySql["unified-global"][id] = `Server=mysql-${unifiedGlobal.mysql};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                }
+            }
+            if (unifiedGlobal.redis && conf.redis[unifiedGlobal.redis]) {
+                if (!config.Redis["unified-global"]) {
+                    config.Redis["unified-global"] = {}
+                }
+                for(const [id, redisConf] of Object.entries(conf.redis[unifiedGlobal.redis])) {
+                    config.Redis["unified-global"][id] = {
+                        Host: `redis-${unifiedGlobal.redis}`,
+                        Port: conf.redis[unifiedGlobal.redis][id].port.cluster
+                    }
+                }
+            }
+        }
+
+        // Build RabbitMQ connections for all sections
+        for(const [sectionName, sectionConf] of Object.entries(adminToolConf.sections)) {
+            if (sectionConf.rabbitmq && conf.rabbitmq[sectionConf.rabbitmq]) {
+                config.RabbitMQ[sectionName] = {
                     "Internal": {
                         "Host": `rabbitmq-${sectionConf.rabbitmq}-internal`,
                         "Port": conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
@@ -33,44 +94,34 @@ module.exports = {
                         "Pwd": "admin",
                         "QueueSize": 128
                     }
-                },
-                "Log": {
-                    "Enabled": true,
-                    "ServerId": "0",
-                    "ServerName": "admin-tool"
-                },
-                "Security": {
-                    "ElevationSecret": ""
                 }
             }
+        }
 
-            for(const [id, mysqlConf] of Object.entries(conf.mysql[sectionConf.mysql].data)) {
-                config.ConnectionStrings.MySql[id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+        // Build SectionServers mapping from login configuration (same as gateway entrypoints)
+        config.SectionServers = {}
+        for(const [section, loginConf] of Object.entries(conf.login)) {
+            if (loginConf.name) {
+                config.SectionServers[section] = loginConf.name
             }
+        }
 
-            for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
-                config.Redis[id] = {
-                    Host: `redis-${sectionConf.redis}`,
-                    Port: conf.redis[sectionConf.redis][id].port.cluster
-                }
-            }
+        if (adminToolConf.security && adminToolConf.security.elevationSecret) {
+            config.Security.ElevationSecret = adminToolConf.security.elevationSecret
+        }
 
-            if (sectionConf.security && sectionConf.security.elevationSecret) {
-                config.Security.ElevationSecret = sectionConf.security.elevationSecret
-            }
+        const configMap = new k8s.core.v1.ConfigMap("admin-tool", {
+            metadata: { name: "admin-tool", namespace: namespace.metadata.name },
+            data: {
+                "appsettings.k8s.json": JSON.stringify(config),
+            },
+        })
 
-            const configMap = new k8s.core.v1.ConfigMap(`admin-tool-${section}`, {
-                metadata: { name: `admin-tool-${section}`, namespace: namespace.metadata.name },
-                data: {
-                    "appsettings.k8s.json": JSON.stringify(config),
-                },
-            })
-
-            const deployment = new k8s.apps.v1.Deployment(`admin-tool-${section}`, {
-                metadata: { name: `admin-tool-${section}`, namespace: namespace.metadata.name },
-                spec: {
-                    selector: { matchLabels: appLabels },
-                    replicas: sectionConf.replicas,
+        const deployment = new k8s.apps.v1.Deployment("admin-tool", {
+            metadata: { name: "admin-tool", namespace: namespace.metadata.name },
+            spec: {
+                selector: { matchLabels: appLabels },
+                replicas: adminToolConf.replicas,
                     template: {
                         metadata: { labels: appLabels },
                         spec: {
@@ -89,6 +140,9 @@ module.exports = {
                                 }
                             },
                             containers: [{
+                                nodeSelector: {
+                                    cpu: "epyc"
+                                },
                                 name: "admin-tool",
                                 image: "ghcr.io/boyism80/fb/admin-tool:latest",
                                 imagePullPolicy: "Always",
@@ -133,26 +187,25 @@ module.exports = {
                 },
             }, { dependsOn: dependsOn })
 
-            const service = new k8s.core.v1.Service(`admin-tool-${section}`, {
-                metadata: { name: `admin-tool-${section}`, namespace: namespace.metadata.name },
-                spec: {
-                    type: "NodePort",
-                    ports: [{ 
-                        name: `admin-tool-${section}`,
-                        port: sectionConf.port.cluster,
-                        targetPort: `admin-tool`,
-                        protocol: "TCP",
-                        nodePort: sectionConf.port.node 
-                    }],
-                    selector: appLabels,
-                },
-            }, { dependsOn: dependsOn })
-            
-            // Collect all resources
-            resources.push(configMap)
-            resources.push(deployment)
-            resources.push(service)
-        }
+        const service = new k8s.core.v1.Service("admin-tool", {
+            metadata: { name: "admin-tool", namespace: namespace.metadata.name },
+            spec: {
+                type: "NodePort",
+                ports: [{ 
+                    name: "admin-tool",
+                    port: adminToolConf.port.cluster,
+                    targetPort: "admin-tool",
+                    protocol: "TCP",
+                    nodePort: adminToolConf.port.node 
+                }],
+                selector: appLabels,
+            },
+        }, { dependsOn: dependsOn })
+        
+        // Collect all resources
+        resources.push(configMap)
+        resources.push(deployment)
+        resources.push(service)
         
         return resources
     }

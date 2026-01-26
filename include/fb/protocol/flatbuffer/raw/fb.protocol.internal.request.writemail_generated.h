@@ -25,12 +25,16 @@ struct WriteMailBuilder;
 struct WriteMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef WriteMailBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SENDER = 4,
-    VT_USER = 6,
-    VT_TITLE = 8,
-    VT_CONTENTS = 10,
-    VT_HOST = 12
+    VT_SECTION = 4,
+    VT_SENDER = 6,
+    VT_USER = 8,
+    VT_TITLE = 10,
+    VT_CONTENTS = 12,
+    VT_HOST = 14
   };
+  const ::flatbuffers::String *section() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  }
   uint32_t sender() const {
     return GetField<uint32_t>(VT_SENDER, 0);
   }
@@ -48,6 +52,8 @@ struct WriteMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SECTION) &&
+           verifier.VerifyString(section()) &&
            VerifyField<uint32_t>(verifier, VT_SENDER, 4) &&
            VerifyOffset(verifier, VT_USER) &&
            verifier.VerifyString(user()) &&
@@ -64,6 +70,9 @@ struct WriteMailBuilder {
   typedef WriteMail Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
+    fbb_.AddOffset(WriteMail::VT_SECTION, section);
+  }
   void add_sender(uint32_t sender) {
     fbb_.AddElement<uint32_t>(WriteMail::VT_SENDER, sender, 0);
   }
@@ -92,6 +101,7 @@ struct WriteMailBuilder {
 
 inline ::flatbuffers::Offset<WriteMail> CreateWriteMail(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
     uint32_t sender = 0,
     ::flatbuffers::Offset<::flatbuffers::String> user = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
@@ -103,21 +113,25 @@ inline ::flatbuffers::Offset<WriteMail> CreateWriteMail(
   builder_.add_title(title);
   builder_.add_user(user);
   builder_.add_sender(sender);
+  builder_.add_section(section);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<WriteMail> CreateWriteMailDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *section = nullptr,
     uint32_t sender = 0,
     const char *user = nullptr,
     const char *title = nullptr,
     const char *contents = nullptr,
     uint32_t host = 0) {
+  auto section__ = section ? _fbb.CreateString(section) : 0;
   auto user__ = user ? _fbb.CreateString(user) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto contents__ = contents ? _fbb.CreateString(contents) : 0;
   return fb::protocol::internal::request::raw::CreateWriteMail(
       _fbb,
+      section__,
       sender,
       user__,
       title__,

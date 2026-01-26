@@ -25,11 +25,15 @@ struct ChangePwBuilder;
 struct ChangePw FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ChangePwBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_UID = 4,
-    VT_BEFORE = 6,
-    VT_AFTER = 8,
-    VT_BIRTHDAY = 10
+    VT_SECTION = 4,
+    VT_UID = 6,
+    VT_BEFORE = 8,
+    VT_AFTER = 10,
+    VT_BIRTHDAY = 12
   };
+  const ::flatbuffers::String *section() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  }
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
   }
@@ -44,6 +48,8 @@ struct ChangePw FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SECTION) &&
+           verifier.VerifyString(section()) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
            VerifyOffset(verifier, VT_BEFORE) &&
            verifier.VerifyString(before()) &&
@@ -58,6 +64,9 @@ struct ChangePwBuilder {
   typedef ChangePw Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
+    fbb_.AddOffset(ChangePw::VT_SECTION, section);
+  }
   void add_uid(uint32_t uid) {
     fbb_.AddElement<uint32_t>(ChangePw::VT_UID, uid, 0);
   }
@@ -83,6 +92,7 @@ struct ChangePwBuilder {
 
 inline ::flatbuffers::Offset<ChangePw> CreateChangePw(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
     uint32_t uid = 0,
     ::flatbuffers::Offset<::flatbuffers::String> before = 0,
     ::flatbuffers::Offset<::flatbuffers::String> after = 0,
@@ -92,19 +102,23 @@ inline ::flatbuffers::Offset<ChangePw> CreateChangePw(
   builder_.add_after(after);
   builder_.add_before(before);
   builder_.add_uid(uid);
+  builder_.add_section(section);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<ChangePw> CreateChangePwDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *section = nullptr,
     uint32_t uid = 0,
     const char *before = nullptr,
     const char *after = nullptr,
     uint32_t birthday = 0) {
+  auto section__ = section ? _fbb.CreateString(section) : 0;
   auto before__ = before ? _fbb.CreateString(before) : 0;
   auto after__ = after ? _fbb.CreateString(after) : 0;
   return fb::protocol::internal::request::raw::CreateChangePw(
       _fbb,
+      section__,
       uid,
       before__,
       after__,

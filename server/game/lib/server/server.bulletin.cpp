@@ -8,9 +8,10 @@ async::task<std::list<bulletin::article>> server::bulletin_list(uint16_t section
     if (table::bulletin.contains(section) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_SECTION_NOT_EXIST));
 
-    auto&& resp =
-        co_await this->http.get<internal_resp::GetArticleList>("internal",
-                                                               std::format("/bulletin/{}?offset={}", section, offset));
+    auto   game_section = fb::config<std::string>("section");
+    auto&& resp         = co_await this->http.get<internal_resp::GetArticleList>(
+        "internal",
+        std::format("/{}/bulletin/{}?offset={}", game_section, section, offset));
     auto& model    = table::bulletin[section];
     auto  articles = std::list<bulletin::article>();
     for (auto& summary : resp.summary_list)
@@ -33,8 +34,10 @@ async::task<bulletin::article> server::read_bulletin(uint16_t section, uint16_t 
     if (table::bulletin.contains(section) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_SECTION_NOT_EXIST));
 
-    auto&& resp =
-        co_await this->http.get<internal_resp::GetArticle>("internal", std::format("/bulletin/{}/{}", section, id));
+    auto   game_section = fb::config<std::string>("section");
+    auto&& resp         = co_await this->http.get<internal_resp::GetArticle>(
+        "internal",
+        std::format("/{}/bulletin/{}/{}", game_section, section, id));
     if (resp.success == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_ARTICLE_NOT_EXIST));
 
@@ -65,9 +68,10 @@ server::write_bulletin(character& ch, uint16_t section, const std::string& title
     if (contents.length() > 256)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_TOO_LONG_CONTENTS));
 
-    auto&& resp = co_await this->http.post("internal",
+    auto   game_section = fb::config<std::string>("section");
+    auto&& resp         = co_await this->http.post("internal",
                                            "/bulletin/write",
-                                           internal_reqs::WriteArticle{section, ch.id, title, contents});
+                                           internal_reqs::WriteArticle{game_section, section, ch.id, title, contents});
 
     if (resp.success == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_WRITE_FAILED));
@@ -81,8 +85,10 @@ async::task<void> server::delete_bulletin(character& ch, uint16_t section, uint1
     if (ch.condition(table::bulletin[section].condition) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_NOT_AUTH));
 
-    auto&& resp =
-        co_await this->http.post("internal", "/bulletin/delete", internal_reqs::DeleteArticle{id, section, ch.id});
+    auto   game_section = fb::config<std::string>("section");
+    auto&& resp         = co_await this->http.post("internal",
+                                           "/bulletin/delete",
+                                           internal_reqs::DeleteArticle{game_section, id, section, ch.id});
 
     switch (resp.result)
     {

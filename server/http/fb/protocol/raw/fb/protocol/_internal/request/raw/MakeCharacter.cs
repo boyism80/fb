@@ -20,20 +20,29 @@ public struct MakeCharacter : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public MakeCharacter __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Uid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public ushort Hair { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public byte Gender { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public byte Nation { get { int o = __p.__offset(10); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public byte Creature { get { int o = __p.__offset(12); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
+#else
+  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
+#endif
+  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint Uid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ushort Hair { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public byte Gender { get { int o = __p.__offset(10); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte Nation { get { int o = __p.__offset(12); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte Creature { get { int o = __p.__offset(14); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.MakeCharacter> CreateMakeCharacter(FlatBufferBuilder builder,
+      StringOffset sectionOffset = default(StringOffset),
       uint uid = 0,
       ushort hair = 0,
       byte gender = 0,
       byte nation = 0,
       byte creature = 0) {
-    builder.StartTable(5);
+    builder.StartTable(6);
     MakeCharacter.AddUid(builder, uid);
+    MakeCharacter.AddSection(builder, sectionOffset);
     MakeCharacter.AddHair(builder, hair);
     MakeCharacter.AddCreature(builder, creature);
     MakeCharacter.AddNation(builder, nation);
@@ -41,12 +50,13 @@ public struct MakeCharacter : IFlatbufferObject
     return MakeCharacter.EndMakeCharacter(builder);
   }
 
-  public static void StartMakeCharacter(FlatBufferBuilder builder) { builder.StartTable(5); }
-  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(0, uid, 0); }
-  public static void AddHair(FlatBufferBuilder builder, ushort hair) { builder.AddUshort(1, hair, 0); }
-  public static void AddGender(FlatBufferBuilder builder, byte gender) { builder.AddByte(2, gender, 0); }
-  public static void AddNation(FlatBufferBuilder builder, byte nation) { builder.AddByte(3, nation, 0); }
-  public static void AddCreature(FlatBufferBuilder builder, byte creature) { builder.AddByte(4, creature, 0); }
+  public static void StartMakeCharacter(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(1, uid, 0); }
+  public static void AddHair(FlatBufferBuilder builder, ushort hair) { builder.AddUshort(2, hair, 0); }
+  public static void AddGender(FlatBufferBuilder builder, byte gender) { builder.AddByte(3, gender, 0); }
+  public static void AddNation(FlatBufferBuilder builder, byte nation) { builder.AddByte(4, nation, 0); }
+  public static void AddCreature(FlatBufferBuilder builder, byte creature) { builder.AddByte(5, creature, 0); }
   public static Offset<fb.protocol._internal.request.raw.MakeCharacter> EndMakeCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.MakeCharacter>(o);
@@ -61,11 +71,12 @@ static public class MakeCharacterVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Uid*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Hair*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 8 /*Gender*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 10 /*Nation*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 12 /*Creature*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 6 /*Uid*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Hair*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 10 /*Gender*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 12 /*Nation*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 14 /*Creature*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

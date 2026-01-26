@@ -33,10 +33,10 @@ namespace Internal.Controllers
             _logger = logger;
         }
 
-        [HttpGet("{section}")]
-        public async Task<Response.GetArticleList> GetArticleList(uint section, [FromQuery(Name = "offset")] ushort offset)
+        [HttpGet("{section}/{bulletinSection}")]
+        public async Task<Response.GetArticleList> GetArticleList(string section, uint bulletinSection, [FromQuery(Name = "offset")] ushort offset)
         {
-            var articleList = await _bulletinService.GetArticleListAsync(section, offset);
+            var articleList = await _bulletinService.GetArticleListAsync(section, bulletinSection, offset);
 
             var summaryList = _mapper.Map<List<Http.Model.Bulletin>, List<ArticleSummary>>(articleList);
             return new Response.GetArticleList
@@ -45,12 +45,12 @@ namespace Internal.Controllers
             };
         }
 
-        [HttpGet("{section}/{id}")]
-        public async Task<Response.GetArticle> GetArticle(uint section, ushort id)
+        [HttpGet("{section}/{bulletinSection}/{id}")]
+        public async Task<Response.GetArticle> GetArticle(string section, uint bulletinSection, ushort id)
         {
             try
             {
-                var (article, next) = await _bulletinService.GetArticleAsync(section, id);
+                var (article, next) = await _bulletinService.GetArticleAsync(section, bulletinSection, id);
 
                 if (article == null)
                 {
@@ -80,6 +80,7 @@ namespace Internal.Controllers
             {
                 var success = await _bulletinService.Write(
                     request.Section,
+                    request.ArticleSection,
                     request.User,
                     request.Title,
                     request.Contents
@@ -107,6 +108,7 @@ namespace Internal.Controllers
             {
                 var result = await _bulletinService.Delete(
                     request.Section,
+                    request.ArticleSection,
                     request.Id,
                     request.User
                 );

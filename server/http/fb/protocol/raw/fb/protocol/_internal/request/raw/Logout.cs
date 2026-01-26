@@ -20,23 +20,33 @@ public struct Logout : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Logout __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Name { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(4, 1); }
+  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
 #else
-  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(4); }
+  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
-  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(4); }
+  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public string Name { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(6, 1); }
+#else
+  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
+#endif
+  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
 
   public static Offset<fb.protocol._internal.request.raw.Logout> CreateLogout(FlatBufferBuilder builder,
+      StringOffset sectionOffset = default(StringOffset),
       StringOffset nameOffset = default(StringOffset)) {
-    builder.StartTable(1);
+    builder.StartTable(2);
     Logout.AddName(builder, nameOffset);
+    Logout.AddSection(builder, sectionOffset);
     return Logout.EndLogout(builder);
   }
 
-  public static void StartLogout(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(0, nameOffset.Value, 0); }
+  public static void StartLogout(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.Logout> EndLogout(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Logout>(o);
@@ -51,7 +61,8 @@ static public class LogoutVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Name*/, false)
+      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyString(tablePos, 6 /*Name*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

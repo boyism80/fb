@@ -25,11 +25,15 @@ struct PurchaseBuilder;
 struct Purchase FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PurchaseBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_BUYER_ID = 4,
-    VT_LISTING_ID = 6,
-    VT_PURCHASE_COUNT = 8,
-    VT_PURCHASE_ID = 10
+    VT_SECTION = 4,
+    VT_BUYER_ID = 6,
+    VT_LISTING_ID = 8,
+    VT_PURCHASE_COUNT = 10,
+    VT_PURCHASE_ID = 12
   };
+  const ::flatbuffers::String *section() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  }
   uint32_t buyer_id() const {
     return GetField<uint32_t>(VT_BUYER_ID, 0);
   }
@@ -44,6 +48,8 @@ struct Purchase FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SECTION) &&
+           verifier.VerifyString(section()) &&
            VerifyField<uint32_t>(verifier, VT_BUYER_ID, 4) &&
            VerifyOffset(verifier, VT_LISTING_ID) &&
            verifier.VerifyString(listing_id()) &&
@@ -58,6 +64,9 @@ struct PurchaseBuilder {
   typedef Purchase Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
+    fbb_.AddOffset(Purchase::VT_SECTION, section);
+  }
   void add_buyer_id(uint32_t buyer_id) {
     fbb_.AddElement<uint32_t>(Purchase::VT_BUYER_ID, buyer_id, 0);
   }
@@ -83,6 +92,7 @@ struct PurchaseBuilder {
 
 inline ::flatbuffers::Offset<Purchase> CreatePurchase(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
     uint32_t buyer_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
     uint16_t purchase_count = 0,
@@ -91,20 +101,24 @@ inline ::flatbuffers::Offset<Purchase> CreatePurchase(
   builder_.add_purchase_id(purchase_id);
   builder_.add_listing_id(listing_id);
   builder_.add_buyer_id(buyer_id);
+  builder_.add_section(section);
   builder_.add_purchase_count(purchase_count);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Purchase> CreatePurchaseDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *section = nullptr,
     uint32_t buyer_id = 0,
     const char *listing_id = nullptr,
     uint16_t purchase_count = 0,
     const char *purchase_id = nullptr) {
+  auto section__ = section ? _fbb.CreateString(section) : 0;
   auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
   auto purchase_id__ = purchase_id ? _fbb.CreateString(purchase_id) : 0;
   return fb::protocol::marketplace::request::raw::CreatePurchase(
       _fbb,
+      section__,
       buyer_id,
       listing_id__,
       purchase_count,

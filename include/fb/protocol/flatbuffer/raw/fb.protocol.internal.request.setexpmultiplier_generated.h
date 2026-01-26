@@ -25,13 +25,19 @@ struct SetExpMultiplierBuilder;
 struct SetExpMultiplier FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SetExpMultiplierBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_VALUE = 4
+    VT_SECTION = 4,
+    VT_VALUE = 6
   };
+  const ::flatbuffers::String *section() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  }
   double value() const {
     return GetField<double>(VT_VALUE, 0.0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SECTION) &&
+           verifier.VerifyString(section()) &&
            VerifyField<double>(verifier, VT_VALUE, 8) &&
            verifier.EndTable();
   }
@@ -41,6 +47,9 @@ struct SetExpMultiplierBuilder {
   typedef SetExpMultiplier Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
+    fbb_.AddOffset(SetExpMultiplier::VT_SECTION, section);
+  }
   void add_value(double value) {
     fbb_.AddElement<double>(SetExpMultiplier::VT_VALUE, value, 0.0);
   }
@@ -57,10 +66,23 @@ struct SetExpMultiplierBuilder {
 
 inline ::flatbuffers::Offset<SetExpMultiplier> CreateSetExpMultiplier(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
     double value = 0.0) {
   SetExpMultiplierBuilder builder_(_fbb);
   builder_.add_value(value);
+  builder_.add_section(section);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<SetExpMultiplier> CreateSetExpMultiplierDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *section = nullptr,
+    double value = 0.0) {
+  auto section__ = section ? _fbb.CreateString(section) : 0;
+  return fb::protocol::internal::request::raw::CreateSetExpMultiplier(
+      _fbb,
+      section__,
+      value);
 }
 
 inline const fb::protocol::internal::request::raw::SetExpMultiplier *GetSetExpMultiplier(const void *buf) {

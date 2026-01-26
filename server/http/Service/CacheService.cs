@@ -12,6 +12,7 @@ namespace Http.Service
     {
         private readonly RedisService _redisService;
         private readonly ILogger<CacheService> _logger;
+        private readonly IConfiguration _configuration;
         private readonly ServerStateService _serverStateService;
 
         /// <summary>
@@ -20,10 +21,11 @@ namespace Http.Service
         /// <param name="redisService">The Redis service for cache operations.</param>
         /// <param name="logger">The logger for recording cache operations.</param>
         /// <param name="serverStateService">The server state service for checking running servers (optional).</param>
-        public CacheService(RedisService redisService, ILogger<CacheService> logger, ServerStateService serverStateService = null)
+        public CacheService(RedisService redisService, ILogger<CacheService> logger, IConfiguration configuration, ServerStateService serverStateService)
         {
             _redisService = redisService;
             _logger = logger;
+            _configuration = configuration;
             _serverStateService = serverStateService;
         }
 
@@ -35,9 +37,9 @@ namespace Http.Service
         /// <param name="pattern">The key pattern to match for deletion.</param>
         /// <param name="count">The maximum number of keys to scan in one operation.</param>
         /// <returns>The number of keys that were deleted.</returns>
-        private async Task<int> DeleteCache(int shardIndex, string pattern, int count)
+        private async Task<int> DeleteCache(string section, int shardIndex, string pattern, int count)
         {
-            var redis = _redisService.Redis(shardIndex);
+            var redis = _redisService.Redis(section, shardIndex);
             if (redis == null)
                 return 0;
 
@@ -57,14 +59,17 @@ namespace Http.Service
         public async Task<int> ClearCache()
         {
             var count = 0;
-            var batch = 10;
-            for (int i = 0; i < _redisService.ShardSize; i++)
+            foreach (var section in _configuration.GetSection("ConnectionStrings:MySql").GetChildren().Select(x => x.Key))
             {
-                count += await DeleteCache(i, "cache:*", batch);
-                count += await DeleteCache(i, Const.ReferenceCountKey, 10);
-                count += await DeleteCache(i, $"{Const.RedisBufferKey}:*", 10);
+                var batch = 10;
+                for (int i = 0; i < _redisService.GetShardSize(section); i++)
+                {
+                    count += await DeleteCache(section, i, "cache:*", batch);
+                    count += await DeleteCache(section, i, Const.ReferenceCountKey, 10);
+                    count += await DeleteCache(section, i, $"{Const.RedisBufferKey}:*", 10);
+                }
+                _logger.LogInformation("Cache cleared: {Count} keys deleted", count);
             }
-            _logger.LogInformation("Cache cleared: {Count} keys deleted", count);
             return count;
         }
 
@@ -73,7 +78,7 @@ namespace Http.Service
         /// This operation is only safe when no servers are running.
         /// </summary>
         /// <returns>True if sessions were cleared; false if servers are still running or ServerStateService is not available.</returns>
-        public async Task<bool> ClearUserSessions()
+        public async Task<bool> ClearUserSessions(string section)
         {
             if (_serverStateService == null)
             {
@@ -88,7 +93,7 @@ namespace Http.Service
                 return false;
             }
 
-            var redis = _redisService.Redis(-1);
+            var redis = _redisService.Redis(section, -1);
             var sessionKey = new SessionKey().Key;
             await redis.Connection.KeyDeleteAsync(new RedisKey(sessionKey));
             _logger.LogInformation("User sessions cleared");

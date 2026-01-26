@@ -24,10 +24,11 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves pending rewards filtered by user scope.
         /// </summary>
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
         /// <param name="user">Target user id or null for global rewards.</param>
-        public Task<IEnumerable<StoragePendingBox>> Get(uint? user)
+        public Task<IEnumerable<StoragePendingBox>> Get(string section, uint? user)
         {
-            return base.GetAll(new StoragePendingBoxKey
+            return base.GetAll(section, new StoragePendingBoxKey
             {
                 User = user
             });
@@ -36,9 +37,11 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves a specific pending reward entry.
         /// </summary>
-        public Task<StoragePendingBox> GetByKey(StoragePendingBoxKey key)
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="key">The storage pending box key.</param>
+        public Task<StoragePendingBox> GetByKey(string section, StoragePendingBoxKey key)
         {
-            return base.Get(key);
+            return base.Get(section, key);
         }
 
         /// <inheritdoc/>

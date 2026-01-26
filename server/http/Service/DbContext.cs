@@ -1,4 +1,4 @@
-﻿using Http.Reepository;
+using Http.Reepository;
 using MySqlConnector;
 
 namespace Http.Service
@@ -98,17 +98,16 @@ namespace Http.Service
         /// </summary>
         public BanRepository Ban => Bind<BanRepository>();
 
+
         /// <summary>
-        /// Gets the number of shared database instances configured.
+        /// Gets the number of shared database instances configured for the specified section.
         /// </summary>
-        /// <value>The count of database shards excluding the default (-1) connection.</value>
-        public uint SharedDbSize
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <returns>The count of database shards excluding the default (-1) connection for the specified section.</returns>
+        public uint GetSharedDbSize(string section)
         {
-            get
-            {
-                var section = _configuration.GetSection("ConnectionStrings:MySql");
-                return (uint)section.GetChildren().Where(x => x.Key != "-1").Count();
-            }
+            var sectionConfig = _configuration.GetSection($"ConnectionStrings:MySql:{section}");
+            return (uint)sectionConfig.GetChildren().Where(x => x.Key != "-1").Count();
         }
 
         /// <summary>
@@ -140,112 +139,120 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Creates a MySQL connection for the specified shard ID.
-        /// Uses modulo operation to distribute connections across available shards.
-        /// </summary>
-        /// <param name="id">The ID used to determine the target shard.</param>
-        /// <returns>A new <see cref="MySqlConnection"/> instance for the calculated shard.</returns>
-        /// <exception cref="Exception">Thrown when SharedDbSize is zero.</exception>
-        public MySqlConnection Connection(uint id)
-        {
-            if (SharedDbSize == 0)
-                throw new Exception("shard db size cannot be zero");
-
-            return new MySqlConnection(_configuration.GetConnectionString($"MySql:{id % SharedDbSize}"));
-        }
-
-        public MySqlConnection Connection(uint? id)
-        {
-            if (id == null)
-                return Connection(-1);
-            else
-                return Connection(id.Value);
-        }
-
-        /// <summary>
-        /// Creates multiple MySQL connections grouped by shard for the specified ID list.
+        /// Creates multiple MySQL connections grouped by shard for the specified section and ID list.
         /// Groups IDs by their target shard to optimize database operations.
         /// </summary>
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
         /// <param name="idList">The collection of IDs to group by shard.</param>
         /// <returns>An enumerable of tuples containing the connection and associated ID array for each shard.</returns>
-        /// <exception cref="Exception">Thrown when SharedDbSize is zero.</exception>
-        public IEnumerable<(MySqlConnection Connection, uint[] IdList)> Connections(IEnumerable<uint> idList)
+        /// <exception cref="Exception">Thrown when shard size is zero for the section.</exception>
+        public IEnumerable<(MySqlConnection Connection, uint[] IdList)> Connections(string section, IEnumerable<uint> idList)
         {
-            if (SharedDbSize == 0)
-                throw new Exception("shard db size cannot be zero");
+            var shardSize = GetSharedDbSize(section);
+            if (shardSize == 0)
+                throw new Exception($"shard db size cannot be zero for section {section}");
 
-            foreach (var g in idList.Distinct().GroupBy(id => (int)(id % SharedDbSize)))
+            foreach (var g in idList.Distinct().GroupBy(id => (int)(id % shardSize)))
             {
-                yield return (Connection(g.Key), g.ToArray());
+                yield return (Connection(section, g.Key), g.ToArray());
             }
         }
 
-        public IEnumerable<(MySqlConnection Connection, uint?[] IdList)> Connections(IEnumerable<uint?> idList)
+        /// <summary>
+        /// Creates multiple MySQL connections grouped by shard for the specified section and nullable ID list.
+        /// Groups IDs by their target shard to optimize database operations.
+        /// </summary>
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="idList">The collection of nullable IDs to group by shard.</param>
+        /// <returns>An enumerable of tuples containing the connection and associated ID array for each shard.</returns>
+        /// <exception cref="Exception">Thrown when shard size is zero for the section.</exception>
+        public IEnumerable<(MySqlConnection Connection, uint?[] IdList)> Connections(string section, IEnumerable<uint?> idList)
         {
-            if (SharedDbSize == 0)
-                throw new Exception("shard db size cannot be zero");
+            var shardSize = GetSharedDbSize(section);
+            if (shardSize == 0)
+                throw new Exception($"shard db size cannot be zero for section {section}");
 
             var groups = idList.Distinct().GroupBy(id =>
             {
                 if (id == null)
                     return -1;
                 else
-                    return (int)(id.Value % SharedDbSize);
+                    return (int)(id.Value % shardSize);
             });
             foreach (var g in groups)
             {
-                yield return (Connection(g.Key), g.ToArray());
+                yield return (Connection(section, g.Key), g.ToArray());
             }
         }
 
         /// <summary>
-        /// Creates multiple MySQL connections grouped by shard for the specified values.
+        /// Creates multiple MySQL connections grouped by shard for the specified section and values.
         /// Uses a selector function to extract the sharding key from each value.
         /// </summary>
         /// <typeparam name="T">The type of values to group by shard.</typeparam>
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
         /// <param name="values">The collection of values to group by shard.</param>
-        /// <param name="selector">A function to extract the sharding key from each value.</param>
+        /// <param name="selector">A function to extract the nullable sharding key from each value.</param>
         /// <returns>An enumerable of tuples containing the connection and associated value array for each shard.</returns>
-        /// <exception cref="Exception">Thrown when SharedDbSize is zero.</exception>
-        public IEnumerable<(MySqlConnection Connection, T[] Values)> Connections<T>(IEnumerable<T> values, Func<T, uint> selector)
+        /// <exception cref="Exception">Thrown when shard size is zero for the section.</exception>
+        public IEnumerable<(MySqlConnection Connection, T[] Values)> Connections<T>(string section, IEnumerable<T> values, Func<T, uint?> selector)
         {
-            if (SharedDbSize == 0)
-                throw new Exception("shard db size cannot be zero");
-
-            foreach (var g in values.GroupBy(value => (int)(selector(value) % SharedDbSize)))
-            {
-                yield return (Connection(g.Key), g.ToArray());
-            }
-        }
-
-        public IEnumerable<(MySqlConnection Connection, T[] Values)> Connections<T>(IEnumerable<T> values, Func<T, uint?> selector)
-        {
-            if (SharedDbSize == 0)
-                throw new Exception("shard db size cannot be zero");
+            var shardSize = GetSharedDbSize(section);
+            if (shardSize == 0)
+                throw new Exception($"shard db size cannot be zero for section {section}");
 
             var groups = values.GroupBy(value =>
             {
-                if (selector(value) == null)
+                var hash = selector(value);
+                if (hash == null)
                     return -1;
                 else
-                    return (int)(selector(value).Value % SharedDbSize);
+                    return (int)(hash.Value % shardSize);
             });
 
             foreach (var g in groups)
             {
-                yield return (Connection(g.Key), g.ToArray());
+                yield return (Connection(section, g.Key), g.ToArray());
             }
         }
 
+
         /// <summary>
-        /// Creates a MySQL connection for the specified database index.
-        /// Directly connects to the database with the given index without sharding logic.
+        /// Creates a MySQL connection for the specified section and database index.
+        /// Uses nested configuration structure: ConnectionStrings:MySql:{section}:{db}
         /// </summary>
-        /// <param name="db">The database index to connect to.</param>
-        /// <returns>A new <see cref="MySqlConnection"/> instance for the specified database.</returns>
-        public MySqlConnection Connection(int db)
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="db">The database index within the section (-1, 0, 1, 2, etc.). Defaults to -1 (section-global database).</param>
+        /// <returns>A new <see cref="MySqlConnection"/> instance for the specified section and database.</returns>
+        public MySqlConnection Connection(string section, int db)
         {
-            return new MySqlConnection(_configuration.GetConnectionString($"MySql:{db}"));
+            var connectionString = _configuration.GetConnectionString($"MySql:{section}:{db}");
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new Exception($"Connection string not found for section '{section}' and database index '{db}'");
+            }
+            return new MySqlConnection(connectionString);
+        }
+
+        /// <summary>
+        /// Creates a MySQL connection for the specified section and ID using sharding logic.
+        /// Uses modulo operation to distribute connections across available shards within the section.
+        /// If id is null, uses section-global database (-1).
+        /// </summary>
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="id">The ID used to determine the target shard within the section. Null for section-global database.</param>
+        /// <returns>A new <see cref="MySqlConnection"/> instance for the calculated shard.</returns>
+        public MySqlConnection Connection(string section, uint? id = null)
+        {
+            if (id == null)
+                return Connection(section, -1);
+
+            var shardSize = GetSharedDbSize(section);
+
+            if (shardSize == 0)
+                throw new Exception($"shard db size cannot be zero for section {section}");
+
+            return Connection(section, (int)(id.Value % shardSize));
         }
 
         /// <summary>

@@ -20,27 +20,37 @@ public struct DestroyGroup : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public DestroyGroup __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Master { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetMasterBytes() { return __p.__vector_as_span<byte>(6, 1); }
+  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
 #else
-  public ArraySegment<byte>? GetMasterBytes() { return __p.__vector_as_arraysegment(6); }
+  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
-  public byte[] GetMasterArray() { return __p.__vector_as_array<byte>(6); }
+  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Master { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetMasterBytes() { return __p.__vector_as_span<byte>(8, 1); }
+#else
+  public ArraySegment<byte>? GetMasterBytes() { return __p.__vector_as_arraysegment(8); }
+#endif
+  public byte[] GetMasterArray() { return __p.__vector_as_array<byte>(8); }
 
   public static Offset<fb.protocol._internal.request.raw.DestroyGroup> CreateDestroyGroup(FlatBufferBuilder builder,
+      StringOffset sectionOffset = default(StringOffset),
       uint host = 0,
       StringOffset masterOffset = default(StringOffset)) {
-    builder.StartTable(2);
+    builder.StartTable(3);
     DestroyGroup.AddMaster(builder, masterOffset);
     DestroyGroup.AddHost(builder, host);
+    DestroyGroup.AddSection(builder, sectionOffset);
     return DestroyGroup.EndDestroyGroup(builder);
   }
 
-  public static void StartDestroyGroup(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
-  public static void AddMaster(FlatBufferBuilder builder, StringOffset masterOffset) { builder.AddOffset(1, masterOffset.Value, 0); }
+  public static void StartDestroyGroup(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
+  public static void AddMaster(FlatBufferBuilder builder, StringOffset masterOffset) { builder.AddOffset(2, masterOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.DestroyGroup> EndDestroyGroup(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.DestroyGroup>(o);
@@ -55,8 +65,9 @@ static public class DestroyGroupVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 6 /*Master*/, false)
+      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 8 /*Master*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

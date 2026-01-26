@@ -5,6 +5,7 @@
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IConfiguration Configuration
 
 <PageTitle>Login - Admin Tool</PageTitle>
 
@@ -28,6 +29,18 @@
 
                         <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
                             <DataAnnotationsValidator />
+                            <div class="mb-3">
+                                <label for="server" class="form-label">Server</label>
+                                <select id="server" class="form-select" @bind="selectedServerName" @bind:after="OnServerChanged">
+                                    @if (serverNames != null && serverNames.Any())
+                                    {
+                                        @foreach (var serverName in serverNames)
+                                        {
+                                            <option value="@serverName">@serverName</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
                             <div class="mb-3">
                                 <label for="username" class="form-label">Character Name</label>
                                 <InputText id="username" class="form-control" @bind-Value="loginModel.Username" 
@@ -59,6 +72,9 @@
     private LoginModel loginModel = new();
     private string? ErrorMessage;
     private bool isLoading = false;
+    private List<string>? serverNames;
+    private Dictionary<string, string>? serverNameToSection;
+    private string selectedServerName = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -67,6 +83,32 @@
         {
             Navigation.NavigateTo("/");
         }
+        LoadServers();
+    }
+
+    private void LoadServers()
+    {
+        try
+        {
+            var sectionServersSection = Configuration.GetSection("SectionServers");
+            serverNameToSection = sectionServersSection.GetChildren()
+                .ToDictionary(child => child.Value ?? string.Empty, child => child.Key);
+            serverNames = serverNameToSection.Keys.ToList();
+            
+            if (serverNames != null && serverNames.Any())
+            {
+                selectedServerName = serverNames.First();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading servers: {ex.Message}");
+        }
+    }
+
+    private void OnServerChanged()
+    {
+        StateHasChanged();
     }
 
     private async Task HandleLogin()
@@ -76,7 +118,19 @@
 
         try
         {
-            var result = await AuthService.Authenticate(loginModel.Username, loginModel.Password);
+            if (string.IsNullOrEmpty(selectedServerName) || serverNameToSection == null)
+            {
+                ErrorMessage = "Server is not selected.";
+                return;
+            }
+            
+            if (!serverNameToSection.TryGetValue(selectedServerName, out var section))
+            {
+                ErrorMessage = "Invalid server selection.";
+                return;
+            }
+            
+            var result = await AuthService.Authenticate(section, loginModel.Username, loginModel.Password);
             if (result.Success && result.UserId.HasValue && result.Role.HasValue)
             {
                 // Update authentication state

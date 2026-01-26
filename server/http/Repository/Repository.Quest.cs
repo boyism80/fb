@@ -1,4 +1,4 @@
-﻿using Http.Extension;
+using Http.Extension;
 using Http.Model;
 using Http.Service;
 
@@ -25,16 +25,15 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves a specific item by its complete identification parameters.
+        /// Retrieves a specific quest by user ID and quest ID.
         /// </summary>
-        /// <param name="owner">The unique identifier of the character who owns the item.</param>
-        /// <param name="index">The inventory slot index where the item is located.</param>
-        /// <param name="parts">The equipment parts identifier for the item.</param>
-        /// <param name="stored">The storage type identifier where the item is stored.</param>
-        /// <returns>The item if found; otherwise, null.</returns>
-        public async Task<Quest> Get(uint user, uint id)
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="user">The unique identifier of the character who owns the quest.</param>
+        /// <param name="id">The quest ID.</param>
+        /// <returns>The quest if found; otherwise, null.</returns>
+        public async Task<Quest> Get(string section, uint user, uint id)
         {
-            return await Get(new QuestKey
+            return await base.Get(section, new QuestKey
             {
                 User = user,
                 Id = id
@@ -42,13 +41,14 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves all items belonging to a specific character.
+        /// Retrieves all quests belonging to a specific character.
         /// </summary>
-        /// <param name="user">The unique identifier of the character who owns the items.</param>
-        /// <returns>A collection of all items belonging to the specified character.</returns>
-        public async Task<IEnumerable<Quest>> Get(uint user)
+        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="user">The unique identifier of the character who owns the quests.</param>
+        /// <returns>A collection of all quests belonging to the specified character.</returns>
+        public async Task<IEnumerable<Quest>> Get(string section, uint user)
         {
-            return await GetAll(new QuestKey
+            return await base.GetAll(section, new QuestKey
             {
                 User = user
             });

@@ -226,6 +226,7 @@ namespace Marketplace.Services
                 : string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessage.ToCSharpFormat(), itemName, listing.RemainingCount);
 
             await storageService.CreatePendingAsync(
+                listing.Section,
                 Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredTitle,
                 message,
                 listing.SellerId,

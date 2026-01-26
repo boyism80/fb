@@ -15,8 +15,9 @@ async::task<bool> friends::handle(fb::socket<character>& session, game_reqs::fri
     if (ch->inited() == false)
         co_return true;
 
+    auto section = fb::config<std::string>("section");
     auto&& resp = co_await this->server.http.post("internal",
                                                   "/in-game/update-friends",
-                                                  internal_reqs::UpdateFriends{ch->id, request.names});
+                                                  internal_reqs::UpdateFriends{section, ch->id, request.names});
     co_return true;
 }

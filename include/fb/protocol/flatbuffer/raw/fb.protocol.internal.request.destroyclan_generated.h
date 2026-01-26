@@ -25,9 +25,13 @@ struct DestroyClanBuilder;
 struct DestroyClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef DestroyClanBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HOST = 4,
-    VT_MASTER = 6
+    VT_SECTION = 4,
+    VT_HOST = 6,
+    VT_MASTER = 8
   };
+  const ::flatbuffers::String *section() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
@@ -36,6 +40,8 @@ struct DestroyClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SECTION) &&
+           verifier.VerifyString(section()) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_MASTER, 4) &&
            verifier.EndTable();
@@ -46,6 +52,9 @@ struct DestroyClanBuilder {
   typedef DestroyClan Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
+    fbb_.AddOffset(DestroyClan::VT_SECTION, section);
+  }
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(DestroyClan::VT_HOST, host, 0);
   }
@@ -65,12 +74,27 @@ struct DestroyClanBuilder {
 
 inline ::flatbuffers::Offset<DestroyClan> CreateDestroyClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
     uint32_t host = 0,
     uint32_t master = 0) {
   DestroyClanBuilder builder_(_fbb);
   builder_.add_master(master);
   builder_.add_host(host);
+  builder_.add_section(section);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<DestroyClan> CreateDestroyClanDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *section = nullptr,
+    uint32_t host = 0,
+    uint32_t master = 0) {
+  auto section__ = section ? _fbb.CreateString(section) : 0;
+  return fb::protocol::internal::request::raw::CreateDestroyClan(
+      _fbb,
+      section__,
+      host,
+      master);
 }
 
 inline const fb::protocol::internal::request::raw::DestroyClan *GetDestroyClan(const void *buf) {

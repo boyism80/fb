@@ -2,9 +2,12 @@
 @implements IDisposable
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.WebUtilities
 @using AdminTool.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
+@inject IConfiguration Configuration
 
 <PageTitle>Admin Tool</PageTitle>
 
@@ -22,6 +25,20 @@
                     </div>
                 </div>
                 <div class="header-actions">
+                    <div class="section-selector">
+                        <label for="section-select" class="section-label">Server:</label>
+                        <select id="section-select" class="form-select form-select-sm section-select" 
+                                @bind="selectedSection" @bind:after="OnSectionChanged">
+                            @if (sections != null && sections.Any())
+                            {
+                                @foreach (var sectionName in sections)
+                                {
+                                    var serverName = GetServerName(sectionName);
+                                    <option value="@sectionName">@serverName</option>
+                                }
+                            }
+                        </select>
+                    </div>
                     @if (isAuthenticated)
                     {
                         <button class="btn btn-outline-secondary" @onclick="HandleLogout">Logout</button>
@@ -50,19 +67,114 @@
     </header>
 
     <main class="app-main">
-        <div class="content-wrapper">
-            @Body
-        </div>
+        <CascadingValue Value="selectedSection" Name="SelectedSection">
+            <div class="content-wrapper">
+                @Body
+            </div>
+        </CascadingValue>
     </main>
 </div>
 
 @code {
     private bool isAuthenticated = false;
     private string globalSearchTerm = string.Empty;
+    private List<string>? sections;
+    private string selectedSection = string.Empty;
+    private Dictionary<string, string>? sectionToServerName;
 
     protected override async Task OnInitializedAsync()
     {
         await CheckAuthenticationState();
+        LoadSections();
+        LoadSectionFromQuery();
+    }
+
+    private void LoadSections()
+    {
+        try
+        {
+            var rabbitMqSection = Configuration.GetSection("RabbitMQ");
+            sections = rabbitMqSection.GetChildren()
+                .Select(child => child.Key)
+                .ToList();
+            
+            // Load section to server name mapping
+            var sectionServersSection = Configuration.GetSection("SectionServers");
+            sectionToServerName = sectionServersSection.GetChildren()
+                .ToDictionary(child => child.Key, child => child.Value ?? child.Key);
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't break the layout
+            System.Diagnostics.Debug.WriteLine($"Error loading sections: {ex.Message}");
+        }
+    }
+
+    private string GetServerName(string section)
+    {
+        if (sectionToServerName != null && sectionToServerName.TryGetValue(section, out var serverName))
+        {
+            return serverName;
+        }
+        return section;
+    }
+
+    private void LoadSectionFromQuery()
+    {
+        try
+        {
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            var queryParams = QueryHelpers.ParseQuery(uri.Query);
+            
+            if (queryParams.TryGetValue("section", out var sectionValue) && !string.IsNullOrEmpty(sectionValue))
+            {
+                if (sections != null && sections.Contains(sectionValue!))
+                {
+                    selectedSection = sectionValue!;
+                    return;
+                }
+            }
+            
+            // If no valid section in query or sections not loaded yet, use first section as default
+            if (sections != null && sections.Any() && string.IsNullOrEmpty(selectedSection))
+            {
+                selectedSection = sections.First();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading section from query: {ex.Message}");
+        }
+    }
+
+    private void OnSectionChanged()
+    {
+        UpdateUrlWithSection();
+        StateHasChanged();
+    }
+
+    private void UpdateUrlWithSection()
+    {
+        try
+        {
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            var queryParams = QueryHelpers.ParseQuery(uri.Query);
+            
+            queryParams["section"] = selectedSection;
+            
+            var queryDict = queryParams.ToDictionary(
+                kvp => kvp.Key, 
+                kvp => (string?)(kvp.Value.ToString() ?? string.Empty));
+            var newQueryString = QueryHelpers.AddQueryString(
+                uri.GetLeftPart(UriPartial.Path),
+                queryDict);
+            
+            Navigation.NavigateTo(newQueryString, false);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error updating URL with section: {ex.Message}");
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -70,6 +182,7 @@
         if (firstRender)
         {
             AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+            Navigation.LocationChanged += OnLocationChanged;
         }
     }
 
@@ -85,12 +198,13 @@
         isAuthenticated = authState.User.Identity?.IsAuthenticated == true;
     }
 
-    private async Task HandleSearchKeyPress(KeyboardEventArgs e)
+    private Task HandleSearchKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(globalSearchTerm))
         {
             Navigation.NavigateTo($"/users?search={Uri.EscapeDataString(globalSearchTerm)}");
         }
+        return Task.CompletedTask;
     }
 
     private void NavigateToLogin()
@@ -107,11 +221,18 @@
         }
     }
 
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        LoadSectionFromQuery();
+        StateHasChanged();
+    }
+
     public void Dispose()
     {
         if (AuthenticationStateProvider != null)
         {
             AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         }
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 }

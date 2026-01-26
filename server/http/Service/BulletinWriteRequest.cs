@@ -3,6 +3,7 @@ namespace Http.Service
     public class BulletinWriteRequest
     {
         public uint Section { get; set; }
+        public string GameSection { get; set; } = string.Empty;
         public uint User { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Contents { get; set; } = string.Empty;

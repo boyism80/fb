@@ -216,6 +216,9 @@
 </div>
 
 @code {
+    [CascadingParameter(Name = "SelectedSection")]
+    private string? selectedSection { get; set; }
+    
     private StoragePendingForm model = new();
     private string? errorMessage;
     private string? successMessage;
@@ -446,7 +449,13 @@
         isProcessing = true;
         try
         {
+            if (string.IsNullOrEmpty(selectedSection))
+            {
+                errorMessage = "Section is not selected.";
+                return;
+            }
             var result = await StorageService.CreatePendingAsync(
+                selectedSection,
                 model.Title.Trim(),
                 model.Message.Trim(),
                 model.IsGlobal ? null : model.UserName?.Trim(),

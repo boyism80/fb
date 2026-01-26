@@ -20,41 +20,51 @@ public struct KickClan : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public KickClan __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Clan { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Kicker { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetKickerBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
 #else
-  public ArraySegment<byte>? GetKickerBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
-  public byte[] GetKickerArray() { return __p.__vector_as_array<byte>(8); }
-  public string Target { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Clan { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Kicker { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetTargetBytes() { return __p.__vector_as_span<byte>(10, 1); }
+  public Span<byte> GetKickerBytes() { return __p.__vector_as_span<byte>(10, 1); }
 #else
-  public ArraySegment<byte>? GetTargetBytes() { return __p.__vector_as_arraysegment(10); }
+  public ArraySegment<byte>? GetKickerBytes() { return __p.__vector_as_arraysegment(10); }
 #endif
-  public byte[] GetTargetArray() { return __p.__vector_as_array<byte>(10); }
+  public byte[] GetKickerArray() { return __p.__vector_as_array<byte>(10); }
+  public string Target { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetTargetBytes() { return __p.__vector_as_span<byte>(12, 1); }
+#else
+  public ArraySegment<byte>? GetTargetBytes() { return __p.__vector_as_arraysegment(12); }
+#endif
+  public byte[] GetTargetArray() { return __p.__vector_as_array<byte>(12); }
 
   public static Offset<fb.protocol._internal.request.raw.KickClan> CreateKickClan(FlatBufferBuilder builder,
+      StringOffset sectionOffset = default(StringOffset),
       uint host = 0,
       uint clan = 0,
       StringOffset kickerOffset = default(StringOffset),
       StringOffset targetOffset = default(StringOffset)) {
-    builder.StartTable(4);
+    builder.StartTable(5);
     KickClan.AddTarget(builder, targetOffset);
     KickClan.AddKicker(builder, kickerOffset);
     KickClan.AddClan(builder, clan);
     KickClan.AddHost(builder, host);
+    KickClan.AddSection(builder, sectionOffset);
     return KickClan.EndKickClan(builder);
   }
 
-  public static void StartKickClan(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
-  public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(1, clan, 0); }
-  public static void AddKicker(FlatBufferBuilder builder, StringOffset kickerOffset) { builder.AddOffset(2, kickerOffset.Value, 0); }
-  public static void AddTarget(FlatBufferBuilder builder, StringOffset targetOffset) { builder.AddOffset(3, targetOffset.Value, 0); }
+  public static void StartKickClan(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
+  public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(2, clan, 0); }
+  public static void AddKicker(FlatBufferBuilder builder, StringOffset kickerOffset) { builder.AddOffset(3, kickerOffset.Value, 0); }
+  public static void AddTarget(FlatBufferBuilder builder, StringOffset targetOffset) { builder.AddOffset(4, targetOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.KickClan> EndKickClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.KickClan>(o);
@@ -69,10 +79,11 @@ static public class KickClanVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Clan*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*Kicker*/, false)
-      && verifier.VerifyString(tablePos, 10 /*Target*/, false)
+      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Clan*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 10 /*Kicker*/, false)
+      && verifier.VerifyString(tablePos, 12 /*Target*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -25,7 +25,7 @@ namespace Http.Service
             return null;
         }
 
-        public async Task<T> GetAsync(Func<Task<T>> dbQueryFunc, TimeSpan? ttl = null, params object[] parameters)
+        public async Task<T> GetAsync(string section, Func<Task<T>> dbQueryFunc, TimeSpan? ttl = null, params object[] parameters)
         {
             var cacheKey = GenerateCacheKey(parameters);
             var hashForSharding = GetHashForSharding(cacheKey, parameters);
@@ -34,8 +34,8 @@ namespace Http.Service
             {
                 // Get Redis instance based on sharding
                 var redis = hashForSharding.HasValue
-                    ? RedisService.Redis(hashForSharding.Value)
-                    : RedisService.Redis(cacheKey);
+                    ? RedisService.Redis(section, hashForSharding.Value)
+                    : RedisService.Redis(section, cacheKey);
 
                 if (redis == null)
                 {
@@ -72,7 +72,7 @@ namespace Http.Service
             }
         }
 
-        public async Task SetAsync(T value, TimeSpan? ttl = null, params object[] parameters)
+        public async Task SetAsync(string section, T value, TimeSpan? ttl = null, params object[] parameters)
         {
             var cacheKey = GenerateCacheKey(parameters);
             var hashForSharding = GetHashForSharding(cacheKey, parameters);
@@ -81,8 +81,8 @@ namespace Http.Service
             {
                 // Get Redis instance based on sharding
                 var redis = hashForSharding.HasValue
-                    ? RedisService.Redis(hashForSharding.Value)
-                    : RedisService.Redis(cacheKey);
+                    ? RedisService.Redis(section, hashForSharding.Value)
+                    : RedisService.Redis(section, cacheKey);
 
                 if (redis == null)
                 {
@@ -99,7 +99,7 @@ namespace Http.Service
             }
         }
 
-        public async Task DeleteAsync(params object[] parameters)
+        public async Task DeleteAsync(string section, params object[] parameters)
         {
             var cacheKey = GenerateCacheKey(parameters);
             var hashForSharding = GetHashForSharding(cacheKey, parameters);
@@ -108,8 +108,8 @@ namespace Http.Service
             {
                 // Get Redis instance based on sharding
                 var redis = hashForSharding.HasValue
-                    ? RedisService.Redis(hashForSharding.Value)
-                    : RedisService.Redis(cacheKey);
+                    ? RedisService.Redis(section, hashForSharding.Value)
+                    : RedisService.Redis(section, cacheKey);
 
                 if (redis == null)
                 {
@@ -125,7 +125,7 @@ namespace Http.Service
             }
         }
 
-        public async Task SetBatchAsync(Dictionary<object[], T> items, TimeSpan? ttl = null)
+        public async Task SetBatchAsync(string section, Dictionary<object[], T> items, TimeSpan? ttl = null)
         {
             if (items == null || items.Count == 0)
                 return;
@@ -142,8 +142,8 @@ namespace Http.Service
                     var hashForSharding = GetHashForSharding(cacheKey, parameters);
 
                     var redis = hashForSharding.HasValue
-                        ? RedisService.Redis(hashForSharding.Value)
-                        : RedisService.Redis(cacheKey);
+                        ? RedisService.Redis(section, hashForSharding.Value)
+                        : RedisService.Redis(section, cacheKey);
 
                     if (redis == null)
                     {
@@ -180,7 +180,7 @@ namespace Http.Service
             }
         }
 
-        public async Task DeleteBatchAsync(IEnumerable<object[]> parametersList)
+        public async Task DeleteBatchAsync(string section, IEnumerable<object[]> parametersList)
         {
             if (parametersList == null)
                 return;
@@ -199,8 +199,8 @@ namespace Http.Service
                     var hashForSharding = GetHashForSharding(cacheKey, parameters);
 
                     var redis = hashForSharding.HasValue
-                        ? RedisService.Redis(hashForSharding.Value)
-                        : RedisService.Redis(cacheKey);
+                        ? RedisService.Redis(section, hashForSharding.Value)
+                        : RedisService.Redis(section, cacheKey);
 
                     if (redis == null)
                     {

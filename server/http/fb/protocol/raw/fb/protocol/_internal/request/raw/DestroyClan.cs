@@ -20,21 +20,31 @@ public struct DestroyClan : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public DestroyClan __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Master { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
+#else
+  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
+#endif
+  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Master { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.DestroyClan> CreateDestroyClan(FlatBufferBuilder builder,
+      StringOffset sectionOffset = default(StringOffset),
       uint host = 0,
       uint master = 0) {
-    builder.StartTable(2);
+    builder.StartTable(3);
     DestroyClan.AddMaster(builder, master);
     DestroyClan.AddHost(builder, host);
+    DestroyClan.AddSection(builder, sectionOffset);
     return DestroyClan.EndDestroyClan(builder);
   }
 
-  public static void StartDestroyClan(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
-  public static void AddMaster(FlatBufferBuilder builder, uint master) { builder.AddUint(1, master, 0); }
+  public static void StartDestroyClan(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
+  public static void AddMaster(FlatBufferBuilder builder, uint master) { builder.AddUint(2, master, 0); }
   public static Offset<fb.protocol._internal.request.raw.DestroyClan> EndDestroyClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.DestroyClan>(o);
@@ -49,8 +59,9 @@ static public class DestroyClanVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Master*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Master*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

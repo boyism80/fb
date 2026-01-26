@@ -6,20 +6,81 @@ module.exports = {
 
         const resources = []
         const ports = []
-        for(const [section, sectionConf] of Object.entries(conf.marketplace)) {
-            const appLabels = { app: `marketplace-${section}` }
-            const config = {
-                "Logging": {
-                    "LogLevel": {
-                        "Default": "Information",
-                        "Microsoft.AspNetCore": "Warning"
+        const marketplaceConf = conf.marketplace
+        const appLabels = { app: "marketplace" }
+        const config = {
+            "Logging": {
+                "LogLevel": {
+                    "Default": "Information",
+                    "Microsoft.AspNetCore": "Warning"
+                }
+            },
+            "ConnectionStrings": {
+                "MySql": {}
+            },
+            "Redis": {},
+            "RabbitMQ": {},
+            "Log": {
+                "Enabled": true,
+                "ServerId": "0",
+                "ServerName": "marketplace"
+            },
+            "Marketplace": {
+                "UseSharding": false
+            }
+        }
+
+        // Build MySQL connections for all sections (nested structure: MySql:{section}:{id})
+        for(const [sectionName, sectionConf] of Object.entries(marketplaceConf.sections)) {
+            if (sectionConf.mysql && conf.mysql[sectionConf.mysql]) {
+                if (!config.ConnectionStrings.MySql[sectionName]) {
+                    config.ConnectionStrings.MySql[sectionName] = {}
+                }
+                for(const [id, mysqlConf] of Object.entries(conf.mysql[sectionConf.mysql].data)) {
+                    config.ConnectionStrings.MySql[sectionName][id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                }
+            }
+            if (sectionConf.redis && conf.redis[sectionConf.redis]) {
+                if (!config.Redis[sectionName]) {
+                    config.Redis[sectionName] = {}
+                }
+                for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
+                    config.Redis[sectionName][id] = {
+                        Host: `redis-${sectionConf.redis}`,
+                        Port: conf.redis[sectionConf.redis][id].port.cluster
                     }
-                },
-                "ConnectionStrings": {
-                    "MySql": {}
-                },
-                "Redis": {},
-                "RabbitMQ": {
+                }
+            }
+        }
+
+        // Add unified-global MySQL and Redis (nested structure)
+        if (marketplaceConf["unified-global"]) {
+            const unifiedGlobal = marketplaceConf["unified-global"]
+            if (unifiedGlobal.mysql && conf.mysql[unifiedGlobal.mysql]) {
+                if (!config.ConnectionStrings.MySql["unified-global"]) {
+                    config.ConnectionStrings.MySql["unified-global"] = {}
+                }
+                for(const [id, mysqlConf] of Object.entries(conf.mysql[unifiedGlobal.mysql].data)) {
+                    config.ConnectionStrings.MySql["unified-global"][id] = `Server=mysql-${unifiedGlobal.mysql};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                }
+            }
+            if (unifiedGlobal.redis && conf.redis[unifiedGlobal.redis]) {
+                if (!config.Redis["unified-global"]) {
+                    config.Redis["unified-global"] = {}
+                }
+                for(const [id, redisConf] of Object.entries(conf.redis[unifiedGlobal.redis])) {
+                    config.Redis["unified-global"][id] = {
+                        Host: `redis-${unifiedGlobal.redis}`,
+                        Port: conf.redis[unifiedGlobal.redis][id].port.cluster
+                    }
+                }
+            }
+        }
+
+        // Build RabbitMQ connections for all sections
+        for(const [sectionName, sectionConf] of Object.entries(marketplaceConf.sections)) {
+            if (sectionConf.rabbitmq && conf.rabbitmq[sectionConf.rabbitmq]) {
+                config.RabbitMQ[sectionName] = {
                     "Internal": {
                         "Host": `rabbitmq-${sectionConf.rabbitmq}-internal`,
                         "Port": conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
@@ -33,40 +94,22 @@ module.exports = {
                         "Pwd": "admin",
                         "QueueSize": 128
                     }
-                },
-                "Log": {
-                    "Enabled": true,
-                    "ServerId": "0",
-                    "ServerName": "marketplace"
-                },
-                "Marketplace": {
-                    "UseSharding": false
                 }
             }
+        }
 
-            for(const [id, mysqlConf] of Object.entries(conf.mysql[sectionConf.mysql].data)) {
-                config.ConnectionStrings.MySql[id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
-            }
+        const configMap = new k8s.core.v1.ConfigMap("marketplace", {
+            metadata: { name: "marketplace", namespace: namespace.metadata.name },
+            data: {
+                "appsettings.k8s.json": JSON.stringify(config),
+            },
+        })
 
-            for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
-                config.Redis[id] = {
-                    Host: `redis-${sectionConf.redis}`,
-                    Port: conf.redis[sectionConf.redis][id].port.cluster
-                }
-            }
-
-            const configMap = new k8s.core.v1.ConfigMap(`marketplace-${section}`, {
-                metadata: { name: `marketplace-${section}`, namespace: namespace.metadata.name },
-                data: {
-                    "appsettings.k8s.json": JSON.stringify(config),
-                },
-            })
-
-            const deployment = new k8s.apps.v1.Deployment(`marketplace-${section}`, {
-                metadata: { name: `marketplace-${section}`, namespace: namespace.metadata.name },
-                spec: {
-                    selector: { matchLabels: appLabels },
-                    replicas: sectionConf.replicas || 1,
+        const deployment = new k8s.apps.v1.Deployment("marketplace", {
+            metadata: { name: "marketplace", namespace: namespace.metadata.name },
+            spec: {
+                selector: { matchLabels: appLabels },
+                replicas: marketplaceConf.replicas || 1,
                     template: {
                         metadata: { labels: appLabels },
                         spec: {
@@ -134,52 +177,51 @@ module.exports = {
                     },
                 }, { dependsOn: dependsOn })
 
-            const hpa = new k8s.autoscaling.v2.HorizontalPodAutoscaler(`marketplace-hpa-${section}`, {
-                metadata: {
-                    namespace: namespace.metadata.name,
+        const hpa = new k8s.autoscaling.v2.HorizontalPodAutoscaler("marketplace-hpa", {
+            metadata: {
+                namespace: namespace.metadata.name,
+            },
+            spec: {
+                scaleTargetRef: {
+                    apiVersion: "apps/v1",
+                    kind: "Deployment",
+                    name: deployment.metadata.name,
                 },
-                spec: {
-                    scaleTargetRef: {
-                        apiVersion: "apps/v1",
-                        kind: "Deployment",
-                        name: deployment.metadata.name,
-                    },
-                    minReplicas: 5,
-                    maxReplicas: 30,
-                    metrics: [{
-                        type: "Resource",
-                        resource: {
-                            name: "cpu",
-                            target: {
-                                type: "Utilization",
-                                averageUtilization: 50,
-                            },
+                minReplicas: 5,
+                maxReplicas: 30,
+                metrics: [{
+                    type: "Resource",
+                    resource: {
+                        name: "cpu",
+                        target: {
+                            type: "Utilization",
+                            averageUtilization: 50,
                         },
-                    }],
-                },
-            })
+                    },
+                }],
+            },
+        })
 
-            const service = new k8s.core.v1.Service(`marketplace-${section}`, {
-                metadata: { name: `marketplace-${section}`, namespace: namespace.metadata.name },
-                spec: {
-                    type: "NodePort",
-                    ports: [{ 
-                        name: `marketplace-${section}`,
-                        port: sectionConf.port.cluster,
-                        targetPort: `marketplace`,
-                        protocol: "TCP",
-                        nodePort: sectionConf.port.node 
-                    }],
-                    selector: appLabels,
-                },
-            }, { dependsOn: dependsOn })
-            
-            // Collect all resources
-            resources.push(configMap)
-            resources.push(deployment)
-            resources.push(hpa)
-            resources.push(service)
-        }
+        const service = new k8s.core.v1.Service("marketplace", {
+            metadata: { name: "marketplace", namespace: namespace.metadata.name },
+            spec: {
+                type: "NodePort",
+                ports: [{ 
+                    name: "marketplace",
+                    port: marketplaceConf.port.cluster,
+                    targetPort: "marketplace",
+                    protocol: "TCP",
+                    nodePort: marketplaceConf.port.node 
+                }],
+                selector: appLabels,
+            },
+        }, { dependsOn: dependsOn })
+        
+        // Collect all resources
+        resources.push(configMap)
+        resources.push(deployment)
+        resources.push(hpa)
+        resources.push(service)
         
         return resources
     }

@@ -14,6 +14,7 @@ module.exports = function () {
                     const config = {
                         id: parseInt(i),
                         name: `game-${section}-${i}`,
+                        section: section,
                         delay: 5,
                         ip: conf.host,
                         port: container.port,
@@ -23,12 +24,12 @@ module.exports = function () {
                         },
                         save: 600,
                         internal: {
-                            ip: `internal-${sectionConf.internal}`, 
-                            port: conf.internal[sectionConf.internal].port.cluster
+                            ip: "internal",
+                            port: conf.internal.port.cluster
                         },
                         marketplace: {
-                            ip: `marketplace-${sectionConf.marketplace}`, 
-                            port: conf.marketplace[sectionConf.marketplace].port.cluster
+                            ip: "marketplace",
+                            port: conf.marketplace.port.cluster
                         },
                         login: { ip: conf.host, port: conf.login[sectionConf.login].port },
                         amqp: {
