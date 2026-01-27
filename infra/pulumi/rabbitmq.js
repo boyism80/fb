@@ -137,16 +137,6 @@ RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
                                         { name: "management", containerPort: 15672 },
                                         { name: "epmd", containerPort: 4369 },
                                     ],
-                                    resources: {
-                                        limits: {
-                                            cpu: "8",
-                                            memory: "4Gi"
-                                        },
-                                        requests: {
-                                            cpu: "8",
-                                            memory: "4Gi"
-                                        }
-                                    },
                                     env: [
                                         { name: "RABBITMQ_DEFAULT_USER", value: "fb" },
                                         { name: "RABBITMQ_DEFAULT_PASS", value: "admin" },
