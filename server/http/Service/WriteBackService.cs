@@ -92,7 +92,7 @@ namespace Http.Service
         /// <returns>A task representing the asynchronous queue operation.</returns>
         public async Task Post(string section, uint? hash, string sql, string key)
         {
-            var sharedSize = _dbContext.GetSharedDbSize(section);
+            var sharedSize = _dbContext.GetShardDbSize(section);
             int db = hash != null ? (int)(hash % sharedSize) : -1;
             await Post(section, db, sql, key, hash);
         }

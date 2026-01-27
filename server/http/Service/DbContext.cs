@@ -104,7 +104,7 @@ namespace Http.Service
         /// </summary>
         /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
         /// <returns>The count of database shards excluding the default (-1) connection for the specified section.</returns>
-        public uint GetSharedDbSize(string section)
+        public uint GetShardDbSize(string section)
         {
             var sectionConfig = _configuration.GetSection($"ConnectionStrings:MySql:{section}");
             return (uint)sectionConfig.GetChildren().Where(x => x.Key != "-1").Count();
@@ -148,7 +148,7 @@ namespace Http.Service
         /// <exception cref="Exception">Thrown when shard size is zero for the section.</exception>
         public IEnumerable<(MySqlConnection Connection, uint[] IdList)> Connections(string section, IEnumerable<uint> idList)
         {
-            var shardSize = GetSharedDbSize(section);
+            var shardSize = GetShardDbSize(section);
             if (shardSize == 0)
                 throw new Exception($"shard db size cannot be zero for section {section}");
 
@@ -168,7 +168,7 @@ namespace Http.Service
         /// <exception cref="Exception">Thrown when shard size is zero for the section.</exception>
         public IEnumerable<(MySqlConnection Connection, uint?[] IdList)> Connections(string section, IEnumerable<uint?> idList)
         {
-            var shardSize = GetSharedDbSize(section);
+            var shardSize = GetShardDbSize(section);
             if (shardSize == 0)
                 throw new Exception($"shard db size cannot be zero for section {section}");
 
@@ -197,7 +197,7 @@ namespace Http.Service
         /// <exception cref="Exception">Thrown when shard size is zero for the section.</exception>
         public IEnumerable<(MySqlConnection Connection, T[] Values)> Connections<T>(string section, IEnumerable<T> values, Func<T, uint?> selector)
         {
-            var shardSize = GetSharedDbSize(section);
+            var shardSize = GetShardDbSize(section);
             if (shardSize == 0)
                 throw new Exception($"shard db size cannot be zero for section {section}");
 
@@ -247,7 +247,7 @@ namespace Http.Service
             if (id == null)
                 return Connection(section, -1);
 
-            var shardSize = GetSharedDbSize(section);
+            var shardSize = GetShardDbSize(section);
 
             if (shardSize == 0)
                 throw new Exception($"shard db size cannot be zero for section {section}");

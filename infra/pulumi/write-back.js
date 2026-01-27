@@ -8,6 +8,7 @@ module.exports = {
         const appLabels = { app: "write-back" }
         for(const [section, sectionConf] of Object.entries(conf['write-back'])) {
             const config = {
+                "Section": section,
                 "Logging": {
                     "LogLevel": {
                         "Default": "Information",
@@ -18,21 +19,7 @@ module.exports = {
                     "MySql": {}
                 },
                 "Redis": {},
-                "RabbitMQ": {
-                    "Internal": {
-                        "Host": `rabbitmq-${sectionConf.rabbitmq}-internal`,
-                        "Port": conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
-                        "Uid": "fb",
-                        "Pwd": "admin"
-                    },
-                    "Log": {
-                        "Host": `rabbitmq-${sectionConf.rabbitmq}-log`,
-                        "Port": conf.rabbitmq[sectionConf.rabbitmq].log.port.amqp.cluster,
-                        "Uid": "fb",
-                        "Pwd": "admin",
-                        "QueueSize": 128
-                    }
-                },
+                "RabbitMQ": {},
                 "Log": {
                     "Enabled": true,
                     "ServerId": "0",
@@ -40,14 +27,46 @@ module.exports = {
                 }
             }
 
-            for(const [id, mysqlConfig] of Object.entries(conf.mysql[sectionConf.mysql].data)) {
-                config.ConnectionStrings.MySql[id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
+            // Build MySQL connections for this section (nested structure: MySql:{section}:{id})
+            if (sectionConf.mysql && conf.mysql[sectionConf.mysql]) {
+                if (!config.ConnectionStrings.MySql[section]) {
+                    config.ConnectionStrings.MySql[section] = {}
+                }
+                for(const [id, mysqlConfig] of Object.entries(conf.mysql[sectionConf.mysql].data)) {
+                    config.ConnectionStrings.MySql[section][id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
+                }
             }
 
-            for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
-                config.Redis[id] = {
-                    Host: `redis-${sectionConf.redis}`,
-                    Port: conf.redis[sectionConf.redis][id].port.cluster
+            // Build Redis connections for this section (nested structure: Redis:{section}:{id})
+            if (sectionConf.redis && conf.redis[sectionConf.redis]) {
+                if (!config.Redis[section]) {
+                    config.Redis[section] = {}
+                }
+                for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
+                    config.Redis[section][id] = {
+                        Host: `redis-${sectionConf.redis}`,
+                        Port: conf.redis[sectionConf.redis][id].port.cluster
+                    }
+                }
+            }
+
+            // Build RabbitMQ connections for this section (nested structure: RabbitMQ:{section}:{Internal/Log})
+            if (sectionConf.rabbitmq && conf.rabbitmq[sectionConf.rabbitmq]) {
+                if (!config.RabbitMQ[section]) {
+                    config.RabbitMQ[section] = {}
+                }
+                config.RabbitMQ[section]["Internal"] = {
+                    "Host": `rabbitmq-${sectionConf.rabbitmq}-internal`,
+                    "Port": conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
+                    "Uid": "fb",
+                    "Pwd": "admin"
+                }
+                config.RabbitMQ[section]["Log"] = {
+                    "Host": `rabbitmq-${sectionConf.rabbitmq}-log`,
+                    "Port": conf.rabbitmq[sectionConf.rabbitmq].log.port.amqp.cluster,
+                    "Uid": "fb",
+                    "Pwd": "admin",
+                    "QueueSize": 128
                 }
             }
 

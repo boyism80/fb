@@ -73,7 +73,7 @@ namespace Http.Service
         /// <param name="protocol">The FlatBuffer protocol message to publish.</param>
         /// <param name="exchangeName">The name of the exchange to publish to.</param>
         /// <param name="routeKey">The routing key for message routing.</param>
-        public void Publish(string? section, IFlatBufferEx protocol, string exchangeName, string routeKey)
+        public void Publish(string section, IFlatBufferEx protocol, string exchangeName, string routeKey)
         {
             if (string.IsNullOrEmpty(section))
             {
