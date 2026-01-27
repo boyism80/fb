@@ -72,7 +72,7 @@ namespace Http.Service
         public async Task Post(uint world, int db, string sql, string key, uint? hash)
         {
             var bufferKey = $"{Const.RedisBufferKey}:{db}";
-            var redisInstance = _redisService.GetShardConnection(world, bufferKey);
+            var redisInstance = db == -1 ? _redisService.GetGlobalConnection(world) : _redisService.GetDataConnection(world, db);
             if (redisInstance == null)
                 return;
             var redis = redisInstance.Connection;
