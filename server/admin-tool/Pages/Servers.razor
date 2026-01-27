@@ -277,7 +277,7 @@
                 return Task.CompletedTask;
             }
             var packet = new Response.BroadcastSave();
-            RabbitMqService.Publish(selectedWorld.Value, packet, "amq.direct", "fb.system");
+            RabbitMqService.Publish(packet, "amq.direct", $"fb.{selectedWorld.Value}.system");
             successMessage = "Save instruction broadcasted to all game servers.";
         }
         catch (Exception ex)
@@ -313,7 +313,8 @@
                 return Task.CompletedTask;
             }
             var packet = new Response.Shutdown();
-            RabbitMqService.Publish(selectedWorld.Value, packet, "amq.direct", "fb.system");
+            // Shutdown uses fb.global (no world prefix - all servers receive)
+            RabbitMqService.Publish(packet, "amq.direct", "fb.global");
             successMessage = "Shutdown instruction sent to all game servers.";
         }
         catch (Exception ex)

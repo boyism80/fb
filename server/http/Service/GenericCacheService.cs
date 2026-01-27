@@ -34,8 +34,8 @@ namespace Http.Service
             {
                 // Get Redis instance based on sharding
                 var redis = hashForSharding.HasValue
-                    ? RedisService.Redis(world, hashForSharding.Value)
-                    : RedisService.Redis(world, cacheKey);
+                    ? RedisService.GetShardConnection(world, hashForSharding.Value)
+                    : RedisService.GetShardConnection(world, cacheKey);
 
                 if (redis == null)
                 {
@@ -81,8 +81,8 @@ namespace Http.Service
             {
                 // Get Redis instance based on sharding
                 var redis = hashForSharding.HasValue
-                    ? RedisService.Redis(world, hashForSharding.Value)
-                    : RedisService.Redis(world, cacheKey);
+                    ? RedisService.GetShardConnection(world, hashForSharding.Value)
+                    : RedisService.GetShardConnection(world, cacheKey);
 
                 if (redis == null)
                 {
@@ -108,8 +108,8 @@ namespace Http.Service
             {
                 // Get Redis instance based on sharding
                 var redis = hashForSharding.HasValue
-                    ? RedisService.Redis(world, hashForSharding.Value)
-                    : RedisService.Redis(world, cacheKey);
+                    ? RedisService.GetShardConnection(world, hashForSharding.Value)
+                    : RedisService.GetShardConnection(world, cacheKey);
 
                 if (redis == null)
                 {
@@ -142,8 +142,8 @@ namespace Http.Service
                     var hashForSharding = GetHashForSharding(cacheKey, parameters);
 
                     var redis = hashForSharding.HasValue
-                        ? RedisService.Redis(world, hashForSharding.Value)
-                        : RedisService.Redis(world, cacheKey);
+                        ? RedisService.GetShardConnection(world, hashForSharding.Value)
+                        : RedisService.GetShardConnection(world, cacheKey);
 
                     if (redis == null)
                     {
@@ -199,8 +199,8 @@ namespace Http.Service
                     var hashForSharding = GetHashForSharding(cacheKey, parameters);
 
                     var redis = hashForSharding.HasValue
-                        ? RedisService.Redis(world, hashForSharding.Value)
-                        : RedisService.Redis(world, cacheKey);
+                        ? RedisService.GetShardConnection(world, hashForSharding.Value)
+                        : RedisService.GetShardConnection(world, cacheKey);
 
                     if (redis == null)
                     {

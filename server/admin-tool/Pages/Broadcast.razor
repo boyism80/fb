@@ -8,6 +8,7 @@
 @using Response = fb.protocol._internal.response
 @inject RabbitMqService RabbitMqService
 @inject LogService LogService
+@inject IConfiguration Configuration
 @attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>Broadcast - Admin Tool</PageTitle>
@@ -131,18 +132,22 @@
 
                 if (useBroadcast)
                 {
-                    // Use Broadcast method to send to all worlds
-                    RabbitMqService.Broadcast(message, "amq.direct", "fb.global");
+                    // Publish to all worlds
+                    var worlds = GetWorlds();
+                    foreach (var world in worlds)
+                    {
+                        RabbitMqService.Publish(message, "amq.direct", $"fb.{world}.global");
+                    }
                 }
                 else
                 {
-                    // Use Publish method to send to selected world only
+                    // Publish to selected world only
                     if (!selectedWorld.HasValue)
                     {
                         errorMessage = "World is required when not using broadcast to all worlds.";
                         return;
                     }
-                    RabbitMqService.Publish(selectedWorld.Value, message, "amq.direct", "fb.global");
+                    RabbitMqService.Publish(message, "amq.direct", $"fb.{selectedWorld.Value}.global");
                 }
 
                 // Log broadcast event
@@ -178,6 +183,22 @@
     private void ResetForm()
     {
         broadcastModel = new BroadcastModel();
+    }
+
+    private List<uint> GetWorlds()
+    {
+        try
+        {
+            var worldServersSection = Configuration.GetSection("WorldServers");
+            return worldServersSection.GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _))
+                .Select(child => uint.Parse(child.Key))
+                .ToList();
+        }
+        catch
+        {
+            return new List<uint>();
+        }
     }
 
     private class BroadcastModel

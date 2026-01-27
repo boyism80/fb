@@ -1,4 +1,4 @@
-﻿using Http.Redis;
+using Http.Redis;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
@@ -72,7 +72,10 @@ namespace Http.Service
         public async Task Post(uint world, int db, string sql, string key, uint? hash)
         {
             var bufferKey = $"{Const.RedisBufferKey}:{db}";
-            var redis = _redisService.Redis(world, bufferKey).Connection;
+            var redisInstance = _redisService.GetShardConnection(world, bufferKey);
+            if (redisInstance == null)
+                return;
+            var redis = redisInstance.Connection;
             await redis.ListRightPushAsync(
                 new RedisKey(bufferKey),
                 new RedisValue(JsonConvert.SerializeObject(new BackgroundCommitEntry

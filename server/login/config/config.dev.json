@@ -7,7 +7,7 @@
     "transfer delay": 0,
     "allow_foreign_name": false,
     "agreement": "안녕하세요",
-    "admin_mode": false,
+    "admin_mode": true,
     "thread": {
         "logic": 12,
         "io": 12,

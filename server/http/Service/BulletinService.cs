@@ -44,7 +44,7 @@ namespace Http.Service
 
             try
             {
-                await using var conn = dbContext.Connection(world, null);
+                await using var conn = dbContext.GetGlobalConnection(world);
                 await conn.OpenAsync();
 
                 var dynamicParams = new DynamicParameters();
@@ -89,7 +89,7 @@ namespace Http.Service
 
             try
             {
-                await using var conn = dbContext.Connection(world, null);
+                await using var conn = dbContext.GetGlobalConnection(world);
                 await conn.OpenAsync();
 
                 var deletedIds = new List<(uint bulletinSection, uint id)>();
@@ -146,7 +146,7 @@ namespace Http.Service
 
             try
             {
-                await using var conn = dbContext.Connection(world, null);
+                await using var conn = dbContext.GetGlobalConnection(world);
                 await conn.OpenAsync();
 
                 var dynamicParams = new DynamicParameters();
@@ -214,7 +214,7 @@ namespace Http.Service
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-            await using var conn = dbContext.Connection(world, null);
+            await using var conn = dbContext.GetGlobalConnection(world);
 
             List<Bulletin> articleList;
 
@@ -314,7 +314,7 @@ namespace Http.Service
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-            await using var conn = dbContext.Connection(world, null);
+            await using var conn = dbContext.GetGlobalConnection(world);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("bulletinSection", bulletinSection);
             dynamicParams.Add("article", id);
@@ -338,7 +338,7 @@ namespace Http.Service
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-            await using var conn = dbContext.Connection(world, null);
+            await using var conn = dbContext.GetGlobalConnection(world);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("bulletinSection", bulletinSection);
             dynamicParams.Add("article", id);

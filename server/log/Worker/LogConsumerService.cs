@@ -179,7 +179,7 @@ namespace Log.Worker
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ConnectToRabbitMQAsync(CancellationToken cancellationToken)
         {
-            var section = _configuration.GetSection("RabbitMQ");
+            var section = _configuration.GetSection("RabbitMQ:Log");
             var hostName = section.GetValue<string>("Host");
             var port = section.GetValue<int>("Port");
             var userName = section.GetValue<string>("Uid");
@@ -204,7 +204,7 @@ namespace Log.Worker
             _channel.ExchangeDeclare(ExchangeName, ExchangeType.Direct, durable: true);
 
             // Get queue size from configuration
-            var queueSize = _configuration.GetValue<int>("RabbitMQ:QueueSize", 128);
+            var queueSize = _configuration.GetValue<int>("RabbitMQ:Log:QueueSize", 128);
 
             // Declare queues with names matching routing keys (fb.log.0 to fb.log.{queueSize-1})
             // All consumer instances use the same queue names, allowing RabbitMQ to distribute

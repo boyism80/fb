@@ -30,77 +30,39 @@ module.exports = {
             }
         }
 
-        // Build MySQL connections for all worlds (nested structure: MySql:{worldId}:{id})
-        // Marketplace uses world-1 for all worlds (shared marketplace)
-        for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
-            const worldId = worldConf.id.toString()
-            // Use world-1's MySQL and Redis for all worlds (shared marketplace)
-            const marketplaceWorld = conf.worlds["world-1"]
-            if (marketplaceWorld && marketplaceWorld.mysql && marketplaceWorld.mysql.data) {
-                if (!config.ConnectionStrings.MySql[worldId]) {
-                    config.ConnectionStrings.MySql[worldId] = {}
-                }
-                for(const [id, mysqlConf] of Object.entries(marketplaceWorld.mysql.data)) {
-                    config.ConnectionStrings.MySql[worldId][id] = `Server=mysql-world-1;Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
-                }
+        // Add unified MySQL connection (string) - marketplace uses unified for all operations
+        if (conf["unified-infra"] && conf["unified-infra"].mysql && conf["unified-infra"].mysql.data) {
+            const unifiedMysql = conf["unified-infra"].mysql.data["-1"]
+            if (unifiedMysql) {
+                config.ConnectionStrings.MySql["unified"] = `Server=mysql-unified-global;Port=${unifiedMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
             }
-            if (marketplaceWorld && marketplaceWorld.redis) {
-                if (!config.Redis[worldId]) {
-                    config.Redis[worldId] = {}
-                }
-                for(const [id, redisConf] of Object.entries(marketplaceWorld.redis)) {
-                    config.Redis[worldId][id] = {
-                        Host: `redis-world-1`,
-                        Port: redisConf.port.cluster
-                    }
+        }
+
+        // Add unified Redis connection (string) - marketplace uses unified for all operations
+        if (conf["unified-infra"] && conf["unified-infra"].redis) {
+            const unifiedRedis = conf["unified-infra"].redis["-1"]
+            if (unifiedRedis) {
+                config.Redis["unified"] = {
+                    Host: `redis-unified-global`,
+                    Port: unifiedRedis.port.cluster
                 }
             }
         }
 
-        // Add unified-infra MySQL and Redis (nested structure)
-        if (conf["unified-infra"]) {
-            const unifiedInfra = conf["unified-infra"]
-            if (unifiedInfra.mysql && unifiedInfra.mysql.data) {
-                if (!config.ConnectionStrings.MySql["unified-global"]) {
-                    config.ConnectionStrings.MySql["unified-global"] = {}
-                }
-                for(const [id, mysqlConf] of Object.entries(unifiedInfra.mysql.data)) {
-                    config.ConnectionStrings.MySql["unified-global"][id] = `Server=mysql-unified-global;Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
-                }
+        // Build RabbitMQ connections using unified-global (flat structure: RabbitMQ:{Internal/Log})
+        if (conf["unified-infra"] && conf["unified-infra"].rabbitmq) {
+            config.RabbitMQ["Internal"] = {
+                "Host": "rabbitmq-internal",
+                "Port": conf["unified-infra"].rabbitmq.internal.port.amqp.cluster,
+                "Uid": "fb",
+                "Pwd": "admin"
             }
-            if (unifiedInfra.redis) {
-                if (!config.Redis["unified-global"]) {
-                    config.Redis["unified-global"] = {}
-                }
-                for(const [id, redisConf] of Object.entries(unifiedInfra.redis)) {
-                    config.Redis["unified-global"][id] = {
-                        Host: `redis-unified-global`,
-                        Port: redisConf.port.cluster
-                    }
-                }
-            }
-        }
-
-        // Build RabbitMQ connections for all worlds (use world-1's RabbitMQ for all)
-        const marketplaceWorld = conf.worlds["world-1"]
-        if (marketplaceWorld && marketplaceWorld.rabbitmq) {
-            for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
-                const worldId = worldConf.id.toString()
-                config.RabbitMQ[worldId] = {
-                    "Internal": {
-                        "Host": `rabbitmq-world-1-internal`,
-                        "Port": marketplaceWorld.rabbitmq.internal.port.amqp.cluster,
-                        "Uid": "fb",
-                        "Pwd": "admin"
-                    },
-                    "Log": {
-                        "Host": `rabbitmq-world-1-log`,
-                        "Port": marketplaceWorld.rabbitmq.log.port.amqp.cluster,
-                        "Uid": "fb",
-                        "Pwd": "admin",
-                        "QueueSize": 128
-                    }
-                }
+            config.RabbitMQ["Log"] = {
+                "Host": "rabbitmq-log",
+                "Port": conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
+                "Uid": "fb",
+                "Pwd": "admin",
+                "QueueSize": 128
             }
         }
 

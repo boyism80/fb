@@ -276,7 +276,7 @@ public class MarketplaceService : IMarketplaceService
         });
 
         // Use transaction to ensure atomicity
-        await using var conn = _dbContext.Connection(-1);
+        await using var conn = _dbContext.GetUnifiedConnection();
         await conn.OpenAsync();
         await using var transaction = await conn.BeginTransactionAsync();
 
@@ -470,7 +470,7 @@ public class MarketplaceService : IMarketplaceService
         }
 
         // Use transaction to ensure atomicity between search and count
-        await using var conn = _dbContext.Connection(-1);
+        await using var conn = _dbContext.GetUnifiedConnection();
         await conn.OpenAsync();
         await using var transaction = await conn.BeginTransactionAsync();
 

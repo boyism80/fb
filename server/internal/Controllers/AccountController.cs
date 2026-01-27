@@ -158,7 +158,7 @@ namespace Internal.Controllers
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
             var world = request.World;
-            await using var connection = _dbContext.Connection(world, -1);
+            await using var connection = _dbContext.GetGlobalConnection(world);
             var result = await connection.QueryFirstAsync<ReserveNameResult>("USP_NAME_SET", new
             {
                 uname = request.Name

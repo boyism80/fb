@@ -1,4 +1,3 @@
-using Http.Model;
 using StackExchange.Redis;
 using StackExchange.Redis.Extensions.Core.Configuration;
 using System.Text;
@@ -83,99 +82,154 @@ namespace Http.Service
     /// </summary>
     public class RedisService
     {
-        private readonly Dictionary<string, Redis> _redisBySection = new Dictionary<string, Redis>();
+        private Redis _unifiedRedis;
+        private readonly Dictionary<uint, Redis> _worldGlobalRedis = new Dictionary<uint, Redis>();
+        private readonly Dictionary<uint, List<Redis>> _worldShardRedis = new Dictionary<uint, List<Redis>>();
+        private readonly IConfiguration _configuration;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RedisService"/> class.
-        /// Creates Redis connections for all configured instances using nested structure: Redis:{world}:{id}.
-        /// Supports both integer world keys (e.g., "1", "2") and "unified-global" string key.
+        /// Creates Redis connections using unified/global/data structure: Redis:{unified|worlds:{world}:{global|data}}.
         /// </summary>
         /// <param name="configuration">The application configuration containing Redis connection settings.</param>
         public RedisService(IConfiguration configuration)
         {
-            var redisSection = configuration.GetSection("Redis");
+            _configuration = configuration;
 
-            // Parse nested structure: Redis:{world}:{id}
-            // World keys can be integers (e.g., "1", "2") or "unified-global"
-            foreach (var sectionChild in redisSection.GetChildren())
+            // Load unified Redis
+            var unifiedHost = _configuration.GetSection("Redis:unified").Get<RedisHost>();
+            if (unifiedHost != null)
             {
-                var worldKey = sectionChild.Key;
-                foreach (var idChild in sectionChild.GetChildren())
+                _unifiedRedis = new Redis(unifiedHost);
+            }
+
+            // Load world-specific Redis
+            var worldsSection = _configuration.GetSection("Redis:worlds");
+            foreach (var worldChild in worldsSection.GetChildren())
+            {
+                if (uint.TryParse(worldChild.Key, out var world))
                 {
-                    var id = idChild.Key;
-                    var host = idChild.Get<RedisHost>();
-                    if (host != null)
+                    // Load global Redis for this world
+                    var globalHost = worldChild.GetSection("global").Get<RedisHost>();
+                    if (globalHost != null)
                     {
-                        var redis = new Redis(host);
-                        var key = $"{worldKey}:{id}";
-                        _redisBySection.Add(key, redis);
+                        _worldGlobalRedis[world] = new Redis(globalHost);
+                    }
+
+                    // Load shard Redis array for this world
+                    var dataArray = worldChild.GetSection("data").Get<RedisHost[]>();
+                    if (dataArray != null && dataArray.Length > 0)
+                    {
+                        var shardList = dataArray.Select(host => new Redis(host)).ToList();
+                        _worldShardRedis[world] = shardList;
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Gets the Redis instance for the specified world and database index.
-        /// Uses nested configuration structure: Redis:{world}:{db}
+        /// Gets unified-global Redis instance.
+        /// Use this for services that need cross-world data.
+        /// Unified Redis is shared across all worlds (no world parameter needed).
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="db">The database index within the world (-1, 0, 1, 2, etc.). Defaults to -1 (world-global Redis).</param>
-        /// <returns>The Redis instance for the specified world and database, or null if not found.</returns>
-        public Redis Redis(uint world, int db)
+        /// <returns>The unified-global Redis instance, or null if not found.</returns>
+        public Redis GetUnifiedConnection()
         {
-            var worldKey = world == 0 ? "unified-global" : world.ToString();
-            var key = $"{worldKey}:{db}";
-            if (_redisBySection.ContainsKey(key) == false)
+            return _unifiedRedis;
+        }
+
+        /// <summary>
+        /// Gets world-global Redis instance for the specified world.
+        /// Use this for world-specific global data.
+        /// </summary>
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <returns>The world-global Redis instance, or null if not found.</returns>
+        public Redis GetGlobalConnection(uint world)
+        {
+            if (world == 0)
+                throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
+
+            return _worldGlobalRedis.TryGetValue(world, out var redis) ? redis : null;
+        }
+
+        /// <summary>
+        /// Gets shard Redis instance for the specified world and shard index.
+        /// Use this for sharded data.
+        /// </summary>
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <param name="index">The shard index (0-based array index).</param>
+        /// <returns>The shard Redis instance, or null if not found.</returns>
+        public Redis GetDataConnection(uint world, int index)
+        {
+            if (world == 0)
+                throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
+
+            if (index < 0)
+                return GetGlobalConnection(world);
+
+            if (!_worldShardRedis.TryGetValue(world, out var shardList))
                 return null;
 
-            return _redisBySection[key];
+            if (index >= shardList.Count)
+                return null;
+
+            return shardList[index];
         }
 
         /// <summary>
-        /// Gets the shard size for the specified world.
+        /// Gets shard Redis instance using ID-based sharding.
+        /// Automatically calculates shard index from ID using modulo operation.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <returns>The count of Redis shards excluding the default (-1) instance for the specified world.</returns>
-        public int GetShardSize(uint world)
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <param name="id">The ID used for sharding calculation.</param>
+        /// <returns>The shard Redis instance, or null if not found.</returns>
+        public Redis GetShardConnection(uint world, uint id)
         {
-            var worldKey = world == 0 ? "unified-global" : world.ToString();
-            var sectionKey = $"{worldKey}:";
-            return _redisBySection.Keys
-                .Where(k => k.StartsWith(sectionKey) && k != $"{sectionKey}-1")
-                .Count();
+            var shardSize = GetShardSize(world);
+            if (shardSize == 0)
+                return null;
+
+            var index = (int)(id % (uint)shardSize);
+            return GetDataConnection(world, index);
         }
 
         /// <summary>
-        /// Gets the Redis instance for the specified world and ID using sharding logic.
-        /// Uses modulo operation to distribute connections across available shards within the world.
-        /// If id is null, uses world-global Redis (-1).
+        /// Gets shard Redis instance using string key-based sharding.
+        /// Calculates hash from string key and uses modulo operation.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="id">The unsigned integer ID to determine the target shard within the world. Null for world-global Redis.</param>
-        /// <returns>The Redis instance for the calculated shard.</returns>
-        public Redis Redis(uint world, uint? id = null)
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <param name="key">The string key used for sharding calculation.</param>
+        /// <returns>The shard Redis instance, or null if not found.</returns>
+        public Redis GetShardConnection(uint world, string key)
         {
-            if (id == null)
-                return Redis(world, -1);
-            else
-            {
-                var shardSize = GetShardSize(world);
+            if (world == 0)
+                throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
 
-                if (shardSize == 0)
-                    return null;
+            var shardSize = GetShardSize(world);
+            if (shardSize == 0)
+                return null;
 
-                return Redis(world, (int)(id.Value % (uint)shardSize));
-            }
-        }
-
-        public Redis Redis(uint world, string key)
-        {
             ulong hash = 0;
             foreach (var b in Encoding.UTF8.GetBytes(key))
             {
                 hash = hash * 31 + b;
             }
-            return Redis(world, (int)(hash % (ulong)GetShardSize(world)));
+            var shardIndex = (int)(hash % (ulong)shardSize);
+            return GetDataConnection(world, shardIndex);
         }
+
+        /// <summary>
+        /// Gets the shard size for the specified world.
+        /// </summary>
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <returns>The count of Redis shards for the specified world.</returns>
+        public int GetShardSize(uint world)
+        {
+            if (world == 0)
+                throw new ArgumentException("World must be greater than 0. Unified has no shards.");
+
+            return _worldShardRedis.TryGetValue(world, out var shardList) ? shardList.Count : 0;
+        }
+
     }
 }

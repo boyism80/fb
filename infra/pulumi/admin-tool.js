@@ -30,49 +30,102 @@ module.exports = {
             }
         }
 
-        // Build MySQL connections for all worlds (nested structure: MySql:{worldId}:{id})
-        for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
-            const worldId = worldConf.id.toString()
-            if (worldConf.mysql && worldConf.mysql.data) {
-                if (!config.ConnectionStrings.MySql[worldId]) {
-                    config.ConnectionStrings.MySql[worldId] = {}
-                }
-                for(const [id, mysqlConf] of Object.entries(worldConf.mysql.data)) {
-                    config.ConnectionStrings.MySql[worldId][id] = `Server=mysql-${worldName};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
-                }
+        // Add unified MySQL connection (string)
+        if (conf["unified-infra"] && conf["unified-infra"].mysql && conf["unified-infra"].mysql.data) {
+            const unifiedMysql = conf["unified-infra"].mysql.data["-1"]
+            if (unifiedMysql) {
+                config.ConnectionStrings.MySql["unified"] = `Server=mysql-unified-global;Port=${unifiedMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
             }
-            if (worldConf.redis) {
-                if (!config.Redis[worldId]) {
-                    config.Redis[worldId] = {}
-                }
-                for(const [id, redisConf] of Object.entries(worldConf.redis)) {
-                    config.Redis[worldId][id] = {
-                        Host: `redis-${worldName}`,
-                        Port: redisConf.port.cluster
-                    }
+        }
+
+        // Add unified Redis connection (string)
+        if (conf["unified-infra"] && conf["unified-infra"].redis) {
+            const unifiedRedis = conf["unified-infra"].redis["-1"]
+            if (unifiedRedis) {
+                config.Redis["unified"] = {
+                    Host: `redis-unified-global`,
+                    Port: unifiedRedis.port.cluster
                 }
             }
         }
 
-        // Build RabbitMQ connections for all worlds
+        // Build MySQL and Redis connections for all worlds (unified/global/data structure)
+        config.ConnectionStrings.MySql["worlds"] = {}
+        config.Redis["worlds"] = {}
         for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
             const worldId = worldConf.id.toString()
-            if (worldConf.rabbitmq) {
-                config.RabbitMQ[worldId] = {
-                    "Internal": {
-                        "Host": `rabbitmq-${worldName}-internal`,
-                        "Port": worldConf.rabbitmq.internal.port.amqp.cluster,
-                        "Uid": "fb",
-                        "Pwd": "admin"
-                    },
-                    "Log": {
-                        "Host": `rabbitmq-${worldName}-log`,
-                        "Port": worldConf.rabbitmq.log.port.amqp.cluster,
-                        "Uid": "fb",
-                        "Pwd": "admin",
-                        "QueueSize": 128
+            
+            // Build MySQL: worlds:{worldId}:{global, data[]}
+            if (worldConf.mysql && worldConf.mysql.data) {
+                config.ConnectionStrings.MySql["worlds"][worldId] = {}
+                
+                // Global connection (from -1)
+                if (worldConf.mysql.data["-1"]) {
+                    const globalMysql = worldConf.mysql.data["-1"]
+                    config.ConnectionStrings.MySql["worlds"][worldId]["global"] = `Server=mysql-${worldName};Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+                }
+                
+                // Data array (shard connections: 0, 1, 2, ...)
+                const dataArray = []
+                const sortedIds = Object.keys(worldConf.mysql.data)
+                    .filter(id => id !== "-1")
+                    .map(id => parseInt(id))
+                    .sort((a, b) => a - b)
+                for(const id of sortedIds) {
+                    const mysqlConf = worldConf.mysql.data[id.toString()]
+                    dataArray.push(`Server=mysql-${worldName};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`)
+                }
+                if (dataArray.length > 0) {
+                    config.ConnectionStrings.MySql["worlds"][worldId]["data"] = dataArray
+                }
+            }
+            
+            // Build Redis: worlds:{worldId}:{global, data[]}
+            if (worldConf.redis) {
+                config.Redis["worlds"][worldId] = {}
+                
+                // Global Redis (from -1)
+                if (worldConf.redis["-1"]) {
+                    const globalRedis = worldConf.redis["-1"]
+                    config.Redis["worlds"][worldId]["global"] = {
+                        Host: `redis-${worldName}`,
+                        Port: globalRedis.port.cluster
                     }
                 }
+                
+                // Data array (shard Redis: 0, 1, 2, ...)
+                const dataArray = []
+                const sortedIds = Object.keys(worldConf.redis)
+                    .filter(id => id !== "-1")
+                    .map(id => parseInt(id))
+                    .sort((a, b) => a - b)
+                for(const id of sortedIds) {
+                    const redisConf = worldConf.redis[id.toString()]
+                    dataArray.push({
+                        Host: `redis-${worldName}`,
+                        Port: redisConf.port.cluster
+                    })
+                }
+                if (dataArray.length > 0) {
+                    config.Redis["worlds"][worldId]["data"] = dataArray
+                }
+            }
+        }
+
+        // Build RabbitMQ connections using unified-global (flat structure: RabbitMQ:{Internal/Log})
+        if (conf["unified-infra"] && conf["unified-infra"].rabbitmq) {
+            config.RabbitMQ["Internal"] = {
+                "Host": "rabbitmq-internal",
+                "Port": conf["unified-infra"].rabbitmq.internal.port.amqp.cluster,
+                "Uid": "fb",
+                "Pwd": "admin"
+            }
+            config.RabbitMQ["Log"] = {
+                "Host": "rabbitmq-log",
+                "Port": conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
+                "Uid": "fb",
+                "Pwd": "admin",
+                "QueueSize": 128
             }
         }
 

@@ -56,7 +56,10 @@ namespace Http.Service
         public async Task<Session> Get(uint world, string name)
         {
             var key = new SessionKey().Key;
-            var conn = _redisService.Redis(world, -1).Connection;
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return null;
+            var conn = redis.Connection;
             var data = await conn.HashGetAsync(new RedisKey(key), new RedisValue(name));
             if (data.IsNull)
                 return null;
@@ -73,7 +76,9 @@ namespace Http.Service
         public async Task Set(uint world, string name, Session session)
         {
             var key = new SessionKey().Key;
-            var redis = _redisService.Redis(world, -1);
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return;
             var conn = redis.Connection;
 
             await conn.JsonHashSetAsync(new RedisKey(key), new RedisValue(name), session);
@@ -88,7 +93,10 @@ namespace Http.Service
         public async Task Delete(uint world, string name)
         {
             var key = new SessionKey().Key;
-            var conn = _redisService.Redis(world, -1).Connection;
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return;
+            var conn = redis.Connection;
 
             await conn.HashDeleteAsync(new RedisKey(key), name);
             await RefreshTTL(world);
@@ -104,7 +112,9 @@ namespace Http.Service
         public async Task<Session> GetAndDelete(uint world, string name)
         {
             var key = new SessionKey().Key;
-            var redis = _redisService.Redis(world, -1);
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return null;
 
             var redisResult = await redis.ScriptEvaluateAsync("get_and_delete_session.lua", new
             {
@@ -114,9 +124,7 @@ namespace Http.Service
 
             var found = (bool)redisResult[0];
             if (!found)
-            {
                 return null;
-            }
 
             var sessionJson = redisResult[1].ToString();
             return JsonConvert.DeserializeObject<Session>(sessionJson);
@@ -135,7 +143,9 @@ namespace Http.Service
         public async Task<bool> Login(uint world, string name, Session session, bool force = false)
         {
             var key = new SessionKey().Key;
-            var redis = _redisService.Redis(world, -1);
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return false;
 
             string scriptName = force ? "login.lua" : "try_login.lua";
             var redisResult = await redis.ScriptEvaluateAsync(scriptName, new
@@ -148,9 +158,7 @@ namespace Http.Service
 
             var success = (bool)redisResult[0];
             if (success)
-            {
                 return true;
-            }
 
             // If force is true and login failed, publish KickOut message
             if (force)
@@ -158,11 +166,11 @@ namespace Http.Service
                 var existingSession = JsonConvert.DeserializeObject<Session>(redisResult[1].ToString());
 
                 // Publish KickOut message to notify the game server to disconnect the existing user
-                _rabbitMqService.Publish(world, new Response.KickOut
+                _rabbitMqService.Publish(new Response.KickOut
                 {
                     Uid = existingSession.Uid,
                     Name = name
-                }, "amq.direct", $"fb.game.{existingSession.Host}");
+                }, "amq.direct", $"fb.{world}.game.{existingSession.Host}");
             }
 
             return false;
@@ -178,7 +186,9 @@ namespace Http.Service
             try
             {
                 var key = new SessionKey().Key;
-                var redis = _redisService.Redis(world, -1);
+                var redis = _redisService.GetGlobalConnection(world);
+                if (redis == null)
+                    return;
                 var script = LuaScript.Prepare(SessionTtlRefreshScript).Load(redis.GetServer());
 
                 await redis.Connection.ScriptEvaluateAsync(script.Hash,

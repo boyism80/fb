@@ -36,15 +36,7 @@ namespace Http.Reepository
         /// <returns>The character if found; otherwise, null.</returns>
         public async Task<Character> Get(uint world, uint id)
         {
-            await using var conn = _dbContext.Connection(world, id);
-            var value = await conn.QuerySingleOrDefaultAsync<Character>(OnSelect(new CharacterKey { Id = id }));
-            if (value == null)
-                return null;
-
-            if (value.Deleted)
-                return null;
-
-            return value;
+            return await base.Get(world, new CharacterKey { Id = id });
         }
 
         /// <summary>
@@ -210,7 +202,7 @@ namespace Http.Reepository
         /// <returns>The character ID if found; otherwise, null.</returns>
         public async Task<uint?> GetCharacterId(uint world, string name)
         {
-            await using var conn = _dbContext.Connection(world, -1);
+            await using var conn = _dbContext.GetGlobalConnection(world);
             var result = await conn.QueryAsync<uint>("USP_NAME_GET_ID", new
             {
                 n = name
@@ -231,7 +223,7 @@ namespace Http.Reepository
         /// <returns>The character name if found; otherwise, null.</returns>
         public async Task<string> GetName(uint world, uint id)
         {
-            await using var conn = _dbContext.Connection(world, -1);
+            await using var conn = _dbContext.GetGlobalConnection(world);
             var result = await conn.QueryFirstOrDefaultAsync<CharacterName>($"SELECT id, name FROM name WHERE id = {id}");
             return result?.Name;
         }
@@ -248,7 +240,7 @@ namespace Http.Reepository
             if (ids.Any() == false)
                 return new Dictionary<uint, string>();
 
-            await using var conn = _dbContext.Connection(world, -1);
+            await using var conn = _dbContext.GetGlobalConnection(world);
             var result = await conn.QueryAsync<CharacterName>($"SELECT id, name FROM name WHERE id IN ({string.Join(',', ids)})");
             return result.ToDictionary(x => x.Id, x => x.Name);
         }

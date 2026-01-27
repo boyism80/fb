@@ -147,11 +147,11 @@ namespace Internal.Controllers
                     var session = await _sessionService.GetAndDelete(world, request.Name);
                     if (session != null)
                     {
-                        _rabbitMqService.Publish(world, new Response.KickOut
+                        _rabbitMqService.Publish(new Response.KickOut
                         {
                             Uid = session.Uid,
                             Name = request.Name
-                        }, "amq.direct", $"fb.game.{session.Host}");
+                        }, "amq.direct", $"fb.{world}.game.{session.Host}");
                         throw new LogicException(ErrorCode.AlreadyLogin);
                     }
                 }
@@ -224,7 +224,7 @@ namespace Internal.Controllers
                     To = target.Name,
                     Message = request.Message
                 };
-                _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.game.{targetSession.Host}");
+                _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.game.{targetSession.Host}");
                 return response;
             }
             catch (LogicException e)
@@ -258,7 +258,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.global");
+            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.global");
             return Task.FromResult(response);
         }
 
@@ -271,7 +271,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.global");
+            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.global");
             return Task.FromResult(response);
         }
 
@@ -284,7 +284,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.global");
+            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.global");
             return Task.FromResult(response);
         }
 

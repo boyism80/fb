@@ -20,22 +20,44 @@ module.exports = {
                     "MySql": {}
                 },
                 "RabbitMQ": {
-                    "Host": `rabbitmq-${worldName}-log`,
-                    "Port": worldConf.rabbitmq.log.port.amqp.cluster,
-                    "Uid": "fb",
-                    "Pwd": "admin",
-                    "QueueSize": 128
+                    "Internal": {
+                        "Host": "rabbitmq-internal",
+                        "Port": conf["unified-infra"].rabbitmq.internal.port.amqp.cluster,
+                        "Uid": "fb",
+                        "Pwd": "admin"
+                    },
+                    "Log": {
+                        "Host": "rabbitmq-log",
+                        "Port": conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
+                        "Uid": "fb",
+                        "Pwd": "admin",
+                        "QueueSize": 128
+                    }
                 },
                 "Log": {
                     "InstanceCount": 5
                 }
             }
 
-            // Use log MySQL instances
+            // Use log MySQL instances (unified/global/data structure)
+            const worldId = parseInt(worldConf.id);
+            config.ConnectionStrings.MySql["worlds"] = config.ConnectionStrings.MySql["worlds"] || {}
+            config.ConnectionStrings.MySql["worlds"][worldId.toString()] = {};
+            
+            // Global connection (from mysql.data["-1"])
+            if (worldConf.mysql && worldConf.mysql.data && worldConf.mysql.data["-1"]) {
+                const globalMysql = worldConf.mysql.data["-1"]
+                config.ConnectionStrings.MySql["worlds"][worldId.toString()]["global"] = `Server=mysql-${worldName};Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+            }
+            
+            // Data array (log shard connections)
             if (worldConf.mysql && worldConf.mysql.log && Array.isArray(worldConf.mysql.log)) {
-                worldConf.mysql.log.forEach((logConf, index) => {
-                    config.ConnectionStrings.MySql[index.toString()] = `Server=mysql-${worldName}-log;Port=${logConf.port.cluster};User ID=fb; Password=admin; Database=fb`
-                })
+                const dataArray = worldConf.mysql.log.map(logConf => 
+                    `Server=mysql-${worldName}-log;Port=${logConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                )
+                if (dataArray.length > 0) {
+                    config.ConnectionStrings.MySql["worlds"][worldId.toString()]["data"] = dataArray
+                }
             }
 
             const configMap = new k8s.core.v1.ConfigMap(`log-${worldName}`, {

@@ -100,19 +100,19 @@
     {
         try
         {
-            var rabbitMqSection = Configuration.GetSection("RabbitMQ");
-            worlds = rabbitMqSection.GetChildren()
-            .Where(child => uint.TryParse(child.Key, out _))
-            .Select(child => uint.Parse(child.Key))
-            .ToList();
+            // Load worlds from WorldServers section
+            var worldServersSection = Configuration.GetSection("WorldServers");
+            worlds = worldServersSection.GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _))
+                .Select(child => uint.Parse(child.Key))
+                .ToList();
 
             // Load world to server name mapping
-            var worldServersSection = Configuration.GetSection("WorldServers");
             worldToServerName = worldServersSection.GetChildren()
-            .Where(child => uint.TryParse(child.Key, out _))
-            .ToDictionary(
-            child => uint.Parse(child.Key),
-            child => child.Value ?? child.Key);
+                .Where(child => uint.TryParse(child.Key, out _))
+                .ToDictionary(
+                    child => uint.Parse(child.Key),
+                    child => child.Value ?? child.Key);
         }
         catch (Exception ex)
         {

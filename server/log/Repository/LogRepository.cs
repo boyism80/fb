@@ -77,7 +77,7 @@ namespace Log.Repository
 
             try
             {
-                await using var conn = _dbContext.Connection(_world, (int)shard);
+                await using var conn = _dbContext.GetDataConnection(_world, (int)shard);
                 await conn.OpenAsync();
 
                 var sql = BuildBulkInsertQuery(entries);

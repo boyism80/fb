@@ -2390,6 +2390,34 @@
                     "node": 31010
                 }
             }
+        },
+        "rabbitmq": {
+            "internal": {
+                "port": {
+                    "amqp": {
+                        "cluster": 5700,
+                        "node": 31020
+                    },
+                    "management": {
+                        "cluster": 15700,
+                        "node": 31021
+                    }
+                },
+                "replicas": 3
+            },
+            "log": {
+                "port": {
+                    "amqp": {
+                        "cluster": 5701,
+                        "node": 31022
+                    },
+                    "management": {
+                        "cluster": 15701,
+                        "node": 31023
+                    }
+                },
+                "replicas": 3
+            }
         }
     }
 }

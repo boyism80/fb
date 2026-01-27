@@ -27,12 +27,11 @@ namespace Internal.Controllers
         [HttpPost("shutdown")]
         public Task Shutdown()
         {
-            // Get first section for global shutdown message
-            var rabbitMqSection = _configuration.GetSection("RabbitMQ");
-            _rabbitMqService.Broadcast(new Response.Shutdown
+            // Shutdown uses fb.global (no world prefix - all servers receive)
+            _rabbitMqService.Publish(new Response.Shutdown
             {
 
-            }, "amq.direct", $"fb.system");
+            }, "amq.direct", "fb.global");
             return Task.CompletedTask;
         }
     }

@@ -39,7 +39,7 @@ namespace AdminTool.Services
         /// <returns>A result object containing the user list and pagination information.</returns>
         public async Task<UserListResult> GetUsers(uint world, int page, int pageSize, string? searchTerm = null)
         {
-            await using var globalConn = _dbContext.Connection(world, -1);
+            await using var globalConn = _dbContext.GetGlobalConnection(world);
 
             var offset = (page - 1) * pageSize;
             var whereClause = "";
@@ -99,7 +99,7 @@ namespace AdminTool.Services
             var userDetailsDict = new Dictionary<uint, UserListItem>();
 
             // Query each shard for user details
-            foreach (var (conn, idList) in _dbContext.Connections(world, userIds))
+            foreach (var (conn, idList) in _dbContext.GetShardConnections(world, userIds))
             {
                 var userQuery = """
                     SELECT 
@@ -193,7 +193,7 @@ namespace AdminTool.Services
 
             try
             {
-                var redis = _redisService.Redis(world, -1);
+                var redis = _redisService.GetGlobalConnection(world);
                 if (redis == null)
                 {
                     _logger.LogWarning("Redis service instance is not available for IsOnline check.");

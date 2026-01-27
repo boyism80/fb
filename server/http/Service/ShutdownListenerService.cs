@@ -52,7 +52,7 @@ namespace Http.Service
             try
             {
                 _queueName = _channel.QueueDeclare(string.Empty, durable: false, exclusive: false, autoDelete: false, arguments: null);
-                _channel.QueueBind(_queueName, "amq.direct", "fb.system");
+                _channel.QueueBind(_queueName, "amq.direct", "fb.global");
             }
             catch (RabbitMQ.Client.Exceptions.OperationInterruptedException ex)
             {
@@ -101,7 +101,7 @@ namespace Http.Service
 
                     _logger.LogWarning("Shutdown message received.");
 
-                    var redis = _redisService.Redis(0);
+                    var redis = _redisService.GetUnifiedConnection();
                     if (redis == null)
                     {
                         _logger.LogError("unified-global Redis not available, shutting down immediately.");

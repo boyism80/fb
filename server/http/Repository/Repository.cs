@@ -86,7 +86,7 @@ namespace Http.Reepository
         protected virtual async Task<TModel> Get(uint world, TKey key)
         {
             var hash = key.GetHash();
-            await using var conn = _dbContext.Connection(world, hash);
+            await using var conn = hash == null ? _dbContext.GetGlobalConnection(world) : _dbContext.GetShardConnection(world, hash.Value);
             var value = await conn.QuerySingleOrDefaultAsync<TModel>(OnSelect(key));
             if (value == null)
                 return null;
@@ -107,7 +107,7 @@ namespace Http.Reepository
         protected virtual async Task<IEnumerable<TModel>> GetAll(uint world, TKey key)
         {
             var hash = key.GetHash();
-            await using var conn = _dbContext.Connection(world, hash);
+            await using var conn = hash == null ? _dbContext.GetGlobalConnection(world) : _dbContext.GetShardConnection(world, hash.Value);
             return (await conn.QueryAsync<TModel>(OnSelectBulk(key))).Where(x => !x.Deleted);
         }
 
@@ -123,7 +123,7 @@ namespace Http.Reepository
             _buffer.Enqueue(async () =>
             {
                 var hash = value.GetHash();
-                await using var conn = _dbContext.Connection(world, hash);
+                await using var conn = hash == null ? _dbContext.GetGlobalConnection(world) : _dbContext.GetShardConnection(world, hash.Value);
                 await conn.ExecuteAsync(OnUpsert(value));
             });
             return value;
@@ -140,7 +140,7 @@ namespace Http.Reepository
         {
             _buffer.Enqueue(async () =>
             {
-                foreach (var (conn, items) in _dbContext.Connections(world, values, value => value.GetHash()))
+                foreach (var (conn, items) in _dbContext.GetShardConnections(world, values, value => value.GetHash()))
                 {
                     await conn.ExecuteAsync(OnUpsert(items));
                 }
@@ -240,7 +240,7 @@ namespace Http.Reepository
                 }
 
                 var hash = key.GetHash();
-                var redis = _redisService.Redis(world, hash);
+                var redis = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
                 if (redis == null)
                     return null;
 
@@ -306,7 +306,7 @@ namespace Http.Reepository
                 value.UpdatedDate = DateTime.Now;
 
                 var hash = value.GetHash();
-                var redis = _redisService.Redis(world, hash);
+                var redis = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
                 if (redis == null)
                     return;
 
@@ -540,7 +540,7 @@ namespace Http.Reepository
                 }
 
                 var hash = key.GetHash();
-                var redis = _redisService.Redis(world, hash);
+                var redis = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
                 if (redis == null)
                     return null;
 
@@ -595,7 +595,7 @@ namespace Http.Reepository
                     return localValues.Values.Select(x => JsonConvert.DeserializeObject<TModel>(x)).Where(x => !x.Deleted);
 
                 var hash = key.GetHash();
-                var redis = _redisService.Redis(world, hash);
+                var redis = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
                 if (redis == null)
                     return Enumerable.Empty<TModel>();
 
@@ -628,7 +628,7 @@ namespace Http.Reepository
 
                 var redisKey = value.GetRedisKey();
                 var hash = value.GetHash();
-                var redis = _redisService.Redis(world, hash);
+                var redis = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
                 if (redis == null)
                     return;
 
@@ -695,7 +695,7 @@ namespace Http.Reepository
                 foreach (var hashGroup in values.GroupBy(x => x.GetHash()))
                 {
                     var hash = hashGroup.Key;
-                    var redis = _redisService.Redis(world, hash);
+                    var redis = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
                     if (redis == null)
                         continue;
 

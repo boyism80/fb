@@ -53,15 +53,14 @@ module.exports = {
         
         resources.push(serviceAccount, role, roleBinding);
         
-        // Process worlds' RabbitMQ instances
-        for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
-            if (!worldConf.rabbitmq) continue
-            const section = worldName
-            const sectionConf = worldConf.rabbitmq
-            for(const [type, typeConf] of Object.entries(sectionConf)) {
-                if (type !== "internal" && type !== "log") continue
+        // Process unified-global RabbitMQ instances
+        if (conf["unified-infra"] && conf["unified-infra"].rabbitmq) {
+            const unifiedRabbitMqConf = conf["unified-infra"].rabbitmq;
+            for(const [type, typeConf] of Object.entries(unifiedRabbitMqConf)) {
+                if (type !== "internal" && type !== "log")
+                    continue
                 
-                const resourceName = `rabbitmq-${section}-${type}`
+                const resourceName = `rabbitmq-${type}`
                 const headlessServiceName = `${resourceName}-headless`
                 const replicas = typeConf.replicas || 1
                 
@@ -95,7 +94,7 @@ RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
                     },
                     spec: {
                         clusterIP: "None",
-                        selector: { app: "rabbitmq", section: section, type: type },
+                        selector: { app: "rabbitmq", type: type },
                         ports: [
                             { name: "amqp", port: 5672, targetPort: 5672 },
                             { name: "management", port: 15672, targetPort: 15672 },
@@ -110,10 +109,10 @@ RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
                     spec: {
                         serviceName: headlessServiceName,
                         replicas: replicas,
-                        selector: { matchLabels: { app: "rabbitmq", section: section, type: type } },
+                        selector: { matchLabels: { app: "rabbitmq", type: type } },
                         podManagementPolicy: "OrderedReady",
                         template: {
-                            metadata: { labels: { app: "rabbitmq", section: section, type: type } },
+                            metadata: { labels: { app: "rabbitmq", type: type } },
                             spec: {
                                 serviceAccountName: serviceAccount.metadata.name,
                                 affinity: {
@@ -185,7 +184,7 @@ exec docker-entrypoint.sh rabbitmq-server
                         metadata: { name: resourceName, namespace: namespace.metadata.name },
                         spec: {
                             type: "ClusterIP",
-                            selector: { app: "rabbitmq", section: section, type: type },
+                            selector: { app: "rabbitmq", type: type },
                             ports: [
                                 { name: "amqp", port: typeConf.port.amqp.cluster, targetPort: 5672 },
                                 { name: "management", port: typeConf.port.management.cluster, targetPort: 15672 },
@@ -198,7 +197,7 @@ exec docker-entrypoint.sh rabbitmq-server
                         metadata: { name: `${resourceName}-nodeport`, namespace: namespace.metadata.name },
                         spec: {
                             type: "NodePort",
-                            selector: { app: "rabbitmq", section: section, type: type },
+                            selector: { app: "rabbitmq", type: type },
                             ports: [
                                 {
                                     name: "amqp",

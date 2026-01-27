@@ -241,26 +241,27 @@ async::task<void> server::on_start()
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
     this->bind_thread_timer<fb::game::handler::timer::marketplace_restore_timer>(30s);
 
-    auto host_name = std::format("fb.game.{}", config<uint32_t>("id"));
+    auto world = config<uint32_t>("world");
+    auto host_name = std::format("fb.{}.game.{}", world, config<uint32_t>("id"));
     this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::whisper>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_personal>(host_name);
-    this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.system");
-    this->handler.amqp.bind<fb::game::handler::amqp::write_system_mail>("fb.system");
-    this->handler.amqp.bind<fb::game::handler::amqp::broadcast>("fb.global");
-    this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_fetch>("fb.global");
-    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>("fb.system");
-    this->handler.amqp.bind<fb::game::handler::amqp::create_group>("fb.group");
-    this->handler.amqp.bind<fb::game::handler::amqp::updated_group>("fb.group");
-    this->handler.amqp.bind<fb::game::handler::amqp::destroy_group>("fb.group");
-    this->handler.amqp.bind<fb::game::handler::amqp::create_clan>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::destroy_clan>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::write_mail>("fb.mail");
-    this->handler.amqp.bind<fb::game::handler::amqp::ban>("fb.ban");
-    this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>("fb.global");
-    this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>("fb.global");
+    this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.global");  // Shutdown: all servers
+    this->handler.amqp.bind<fb::game::handler::amqp::write_system_mail>(std::format("fb.{}.system", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(std::format("fb.{}.global", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_fetch>(std::format("fb.{}.global", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>(std::format("fb.{}.system", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::create_group>(std::format("fb.{}.group", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_group>(std::format("fb.{}.group", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::destroy_group>(std::format("fb.{}.group", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::create_clan>(std::format("fb.{}.clan", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::destroy_clan>(std::format("fb.{}.clan", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>(std::format("fb.{}.clan", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>(std::format("fb.{}.clan", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::write_mail>(std::format("fb.{}.mail", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::ban>(std::format("fb.{}.ban", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(std::format("fb.{}.global", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(std::format("fb.{}.global", world));
 
     // Fetch system mails on server startup
     co_await this->system_mail.fetch();
@@ -657,13 +658,15 @@ const fb::model::datetime& server::time() const
 
 void server::on_init_amqp(fb::amqp::socket& amqp)
 {
-    this->handler.amqp.declare_queue("amq.direct", "fb.system");
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
-    this->handler.amqp.declare_queue("amq.direct", "fb.global");
-    this->handler.amqp.declare_queue("amq.direct", "fb.group");
-    this->handler.amqp.declare_queue("amq.direct", "fb.clan");
-    this->handler.amqp.declare_queue("amq.direct", "fb.mail");
-    this->handler.amqp.declare_queue("amq.direct", "fb.ban");
+    auto world = config<uint32_t>("world");
+    this->handler.amqp.declare_queue("amq.direct", "fb.global");  // Shutdown: all servers
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.system", world));  // System mail, broadcast save
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.global", world));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.group", world));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.clan", world));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.mail", world));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.ban", world));
 }
 
 async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)

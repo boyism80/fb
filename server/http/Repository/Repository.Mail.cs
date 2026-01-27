@@ -33,7 +33,7 @@ namespace Http.Reepository
         /// <returns>A list of mail messages with resolved sender names.</returns>
         public async Task<List<Mail>> GetList(uint world, uint user, ushort offset, ushort count)
         {
-            await using var conn = _dbContext.Connection(world, user);
+            await using var conn = _dbContext.GetShardConnection(world, user);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("user", user);
             dynamicParams.Add("position", offset);
@@ -54,7 +54,7 @@ namespace Http.Reepository
         /// <exception cref="LogicException">Thrown when the mail does not exist.</exception>
         public async Task<Mail> Get(uint world, uint user, uint id)
         {
-            await using var conn = _dbContext.Connection(world, user);
+            await using var conn = _dbContext.GetShardConnection(world, user);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("user", user);
             dynamicParams.Add("id", id);
@@ -89,7 +89,7 @@ namespace Http.Reepository
                     throw new LogicException(ErrorCode.NotFoundCharacter);
             }
 
-            await using var conn = _dbContext.Connection(world, uid);
+            await using var conn = _dbContext.GetShardConnection(world, uid);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("user", uid);
             dynamicParams.Add("sender", sender);
@@ -115,7 +115,7 @@ namespace Http.Reepository
         /// <returns>The number of unread mail messages.</returns>
         public async Task<ushort> Unread(uint world, uint user)
         {
-            await using var conn = _dbContext.Connection(world, user);
+            await using var conn = _dbContext.GetShardConnection(world, user);
             return await conn.QueryFirstOrDefaultAsync<ushort>($"SELECT COUNT(id) FROM mail WHERE user = {user} AND `read` = 0 AND deleted = 0;");
         }
 
@@ -129,7 +129,7 @@ namespace Http.Reepository
         /// <returns>A task representing the asynchronous delete operation.</returns>
         public async Task<bool> Delete(uint world, uint user, uint id)
         {
-            await using var conn = _dbContext.Connection(world, user);
+            await using var conn = _dbContext.GetShardConnection(world, user);
             var affectedRows = await conn.ExecuteAsync($"UPDATE `mail` SET deleted = 1 WHERE `user` = {user} AND `id` = {id} AND `deleted` = 0");
             return affectedRows == 1;
         }

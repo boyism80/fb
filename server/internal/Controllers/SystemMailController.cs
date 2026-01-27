@@ -87,7 +87,7 @@ namespace Internal.Controllers
                     expire_date = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
                 });
 
-                _rabbitMqService.Publish(request.World, response, "amq.direct", "fb.system");
+                _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.system");
                 return response;
             }
             catch (Exception)

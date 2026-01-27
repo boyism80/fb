@@ -68,7 +68,7 @@ namespace Marketplace.Reepository
             }
             else
             {
-                await using var conn = _dbContext.Connection(0);
+                await using var conn = _dbContext.GetUnifiedConnection();
                 await conn.ExecuteAsync(sql);
             }
 
@@ -87,7 +87,7 @@ namespace Marketplace.Reepository
                 return new Dictionary<string, MarketplacePurchase>();
             }
 
-            await using var conn = _dbContext.Connection(0);
+            await using var conn = _dbContext.GetUnifiedConnection();
             var parameters = new DynamicParameters();
             parameters.Add("PurchaseIds", purchaseIds);
 
@@ -106,7 +106,7 @@ namespace Marketplace.Reepository
         /// <returns>List of purchase records for the listing; empty list if none found.</returns>
         public async Task<List<MarketplacePurchase>> GetPurchasesByListingIdAsync(string listingId)
         {
-            await using var conn = _dbContext.Connection(0);
+            await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $@"
                 SELECT * FROM `marketplace_purchase` 
                 WHERE `listing_id` = {listingId.Escape()}
@@ -123,7 +123,7 @@ namespace Marketplace.Reepository
         /// <returns>True if the purchase ID exists; otherwise, false.</returns>
         public async Task<bool> CheckPurchaseIdExistsAsync(string purchaseId)
         {
-            await using var conn = _dbContext.Connection(0);
+            await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $@"
                 SELECT COUNT(*) FROM `marketplace_purchase` 
                 WHERE `id` = {purchaseId.Escape()}";

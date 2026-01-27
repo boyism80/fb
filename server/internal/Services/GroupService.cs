@@ -49,7 +49,7 @@ namespace Internal.Services
         {
             try
             {
-                var redis = _redisService.Redis(world, id);
+                var redis = _redisService.GetShardConnection(world, id);
                 if (redis == null)
                     throw new LogicException(ErrorCode.Unhandled);
 
@@ -222,7 +222,7 @@ namespace Internal.Services
                                 Error = (uint)ErrorCode.None
                             };
 
-                            _rabbitMqService.Publish(world, response, "amq.direct", $"fb.group");
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.group");
                             return response;
                         }
                     }
@@ -404,7 +404,7 @@ namespace Internal.Services
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(world, response, "amq.direct", $"fb.group");
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.group");
                         return response;
                     }
                 }
@@ -575,7 +575,7 @@ namespace Internal.Services
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(world, response, "amq.direct", $"fb.group");
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.group");
                         return response;
                     }
                 }
@@ -619,7 +619,7 @@ namespace Internal.Services
                         Type = request.Type,
                         Error = (uint)ErrorCode.None
                     };
-                    _rabbitMqService.Publish(world, response, "amq.direct", $"fb.group");
+                    _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.group");
                     return response;
                 }
             }
@@ -777,7 +777,7 @@ namespace Internal.Services
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(world, response, "amq.direct", $"fb.group");
+            _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.group");
             return response;
         }
 
@@ -825,7 +825,7 @@ namespace Internal.Services
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(world, response, "amq.direct", $"fb.group");
+            _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.group");
             return response;
         }
     }

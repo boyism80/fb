@@ -175,7 +175,7 @@ namespace Http.Service
                 return;
 
             var response = BuildPendingResponse(user, pending);
-            _rabbitMqService.Publish(world, response, "amq.direct", $"fb.game.{session.Host}");
+            _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.game.{session.Host}");
         }
 
         private async Task NotifyGlobalPendingAsync(uint world)
@@ -185,7 +185,7 @@ namespace Http.Service
                 return;
 
             var response = BuildPendingResponse(null, pending);
-            _rabbitMqService.Publish(world, response, "amq.direct", "fb.global");
+            _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.global");
         }
 
         private Response.GetStoragePending BuildPendingResponse(uint? user, IEnumerable<StoragePendingBox> pending)

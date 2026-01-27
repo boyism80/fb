@@ -36,7 +36,7 @@ namespace Http.Reepository
         /// <returns>The ban if found; otherwise, null.</returns>
         public async Task<Ban> Get(uint world, uint userId)
         {
-            await using var conn = _dbContext.Connection(world, -1);
+            await using var conn = _dbContext.GetGlobalConnection(world);
             var value = await conn.QuerySingleOrDefaultAsync<Ban>(OnSelect(new BanKey { User = userId }));
             if (value == null)
                 return null;
@@ -106,7 +106,7 @@ namespace Http.Reepository
 
             ban.Deleted = true;
             // Note: Set method needs to be updated to support world, but for now use direct connection
-            await using var conn = _dbContext.Connection(world, -1);
+            await using var conn = _dbContext.GetGlobalConnection(world);
             await conn.ExecuteAsync(OnUpsert(ban));
         }
     }

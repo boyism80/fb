@@ -7,7 +7,7 @@ module.exports = function () {
         setup: function (namespace, conf, dependsOn) {
 
             const resources = []
-            // Get first world for gateway log/rabbitmq (gateway is global, uses first world's infrastructure)
+            // Get first world for gateway log (gateway is global, uses first world's log infrastructure)
             const firstWorldName = Object.keys(conf.worlds)[0]
             const firstWorld = conf.worlds[firstWorldName]
             
@@ -32,14 +32,14 @@ module.exports = function () {
                 },
                 amqp: {
                     internal: {
-                        ip: `rabbitmq-${firstWorldName}-internal`,
-                        port: firstWorld.rabbitmq.internal.port.amqp.cluster,
+                        ip: "rabbitmq-internal",
+                        port: conf["unified-infra"].rabbitmq.internal.port.amqp.cluster,
                         uid: "fb",
                         pwd: "admin"
                     },
                     log: {
-                        ip: `rabbitmq-${firstWorldName}-log`,
-                        port: firstWorld.rabbitmq.log.port.amqp.cluster,
+                        ip: "rabbitmq-log",
+                        port: conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
                         uid: "fb",
                         pwd: "admin",
                         queue_size: 128

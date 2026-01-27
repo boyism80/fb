@@ -40,7 +40,7 @@ namespace Http.Service
         /// <returns>The number of keys that were deleted.</returns>
         private async Task<int> DeleteCache(uint world, int shardIndex, string pattern, int count)
         {
-            var redis = _redisService.Redis(world, shardIndex);
+            var redis = _redisService.GetDataConnection(world, shardIndex);
             if (redis == null)
                 return 0;
 
@@ -60,10 +60,11 @@ namespace Http.Service
         public async Task<int> ClearCache()
         {
             var count = 0;
-            var redisSection = _configuration.GetSection("Redis");
-            var worlds = redisSection.GetChildren()
-                .Where(child => uint.TryParse(child.Key, out _) || child.Key == "unified-global")
-                .Select(child => child.Key == "unified-global" ? 0 : uint.Parse(child.Key));
+            // Get all configured worlds from Redis:worlds section
+            var worldsSection = _configuration.GetSection("Redis:worlds");
+            var worlds = worldsSection.GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _))
+                .Select(child => uint.Parse(child.Key));
 
             foreach (var world in worlds)
             {
@@ -99,7 +100,9 @@ namespace Http.Service
                 return false;
             }
 
-            var redis = _redisService.Redis(world, -1);
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return false;
             var sessionKey = new SessionKey().Key;
             await redis.Connection.KeyDeleteAsync(new RedisKey(sessionKey));
             _logger.LogInformation("User sessions cleared");

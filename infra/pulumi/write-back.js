@@ -31,43 +31,75 @@ module.exports = {
                 }
             }
 
-            // Build MySQL connections for this world (nested structure: MySql:{worldId}:{id})
+            // Build MySQL connections for this world (unified/global/data structure)
             if (worldConf.mysql && worldConf.mysql.data) {
-                if (!config.ConnectionStrings.MySql[worldId]) {
-                    config.ConnectionStrings.MySql[worldId] = {}
+                config.ConnectionStrings.MySql["worlds"] = config.ConnectionStrings.MySql["worlds"] || {}
+                config.ConnectionStrings.MySql["worlds"][worldId] = {}
+                
+                // Global connection (from -1)
+                if (worldConf.mysql.data["-1"]) {
+                    const globalMysql = worldConf.mysql.data["-1"]
+                    config.ConnectionStrings.MySql["worlds"][worldId]["global"] = `Server=mysql-${worldName};Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
                 }
-                for(const [id, mysqlConfig] of Object.entries(worldConf.mysql.data)) {
-                    config.ConnectionStrings.MySql[worldId][id] = `Server=mysql-${worldName};Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
+                
+                // Data array (shard connections: 0, 1, 2, ...)
+                const dataArray = []
+                const sortedIds = Object.keys(worldConf.mysql.data)
+                    .filter(id => id !== "-1")
+                    .map(id => parseInt(id))
+                    .sort((a, b) => a - b)
+                for(const id of sortedIds) {
+                    const mysqlConfig = worldConf.mysql.data[id.toString()]
+                    dataArray.push(`Server=mysql-${worldName};Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`)
+                }
+                if (dataArray.length > 0) {
+                    config.ConnectionStrings.MySql["worlds"][worldId]["data"] = dataArray
                 }
             }
 
-            // Build Redis connections for this world (nested structure: Redis:{worldId}:{id})
+            // Build Redis connections for this world (unified/global/data structure)
             if (worldConf.redis) {
-                if (!config.Redis[worldId]) {
-                    config.Redis[worldId] = {}
-                }
-                for(const [id, redisConf] of Object.entries(worldConf.redis)) {
-                    config.Redis[worldId][id] = {
+                config.Redis["worlds"] = config.Redis["worlds"] || {}
+                config.Redis["worlds"][worldId] = {}
+                
+                // Global Redis (from -1)
+                if (worldConf.redis["-1"]) {
+                    const globalRedis = worldConf.redis["-1"]
+                    config.Redis["worlds"][worldId]["global"] = {
                         Host: `redis-${worldName}`,
-                        Port: redisConf.port.cluster
+                        Port: globalRedis.port.cluster
                     }
                 }
+                
+                // Data array (shard Redis: 0, 1, 2, ...)
+                const dataArray = []
+                const sortedIds = Object.keys(worldConf.redis)
+                    .filter(id => id !== "-1")
+                    .map(id => parseInt(id))
+                    .sort((a, b) => a - b)
+                for(const id of sortedIds) {
+                    const redisConf = worldConf.redis[id.toString()]
+                    dataArray.push({
+                        Host: `redis-${worldName}`,
+                        Port: redisConf.port.cluster
+                    })
+                }
+                if (dataArray.length > 0) {
+                    config.Redis["worlds"][worldId]["data"] = dataArray
+                }
             }
 
-            // Build RabbitMQ connections for this world (nested structure: RabbitMQ:{worldId}:{Internal/Log})
-            if (worldConf.rabbitmq) {
-                if (!config.RabbitMQ[worldId]) {
-                    config.RabbitMQ[worldId] = {}
-                }
-                config.RabbitMQ[worldId]["Internal"] = {
-                    "Host": `rabbitmq-${worldName}-internal`,
-                    "Port": worldConf.rabbitmq.internal.port.amqp.cluster,
+            // Build RabbitMQ connections using unified-global (flat structure: RabbitMQ:{Internal/Log})
+            if (conf["unified-infra"] && conf["unified-infra"].rabbitmq) {
+                config.RabbitMQ["Internal"] = {
+                    "Host": "rabbitmq-internal",
+                    "Port": conf["unified-infra"].rabbitmq.internal.port.amqp.cluster,
                     "Uid": "fb",
                     "Pwd": "admin"
                 }
-                config.RabbitMQ[worldId]["Log"] = {
-                    "Host": `rabbitmq-${worldName}-log`,
-                    "Port": worldConf.rabbitmq.log.port.amqp.cluster,
+                config.RabbitMQ["Log"] = {
+                    "Host": "rabbitmq-log",
+                    "Port": conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
                     "Uid": "fb",
                     "Pwd": "admin",
                     "QueueSize": 128

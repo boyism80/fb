@@ -35,14 +35,14 @@ module.exports = function () {
                         login: { ip: conf.host, port: worldConf.login.port },
                         amqp: {
                             internal: {
-                                ip: `rabbitmq-${worldName}-internal`,
-                                port: worldConf.rabbitmq.internal.port.amqp.cluster,
+                                ip: "rabbitmq-internal",
+                                port: conf["unified-infra"].rabbitmq.internal.port.amqp.cluster,
                                 uid: "fb",
                                 pwd: "admin"
                             },
                             log: {
-                                ip: `rabbitmq-${worldName}-log`,
-                                port: worldConf.rabbitmq.log.port.amqp.cluster,
+                                ip: "rabbitmq-log",
+                                port: conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
                                 uid: "fb",
                                 pwd: "admin",
                                 queue_size: 128

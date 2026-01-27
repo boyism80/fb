@@ -687,7 +687,7 @@
                 ExpireDate = result.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
                 Error = (uint)result.Error
             };
-            RabbitMqService.Publish(selectedWorld.Value, response, "amq.direct", "fb.ban");
+            RabbitMqService.Publish(response, "amq.direct", $"fb.{selectedWorld.Value}.ban");
 
             successMessage = $"User {selectedUser.Name} has been banned successfully.";
             CloseBanModal();
@@ -729,7 +729,7 @@
                 Name = selectedUser.Name,
                 Error = (uint)result.Error
             };
-            RabbitMqService.Publish(selectedWorld.Value, response, "amq.direct", "fb.unban");
+            RabbitMqService.Publish(response, "amq.direct", $"fb.{selectedWorld.Value}.unban");
 
             successMessage = $"User {selectedUser.Name} has been unbanned successfully.";
             CloseUnbanModal();

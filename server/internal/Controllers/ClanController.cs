@@ -42,7 +42,7 @@ namespace Internal.Controllers
         private async Task<List<Protocol.ClanMember>> GetClanMemberResponse(uint world, uint id)
         {
             var members = await _dbContext.ClanMember.Get(world, id);
-            await using var conn = _dbContext.Connection(world, -1);
+            await using var conn = _dbContext.GetGlobalConnection(world);
             var names = await conn.QueryAsync($"SELECT `id`, `name` FROM `name` WHERE id IN ({string.Join(',', members.Select(x => x.User))})");
             var nameDict = names.ToDictionary(x => x.id, x => x.name);
 
@@ -99,7 +99,7 @@ namespace Internal.Controllers
         public async Task<Response.ClanDetails> Create(Request.CreateClan request)
         {
             var world = request.World;
-            await using var db = _dbContext.Connection(world, -1);
+            await using var db = _dbContext.GetGlobalConnection(world);
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
             try
@@ -161,7 +161,7 @@ namespace Internal.Controllers
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.clan");
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                         return response;
                     }
                 }
@@ -195,7 +195,7 @@ namespace Internal.Controllers
         public async Task<Response.DestroyClan> Destroy(Request.DestroyClan request)
         {
             var world = request.World;
-            await using var db = _dbContext.Connection(world, -1);
+            await using var db = _dbContext.GetGlobalConnection(world);
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
             try
@@ -245,7 +245,7 @@ namespace Internal.Controllers
                         await _dbContext.SaveChangesAsync();
                         await trans.CommitAsync();
 
-                        var conn = _dbContext.Connection(world, -1);
+                        var conn = _dbContext.GetGlobalConnection(world);
                         var masterName = await conn.QueryFirstOrDefaultAsync<string>(
                             $"SELECT `name` FROM `name` WHERE id = {ch.Id}");
 
@@ -262,7 +262,7 @@ namespace Internal.Controllers
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.clan");
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                         return response;
                     }
                 }
@@ -347,7 +347,7 @@ namespace Internal.Controllers
                             NewTitle = request.Title,
                             Error = (uint)ErrorCode.None
                         };
-                        _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.clan");
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                         return response;
                     }
                 }
@@ -466,7 +466,7 @@ namespace Internal.Controllers
                                 Error = (uint)ErrorCode.None
                             };
 
-                            _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.clan");
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                             return response;
                         }
                     }
@@ -557,7 +557,7 @@ namespace Internal.Controllers
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.clan");
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                         return response;
                     }
                 }
@@ -681,7 +681,7 @@ namespace Internal.Controllers
                                 Error = (uint)ErrorCode.None
                             };
 
-                            _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.clan");
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                             return response;
                         }
                     }
@@ -724,7 +724,7 @@ namespace Internal.Controllers
                         Type = request.Type,
                         Error = (uint)ErrorCode.None
                     };
-                    _rabbitMqService.Publish(world, response, "amq.direct", $"fb.clan");
+                    _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.clan");
                     return response;
                 }
             }
@@ -848,7 +848,7 @@ namespace Internal.Controllers
                                 Error = (uint)ErrorCode.None
                             };
 
-                            _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.clan");
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                             return response;
                         }
                     }

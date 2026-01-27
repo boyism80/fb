@@ -77,7 +77,7 @@ namespace Http.Service
 
                 try
                 {
-                    await using var conn = dbContext.Connection(world, bulletinSection);
+                    await using var conn = dbContext.GetDataConnection(world, (int)bulletinSection);
                     await conn.OpenAsync(cancellationToken);
 
                     // Start transaction for sequence management

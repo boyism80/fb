@@ -100,15 +100,91 @@ namespace Http.Service
 
 
         /// <summary>
+        /// Gets unified-global database connection.
+        /// Use this for services that need cross-world data (e.g., marketplace, admin-tool).
+        /// Unified connection is shared across all worlds (no world parameter needed).
+        /// </summary>
+        /// <returns>A new <see cref="MySqlConnection"/> instance for unified-global database.</returns>
+        public MySqlConnection GetUnifiedConnection()
+        {
+            var connectionString = _configuration.GetValue<string>("ConnectionStrings:MySql:unified");
+            if (string.IsNullOrEmpty(connectionString))
+                throw new Exception("Unified connection string not found");
+            return new MySqlConnection(connectionString);
+        }
+
+        /// <summary>
+        /// Gets world-global database connection for the specified world.
+        /// Use this for world-specific global data (e.g., system mail, bulletin).
+        /// </summary>
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <returns>A new <see cref="MySqlConnection"/> instance for world-global database.</returns>
+        public MySqlConnection GetGlobalConnection(uint world)
+        {
+            if (world == 0)
+                throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
+
+            var connectionString = _configuration.GetValue<string>($"ConnectionStrings:MySql:worlds:{world}:global");
+            if (string.IsNullOrEmpty(connectionString))
+                throw new Exception($"World {world} global connection string not found");
+            return new MySqlConnection(connectionString);
+        }
+
+        /// <summary>
+        /// Gets shard database connection for the specified world and shard index.
+        /// Use this for sharded data (e.g., character, item, mail).
+        /// </summary>
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <param name="index">The shard index (0-based array index).</param>
+        /// <returns>A new <see cref="MySqlConnection"/> instance for the specified shard.</returns>
+        public MySqlConnection GetDataConnection(uint world, int index)
+        {
+            if (world == 0)
+                throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
+
+            if (index < 0)
+                throw new ArgumentException("Shard index must be >= 0. Use GetWorldGlobalConnection() for world-global.");
+
+            var dataArray = _configuration.GetSection($"ConnectionStrings:MySql:worlds:{world}:data")
+                .Get<string[]>();
+
+            if (dataArray == null || index >= dataArray.Length)
+                throw new Exception($"Shard index {index} not found for world {world}");
+
+            return new MySqlConnection(dataArray[index]);
+        }
+
+        /// <summary>
+        /// Gets shard database connection using ID-based sharding.
+        /// Automatically calculates shard index from ID using modulo operation.
+        /// </summary>
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <param name="id">The ID used for sharding calculation.</param>
+        /// <returns>A new <see cref="MySqlConnection"/> instance for the calculated shard.</returns>
+        public MySqlConnection GetShardConnection(uint world, uint id)
+        {
+            var shardSize = GetShardDbSize(world);
+            if (shardSize == 0)
+                throw new Exception($"No shards available for world {world}");
+
+            var shardIndex = (int)(id % shardSize);
+            return GetDataConnection(world, shardIndex);
+        }
+
+        /// <summary>
         /// Gets the number of shared database instances configured for the specified world.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <returns>The count of database shards excluding the default (-1) connection for the specified world.</returns>
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <returns>The count of database shards for the specified world.</returns>
         public uint GetShardDbSize(uint world)
         {
-            var worldKey = world == 0 ? "unified-global" : world.ToString();
-            var sectionConfig = _configuration.GetSection($"ConnectionStrings:MySql:{worldKey}");
-            return (uint)sectionConfig.GetChildren().Where(x => x.Key != "-1").Count();
+            if (world == 0)
+                throw new ArgumentException("World must be greater than 0. Unified has no shards.");
+
+            var dataArray = _configuration.GetSection($"ConnectionStrings:MySql:worlds:{world}:data")
+                .Get<string[]>();
+
+            return dataArray != null ? (uint)dataArray.Length : 0;
         }
 
         /// <summary>
@@ -147,7 +223,7 @@ namespace Http.Service
         /// <param name="idList">The collection of IDs to group by shard.</param>
         /// <returns>An enumerable of tuples containing the connection and associated ID array for each shard.</returns>
         /// <exception cref="Exception">Thrown when shard size is zero for the world.</exception>
-        public IEnumerable<(MySqlConnection Connection, uint[] IdList)> Connections(uint world, IEnumerable<uint> idList)
+        public IEnumerable<(MySqlConnection Connection, uint[] IdList)> GetShardConnections(uint world, IEnumerable<uint> idList)
         {
             var shardSize = GetShardDbSize(world);
             if (shardSize == 0)
@@ -155,7 +231,7 @@ namespace Http.Service
 
             foreach (var g in idList.Distinct().GroupBy(id => (int)(id % shardSize)))
             {
-                yield return (Connection(world, g.Key), g.ToArray());
+                yield return (GetDataConnection(world, g.Key), g.ToArray());
             }
         }
 
@@ -167,7 +243,7 @@ namespace Http.Service
         /// <param name="idList">The collection of nullable IDs to group by shard.</param>
         /// <returns>An enumerable of tuples containing the connection and associated ID array for each shard.</returns>
         /// <exception cref="Exception">Thrown when shard size is zero for the world.</exception>
-        public IEnumerable<(MySqlConnection Connection, uint?[] IdList)> Connections(uint world, IEnumerable<uint?> idList)
+        public IEnumerable<(MySqlConnection Connection, uint?[] IdList)> GetShardConnections(uint world, IEnumerable<uint?> idList)
         {
             var shardSize = GetShardDbSize(world);
             if (shardSize == 0)
@@ -176,13 +252,16 @@ namespace Http.Service
             var groups = idList.Distinct().GroupBy(id =>
             {
                 if (id == null)
-                    return -1;
+                    return -1; // Use -1 as marker for world-global
                 else
                     return (int)(id.Value % shardSize);
             });
             foreach (var g in groups)
             {
-                yield return (Connection(world, g.Key), g.ToArray());
+                if (g.Key == -1)
+                    yield return (GetGlobalConnection(world), g.ToArray());
+                else
+                    yield return (GetDataConnection(world, g.Key), g.ToArray());
             }
         }
 
@@ -196,7 +275,7 @@ namespace Http.Service
         /// <param name="selector">A function to extract the nullable sharding key from each value.</param>
         /// <returns>An enumerable of tuples containing the connection and associated value array for each shard.</returns>
         /// <exception cref="Exception">Thrown when shard size is zero for the world.</exception>
-        public IEnumerable<(MySqlConnection Connection, T[] Values)> Connections<T>(uint world, IEnumerable<T> values, Func<T, uint?> selector)
+        public IEnumerable<(MySqlConnection Connection, T[] Values)> GetShardConnections<T>(uint world, IEnumerable<T> values, Func<T, uint?> selector)
         {
             var shardSize = GetShardDbSize(world);
             if (shardSize == 0)
@@ -206,56 +285,21 @@ namespace Http.Service
             {
                 var hash = selector(value);
                 if (hash == null)
-                    return -1;
+                    return -1; // Use -1 as marker for world-global
                 else
                     return (int)(hash.Value % shardSize);
             });
 
             foreach (var g in groups)
             {
-                yield return (Connection(world, g.Key), g.ToArray());
+                if (g.Key == -1)
+                    yield return (GetGlobalConnection(world), g.ToArray());
+                else
+                    yield return (GetDataConnection(world, g.Key), g.ToArray());
             }
         }
 
 
-        /// <summary>
-        /// Creates a MySQL connection for the specified world and database index.
-        /// Uses nested configuration structure: ConnectionStrings:MySql:{world}:{db}
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="db">The database index within the world (-1, 0, 1, 2, etc.). Defaults to -1 (world-global database).</param>
-        /// <returns>A new <see cref="MySqlConnection"/> instance for the specified world and database.</returns>
-        public MySqlConnection Connection(uint world, int db)
-        {
-            var worldKey = world == 0 ? "unified-global" : world.ToString();
-            var connectionString = _configuration.GetConnectionString($"MySql:{worldKey}:{db}");
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                throw new Exception($"Connection string not found for world '{world}' and database index '{db}'");
-            }
-            return new MySqlConnection(connectionString);
-        }
-
-        /// <summary>
-        /// Creates a MySQL connection for the specified world and ID using sharding logic.
-        /// Uses modulo operation to distribute connections across available shards within the world.
-        /// If id is null, uses world-global database (-1).
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="id">The ID used to determine the target shard within the world. Null for world-global database.</param>
-        /// <returns>A new <see cref="MySqlConnection"/> instance for the calculated shard.</returns>
-        public MySqlConnection Connection(uint world, uint? id = null)
-        {
-            if (id == null)
-                return Connection(world, -1);
-
-            var shardSize = GetShardDbSize(world);
-
-            if (shardSize == 0)
-                throw new Exception($"shard db size cannot be zero for world {world}");
-
-            return Connection(world, (int)(id.Value % shardSize));
-        }
 
         /// <summary>
         /// Saves all pending changes across all repository instances asynchronously.

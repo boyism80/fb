@@ -59,7 +59,7 @@ namespace Http.Service
         /// <returns>A list of running server information.</returns>
         public async Task<List<ServerInfo>> GetRunningServers()
         {
-            var redis = _redisService.Redis(0);
+            var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
                 return new List<ServerInfo>();
 
@@ -113,7 +113,7 @@ namespace Http.Service
         /// <returns>True if any servers are running; otherwise, false.</returns>
         public async Task<bool> HasRunningServers()
         {
-            var redis = _redisService.Redis(0);
+            var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
                 return false;
 
@@ -135,7 +135,7 @@ namespace Http.Service
         {
             try
             {
-                var redis = _redisService.Redis(0); // unified-global is 0
+                var redis = _redisService.GetUnifiedConnection(); // unified-global is 0
                 if (redis == null)
                     return false;
 
@@ -168,7 +168,7 @@ namespace Http.Service
         /// <returns>The host configuration if found; otherwise, null.</returns>
         public async Task<HostConfig> GetHostConfig(uint world, Protocol.Service service, byte id)
         {
-            var redis = _redisService.Redis(0); // unified-global is 0
+            var redis = _redisService.GetUnifiedConnection(); // unified-global is 0
             if (redis == null)
                 return null;
 

@@ -135,7 +135,7 @@ namespace Http.Reepository
                 SELECT LAST_INSERT_ID();";
 
             // SystemMail uses world-global database
-            await using var conn = _dbContext.Connection(world, null);
+            await using var conn = _dbContext.GetGlobalConnection(world);
             var id = await conn.QueryFirstOrDefaultAsync<uint>(query, new { sender, title, contents, expireDate });
 
             var systemMail = new SystemMail
