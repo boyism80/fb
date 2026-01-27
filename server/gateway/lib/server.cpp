@@ -17,7 +17,8 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<std::string>("amqp:log:pwd"),
         std::to_string(fb::config<uint32_t>("id")),
         fb::config<std::string>("name"),
-        fb::config<size_t>("amqp:log:queue_size"))
+        fb::config<size_t>("amqp:log:queue_size"),
+        0) // Gateway is unified-global (world = 0)
 {
     this->handler.protocol.bind<fb::gateway::handler::protocol::check_version>();
     this->handler.protocol.bind<fb::gateway::handler::protocol::entry_list>();

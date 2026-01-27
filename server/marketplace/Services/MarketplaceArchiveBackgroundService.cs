@@ -122,6 +122,7 @@ namespace Marketplace.Services
                 var archiveSql = $@"
                     INSERT INTO `marketplace_listing_archive` (
                         `id`,
+                        `world`,
                         `seller_id`,
                         `item_model`,
                         `remaining_count`,
@@ -136,6 +137,7 @@ namespace Marketplace.Services
                         `archived_date`)
                     SELECT 
                         `id`,
+                        `world`,
                         `seller_id`,
                         `item_model`,
                         `remaining_count`,

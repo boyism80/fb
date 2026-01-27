@@ -14,6 +14,7 @@ private:
     std::string                       _server_id;
     std::string                       _server_name;
     size_t                            _queue_size;
+    uint32_t                          _world;
 
 public:
     log_collector(const std::string& hostname,
@@ -22,7 +23,8 @@ public:
                   const std::string& pwd,
                   const std::string& server_id,
                   const std::string& server_name,
-                  size_t             queue_size);
+                  size_t             queue_size,
+                  uint32_t           world);
     ~log_collector() = default;
 
     log_collector(const log_collector&)             = delete;

@@ -48,7 +48,7 @@ namespace Http.Extension
 
             return obj switch
             {
-                string s => s == null ? "NULL" : $"'{s}'",
+                string s => s == null ? "NULL" : $"'{s.Replace("'", "''").Replace("\\", "\\\\")}'",
                 bool b => b ? "1" : "0",
                 DateTime dt => $"'{dt:yyyy-MM-dd HH:mm:ss.ffffff}'",
                 _ => obj.ToString(),

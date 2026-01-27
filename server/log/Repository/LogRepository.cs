@@ -94,13 +94,23 @@ namespace Log.Repository
         /// </summary>
         /// <param name="log">The JSON log element to parse.</param>
         /// <returns>A LogEntry object, or null if parsing fails.</returns>
-        private LogEntry ParseLogEntry(JsonElement log)
+        private static LogEntry ParseLogEntry(JsonElement log)
         {
             try
             {
+                string timestampStr;
+                if (log.TryGetProperty("timestamp", out var ts) && ts.ValueKind == System.Text.Json.JsonValueKind.String)
+                {
+                    timestampStr = ts.GetString() ?? DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+                else
+                {
+                    timestampStr = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+
                 return new LogEntry
                 {
-                    Timestamp = log.TryGetProperty("timestamp", out var ts) ? ts.GetInt64() : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                    Timestamp = timestampStr,
                     Event = log.TryGetProperty("event", out var evt) ? evt.GetString() ?? string.Empty : string.Empty,
                     ServerId = log.TryGetProperty("server_id", out var sid) ? sid.GetString() ?? string.Empty : string.Empty,
                     ServerName = log.TryGetProperty("server_name", out var sname) ? sname.GetString() ?? string.Empty : string.Empty,
@@ -122,7 +132,7 @@ namespace Log.Repository
         private static string BuildBulkInsertQuery(List<LogEntry> entries)
         {
             var values = string.Join(", ", entries.Select(e =>
-                $"({e.Timestamp}, {e.Event.Escape()}, {e.ServerId.Escape()}, {e.ServerName.Escape()}, {e.Data.Escape()})"));
+                $"({e.Timestamp.Escape()}, {e.Event.Escape()}, {e.ServerId.Escape()}, {e.ServerName.Escape()}, {e.Data.Escape()})"));
 
             return $"INSERT INTO log (`timestamp`, `event`, `server_id`, `server_name`, `data`) VALUES {values}";
         }
@@ -132,7 +142,7 @@ namespace Log.Repository
         /// </summary>
         private class LogEntry
         {
-            public long Timestamp { get; set; }
+            public string Timestamp { get; set; } = string.Empty;
             public string Event { get; set; } = string.Empty;
             public string ServerId { get; set; } = string.Empty;
             public string ServerName { get; set; } = string.Empty;

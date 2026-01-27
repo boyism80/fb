@@ -15,6 +15,7 @@ namespace Http.Service
         private readonly string _serverId;
         private readonly string _serverName;
         private readonly int _queueSize;
+        private readonly uint _world;
         private readonly Random _random;
         private readonly ILogger<LogService> _logger;
         private readonly bool _enabled;
@@ -38,6 +39,7 @@ namespace Http.Service
                 _serverId = string.Empty;
                 _serverName = string.Empty;
                 _queueSize = 128;
+                _world = 0;
                 _random = new Random();
                 return;
             }
@@ -45,6 +47,9 @@ namespace Http.Service
             // Read server identification from Log section
             _serverId = logConfig["ServerId"] ?? "0";
             _serverName = logConfig["ServerName"] ?? "unknown";
+
+            // Read world from configuration (0 means unified-global, >0 means specific world)
+            _world = (uint)configuration.GetValue<int>("World", 0);
 
             // Read RabbitMQ connection info from RabbitMQ.Log section
             var logSection = configuration.GetSection("RabbitMQ:Log");
@@ -95,7 +100,7 @@ namespace Http.Service
                 // Create log entry JSON (same format as C++ log_collector)
                 var logEntry = new
                 {
-                    timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                    timestamp = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                     @event = eventType,
                     server_id = _serverId,
                     server_name = _serverName,
@@ -123,10 +128,14 @@ namespace Http.Service
         /// <summary>
         /// Selects a random routing key for log message distribution.
         /// </summary>
-        /// <returns>A routing key in the format "fb.log.{0-queue_size-1}".</returns>
+        /// <returns>A routing key in the format "fb.{world}.log.{0-queue_size-1}" for world > 0, or "fb.log.{0-queue_size-1}" for unified-global.</returns>
         private string SelectRandomRoutingKey()
         {
             var queueIndex = _random.Next(0, _queueSize);
+            if (_world > 0)
+            {
+                return $"fb.{_world}.log.{queueIndex}";
+            }
             return $"fb.log.{queueIndex}";
         }
 
