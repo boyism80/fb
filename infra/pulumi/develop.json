@@ -6,32 +6,26 @@
             "desc": "1996년 4월 서비스 시작",
             "deploy": true,
             "mysql": {
-                "data": {
-                    "-1": {
-                        "port": {
-                            "cluster": 3306,
-                            "node": 30100
-                        }
-                    },
-                    "0": {
+                "data": [
+                    {
                         "port": {
                             "cluster": 3307,
                             "node": 30101
                         }
                     },
-                    "1": {
+                    {
                         "port": {
                             "cluster": 3308,
                             "node": 30102
                         }
                     },
-                    "2": {
+                    {
                         "port": {
                             "cluster": 3309,
                             "node": 30103
                         }
                     }
-                },
+                ],
                 "log": [
                     {
                         "port": {
@@ -51,33 +45,41 @@
                             "node": 30106
                         }
                     }
-                ]
+                ],
+                "global": {
+                    "port": {
+                        "cluster": 3306,
+                        "node": 30100
+                    }
+                }
             },
             "redis": {
-                "-1": {
+                "global": {
                     "port": {
                         "cluster": 6379,
                         "node": 30110
                     }
                 },
-                "0": {
-                    "port": {
-                        "cluster": 6380,
-                        "node": 30111
+                "data": [
+                    {
+                        "port": {
+                            "cluster": 6380,
+                            "node": 30111
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6381,
+                            "node": 30112
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6382,
+                            "node": 30113
+                        }
                     }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 6381,
-                        "node": 30112
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 6382,
-                        "node": 30113
-                    }
-                }
+                ]
             },
             "rabbitmq": {
                 "internal": {
@@ -205,11 +207,7 @@
                     }
                 }
             },
-            "write-back": {
-                "mysql": "world-1",
-                "redis": "world-1",
-                "rabbitmq": "world-1"
-            },
+            "write-back": {},
             "bot": {
                 "io_size": 5,
                 "interval": 60000,
@@ -227,32 +225,26 @@
             "desc": "2000년 2월 서비스 시작",
             "deploy": true,
             "mysql": {
-                "data": {
-                    "-1": {
-                        "port": {
-                            "cluster": 3320,
-                            "node": 30120
-                        }
-                    },
-                    "0": {
+                "data": [
+                    {
                         "port": {
                             "cluster": 3321,
                             "node": 30121
                         }
                     },
-                    "1": {
+                    {
                         "port": {
                             "cluster": 3322,
                             "node": 30122
                         }
                     },
-                    "2": {
+                    {
                         "port": {
                             "cluster": 3323,
                             "node": 30123
                         }
                     }
-                },
+                ],
                 "log": [
                     {
                         "port": {
@@ -272,33 +264,41 @@
                             "node": 30126
                         }
                     }
-                ]
+                ],
+                "global": {
+                    "port": {
+                        "cluster": 3320,
+                        "node": 30120
+                    }
+                }
             },
             "redis": {
-                "-1": {
+                "global": {
                     "port": {
                         "cluster": 6383,
                         "node": 30114
                     }
                 },
-                "0": {
-                    "port": {
-                        "cluster": 6384,
-                        "node": 30115
+                "data": [
+                    {
+                        "port": {
+                            "cluster": 6384,
+                            "node": 30115
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6385,
+                            "node": 30116
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6386,
+                            "node": 30117
+                        }
                     }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 6385,
-                        "node": 30116
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 6386,
-                        "node": 30117
-                    }
-                }
+                ]
             },
             "rabbitmq": {
                 "internal": {
@@ -426,11 +426,7 @@
                     }
                 }
             },
-            "write-back": {
-                "mysql": "world-2",
-                "redis": "world-2",
-                "rabbitmq": "world-2"
-            },
+            "write-back": {},
             "bot": {}
         },
         "world-3": {
@@ -439,32 +435,26 @@
             "desc": "2000년 7월 서비스 시작",
             "deploy": false,
             "mysql": {
-                "data": {
-                    "-1": {
-                        "port": {
-                            "cluster": 3330,
-                            "node": 30140
-                        }
-                    },
-                    "0": {
+                "data": [
+                    {
                         "port": {
                             "cluster": 3331,
                             "node": 30141
                         }
                     },
-                    "1": {
+                    {
                         "port": {
                             "cluster": 3332,
                             "node": 30142
                         }
                     },
-                    "2": {
+                    {
                         "port": {
                             "cluster": 3333,
                             "node": 30143
                         }
                     }
-                },
+                ],
                 "log": [
                     {
                         "port": {
@@ -484,33 +474,41 @@
                             "node": 30146
                         }
                     }
-                ]
+                ],
+                "global": {
+                    "port": {
+                        "cluster": 3330,
+                        "node": 30140
+                    }
+                }
             },
             "redis": {
-                "-1": {
+                "global": {
                     "port": {
                         "cluster": 6387,
                         "node": 30118
                     }
                 },
-                "0": {
-                    "port": {
-                        "cluster": 6388,
-                        "node": 30119
+                "data": [
+                    {
+                        "port": {
+                            "cluster": 6388,
+                            "node": 30119
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6389,
+                            "node": 30120
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6390,
+                            "node": 30121
+                        }
                     }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 6389,
-                        "node": 30120
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 6390,
-                        "node": 30121
-                    }
-                }
+                ]
             },
             "rabbitmq": {
                 "internal": {
@@ -638,11 +636,7 @@
                     }
                 }
             },
-            "write-back": {
-                "mysql": "world-3",
-                "redis": "world-3",
-                "rabbitmq": "world-3"
-            },
+            "write-back": {},
             "bot": {}
         },
         "world-4": {
@@ -651,32 +645,26 @@
             "desc": "2000년 7월 서비스 시작",
             "deploy": false,
             "mysql": {
-                "data": {
-                    "-1": {
-                        "port": {
-                            "cluster": 3340,
-                            "node": 30160
-                        }
-                    },
-                    "0": {
+                "data": [
+                    {
                         "port": {
                             "cluster": 3341,
                             "node": 30161
                         }
                     },
-                    "1": {
+                    {
                         "port": {
                             "cluster": 3342,
                             "node": 30162
                         }
                     },
-                    "2": {
+                    {
                         "port": {
                             "cluster": 3343,
                             "node": 30163
                         }
                     }
-                },
+                ],
                 "log": [
                     {
                         "port": {
@@ -696,33 +684,41 @@
                             "node": 30166
                         }
                     }
-                ]
+                ],
+                "global": {
+                    "port": {
+                        "cluster": 3340,
+                        "node": 30160
+                    }
+                }
             },
             "redis": {
-                "-1": {
+                "global": {
                     "port": {
                         "cluster": 6391,
                         "node": 30122
                     }
                 },
-                "0": {
-                    "port": {
-                        "cluster": 6392,
-                        "node": 30123
+                "data": [
+                    {
+                        "port": {
+                            "cluster": 6392,
+                            "node": 30123
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6393,
+                            "node": 30124
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6394,
+                            "node": 30125
+                        }
                     }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 6393,
-                        "node": 30124
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 6394,
-                        "node": 30125
-                    }
-                }
+                ]
             },
             "rabbitmq": {
                 "internal": {
@@ -850,11 +846,7 @@
                     }
                 }
             },
-            "write-back": {
-                "mysql": "world-4",
-                "redis": "world-4",
-                "rabbitmq": "world-4"
-            },
+            "write-back": {},
             "bot": {}
         },
         "world-5": {
@@ -863,32 +855,26 @@
             "desc": "2000년 12월 서비스 시작",
             "deploy": false,
             "mysql": {
-                "data": {
-                    "-1": {
-                        "port": {
-                            "cluster": 3350,
-                            "node": 30180
-                        }
-                    },
-                    "0": {
+                "data": [
+                    {
                         "port": {
                             "cluster": 3351,
                             "node": 30181
                         }
                     },
-                    "1": {
+                    {
                         "port": {
                             "cluster": 3352,
                             "node": 30182
                         }
                     },
-                    "2": {
+                    {
                         "port": {
                             "cluster": 3353,
                             "node": 30183
                         }
                     }
-                },
+                ],
                 "log": [
                     {
                         "port": {
@@ -908,33 +894,41 @@
                             "node": 30186
                         }
                     }
-                ]
+                ],
+                "global": {
+                    "port": {
+                        "cluster": 3350,
+                        "node": 30180
+                    }
+                }
             },
             "redis": {
-                "-1": {
+                "global": {
                     "port": {
                         "cluster": 6395,
                         "node": 30126
                     }
                 },
-                "0": {
-                    "port": {
-                        "cluster": 6396,
-                        "node": 30127
+                "data": [
+                    {
+                        "port": {
+                            "cluster": 6396,
+                            "node": 30127
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6397,
+                            "node": 30128
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6398,
+                            "node": 30129
+                        }
                     }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 6397,
-                        "node": 30128
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 6398,
-                        "node": 30129
-                    }
-                }
+                ]
             },
             "rabbitmq": {
                 "internal": {
@@ -1062,11 +1056,7 @@
                     }
                 }
             },
-            "write-back": {
-                "mysql": "world-5",
-                "redis": "world-5",
-                "rabbitmq": "world-5"
-            },
+            "write-back": {},
             "bot": {}
         },
         "world-6": {
@@ -1075,32 +1065,26 @@
             "desc": "2000년 12월 서비스 시작(PK서버)",
             "deploy": false,
             "mysql": {
-                "data": {
-                    "-1": {
-                        "port": {
-                            "cluster": 3360,
-                            "node": 30200
-                        }
-                    },
-                    "0": {
+                "data": [
+                    {
                         "port": {
                             "cluster": 3361,
                             "node": 30201
                         }
                     },
-                    "1": {
+                    {
                         "port": {
                             "cluster": 3362,
                             "node": 30202
                         }
                     },
-                    "2": {
+                    {
                         "port": {
                             "cluster": 3363,
                             "node": 30203
                         }
                     }
-                },
+                ],
                 "log": [
                     {
                         "port": {
@@ -1120,33 +1104,41 @@
                             "node": 30206
                         }
                     }
-                ]
+                ],
+                "global": {
+                    "port": {
+                        "cluster": 3360,
+                        "node": 30200
+                    }
+                }
             },
             "redis": {
-                "-1": {
+                "global": {
                     "port": {
                         "cluster": 6399,
                         "node": 30130
                     }
                 },
-                "0": {
-                    "port": {
-                        "cluster": 6400,
-                        "node": 30131
+                "data": [
+                    {
+                        "port": {
+                            "cluster": 6400,
+                            "node": 30131
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6401,
+                            "node": 30132
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6402,
+                            "node": 30133
+                        }
                     }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 6401,
-                        "node": 30132
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 6402,
-                        "node": 30133
-                    }
-                }
+                ]
             },
             "rabbitmq": {
                 "internal": {
@@ -1274,11 +1266,7 @@
                     }
                 }
             },
-            "write-back": {
-                "mysql": "world-6",
-                "redis": "world-6",
-                "rabbitmq": "world-6"
-            },
+            "write-back": {},
             "bot": {}
         },
         "world-7": {
@@ -1287,32 +1275,26 @@
             "desc": "10대들을 위한 전용 서버",
             "deploy": false,
             "mysql": {
-                "data": {
-                    "-1": {
-                        "port": {
-                            "cluster": 3370,
-                            "node": 30220
-                        }
-                    },
-                    "0": {
+                "data": [
+                    {
                         "port": {
                             "cluster": 3371,
                             "node": 30221
                         }
                     },
-                    "1": {
+                    {
                         "port": {
                             "cluster": 3372,
                             "node": 30222
                         }
                     },
-                    "2": {
+                    {
                         "port": {
                             "cluster": 3373,
                             "node": 30223
                         }
                     }
-                },
+                ],
                 "log": [
                     {
                         "port": {
@@ -1332,33 +1314,41 @@
                             "node": 30226
                         }
                     }
-                ]
+                ],
+                "global": {
+                    "port": {
+                        "cluster": 3370,
+                        "node": 30220
+                    }
+                }
             },
             "redis": {
-                "-1": {
+                "global": {
                     "port": {
                         "cluster": 6403,
                         "node": 30134
                     }
                 },
-                "0": {
-                    "port": {
-                        "cluster": 6404,
-                        "node": 30135
+                "data": [
+                    {
+                        "port": {
+                            "cluster": 6404,
+                            "node": 30135
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6405,
+                            "node": 30136
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6406,
+                            "node": 30137
+                        }
                     }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 6405,
-                        "node": 30136
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 6406,
-                        "node": 30137
-                    }
-                }
+                ]
             },
             "rabbitmq": {
                 "internal": {
@@ -1486,11 +1476,7 @@
                     }
                 }
             },
-            "write-back": {
-                "mysql": "world-7",
-                "redis": "world-7",
-                "rabbitmq": "world-7"
-            },
+            "write-back": {},
             "bot": {}
         },
         "world-8": {
@@ -1499,32 +1485,26 @@
             "desc": "2001년 2월 서비스 시작",
             "deploy": false,
             "mysql": {
-                "data": {
-                    "-1": {
-                        "port": {
-                            "cluster": 3380,
-                            "node": 30240
-                        }
-                    },
-                    "0": {
+                "data": [
+                    {
                         "port": {
                             "cluster": 3381,
                             "node": 30241
                         }
                     },
-                    "1": {
+                    {
                         "port": {
                             "cluster": 3382,
                             "node": 30242
                         }
                     },
-                    "2": {
+                    {
                         "port": {
                             "cluster": 3383,
                             "node": 30243
                         }
                     }
-                },
+                ],
                 "log": [
                     {
                         "port": {
@@ -1544,33 +1524,41 @@
                             "node": 30246
                         }
                     }
-                ]
+                ],
+                "global": {
+                    "port": {
+                        "cluster": 3380,
+                        "node": 30240
+                    }
+                }
             },
             "redis": {
-                "-1": {
+                "global": {
                     "port": {
                         "cluster": 6407,
                         "node": 30138
                     }
                 },
-                "0": {
-                    "port": {
-                        "cluster": 6408,
-                        "node": 30139
+                "data": [
+                    {
+                        "port": {
+                            "cluster": 6408,
+                            "node": 30139
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6409,
+                            "node": 30140
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6410,
+                            "node": 30141
+                        }
                     }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 6409,
-                        "node": 30140
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 6410,
-                        "node": 30141
-                    }
-                }
+                ]
             },
             "rabbitmq": {
                 "internal": {
@@ -1698,11 +1686,7 @@
                     }
                 }
             },
-            "write-back": {
-                "mysql": "world-8",
-                "redis": "world-8",
-                "rabbitmq": "world-8"
-            },
+            "write-back": {},
             "bot": {}
         },
         "world-9": {
@@ -1711,32 +1695,26 @@
             "desc": "2002년 2월 서비스 시작",
             "deploy": false,
             "mysql": {
-                "data": {
-                    "-1": {
-                        "port": {
-                            "cluster": 3390,
-                            "node": 30260
-                        }
-                    },
-                    "0": {
+                "data": [
+                    {
                         "port": {
                             "cluster": 3391,
                             "node": 30261
                         }
                     },
-                    "1": {
+                    {
                         "port": {
                             "cluster": 3392,
                             "node": 30262
                         }
                     },
-                    "2": {
+                    {
                         "port": {
                             "cluster": 3393,
                             "node": 30263
                         }
                     }
-                },
+                ],
                 "log": [
                     {
                         "port": {
@@ -1756,33 +1734,41 @@
                             "node": 30266
                         }
                     }
-                ]
+                ],
+                "global": {
+                    "port": {
+                        "cluster": 3390,
+                        "node": 30260
+                    }
+                }
             },
             "redis": {
-                "-1": {
+                "global": {
                     "port": {
                         "cluster": 6411,
                         "node": 30142
                     }
                 },
-                "0": {
-                    "port": {
-                        "cluster": 6412,
-                        "node": 30143
+                "data": [
+                    {
+                        "port": {
+                            "cluster": 6412,
+                            "node": 30143
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6413,
+                            "node": 30144
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6414,
+                            "node": 30145
+                        }
                     }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 6413,
-                        "node": 30144
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 6414,
-                        "node": 30145
-                    }
-                }
+                ]
             },
             "rabbitmq": {
                 "internal": {
@@ -1910,11 +1896,7 @@
                     }
                 }
             },
-            "write-back": {
-                "mysql": "world-9",
-                "redis": "world-9",
-                "rabbitmq": "world-9"
-            },
+            "write-back": {},
             "bot": {}
         },
         "world-10": {
@@ -1923,32 +1905,26 @@
             "desc": "2002년 8월 서비스 시작",
             "deploy": false,
             "mysql": {
-                "data": {
-                    "-1": {
-                        "port": {
-                            "cluster": 3400,
-                            "node": 30280
-                        }
-                    },
-                    "0": {
+                "data": [
+                    {
                         "port": {
                             "cluster": 3401,
                             "node": 30281
                         }
                     },
-                    "1": {
+                    {
                         "port": {
                             "cluster": 3402,
                             "node": 30282
                         }
                     },
-                    "2": {
+                    {
                         "port": {
                             "cluster": 3403,
                             "node": 30283
                         }
                     }
-                },
+                ],
                 "log": [
                     {
                         "port": {
@@ -1968,33 +1944,41 @@
                             "node": 30286
                         }
                     }
-                ]
+                ],
+                "global": {
+                    "port": {
+                        "cluster": 3400,
+                        "node": 30280
+                    }
+                }
             },
             "redis": {
-                "-1": {
+                "global": {
                     "port": {
                         "cluster": 6415,
                         "node": 30146
                     }
                 },
-                "0": {
-                    "port": {
-                        "cluster": 6416,
-                        "node": 30147
+                "data": [
+                    {
+                        "port": {
+                            "cluster": 6416,
+                            "node": 30147
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6417,
+                            "node": 30148
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6418,
+                            "node": 30149
+                        }
                     }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 6417,
-                        "node": 30148
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 6418,
-                        "node": 30149
-                    }
-                }
+                ]
             },
             "rabbitmq": {
                 "internal": {
@@ -2122,11 +2106,7 @@
                     }
                 }
             },
-            "write-back": {
-                "mysql": "world-10",
-                "redis": "world-10",
-                "rabbitmq": "world-10"
-            },
+            "write-back": {},
             "bot": {}
         },
         "world-11": {
@@ -2135,32 +2115,26 @@
             "desc": "2002년 2월 서비스 시작(무료테스트 서버)",
             "deploy": false,
             "mysql": {
-                "data": {
-                    "-1": {
-                        "port": {
-                            "cluster": 3410,
-                            "node": 30300
-                        }
-                    },
-                    "0": {
+                "data": [
+                    {
                         "port": {
                             "cluster": 3411,
                             "node": 30301
                         }
                     },
-                    "1": {
+                    {
                         "port": {
                             "cluster": 3412,
                             "node": 30302
                         }
                     },
-                    "2": {
+                    {
                         "port": {
                             "cluster": 3413,
                             "node": 30303
                         }
                     }
-                },
+                ],
                 "log": [
                     {
                         "port": {
@@ -2180,33 +2154,41 @@
                             "node": 30306
                         }
                     }
-                ]
+                ],
+                "global": {
+                    "port": {
+                        "cluster": 3410,
+                        "node": 30300
+                    }
+                }
             },
             "redis": {
-                "-1": {
+                "global": {
                     "port": {
                         "cluster": 6419,
                         "node": 30150
                     }
                 },
-                "0": {
-                    "port": {
-                        "cluster": 6420,
-                        "node": 30151
+                "data": [
+                    {
+                        "port": {
+                            "cluster": 6420,
+                            "node": 30151
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6421,
+                            "node": 30152
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 6422,
+                            "node": 30153
+                        }
                     }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 6421,
-                        "node": 30152
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 6422,
-                        "node": 30153
-                    }
-                }
+                ]
             },
             "rabbitmq": {
                 "internal": {
@@ -2334,11 +2316,7 @@
                     }
                 }
             },
-            "write-back": {
-                "mysql": "world-11",
-                "redis": "world-11",
-                "rabbitmq": "world-11"
-            },
+            "write-back": {},
             "bot": {}
         }
     },
@@ -2374,21 +2352,15 @@
     },
     "unified-infra": {
         "mysql": {
-            "data": {
-                "-1": {
-                    "port": {
-                        "cluster": 3500,
-                        "node": 31000
-                    }
-                }
+            "port": {
+                "cluster": 3500,
+                "node": 31000
             }
         },
         "redis": {
-            "-1": {
-                "port": {
-                    "cluster": 6500,
-                    "node": 31010
-                }
+            "port": {
+                "cluster": 6500,
+                "node": 31010
             }
         },
         "rabbitmq": {

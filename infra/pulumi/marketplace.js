@@ -31,20 +31,51 @@ module.exports = {
         }
 
         // Add unified MySQL connection (string) - marketplace uses unified for all operations
-        if (conf["unified-infra"] && conf["unified-infra"].mysql && conf["unified-infra"].mysql.data) {
-            const unifiedMysql = conf["unified-infra"].mysql.data["-1"]
+        if (conf["unified-infra"] && conf["unified-infra"].mysql && conf["unified-infra"].mysql.port) {
+            const unifiedMysql = conf["unified-infra"].mysql
             if (unifiedMysql) {
                 config.ConnectionStrings.MySql["unified"] = `Server=mysql-unified-global;Port=${unifiedMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
             }
         }
 
-        // Add unified Redis connection (string) - marketplace uses unified for all operations
-        if (conf["unified-infra"] && conf["unified-infra"].redis) {
-            const unifiedRedis = conf["unified-infra"].redis["-1"]
+        // Add unified Redis connection (string) - marketplace uses unified for marketplace operations
+        if (conf["unified-infra"] && conf["unified-infra"].redis && conf["unified-infra"].redis.port) {
+            const unifiedRedis = conf["unified-infra"].redis
             if (unifiedRedis) {
                 config.Redis["unified"] = {
                     Host: `redis-unified-global`,
                     Port: unifiedRedis.port.cluster
+                }
+            }
+        }
+
+        // Build Redis connections for all worlds (marketplace uses world-specific Redis for storage operations)
+        config.Redis["worlds"] = {}
+        for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+            const worldId = worldConf.id.toString()
+            
+            // Build Redis: worlds:{worldId}:{global, data[]}
+            if (worldConf.redis) {
+                config.Redis["worlds"][worldId] = {}
+                
+                // Global Redis
+                if (worldConf.redis.global) {
+                    const globalRedis = worldConf.redis.global
+                    config.Redis["worlds"][worldId]["global"] = {
+                        Host: `redis-${worldName}`,
+                        Port: globalRedis.port.cluster
+                    }
+                }
+                
+                // Data array (shard Redis)
+                if (worldConf.redis.data && Array.isArray(worldConf.redis.data)) {
+                    const dataArray = worldConf.redis.data.map(redisConf => ({
+                        Host: `redis-${worldName}`,
+                        Port: redisConf.port.cluster
+                    }))
+                    if (dataArray.length > 0) {
+                        config.Redis["worlds"][worldId]["data"] = dataArray
+                    }
                 }
             }
         }

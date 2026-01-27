@@ -31,16 +31,16 @@ module.exports = {
         }
 
         // Add unified MySQL connection (string)
-        if (conf["unified-infra"] && conf["unified-infra"].mysql && conf["unified-infra"].mysql.data) {
-            const unifiedMysql = conf["unified-infra"].mysql.data["-1"]
+        if (conf["unified-infra"] && conf["unified-infra"].mysql && conf["unified-infra"].mysql.port) {
+            const unifiedMysql = conf["unified-infra"].mysql
             if (unifiedMysql) {
                 config.ConnectionStrings.MySql["unified"] = `Server=mysql-unified-global;Port=${unifiedMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
             }
         }
 
         // Add unified Redis connection (string)
-        if (conf["unified-infra"] && conf["unified-infra"].redis) {
-            const unifiedRedis = conf["unified-infra"].redis["-1"]
+        if (conf["unified-infra"] && conf["unified-infra"].redis && conf["unified-infra"].redis.port) {
+            const unifiedRedis = conf["unified-infra"].redis
             if (unifiedRedis) {
                 config.Redis["unified"] = {
                     Host: `redis-unified-global`,
@@ -56,27 +56,23 @@ module.exports = {
             const worldId = worldConf.id.toString()
             
             // Build MySQL: worlds:{worldId}:{global, data[]}
-            if (worldConf.mysql && worldConf.mysql.data) {
+            if (worldConf.mysql) {
                 config.ConnectionStrings.MySql["worlds"][worldId] = {}
                 
-                // Global connection (from -1)
-                if (worldConf.mysql.data["-1"]) {
-                    const globalMysql = worldConf.mysql.data["-1"]
+                // Global connection
+                if (worldConf.mysql.global) {
+                    const globalMysql = worldConf.mysql.global
                     config.ConnectionStrings.MySql["worlds"][worldId]["global"] = `Server=mysql-${worldName};Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
                 }
                 
-                // Data array (shard connections: 0, 1, 2, ...)
-                const dataArray = []
-                const sortedIds = Object.keys(worldConf.mysql.data)
-                    .filter(id => id !== "-1")
-                    .map(id => parseInt(id))
-                    .sort((a, b) => a - b)
-                for(const id of sortedIds) {
-                    const mysqlConf = worldConf.mysql.data[id.toString()]
-                    dataArray.push(`Server=mysql-${worldName};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`)
-                }
-                if (dataArray.length > 0) {
-                    config.ConnectionStrings.MySql["worlds"][worldId]["data"] = dataArray
+                // Data array (shard connections)
+                if (worldConf.mysql.data && Array.isArray(worldConf.mysql.data)) {
+                    const dataArray = worldConf.mysql.data.map(mysqlConf => 
+                        `Server=mysql-${worldName};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                    )
+                    if (dataArray.length > 0) {
+                        config.ConnectionStrings.MySql["worlds"][worldId]["data"] = dataArray
+                    }
                 }
             }
             
@@ -84,30 +80,24 @@ module.exports = {
             if (worldConf.redis) {
                 config.Redis["worlds"][worldId] = {}
                 
-                // Global Redis (from -1)
-                if (worldConf.redis["-1"]) {
-                    const globalRedis = worldConf.redis["-1"]
+                // Global Redis
+                if (worldConf.redis.global) {
+                    const globalRedis = worldConf.redis.global
                     config.Redis["worlds"][worldId]["global"] = {
                         Host: `redis-${worldName}`,
                         Port: globalRedis.port.cluster
                     }
                 }
                 
-                // Data array (shard Redis: 0, 1, 2, ...)
-                const dataArray = []
-                const sortedIds = Object.keys(worldConf.redis)
-                    .filter(id => id !== "-1")
-                    .map(id => parseInt(id))
-                    .sort((a, b) => a - b)
-                for(const id of sortedIds) {
-                    const redisConf = worldConf.redis[id.toString()]
-                    dataArray.push({
+                // Data array (shard Redis)
+                if (worldConf.redis.data && Array.isArray(worldConf.redis.data)) {
+                    const dataArray = worldConf.redis.data.map(redisConf => ({
                         Host: `redis-${worldName}`,
                         Port: redisConf.port.cluster
-                    })
-                }
-                if (dataArray.length > 0) {
-                    config.Redis["worlds"][worldId]["data"] = dataArray
+                    }))
+                    if (dataArray.length > 0) {
+                        config.Redis["worlds"][worldId]["data"] = dataArray
+                    }
                 }
             }
         }

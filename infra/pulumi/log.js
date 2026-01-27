@@ -44,9 +44,9 @@ module.exports = {
             config.ConnectionStrings.MySql["worlds"] = config.ConnectionStrings.MySql["worlds"] || {}
             config.ConnectionStrings.MySql["worlds"][worldId.toString()] = {};
             
-            // Global connection (from mysql.data["-1"])
-            if (worldConf.mysql && worldConf.mysql.data && worldConf.mysql.data["-1"]) {
-                const globalMysql = worldConf.mysql.data["-1"]
+            // Global connection
+            if (worldConf.mysql && worldConf.mysql.global) {
+                const globalMysql = worldConf.mysql.global
                 config.ConnectionStrings.MySql["worlds"][worldId.toString()]["global"] = `Server=mysql-${worldName};Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
             }
             
