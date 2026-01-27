@@ -58,7 +58,7 @@ module.exports = {
                 // Global connection
                 if (worldConf.mysql.global) {
                     const globalMysql = worldConf.mysql.global
-                    config.ConnectionStrings.MySql["worlds"][worldId]["global"] = `Server=mysql-${worldName};Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+                    config.ConnectionStrings.MySql["worlds"][worldId]["global"] = `Server=mysql-${worldName}-global;Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
                 }
                 
                 // Data array (shard connections)
@@ -126,7 +126,7 @@ module.exports = {
             metadata: { name: "internal", namespace: namespace.metadata.name },
             spec: {
                 selector: { matchLabels: appLabels },
-                replicas: internalConf.replicas || 1,
+                // replicas is managed by HPA, do not set it here
                     template: {
                         metadata: { labels: appLabels },
                         spec: {

@@ -30,11 +30,38 @@ module.exports = {
             }
         }
 
-        // Add unified MySQL connection (string) - marketplace uses unified for all operations
+        // Add unified MySQL connection (string) - marketplace uses unified for marketplace operations
         if (conf["unified-infra"] && conf["unified-infra"].mysql && conf["unified-infra"].mysql.port) {
             const unifiedMysql = conf["unified-infra"].mysql
             if (unifiedMysql) {
                 config.ConnectionStrings.MySql["unified"] = `Server=mysql-unified-global;Port=${unifiedMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+            }
+        }
+
+        // Build MySQL connections for all worlds (marketplace uses world-specific MySQL for storage operations)
+        config.ConnectionStrings.MySql["worlds"] = {}
+        for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+            const worldId = worldConf.id.toString()
+            
+            // Build MySQL: worlds:{worldId}:{global, data[]}
+            if (worldConf.mysql) {
+                config.ConnectionStrings.MySql["worlds"][worldId] = {}
+                
+                // Global connection
+                if (worldConf.mysql.global) {
+                    const globalMysql = worldConf.mysql.global
+                    config.ConnectionStrings.MySql["worlds"][worldId]["global"] = `Server=mysql-${worldName}-global;Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+                }
+                
+                // Data array (shard connections)
+                if (worldConf.mysql.data && Array.isArray(worldConf.mysql.data)) {
+                    const dataArray = worldConf.mysql.data.map(mysqlConf => 
+                        `Server=mysql-${worldName};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                    )
+                    if (dataArray.length > 0) {
+                        config.ConnectionStrings.MySql["worlds"][worldId]["data"] = dataArray
+                    }
+                }
             }
         }
 
@@ -108,7 +135,7 @@ module.exports = {
             metadata: { name: "marketplace", namespace: namespace.metadata.name },
             spec: {
                 selector: { matchLabels: appLabels },
-                replicas: marketplaceConf.replicas || 1,
+                // replicas is managed by HPA, do not set it here
                     template: {
                         metadata: { labels: appLabels },
                         spec: {

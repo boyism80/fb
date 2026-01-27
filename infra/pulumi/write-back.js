@@ -40,7 +40,7 @@ module.exports = {
                 // Global connection
                 if (worldConf.mysql.global) {
                     const globalMysql = worldConf.mysql.global
-                    config.ConnectionStrings.MySql["worlds"][worldId]["global"] = `Server=mysql-${worldName};Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+                    config.ConnectionStrings.MySql["worlds"][worldId]["global"] = `Server=mysql-${worldName}-global;Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
                 }
                 
                 // Data array (shard connections)
