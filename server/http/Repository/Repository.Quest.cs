@@ -27,13 +27,13 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves a specific quest by user ID and quest ID.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="user">The unique identifier of the character who owns the quest.</param>
         /// <param name="id">The quest ID.</param>
         /// <returns>The quest if found; otherwise, null.</returns>
-        public async Task<Quest> Get(string section, uint user, uint id)
+        public async Task<Quest> Get(uint world, uint user, uint id)
         {
-            return await base.Get(section, new QuestKey
+            return await base.Get(world, new QuestKey
             {
                 User = user,
                 Id = id
@@ -43,12 +43,12 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves all quests belonging to a specific character.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="user">The unique identifier of the character who owns the quests.</param>
         /// <returns>A collection of all quests belonging to the specified character.</returns>
-        public async Task<IEnumerable<Quest>> Get(string section, uint user)
+        public async Task<IEnumerable<Quest>> Get(uint world, uint user)
         {
-            return await base.GetAll(section, new QuestKey
+            return await base.GetAll(world, new QuestKey
             {
                 User = user
             });

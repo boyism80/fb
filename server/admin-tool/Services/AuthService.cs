@@ -81,14 +81,14 @@ namespace AdminTool.Services
         /// Authenticates a user with their character name and password.
         /// Verifies credentials and checks if the user has admin or higher role.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to authenticate.</param>
         /// <param name="password">The password to verify.</param>
         /// <returns>A result object containing authentication status and user information.</returns>
-        public async Task<AuthResult> Authenticate(string section, string name, string password)
+        public async Task<AuthResult> Authenticate(uint world, string name, string password)
         {
             // Get character by name
-            var userId = await _dbContext.Character.GetCharacterId(section, name);
+            var userId = await _dbContext.Character.GetCharacterId(world, name);
             if (!userId.HasValue)
             {
                 return new AuthResult
@@ -98,7 +98,7 @@ namespace AdminTool.Services
                 };
             }
 
-            var character = await _dbContext.Character.Get(section, userId.Value);
+            var character = await _dbContext.Character.Get(world, userId.Value);
             if (character == null)
             {
                 return new AuthResult

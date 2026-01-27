@@ -35,30 +35,39 @@ namespace Http.Service
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // Get all game sections from configuration
+            // Get all game worlds from configuration
             var mysqlSection = _configuration.GetSection("ConnectionStrings:MySql");
-            var sections = mysqlSection.GetChildren().Select(x => x.Key).ToList();
+            var worldKeys = mysqlSection.GetChildren().Select(x => x.Key).ToList();
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                foreach (var section in sections)
+                foreach (var worldKey in worldKeys)
                 {
                     try
                     {
+                        // Parse world key: "1", "2", "unified-global", etc.
+                        uint world;
+                        if (worldKey == "unified-global")
+                            world = 0;
+                        else if (uint.TryParse(worldKey, out world))
+                            ; // world is already set
+                        else
+                            continue; // Skip invalid keys
+
                         var writes = _bulletinService.DequeueBatch(_maxBatchSize);
-                        await ProcessWritesAsync(section, writes, stoppingToken);
+                        await ProcessWritesAsync(world, writes, stoppingToken);
                         await Task.Delay(_processingInterval, stoppingToken);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, $"Error processing bulletin operation batch for section {section}");
+                        _logger.LogError(ex, $"Error processing bulletin operation batch for world {worldKey}");
                     }
                 }
                 await Task.Delay(_processingInterval, stoppingToken);
             }
         }
 
-        private async Task ProcessWritesAsync(string section, Dictionary<uint, List<BulletinWriteRequest>> writes, CancellationToken cancellationToken)
+        private async Task ProcessWritesAsync(uint world, Dictionary<uint, List<BulletinWriteRequest>> writes, CancellationToken cancellationToken)
         {
             // Group by section and process
             foreach (var (bulletinSection, requests) in writes)
@@ -68,7 +77,7 @@ namespace Http.Service
 
                 try
                 {
-                    await using var conn = dbContext.Connection(section, bulletinSection);
+                    await using var conn = dbContext.Connection(world, bulletinSection);
                     await conn.OpenAsync(cancellationToken);
 
                     // Start transaction for sequence management
@@ -76,20 +85,21 @@ namespace Http.Service
 
                     try
                     {
-                        // Get current sequence for this section (with lock)
+                        // Get current sequence for this bulletin section (with lock)
+                        // Note: bulletinSection is the bulletin category, not world
                         var currentSequence = await conn.QueryFirstOrDefaultAsync<uint?>(
                             "SELECT id FROM bulletin_sequence WHERE `section` = @section FOR UPDATE",
-                            new { bulletinSection },
+                            new { section = bulletinSection },
                             transaction);
 
                         uint startId;
                         if (currentSequence == null)
                         {
-                            // First articles for this section
+                            // First articles for this bulletin section
                             startId = 1;
                             await conn.ExecuteAsync(
                                 "INSERT INTO bulletin_sequence (`section`, `id`) VALUES (@section, @id)",
-                                new { bulletinSection, id = (uint)(startId + requests.Count - 1) },
+                                new { section = bulletinSection, id = (uint)(startId + requests.Count - 1) },
                                 transaction);
                         }
                         else
@@ -98,7 +108,7 @@ namespace Http.Service
                             startId = currentSequence.Value + 1;
                             await conn.ExecuteAsync(
                                 "UPDATE bulletin_sequence SET id = @id WHERE `section` = @section",
-                                new { bulletinSection, id = (uint)(startId + requests.Count - 1) },
+                                new { section = bulletinSection, id = (uint)(startId + requests.Count - 1) },
                                 transaction);
                         }
 
@@ -111,7 +121,7 @@ namespace Http.Service
 
                         // Cache articles in Redis after successful DB insert
                         var cacheItems = new Dictionary<(uint section, uint id), Http.Model.Bulletin>();
-                        var names = await dbContext.Character.GetName(section, requests.Select(r => r.User));
+                        var names = await dbContext.Character.GetName(world, requests.Select(r => r.User));
                         for (int i = 0; i < requests.Count; i++)
                         {
                             var articleId = startId + (uint)i;
@@ -134,7 +144,7 @@ namespace Http.Service
                         }
 
                         // Batch cache insert
-                        await _bulletinCacheService.SetArticlesBatchAsync(section, cacheItems);
+                        await _bulletinCacheService.SetArticlesBatchAsync(world, cacheItems);
 
                         // Log bulletin write events
                         foreach (var request in requests)
@@ -142,7 +152,8 @@ namespace Http.Service
                             var articleId = startId + (uint)requests.IndexOf(request);
                             _logService?.Write("bulletin_write", new
                             {
-                                section = bulletinSection,
+                                world = world,
+                                bulletinSection = bulletinSection,
                                 article_id = articleId,
                                 user_id = request.User
                             });

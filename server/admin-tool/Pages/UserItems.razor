@@ -174,8 +174,8 @@
 </div>
 
 @code {
-    [CascadingParameter(Name = "SelectedSection")]
-    private string? selectedSection { get; set; }
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
     [Parameter]
     public int UserId { get; set; }
 
@@ -198,15 +198,15 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 isLoading = false;
                 return;
             }
 
             // Get user detail
-            var character = await DbContext.Character.Get(selectedSection, (uint)UserId);
+            var character = await DbContext.Character.Get(selectedWorld.Value, (uint)UserId);
             if (character == null)
             {
                 errorMessage = "User not found.";
@@ -214,7 +214,7 @@
                 return;
             }
 
-            userDetail = await UserService.GetUserByName(selectedSection, character.Name);
+            userDetail = await UserService.GetUserByName(selectedWorld.Value, character.Name);
             if (userDetail == null)
             {
                 errorMessage = "User not found.";
@@ -223,7 +223,7 @@
             }
 
             // Get all items for the user
-            var allItems = (await DbContext.Item.Get(selectedSection, (uint)UserId)).ToList();
+            var allItems = (await DbContext.Item.Get(selectedWorld.Value, (uint)UserId)).ToList();
 
             // Categorize items
             // Equipped: stored == -1 and parts != 0

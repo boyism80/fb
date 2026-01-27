@@ -20,13 +20,7 @@ public struct Purchase : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Purchase __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint BuyerId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public string ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
@@ -45,7 +39,7 @@ public struct Purchase : IFlatbufferObject
   public byte[] GetPurchaseIdArray() { return __p.__vector_as_array<byte>(12); }
 
   public static Offset<fb.protocol.marketplace.request.raw.Purchase> CreatePurchase(FlatBufferBuilder builder,
-      StringOffset sectionOffset = default(StringOffset),
+      uint world = 0,
       uint buyer_id = 0,
       StringOffset listing_idOffset = default(StringOffset),
       ushort purchase_count = 0,
@@ -54,13 +48,13 @@ public struct Purchase : IFlatbufferObject
     Purchase.AddPurchaseId(builder, purchase_idOffset);
     Purchase.AddListingId(builder, listing_idOffset);
     Purchase.AddBuyerId(builder, buyer_id);
-    Purchase.AddSection(builder, sectionOffset);
+    Purchase.AddWorld(builder, world);
     Purchase.AddPurchaseCount(builder, purchase_count);
     return Purchase.EndPurchase(builder);
   }
 
   public static void StartPurchase(FlatBufferBuilder builder) { builder.StartTable(5); }
-  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddBuyerId(FlatBufferBuilder builder, uint buyerId) { builder.AddUint(1, buyerId, 0); }
   public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(2, listingIdOffset.Value, 0); }
   public static void AddPurchaseCount(FlatBufferBuilder builder, ushort purchaseCount) { builder.AddUshort(3, purchaseCount, 0); }
@@ -79,7 +73,7 @@ static public class PurchaseVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*BuyerId*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 8 /*ListingId*/, false)
       && verifier.VerifyField(tablePos, 10 /*PurchaseCount*/, 2 /*ushort*/, 2, false)

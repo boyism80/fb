@@ -87,17 +87,19 @@ namespace Http.Service
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RedisService"/> class.
-        /// Creates Redis connections for all configured instances using nested structure: Redis:{section}:{id}.
+        /// Creates Redis connections for all configured instances using nested structure: Redis:{world}:{id}.
+        /// Supports both integer world keys (e.g., "1", "2") and "unified-global" string key.
         /// </summary>
         /// <param name="configuration">The application configuration containing Redis connection settings.</param>
         public RedisService(IConfiguration configuration)
         {
             var redisSection = configuration.GetSection("Redis");
 
-            // Parse nested structure: Redis:{section}:{id}
+            // Parse nested structure: Redis:{world}:{id}
+            // World keys can be integers (e.g., "1", "2") or "unified-global"
             foreach (var sectionChild in redisSection.GetChildren())
             {
-                var sectionName = sectionChild.Key;
+                var worldKey = sectionChild.Key;
                 foreach (var idChild in sectionChild.GetChildren())
                 {
                     var id = idChild.Key;
@@ -105,7 +107,7 @@ namespace Http.Service
                     if (host != null)
                     {
                         var redis = new Redis(host);
-                        var key = $"{sectionName}:{id}";
+                        var key = $"{worldKey}:{id}";
                         _redisBySection.Add(key, redis);
                     }
                 }
@@ -113,15 +115,16 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Gets the Redis instance for the specified section and database index.
-        /// Uses nested configuration structure: Redis:{section}:{db}
+        /// Gets the Redis instance for the specified world and database index.
+        /// Uses nested configuration structure: Redis:{world}:{db}
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
-        /// <param name="db">The database index within the section (-1, 0, 1, 2, etc.). Defaults to -1 (section-global Redis).</param>
-        /// <returns>The Redis instance for the specified section and database, or null if not found.</returns>
-        public Redis Redis(string section, int db)
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="db">The database index within the world (-1, 0, 1, 2, etc.). Defaults to -1 (world-global Redis).</param>
+        /// <returns>The Redis instance for the specified world and database, or null if not found.</returns>
+        public Redis Redis(uint world, int db)
         {
-            var key = $"{section}:{db}";
+            var worldKey = world == 0 ? "unified-global" : world.ToString();
+            var key = $"{worldKey}:{db}";
             if (_redisBySection.ContainsKey(key) == false)
                 return null;
 
@@ -129,49 +132,50 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Gets the shard size for the specified section.
+        /// Gets the shard size for the specified world.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
-        /// <returns>The count of Redis shards excluding the default (-1) instance for the specified section.</returns>
-        public int GetShardSize(string section)
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <returns>The count of Redis shards excluding the default (-1) instance for the specified world.</returns>
+        public int GetShardSize(uint world)
         {
-            var sectionKey = $"{section}:";
+            var worldKey = world == 0 ? "unified-global" : world.ToString();
+            var sectionKey = $"{worldKey}:";
             return _redisBySection.Keys
                 .Where(k => k.StartsWith(sectionKey) && k != $"{sectionKey}-1")
                 .Count();
         }
 
         /// <summary>
-        /// Gets the Redis instance for the specified section and ID using sharding logic.
-        /// Uses modulo operation to distribute connections across available shards within the section.
-        /// If id is null, uses section-global Redis (-1).
+        /// Gets the Redis instance for the specified world and ID using sharding logic.
+        /// Uses modulo operation to distribute connections across available shards within the world.
+        /// If id is null, uses world-global Redis (-1).
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
-        /// <param name="id">The unsigned integer ID to determine the target shard within the section. Null for section-global Redis.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="id">The unsigned integer ID to determine the target shard within the world. Null for world-global Redis.</param>
         /// <returns>The Redis instance for the calculated shard.</returns>
-        public Redis Redis(string section, uint? id = null)
+        public Redis Redis(uint world, uint? id = null)
         {
             if (id == null)
-                return Redis(section, -1);
+                return Redis(world, -1);
             else
             {
-                var shardSize = GetShardSize(section);
+                var shardSize = GetShardSize(world);
 
                 if (shardSize == 0)
                     return null;
 
-                return Redis(section, (int)(id.Value % (uint)shardSize));
+                return Redis(world, (int)(id.Value % (uint)shardSize));
             }
         }
 
-        public Redis Redis(string section, string key)
+        public Redis Redis(uint world, string key)
         {
             ulong hash = 0;
             foreach (var b in Encoding.UTF8.GetBytes(key))
             {
                 hash = hash * 31 + b;
             }
-            return Redis(section, (int)(hash % (ulong)GetShardSize(section)));
+            return Redis(world, (int)(hash % (ulong)GetShardSize(world)));
         }
     }
 }

@@ -58,9 +58,9 @@ async::task<void> server::ensure_group(uint32_t id, ensure_group_fn fn)
                     co_await thread.switching();
                 },
                 [=, this]() -> async::task<std::shared_ptr<fb::game::group>> {
-                    auto   section = fb::config<std::string>("section");
+                    auto   world = fb::config<uint32_t>("world");
                     auto&& resp    = co_await this->http.get<internal_resp::GroupDetails>(
-                        "internal", std::format("/group/{}/{}", section, id));
+                        "internal", std::format("/group/{}/{}", world, id));
                     switch (static_cast<ERROR_CODE>(resp.error))
                     {
                     case ERROR_CODE::NONE:
@@ -119,11 +119,11 @@ async::task<void> server::create_group(character& me, const std::string& target_
     }
 
     // Call API (either target not found in same thread, or checks passed)
-    auto section = fb::config<std::string>("section");
+    auto world = fb::config<uint32_t>("world");
     auto&& resp =
         co_await this->http.post("internal",
                                  "/group/create",
-                                 internal_reqs::CreateGroup{section, fb::config<uint32_t>("host"), me.id, target_name});
+                                 internal_reqs::CreateGroup{world, fb::config<uint32_t>("host"), me.id, target_name});
     co_await this->threads.switching(weak);
     co_await this->on_create_group(resp);
 }
@@ -135,10 +135,10 @@ async::task<void> server::destroy_group(character& me)
         co_return;
 
     auto   weak = me.weak_from_this_as<fb::game::character>();
-    auto section = fb::config<std::string>("section");
+    auto world = fb::config<uint32_t>("world");
     auto&& resp = co_await this->http.post("internal",
                                            "/group/destroy",
-                                           internal_reqs::DestroyGroup{section, fb::config<uint32_t>("host"), me.name()});
+                                           internal_reqs::DestroyGroup{world, fb::config<uint32_t>("host"), me.name()});
     co_await this->threads.switching(weak);
     co_await this->on_destroyed_group(resp);
 }
@@ -161,11 +161,11 @@ async::task<void> server::toggle_group_member(character& actor, const std::strin
     }
 
     // Call toggle API (either target not found in same thread, or checks passed)
-    auto section = fb::config<std::string>("section");
+    auto world = fb::config<uint32_t>("world");
     auto&& resp =
         co_await this->http.post("internal",
                                  "/group/toggle",
-                                 internal_reqs::EnterGroup{section, fb::config<uint32_t>("host"), actor.id, target_name});
+                                 internal_reqs::EnterGroup{world, fb::config<uint32_t>("host"), actor.id, target_name});
     co_await this->threads.switching(weak);
     co_await this->on_updated_group(resp);
 }
@@ -176,21 +176,21 @@ async::task<void> server::leave_group_member(character& leaver)
     if (leaver.group_id().has_value() == false)
         co_return;
 
-    auto section = fb::config<std::string>("section");
+    auto world = fb::config<uint32_t>("world");
     auto&& resp = co_await this->http.post("internal",
                                            "/group/leave",
-                                           internal_reqs::LeaveGroup{section, fb::config<uint32_t>("host"), leaver.name()});
+                                           internal_reqs::LeaveGroup{world, fb::config<uint32_t>("host"), leaver.name()});
     co_await this->threads.switching(weak);
     co_await this->on_updated_group(resp);
 }
 
 async::task<void> server::broadcast_group(uint32_t group_id, const std::string& message, MESSAGE_TYPE type)
 {
-    auto section = fb::config<std::string>("section");
+    auto world = fb::config<uint32_t>("world");
     auto&& resp = co_await this->http.post(
         "internal",
         "/group/broadcast",
-        internal_reqs::BroadcastGroup{section, fb::config<uint32_t>("host"), group_id, message, static_cast<uint8_t>(type)});
+        internal_reqs::BroadcastGroup{world, fb::config<uint32_t>("host"), group_id, message, static_cast<uint8_t>(type)});
     co_await this->on_group_broadcast(resp);
 }
 

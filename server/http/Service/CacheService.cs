@@ -33,13 +33,14 @@ namespace Http.Service
         /// Deletes cache entries matching a specific pattern from a Redis shard.
         /// Scans for keys matching the pattern and deletes them in batches.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="shardIndex">The Redis shard index to operate on.</param>
         /// <param name="pattern">The key pattern to match for deletion.</param>
         /// <param name="count">The maximum number of keys to scan in one operation.</param>
         /// <returns>The number of keys that were deleted.</returns>
-        private async Task<int> DeleteCache(string section, int shardIndex, string pattern, int count)
+        private async Task<int> DeleteCache(uint world, int shardIndex, string pattern, int count)
         {
-            var redis = _redisService.Redis(section, shardIndex);
+            var redis = _redisService.Redis(world, shardIndex);
             if (redis == null)
                 return 0;
 
@@ -59,16 +60,21 @@ namespace Http.Service
         public async Task<int> ClearCache()
         {
             var count = 0;
-            foreach (var section in _configuration.GetSection("ConnectionStrings:MySql").GetChildren().Select(x => x.Key))
+            var redisSection = _configuration.GetSection("Redis");
+            var worlds = redisSection.GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _) || child.Key == "unified-global")
+                .Select(child => child.Key == "unified-global" ? 0 : uint.Parse(child.Key));
+
+            foreach (var world in worlds)
             {
                 var batch = 10;
-                for (int i = 0; i < _redisService.GetShardSize(section); i++)
+                for (int i = 0; i < _redisService.GetShardSize(world); i++)
                 {
-                    count += await DeleteCache(section, i, "cache:*", batch);
-                    count += await DeleteCache(section, i, Const.ReferenceCountKey, 10);
-                    count += await DeleteCache(section, i, $"{Const.RedisBufferKey}:*", 10);
+                    count += await DeleteCache(world, i, "cache:*", batch);
+                    count += await DeleteCache(world, i, Const.ReferenceCountKey, 10);
+                    count += await DeleteCache(world, i, $"{Const.RedisBufferKey}:*", 10);
                 }
-                _logger.LogInformation("Cache cleared: {Count} keys deleted", count);
+                _logger.LogInformation("Cache cleared for world {World}: {Count} keys deleted", world, count);
             }
             return count;
         }
@@ -78,7 +84,7 @@ namespace Http.Service
         /// This operation is only safe when no servers are running.
         /// </summary>
         /// <returns>True if sessions were cleared; false if servers are still running or ServerStateService is not available.</returns>
-        public async Task<bool> ClearUserSessions(string section)
+        public async Task<bool> ClearUserSessions(uint world)
         {
             if (_serverStateService == null)
             {
@@ -93,7 +99,7 @@ namespace Http.Service
                 return false;
             }
 
-            var redis = _redisService.Redis(section, -1);
+            var redis = _redisService.Redis(world, -1);
             var sessionKey = new SessionKey().Key;
             await redis.Connection.KeyDeleteAsync(new RedisKey(sessionKey));
             _logger.LogInformation("User sessions cleared");

@@ -20,13 +20,7 @@ public struct Ban : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Ban __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public string Name { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(6, 1); }
@@ -44,7 +38,7 @@ public struct Ban : IFlatbufferObject
   public nullable.nullable_uint? Days { get { int o = __p.__offset(10); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol._internal.request.raw.Ban> CreateBan(FlatBufferBuilder builder,
-      StringOffset sectionOffset = default(StringOffset),
+      uint world = 0,
       StringOffset nameOffset = default(StringOffset),
       StringOffset reasonOffset = default(StringOffset),
       Offset<nullable.nullable_uint> daysOffset = default(Offset<nullable.nullable_uint>)) {
@@ -52,12 +46,12 @@ public struct Ban : IFlatbufferObject
     Ban.AddDays(builder, daysOffset);
     Ban.AddReason(builder, reasonOffset);
     Ban.AddName(builder, nameOffset);
-    Ban.AddSection(builder, sectionOffset);
+    Ban.AddWorld(builder, world);
     return Ban.EndBan(builder);
   }
 
   public static void StartBan(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static void AddReason(FlatBufferBuilder builder, StringOffset reasonOffset) { builder.AddOffset(2, reasonOffset.Value, 0); }
   public static void AddDays(FlatBufferBuilder builder, Offset<nullable.nullable_uint> daysOffset) { builder.AddOffset(3, daysOffset.Value, 0); }
@@ -75,7 +69,7 @@ static public class BanVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 6 /*Name*/, false)
       && verifier.VerifyString(tablePos, 8 /*Reason*/, false)
       && verifier.VerifyTable(tablePos, 10 /*Days*/, nullable.nullable_uintVerify.Verify, false)

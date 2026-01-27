@@ -32,32 +32,32 @@ namespace Http.Service
         }
 
         public Task<Bulletin> GetArticleAsync(
-            string section,
+            uint world,
             uint bulletinSection,
             uint id,
             Func<Task<Bulletin>> dbQueryFunc,
             TimeSpan? ttl = null)
         {
-            return GetAsync(section, dbQueryFunc, ttl, bulletinSection, id);
+            return GetAsync(world, dbQueryFunc, ttl, bulletinSection, id);
         }
 
         public Task SetArticleAsync(
-            string section,
+            uint world,
             uint bulletinSection,
             uint id,
             Bulletin article,
             TimeSpan? ttl = null)
         {
-            return SetAsync(section, article, ttl, bulletinSection, id);
+            return SetAsync(world, article, ttl, bulletinSection, id);
         }
 
-        public Task DeleteArticleAsync(string section, uint bulletinSection, uint id)
+        public Task DeleteArticleAsync(uint world, uint bulletinSection, uint id)
         {
-            return DeleteAsync(section, bulletinSection, id);
+            return DeleteAsync(world, bulletinSection, id);
         }
 
         public Task SetArticlesBatchAsync(
-            string section,
+            uint world,
             Dictionary<(uint bulletinSection, uint id), Bulletin> articles,
             TimeSpan? ttl = null)
         {
@@ -68,16 +68,16 @@ namespace Http.Service
                 kvp => new object[] { kvp.Key.bulletinSection, kvp.Key.id },
                 kvp => kvp.Value);
 
-            return SetBatchAsync(section, items, ttl);
+            return SetBatchAsync(world, items, ttl);
         }
 
-        public Task DeleteArticlesBatchAsync(string section, IEnumerable<(uint bulletinSection, uint id)> articleKeys)
+        public Task DeleteArticlesBatchAsync(uint world, IEnumerable<(uint bulletinSection, uint id)> articleKeys)
         {
             if (articleKeys == null)
                 return Task.CompletedTask;
 
             var parametersList = articleKeys.Select(k => new object[] { k.bulletinSection, k.id });
-            return DeleteBatchAsync(section, parametersList);
+            return DeleteBatchAsync(world, parametersList);
         }
     }
 }

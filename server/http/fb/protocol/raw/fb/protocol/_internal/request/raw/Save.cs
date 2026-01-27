@@ -20,13 +20,7 @@ public struct Save : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Save __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public fb.protocol._internal.raw.Character? Character { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol._internal.raw.Character?)(new fb.protocol._internal.raw.Character()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public fb.protocol._internal.raw.Item? Items(int j) { int o = __p.__offset(8); return o != 0 ? (fb.protocol._internal.raw.Item?)(new fb.protocol._internal.raw.Item()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int ItemsLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
@@ -44,7 +38,7 @@ public struct Save : IFlatbufferObject
   public int StorageRewardMarksLength { get { int o = __p.__offset(20); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<fb.protocol._internal.request.raw.Save> CreateSave(FlatBufferBuilder builder,
-      StringOffset sectionOffset = default(StringOffset),
+      uint world = 0,
       Offset<fb.protocol._internal.raw.Character> characterOffset = default(Offset<fb.protocol._internal.raw.Character>),
       VectorOffset itemsOffset = default(VectorOffset),
       VectorOffset spellsOffset = default(VectorOffset),
@@ -62,12 +56,12 @@ public struct Save : IFlatbufferObject
     Save.AddSpells(builder, spellsOffset);
     Save.AddItems(builder, itemsOffset);
     Save.AddCharacter(builder, characterOffset);
-    Save.AddSection(builder, sectionOffset);
+    Save.AddWorld(builder, world);
     return Save.EndSave(builder);
   }
 
   public static void StartSave(FlatBufferBuilder builder) { builder.StartTable(9); }
-  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Character> characterOffset) { builder.AddOffset(1, characterOffset.Value, 0); }
   public static void AddItems(FlatBufferBuilder builder, VectorOffset itemsOffset) { builder.AddOffset(2, itemsOffset.Value, 0); }
   public static VectorOffset CreateItemsVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Item>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
@@ -125,7 +119,7 @@ static public class SaveVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTable(tablePos, 6 /*Character*/, fb.protocol._internal.raw.CharacterVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 8 /*Items*/, fb.protocol._internal.raw.ItemVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 10 /*Spells*/, fb.protocol._internal.raw.SpellVerify.Verify, false)

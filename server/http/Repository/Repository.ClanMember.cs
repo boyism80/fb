@@ -25,15 +25,15 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves a specific clan member by section, clan ID and user ID.
+        /// Retrieves a specific clan member by world, clan ID and user ID.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="clan">The unique identifier of the clan.</param>
         /// <param name="user">The unique identifier of the user/member.</param>
         /// <returns>The clan member if found; otherwise, null.</returns>
-        public async Task<ClanMember> Get(string section, uint clan, uint user)
+        public async Task<ClanMember> Get(uint world, uint clan, uint user)
         {
-            return await base.Get(section, new ClanMemberKey
+            return await base.Get(world, new ClanMemberKey
             {
                 Clan = clan,
                 User = user,
@@ -41,14 +41,14 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves all members of a specific clan by section and clan ID.
+        /// Retrieves all members of a specific clan by world and clan ID.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="clan">The unique identifier of the clan.</param>
         /// <returns>A collection of all members in the specified clan.</returns>
-        public async Task<IEnumerable<ClanMember>> Get(string section, uint clan)
+        public async Task<IEnumerable<ClanMember>> Get(uint world, uint clan)
         {
-            return await base.GetAll(section, new ClanMemberKey
+            return await base.GetAll(world, new ClanMemberKey
             {
                 Clan = clan
             });

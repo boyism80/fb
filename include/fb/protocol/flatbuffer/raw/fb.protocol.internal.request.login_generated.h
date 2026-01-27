@@ -25,14 +25,14 @@ struct LoginBuilder;
 struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LoginBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SECTION = 4,
+    VT_WORLD = 4,
     VT_UID = 6,
     VT_NAME = 8,
     VT_HOST = 10,
     VT_FORCE = 12
   };
-  const ::flatbuffers::String *section() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
   }
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
@@ -48,8 +48,7 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_SECTION) &&
-           verifier.VerifyString(section()) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
@@ -63,8 +62,8 @@ struct LoginBuilder {
   typedef Login Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
-    fbb_.AddOffset(Login::VT_SECTION, section);
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(Login::VT_WORLD, world, 0);
   }
   void add_uid(uint32_t uid) {
     fbb_.AddElement<uint32_t>(Login::VT_UID, uid, 0);
@@ -91,7 +90,7 @@ struct LoginBuilder {
 
 inline ::flatbuffers::Offset<Login> CreateLogin(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
+    uint32_t world = 0,
     uint32_t uid = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     uint8_t host = 0,
@@ -99,7 +98,7 @@ inline ::flatbuffers::Offset<Login> CreateLogin(
   LoginBuilder builder_(_fbb);
   builder_.add_name(name);
   builder_.add_uid(uid);
-  builder_.add_section(section);
+  builder_.add_world(world);
   builder_.add_force(force);
   builder_.add_host(host);
   return builder_.Finish();
@@ -107,16 +106,15 @@ inline ::flatbuffers::Offset<Login> CreateLogin(
 
 inline ::flatbuffers::Offset<Login> CreateLoginDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const char *section = nullptr,
+    uint32_t world = 0,
     uint32_t uid = 0,
     const char *name = nullptr,
     uint8_t host = 0,
     bool force = false) {
-  auto section__ = section ? _fbb.CreateString(section) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return fb::protocol::internal::request::raw::CreateLogin(
       _fbb,
-      section__,
+      world,
       uid,
       name__,
       host,

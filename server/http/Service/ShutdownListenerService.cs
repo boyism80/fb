@@ -101,7 +101,7 @@ namespace Http.Service
 
                     _logger.LogWarning("Shutdown message received.");
 
-                    var redis = _redisService.Redis("unified-global");
+                    var redis = _redisService.Redis(0);
                     if (redis == null)
                     {
                         _logger.LogError("unified-global Redis not available, shutting down immediately.");

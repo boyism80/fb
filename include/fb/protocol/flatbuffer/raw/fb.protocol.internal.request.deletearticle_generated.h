@@ -25,29 +25,28 @@ struct DeleteArticleBuilder;
 struct DeleteArticle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef DeleteArticleBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SECTION = 4,
+    VT_WORLD = 4,
     VT_ID = 6,
-    VT_ARTICLE_SECTION = 8,
+    VT_SECTION = 8,
     VT_USER = 10
   };
-  const ::flatbuffers::String *section() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
   }
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
   }
-  uint32_t article_section() const {
-    return GetField<uint32_t>(VT_ARTICLE_SECTION, 0);
+  uint32_t section() const {
+    return GetField<uint32_t>(VT_SECTION, 0);
   }
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_SECTION) &&
-           verifier.VerifyString(section()) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
-           VerifyField<uint32_t>(verifier, VT_ARTICLE_SECTION, 4) &&
+           VerifyField<uint32_t>(verifier, VT_SECTION, 4) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            verifier.EndTable();
   }
@@ -57,14 +56,14 @@ struct DeleteArticleBuilder {
   typedef DeleteArticle Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
-    fbb_.AddOffset(DeleteArticle::VT_SECTION, section);
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(DeleteArticle::VT_WORLD, world, 0);
   }
   void add_id(uint32_t id) {
     fbb_.AddElement<uint32_t>(DeleteArticle::VT_ID, id, 0);
   }
-  void add_article_section(uint32_t article_section) {
-    fbb_.AddElement<uint32_t>(DeleteArticle::VT_ARTICLE_SECTION, article_section, 0);
+  void add_section(uint32_t section) {
+    fbb_.AddElement<uint32_t>(DeleteArticle::VT_SECTION, section, 0);
   }
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(DeleteArticle::VT_USER, user, 0);
@@ -82,31 +81,16 @@ struct DeleteArticleBuilder {
 
 inline ::flatbuffers::Offset<DeleteArticle> CreateDeleteArticle(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
+    uint32_t world = 0,
     uint32_t id = 0,
-    uint32_t article_section = 0,
+    uint32_t section = 0,
     uint32_t user = 0) {
   DeleteArticleBuilder builder_(_fbb);
   builder_.add_user(user);
-  builder_.add_article_section(article_section);
-  builder_.add_id(id);
   builder_.add_section(section);
+  builder_.add_id(id);
+  builder_.add_world(world);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<DeleteArticle> CreateDeleteArticleDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    const char *section = nullptr,
-    uint32_t id = 0,
-    uint32_t article_section = 0,
-    uint32_t user = 0) {
-  auto section__ = section ? _fbb.CreateString(section) : 0;
-  return fb::protocol::internal::request::raw::CreateDeleteArticle(
-      _fbb,
-      section__,
-      id,
-      article_section,
-      user);
 }
 
 inline const fb::protocol::internal::request::raw::DeleteArticle *GetDeleteArticle(const void *buf) {

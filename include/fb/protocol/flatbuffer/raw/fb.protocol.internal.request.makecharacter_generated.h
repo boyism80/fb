@@ -25,15 +25,15 @@ struct MakeCharacterBuilder;
 struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef MakeCharacterBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SECTION = 4,
+    VT_WORLD = 4,
     VT_UID = 6,
     VT_HAIR = 8,
     VT_GENDER = 10,
     VT_NATION = 12,
     VT_CREATURE = 14
   };
-  const ::flatbuffers::String *section() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
   }
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
@@ -52,8 +52,7 @@ struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_SECTION) &&
-           verifier.VerifyString(section()) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
            VerifyField<uint16_t>(verifier, VT_HAIR, 2) &&
            VerifyField<uint8_t>(verifier, VT_GENDER, 1) &&
@@ -67,8 +66,8 @@ struct MakeCharacterBuilder {
   typedef MakeCharacter Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
-    fbb_.AddOffset(MakeCharacter::VT_SECTION, section);
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(MakeCharacter::VT_WORLD, world, 0);
   }
   void add_uid(uint32_t uid) {
     fbb_.AddElement<uint32_t>(MakeCharacter::VT_UID, uid, 0);
@@ -98,7 +97,7 @@ struct MakeCharacterBuilder {
 
 inline ::flatbuffers::Offset<MakeCharacter> CreateMakeCharacter(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
+    uint32_t world = 0,
     uint32_t uid = 0,
     uint16_t hair = 0,
     uint8_t gender = 0,
@@ -106,31 +105,12 @@ inline ::flatbuffers::Offset<MakeCharacter> CreateMakeCharacter(
     uint8_t creature = 0) {
   MakeCharacterBuilder builder_(_fbb);
   builder_.add_uid(uid);
-  builder_.add_section(section);
+  builder_.add_world(world);
   builder_.add_hair(hair);
   builder_.add_creature(creature);
   builder_.add_nation(nation);
   builder_.add_gender(gender);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<MakeCharacter> CreateMakeCharacterDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    const char *section = nullptr,
-    uint32_t uid = 0,
-    uint16_t hair = 0,
-    uint8_t gender = 0,
-    uint8_t nation = 0,
-    uint8_t creature = 0) {
-  auto section__ = section ? _fbb.CreateString(section) : 0;
-  return fb::protocol::internal::request::raw::CreateMakeCharacter(
-      _fbb,
-      section__,
-      uid,
-      hair,
-      gender,
-      nation,
-      creature);
 }
 
 inline const fb::protocol::internal::request::raw::MakeCharacter *GetMakeCharacter(const void *buf) {

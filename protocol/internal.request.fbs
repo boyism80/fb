@@ -7,7 +7,7 @@ table Shutdown {
 }
 
 table Login {
-  section: string;
+  world: uint;
   uid: uint;
   name: string;
   host: ubyte;
@@ -16,13 +16,13 @@ table Login {
 
 
 table Logout {
-  section: string;
+  world: uint;
   name: string;
 }
 
 
 table Transfer {
-  section: string;
+  world: uint;
   service: fb.protocol.internal.Service;
   id: ubyte;
   name: string?;
@@ -31,7 +31,7 @@ table Transfer {
 
 
 table Whisper {
-  section: string;
+  world: uint;
   from: string;
   to: string;
   message: string;
@@ -39,18 +39,18 @@ table Whisper {
 
 
 table KickOut {
-  section: string;
+  world: uint;
   uid: uint;
 }
 
 table Account {
-  section: string;
+  world: uint;
   uid: uint;
 }
 
 
 table ChangePw {
-  section: string;
+  world: uint;
   uid: uint;
   before: string;
   after: string;
@@ -59,7 +59,7 @@ table ChangePw {
 
 
 table InitCharacter {
-  section: string;
+  world: uint;
   uid: uint;
   name: string;
   pw: string;
@@ -72,20 +72,20 @@ table InitCharacter {
 }
 
 table Authenticate {
-  section: string;
+  world: uint;
   uid: uint;
   pw: string;
 }
 
 
 table Init {
-  section: string;
+  world: uint;
   uid: uint;
 }
 
 
 table MakeCharacter {
-  section: string;
+  world: uint;
   uid: uint;
   hair: ushort;
   gender: ubyte;
@@ -95,13 +95,13 @@ table MakeCharacter {
 
 
 table ReserveName {
-  section: string;
+  world: uint;
   name: string;
 }
 
 
 table Save {
-  section: string;
+  world: uint;
   character: fb.protocol.internal.Character;
   items: [fb.protocol.internal.Item];
   spells: [fb.protocol.internal.Spell];
@@ -114,8 +114,8 @@ table Save {
 
 
 table WriteArticle {
-  section: string;
-  article_section: uint;
+  world: uint;
+  section: uint;
   user: uint;
   title: string;
   contents: string;
@@ -123,14 +123,14 @@ table WriteArticle {
 
 
 table DeleteArticle {
-  section: string;
+  world: uint;
   id: uint;
-  article_section: uint;
+  section: uint;
   user: uint;
 }
 
 table WriteMail {
-  section: string;
+  world: uint;
   sender: uint;
   user: string;
   title: string;
@@ -139,35 +139,35 @@ table WriteMail {
 }
 
 table DeleteMail {
-  section: string;
+  world: uint;
   user: uint;
   id: ushort;
 }
 
 
 table SetOption {
-  section: string;
+  world: uint;
   user: uint;
   type: ubyte;
   enabled: bool;
 }
 
 table CreateGroup {
-  section: string;
+  world: uint;
   host: uint;
   master: uint;
   member: string;
 }
 
 table EnterGroup {
-  section: string;
+  world: uint;
   host: uint;
   master: uint;
   member: string;
 }
 
 table BroadcastGroup {
-  section: string;
+  world: uint;
   host: uint;
   group: uint;
   message: string;
@@ -175,53 +175,53 @@ table BroadcastGroup {
 }
 
 table LeaveGroup {
-  section: string;
+  world: uint;
   host: uint;
   member: string;
 }
 
 table KickGroup {
-  section: string;
+  world: uint;
   host: uint;
   kicker: string;
   target: string;
 }
 
 table DestroyGroup {
-  section: string;
+  world: uint;
   host: uint;
   master: string;
 }
 
 table CreateClan {
-  section: string;
+  world: uint;
   host: uint;
   master: uint;
   name: string;
 }
 
 table DestroyClan {
-  section: string;
+  world: uint;
   host: uint;
   master: uint;
 }
 
 table JoinClan {
-  section: string;
+  world: uint;
   host: uint;
   inviter_uid: uint;
   invitee_name: string;
 }
 
 table LeaveClan {
-  section: string;
+  world: uint;
   host: uint;
   clan: uint;
   name: string;
 }
 
 table KickClan {
-  section: string;
+  world: uint;
   host: uint;
   clan: uint;
   kicker: string;
@@ -229,14 +229,14 @@ table KickClan {
 }
 
 table SetClanTitle {
-  section: string;
+  world: uint;
   host: uint;
   changer: uint;
   title: string?;
 }
 
 table BroadcastClan {
-  section: string;
+  world: uint;
   host: uint;
   clan: uint;
   message: string;
@@ -244,7 +244,7 @@ table BroadcastClan {
 }
 
 table ChangeClanRole {
-  section: string;
+  world: uint;
   host: uint;
   changer_uid: uint;
   target_name: string;
@@ -253,25 +253,25 @@ table ChangeClanRole {
 }
 
 table Broadcast {
-  section: string;
+  world: uint;
   host: uint;
   message: string;
   type: ubyte;
 }
 
 table UpdateFriends {
-  section: string;
+  world: uint;
   user: uint;
   names: [string];
 }
 
 table GetStoragePending {
-  section: string;
+  world: uint;
   user: uint;
 }
 
 table WriteSystemMail {
-  section: string;
+  world: uint;
   sender: uint;
   title: string;
   contents: string;
@@ -279,19 +279,19 @@ table WriteSystemMail {
 }
 
 table Ban {
-  section: string;
+  world: uint;
   name: string;
   reason: string;
   days: uint?;
 }
 
 table Unban {
-  section: string;
+  world: uint;
   name: string;
 }
 
 table Heartbeat {
-  section: string;
+  world: uint;
   service: fb.protocol.internal.Service;
   id: ubyte;
   name: string;
@@ -300,11 +300,11 @@ table Heartbeat {
 }
 
 table SetExpMultiplier {
-  section: string;
+  world: uint;
   value: double;
 }
 
 table SetDropRateMultiplier {
-  section: string;
+  world: uint;
   value: double;
 }

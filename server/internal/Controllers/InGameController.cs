@@ -53,10 +53,10 @@ namespace Internal.Controllers
         {
             try
             {
-                var section = request.Section;
+                var world = request.World;
 
                 // Check if user is banned
-                var banCheck = await _banService.IsBanned(section, request.Name);
+                var banCheck = await _banService.IsBanned(world, request.Name);
                 if (banCheck != null && banCheck.IsBanned)
                 {
                     return new Response.Login
@@ -67,11 +67,11 @@ namespace Internal.Controllers
                     };
                 }
 
-                var conf = await _serverStateService.GetHostConfig(section, fb.protocol._internal.Service.Game, request.Host);
+                var conf = await _serverStateService.GetHostConfig(world, fb.protocol._internal.Service.Game, request.Host);
                 if (conf == null)
                     throw new LogicException(ErrorCode.ServerNotReady);
 
-                var success = await _sessionService.Login(section, request.Name, new Session
+                var success = await _sessionService.Login(world, request.Name, new Session
                 {
                     Uid = request.Uid,
                     Host = request.Host
@@ -108,8 +108,8 @@ namespace Internal.Controllers
         [HttpPost("logout")]
         public async Task<Response.Logout> Logout(Request.Logout request)
         {
-            var section = request.Section;
-            await _sessionService.Delete(section, request.Name);
+            var world = request.World;
+            await _sessionService.Delete(world, request.Name);
 
             return new Response.Logout
             {
@@ -121,12 +121,12 @@ namespace Internal.Controllers
         {
             try
             {
-                var section = request.Section;
+                var world = request.World;
 
                 // Check if user is banned (only if name is provided)
                 if (!string.IsNullOrEmpty(request.Name))
                 {
-                    var banCheck = await _banService.IsBanned(section, request.Name);
+                    var banCheck = await _banService.IsBanned(world, request.Name);
                     if (banCheck != null && banCheck.IsBanned)
                     {
                         return new Response.Transfer
@@ -138,16 +138,16 @@ namespace Internal.Controllers
                     }
                 }
 
-                var config = await _serverStateService.GetHostConfig(section, request.Service, request.Id);
+                var config = await _serverStateService.GetHostConfig(world, request.Service, request.Id);
                 if (config == null)
                     throw new LogicException(ErrorCode.ServerNotReady);
 
                 if (request.ForceShutdown && string.IsNullOrEmpty(request.Name) == false)
                 {
-                    var session = await _sessionService.GetAndDelete(section, request.Name);
+                    var session = await _sessionService.GetAndDelete(world, request.Name);
                     if (session != null)
                     {
-                        _rabbitMqService.Publish(section, new Response.KickOut
+                        _rabbitMqService.Publish(world, new Response.KickOut
                         {
                             Uid = session.Uid,
                             Name = request.Name
@@ -159,7 +159,7 @@ namespace Internal.Controllers
                 // Log game server entry event (only if name is provided)
                 if (!string.IsNullOrEmpty(request.Name))
                 {
-                    var uid = await _dbContext.Character.GetCharacterId(section, request.Name);
+                    var uid = await _dbContext.Character.GetCharacterId(world, request.Name);
                     if (uid.HasValue)
                     {
                         _logService.Write("game_server_entry", new
@@ -199,19 +199,19 @@ namespace Internal.Controllers
         {
             try
             {
-                var section = request.Section;
+                var world = request.World;
 
-                var session = await _sessionService.Get(section, request.From) ??
+                var session = await _sessionService.Get(world, request.From) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var targetSession = await _sessionService.Get(section, request.To);
+                var targetSession = await _sessionService.Get(world, request.To);
                 if (targetSession == null)
                     throw new LogicException(ErrorCode.Offline);
 
-                var target = await _dbContext.Character.Get(section, targetSession.Uid) ??
+                var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                var targetOption = await _dbContext.Option.Get(section, targetSession.Uid) ??
+                var targetOption = await _dbContext.Option.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundOption);
 
                 if (!targetOption.Whisper)
@@ -224,7 +224,7 @@ namespace Internal.Controllers
                     To = target.Name,
                     Message = request.Message
                 };
-                _rabbitMqService.Publish(request.Section, response, "amq.direct", $"fb.game.{targetSession.Host}");
+                _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.game.{targetSession.Host}");
                 return response;
             }
             catch (LogicException e)
@@ -258,7 +258,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(request.Section, response, "amq.direct", $"fb.global");
+            _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.global");
             return Task.FromResult(response);
         }
 
@@ -271,7 +271,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(request.Section, response, "amq.direct", $"fb.global");
+            _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.global");
             return Task.FromResult(response);
         }
 
@@ -284,7 +284,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(request.Section, response, "amq.direct", $"fb.global");
+            _rabbitMqService.Publish(request.World, response, "amq.direct", $"fb.global");
             return Task.FromResult(response);
         }
 
@@ -298,34 +298,34 @@ namespace Internal.Controllers
 
             return Task.FromResult(response);
         }
-        [HttpGet("init/{section}/{uid}")]
-        public async Task<Response.Init> Init(string section, uint uid)
+        [HttpGet("init/{world}/{uid}")]
+        public async Task<Response.Init> Init(uint world, uint uid)
         {
-            var ch = await _dbContext.Character.Get(section, uid);
-            var items = await _dbContext.Item.Get(section, uid);
-            var spells = await _dbContext.Spell.Get(section, uid);
-            var achievements = await _dbContext.Achievement.Get(section, uid);
-            var quests = await _dbContext.Quest.Get(section, uid);
-            var storageBoxes = await _dbContext.StorageBox.Get(section, uid);
-            var storageRewardMarks = await _dbContext.StorageRewardMark.Get(section, uid);
-            var option = await _dbContext.Option.Get(section, uid) ??
-                _dbContext.Option.Set(section, new Option
+            var ch = await _dbContext.Character.Get(world, uid);
+            var items = await _dbContext.Item.Get(world, uid);
+            var spells = await _dbContext.Spell.Get(world, uid);
+            var achievements = await _dbContext.Achievement.Get(world, uid);
+            var quests = await _dbContext.Quest.Get(world, uid);
+            var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
+            var storageRewardMarks = await _dbContext.StorageRewardMark.Get(world, uid);
+            var option = await _dbContext.Option.Get(world, uid) ??
+                _dbContext.Option.Set(world, new Option
                 {
                     Uid = uid,
                 });
-            var storagePending = await _storageService.GetPendingForUserAsync(section, uid);
+            var storagePending = await _storageService.GetPendingForUserAsync(world, uid);
 
-            await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(uid)))
+            await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(uid)))
             {
-                var sync = await _dbContext.CharacterSync.Get(section, uid) ??
-                    _dbContext.CharacterSync.Set(section, new CharacterSync
+                var sync = await _dbContext.CharacterSync.Get(world, uid) ??
+                    _dbContext.CharacterSync.Set(world, new CharacterSync
                     {
                         Uid = uid
                     });
 
                 await _dbContext.SaveChangesAsync();
                 var now = DateTime.Now;
-                var receivedSystemMails = await _dbContext.SystemMailUser.Get(section, uid);
+                var receivedSystemMails = await _dbContext.SystemMailUser.Get(world, uid);
                 return new Response.Init
                 {
                     Character = _mapper.Map<Protocol.Character>(ch),
@@ -348,7 +348,7 @@ namespace Internal.Controllers
                     Option = _mapper.Map<Protocol.Option>(option),
                     Clan = sync.Clan,
                     Group = sync.Group,
-                    Mail = await _dbContext.Mail.Unread(section, uid)
+                    Mail = await _dbContext.Mail.Unread(world, uid)
                 };
             }
         }
@@ -380,49 +380,49 @@ namespace Internal.Controllers
         {
             try
             {
-                var section = request.Section;
+                var world = request.World;
 
-                var exists = await _dbContext.Character.Get(section, request.Character.Id) ??
+                var exists = await _dbContext.Character.Get(world, request.Character.Id) ??
                     throw new Exception();
 
                 if (exists.Deleted)
                     throw new Exception();
 
                 var ch = _mapper.Map<Character>(request.Character);
-                _dbContext.Character.Set(section, ch);
+                _dbContext.Character.Set(world, ch);
 
-                var items = Override(_mapper.Map<Protocol.Item[], Item[]>(request.Items.ToArray()), await _dbContext.Item.Get(section, request.Character.Id));
-                _dbContext.Item.Set(section, items);
+                var items = Override(_mapper.Map<Protocol.Item[], Item[]>(request.Items.ToArray()), await _dbContext.Item.Get(world, request.Character.Id));
+                _dbContext.Item.Set(world, items);
 
-                var spells = Override(_mapper.Map<Protocol.Spell[], Spell[]>(request.Spells.ToArray()), await _dbContext.Spell.Get(section, request.Character.Id));
-                _dbContext.Spell.Set(section, spells.ToArray());
+                var spells = Override(_mapper.Map<Protocol.Spell[], Spell[]>(request.Spells.ToArray()), await _dbContext.Spell.Get(world, request.Character.Id));
+                _dbContext.Spell.Set(world, spells.ToArray());
 
-                var achievements = Override(_mapper.Map<Protocol.Achievement[], Achievement[]>(request.Achievements.ToArray()), await _dbContext.Achievement.Get(section, request.Character.Id));
-                _dbContext.Achievement.Set(section, achievements.ToArray());
+                var achievements = Override(_mapper.Map<Protocol.Achievement[], Achievement[]>(request.Achievements.ToArray()), await _dbContext.Achievement.Get(world, request.Character.Id));
+                _dbContext.Achievement.Set(world, achievements.ToArray());
 
-                var quests = Override(_mapper.Map<Protocol.Quest[], Quest[]>(request.Quests.ToArray()), await _dbContext.Quest.Get(section, request.Character.Id));
-                _dbContext.Quest.Set(section, quests.ToArray());
+                var quests = Override(_mapper.Map<Protocol.Quest[], Quest[]>(request.Quests.ToArray()), await _dbContext.Quest.Get(world, request.Character.Id));
+                _dbContext.Quest.Set(world, quests.ToArray());
 
-                var receivedSystemMails = Override(_mapper.Map<Protocol.SystemMailUser[], SystemMailUser[]>(request.ReceivedSystemMails.ToArray()), await _dbContext.SystemMailUser.Get(section, request.Character.Id));
-                _dbContext.SystemMailUser.Set(section, receivedSystemMails.ToArray());
+                var receivedSystemMails = Override(_mapper.Map<Protocol.SystemMailUser[], SystemMailUser[]>(request.ReceivedSystemMails.ToArray()), await _dbContext.SystemMailUser.Get(world, request.Character.Id));
+                _dbContext.SystemMailUser.Set(world, receivedSystemMails.ToArray());
 
-                var storageBoxes = Override(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(request.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), await _dbContext.StorageBox.Get(section, request.Character.Id));
-                _dbContext.StorageBox.Set(section, storageBoxes);
+                var storageBoxes = Override(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(request.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), await _dbContext.StorageBox.Get(world, request.Character.Id));
+                _dbContext.StorageBox.Set(world, storageBoxes);
 
-                var storageRewardMarks = Override(_mapper.Map<Protocol.StorageRewardMark[], StorageRewardMark[]>(request.StorageRewardMarks?.ToArray() ?? Array.Empty<Protocol.StorageRewardMark>()), await _dbContext.StorageRewardMark.Get(section, request.Character.Id));
-                _dbContext.StorageRewardMark.Set(section, storageRewardMarks.ToArray());
+                var storageRewardMarks = Override(_mapper.Map<Protocol.StorageRewardMark[], StorageRewardMark[]>(request.StorageRewardMarks?.ToArray() ?? Array.Empty<Protocol.StorageRewardMark>()), await _dbContext.StorageRewardMark.Get(world, request.Character.Id));
+                _dbContext.StorageRewardMark.Set(world, storageRewardMarks.ToArray());
 
                 var personalPendingIds = request.StorageRewardMarks?.Select(mark => mark.PendingId).ToHashSet() ?? new HashSet<string>();
                 if (personalPendingIds.Count > 0)
                 {
-                    var pendingBoxes = (await _dbContext.StoragePendingBox.Get(section, request.Character.Id)).Where(x => personalPendingIds.Contains(x.Id)).ToArray();
+                    var pendingBoxes = (await _dbContext.StoragePendingBox.Get(world, request.Character.Id)).Where(x => personalPendingIds.Contains(x.Id)).ToArray();
                     if (pendingBoxes.Length > 0)
                     {
                         foreach (var pendingBox in pendingBoxes)
                         {
                             pendingBox.Deleted = true;
                         }
-                        _dbContext.StoragePendingBox.Set(section, pendingBoxes);
+                        _dbContext.StoragePendingBox.Set(world, pendingBoxes);
                     }
                 }
 
@@ -458,9 +458,9 @@ namespace Internal.Controllers
         {
             try
             {
-                var section = request.Section;
+                var world = request.World;
 
-                var option = await _dbContext.Option.Get(section, request.User) ??
+                var option = await _dbContext.Option.Get(world, request.User) ??
                     throw new Exception($"option {request.User} not found");
 
                 switch ((Fb.Model.EnumValue.Option)request.Type)
@@ -512,7 +512,7 @@ namespace Internal.Controllers
                     default:
                         throw new Exception($"invalid option type : {request.Type}");
                 }
-                _dbContext.Option.Set(section, option);
+                _dbContext.Option.Set(world, option);
 
                 await _dbContext.SaveChangesAsync();
                 return new Response.SetOption

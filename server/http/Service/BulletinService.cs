@@ -19,32 +19,32 @@ namespace Http.Service
             _logService = logService;
         }
 
-        public Task<bool> Write(string section, uint bulletinSection, uint user, string title, string contents)
+        public Task<bool> Write(uint world, uint section, uint user, string title, string contents)
         {
             var request = new BulletinWriteRequest
             {
-                Section = bulletinSection,
-                GameSection = section,
+                Section = section,
+                World = world,
                 User = user,
                 Title = title,
                 Contents = contents,
                 CompletionSource = new TaskCompletionSource<bool>()
             };
 
-            var queue = _writeQueues.GetOrAdd(bulletinSection, _ => new ConcurrentQueue<BulletinWriteRequest>());
+            var queue = _writeQueues.GetOrAdd(section, _ => new ConcurrentQueue<BulletinWriteRequest>());
             queue.Enqueue(request);
 
             return request.CompletionSource.Task;
         }
 
-        public async Task<int> Delete(string section, uint bulletinSection, uint id, uint user, bool ignoreOwner = false)
+        public async Task<int> Delete(uint world, uint bulletinSection, uint id, uint user, bool ignoreOwner = false)
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
             try
             {
-                await using var conn = dbContext.Connection(section, null);
+                await using var conn = dbContext.Connection(world, null);
                 await conn.OpenAsync();
 
                 var dynamicParams = new DynamicParameters();
@@ -60,12 +60,12 @@ namespace Http.Service
                 // Delete from Redis cache if successful
                 if (result == 1)
                 {
-                    await _cacheService.DeleteArticlesBatchAsync(section, new List<(uint bulletinSection, uint id)> { (bulletinSection, id) });
+                    await _cacheService.DeleteArticlesBatchAsync(world, new List<(uint bulletinSection, uint id)> { (bulletinSection, id) });
 
                     // Log bulletin delete event
                     _logService?.Write("bulletin_delete", new
                     {
-                        section = section,
+                        world = world,
                         bulletinSection = bulletinSection,
                         article_id = id,
                         user_id = user,
@@ -82,14 +82,14 @@ namespace Http.Service
             }
         }
 
-        public async Task<int> DeleteBatch(string section, uint bulletinSection, List<uint> ids, uint user, bool ignoreOwner = false)
+        public async Task<int> DeleteBatch(uint world, uint bulletinSection, List<uint> ids, uint user, bool ignoreOwner = false)
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
             try
             {
-                await using var conn = dbContext.Connection(section, null);
+                await using var conn = dbContext.Connection(world, null);
                 await conn.OpenAsync();
 
                 var deletedIds = new List<(uint bulletinSection, uint id)>();
@@ -117,12 +117,12 @@ namespace Http.Service
                 // Delete from Redis cache for all successfully deleted articles
                 if (deletedIds.Any())
                 {
-                    await _cacheService.DeleteArticlesBatchAsync(section, deletedIds);
+                    await _cacheService.DeleteArticlesBatchAsync(world, deletedIds);
 
                     // Log bulletin batch delete event
                     _logService?.Write("bulletin_delete_batch", new
                     {
-                        section = section,
+                        world = world,
                         bulletinSection = bulletinSection,
                         article_ids = deletedIds.Select(x => x.id).ToList(),
                         user_id = user,
@@ -139,14 +139,14 @@ namespace Http.Service
             }
         }
 
-        public async Task<int> Update(string section, uint bulletinSection, uint id, uint user, string title, string contents, bool ignoreOwner = false)
+        public async Task<int> Update(uint world, uint bulletinSection, uint id, uint user, string title, string contents, bool ignoreOwner = false)
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
             try
             {
-                await using var conn = dbContext.Connection(section, null);
+                await using var conn = dbContext.Connection(world, null);
                 await conn.OpenAsync();
 
                 var dynamicParams = new DynamicParameters();
@@ -163,20 +163,20 @@ namespace Http.Service
 
                 if (result == 1)
                 {
-                    var (article, _) = await LoadArticleFromDatabase(section, bulletinSection, id);
+                    var (article, _) = await LoadArticleFromDatabase(world, bulletinSection, id);
                     if (article != null)
                     {
-                        await _cacheService.SetArticleAsync(section, bulletinSection, id, article);
+                        await _cacheService.SetArticleAsync(world, bulletinSection, id, article);
                     }
                     else
                     {
-                        await _cacheService.DeleteArticlesBatchAsync(section, new List<(uint bulletinSection, uint id)> { (bulletinSection, id) });
+                        await _cacheService.DeleteArticlesBatchAsync(world, new List<(uint bulletinSection, uint id)> { (bulletinSection, id) });
                     }
 
                     // Log bulletin update event
                     _logService?.Write("bulletin_update", new
                     {
-                        section = section,
+                        world = world,
                         bulletinSection = bulletinSection,
                         article_id = id,
                         user_id = user,
@@ -209,12 +209,12 @@ namespace Http.Service
             return writes;
         }
 
-        public async Task<List<Bulletin>> GetArticleListAsync(string section, uint bulletinSection, ushort offset, string searchQuery = null)
+        public async Task<List<Bulletin>> GetArticleListAsync(uint world, uint bulletinSection, ushort offset, string searchQuery = null)
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-            await using var conn = dbContext.Connection(section, null);
+            await using var conn = dbContext.Connection(world, null);
 
             List<Bulletin> articleList;
 
@@ -240,7 +240,7 @@ namespace Http.Service
                 uint? userId = null;
 
                 // Try to find user ID by name if search query might be a user name
-                var foundUserId = await dbContext.Character.GetCharacterId(section, searchQuery);
+                var foundUserId = await dbContext.Character.GetCharacterId(world, searchQuery);
                 if (foundUserId.HasValue)
                 {
                     userId = foundUserId.Value;
@@ -276,7 +276,7 @@ namespace Http.Service
             if (articleList.Any())
             {
                 var userIds = articleList.Select(a => a.User).Distinct().ToList();
-                var userNames = await dbContext.Character.GetName(section, userIds);
+                var userNames = await dbContext.Character.GetName(world, userIds);
 
                 foreach (var article in articleList)
                 {
@@ -287,17 +287,17 @@ namespace Http.Service
             return articleList;
         }
 
-        public async Task<(Bulletin Article, bool Next)> GetArticleAsync(string section, uint bulletinSection, uint id)
+        public async Task<(Bulletin Article, bool Next)> GetArticleAsync(uint world, uint bulletinSection, uint id)
         {
             bool? nextFlagFromLoader = null;
 
             var article = await _cacheService.GetArticleAsync(
-                section,
+                world,
                 bulletinSection,
                 id,
                 async () =>
                 {
-                    var (dbArticle, next) = await LoadArticleFromDatabase(section, bulletinSection, id);
+                    var (dbArticle, next) = await LoadArticleFromDatabase(world, bulletinSection, id);
                     nextFlagFromLoader = next;
                     return dbArticle;
                 });
@@ -305,16 +305,16 @@ namespace Http.Service
             if (article == null)
                 return (null, false);
 
-            var nextFlag = nextFlagFromLoader ?? await LoadNextFlagAsync(section, bulletinSection, id);
+            var nextFlag = nextFlagFromLoader ?? await LoadNextFlagAsync(world, bulletinSection, id);
             return (article, nextFlag);
         }
 
-        private async Task<(Bulletin Article, bool Next)> LoadArticleFromDatabase(string section, uint bulletinSection, uint id)
+        private async Task<(Bulletin Article, bool Next)> LoadArticleFromDatabase(uint world, uint bulletinSection, uint id)
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-            await using var conn = dbContext.Connection(section, null);
+            await using var conn = dbContext.Connection(world, null);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("bulletinSection", bulletinSection);
             dynamicParams.Add("article", id);
@@ -327,18 +327,18 @@ namespace Http.Service
             if (dbArticle == null)
                 return (null, false);
 
-            dbArticle.UserName = await dbContext.Character.GetName(section, dbArticle.User) ?? string.Empty;
+            dbArticle.UserName = await dbContext.Character.GetName(world, dbArticle.User) ?? string.Empty;
             var next = await reader.ReadFirstAsync<bool>();
 
             return (dbArticle, next);
         }
 
-        private async Task<bool> LoadNextFlagAsync(string section, uint bulletinSection, uint id)
+        private async Task<bool> LoadNextFlagAsync(uint world, uint bulletinSection, uint id)
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-            await using var conn = dbContext.Connection(section, null);
+            await using var conn = dbContext.Connection(world, null);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("bulletinSection", bulletinSection);
             dynamicParams.Add("article", id);

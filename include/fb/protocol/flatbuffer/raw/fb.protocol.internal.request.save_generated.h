@@ -34,7 +34,7 @@ struct SaveBuilder;
 struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SaveBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SECTION = 4,
+    VT_WORLD = 4,
     VT_CHARACTER = 6,
     VT_ITEMS = 8,
     VT_SPELLS = 10,
@@ -44,8 +44,8 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_STORAGE_BOXES = 18,
     VT_STORAGE_REWARD_MARKS = 20
   };
-  const ::flatbuffers::String *section() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
   }
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -73,8 +73,7 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_SECTION) &&
-           verifier.VerifyString(section()) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
            verifier.VerifyTable(character()) &&
            VerifyOffset(verifier, VT_ITEMS) &&
@@ -106,8 +105,8 @@ struct SaveBuilder {
   typedef Save Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
-    fbb_.AddOffset(Save::VT_SECTION, section);
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(Save::VT_WORLD, world, 0);
   }
   void add_character(::flatbuffers::Offset<fb::protocol::internal::raw::Character> character) {
     fbb_.AddOffset(Save::VT_CHARACTER, character);
@@ -146,7 +145,7 @@ struct SaveBuilder {
 
 inline ::flatbuffers::Offset<Save> CreateSave(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
+    uint32_t world = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
@@ -164,13 +163,13 @@ inline ::flatbuffers::Offset<Save> CreateSave(
   builder_.add_spells(spells);
   builder_.add_items(items);
   builder_.add_character(character);
-  builder_.add_section(section);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Save> CreateSaveDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const char *section = nullptr,
+    uint32_t world = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
@@ -179,7 +178,6 @@ inline ::flatbuffers::Offset<Save> CreateSaveDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *received_system_mails = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>> *storage_reward_marks = nullptr) {
-  auto section__ = section ? _fbb.CreateString(section) : 0;
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto achievements__ = achievements ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>(*achievements) : 0;
@@ -189,7 +187,7 @@ inline ::flatbuffers::Offset<Save> CreateSaveDirect(
   auto storage_reward_marks__ = storage_reward_marks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>>(*storage_reward_marks) : 0;
   return fb::protocol::internal::request::raw::CreateSave(
       _fbb,
-      section__,
+      world,
       character,
       items__,
       spells__,

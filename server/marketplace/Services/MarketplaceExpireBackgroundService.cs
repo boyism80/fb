@@ -49,7 +49,7 @@ namespace Marketplace.Services
                 try
                 {
                     // Use Lua script to atomically check and acquire lock
-                    var redis = _redisService.Redis(LockKey);
+                    var redis = _redisService.Redis(0, LockKey);
                     var acquireLockScript = @"
                         if redis.call('exists', KEYS[1]) == 0 then
                             redis.call('set', KEYS[1], '1')
@@ -226,7 +226,7 @@ namespace Marketplace.Services
                 : string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessage.ToCSharpFormat(), itemName, listing.RemainingCount);
 
             await storageService.CreatePendingAsync(
-                listing.Section,
+                listing.World,
                 Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredTitle,
                 message,
                 listing.SellerId,

@@ -120,7 +120,7 @@ namespace Marketplace.Reepository
         /// Creates a new marketplace listing.
         /// </summary>
         /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
-        /// <param name="section">The section identifier (e.g., "section-1", "section-2").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2).</param>
         /// <param name="sellerId">The unique identifier of the seller.</param>
         /// <param name="itemModel">The item model identifier.</param>
         /// <param name="remainingCount">The number of items available for purchase.</param>
@@ -131,7 +131,7 @@ namespace Marketplace.Reepository
         /// <returns>The unique identifier of the created listing (UUID string).</returns>
         public async Task<string> CreateListingAsync(
             string listingId,
-            string section,
+            uint world,
             uint sellerId,
             uint itemModel,
             ushort remainingCount,
@@ -144,7 +144,7 @@ namespace Marketplace.Reepository
             var sql = $"""
                 INSERT INTO `marketplace_listing` (
                     `id`,
-                    `section`,
+                    `world`,
                     `seller_id`,
                     `item_model`,
                     `remaining_count`,
@@ -155,7 +155,7 @@ namespace Marketplace.Reepository
                     `expire_date`)
                 VALUES (
                     {listingId.Escape()},
-                    {section.Escape()},
+                    {world.Escape()},
                     {sellerId.Escape()},
                     {itemModel.Escape()},
                     {remainingCount.Escape()},

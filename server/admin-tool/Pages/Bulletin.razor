@@ -126,7 +126,7 @@
                                             <div class="clean-list-item-main">
                                                 <a href="#" class="text-decoration-none"
                                                    @onclick="() => ShowViewModal(article)"
-                                                @onclick:preventDefault
+                                                   @onclick:preventDefault
                                                    style="color: var(--text-primary); cursor: pointer;">
                                                     @article.Title
                                                 </a>
@@ -156,14 +156,14 @@
                                     <ul class="pagination justify-content-center">
                                         <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
                                             <a class="page-link" href="#" @onclick="() => ChangePage(currentPage - 1)"
-                                            @onclick:preventDefault>Previous</a>
+                                               @onclick:preventDefault>Previous</a>
                                         </li>
                                         <li class="page-item active">
                                             <span class="page-link">Page @currentPage</span>
                                         </li>
                                         <li class="page-item @(articles == null || articles.Count < pageSize ? "disabled" : "")">
                                             <a class="page-link" href="#" @onclick="() => ChangePage(currentPage + 1)"
-                                            @onclick:preventDefault>Next</a>
+                                               @onclick:preventDefault>Next</a>
                                         </li>
                                     </ul>
                                 </nav>
@@ -368,9 +368,9 @@
 }
 
 @code {
-    [CascadingParameter(Name = "SelectedSection")]
-    private string? selectedSection { get; set; }
-    
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
+
     private Dictionary<uint, Fb.Model.Bulletin>? sections;
     private uint? selectedBulletinSection;
     private List<Http.Model.Bulletin>? articles;
@@ -485,13 +485,13 @@
                 position = 0xFFFF;
             }
 
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 return;
             }
             articles = await BulletinService.GetArticleListAsync(
-                selectedSection,
+                selectedWorld.Value,
                 selectedBulletinSection.Value,
                 position,
                 string.IsNullOrWhiteSpace(searchQuery) ? null : searchQuery);
@@ -623,13 +623,13 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 return;
             }
             var success = await BulletinService.Write(
-                selectedSection,
+                selectedWorld.Value,
                 selectedBulletinSection.Value,
                 currentUserId,
                 writeModel.Title,
@@ -666,13 +666,13 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 return;
             }
             // Get full article data including contents
-            var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedSection, selectedBulletinSection.Value, article.Id);
+            var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedWorld.Value, selectedBulletinSection.Value, article.Id);
 
             if (fullArticle == null)
             {
@@ -682,11 +682,11 @@
 
             selectedArticle = fullArticle;
             editModel = new EditModel
-                {
-                    Title = fullArticle.Title,
-                    Contents = fullArticle.Contents ?? string.Empty,
-                    IgnoreOwner = true
-                };
+            {
+                Title = fullArticle.Title,
+                Contents = fullArticle.Contents ?? string.Empty,
+                IgnoreOwner = true
+            };
             showEditModal = true;
         }
         catch (Exception ex)
@@ -720,13 +720,13 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 return;
             }
             var result = await BulletinService.Update(
-                selectedSection,
+                selectedWorld.Value,
                 selectedBulletinSection.Value,
                 selectedArticle.Id,
                 currentUserId,
@@ -765,13 +765,13 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 return;
             }
             // Get full article data including contents
-            var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedSection, selectedBulletinSection.Value, article.Id);
+            var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedWorld.Value, selectedBulletinSection.Value, article.Id);
 
             if (fullArticle == null)
             {
@@ -824,13 +824,13 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 return;
             }
             var result = await BulletinService.Delete(
-                selectedSection,
+                selectedWorld.Value,
                 selectedBulletinSection.Value,
                 selectedArticle.Id,
                 currentUserId,
@@ -881,14 +881,14 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 return;
             }
             var ids = selectedArticleIds.ToList();
             var result = await BulletinService.DeleteBatch(
-                selectedSection,
+                selectedWorld.Value,
                 selectedBulletinSection.Value,
                 ids,
                 currentUserId,

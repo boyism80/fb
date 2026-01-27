@@ -1,2327 +1,2334 @@
 {
-    "mysql": {
-        "section-1": {
-            "data": {
+    "worlds": {
+        "world-1": {
+            "id": 1,
+            "name": "연",
+            "desc": "1996년 4월 서비스 시작",
+            "mysql": {
+                "data": {
+                    "-1": {
+                        "port": {
+                            "cluster": 3306,
+                            "node": 30100
+                        }
+                    },
+                    "0": {
+                        "port": {
+                            "cluster": 3307,
+                            "node": 30101
+                        }
+                    },
+                    "1": {
+                        "port": {
+                            "cluster": 3308,
+                            "node": 30102
+                        }
+                    },
+                    "2": {
+                        "port": {
+                            "cluster": 3309,
+                            "node": 30103
+                        }
+                    }
+                },
+                "log": [
+                    {
+                        "port": {
+                            "cluster": 3310,
+                            "node": 30104
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3311,
+                            "node": 30105
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3312,
+                            "node": 30106
+                        }
+                    }
+                ]
+            },
+            "redis": {
                 "-1": {
                     "port": {
-                        "cluster": 3306,
-                        "node": 30100
+                        "cluster": 6379,
+                        "node": 30110
                     }
                 },
                 "0": {
                     "port": {
-                        "cluster": 3307,
-                        "node": 30101
+                        "cluster": 6380,
+                        "node": 30111
                     }
                 },
                 "1": {
                     "port": {
-                        "cluster": 3308,
-                        "node": 30102
+                        "cluster": 6381,
+                        "node": 30112
                     }
                 },
                 "2": {
                     "port": {
-                        "cluster": 3309,
-                        "node": 30103
+                        "cluster": 6382,
+                        "node": 30113
                     }
                 }
             },
-            "log": [
-                {
+            "rabbitmq": {
+                "internal": {
                     "port": {
-                        "cluster": 3310,
-                        "node": 30104
-                    }
+                        "amqp": {
+                            "cluster": 5672,
+                            "node": 30300
+                        },
+                        "management": {
+                            "cluster": 15672,
+                            "node": 30301
+                        }
+                    },
+                    "replicas": 4
                 },
-                {
+                "log": {
                     "port": {
-                        "cluster": 3311,
-                        "node": 30105
-                    }
+                        "amqp": {
+                            "cluster": 5673,
+                            "node": 30302
+                        },
+                        "management": {
+                            "cluster": 15673,
+                            "node": 30303
+                        }
+                    },
+                    "replicas": 4
+                }
+            },
+            "log": {
+                "port": {
+                    "cluster": 80,
+                    "node": 30400
                 },
-                {
-                    "port": {
-                        "cluster": 3312,
-                        "node": 30106
+                "rabbitmq": "world-1"
+            },
+            "login": {
+                "port": 30010
+            },
+            "game": {
+                "marketplace": "world-1",
+                "login": "world-1",
+                "db": "world-1",
+                "redis": "world-1",
+                "rabbitmq": "world-1",
+                "log": "world-1",
+                "containers": {
+                    "0": {
+                        "port": 30030
+                    },
+                    "1": {
+                        "port": 30031
+                    },
+                    "2": {
+                        "port": 30032
+                    },
+                    "3": {
+                        "port": 30033
+                    },
+                    "4": {
+                        "port": 30034
+                    },
+                    "5": {
+                        "port": 30035
+                    },
+                    "6": {
+                        "port": 30036
+                    },
+                    "7": {
+                        "port": 30037
+                    },
+                    "8": {
+                        "port": 30038
+                    },
+                    "9": {
+                        "port": 30039
+                    },
+                    "10": {
+                        "port": 30040
+                    },
+                    "11": {
+                        "port": 30041
+                    },
+                    "12": {
+                        "port": 30042
+                    },
+                    "13": {
+                        "port": 30043
+                    },
+                    "14": {
+                        "port": 30044
+                    },
+                    "15": {
+                        "port": 30045
+                    },
+                    "16": {
+                        "port": 30046
+                    },
+                    "17": {
+                        "port": 30047
+                    },
+                    "18": {
+                        "port": 30048
+                    },
+                    "19": {
+                        "port": 30049
+                    },
+                    "20": {
+                        "port": 30050
+                    },
+                    "21": {
+                        "port": 30051
+                    },
+                    "22": {
+                        "port": 30052
+                    },
+                    "23": {
+                        "port": 30053
+                    },
+                    "24": {
+                        "port": 30054
+                    },
+                    "25": {
+                        "port": 30055
                     }
                 }
-            ]
+            },
+            "write-back": {
+                "mysql": "world-1",
+                "redis": "world-1",
+                "rabbitmq": "world-1"
+            },
+            "bot": {
+                "io_size": 5,
+                "interval": 60000,
+                "spawn_per_interval": 50,
+                "spawn_count": 5000,
+                "thread": {
+                    "logic": 12
+                },
+                "replicas": 5
+            }
         },
-        "section-2": {
-            "data": {
+        "world-2": {
+            "id": 2,
+            "name": "무휼",
+            "desc": "2000년 2월 서비스 시작",
+            "mysql": {
+                "data": {
+                    "-1": {
+                        "port": {
+                            "cluster": 3320,
+                            "node": 30120
+                        }
+                    },
+                    "0": {
+                        "port": {
+                            "cluster": 3321,
+                            "node": 30121
+                        }
+                    },
+                    "1": {
+                        "port": {
+                            "cluster": 3322,
+                            "node": 30122
+                        }
+                    },
+                    "2": {
+                        "port": {
+                            "cluster": 3323,
+                            "node": 30123
+                        }
+                    }
+                },
+                "log": [
+                    {
+                        "port": {
+                            "cluster": 3324,
+                            "node": 30124
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3325,
+                            "node": 30125
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3326,
+                            "node": 30126
+                        }
+                    }
+                ]
+            },
+            "redis": {
                 "-1": {
                     "port": {
-                        "cluster": 3320,
+                        "cluster": 6383,
+                        "node": 30114
+                    }
+                },
+                "0": {
+                    "port": {
+                        "cluster": 6384,
+                        "node": 30115
+                    }
+                },
+                "1": {
+                    "port": {
+                        "cluster": 6385,
+                        "node": 30116
+                    }
+                },
+                "2": {
+                    "port": {
+                        "cluster": 6386,
+                        "node": 30117
+                    }
+                }
+            },
+            "rabbitmq": {
+                "internal": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5674,
+                            "node": 30310
+                        },
+                        "management": {
+                            "cluster": 15674,
+                            "node": 30311
+                        }
+                    },
+                    "replicas": 4
+                },
+                "log": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5675,
+                            "node": 30312
+                        },
+                        "management": {
+                            "cluster": 15675,
+                            "node": 30313
+                        }
+                    },
+                    "replicas": 4
+                }
+            },
+            "log": {
+                "port": {
+                    "cluster": 80,
+                    "node": 30410
+                },
+                "rabbitmq": "world-2"
+            },
+            "login": {
+                "port": 30011
+            },
+            "game": {
+                "marketplace": "world-1",
+                "login": "world-2",
+                "db": "world-2",
+                "redis": "world-2",
+                "rabbitmq": "world-2",
+                "log": "world-2",
+                "containers": {
+                    "0": {
+                        "port": 30056
+                    },
+                    "1": {
+                        "port": 30057
+                    },
+                    "2": {
+                        "port": 30058
+                    },
+                    "3": {
+                        "port": 30059
+                    },
+                    "4": {
+                        "port": 30060
+                    },
+                    "5": {
+                        "port": 30061
+                    },
+                    "6": {
+                        "port": 30062
+                    },
+                    "7": {
+                        "port": 30063
+                    },
+                    "8": {
+                        "port": 30064
+                    },
+                    "9": {
+                        "port": 30065
+                    },
+                    "10": {
+                        "port": 30066
+                    },
+                    "11": {
+                        "port": 30067
+                    },
+                    "12": {
+                        "port": 30068
+                    },
+                    "13": {
+                        "port": 30069
+                    },
+                    "14": {
+                        "port": 30070
+                    },
+                    "15": {
+                        "port": 30071
+                    },
+                    "16": {
+                        "port": 30072
+                    },
+                    "17": {
+                        "port": 30073
+                    },
+                    "18": {
+                        "port": 30074
+                    },
+                    "19": {
+                        "port": 30075
+                    },
+                    "20": {
+                        "port": 30076
+                    },
+                    "21": {
+                        "port": 30077
+                    },
+                    "22": {
+                        "port": 30078
+                    },
+                    "23": {
+                        "port": 30079
+                    },
+                    "24": {
+                        "port": 30080
+                    },
+                    "25": {
+                        "port": 30081
+                    }
+                }
+            },
+            "write-back": {
+                "mysql": "world-2",
+                "redis": "world-2",
+                "rabbitmq": "world-2"
+            },
+            "bot": {}
+        },
+        "world-3": {
+            "id": 3,
+            "name": "세류",
+            "desc": "2000년 7월 서비스 시작",
+            "mysql": {
+                "data": {
+                    "-1": {
+                        "port": {
+                            "cluster": 3330,
+                            "node": 30140
+                        }
+                    },
+                    "0": {
+                        "port": {
+                            "cluster": 3331,
+                            "node": 30141
+                        }
+                    },
+                    "1": {
+                        "port": {
+                            "cluster": 3332,
+                            "node": 30142
+                        }
+                    },
+                    "2": {
+                        "port": {
+                            "cluster": 3333,
+                            "node": 30143
+                        }
+                    }
+                },
+                "log": [
+                    {
+                        "port": {
+                            "cluster": 3334,
+                            "node": 30144
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3335,
+                            "node": 30145
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3336,
+                            "node": 30146
+                        }
+                    }
+                ]
+            },
+            "redis": {
+                "-1": {
+                    "port": {
+                        "cluster": 6387,
+                        "node": 30118
+                    }
+                },
+                "0": {
+                    "port": {
+                        "cluster": 6388,
+                        "node": 30119
+                    }
+                },
+                "1": {
+                    "port": {
+                        "cluster": 6389,
                         "node": 30120
                     }
                 },
-                "0": {
+                "2": {
                     "port": {
-                        "cluster": 3321,
+                        "cluster": 6390,
                         "node": 30121
                     }
-                },
-                "1": {
+                }
+            },
+            "rabbitmq": {
+                "internal": {
                     "port": {
-                        "cluster": 3322,
+                        "amqp": {
+                            "cluster": 5676,
+                            "node": 30320
+                        },
+                        "management": {
+                            "cluster": 15676,
+                            "node": 30321
+                        }
+                    },
+                    "replicas": 4
+                },
+                "log": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5677,
+                            "node": 30322
+                        },
+                        "management": {
+                            "cluster": 15677,
+                            "node": 30323
+                        }
+                    },
+                    "replicas": 4
+                }
+            },
+            "log": {
+                "port": {
+                    "cluster": 80,
+                    "node": 30420
+                },
+                "rabbitmq": "world-3"
+            },
+            "login": {
+                "port": 30012
+            },
+            "game": {
+                "marketplace": "world-1",
+                "login": "world-3",
+                "db": "world-3",
+                "redis": "world-3",
+                "rabbitmq": "world-3",
+                "log": "world-3",
+                "containers": {
+                    "0": {
+                        "port": 30082
+                    },
+                    "1": {
+                        "port": 30083
+                    },
+                    "2": {
+                        "port": 30084
+                    },
+                    "3": {
+                        "port": 30085
+                    },
+                    "4": {
+                        "port": 30086
+                    },
+                    "5": {
+                        "port": 30087
+                    },
+                    "6": {
+                        "port": 30088
+                    },
+                    "7": {
+                        "port": 30089
+                    },
+                    "8": {
+                        "port": 30090
+                    },
+                    "9": {
+                        "port": 30091
+                    },
+                    "10": {
+                        "port": 30092
+                    },
+                    "11": {
+                        "port": 30093
+                    },
+                    "12": {
+                        "port": 30094
+                    },
+                    "13": {
+                        "port": 30095
+                    },
+                    "14": {
+                        "port": 30096
+                    },
+                    "15": {
+                        "port": 30097
+                    },
+                    "16": {
+                        "port": 30098
+                    },
+                    "17": {
+                        "port": 30099
+                    },
+                    "18": {
+                        "port": 30100
+                    },
+                    "19": {
+                        "port": 30101
+                    },
+                    "20": {
+                        "port": 30102
+                    },
+                    "21": {
+                        "port": 30103
+                    },
+                    "22": {
+                        "port": 30104
+                    },
+                    "23": {
+                        "port": 30105
+                    },
+                    "24": {
+                        "port": 30106
+                    },
+                    "25": {
+                        "port": 30107
+                    }
+                }
+            },
+            "write-back": {
+                "mysql": "world-3",
+                "redis": "world-3",
+                "rabbitmq": "world-3"
+            },
+            "bot": {}
+        },
+        "world-4": {
+            "id": 4,
+            "name": "유리",
+            "desc": "2000년 7월 서비스 시작",
+            "mysql": {
+                "data": {
+                    "-1": {
+                        "port": {
+                            "cluster": 3340,
+                            "node": 30160
+                        }
+                    },
+                    "0": {
+                        "port": {
+                            "cluster": 3341,
+                            "node": 30161
+                        }
+                    },
+                    "1": {
+                        "port": {
+                            "cluster": 3342,
+                            "node": 30162
+                        }
+                    },
+                    "2": {
+                        "port": {
+                            "cluster": 3343,
+                            "node": 30163
+                        }
+                    }
+                },
+                "log": [
+                    {
+                        "port": {
+                            "cluster": 3344,
+                            "node": 30164
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3345,
+                            "node": 30165
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3346,
+                            "node": 30166
+                        }
+                    }
+                ]
+            },
+            "redis": {
+                "-1": {
+                    "port": {
+                        "cluster": 6391,
                         "node": 30122
                     }
                 },
-                "2": {
+                "0": {
                     "port": {
-                        "cluster": 3323,
+                        "cluster": 6392,
                         "node": 30123
                     }
-                }
-            },
-            "log": [
-                {
+                },
+                "1": {
                     "port": {
-                        "cluster": 3324,
+                        "cluster": 6393,
                         "node": 30124
                     }
                 },
-                {
+                "2": {
                     "port": {
-                        "cluster": 3325,
+                        "cluster": 6394,
                         "node": 30125
                     }
-                },
-                {
+                }
+            },
+            "rabbitmq": {
+                "internal": {
                     "port": {
-                        "cluster": 3326,
-                        "node": 30126
+                        "amqp": {
+                            "cluster": 5678,
+                            "node": 30330
+                        },
+                        "management": {
+                            "cluster": 15678,
+                            "node": 30331
+                        }
+                    },
+                    "replicas": 4
+                },
+                "log": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5679,
+                            "node": 30332
+                        },
+                        "management": {
+                            "cluster": 15679,
+                            "node": 30333
+                        }
+                    },
+                    "replicas": 4
+                }
+            },
+            "log": {
+                "port": {
+                    "cluster": 80,
+                    "node": 30430
+                },
+                "rabbitmq": "world-4"
+            },
+            "login": {
+                "port": 30013
+            },
+            "game": {
+                "marketplace": "world-1",
+                "login": "world-4",
+                "db": "world-4",
+                "redis": "world-4",
+                "rabbitmq": "world-4",
+                "log": "world-4",
+                "containers": {
+                    "0": {
+                        "port": 30108
+                    },
+                    "1": {
+                        "port": 30109
+                    },
+                    "2": {
+                        "port": 30110
+                    },
+                    "3": {
+                        "port": 30111
+                    },
+                    "4": {
+                        "port": 30112
+                    },
+                    "5": {
+                        "port": 30113
+                    },
+                    "6": {
+                        "port": 30114
+                    },
+                    "7": {
+                        "port": 30115
+                    },
+                    "8": {
+                        "port": 30116
+                    },
+                    "9": {
+                        "port": 30117
+                    },
+                    "10": {
+                        "port": 30118
+                    },
+                    "11": {
+                        "port": 30119
+                    },
+                    "12": {
+                        "port": 30120
+                    },
+                    "13": {
+                        "port": 30121
+                    },
+                    "14": {
+                        "port": 30122
+                    },
+                    "15": {
+                        "port": 30123
+                    },
+                    "16": {
+                        "port": 30124
+                    },
+                    "17": {
+                        "port": 30125
+                    },
+                    "18": {
+                        "port": 30126
+                    },
+                    "19": {
+                        "port": 30127
+                    },
+                    "20": {
+                        "port": 30128
+                    },
+                    "21": {
+                        "port": 30129
+                    },
+                    "22": {
+                        "port": 30130
+                    },
+                    "23": {
+                        "port": 30131
+                    },
+                    "24": {
+                        "port": 30132
+                    },
+                    "25": {
+                        "port": 30133
                     }
                 }
-            ]
+            },
+            "write-back": {
+                "mysql": "world-4",
+                "redis": "world-4",
+                "rabbitmq": "world-4"
+            },
+            "bot": {}
         },
-        "section-3": {
-            "data": {
+        "world-5": {
+            "id": 5,
+            "name": "해명",
+            "desc": "2000년 12월 서비스 시작",
+            "mysql": {
+                "data": {
+                    "-1": {
+                        "port": {
+                            "cluster": 3350,
+                            "node": 30180
+                        }
+                    },
+                    "0": {
+                        "port": {
+                            "cluster": 3351,
+                            "node": 30181
+                        }
+                    },
+                    "1": {
+                        "port": {
+                            "cluster": 3352,
+                            "node": 30182
+                        }
+                    },
+                    "2": {
+                        "port": {
+                            "cluster": 3353,
+                            "node": 30183
+                        }
+                    }
+                },
+                "log": [
+                    {
+                        "port": {
+                            "cluster": 3354,
+                            "node": 30184
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3355,
+                            "node": 30185
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3356,
+                            "node": 30186
+                        }
+                    }
+                ]
+            },
+            "redis": {
                 "-1": {
                     "port": {
-                        "cluster": 3330,
+                        "cluster": 6395,
+                        "node": 30126
+                    }
+                },
+                "0": {
+                    "port": {
+                        "cluster": 6396,
+                        "node": 30127
+                    }
+                },
+                "1": {
+                    "port": {
+                        "cluster": 6397,
+                        "node": 30128
+                    }
+                },
+                "2": {
+                    "port": {
+                        "cluster": 6398,
+                        "node": 30129
+                    }
+                }
+            },
+            "rabbitmq": {
+                "internal": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5680,
+                            "node": 30340
+                        },
+                        "management": {
+                            "cluster": 15680,
+                            "node": 30341
+                        }
+                    },
+                    "replicas": 4
+                },
+                "log": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5681,
+                            "node": 30342
+                        },
+                        "management": {
+                            "cluster": 15681,
+                            "node": 30343
+                        }
+                    },
+                    "replicas": 4
+                }
+            },
+            "log": {
+                "port": {
+                    "cluster": 80,
+                    "node": 30440
+                },
+                "rabbitmq": "world-5"
+            },
+            "login": {
+                "port": 30014
+            },
+            "game": {
+                "marketplace": "world-1",
+                "login": "world-5",
+                "db": "world-5",
+                "redis": "world-5",
+                "rabbitmq": "world-5",
+                "log": "world-5",
+                "containers": {
+                    "0": {
+                        "port": 30134
+                    },
+                    "1": {
+                        "port": 30135
+                    },
+                    "2": {
+                        "port": 30136
+                    },
+                    "3": {
+                        "port": 30137
+                    },
+                    "4": {
+                        "port": 30138
+                    },
+                    "5": {
+                        "port": 30139
+                    },
+                    "6": {
+                        "port": 30140
+                    },
+                    "7": {
+                        "port": 30141
+                    },
+                    "8": {
+                        "port": 30142
+                    },
+                    "9": {
+                        "port": 30143
+                    },
+                    "10": {
+                        "port": 30144
+                    },
+                    "11": {
+                        "port": 30145
+                    },
+                    "12": {
+                        "port": 30146
+                    },
+                    "13": {
+                        "port": 30147
+                    },
+                    "14": {
+                        "port": 30148
+                    },
+                    "15": {
+                        "port": 30149
+                    },
+                    "16": {
+                        "port": 30150
+                    },
+                    "17": {
+                        "port": 30151
+                    },
+                    "18": {
+                        "port": 30152
+                    },
+                    "19": {
+                        "port": 30153
+                    },
+                    "20": {
+                        "port": 30154
+                    },
+                    "21": {
+                        "port": 30155
+                    },
+                    "22": {
+                        "port": 30156
+                    },
+                    "23": {
+                        "port": 30157
+                    },
+                    "24": {
+                        "port": 30158
+                    },
+                    "25": {
+                        "port": 30159
+                    }
+                }
+            },
+            "write-back": {
+                "mysql": "world-5",
+                "redis": "world-5",
+                "rabbitmq": "world-5"
+            },
+            "bot": {}
+        },
+        "world-6": {
+            "id": 6,
+            "name": "배극",
+            "desc": "2000년 12월 서비스 시작(PK서버)",
+            "mysql": {
+                "data": {
+                    "-1": {
+                        "port": {
+                            "cluster": 3360,
+                            "node": 30200
+                        }
+                    },
+                    "0": {
+                        "port": {
+                            "cluster": 3361,
+                            "node": 30201
+                        }
+                    },
+                    "1": {
+                        "port": {
+                            "cluster": 3362,
+                            "node": 30202
+                        }
+                    },
+                    "2": {
+                        "port": {
+                            "cluster": 3363,
+                            "node": 30203
+                        }
+                    }
+                },
+                "log": [
+                    {
+                        "port": {
+                            "cluster": 3364,
+                            "node": 30204
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3365,
+                            "node": 30205
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3366,
+                            "node": 30206
+                        }
+                    }
+                ]
+            },
+            "redis": {
+                "-1": {
+                    "port": {
+                        "cluster": 6399,
+                        "node": 30130
+                    }
+                },
+                "0": {
+                    "port": {
+                        "cluster": 6400,
+                        "node": 30131
+                    }
+                },
+                "1": {
+                    "port": {
+                        "cluster": 6401,
+                        "node": 30132
+                    }
+                },
+                "2": {
+                    "port": {
+                        "cluster": 6402,
+                        "node": 30133
+                    }
+                }
+            },
+            "rabbitmq": {
+                "internal": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5682,
+                            "node": 30350
+                        },
+                        "management": {
+                            "cluster": 15682,
+                            "node": 30351
+                        }
+                    },
+                    "replicas": 4
+                },
+                "log": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5683,
+                            "node": 30352
+                        },
+                        "management": {
+                            "cluster": 15683,
+                            "node": 30353
+                        }
+                    },
+                    "replicas": 4
+                }
+            },
+            "log": {
+                "port": {
+                    "cluster": 80,
+                    "node": 30450
+                },
+                "rabbitmq": "world-6"
+            },
+            "login": {
+                "port": 30015
+            },
+            "game": {
+                "marketplace": "world-1",
+                "login": "world-6",
+                "db": "world-6",
+                "redis": "world-6",
+                "rabbitmq": "world-6",
+                "log": "world-6",
+                "containers": {
+                    "0": {
+                        "port": 30160
+                    },
+                    "1": {
+                        "port": 30161
+                    },
+                    "2": {
+                        "port": 30162
+                    },
+                    "3": {
+                        "port": 30163
+                    },
+                    "4": {
+                        "port": 30164
+                    },
+                    "5": {
+                        "port": 30165
+                    },
+                    "6": {
+                        "port": 30166
+                    },
+                    "7": {
+                        "port": 30167
+                    },
+                    "8": {
+                        "port": 30168
+                    },
+                    "9": {
+                        "port": 30169
+                    },
+                    "10": {
+                        "port": 30170
+                    },
+                    "11": {
+                        "port": 30171
+                    },
+                    "12": {
+                        "port": 30172
+                    },
+                    "13": {
+                        "port": 30173
+                    },
+                    "14": {
+                        "port": 30174
+                    },
+                    "15": {
+                        "port": 30175
+                    },
+                    "16": {
+                        "port": 30176
+                    },
+                    "17": {
+                        "port": 30177
+                    },
+                    "18": {
+                        "port": 30178
+                    },
+                    "19": {
+                        "port": 30179
+                    },
+                    "20": {
+                        "port": 30180
+                    },
+                    "21": {
+                        "port": 30181
+                    },
+                    "22": {
+                        "port": 30182
+                    },
+                    "23": {
+                        "port": 30183
+                    },
+                    "24": {
+                        "port": 30184
+                    },
+                    "25": {
+                        "port": 30185
+                    }
+                }
+            },
+            "write-back": {
+                "mysql": "world-6",
+                "redis": "world-6",
+                "rabbitmq": "world-6"
+            },
+            "bot": {}
+        },
+        "world-7": {
+            "id": 7,
+            "name": "하자",
+            "desc": "10대들을 위한 전용 서버",
+            "mysql": {
+                "data": {
+                    "-1": {
+                        "port": {
+                            "cluster": 3370,
+                            "node": 30220
+                        }
+                    },
+                    "0": {
+                        "port": {
+                            "cluster": 3371,
+                            "node": 30221
+                        }
+                    },
+                    "1": {
+                        "port": {
+                            "cluster": 3372,
+                            "node": 30222
+                        }
+                    },
+                    "2": {
+                        "port": {
+                            "cluster": 3373,
+                            "node": 30223
+                        }
+                    }
+                },
+                "log": [
+                    {
+                        "port": {
+                            "cluster": 3374,
+                            "node": 30224
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3375,
+                            "node": 30225
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3376,
+                            "node": 30226
+                        }
+                    }
+                ]
+            },
+            "redis": {
+                "-1": {
+                    "port": {
+                        "cluster": 6403,
+                        "node": 30134
+                    }
+                },
+                "0": {
+                    "port": {
+                        "cluster": 6404,
+                        "node": 30135
+                    }
+                },
+                "1": {
+                    "port": {
+                        "cluster": 6405,
+                        "node": 30136
+                    }
+                },
+                "2": {
+                    "port": {
+                        "cluster": 6406,
+                        "node": 30137
+                    }
+                }
+            },
+            "rabbitmq": {
+                "internal": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5684,
+                            "node": 30360
+                        },
+                        "management": {
+                            "cluster": 15684,
+                            "node": 30361
+                        }
+                    },
+                    "replicas": 4
+                },
+                "log": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5685,
+                            "node": 30362
+                        },
+                        "management": {
+                            "cluster": 15685,
+                            "node": 30363
+                        }
+                    },
+                    "replicas": 4
+                }
+            },
+            "log": {
+                "port": {
+                    "cluster": 80,
+                    "node": 30460
+                },
+                "rabbitmq": "world-7"
+            },
+            "login": {
+                "port": 30016
+            },
+            "game": {
+                "marketplace": "world-1",
+                "login": "world-7",
+                "db": "world-7",
+                "redis": "world-7",
+                "rabbitmq": "world-7",
+                "log": "world-7",
+                "containers": {
+                    "0": {
+                        "port": 30186
+                    },
+                    "1": {
+                        "port": 30187
+                    },
+                    "2": {
+                        "port": 30188
+                    },
+                    "3": {
+                        "port": 30189
+                    },
+                    "4": {
+                        "port": 30190
+                    },
+                    "5": {
+                        "port": 30191
+                    },
+                    "6": {
+                        "port": 30192
+                    },
+                    "7": {
+                        "port": 30193
+                    },
+                    "8": {
+                        "port": 30194
+                    },
+                    "9": {
+                        "port": 30195
+                    },
+                    "10": {
+                        "port": 30196
+                    },
+                    "11": {
+                        "port": 30197
+                    },
+                    "12": {
+                        "port": 30198
+                    },
+                    "13": {
+                        "port": 30199
+                    },
+                    "14": {
+                        "port": 30200
+                    },
+                    "15": {
+                        "port": 30201
+                    },
+                    "16": {
+                        "port": 30202
+                    },
+                    "17": {
+                        "port": 30203
+                    },
+                    "18": {
+                        "port": 30204
+                    },
+                    "19": {
+                        "port": 30205
+                    },
+                    "20": {
+                        "port": 30206
+                    },
+                    "21": {
+                        "port": 30207
+                    },
+                    "22": {
+                        "port": 30208
+                    },
+                    "23": {
+                        "port": 30209
+                    },
+                    "24": {
+                        "port": 30210
+                    },
+                    "25": {
+                        "port": 30211
+                    }
+                }
+            },
+            "write-back": {
+                "mysql": "world-7",
+                "redis": "world-7",
+                "rabbitmq": "world-7"
+            },
+            "bot": {}
+        },
+        "world-8": {
+            "id": 8,
+            "name": "호동",
+            "desc": "2001년 2월 서비스 시작",
+            "mysql": {
+                "data": {
+                    "-1": {
+                        "port": {
+                            "cluster": 3380,
+                            "node": 30240
+                        }
+                    },
+                    "0": {
+                        "port": {
+                            "cluster": 3381,
+                            "node": 30241
+                        }
+                    },
+                    "1": {
+                        "port": {
+                            "cluster": 3382,
+                            "node": 30242
+                        }
+                    },
+                    "2": {
+                        "port": {
+                            "cluster": 3383,
+                            "node": 30243
+                        }
+                    }
+                },
+                "log": [
+                    {
+                        "port": {
+                            "cluster": 3384,
+                            "node": 30244
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3385,
+                            "node": 30245
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3386,
+                            "node": 30246
+                        }
+                    }
+                ]
+            },
+            "redis": {
+                "-1": {
+                    "port": {
+                        "cluster": 6407,
+                        "node": 30138
+                    }
+                },
+                "0": {
+                    "port": {
+                        "cluster": 6408,
+                        "node": 30139
+                    }
+                },
+                "1": {
+                    "port": {
+                        "cluster": 6409,
                         "node": 30140
                     }
                 },
-                "0": {
+                "2": {
                     "port": {
-                        "cluster": 3331,
+                        "cluster": 6410,
                         "node": 30141
                     }
-                },
-                "1": {
+                }
+            },
+            "rabbitmq": {
+                "internal": {
                     "port": {
-                        "cluster": 3332,
+                        "amqp": {
+                            "cluster": 5686,
+                            "node": 30370
+                        },
+                        "management": {
+                            "cluster": 15686,
+                            "node": 30371
+                        }
+                    },
+                    "replicas": 4
+                },
+                "log": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5687,
+                            "node": 30372
+                        },
+                        "management": {
+                            "cluster": 15687,
+                            "node": 30373
+                        }
+                    },
+                    "replicas": 4
+                }
+            },
+            "log": {
+                "port": {
+                    "cluster": 80,
+                    "node": 30470
+                },
+                "rabbitmq": "world-8"
+            },
+            "login": {
+                "port": 30017
+            },
+            "game": {
+                "marketplace": "world-1",
+                "login": "world-8",
+                "db": "world-8",
+                "redis": "world-8",
+                "rabbitmq": "world-8",
+                "log": "world-8",
+                "containers": {
+                    "0": {
+                        "port": 30212
+                    },
+                    "1": {
+                        "port": 30213
+                    },
+                    "2": {
+                        "port": 30214
+                    },
+                    "3": {
+                        "port": 30215
+                    },
+                    "4": {
+                        "port": 30216
+                    },
+                    "5": {
+                        "port": 30217
+                    },
+                    "6": {
+                        "port": 30218
+                    },
+                    "7": {
+                        "port": 30219
+                    },
+                    "8": {
+                        "port": 30220
+                    },
+                    "9": {
+                        "port": 30221
+                    },
+                    "10": {
+                        "port": 30222
+                    },
+                    "11": {
+                        "port": 30223
+                    },
+                    "12": {
+                        "port": 30224
+                    },
+                    "13": {
+                        "port": 30225
+                    },
+                    "14": {
+                        "port": 30226
+                    },
+                    "15": {
+                        "port": 30227
+                    },
+                    "16": {
+                        "port": 30228
+                    },
+                    "17": {
+                        "port": 30229
+                    },
+                    "18": {
+                        "port": 30230
+                    },
+                    "19": {
+                        "port": 30231
+                    },
+                    "20": {
+                        "port": 30232
+                    },
+                    "21": {
+                        "port": 30233
+                    },
+                    "22": {
+                        "port": 30234
+                    },
+                    "23": {
+                        "port": 30235
+                    },
+                    "24": {
+                        "port": 30236
+                    },
+                    "25": {
+                        "port": 30237
+                    }
+                }
+            },
+            "write-back": {
+                "mysql": "world-8",
+                "redis": "world-8",
+                "rabbitmq": "world-8"
+            },
+            "bot": {}
+        },
+        "world-9": {
+            "id": 9,
+            "name": "주몽",
+            "desc": "2002년 2월 서비스 시작",
+            "mysql": {
+                "data": {
+                    "-1": {
+                        "port": {
+                            "cluster": 3390,
+                            "node": 30260
+                        }
+                    },
+                    "0": {
+                        "port": {
+                            "cluster": 3391,
+                            "node": 30261
+                        }
+                    },
+                    "1": {
+                        "port": {
+                            "cluster": 3392,
+                            "node": 30262
+                        }
+                    },
+                    "2": {
+                        "port": {
+                            "cluster": 3393,
+                            "node": 30263
+                        }
+                    }
+                },
+                "log": [
+                    {
+                        "port": {
+                            "cluster": 3394,
+                            "node": 30264
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3395,
+                            "node": 30265
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3396,
+                            "node": 30266
+                        }
+                    }
+                ]
+            },
+            "redis": {
+                "-1": {
+                    "port": {
+                        "cluster": 6411,
                         "node": 30142
                     }
                 },
-                "2": {
+                "0": {
                     "port": {
-                        "cluster": 3333,
+                        "cluster": 6412,
                         "node": 30143
                     }
-                }
-            },
-            "log": [
-                {
+                },
+                "1": {
                     "port": {
-                        "cluster": 3334,
+                        "cluster": 6413,
                         "node": 30144
                     }
                 },
-                {
+                "2": {
                     "port": {
-                        "cluster": 3335,
+                        "cluster": 6414,
                         "node": 30145
                     }
-                },
-                {
-                    "port": {
-                        "cluster": 3336,
-                        "node": 30146
-                    }
-                }
-            ]
-        },
-        "section-4": {
-            "data": {
-                "-1": {
-                    "port": {
-                        "cluster": 3340,
-                        "node": 30160
-                    }
-                },
-                "0": {
-                    "port": {
-                        "cluster": 3341,
-                        "node": 30161
-                    }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 3342,
-                        "node": 30162
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 3343,
-                        "node": 30163
-                    }
                 }
             },
-            "log": [
-                {
+            "rabbitmq": {
+                "internal": {
                     "port": {
-                        "cluster": 3344,
-                        "node": 30164
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3345,
-                        "node": 30165
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3346,
-                        "node": 30166
-                    }
-                }
-            ]
-        },
-        "section-5": {
-            "data": {
-                "-1": {
-                    "port": {
-                        "cluster": 3350,
-                        "node": 30180
-                    }
-                },
-                "0": {
-                    "port": {
-                        "cluster": 3351,
-                        "node": 30181
-                    }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 3352,
-                        "node": 30182
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 3353,
-                        "node": 30183
-                    }
-                }
-            },
-            "log": [
-                {
-                    "port": {
-                        "cluster": 3354,
-                        "node": 30184
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3355,
-                        "node": 30185
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3356,
-                        "node": 30186
-                    }
-                }
-            ]
-        },
-        "section-6": {
-            "data": {
-                "-1": {
-                    "port": {
-                        "cluster": 3360,
-                        "node": 30200
-                    }
-                },
-                "0": {
-                    "port": {
-                        "cluster": 3361,
-                        "node": 30201
-                    }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 3362,
-                        "node": 30202
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 3363,
-                        "node": 30203
-                    }
-                }
-            },
-            "log": [
-                {
-                    "port": {
-                        "cluster": 3364,
-                        "node": 30204
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3365,
-                        "node": 30205
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3366,
-                        "node": 30206
-                    }
-                }
-            ]
-        },
-        "section-7": {
-            "data": {
-                "-1": {
-                    "port": {
-                        "cluster": 3370,
-                        "node": 30220
-                    }
-                },
-                "0": {
-                    "port": {
-                        "cluster": 3371,
-                        "node": 30221
-                    }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 3372,
-                        "node": 30222
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 3373,
-                        "node": 30223
-                    }
-                }
-            },
-            "log": [
-                {
-                    "port": {
-                        "cluster": 3374,
-                        "node": 30224
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3375,
-                        "node": 30225
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3376,
-                        "node": 30226
-                    }
-                }
-            ]
-        },
-        "section-8": {
-            "data": {
-                "-1": {
-                    "port": {
-                        "cluster": 3380,
-                        "node": 30240
-                    }
-                },
-                "0": {
-                    "port": {
-                        "cluster": 3381,
-                        "node": 30241
-                    }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 3382,
-                        "node": 30242
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 3383,
-                        "node": 30243
-                    }
-                }
-            },
-            "log": [
-                {
-                    "port": {
-                        "cluster": 3384,
-                        "node": 30244
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3385,
-                        "node": 30245
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3386,
-                        "node": 30246
-                    }
-                }
-            ]
-        },
-        "section-9": {
-            "data": {
-                "-1": {
-                    "port": {
-                        "cluster": 3390,
-                        "node": 30260
-                    }
-                },
-                "0": {
-                    "port": {
-                        "cluster": 3391,
-                        "node": 30261
-                    }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 3392,
-                        "node": 30262
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 3393,
-                        "node": 30263
-                    }
-                }
-            },
-            "log": [
-                {
-                    "port": {
-                        "cluster": 3394,
-                        "node": 30264
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3395,
-                        "node": 30265
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3396,
-                        "node": 30266
-                    }
-                }
-            ]
-        },
-        "section-10": {
-            "data": {
-                "-1": {
-                    "port": {
-                        "cluster": 3400,
-                        "node": 30280
-                    }
-                },
-                "0": {
-                    "port": {
-                        "cluster": 3401,
-                        "node": 30281
-                    }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 3402,
-                        "node": 30282
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 3403,
-                        "node": 30283
-                    }
-                }
-            },
-            "log": [
-                {
-                    "port": {
-                        "cluster": 3404,
-                        "node": 30284
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3405,
-                        "node": 30285
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3406,
-                        "node": 30286
-                    }
-                }
-            ]
-        },
-        "section-11": {
-            "data": {
-                "-1": {
-                    "port": {
-                        "cluster": 3410,
-                        "node": 30300
-                    }
-                },
-                "0": {
-                    "port": {
-                        "cluster": 3411,
-                        "node": 30301
-                    }
-                },
-                "1": {
-                    "port": {
-                        "cluster": 3412,
-                        "node": 30302
-                    }
-                },
-                "2": {
-                    "port": {
-                        "cluster": 3413,
-                        "node": 30303
-                    }
-                }
-            },
-            "log": [
-                {
-                    "port": {
-                        "cluster": 3414,
-                        "node": 30304
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3415,
-                        "node": 30305
-                    }
-                },
-                {
-                    "port": {
-                        "cluster": 3416,
-                        "node": 30306
-                    }
-                }
-            ]
-        },
-        "unified-global": {
-            "data": {
-                "-1": {
-                    "port": {
-                        "cluster": 3500,
-                        "node": 31000
-                    }
-                }
-            }
-        }
-    },
-    "redis": {
-        "section-1": {
-            "-1": {
-                "port": {
-                    "cluster": 6379,
-                    "node": 30110
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 6380,
-                    "node": 30111
-                }
-            },
-            "1": {
-                "port": {
-                    "cluster": 6381,
-                    "node": 30112
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 6382,
-                    "node": 30113
-                }
-            }
-        },
-        "section-2": {
-            "-1": {
-                "port": {
-                    "cluster": 6383,
-                    "node": 30114
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 6384,
-                    "node": 30115
-                }
-            },
-            "1": {
-                "port": {
-                    "cluster": 6385,
-                    "node": 30116
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 6386,
-                    "node": 30117
-                }
-            }
-        },
-        "section-3": {
-            "-1": {
-                "port": {
-                    "cluster": 6387,
-                    "node": 30118
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 6388,
-                    "node": 30119
-                }
-            },
-            "1": {
-                "port": {
-                    "cluster": 6389,
-                    "node": 30120
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 6390,
-                    "node": 30121
-                }
-            }
-        },
-        "section-4": {
-            "-1": {
-                "port": {
-                    "cluster": 6391,
-                    "node": 30122
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 6392,
-                    "node": 30123
-                }
-            },
-            "1": {
-                "port": {
-                    "cluster": 6393,
-                    "node": 30124
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 6394,
-                    "node": 30125
-                }
-            }
-        },
-        "section-5": {
-            "-1": {
-                "port": {
-                    "cluster": 6395,
-                    "node": 30126
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 6396,
-                    "node": 30127
-                }
-            },
-            "1": {
-                "port": {
-                    "cluster": 6397,
-                    "node": 30128
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 6398,
-                    "node": 30129
-                }
-            }
-        },
-        "section-6": {
-            "-1": {
-                "port": {
-                    "cluster": 6399,
-                    "node": 30130
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 6400,
-                    "node": 30131
-                }
-            },
-            "1": {
-                "port": {
-                    "cluster": 6401,
-                    "node": 30132
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 6402,
-                    "node": 30133
-                }
-            }
-        },
-        "section-7": {
-            "-1": {
-                "port": {
-                    "cluster": 6403,
-                    "node": 30134
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 6404,
-                    "node": 30135
-                }
-            },
-            "1": {
-                "port": {
-                    "cluster": 6405,
-                    "node": 30136
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 6406,
-                    "node": 30137
-                }
-            }
-        },
-        "section-8": {
-            "-1": {
-                "port": {
-                    "cluster": 6407,
-                    "node": 30138
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 6408,
-                    "node": 30139
-                }
-            },
-            "1": {
-                "port": {
-                    "cluster": 6409,
-                    "node": 30140
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 6410,
-                    "node": 30141
-                }
-            }
-        },
-        "section-9": {
-            "-1": {
-                "port": {
-                    "cluster": 6411,
-                    "node": 30142
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 6412,
-                    "node": 30143
-                }
-            },
-            "1": {
-                "port": {
-                    "cluster": 6413,
-                    "node": 30144
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 6414,
-                    "node": 30145
-                }
-            }
-        },
-        "section-10": {
-            "-1": {
-                "port": {
-                    "cluster": 6415,
-                    "node": 30146
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 6416,
-                    "node": 30147
-                }
-            },
-            "1": {
-                "port": {
-                    "cluster": 6417,
-                    "node": 30148
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 6418,
-                    "node": 30149
-                }
-            }
-        },
-        "section-11": {
-            "-1": {
-                "port": {
-                    "cluster": 6419,
-                    "node": 30150
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 6420,
-                    "node": 30151
-                }
-            },
-            "1": {
-                "port": {
-                    "cluster": 6421,
-                    "node": 30152
-                }
-            },
-            "2": {
-                "port": {
-                    "cluster": 6422,
-                    "node": 30153
-                }
-            }
-        },
-        "unified-global": {
-            "-1": {
-                "port": {
-                    "cluster": 6500,
-                    "node": 31010
-                }
-            }
-        }
-    },
-    "rabbitmq": {
-        "section-1": {
-            "internal": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5672,
-                        "node": 30300
+                        "amqp": {
+                            "cluster": 5688,
+                            "node": 30380
+                        },
+                        "management": {
+                            "cluster": 15688,
+                            "node": 30381
+                        }
                     },
-                    "management": {
-                        "cluster": 15672,
-                        "node": 30301
-                    }
+                    "replicas": 4
                 },
-                "replicas": 4
+                "log": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5689,
+                            "node": 30382
+                        },
+                        "management": {
+                            "cluster": 15689,
+                            "node": 30383
+                        }
+                    },
+                    "replicas": 4
+                }
             },
             "log": {
                 "port": {
-                    "amqp": {
-                        "cluster": 5673,
-                        "node": 30302
-                    },
-                    "management": {
-                        "cluster": 15673,
-                        "node": 30303
-                    }
+                    "cluster": 80,
+                    "node": 30480
                 },
-                "replicas": 4
-            }
-        },
-        "section-2": {
-            "internal": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5674,
-                        "node": 30310
+                "rabbitmq": "world-9"
+            },
+            "login": {
+                "port": 30018
+            },
+            "game": {
+                "marketplace": "world-1",
+                "login": "world-9",
+                "db": "world-9",
+                "redis": "world-9",
+                "rabbitmq": "world-9",
+                "log": "world-9",
+                "containers": {
+                    "0": {
+                        "port": 30238
                     },
-                    "management": {
-                        "cluster": 15674,
-                        "node": 30311
-                    }
-                },
-                "replicas": 4
-            },
-            "log": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5675,
-                        "node": 30312
+                    "1": {
+                        "port": 30239
                     },
-                    "management": {
-                        "cluster": 15675,
-                        "node": 30313
-                    }
-                },
-                "replicas": 4
-            }
-        },
-        "section-3": {
-            "internal": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5676,
-                        "node": 30320
+                    "2": {
+                        "port": 30240
                     },
-                    "management": {
-                        "cluster": 15676,
-                        "node": 30321
-                    }
-                },
-                "replicas": 4
-            },
-            "log": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5677,
-                        "node": 30322
+                    "3": {
+                        "port": 30241
                     },
-                    "management": {
-                        "cluster": 15677,
-                        "node": 30323
-                    }
-                },
-                "replicas": 4
-            }
-        },
-        "section-4": {
-            "internal": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5678,
-                        "node": 30330
+                    "4": {
+                        "port": 30242
                     },
-                    "management": {
-                        "cluster": 15678,
-                        "node": 30331
-                    }
-                },
-                "replicas": 4
-            },
-            "log": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5679,
-                        "node": 30332
+                    "5": {
+                        "port": 30243
                     },
-                    "management": {
-                        "cluster": 15679,
-                        "node": 30333
-                    }
-                },
-                "replicas": 4
-            }
-        },
-        "section-5": {
-            "internal": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5680,
-                        "node": 30340
+                    "6": {
+                        "port": 30244
                     },
-                    "management": {
-                        "cluster": 15680,
-                        "node": 30341
-                    }
-                },
-                "replicas": 4
-            },
-            "log": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5681,
-                        "node": 30342
+                    "7": {
+                        "port": 30245
                     },
-                    "management": {
-                        "cluster": 15681,
-                        "node": 30343
-                    }
-                },
-                "replicas": 4
-            }
-        },
-        "section-6": {
-            "internal": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5682,
-                        "node": 30350
+                    "8": {
+                        "port": 30246
                     },
-                    "management": {
-                        "cluster": 15682,
-                        "node": 30351
-                    }
-                },
-                "replicas": 4
-            },
-            "log": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5683,
-                        "node": 30352
+                    "9": {
+                        "port": 30247
                     },
-                    "management": {
-                        "cluster": 15683,
-                        "node": 30353
-                    }
-                },
-                "replicas": 4
-            }
-        },
-        "section-7": {
-            "internal": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5684,
-                        "node": 30360
+                    "10": {
+                        "port": 30248
                     },
-                    "management": {
-                        "cluster": 15684,
-                        "node": 30361
-                    }
-                },
-                "replicas": 4
-            },
-            "log": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5685,
-                        "node": 30362
+                    "11": {
+                        "port": 30249
                     },
-                    "management": {
-                        "cluster": 15685,
-                        "node": 30363
-                    }
-                },
-                "replicas": 4
-            }
-        },
-        "section-8": {
-            "internal": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5686,
-                        "node": 30370
+                    "12": {
+                        "port": 30250
                     },
-                    "management": {
-                        "cluster": 15686,
-                        "node": 30371
-                    }
-                },
-                "replicas": 4
-            },
-            "log": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5687,
-                        "node": 30372
+                    "13": {
+                        "port": 30251
                     },
-                    "management": {
-                        "cluster": 15687,
-                        "node": 30373
-                    }
-                },
-                "replicas": 4
-            }
-        },
-        "section-9": {
-            "internal": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5688,
-                        "node": 30380
+                    "14": {
+                        "port": 30252
                     },
-                    "management": {
-                        "cluster": 15688,
-                        "node": 30381
-                    }
-                },
-                "replicas": 4
-            },
-            "log": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5689,
-                        "node": 30382
+                    "15": {
+                        "port": 30253
                     },
-                    "management": {
-                        "cluster": 15689,
-                        "node": 30383
-                    }
-                },
-                "replicas": 4
-            }
-        },
-        "section-10": {
-            "internal": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5690,
-                        "node": 30390
+                    "16": {
+                        "port": 30254
                     },
-                    "management": {
-                        "cluster": 15690,
-                        "node": 30391
-                    }
-                },
-                "replicas": 4
-            },
-            "log": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5691,
-                        "node": 30392
+                    "17": {
+                        "port": 30255
                     },
-                    "management": {
-                        "cluster": 15691,
-                        "node": 30393
-                    }
-                },
-                "replicas": 4
-            }
-        },
-        "section-11": {
-            "internal": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5692,
-                        "node": 30400
+                    "18": {
+                        "port": 30256
                     },
-                    "management": {
-                        "cluster": 15692,
-                        "node": 30401
-                    }
-                },
-                "replicas": 4
-            },
-            "log": {
-                "port": {
-                    "amqp": {
-                        "cluster": 5693,
-                        "node": 30402
+                    "19": {
+                        "port": 30257
                     },
-                    "management": {
-                        "cluster": 15693,
-                        "node": 30403
+                    "20": {
+                        "port": 30258
+                    },
+                    "21": {
+                        "port": 30259
+                    },
+                    "22": {
+                        "port": 30260
+                    },
+                    "23": {
+                        "port": 30261
+                    },
+                    "24": {
+                        "port": 30262
+                    },
+                    "25": {
+                        "port": 30263
                     }
-                },
-                "replicas": 4
-            }
-        }
-    },
-    "log": {
-        "section-1": {
-            "port": {
-                "cluster": 80,
-                "node": 30400
+                }
             },
-            "rabbitmq": "section-1"
-        },
-        "section-2": {
-            "port": {
-                "cluster": 80,
-                "node": 30410
+            "write-back": {
+                "mysql": "world-9",
+                "redis": "world-9",
+                "rabbitmq": "world-9"
             },
-            "rabbitmq": "section-2"
+            "bot": {}
         },
-        "section-3": {
-            "port": {
-                "cluster": 80,
-                "node": 30420
-            },
-            "rabbitmq": "section-3"
-        },
-        "section-4": {
-            "port": {
-                "cluster": 80,
-                "node": 30430
-            },
-            "rabbitmq": "section-4"
-        },
-        "section-5": {
-            "port": {
-                "cluster": 80,
-                "node": 30440
-            },
-            "rabbitmq": "section-5"
-        },
-        "section-6": {
-            "port": {
-                "cluster": 80,
-                "node": 30450
-            },
-            "rabbitmq": "section-6"
-        },
-        "section-7": {
-            "port": {
-                "cluster": 80,
-                "node": 30460
-            },
-            "rabbitmq": "section-7"
-        },
-        "section-8": {
-            "port": {
-                "cluster": 80,
-                "node": 30470
-            },
-            "rabbitmq": "section-8"
-        },
-        "section-9": {
-            "port": {
-                "cluster": 80,
-                "node": 30480
-            },
-            "rabbitmq": "section-9"
-        },
-        "section-10": {
-            "port": {
-                "cluster": 80,
-                "node": 30490
-            },
-            "rabbitmq": "section-10"
-        },
-        "section-11": {
-            "port": {
-                "cluster": 80,
-                "node": 30500
-            },
-            "rabbitmq": "section-11"
-        }
-    },
-    "gateway": {
-        "port": 30000,
-        "replicas": 3,
-        "internal": "section-1",
-        "redis": "section-1",
-        "log": "section-1"
-    },
-    "login": {
-        "section-1": {
-            "name": "연",
-            "desc": "1996년 4월 서비스 시작",
-            "internal": "section-1",
-            "db": "section-1",
-            "redis": "section-1",
-            "rabbitmq": "section-1",
-            "log": "section-1",
-            "port": 30010
-        },
-        "section-2": {
-            "name": "무휼",
-            "desc": "2000년 2월 서비스 시작",
-            "internal": "section-2",
-            "db": "section-2",
-            "redis": "section-2",
-            "rabbitmq": "section-2",
-            "log": "section-2",
-            "port": 30011
-        },
-        "section-3": {
-            "name": "세류",
-            "desc": "2000년 7월 서비스 시작",
-            "internal": "section-3",
-            "db": "section-3",
-            "redis": "section-3",
-            "rabbitmq": "section-3",
-            "log": "section-3",
-            "port": 30012
-        },
-        "section-4": {
-            "name": "유리",
-            "desc": "2000년 7월 서비스 시작",
-            "internal": "section-4",
-            "db": "section-4",
-            "redis": "section-4",
-            "rabbitmq": "section-4",
-            "log": "section-4",
-            "port": 30013
-        },
-        "section-5": {
-            "name": "해명",
-            "desc": "2000년 12월 서비스 시작",
-            "internal": "section-5",
-            "db": "section-5",
-            "redis": "section-5",
-            "rabbitmq": "section-5",
-            "log": "section-5",
-            "port": 30014
-        },
-        "section-6": {
-            "name": "배극",
-            "desc": "2000년 12월 서비스 시작(PK서버)",
-            "internal": "section-6",
-            "db": "section-6",
-            "redis": "section-6",
-            "rabbitmq": "section-6",
-            "log": "section-6",
-            "port": 30015
-        },
-        "section-7": {
-            "name": "하자",
-            "desc": "10대들을 위한 전용 서버",
-            "internal": "section-7",
-            "db": "section-7",
-            "redis": "section-7",
-            "rabbitmq": "section-7",
-            "log": "section-7",
-            "port": 30016
-        },
-        "section-8": {
-            "name": "호동",
-            "desc": "2001년 2월 서비스 시작",
-            "internal": "section-8",
-            "db": "section-8",
-            "redis": "section-8",
-            "rabbitmq": "section-8",
-            "log": "section-8",
-            "port": 30017
-        },
-        "section-9": {
-            "name": "주몽",
-            "desc": "2002년 2월 서비스 시작",
-            "internal": "section-9",
-            "db": "section-9",
-            "redis": "section-9",
-            "rabbitmq": "section-9",
-            "log": "section-9",
-            "port": 30018
-        },
-        "section-10": {
+        "world-10": {
+            "id": 10,
             "name": "낙랑",
             "desc": "2002년 8월 서비스 시작",
-            "internal": "section-10",
-            "db": "section-10",
-            "redis": "section-10",
-            "rabbitmq": "section-10",
-            "log": "section-10",
-            "port": 30019
+            "mysql": {
+                "data": {
+                    "-1": {
+                        "port": {
+                            "cluster": 3400,
+                            "node": 30280
+                        }
+                    },
+                    "0": {
+                        "port": {
+                            "cluster": 3401,
+                            "node": 30281
+                        }
+                    },
+                    "1": {
+                        "port": {
+                            "cluster": 3402,
+                            "node": 30282
+                        }
+                    },
+                    "2": {
+                        "port": {
+                            "cluster": 3403,
+                            "node": 30283
+                        }
+                    }
+                },
+                "log": [
+                    {
+                        "port": {
+                            "cluster": 3404,
+                            "node": 30284
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3405,
+                            "node": 30285
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3406,
+                            "node": 30286
+                        }
+                    }
+                ]
+            },
+            "redis": {
+                "-1": {
+                    "port": {
+                        "cluster": 6415,
+                        "node": 30146
+                    }
+                },
+                "0": {
+                    "port": {
+                        "cluster": 6416,
+                        "node": 30147
+                    }
+                },
+                "1": {
+                    "port": {
+                        "cluster": 6417,
+                        "node": 30148
+                    }
+                },
+                "2": {
+                    "port": {
+                        "cluster": 6418,
+                        "node": 30149
+                    }
+                }
+            },
+            "rabbitmq": {
+                "internal": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5690,
+                            "node": 30390
+                        },
+                        "management": {
+                            "cluster": 15690,
+                            "node": 30391
+                        }
+                    },
+                    "replicas": 4
+                },
+                "log": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5691,
+                            "node": 30392
+                        },
+                        "management": {
+                            "cluster": 15691,
+                            "node": 30393
+                        }
+                    },
+                    "replicas": 4
+                }
+            },
+            "log": {
+                "port": {
+                    "cluster": 80,
+                    "node": 30490
+                },
+                "rabbitmq": "world-10"
+            },
+            "login": {
+                "port": 30019
+            },
+            "game": {
+                "marketplace": "world-1",
+                "login": "world-10",
+                "db": "world-10",
+                "redis": "world-10",
+                "rabbitmq": "world-10",
+                "log": "world-10",
+                "containers": {
+                    "0": {
+                        "port": 30264
+                    },
+                    "1": {
+                        "port": 30265
+                    },
+                    "2": {
+                        "port": 30266
+                    },
+                    "3": {
+                        "port": 30267
+                    },
+                    "4": {
+                        "port": 30268
+                    },
+                    "5": {
+                        "port": 30269
+                    },
+                    "6": {
+                        "port": 30270
+                    },
+                    "7": {
+                        "port": 30271
+                    },
+                    "8": {
+                        "port": 30272
+                    },
+                    "9": {
+                        "port": 30273
+                    },
+                    "10": {
+                        "port": 30274
+                    },
+                    "11": {
+                        "port": 30275
+                    },
+                    "12": {
+                        "port": 30276
+                    },
+                    "13": {
+                        "port": 30277
+                    },
+                    "14": {
+                        "port": 30278
+                    },
+                    "15": {
+                        "port": 30279
+                    },
+                    "16": {
+                        "port": 30280
+                    },
+                    "17": {
+                        "port": 30281
+                    },
+                    "18": {
+                        "port": 30282
+                    },
+                    "19": {
+                        "port": 30283
+                    },
+                    "20": {
+                        "port": 30284
+                    },
+                    "21": {
+                        "port": 30285
+                    },
+                    "22": {
+                        "port": 30286
+                    },
+                    "23": {
+                        "port": 30287
+                    },
+                    "24": {
+                        "port": 30288
+                    },
+                    "25": {
+                        "port": 30289
+                    }
+                }
+            },
+            "write-back": {
+                "mysql": "world-10",
+                "redis": "world-10",
+                "rabbitmq": "world-10"
+            },
+            "bot": {}
         },
-        "section-11": {
+        "world-11": {
+            "id": 11,
             "name": "괴유",
             "desc": "2002년 2월 서비스 시작(무료테스트 서버)",
-            "internal": "section-11",
-            "db": "section-11",
-            "redis": "section-11",
-            "rabbitmq": "section-11",
-            "log": "section-11",
-            "port": 30020
-        }
-    },
-    "game": {
-        "section-1": {
-            "internal": "section-1",
-            "marketplace": "section-1",
-            "login": "section-1",
-            "db": "section-1",
-            "redis": "section-1",
-            "rabbitmq": "section-1",
-            "log": "section-1",
-            "containers": {
+            "mysql": {
+                "data": {
+                    "-1": {
+                        "port": {
+                            "cluster": 3410,
+                            "node": 30300
+                        }
+                    },
+                    "0": {
+                        "port": {
+                            "cluster": 3411,
+                            "node": 30301
+                        }
+                    },
+                    "1": {
+                        "port": {
+                            "cluster": 3412,
+                            "node": 30302
+                        }
+                    },
+                    "2": {
+                        "port": {
+                            "cluster": 3413,
+                            "node": 30303
+                        }
+                    }
+                },
+                "log": [
+                    {
+                        "port": {
+                            "cluster": 3414,
+                            "node": 30304
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3415,
+                            "node": 30305
+                        }
+                    },
+                    {
+                        "port": {
+                            "cluster": 3416,
+                            "node": 30306
+                        }
+                    }
+                ]
+            },
+            "redis": {
+                "-1": {
+                    "port": {
+                        "cluster": 6419,
+                        "node": 30150
+                    }
+                },
                 "0": {
-                    "port": 30030
+                    "port": {
+                        "cluster": 6420,
+                        "node": 30151
+                    }
                 },
                 "1": {
-                    "port": 30031
+                    "port": {
+                        "cluster": 6421,
+                        "node": 30152
+                    }
                 },
                 "2": {
-                    "port": 30032
-                },
-                "3": {
-                    "port": 30033
-                },
-                "4": {
-                    "port": 30034
-                },
-                "5": {
-                    "port": 30035
-                },
-                "6": {
-                    "port": 30036
-                },
-                "7": {
-                    "port": 30037
-                },
-                "8": {
-                    "port": 30038
-                },
-                "9": {
-                    "port": 30039
-                },
-                "10": {
-                    "port": 30040
-                },
-                "11": {
-                    "port": 30041
-                },
-                "12": {
-                    "port": 30042
-                },
-                "13": {
-                    "port": 30043
-                },
-                "14": {
-                    "port": 30044
-                },
-                "15": {
-                    "port": 30045
-                },
-                "16": {
-                    "port": 30046
-                },
-                "17": {
-                    "port": 30047
-                },
-                "18": {
-                    "port": 30048
-                },
-                "19": {
-                    "port": 30049
-                },
-                "20": {
-                    "port": 30050
-                },
-                "21": {
-                    "port": 30051
-                },
-                "22": {
-                    "port": 30052
-                },
-                "23": {
-                    "port": 30053
-                },
-                "24": {
-                    "port": 30054
-                },
-                "25": {
-                    "port": 30055
+                    "port": {
+                        "cluster": 6422,
+                        "node": 30153
+                    }
                 }
-            }
-        },
-        "section-2": {
-            "internal": "section-2",
-            "marketplace": "section-1",
-            "login": "section-2",
-            "db": "section-2",
-            "redis": "section-2",
-            "rabbitmq": "section-2",
-            "log": "section-2",
-            "containers": {
-                "0": {
-                    "port": 30056
+            },
+            "rabbitmq": {
+                "internal": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5692,
+                            "node": 30400
+                        },
+                        "management": {
+                            "cluster": 15692,
+                            "node": 30401
+                        }
+                    },
+                    "replicas": 4
                 },
-                "1": {
-                    "port": 30057
-                },
-                "2": {
-                    "port": 30058
-                },
-                "3": {
-                    "port": 30059
-                },
-                "4": {
-                    "port": 30060
-                },
-                "5": {
-                    "port": 30061
-                },
-                "6": {
-                    "port": 30062
-                },
-                "7": {
-                    "port": 30063
-                },
-                "8": {
-                    "port": 30064
-                },
-                "9": {
-                    "port": 30065
-                },
-                "10": {
-                    "port": 30066
-                },
-                "11": {
-                    "port": 30067
-                },
-                "12": {
-                    "port": 30068
-                },
-                "13": {
-                    "port": 30069
-                },
-                "14": {
-                    "port": 30070
-                },
-                "15": {
-                    "port": 30071
-                },
-                "16": {
-                    "port": 30072
-                },
-                "17": {
-                    "port": 30073
-                },
-                "18": {
-                    "port": 30074
-                },
-                "19": {
-                    "port": 30075
-                },
-                "20": {
-                    "port": 30076
-                },
-                "21": {
-                    "port": 30077
-                },
-                "22": {
-                    "port": 30078
-                },
-                "23": {
-                    "port": 30079
-                },
-                "24": {
-                    "port": 30080
-                },
-                "25": {
-                    "port": 30081
+                "log": {
+                    "port": {
+                        "amqp": {
+                            "cluster": 5693,
+                            "node": 30402
+                        },
+                        "management": {
+                            "cluster": 15693,
+                            "node": 30403
+                        }
+                    },
+                    "replicas": 4
                 }
-            }
-        },
-        "section-3": {
-            "internal": "section-3",
-            "marketplace": "section-1",
-            "login": "section-3",
-            "db": "section-3",
-            "redis": "section-3",
-            "rabbitmq": "section-3",
-            "log": "section-3",
-            "containers": {
-                "0": {
-                    "port": 30082
+            },
+            "log": {
+                "port": {
+                    "cluster": 80,
+                    "node": 30500
                 },
-                "1": {
-                    "port": 30083
-                },
-                "2": {
-                    "port": 30084
-                },
-                "3": {
-                    "port": 30085
-                },
-                "4": {
-                    "port": 30086
-                },
-                "5": {
-                    "port": 30087
-                },
-                "6": {
-                    "port": 30088
-                },
-                "7": {
-                    "port": 30089
-                },
-                "8": {
-                    "port": 30090
-                },
-                "9": {
-                    "port": 30091
-                },
-                "10": {
-                    "port": 30092
-                },
-                "11": {
-                    "port": 30093
-                },
-                "12": {
-                    "port": 30094
-                },
-                "13": {
-                    "port": 30095
-                },
-                "14": {
-                    "port": 30096
-                },
-                "15": {
-                    "port": 30097
-                },
-                "16": {
-                    "port": 30098
-                },
-                "17": {
-                    "port": 30099
-                },
-                "18": {
-                    "port": 30100
-                },
-                "19": {
-                    "port": 30101
-                },
-                "20": {
-                    "port": 30102
-                },
-                "21": {
-                    "port": 30103
-                },
-                "22": {
-                    "port": 30104
-                },
-                "23": {
-                    "port": 30105
-                },
-                "24": {
-                    "port": 30106
-                },
-                "25": {
-                    "port": 30107
+                "rabbitmq": "world-11"
+            },
+            "login": {
+                "port": 30020
+            },
+            "game": {
+                "marketplace": "world-1",
+                "login": "world-11",
+                "db": "world-11",
+                "redis": "world-11",
+                "rabbitmq": "world-11",
+                "log": "world-11",
+                "containers": {
+                    "0": {
+                        "port": 30290
+                    },
+                    "1": {
+                        "port": 30291
+                    },
+                    "2": {
+                        "port": 30292
+                    },
+                    "3": {
+                        "port": 30293
+                    },
+                    "4": {
+                        "port": 30294
+                    },
+                    "5": {
+                        "port": 30295
+                    },
+                    "6": {
+                        "port": 30296
+                    },
+                    "7": {
+                        "port": 30297
+                    },
+                    "8": {
+                        "port": 30298
+                    },
+                    "9": {
+                        "port": 30299
+                    },
+                    "10": {
+                        "port": 30300
+                    },
+                    "11": {
+                        "port": 30301
+                    },
+                    "12": {
+                        "port": 30302
+                    },
+                    "13": {
+                        "port": 30303
+                    },
+                    "14": {
+                        "port": 30304
+                    },
+                    "15": {
+                        "port": 30305
+                    },
+                    "16": {
+                        "port": 30306
+                    },
+                    "17": {
+                        "port": 30307
+                    },
+                    "18": {
+                        "port": 30308
+                    },
+                    "19": {
+                        "port": 30309
+                    },
+                    "20": {
+                        "port": 30310
+                    },
+                    "21": {
+                        "port": 30311
+                    },
+                    "22": {
+                        "port": 30312
+                    },
+                    "23": {
+                        "port": 30313
+                    },
+                    "24": {
+                        "port": 30314
+                    },
+                    "25": {
+                        "port": 30315
+                    }
                 }
-            }
-        },
-        "section-4": {
-            "internal": "section-4",
-            "marketplace": "section-1",
-            "login": "section-4",
-            "db": "section-4",
-            "redis": "section-4",
-            "rabbitmq": "section-4",
-            "log": "section-4",
-            "containers": {
-                "0": {
-                    "port": 30108
-                },
-                "1": {
-                    "port": 30109
-                },
-                "2": {
-                    "port": 30110
-                },
-                "3": {
-                    "port": 30111
-                },
-                "4": {
-                    "port": 30112
-                },
-                "5": {
-                    "port": 30113
-                },
-                "6": {
-                    "port": 30114
-                },
-                "7": {
-                    "port": 30115
-                },
-                "8": {
-                    "port": 30116
-                },
-                "9": {
-                    "port": 30117
-                },
-                "10": {
-                    "port": 30118
-                },
-                "11": {
-                    "port": 30119
-                },
-                "12": {
-                    "port": 30120
-                },
-                "13": {
-                    "port": 30121
-                },
-                "14": {
-                    "port": 30122
-                },
-                "15": {
-                    "port": 30123
-                },
-                "16": {
-                    "port": 30124
-                },
-                "17": {
-                    "port": 30125
-                },
-                "18": {
-                    "port": 30126
-                },
-                "19": {
-                    "port": 30127
-                },
-                "20": {
-                    "port": 30128
-                },
-                "21": {
-                    "port": 30129
-                },
-                "22": {
-                    "port": 30130
-                },
-                "23": {
-                    "port": 30131
-                },
-                "24": {
-                    "port": 30132
-                },
-                "25": {
-                    "port": 30133
-                }
-            }
-        },
-        "section-5": {
-            "internal": "section-5",
-            "marketplace": "section-1",
-            "login": "section-5",
-            "db": "section-5",
-            "redis": "section-5",
-            "rabbitmq": "section-5",
-            "log": "section-5",
-            "containers": {
-                "0": {
-                    "port": 30134
-                },
-                "1": {
-                    "port": 30135
-                },
-                "2": {
-                    "port": 30136
-                },
-                "3": {
-                    "port": 30137
-                },
-                "4": {
-                    "port": 30138
-                },
-                "5": {
-                    "port": 30139
-                },
-                "6": {
-                    "port": 30140
-                },
-                "7": {
-                    "port": 30141
-                },
-                "8": {
-                    "port": 30142
-                },
-                "9": {
-                    "port": 30143
-                },
-                "10": {
-                    "port": 30144
-                },
-                "11": {
-                    "port": 30145
-                },
-                "12": {
-                    "port": 30146
-                },
-                "13": {
-                    "port": 30147
-                },
-                "14": {
-                    "port": 30148
-                },
-                "15": {
-                    "port": 30149
-                },
-                "16": {
-                    "port": 30150
-                },
-                "17": {
-                    "port": 30151
-                },
-                "18": {
-                    "port": 30152
-                },
-                "19": {
-                    "port": 30153
-                },
-                "20": {
-                    "port": 30154
-                },
-                "21": {
-                    "port": 30155
-                },
-                "22": {
-                    "port": 30156
-                },
-                "23": {
-                    "port": 30157
-                },
-                "24": {
-                    "port": 30158
-                },
-                "25": {
-                    "port": 30159
-                }
-            }
-        },
-        "section-6": {
-            "internal": "section-6",
-            "marketplace": "section-1",
-            "login": "section-6",
-            "db": "section-6",
-            "redis": "section-6",
-            "rabbitmq": "section-6",
-            "log": "section-6",
-            "containers": {
-                "0": {
-                    "port": 30160
-                },
-                "1": {
-                    "port": 30161
-                },
-                "2": {
-                    "port": 30162
-                },
-                "3": {
-                    "port": 30163
-                },
-                "4": {
-                    "port": 30164
-                },
-                "5": {
-                    "port": 30165
-                },
-                "6": {
-                    "port": 30166
-                },
-                "7": {
-                    "port": 30167
-                },
-                "8": {
-                    "port": 30168
-                },
-                "9": {
-                    "port": 30169
-                },
-                "10": {
-                    "port": 30170
-                },
-                "11": {
-                    "port": 30171
-                },
-                "12": {
-                    "port": 30172
-                },
-                "13": {
-                    "port": 30173
-                },
-                "14": {
-                    "port": 30174
-                },
-                "15": {
-                    "port": 30175
-                },
-                "16": {
-                    "port": 30176
-                },
-                "17": {
-                    "port": 30177
-                },
-                "18": {
-                    "port": 30178
-                },
-                "19": {
-                    "port": 30179
-                },
-                "20": {
-                    "port": 30180
-                },
-                "21": {
-                    "port": 30181
-                },
-                "22": {
-                    "port": 30182
-                },
-                "23": {
-                    "port": 30183
-                },
-                "24": {
-                    "port": 30184
-                },
-                "25": {
-                    "port": 30185
-                }
-            }
-        },
-        "section-7": {
-            "internal": "section-7",
-            "marketplace": "section-1",
-            "login": "section-7",
-            "db": "section-7",
-            "redis": "section-7",
-            "rabbitmq": "section-7",
-            "log": "section-7",
-            "containers": {
-                "0": {
-                    "port": 30186
-                },
-                "1": {
-                    "port": 30187
-                },
-                "2": {
-                    "port": 30188
-                },
-                "3": {
-                    "port": 30189
-                },
-                "4": {
-                    "port": 30190
-                },
-                "5": {
-                    "port": 30191
-                },
-                "6": {
-                    "port": 30192
-                },
-                "7": {
-                    "port": 30193
-                },
-                "8": {
-                    "port": 30194
-                },
-                "9": {
-                    "port": 30195
-                },
-                "10": {
-                    "port": 30196
-                },
-                "11": {
-                    "port": 30197
-                },
-                "12": {
-                    "port": 30198
-                },
-                "13": {
-                    "port": 30199
-                },
-                "14": {
-                    "port": 30200
-                },
-                "15": {
-                    "port": 30201
-                },
-                "16": {
-                    "port": 30202
-                },
-                "17": {
-                    "port": 30203
-                },
-                "18": {
-                    "port": 30204
-                },
-                "19": {
-                    "port": 30205
-                },
-                "20": {
-                    "port": 30206
-                },
-                "21": {
-                    "port": 30207
-                },
-                "22": {
-                    "port": 30208
-                },
-                "23": {
-                    "port": 30209
-                },
-                "24": {
-                    "port": 30210
-                },
-                "25": {
-                    "port": 30211
-                }
-            }
-        },
-        "section-8": {
-            "internal": "section-8",
-            "marketplace": "section-1",
-            "login": "section-8",
-            "db": "section-8",
-            "redis": "section-8",
-            "rabbitmq": "section-8",
-            "log": "section-8",
-            "containers": {
-                "0": {
-                    "port": 30212
-                },
-                "1": {
-                    "port": 30213
-                },
-                "2": {
-                    "port": 30214
-                },
-                "3": {
-                    "port": 30215
-                },
-                "4": {
-                    "port": 30216
-                },
-                "5": {
-                    "port": 30217
-                },
-                "6": {
-                    "port": 30218
-                },
-                "7": {
-                    "port": 30219
-                },
-                "8": {
-                    "port": 30220
-                },
-                "9": {
-                    "port": 30221
-                },
-                "10": {
-                    "port": 30222
-                },
-                "11": {
-                    "port": 30223
-                },
-                "12": {
-                    "port": 30224
-                },
-                "13": {
-                    "port": 30225
-                },
-                "14": {
-                    "port": 30226
-                },
-                "15": {
-                    "port": 30227
-                },
-                "16": {
-                    "port": 30228
-                },
-                "17": {
-                    "port": 30229
-                },
-                "18": {
-                    "port": 30230
-                },
-                "19": {
-                    "port": 30231
-                },
-                "20": {
-                    "port": 30232
-                },
-                "21": {
-                    "port": 30233
-                },
-                "22": {
-                    "port": 30234
-                },
-                "23": {
-                    "port": 30235
-                },
-                "24": {
-                    "port": 30236
-                },
-                "25": {
-                    "port": 30237
-                }
-            }
-        },
-        "section-9": {
-            "internal": "section-9",
-            "marketplace": "section-1",
-            "login": "section-9",
-            "db": "section-9",
-            "redis": "section-9",
-            "rabbitmq": "section-9",
-            "log": "section-9",
-            "containers": {
-                "0": {
-                    "port": 30238
-                },
-                "1": {
-                    "port": 30239
-                },
-                "2": {
-                    "port": 30240
-                },
-                "3": {
-                    "port": 30241
-                },
-                "4": {
-                    "port": 30242
-                },
-                "5": {
-                    "port": 30243
-                },
-                "6": {
-                    "port": 30244
-                },
-                "7": {
-                    "port": 30245
-                },
-                "8": {
-                    "port": 30246
-                },
-                "9": {
-                    "port": 30247
-                },
-                "10": {
-                    "port": 30248
-                },
-                "11": {
-                    "port": 30249
-                },
-                "12": {
-                    "port": 30250
-                },
-                "13": {
-                    "port": 30251
-                },
-                "14": {
-                    "port": 30252
-                },
-                "15": {
-                    "port": 30253
-                },
-                "16": {
-                    "port": 30254
-                },
-                "17": {
-                    "port": 30255
-                },
-                "18": {
-                    "port": 30256
-                },
-                "19": {
-                    "port": 30257
-                },
-                "20": {
-                    "port": 30258
-                },
-                "21": {
-                    "port": 30259
-                },
-                "22": {
-                    "port": 30260
-                },
-                "23": {
-                    "port": 30261
-                },
-                "24": {
-                    "port": 30262
-                },
-                "25": {
-                    "port": 30263
-                }
-            }
-        },
-        "section-10": {
-            "internal": "section-10",
-            "marketplace": "section-1",
-            "login": "section-10",
-            "db": "section-10",
-            "redis": "section-10",
-            "rabbitmq": "section-10",
-            "log": "section-10",
-            "containers": {
-                "0": {
-                    "port": 30264
-                },
-                "1": {
-                    "port": 30265
-                },
-                "2": {
-                    "port": 30266
-                },
-                "3": {
-                    "port": 30267
-                },
-                "4": {
-                    "port": 30268
-                },
-                "5": {
-                    "port": 30269
-                },
-                "6": {
-                    "port": 30270
-                },
-                "7": {
-                    "port": 30271
-                },
-                "8": {
-                    "port": 30272
-                },
-                "9": {
-                    "port": 30273
-                },
-                "10": {
-                    "port": 30274
-                },
-                "11": {
-                    "port": 30275
-                },
-                "12": {
-                    "port": 30276
-                },
-                "13": {
-                    "port": 30277
-                },
-                "14": {
-                    "port": 30278
-                },
-                "15": {
-                    "port": 30279
-                },
-                "16": {
-                    "port": 30280
-                },
-                "17": {
-                    "port": 30281
-                },
-                "18": {
-                    "port": 30282
-                },
-                "19": {
-                    "port": 30283
-                },
-                "20": {
-                    "port": 30284
-                },
-                "21": {
-                    "port": 30285
-                },
-                "22": {
-                    "port": 30286
-                },
-                "23": {
-                    "port": 30287
-                },
-                "24": {
-                    "port": 30288
-                },
-                "25": {
-                    "port": 30289
-                }
-            }
-        },
-        "section-11": {
-            "internal": "section-11",
-            "marketplace": "section-1",
-            "login": "section-11",
-            "db": "section-11",
-            "redis": "section-11",
-            "rabbitmq": "section-11",
-            "log": "section-11",
-            "containers": {
-                "0": {
-                    "port": 30290
-                },
-                "1": {
-                    "port": 30291
-                },
-                "2": {
-                    "port": 30292
-                },
-                "3": {
-                    "port": 30293
-                },
-                "4": {
-                    "port": 30294
-                },
-                "5": {
-                    "port": 30295
-                },
-                "6": {
-                    "port": 30296
-                },
-                "7": {
-                    "port": 30297
-                },
-                "8": {
-                    "port": 30298
-                },
-                "9": {
-                    "port": 30299
-                },
-                "10": {
-                    "port": 30300
-                },
-                "11": {
-                    "port": 30301
-                },
-                "12": {
-                    "port": 30302
-                },
-                "13": {
-                    "port": 30303
-                },
-                "14": {
-                    "port": 30304
-                },
-                "15": {
-                    "port": 30305
-                },
-                "16": {
-                    "port": 30306
-                },
-                "17": {
-                    "port": 30307
-                },
-                "18": {
-                    "port": 30308
-                },
-                "19": {
-                    "port": 30309
-                },
-                "20": {
-                    "port": 30310
-                },
-                "21": {
-                    "port": 30311
-                },
-                "22": {
-                    "port": 30312
-                },
-                "23": {
-                    "port": 30313
-                },
-                "24": {
-                    "port": 30314
-                },
-                "25": {
-                    "port": 30315
-                }
-            }
+            },
+            "write-back": {
+                "mysql": "world-11",
+                "redis": "world-11",
+                "rabbitmq": "world-11"
+            },
+            "bot": {}
         }
     },
     "internal": {
@@ -2329,136 +2336,19 @@
         "port": {
             "cluster": 80,
             "node": 30200
-        },
-        "sections": {
-            "section-1": {
-                "mysql": "section-1",
-                "redis": "section-1",
-                "rabbitmq": "section-1"
-            },
-            "section-2": {
-                "mysql": "section-2",
-                "redis": "section-2",
-                "rabbitmq": "section-2"
-            },
-            "section-3": {
-                "mysql": "section-3",
-                "redis": "section-3",
-                "rabbitmq": "section-3"
-            },
-            "section-4": {
-                "mysql": "section-4",
-                "redis": "section-4",
-                "rabbitmq": "section-4"
-            },
-            "section-5": {
-                "mysql": "section-5",
-                "redis": "section-5",
-                "rabbitmq": "section-5"
-            },
-            "section-6": {
-                "mysql": "section-6",
-                "redis": "section-6",
-                "rabbitmq": "section-6"
-            },
-            "section-7": {
-                "mysql": "section-7",
-                "redis": "section-7",
-                "rabbitmq": "section-7"
-            },
-            "section-8": {
-                "mysql": "section-8",
-                "redis": "section-8",
-                "rabbitmq": "section-8"
-            },
-            "section-9": {
-                "mysql": "section-9",
-                "redis": "section-9",
-                "rabbitmq": "section-9"
-            },
-            "section-10": {
-                "mysql": "section-10",
-                "redis": "section-10",
-                "rabbitmq": "section-10"
-            },
-            "section-11": {
-                "mysql": "section-11",
-                "redis": "section-11",
-                "rabbitmq": "section-11"
-            }
-        },
-        "unified-global": {
-            "mysql": "unified-global",
-            "redis": "unified-global"
         }
     },
-    "write-back": {
-        "section-1": {
-            "mysql": "section-1",
-            "redis": "section-1",
-            "rabbitmq": "section-1"
-        },
-        "section-2": {
-            "mysql": "section-2",
-            "redis": "section-2",
-            "rabbitmq": "section-2"
-        },
-        "section-3": {
-            "mysql": "section-3",
-            "redis": "section-3",
-            "rabbitmq": "section-3"
-        },
-        "section-4": {
-            "mysql": "section-4",
-            "redis": "section-4",
-            "rabbitmq": "section-4"
-        },
-        "section-5": {
-            "mysql": "section-5",
-            "redis": "section-5",
-            "rabbitmq": "section-5"
-        },
-        "section-6": {
-            "mysql": "section-6",
-            "redis": "section-6",
-            "rabbitmq": "section-6"
-        },
-        "section-7": {
-            "mysql": "section-7",
-            "redis": "section-7",
-            "rabbitmq": "section-7"
-        },
-        "section-8": {
-            "mysql": "section-8",
-            "redis": "section-8",
-            "rabbitmq": "section-8"
-        },
-        "section-9": {
-            "mysql": "section-9",
-            "redis": "section-9",
-            "rabbitmq": "section-9"
-        },
-        "section-10": {
-            "mysql": "section-10",
-            "redis": "section-10",
-            "rabbitmq": "section-10"
-        },
-        "section-11": {
-            "mysql": "section-11",
-            "redis": "section-11",
-            "rabbitmq": "section-11"
-        }
+    "gateway": {
+        "port": 30000,
+        "replicas": 3,
+        "redis": "world-1",
+        "log": "world-1"
     },
-    "bot": {
-        "section-1": {
-            "io_size": 5,
-            "interval": 60000,
-            "spawn_per_interval": 50,
-            "spawn_count": 5000,
-            "thread": {
-                "logic": 12
-            },
-            "replicas": 5
+    "marketplace": {
+        "replicas": 10,
+        "port": {
+            "cluster": 80,
+            "node": 30220
         }
     },
     "admin-tool": {
@@ -2467,137 +2357,28 @@
             "cluster": 80,
             "node": 30210
         },
-        "sections": {
-            "section-1": {
-                "mysql": "section-1",
-                "redis": "section-1",
-                "rabbitmq": "section-1"
-            },
-            "section-2": {
-                "mysql": "section-2",
-                "redis": "section-2",
-                "rabbitmq": "section-2"
-            },
-            "section-3": {
-                "mysql": "section-3",
-                "redis": "section-3",
-                "rabbitmq": "section-3"
-            },
-            "section-4": {
-                "mysql": "section-4",
-                "redis": "section-4",
-                "rabbitmq": "section-4"
-            },
-            "section-5": {
-                "mysql": "section-5",
-                "redis": "section-5",
-                "rabbitmq": "section-5"
-            },
-            "section-6": {
-                "mysql": "section-6",
-                "redis": "section-6",
-                "rabbitmq": "section-6"
-            },
-            "section-7": {
-                "mysql": "section-7",
-                "redis": "section-7",
-                "rabbitmq": "section-7"
-            },
-            "section-8": {
-                "mysql": "section-8",
-                "redis": "section-8",
-                "rabbitmq": "section-8"
-            },
-            "section-9": {
-                "mysql": "section-9",
-                "redis": "section-9",
-                "rabbitmq": "section-9"
-            },
-            "section-10": {
-                "mysql": "section-10",
-                "redis": "section-10",
-                "rabbitmq": "section-10"
-            },
-            "section-11": {
-                "mysql": "section-11",
-                "redis": "section-11",
-                "rabbitmq": "section-11"
-            }
-        },
-        "unified-global": {
-            "mysql": "unified-global",
-            "redis": "unified-global"
-        },
         "security": {
             "elevationSecret": "admin-tool-dev-secret"
         }
     },
-    "marketplace": {
-        "replicas": 10,
-        "port": {
-            "cluster": 80,
-            "node": 30220
-        },
-        "sections": {
-            "section-1": {
-                "mysql": "section-1",
-                "redis": "section-1",
-                "rabbitmq": "section-1"
-            },
-            "section-2": {
-                "mysql": "section-2",
-                "redis": "section-2",
-                "rabbitmq": "section-2"
-            },
-            "section-3": {
-                "mysql": "section-3",
-                "redis": "section-3",
-                "rabbitmq": "section-3"
-            },
-            "section-4": {
-                "mysql": "section-4",
-                "redis": "section-4",
-                "rabbitmq": "section-4"
-            },
-            "section-5": {
-                "mysql": "section-5",
-                "redis": "section-5",
-                "rabbitmq": "section-5"
-            },
-            "section-6": {
-                "mysql": "section-6",
-                "redis": "section-6",
-                "rabbitmq": "section-6"
-            },
-            "section-7": {
-                "mysql": "section-7",
-                "redis": "section-7",
-                "rabbitmq": "section-7"
-            },
-            "section-8": {
-                "mysql": "section-8",
-                "redis": "section-8",
-                "rabbitmq": "section-8"
-            },
-            "section-9": {
-                "mysql": "section-9",
-                "redis": "section-9",
-                "rabbitmq": "section-9"
-            },
-            "section-10": {
-                "mysql": "section-10",
-                "redis": "section-10",
-                "rabbitmq": "section-10"
-            },
-            "section-11": {
-                "mysql": "section-11",
-                "redis": "section-11",
-                "rabbitmq": "section-11"
+    "unified-infra": {
+        "mysql": {
+            "data": {
+                "-1": {
+                    "port": {
+                        "cluster": 3500,
+                        "node": 31000
+                    }
+                }
             }
         },
-        "unified-global": {
-            "mysql": "unified-global",
-            "redis": "unified-global"
+        "redis": {
+            "-1": {
+                "port": {
+                    "cluster": 6500,
+                    "node": 31010
+                }
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
@@ -13,7 +12,7 @@ namespace Internal.Controllers
         private readonly ILogger _logger;
         private readonly RabbitMqService _rabbitMqService;
         private readonly IConfiguration _configuration;
-        
+
         public SystemController(RedisService redisService,
             ILogger<SystemController> logger,
             RabbitMqService rabbitMqService,
@@ -24,15 +23,13 @@ namespace Internal.Controllers
             _rabbitMqService = rabbitMqService;
             _configuration = configuration;
         }
-        
+
         [HttpPost("shutdown")]
         public Task Shutdown()
         {
             // Get first section for global shutdown message
             var rabbitMqSection = _configuration.GetSection("RabbitMQ");
-            var firstSection = rabbitMqSection.GetChildren().FirstOrDefault()?.Key ?? "section-1";
-            
-            _rabbitMqService.Publish(firstSection, new Response.Shutdown
+            _rabbitMqService.Broadcast(new Response.Shutdown
             {
 
             }, "amq.direct", $"fb.system");

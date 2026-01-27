@@ -100,20 +100,20 @@
     white-space: nowrap;
 }
 
-.section-selector {
+.world-selector {
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-.section-label {
+.world-label {
     color: var(--text-secondary);
     font-size: 0.9rem;
     margin: 0;
     white-space: nowrap;
 }
 
-.section-select {
+.world-select {
     min-width: 120px;
     height: 2rem;
     font-size: 0.9rem;
@@ -123,7 +123,7 @@
     padding: 0.25rem 0.5rem;
 }
 
-.section-select:focus {
+.world-select:focus {
     outline: none;
     border-color: var(--accent-color);
     box-shadow: 0 0 0 0.2rem rgba(74, 222, 128, 0.25);
@@ -253,17 +253,17 @@
         letter-spacing: 1px;
     }
 
-    .section-selector {
+    .world-selector {
         flex-direction: column;
         gap: 0.25rem;
         align-items: flex-start;
     }
 
-    .section-label {
+    .world-label {
         font-size: 0.85rem;
     }
 
-    .section-select {
+    .world-select {
         min-width: 100px;
         width: 100%;
     }

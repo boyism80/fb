@@ -25,9 +25,9 @@ namespace Http.Service
         /// </summary>
         /// <param name="key">The unique key identifying the resource to lock.</param>
         /// <returns>A Redis distributed lock handle that must be disposed to release the lock.</returns>
-        public async Task<RedisDistributedLockHandle> Lock(string key)
+        public async Task<RedisDistributedLockHandle> Lock(uint world, string key)
         {
-            return await new RedisDistributedLock(key, _redisService.Redis(key).Connection).AcquireAsync();
+            return await new RedisDistributedLock(key, _redisService.Redis(world, key).Connection).AcquireAsync();
         }
     }
 }

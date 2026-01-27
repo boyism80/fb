@@ -16,7 +16,7 @@ namespace Http.Service
         /// </summary>
         /// <param name="sessionService">The session service for refreshing TTL.</param>
         /// <param name="logger">The logger for recording refresh operations.</param>
-        /// <param name="configuration">The configuration for retrieving section information.</param>
+        /// <param name="configuration">The configuration for retrieving world information.</param>
         public SessionTtlRefreshService(SessionService sessionService, ILogger<SessionTtlRefreshService> logger, IConfiguration configuration)
         {
             _sessionService = sessionService;
@@ -31,21 +31,24 @@ namespace Http.Service
         /// <returns>A task representing the asynchronous execution of the background service.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // Get all game sections from configuration
+            // Get all game worlds from configuration
             var mysqlSection = _configuration.GetSection("ConnectionStrings:MySql");
-            var sections = mysqlSection.GetChildren().Select(x => x.Key).ToList();
+            var worlds = mysqlSection.GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _) || child.Key == "unified-global")
+                .Select(child => child.Key == "unified-global" ? 0 : uint.Parse(child.Key))
+                .ToList();
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                foreach (var section in sections)
+                foreach (var world in worlds)
                 {
                     try
                     {
-                        await _sessionService.RefreshTTL(section);
+                        await _sessionService.RefreshTTL(world);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, $"Error refreshing session TTL for section {section}");
+                        _logger.LogError(ex, $"Error refreshing session TTL for world {world}");
                     }
                 }
 

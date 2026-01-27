@@ -329,8 +329,8 @@
 }
 
 @code {
-    [CascadingParameter(Name = "SelectedSection")]
-    private string? selectedSection { get; set; }
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
     private UserListResult? userList;
     private string searchTerm = string.Empty;
     private int currentPage = 1;
@@ -449,12 +449,12 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 return;
             }
-            userList = await UserService.GetUsers(selectedSection, currentPage, pageSize, string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
+            userList = await UserService.GetUsers(selectedWorld.Value, currentPage, pageSize, string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
         }
         catch (Exception ex)
         {
@@ -548,13 +548,13 @@
         var targetRole = (Role)selectedUser.Role;
         var isSelf = selectedUser.Id == currentUserId;
 
-        if (string.IsNullOrEmpty(selectedSection))
+        if (!selectedWorld.HasValue)
         {
-            errorMessage = "Section is not selected.";
+            errorMessage = "World is not selected.";
             CloseChangeRoleModal();
             return;
         }
-        if (await UserService.IsOnline(selectedSection, selectedUser.Name))
+        if (await UserService.IsOnline(selectedWorld.Value, selectedUser.Name))
         {
             errorMessage = "Cannot change role while the user is online. Please try again after they log out.";
             CloseChangeRoleModal();
@@ -593,13 +593,13 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 CloseChangeRoleModal();
                 return;
             }
-            var character = await DbContext.Character.Get(selectedSection, selectedUser.Id);
+            var character = await DbContext.Character.Get(selectedWorld.Value, selectedUser.Id);
             if (character == null)
             {
                 errorMessage = "Character not found.";
@@ -610,7 +610,7 @@
             var oldRole = character.Role;
             character.Role = newRole;
             character.UpdatedDate = DateTime.Now;
-            DbContext.Character.Set(selectedSection, character);
+            DbContext.Character.Set(selectedWorld.Value, character);
             await DbContext.SaveChangesAsync();
 
             // Log role change event
@@ -670,13 +670,13 @@
                 days = parsedDays;
             }
 
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 CloseBanModal();
                 return;
             }
-            var result = await BanService.Ban(selectedSection, selectedUser.Name, banModel.Reason, days);
+            var result = await BanService.Ban(selectedWorld.Value, selectedUser.Name, banModel.Reason, days);
             await DbContext.SaveChangesAsync();
 
             // Publish notification via RabbitMQ
@@ -687,7 +687,7 @@
                 ExpireDate = result.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
                 Error = (uint)result.Error
             };
-            RabbitMqService.Publish(selectedSection, response, "amq.direct", "fb.ban");
+            RabbitMqService.Publish(selectedWorld.Value, response, "amq.direct", "fb.ban");
 
             successMessage = $"User {selectedUser.Name} has been banned successfully.";
             CloseBanModal();
@@ -714,13 +714,13 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 CloseUnbanModal();
                 return;
             }
-            var result = await BanService.Unban(selectedSection, selectedUser.Name);
+            var result = await BanService.Unban(selectedWorld.Value, selectedUser.Name);
             await DbContext.SaveChangesAsync();
 
             // Publish notification via RabbitMQ
@@ -729,7 +729,7 @@
                 Name = selectedUser.Name,
                 Error = (uint)result.Error
             };
-            RabbitMqService.Publish(selectedSection, response, "amq.direct", "fb.unban");
+            RabbitMqService.Publish(selectedWorld.Value, response, "amq.direct", "fb.unban");
 
             successMessage = $"User {selectedUser.Name} has been unbanned successfully.";
             CloseUnbanModal();

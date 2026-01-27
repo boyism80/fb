@@ -30,66 +30,72 @@ module.exports = {
             }
         }
 
-        // Build MySQL connections for all sections (nested structure: MySql:{section}:{id})
-        for(const [sectionName, sectionConf] of Object.entries(marketplaceConf.sections)) {
-            if (sectionConf.mysql && conf.mysql[sectionConf.mysql]) {
-                if (!config.ConnectionStrings.MySql[sectionName]) {
-                    config.ConnectionStrings.MySql[sectionName] = {}
+        // Build MySQL connections for all worlds (nested structure: MySql:{worldId}:{id})
+        // Marketplace uses world-1 for all worlds (shared marketplace)
+        for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+            const worldId = worldConf.id.toString()
+            // Use world-1's MySQL and Redis for all worlds (shared marketplace)
+            const marketplaceWorld = conf.worlds["world-1"]
+            if (marketplaceWorld && marketplaceWorld.mysql && marketplaceWorld.mysql.data) {
+                if (!config.ConnectionStrings.MySql[worldId]) {
+                    config.ConnectionStrings.MySql[worldId] = {}
                 }
-                for(const [id, mysqlConf] of Object.entries(conf.mysql[sectionConf.mysql].data)) {
-                    config.ConnectionStrings.MySql[sectionName][id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                for(const [id, mysqlConf] of Object.entries(marketplaceWorld.mysql.data)) {
+                    config.ConnectionStrings.MySql[worldId][id] = `Server=mysql-world-1;Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
                 }
             }
-            if (sectionConf.redis && conf.redis[sectionConf.redis]) {
-                if (!config.Redis[sectionName]) {
-                    config.Redis[sectionName] = {}
+            if (marketplaceWorld && marketplaceWorld.redis) {
+                if (!config.Redis[worldId]) {
+                    config.Redis[worldId] = {}
                 }
-                for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
-                    config.Redis[sectionName][id] = {
-                        Host: `redis-${sectionConf.redis}`,
-                        Port: conf.redis[sectionConf.redis][id].port.cluster
+                for(const [id, redisConf] of Object.entries(marketplaceWorld.redis)) {
+                    config.Redis[worldId][id] = {
+                        Host: `redis-world-1`,
+                        Port: redisConf.port.cluster
                     }
                 }
             }
         }
 
-        // Add unified-global MySQL and Redis (nested structure)
-        if (marketplaceConf["unified-global"]) {
-            const unifiedGlobal = marketplaceConf["unified-global"]
-            if (unifiedGlobal.mysql && conf.mysql[unifiedGlobal.mysql]) {
+        // Add unified-infra MySQL and Redis (nested structure)
+        if (conf["unified-infra"]) {
+            const unifiedInfra = conf["unified-infra"]
+            if (unifiedInfra.mysql && unifiedInfra.mysql.data) {
                 if (!config.ConnectionStrings.MySql["unified-global"]) {
                     config.ConnectionStrings.MySql["unified-global"] = {}
                 }
-                for(const [id, mysqlConf] of Object.entries(conf.mysql[unifiedGlobal.mysql].data)) {
-                    config.ConnectionStrings.MySql["unified-global"][id] = `Server=mysql-${unifiedGlobal.mysql};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                for(const [id, mysqlConf] of Object.entries(unifiedInfra.mysql.data)) {
+                    config.ConnectionStrings.MySql["unified-global"][id] = `Server=mysql-unified-global;Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
                 }
             }
-            if (unifiedGlobal.redis && conf.redis[unifiedGlobal.redis]) {
+            if (unifiedInfra.redis) {
                 if (!config.Redis["unified-global"]) {
                     config.Redis["unified-global"] = {}
                 }
-                for(const [id, redisConf] of Object.entries(conf.redis[unifiedGlobal.redis])) {
+                for(const [id, redisConf] of Object.entries(unifiedInfra.redis)) {
                     config.Redis["unified-global"][id] = {
-                        Host: `redis-${unifiedGlobal.redis}`,
-                        Port: conf.redis[unifiedGlobal.redis][id].port.cluster
+                        Host: `redis-unified-global`,
+                        Port: redisConf.port.cluster
                     }
                 }
             }
         }
 
-        // Build RabbitMQ connections for all sections
-        for(const [sectionName, sectionConf] of Object.entries(marketplaceConf.sections)) {
-            if (sectionConf.rabbitmq && conf.rabbitmq[sectionConf.rabbitmq]) {
-                config.RabbitMQ[sectionName] = {
+        // Build RabbitMQ connections for all worlds (use world-1's RabbitMQ for all)
+        const marketplaceWorld = conf.worlds["world-1"]
+        if (marketplaceWorld && marketplaceWorld.rabbitmq) {
+            for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+                const worldId = worldConf.id.toString()
+                config.RabbitMQ[worldId] = {
                     "Internal": {
-                        "Host": `rabbitmq-${sectionConf.rabbitmq}-internal`,
-                        "Port": conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
+                        "Host": `rabbitmq-world-1-internal`,
+                        "Port": marketplaceWorld.rabbitmq.internal.port.amqp.cluster,
                         "Uid": "fb",
                         "Pwd": "admin"
                     },
                     "Log": {
-                        "Host": `rabbitmq-${sectionConf.rabbitmq}-log`,
-                        "Port": conf.rabbitmq[sectionConf.rabbitmq].log.port.amqp.cluster,
+                        "Host": `rabbitmq-world-1-log`,
+                        "Port": marketplaceWorld.rabbitmq.log.port.amqp.cluster,
                         "Uid": "fb",
                         "Pwd": "admin",
                         "QueueSize": 128

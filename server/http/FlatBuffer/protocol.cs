@@ -431,7 +431,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Name),
                 builder.Build(value.Host),
@@ -443,7 +443,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
@@ -452,7 +452,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Service),
                 builder.Build(value.Id),
                 builder.Build(value.Name),
@@ -464,7 +464,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.From),
                 builder.Build(value.To),
                 builder.Build(value.Message));
@@ -475,7 +475,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.Account> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Account value)
@@ -484,7 +484,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.Account.CreateAccount(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ChangePw value)
@@ -493,7 +493,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.ChangePw.CreateChangePw(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Before),
                 builder.Build(value.After),
@@ -505,7 +505,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.InitCharacter.CreateInitCharacter(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
@@ -522,7 +522,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.Authenticate.CreateAuthenticate(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Pw));
         }
@@ -532,7 +532,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.Init.CreateInit(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.MakeCharacter value)
@@ -541,7 +541,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.MakeCharacter.CreateMakeCharacter(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Hair),
                 builder.Build(value.Gender),
@@ -554,7 +554,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.ReserveName.CreateReserveName(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Save value)
@@ -563,7 +563,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
@@ -579,8 +579,8 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.World),
                 builder.Build(value.Section),
-                builder.Build(value.ArticleSection),
                 builder.Build(value.User),
                 builder.Build(value.Title),
                 builder.Build(value.Contents));
@@ -591,9 +591,9 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.DeleteArticle.CreateDeleteArticle(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Id),
-                builder.Build(value.ArticleSection),
+                builder.Build(value.Section),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteMail value)
@@ -602,7 +602,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.WriteMail.CreateWriteMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Sender),
                 builder.Build(value.User),
                 builder.Build(value.Title),
@@ -615,7 +615,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.DeleteMail.CreateDeleteMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Id));
         }
@@ -625,7 +625,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.SetOption.CreateSetOption(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Type),
                 builder.Build(value.Enabled));
@@ -636,7 +636,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.CreateGroup.CreateCreateGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
@@ -647,7 +647,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.EnterGroup.CreateEnterGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
@@ -658,7 +658,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastGroup.CreateBroadcastGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Group),
                 builder.Build(value.Message),
@@ -670,7 +670,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveGroup.CreateLeaveGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Member));
         }
@@ -680,7 +680,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.KickGroup.CreateKickGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Kicker),
                 builder.Build(value.Target));
@@ -691,7 +691,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.DestroyGroup.CreateDestroyGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master));
         }
@@ -701,7 +701,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.CreateClan.CreateCreateClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Name));
@@ -712,7 +712,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.DestroyClan.CreateDestroyClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master));
         }
@@ -722,7 +722,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.InviterUid),
                 builder.Build(value.InviteeName));
@@ -733,7 +733,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveClan.CreateLeaveClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Name));
@@ -744,7 +744,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.KickClan.CreateKickClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Kicker),
@@ -756,7 +756,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.SetClanTitle.CreateSetClanTitle(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Changer),
                 builder.Build(value.Title));
@@ -767,7 +767,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastClan.CreateBroadcastClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Message),
@@ -779,7 +779,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.ChangeClanRole.CreateChangeClanRole(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.ChangerUid),
                 builder.Build(value.TargetName),
@@ -792,7 +792,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.Broadcast.CreateBroadcast(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Message),
                 builder.Build(value.Type));
@@ -803,7 +803,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.UpdateFriends.CreateUpdateFriends(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Names));
         }
@@ -813,7 +813,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.GetStoragePending.CreateGetStoragePending(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteSystemMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteSystemMail value)
@@ -822,7 +822,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.WriteSystemMail.CreateWriteSystemMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Sender),
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
@@ -834,7 +834,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.Ban.CreateBan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name),
                 builder.Build(value.Reason),
                 builder.Build(value.Days));
@@ -845,7 +845,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.Unban.CreateUnban(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Heartbeat> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Heartbeat value)
@@ -854,7 +854,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.Heartbeat.CreateHeartbeat(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Service),
                 builder.Build(value.Id),
                 builder.Build(value.Name),
@@ -867,7 +867,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.SetExpMultiplier.CreateSetExpMultiplier(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Value));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
@@ -876,7 +876,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.SetDropRateMultiplier.CreateSetDropRateMultiplier(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Value));
         }
         public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
@@ -1378,7 +1378,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol.marketplace.request.raw.List.CreateList(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
@@ -1390,7 +1390,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol.marketplace.request.raw.Cancel.CreateCancel(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId));
         }
@@ -1400,7 +1400,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol.marketplace.request.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
@@ -1952,7 +1952,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Name),
                 builder.Build(value.Host),
@@ -1964,7 +1964,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
@@ -1973,7 +1973,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Service),
                 builder.Build(value.Id),
                 builder.Build(value.Name),
@@ -1985,7 +1985,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.From),
                 builder.Build(value.To),
                 builder.Build(value.Message));
@@ -1996,7 +1996,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.Account> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Account value)
@@ -2005,7 +2005,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.Account.CreateAccount(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ChangePw value)
@@ -2014,7 +2014,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.ChangePw.CreateChangePw(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Before),
                 builder.Build(value.After),
@@ -2026,7 +2026,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.InitCharacter.CreateInitCharacter(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
@@ -2043,7 +2043,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.Authenticate.CreateAuthenticate(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Pw));
         }
@@ -2053,7 +2053,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.Init.CreateInit(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.MakeCharacter value)
@@ -2062,7 +2062,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.MakeCharacter.CreateMakeCharacter(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Hair),
                 builder.Build(value.Gender),
@@ -2075,7 +2075,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.ReserveName.CreateReserveName(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Save value)
@@ -2084,7 +2084,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
@@ -2100,8 +2100,8 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.World),
                 builder.Build(value.Section),
-                builder.Build(value.ArticleSection),
                 builder.Build(value.User),
                 builder.Build(value.Title),
                 builder.Build(value.Contents));
@@ -2112,9 +2112,9 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.DeleteArticle.CreateDeleteArticle(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Id),
-                builder.Build(value.ArticleSection),
+                builder.Build(value.Section),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteMail value)
@@ -2123,7 +2123,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.WriteMail.CreateWriteMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Sender),
                 builder.Build(value.User),
                 builder.Build(value.Title),
@@ -2136,7 +2136,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.DeleteMail.CreateDeleteMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Id));
         }
@@ -2146,7 +2146,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.SetOption.CreateSetOption(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Type),
                 builder.Build(value.Enabled));
@@ -2157,7 +2157,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.CreateGroup.CreateCreateGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
@@ -2168,7 +2168,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.EnterGroup.CreateEnterGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
@@ -2179,7 +2179,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastGroup.CreateBroadcastGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Group),
                 builder.Build(value.Message),
@@ -2191,7 +2191,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveGroup.CreateLeaveGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Member));
         }
@@ -2201,7 +2201,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.KickGroup.CreateKickGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Kicker),
                 builder.Build(value.Target));
@@ -2212,7 +2212,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.DestroyGroup.CreateDestroyGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master));
         }
@@ -2222,7 +2222,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.CreateClan.CreateCreateClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Name));
@@ -2233,7 +2233,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.DestroyClan.CreateDestroyClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master));
         }
@@ -2243,7 +2243,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.InviterUid),
                 builder.Build(value.InviteeName));
@@ -2254,7 +2254,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveClan.CreateLeaveClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Name));
@@ -2265,7 +2265,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.KickClan.CreateKickClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Kicker),
@@ -2277,7 +2277,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.SetClanTitle.CreateSetClanTitle(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Changer),
                 builder.Build(value.Title));
@@ -2288,7 +2288,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastClan.CreateBroadcastClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Message),
@@ -2300,7 +2300,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.ChangeClanRole.CreateChangeClanRole(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.ChangerUid),
                 builder.Build(value.TargetName),
@@ -2313,7 +2313,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.Broadcast.CreateBroadcast(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Message),
                 builder.Build(value.Type));
@@ -2324,7 +2324,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.UpdateFriends.CreateUpdateFriends(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Names));
         }
@@ -2334,7 +2334,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.GetStoragePending.CreateGetStoragePending(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteSystemMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteSystemMail value)
@@ -2343,7 +2343,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.WriteSystemMail.CreateWriteSystemMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Sender),
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
@@ -2355,7 +2355,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.Ban.CreateBan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name),
                 builder.Build(value.Reason),
                 builder.Build(value.Days));
@@ -2366,7 +2366,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.Unban.CreateUnban(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Heartbeat> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Heartbeat value)
@@ -2375,7 +2375,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.Heartbeat.CreateHeartbeat(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Service),
                 builder.Build(value.Id),
                 builder.Build(value.Name),
@@ -2388,7 +2388,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.SetExpMultiplier.CreateSetExpMultiplier(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Value));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
@@ -2397,7 +2397,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.SetDropRateMultiplier.CreateSetDropRateMultiplier(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Value));
         }
         public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
@@ -2899,7 +2899,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol.marketplace.request.raw.List.CreateList(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
@@ -2911,7 +2911,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol.marketplace.request.raw.Cancel.CreateCancel(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId));
         }
@@ -2921,7 +2921,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol.marketplace.request.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
@@ -3494,7 +3494,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Name),
                 builder.Build(value.Host),
@@ -3506,7 +3506,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
@@ -3515,7 +3515,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Service),
                 builder.Build(value.Id),
                 builder.Build(value.Name),
@@ -3527,7 +3527,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.From),
                 builder.Build(value.To),
                 builder.Build(value.Message));
@@ -3538,7 +3538,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.Account> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Account value)
@@ -3547,7 +3547,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.Account.CreateAccount(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ChangePw value)
@@ -3556,7 +3556,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.ChangePw.CreateChangePw(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Before),
                 builder.Build(value.After),
@@ -3568,7 +3568,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.InitCharacter.CreateInitCharacter(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
@@ -3585,7 +3585,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.Authenticate.CreateAuthenticate(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Pw));
         }
@@ -3595,7 +3595,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.Init.CreateInit(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.MakeCharacter value)
@@ -3604,7 +3604,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.MakeCharacter.CreateMakeCharacter(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Hair),
                 builder.Build(value.Gender),
@@ -3617,7 +3617,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.ReserveName.CreateReserveName(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Save value)
@@ -3626,7 +3626,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
@@ -3642,8 +3642,8 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.World),
                 builder.Build(value.Section),
-                builder.Build(value.ArticleSection),
                 builder.Build(value.User),
                 builder.Build(value.Title),
                 builder.Build(value.Contents));
@@ -3654,9 +3654,9 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.DeleteArticle.CreateDeleteArticle(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Id),
-                builder.Build(value.ArticleSection),
+                builder.Build(value.Section),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteMail value)
@@ -3665,7 +3665,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.WriteMail.CreateWriteMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Sender),
                 builder.Build(value.User),
                 builder.Build(value.Title),
@@ -3678,7 +3678,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.DeleteMail.CreateDeleteMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Id));
         }
@@ -3688,7 +3688,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.SetOption.CreateSetOption(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Type),
                 builder.Build(value.Enabled));
@@ -3699,7 +3699,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.CreateGroup.CreateCreateGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
@@ -3710,7 +3710,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.EnterGroup.CreateEnterGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
@@ -3721,7 +3721,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastGroup.CreateBroadcastGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Group),
                 builder.Build(value.Message),
@@ -3733,7 +3733,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveGroup.CreateLeaveGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Member));
         }
@@ -3743,7 +3743,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.KickGroup.CreateKickGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Kicker),
                 builder.Build(value.Target));
@@ -3754,7 +3754,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.DestroyGroup.CreateDestroyGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master));
         }
@@ -3764,7 +3764,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.CreateClan.CreateCreateClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Name));
@@ -3775,7 +3775,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.DestroyClan.CreateDestroyClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master));
         }
@@ -3785,7 +3785,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.InviterUid),
                 builder.Build(value.InviteeName));
@@ -3796,7 +3796,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveClan.CreateLeaveClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Name));
@@ -3807,7 +3807,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.KickClan.CreateKickClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Kicker),
@@ -3819,7 +3819,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.SetClanTitle.CreateSetClanTitle(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Changer),
                 builder.Build(value.Title));
@@ -3830,7 +3830,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastClan.CreateBroadcastClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Message),
@@ -3842,7 +3842,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.ChangeClanRole.CreateChangeClanRole(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.ChangerUid),
                 builder.Build(value.TargetName),
@@ -3855,7 +3855,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.Broadcast.CreateBroadcast(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Message),
                 builder.Build(value.Type));
@@ -3866,7 +3866,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.UpdateFriends.CreateUpdateFriends(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Names));
         }
@@ -3876,7 +3876,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.GetStoragePending.CreateGetStoragePending(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteSystemMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteSystemMail value)
@@ -3885,7 +3885,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.WriteSystemMail.CreateWriteSystemMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Sender),
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
@@ -3897,7 +3897,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.Ban.CreateBan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name),
                 builder.Build(value.Reason),
                 builder.Build(value.Days));
@@ -3908,7 +3908,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.Unban.CreateUnban(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Heartbeat> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Heartbeat value)
@@ -3917,7 +3917,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.Heartbeat.CreateHeartbeat(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Service),
                 builder.Build(value.Id),
                 builder.Build(value.Name),
@@ -3930,7 +3930,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.SetExpMultiplier.CreateSetExpMultiplier(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Value));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
@@ -3939,7 +3939,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.SetDropRateMultiplier.CreateSetDropRateMultiplier(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Value));
         }
         public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
@@ -4441,7 +4441,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol.marketplace.request.raw.List.CreateList(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
@@ -4453,7 +4453,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol.marketplace.request.raw.Cancel.CreateCancel(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId));
         }
@@ -4463,7 +4463,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol.marketplace.request.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
@@ -5036,7 +5036,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Name),
                 builder.Build(value.Host),
@@ -5048,7 +5048,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
@@ -5057,7 +5057,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Service),
                 builder.Build(value.Id),
                 builder.Build(value.Name),
@@ -5069,7 +5069,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.From),
                 builder.Build(value.To),
                 builder.Build(value.Message));
@@ -5080,7 +5080,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.Account> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Account value)
@@ -5089,7 +5089,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.Account.CreateAccount(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ChangePw value)
@@ -5098,7 +5098,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.ChangePw.CreateChangePw(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Before),
                 builder.Build(value.After),
@@ -5110,7 +5110,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.InitCharacter.CreateInitCharacter(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
@@ -5127,7 +5127,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.Authenticate.CreateAuthenticate(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Pw));
         }
@@ -5137,7 +5137,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.Init.CreateInit(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.MakeCharacter value)
@@ -5146,7 +5146,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.MakeCharacter.CreateMakeCharacter(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Hair),
                 builder.Build(value.Gender),
@@ -5159,7 +5159,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.ReserveName.CreateReserveName(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Save value)
@@ -5168,7 +5168,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
@@ -5184,8 +5184,8 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.World),
                 builder.Build(value.Section),
-                builder.Build(value.ArticleSection),
                 builder.Build(value.User),
                 builder.Build(value.Title),
                 builder.Build(value.Contents));
@@ -5196,9 +5196,9 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.DeleteArticle.CreateDeleteArticle(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Id),
-                builder.Build(value.ArticleSection),
+                builder.Build(value.Section),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteMail value)
@@ -5207,7 +5207,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.WriteMail.CreateWriteMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Sender),
                 builder.Build(value.User),
                 builder.Build(value.Title),
@@ -5220,7 +5220,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.DeleteMail.CreateDeleteMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Id));
         }
@@ -5230,7 +5230,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.SetOption.CreateSetOption(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Type),
                 builder.Build(value.Enabled));
@@ -5241,7 +5241,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.CreateGroup.CreateCreateGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
@@ -5252,7 +5252,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.EnterGroup.CreateEnterGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
@@ -5263,7 +5263,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastGroup.CreateBroadcastGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Group),
                 builder.Build(value.Message),
@@ -5275,7 +5275,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveGroup.CreateLeaveGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Member));
         }
@@ -5285,7 +5285,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.KickGroup.CreateKickGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Kicker),
                 builder.Build(value.Target));
@@ -5296,7 +5296,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.DestroyGroup.CreateDestroyGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master));
         }
@@ -5306,7 +5306,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.CreateClan.CreateCreateClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Name));
@@ -5317,7 +5317,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.DestroyClan.CreateDestroyClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master));
         }
@@ -5327,7 +5327,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.InviterUid),
                 builder.Build(value.InviteeName));
@@ -5338,7 +5338,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveClan.CreateLeaveClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Name));
@@ -5349,7 +5349,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.KickClan.CreateKickClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Kicker),
@@ -5361,7 +5361,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.SetClanTitle.CreateSetClanTitle(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Changer),
                 builder.Build(value.Title));
@@ -5372,7 +5372,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastClan.CreateBroadcastClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Message),
@@ -5384,7 +5384,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.ChangeClanRole.CreateChangeClanRole(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.ChangerUid),
                 builder.Build(value.TargetName),
@@ -5397,7 +5397,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.Broadcast.CreateBroadcast(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Message),
                 builder.Build(value.Type));
@@ -5408,7 +5408,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.UpdateFriends.CreateUpdateFriends(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Names));
         }
@@ -5418,7 +5418,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.GetStoragePending.CreateGetStoragePending(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteSystemMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteSystemMail value)
@@ -5427,7 +5427,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.WriteSystemMail.CreateWriteSystemMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Sender),
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
@@ -5439,7 +5439,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.Ban.CreateBan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name),
                 builder.Build(value.Reason),
                 builder.Build(value.Days));
@@ -5450,7 +5450,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.Unban.CreateUnban(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Heartbeat> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Heartbeat value)
@@ -5459,7 +5459,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.Heartbeat.CreateHeartbeat(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Service),
                 builder.Build(value.Id),
                 builder.Build(value.Name),
@@ -5472,7 +5472,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.SetExpMultiplier.CreateSetExpMultiplier(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Value));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
@@ -5481,7 +5481,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.SetDropRateMultiplier.CreateSetDropRateMultiplier(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Value));
         }
         public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
@@ -5983,7 +5983,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol.marketplace.request.raw.List.CreateList(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
@@ -5995,7 +5995,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol.marketplace.request.raw.Cancel.CreateCancel(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId));
         }
@@ -6005,7 +6005,7 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol.marketplace.request.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
@@ -6541,7 +6541,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Name),
                 builder.Build(value.Host),
@@ -6553,7 +6553,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
@@ -6562,7 +6562,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Service),
                 builder.Build(value.Id),
                 builder.Build(value.Name),
@@ -6574,7 +6574,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.From),
                 builder.Build(value.To),
                 builder.Build(value.Message));
@@ -6585,7 +6585,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.Account> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Account value)
@@ -6594,7 +6594,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.Account.CreateAccount(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ChangePw value)
@@ -6603,7 +6603,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.ChangePw.CreateChangePw(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Before),
                 builder.Build(value.After),
@@ -6615,7 +6615,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.InitCharacter.CreateInitCharacter(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
@@ -6632,7 +6632,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.Authenticate.CreateAuthenticate(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Pw));
         }
@@ -6642,7 +6642,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.Init.CreateInit(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.MakeCharacter value)
@@ -6651,7 +6651,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.MakeCharacter.CreateMakeCharacter(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Hair),
                 builder.Build(value.Gender),
@@ -6664,7 +6664,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.ReserveName.CreateReserveName(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Save value)
@@ -6673,7 +6673,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
@@ -6689,8 +6689,8 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.World),
                 builder.Build(value.Section),
-                builder.Build(value.ArticleSection),
                 builder.Build(value.User),
                 builder.Build(value.Title),
                 builder.Build(value.Contents));
@@ -6701,9 +6701,9 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.DeleteArticle.CreateDeleteArticle(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Id),
-                builder.Build(value.ArticleSection),
+                builder.Build(value.Section),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteMail value)
@@ -6712,7 +6712,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.WriteMail.CreateWriteMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Sender),
                 builder.Build(value.User),
                 builder.Build(value.Title),
@@ -6725,7 +6725,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.DeleteMail.CreateDeleteMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Id));
         }
@@ -6735,7 +6735,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.SetOption.CreateSetOption(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Type),
                 builder.Build(value.Enabled));
@@ -6746,7 +6746,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.CreateGroup.CreateCreateGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
@@ -6757,7 +6757,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.EnterGroup.CreateEnterGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
@@ -6768,7 +6768,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastGroup.CreateBroadcastGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Group),
                 builder.Build(value.Message),
@@ -6780,7 +6780,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveGroup.CreateLeaveGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Member));
         }
@@ -6790,7 +6790,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.KickGroup.CreateKickGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Kicker),
                 builder.Build(value.Target));
@@ -6801,7 +6801,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.DestroyGroup.CreateDestroyGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master));
         }
@@ -6811,7 +6811,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.CreateClan.CreateCreateClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Name));
@@ -6822,7 +6822,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.DestroyClan.CreateDestroyClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master));
         }
@@ -6832,7 +6832,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.InviterUid),
                 builder.Build(value.InviteeName));
@@ -6843,7 +6843,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveClan.CreateLeaveClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Name));
@@ -6854,7 +6854,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.KickClan.CreateKickClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Kicker),
@@ -6866,7 +6866,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.SetClanTitle.CreateSetClanTitle(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Changer),
                 builder.Build(value.Title));
@@ -6877,7 +6877,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastClan.CreateBroadcastClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Message),
@@ -6889,7 +6889,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.ChangeClanRole.CreateChangeClanRole(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.ChangerUid),
                 builder.Build(value.TargetName),
@@ -6902,7 +6902,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.Broadcast.CreateBroadcast(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Message),
                 builder.Build(value.Type));
@@ -6913,7 +6913,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.UpdateFriends.CreateUpdateFriends(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Names));
         }
@@ -6923,7 +6923,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.GetStoragePending.CreateGetStoragePending(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteSystemMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteSystemMail value)
@@ -6932,7 +6932,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.WriteSystemMail.CreateWriteSystemMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Sender),
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
@@ -6944,7 +6944,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.Ban.CreateBan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name),
                 builder.Build(value.Reason),
                 builder.Build(value.Days));
@@ -6955,7 +6955,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.Unban.CreateUnban(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Heartbeat> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Heartbeat value)
@@ -6964,7 +6964,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.Heartbeat.CreateHeartbeat(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Service),
                 builder.Build(value.Id),
                 builder.Build(value.Name),
@@ -6977,7 +6977,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.SetExpMultiplier.CreateSetExpMultiplier(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Value));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
@@ -6986,7 +6986,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.SetDropRateMultiplier.CreateSetDropRateMultiplier(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Value));
         }
         public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
@@ -7488,7 +7488,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol.marketplace.request.raw.List.CreateList(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
@@ -7500,7 +7500,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol.marketplace.request.raw.Cancel.CreateCancel(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId));
         }
@@ -7510,7 +7510,7 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol.marketplace.request.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
@@ -8047,7 +8047,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Name),
                 builder.Build(value.Host),
@@ -8059,7 +8059,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
@@ -8068,7 +8068,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Service),
                 builder.Build(value.Id),
                 builder.Build(value.Name),
@@ -8080,7 +8080,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.From),
                 builder.Build(value.To),
                 builder.Build(value.Message));
@@ -8091,7 +8091,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.Account> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Account value)
@@ -8100,7 +8100,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.Account.CreateAccount(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ChangePw value)
@@ -8109,7 +8109,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.ChangePw.CreateChangePw(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Before),
                 builder.Build(value.After),
@@ -8121,7 +8121,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.InitCharacter.CreateInitCharacter(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
@@ -8138,7 +8138,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.Authenticate.CreateAuthenticate(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Pw));
         }
@@ -8148,7 +8148,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.Init.CreateInit(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.MakeCharacter value)
@@ -8157,7 +8157,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.MakeCharacter.CreateMakeCharacter(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Uid),
                 builder.Build(value.Hair),
                 builder.Build(value.Gender),
@@ -8170,7 +8170,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.ReserveName.CreateReserveName(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Save value)
@@ -8179,7 +8179,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
@@ -8195,8 +8195,8 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.World),
                 builder.Build(value.Section),
-                builder.Build(value.ArticleSection),
                 builder.Build(value.User),
                 builder.Build(value.Title),
                 builder.Build(value.Contents));
@@ -8207,9 +8207,9 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.DeleteArticle.CreateDeleteArticle(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Id),
-                builder.Build(value.ArticleSection),
+                builder.Build(value.Section),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteMail value)
@@ -8218,7 +8218,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.WriteMail.CreateWriteMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Sender),
                 builder.Build(value.User),
                 builder.Build(value.Title),
@@ -8231,7 +8231,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.DeleteMail.CreateDeleteMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Id));
         }
@@ -8241,7 +8241,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.SetOption.CreateSetOption(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Type),
                 builder.Build(value.Enabled));
@@ -8252,7 +8252,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.CreateGroup.CreateCreateGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
@@ -8263,7 +8263,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.EnterGroup.CreateEnterGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Member));
@@ -8274,7 +8274,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastGroup.CreateBroadcastGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Group),
                 builder.Build(value.Message),
@@ -8286,7 +8286,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveGroup.CreateLeaveGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Member));
         }
@@ -8296,7 +8296,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.KickGroup.CreateKickGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Kicker),
                 builder.Build(value.Target));
@@ -8307,7 +8307,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.DestroyGroup.CreateDestroyGroup(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master));
         }
@@ -8317,7 +8317,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.CreateClan.CreateCreateClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master),
                 builder.Build(value.Name));
@@ -8328,7 +8328,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.DestroyClan.CreateDestroyClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Master));
         }
@@ -8338,7 +8338,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.InviterUid),
                 builder.Build(value.InviteeName));
@@ -8349,7 +8349,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveClan.CreateLeaveClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Name));
@@ -8360,7 +8360,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.KickClan.CreateKickClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Kicker),
@@ -8372,7 +8372,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.SetClanTitle.CreateSetClanTitle(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Changer),
                 builder.Build(value.Title));
@@ -8383,7 +8383,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastClan.CreateBroadcastClan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Message),
@@ -8395,7 +8395,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.ChangeClanRole.CreateChangeClanRole(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.ChangerUid),
                 builder.Build(value.TargetName),
@@ -8408,7 +8408,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.Broadcast.CreateBroadcast(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Host),
                 builder.Build(value.Message),
                 builder.Build(value.Type));
@@ -8419,7 +8419,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.UpdateFriends.CreateUpdateFriends(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User),
                 builder.Build(value.Names));
         }
@@ -8429,7 +8429,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.GetStoragePending.CreateGetStoragePending(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.User));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteSystemMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteSystemMail value)
@@ -8438,7 +8438,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.WriteSystemMail.CreateWriteSystemMail(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Sender),
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
@@ -8450,7 +8450,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.Ban.CreateBan(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name),
                 builder.Build(value.Reason),
                 builder.Build(value.Days));
@@ -8461,7 +8461,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.Unban.CreateUnban(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Heartbeat> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Heartbeat value)
@@ -8470,7 +8470,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.Heartbeat.CreateHeartbeat(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Service),
                 builder.Build(value.Id),
                 builder.Build(value.Name),
@@ -8483,7 +8483,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.SetExpMultiplier.CreateSetExpMultiplier(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Value));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
@@ -8492,7 +8492,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.SetDropRateMultiplier.CreateSetDropRateMultiplier(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.Value));
         }
         public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
@@ -8994,7 +8994,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol.marketplace.request.raw.List.CreateList(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
@@ -9006,7 +9006,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol.marketplace.request.raw.Cancel.CreateCancel(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId));
         }
@@ -9016,7 +9016,7 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol.marketplace.request.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Section),
+                builder.Build(value.World),
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
@@ -10318,7 +10318,7 @@ namespace fb.protocol._internal.request
     public class Login : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Login;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Uid { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
         public byte Host { get; set; } = 0;
@@ -10329,7 +10329,7 @@ namespace fb.protocol._internal.request
 
         public Login(fb.protocol._internal.request.raw.Login raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Uid = raw.Uid;
             Name = raw.Name;
             Host = raw.Host;
@@ -10362,7 +10362,7 @@ namespace fb.protocol._internal.request
     public class Logout : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Logout;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
 
         public Logout()
@@ -10370,7 +10370,7 @@ namespace fb.protocol._internal.request
 
         public Logout(fb.protocol._internal.request.raw.Logout raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Name = raw.Name;
         }
 
@@ -10400,7 +10400,7 @@ namespace fb.protocol._internal.request
     public class Transfer : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Transfer;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public fb.protocol._internal.Service Service { get; set; }
         public byte Id { get; set; } = 0;
         public string Name { get; set; } = null;
@@ -10411,7 +10411,7 @@ namespace fb.protocol._internal.request
 
         public Transfer(fb.protocol._internal.request.raw.Transfer raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Service = (fb.protocol._internal.Service)raw.Service;
             Id = raw.Id;
             Name = raw.Name;
@@ -10444,7 +10444,7 @@ namespace fb.protocol._internal.request
     public class Whisper : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Whisper;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public string From { get; set; } = string.Empty;
         public string To { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
@@ -10454,7 +10454,7 @@ namespace fb.protocol._internal.request
 
         public Whisper(fb.protocol._internal.request.raw.Whisper raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             From = raw.From;
             To = raw.To;
             Message = raw.Message;
@@ -10486,7 +10486,7 @@ namespace fb.protocol._internal.request
     public class KickOut : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.KickOut;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Uid { get; set; } = 0;
 
         public KickOut()
@@ -10494,7 +10494,7 @@ namespace fb.protocol._internal.request
 
         public KickOut(fb.protocol._internal.request.raw.KickOut raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Uid = raw.Uid;
         }
 
@@ -10524,7 +10524,7 @@ namespace fb.protocol._internal.request
     public class Account : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Account;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Uid { get; set; } = 0;
 
         public Account()
@@ -10532,7 +10532,7 @@ namespace fb.protocol._internal.request
 
         public Account(fb.protocol._internal.request.raw.Account raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Uid = raw.Uid;
         }
 
@@ -10562,7 +10562,7 @@ namespace fb.protocol._internal.request
     public class ChangePw : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ChangePw;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Uid { get; set; } = 0;
         public string Before { get; set; } = string.Empty;
         public string After { get; set; } = string.Empty;
@@ -10573,7 +10573,7 @@ namespace fb.protocol._internal.request
 
         public ChangePw(fb.protocol._internal.request.raw.ChangePw raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Uid = raw.Uid;
             Before = raw.Before;
             After = raw.After;
@@ -10606,7 +10606,7 @@ namespace fb.protocol._internal.request
     public class InitCharacter : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.InitCharacter;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Uid { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
         public string Pw { get; set; } = string.Empty;
@@ -10622,7 +10622,7 @@ namespace fb.protocol._internal.request
 
         public InitCharacter(fb.protocol._internal.request.raw.InitCharacter raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Uid = raw.Uid;
             Name = raw.Name;
             Pw = raw.Pw;
@@ -10660,7 +10660,7 @@ namespace fb.protocol._internal.request
     public class Authenticate : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Authenticate;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Uid { get; set; } = 0;
         public string Pw { get; set; } = string.Empty;
 
@@ -10669,7 +10669,7 @@ namespace fb.protocol._internal.request
 
         public Authenticate(fb.protocol._internal.request.raw.Authenticate raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Uid = raw.Uid;
             Pw = raw.Pw;
         }
@@ -10700,7 +10700,7 @@ namespace fb.protocol._internal.request
     public class Init : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Init;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Uid { get; set; } = 0;
 
         public Init()
@@ -10708,7 +10708,7 @@ namespace fb.protocol._internal.request
 
         public Init(fb.protocol._internal.request.raw.Init raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Uid = raw.Uid;
         }
 
@@ -10738,7 +10738,7 @@ namespace fb.protocol._internal.request
     public class MakeCharacter : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.MakeCharacter;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Uid { get; set; } = 0;
         public ushort Hair { get; set; } = 0;
         public byte Gender { get; set; } = 0;
@@ -10750,7 +10750,7 @@ namespace fb.protocol._internal.request
 
         public MakeCharacter(fb.protocol._internal.request.raw.MakeCharacter raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Uid = raw.Uid;
             Hair = raw.Hair;
             Gender = raw.Gender;
@@ -10784,7 +10784,7 @@ namespace fb.protocol._internal.request
     public class ReserveName : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ReserveName;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
 
         public ReserveName()
@@ -10792,7 +10792,7 @@ namespace fb.protocol._internal.request
 
         public ReserveName(fb.protocol._internal.request.raw.ReserveName raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Name = raw.Name;
         }
 
@@ -10822,7 +10822,7 @@ namespace fb.protocol._internal.request
     public class Save : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Save;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public fb.protocol._internal.Character Character { get; set; } = new fb.protocol._internal.Character();
         public List<fb.protocol._internal.Item> Items { get; set; } = new List<fb.protocol._internal.Item>();
         public List<fb.protocol._internal.Spell> Spells { get; set; } = new List<fb.protocol._internal.Spell>();
@@ -10837,7 +10837,7 @@ namespace fb.protocol._internal.request
 
         public Save(fb.protocol._internal.request.raw.Save raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Character = new fb.protocol._internal.Character(raw.Character.Value);
             Items = Enumerable.Range(0, raw.ItemsLength).Select(i => raw.Items(i)).Select(x => new fb.protocol._internal.Item(x.Value)).ToList();
             Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => raw.Spells(i)).Select(x => new fb.protocol._internal.Spell(x.Value)).ToList();
@@ -10874,8 +10874,8 @@ namespace fb.protocol._internal.request
     public class WriteArticle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.WriteArticle;
-        public string Section { get; set; } = string.Empty;
-        public uint ArticleSection { get; set; } = 0;
+        public uint World { get; set; } = 0;
+        public uint Section { get; set; } = 0;
         public uint User { get; set; } = 0;
         public string Title { get; set; } = string.Empty;
         public string Contents { get; set; } = string.Empty;
@@ -10885,8 +10885,8 @@ namespace fb.protocol._internal.request
 
         public WriteArticle(fb.protocol._internal.request.raw.WriteArticle raw)
         {
+            World = raw.World;
             Section = raw.Section;
-            ArticleSection = raw.ArticleSection;
             User = raw.User;
             Title = raw.Title;
             Contents = raw.Contents;
@@ -10918,9 +10918,9 @@ namespace fb.protocol._internal.request
     public class DeleteArticle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.DeleteArticle;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Id { get; set; } = 0;
-        public uint ArticleSection { get; set; } = 0;
+        public uint Section { get; set; } = 0;
         public uint User { get; set; } = 0;
 
         public DeleteArticle()
@@ -10928,9 +10928,9 @@ namespace fb.protocol._internal.request
 
         public DeleteArticle(fb.protocol._internal.request.raw.DeleteArticle raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Id = raw.Id;
-            ArticleSection = raw.ArticleSection;
+            Section = raw.Section;
             User = raw.User;
         }
 
@@ -10960,7 +10960,7 @@ namespace fb.protocol._internal.request
     public class WriteMail : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.WriteMail;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Sender { get; set; } = 0;
         public string User { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
@@ -10972,7 +10972,7 @@ namespace fb.protocol._internal.request
 
         public WriteMail(fb.protocol._internal.request.raw.WriteMail raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Sender = raw.Sender;
             User = raw.User;
             Title = raw.Title;
@@ -11006,7 +11006,7 @@ namespace fb.protocol._internal.request
     public class DeleteMail : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.DeleteMail;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint User { get; set; } = 0;
         public ushort Id { get; set; } = 0;
 
@@ -11015,7 +11015,7 @@ namespace fb.protocol._internal.request
 
         public DeleteMail(fb.protocol._internal.request.raw.DeleteMail raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             User = raw.User;
             Id = raw.Id;
         }
@@ -11046,7 +11046,7 @@ namespace fb.protocol._internal.request
     public class SetOption : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SetOption;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint User { get; set; } = 0;
         public byte Type { get; set; } = 0;
         public bool Enabled { get; set; } = false;
@@ -11056,7 +11056,7 @@ namespace fb.protocol._internal.request
 
         public SetOption(fb.protocol._internal.request.raw.SetOption raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             User = raw.User;
             Type = raw.Type;
             Enabled = raw.Enabled;
@@ -11088,7 +11088,7 @@ namespace fb.protocol._internal.request
     public class CreateGroup : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.CreateGroup;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public uint Master { get; set; } = 0;
         public string Member { get; set; } = string.Empty;
@@ -11098,7 +11098,7 @@ namespace fb.protocol._internal.request
 
         public CreateGroup(fb.protocol._internal.request.raw.CreateGroup raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Master = raw.Master;
             Member = raw.Member;
@@ -11130,7 +11130,7 @@ namespace fb.protocol._internal.request
     public class EnterGroup : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.EnterGroup;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public uint Master { get; set; } = 0;
         public string Member { get; set; } = string.Empty;
@@ -11140,7 +11140,7 @@ namespace fb.protocol._internal.request
 
         public EnterGroup(fb.protocol._internal.request.raw.EnterGroup raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Master = raw.Master;
             Member = raw.Member;
@@ -11172,7 +11172,7 @@ namespace fb.protocol._internal.request
     public class BroadcastGroup : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.BroadcastGroup;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public uint Group { get; set; } = 0;
         public string Message { get; set; } = string.Empty;
@@ -11183,7 +11183,7 @@ namespace fb.protocol._internal.request
 
         public BroadcastGroup(fb.protocol._internal.request.raw.BroadcastGroup raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Group = raw.Group;
             Message = raw.Message;
@@ -11216,7 +11216,7 @@ namespace fb.protocol._internal.request
     public class LeaveGroup : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.LeaveGroup;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public string Member { get; set; } = string.Empty;
 
@@ -11225,7 +11225,7 @@ namespace fb.protocol._internal.request
 
         public LeaveGroup(fb.protocol._internal.request.raw.LeaveGroup raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Member = raw.Member;
         }
@@ -11256,7 +11256,7 @@ namespace fb.protocol._internal.request
     public class KickGroup : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.KickGroup;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public string Kicker { get; set; } = string.Empty;
         public string Target { get; set; } = string.Empty;
@@ -11266,7 +11266,7 @@ namespace fb.protocol._internal.request
 
         public KickGroup(fb.protocol._internal.request.raw.KickGroup raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Kicker = raw.Kicker;
             Target = raw.Target;
@@ -11298,7 +11298,7 @@ namespace fb.protocol._internal.request
     public class DestroyGroup : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.DestroyGroup;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public string Master { get; set; } = string.Empty;
 
@@ -11307,7 +11307,7 @@ namespace fb.protocol._internal.request
 
         public DestroyGroup(fb.protocol._internal.request.raw.DestroyGroup raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Master = raw.Master;
         }
@@ -11338,7 +11338,7 @@ namespace fb.protocol._internal.request
     public class CreateClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.CreateClan;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public uint Master { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
@@ -11348,7 +11348,7 @@ namespace fb.protocol._internal.request
 
         public CreateClan(fb.protocol._internal.request.raw.CreateClan raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Master = raw.Master;
             Name = raw.Name;
@@ -11380,7 +11380,7 @@ namespace fb.protocol._internal.request
     public class DestroyClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.DestroyClan;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public uint Master { get; set; } = 0;
 
@@ -11389,7 +11389,7 @@ namespace fb.protocol._internal.request
 
         public DestroyClan(fb.protocol._internal.request.raw.DestroyClan raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Master = raw.Master;
         }
@@ -11420,7 +11420,7 @@ namespace fb.protocol._internal.request
     public class JoinClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.JoinClan;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public uint InviterUid { get; set; } = 0;
         public string InviteeName { get; set; } = string.Empty;
@@ -11430,7 +11430,7 @@ namespace fb.protocol._internal.request
 
         public JoinClan(fb.protocol._internal.request.raw.JoinClan raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             InviterUid = raw.InviterUid;
             InviteeName = raw.InviteeName;
@@ -11462,7 +11462,7 @@ namespace fb.protocol._internal.request
     public class LeaveClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.LeaveClan;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public uint Clan { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
@@ -11472,7 +11472,7 @@ namespace fb.protocol._internal.request
 
         public LeaveClan(fb.protocol._internal.request.raw.LeaveClan raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Clan = raw.Clan;
             Name = raw.Name;
@@ -11504,7 +11504,7 @@ namespace fb.protocol._internal.request
     public class KickClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.KickClan;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public uint Clan { get; set; } = 0;
         public string Kicker { get; set; } = string.Empty;
@@ -11515,7 +11515,7 @@ namespace fb.protocol._internal.request
 
         public KickClan(fb.protocol._internal.request.raw.KickClan raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Clan = raw.Clan;
             Kicker = raw.Kicker;
@@ -11548,7 +11548,7 @@ namespace fb.protocol._internal.request
     public class SetClanTitle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SetClanTitle;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public uint Changer { get; set; } = 0;
         public string Title { get; set; } = null;
@@ -11558,7 +11558,7 @@ namespace fb.protocol._internal.request
 
         public SetClanTitle(fb.protocol._internal.request.raw.SetClanTitle raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Changer = raw.Changer;
             Title = raw.Title;
@@ -11590,7 +11590,7 @@ namespace fb.protocol._internal.request
     public class BroadcastClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.BroadcastClan;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public uint Clan { get; set; } = 0;
         public string Message { get; set; } = string.Empty;
@@ -11601,7 +11601,7 @@ namespace fb.protocol._internal.request
 
         public BroadcastClan(fb.protocol._internal.request.raw.BroadcastClan raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Clan = raw.Clan;
             Message = raw.Message;
@@ -11634,7 +11634,7 @@ namespace fb.protocol._internal.request
     public class ChangeClanRole : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ChangeClanRole;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public uint ChangerUid { get; set; } = 0;
         public string TargetName { get; set; } = string.Empty;
@@ -11646,7 +11646,7 @@ namespace fb.protocol._internal.request
 
         public ChangeClanRole(fb.protocol._internal.request.raw.ChangeClanRole raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             ChangerUid = raw.ChangerUid;
             TargetName = raw.TargetName;
@@ -11680,7 +11680,7 @@ namespace fb.protocol._internal.request
     public class Broadcast : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Broadcast;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Host { get; set; } = 0;
         public string Message { get; set; } = string.Empty;
         public byte Type { get; set; } = 0;
@@ -11690,7 +11690,7 @@ namespace fb.protocol._internal.request
 
         public Broadcast(fb.protocol._internal.request.raw.Broadcast raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Host = raw.Host;
             Message = raw.Message;
             Type = raw.Type;
@@ -11722,7 +11722,7 @@ namespace fb.protocol._internal.request
     public class UpdateFriends : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.UpdateFriends;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint User { get; set; } = 0;
         public List<string> Names { get; set; } = new List<string>();
 
@@ -11731,7 +11731,7 @@ namespace fb.protocol._internal.request
 
         public UpdateFriends(fb.protocol._internal.request.raw.UpdateFriends raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             User = raw.User;
             Names = Enumerable.Range(0, raw.NamesLength).Select(i => raw.Names(i)).Select(x => x).ToList();
         }
@@ -11762,7 +11762,7 @@ namespace fb.protocol._internal.request
     public class GetStoragePending : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.GetStoragePending;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint User { get; set; } = 0;
 
         public GetStoragePending()
@@ -11770,7 +11770,7 @@ namespace fb.protocol._internal.request
 
         public GetStoragePending(fb.protocol._internal.request.raw.GetStoragePending raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             User = raw.User;
         }
 
@@ -11800,7 +11800,7 @@ namespace fb.protocol._internal.request
     public class WriteSystemMail : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.WriteSystemMail;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint Sender { get; set; } = 0;
         public string Title { get; set; } = string.Empty;
         public string Contents { get; set; } = string.Empty;
@@ -11811,7 +11811,7 @@ namespace fb.protocol._internal.request
 
         public WriteSystemMail(fb.protocol._internal.request.raw.WriteSystemMail raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Sender = raw.Sender;
             Title = raw.Title;
             Contents = raw.Contents;
@@ -11844,7 +11844,7 @@ namespace fb.protocol._internal.request
     public class Ban : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Ban;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
         public string Reason { get; set; } = string.Empty;
         public uint? Days { get; set; } = null;
@@ -11854,7 +11854,7 @@ namespace fb.protocol._internal.request
 
         public Ban(fb.protocol._internal.request.raw.Ban raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Name = raw.Name;
             Reason = raw.Reason;
             Days = raw.Days != null ? (uint?)raw.Days.Value.Value : null;
@@ -11886,7 +11886,7 @@ namespace fb.protocol._internal.request
     public class Unban : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Unban;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
 
         public Unban()
@@ -11894,7 +11894,7 @@ namespace fb.protocol._internal.request
 
         public Unban(fb.protocol._internal.request.raw.Unban raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Name = raw.Name;
         }
 
@@ -11924,7 +11924,7 @@ namespace fb.protocol._internal.request
     public class Heartbeat : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Heartbeat;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public fb.protocol._internal.Service Service { get; set; }
         public byte Id { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
@@ -11936,7 +11936,7 @@ namespace fb.protocol._internal.request
 
         public Heartbeat(fb.protocol._internal.request.raw.Heartbeat raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Service = (fb.protocol._internal.Service)raw.Service;
             Id = raw.Id;
             Name = raw.Name;
@@ -11970,7 +11970,7 @@ namespace fb.protocol._internal.request
     public class SetExpMultiplier : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SetExpMultiplier;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public double Value { get; set; } = 0.0;
 
         public SetExpMultiplier()
@@ -11978,7 +11978,7 @@ namespace fb.protocol._internal.request
 
         public SetExpMultiplier(fb.protocol._internal.request.raw.SetExpMultiplier raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Value = raw.Value;
         }
 
@@ -12008,7 +12008,7 @@ namespace fb.protocol._internal.request
     public class SetDropRateMultiplier : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SetDropRateMultiplier;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public double Value { get; set; } = 0.0;
 
         public SetDropRateMultiplier()
@@ -12016,7 +12016,7 @@ namespace fb.protocol._internal.request
 
         public SetDropRateMultiplier(fb.protocol._internal.request.raw.SetDropRateMultiplier raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             Value = raw.Value;
         }
 
@@ -14109,7 +14109,7 @@ namespace fb.protocol.marketplace.request
     public class List : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.List;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint CharacterId { get; set; } = 0;
         public string ListingId { get; set; } = string.Empty;
         public fb.protocol.marketplace.Item Item { get; set; } = new fb.protocol.marketplace.Item();
@@ -14120,7 +14120,7 @@ namespace fb.protocol.marketplace.request
 
         public List(fb.protocol.marketplace.request.raw.List raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             CharacterId = raw.CharacterId;
             ListingId = raw.ListingId;
             Item = new fb.protocol.marketplace.Item(raw.Item.Value);
@@ -14153,7 +14153,7 @@ namespace fb.protocol.marketplace.request
     public class Cancel : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Cancel;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint CharacterId { get; set; } = 0;
         public string ListingId { get; set; } = string.Empty;
 
@@ -14162,7 +14162,7 @@ namespace fb.protocol.marketplace.request
 
         public Cancel(fb.protocol.marketplace.request.raw.Cancel raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             CharacterId = raw.CharacterId;
             ListingId = raw.ListingId;
         }
@@ -14193,7 +14193,7 @@ namespace fb.protocol.marketplace.request
     public class Purchase : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Purchase;
-        public string Section { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
         public uint BuyerId { get; set; } = 0;
         public string ListingId { get; set; } = string.Empty;
         public ushort PurchaseCount { get; set; } = 0;
@@ -14204,7 +14204,7 @@ namespace fb.protocol.marketplace.request
 
         public Purchase(fb.protocol.marketplace.request.raw.Purchase raw)
         {
-            Section = raw.Section;
+            World = raw.World;
             BuyerId = raw.BuyerId;
             ListingId = raw.ListingId;
             PurchaseCount = raw.PurchaseCount;

@@ -43,13 +43,13 @@
                             </div>
                             <div class="mb-3">
                                 <label for="username" class="form-label">Character Name</label>
-                                <InputText id="username" class="form-control" @bind-Value="loginModel.Username" 
+                                <InputText id="username" class="form-control" @bind-Value="loginModel.Username"
                                            placeholder="Enter your character name" />
                                 <ValidationMessage For="@(() => loginModel.Username)" />
                             </div>
                             <div class="mb-4">
                                 <label for="password" class="form-label">Password</label>
-                                <InputText id="password" type="password" class="form-control" @bind-Value="loginModel.Password" 
+                                <InputText id="password" type="password" class="form-control" @bind-Value="loginModel.Password"
                                            placeholder="Enter your password" />
                                 <ValidationMessage For="@(() => loginModel.Password)" />
                             </div>
@@ -73,7 +73,7 @@
     private string? ErrorMessage;
     private bool isLoading = false;
     private List<string>? serverNames;
-    private Dictionary<string, string>? serverNameToSection;
+    private Dictionary<string, uint>? serverNameToWorld;
     private string selectedServerName = string.Empty;
 
     protected override async Task OnInitializedAsync()
@@ -90,11 +90,14 @@
     {
         try
         {
-            var sectionServersSection = Configuration.GetSection("SectionServers");
-            serverNameToSection = sectionServersSection.GetChildren()
-                .ToDictionary(child => child.Value ?? string.Empty, child => child.Key);
-            serverNames = serverNameToSection.Keys.ToList();
-            
+            var worldServersSection = Configuration.GetSection("WorldServers");
+            serverNameToWorld = worldServersSection.GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _))
+                .ToDictionary(
+                    child => child.Value ?? child.Key,
+                    child => uint.Parse(child.Key));
+            serverNames = serverNameToWorld.Keys.ToList();
+
             if (serverNames != null && serverNames.Any())
             {
                 selectedServerName = serverNames.First();
@@ -118,19 +121,19 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedServerName) || serverNameToSection == null)
+            if (string.IsNullOrEmpty(selectedServerName) || serverNameToWorld == null)
             {
                 ErrorMessage = "Server is not selected.";
                 return;
             }
-            
-            if (!serverNameToSection.TryGetValue(selectedServerName, out var section))
+
+            if (!serverNameToWorld.TryGetValue(selectedServerName, out var world))
             {
                 ErrorMessage = "Invalid server selection.";
                 return;
             }
-            
-            var result = await AuthService.Authenticate(section, loginModel.Username, loginModel.Password);
+
+            var result = await AuthService.Authenticate(world, loginModel.Username, loginModel.Password);
             if (result.Success && result.UserId.HasValue && result.Role.HasValue)
             {
                 // Update authentication state

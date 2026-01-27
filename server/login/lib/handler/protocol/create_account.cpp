@@ -23,9 +23,9 @@ async::task<bool> create_account::handle(fb::socket<fb::login::session>&       s
         auto pw   = std::string(request.pw);
 
         this->server.assert_account(name, pw);
-        auto   section = fb::config<std::string>("section");
+        auto   world = fb::config<uint32_t>("world");
         auto&& response1 =
-            co_await this->server.http.post("internal", "/account/reserve", internal_reqs::ReserveName{section, name});
+            co_await this->server.http.post("internal", "/account/reserve", internal_reqs::ReserveName{world, name});
         co_await this->server.threads.switching(weak);
 
         if (response1.success == false)
@@ -44,7 +44,7 @@ async::task<bool> create_account::handle(fb::socket<fb::login::session>&       s
             "internal",
             "/account/init",
             internal_reqs::InitCharacter{
-                section,
+                world,
                 uid,
                 name,
                 pw,

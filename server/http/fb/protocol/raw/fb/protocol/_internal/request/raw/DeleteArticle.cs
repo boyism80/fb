@@ -20,34 +20,28 @@ public struct DeleteArticle : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public DeleteArticle __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Id { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint ArticleSection { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Section { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint User { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.DeleteArticle> CreateDeleteArticle(FlatBufferBuilder builder,
-      StringOffset sectionOffset = default(StringOffset),
+      uint world = 0,
       uint id = 0,
-      uint article_section = 0,
+      uint section = 0,
       uint user = 0) {
     builder.StartTable(4);
     DeleteArticle.AddUser(builder, user);
-    DeleteArticle.AddArticleSection(builder, article_section);
+    DeleteArticle.AddSection(builder, section);
     DeleteArticle.AddId(builder, id);
-    DeleteArticle.AddSection(builder, sectionOffset);
+    DeleteArticle.AddWorld(builder, world);
     return DeleteArticle.EndDeleteArticle(builder);
   }
 
   public static void StartDeleteArticle(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(1, id, 0); }
-  public static void AddArticleSection(FlatBufferBuilder builder, uint articleSection) { builder.AddUint(2, articleSection, 0); }
+  public static void AddSection(FlatBufferBuilder builder, uint section) { builder.AddUint(2, section, 0); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(3, user, 0); }
   public static Offset<fb.protocol._internal.request.raw.DeleteArticle> EndDeleteArticle(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -63,9 +57,9 @@ static public class DeleteArticleVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Id*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*ArticleSection*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Section*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 10 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }

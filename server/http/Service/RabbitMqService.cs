@@ -7,7 +7,7 @@ namespace Http.Service
 {
     /// <summary>
     /// Provides RabbitMQ messaging service functionality for publishing messages.
-    /// Manages RabbitMQ connections and channels per section for message publishing operations.
+    /// Manages RabbitMQ connections and channels per world for message publishing operations.
     /// </summary>
     public class RabbitMqService
     {
@@ -25,18 +25,19 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Gets or creates a RabbitMQ connection for the specified section.
+        /// Gets or creates a RabbitMQ connection for the specified world.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "section-2").</param>
-        /// <returns>The RabbitMQ connection for the specified section.</returns>
-        private IConnection GetConnection(string section)
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <returns>The RabbitMQ connection for the specified world.</returns>
+        private IConnection GetConnection(uint world)
         {
-            return _connections.GetOrAdd(section, sectionName =>
+            var worldKey = world == 0 ? "unified-global" : world.ToString();
+            return _connections.GetOrAdd(worldKey, worldName =>
             {
-                var rabbitMqSection = _configuration.GetSection($"RabbitMQ:{sectionName}:Internal");
+                var rabbitMqSection = _configuration.GetSection($"RabbitMQ:{worldName}:Internal");
                 if (rabbitMqSection == null || !rabbitMqSection.Exists())
                 {
-                    throw new Exception($"RabbitMQ configuration not found for section: {sectionName}");
+                    throw new Exception($"RabbitMQ configuration not found for world: {worldName}");
                 }
 
                 var factory = new ConnectionFactory()
@@ -52,42 +53,43 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Gets or creates a RabbitMQ channel for the specified section.
+        /// Gets or creates a RabbitMQ channel for the specified world.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "section-2").</param>
-        /// <returns>The RabbitMQ channel for the specified section.</returns>
-        private IModel GetChannel(string section)
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <returns>The RabbitMQ channel for the specified world.</returns>
+        private IModel GetChannel(uint world)
         {
-            return _channels.GetOrAdd(section, sectionName =>
+            var worldKey = world == 0 ? "unified-global" : world.ToString();
+            return _channels.GetOrAdd(worldKey, worldName =>
             {
-                var connection = GetConnection(sectionName);
+                var connection = GetConnection(world);
                 return connection.CreateModel();
             });
         }
 
         /// <summary>
         /// Publishes a FlatBuffer protocol message to the specified exchange with routing key.
-        /// Uses the RabbitMQ connection for the specified section.
+        /// Uses the RabbitMQ connection for the specified world.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "section-2"). If null, publishes to all sections.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global. If null, publishes to all worlds.</param>
         /// <param name="protocol">The FlatBuffer protocol message to publish.</param>
         /// <param name="exchangeName">The name of the exchange to publish to.</param>
         /// <param name="routeKey">The routing key for message routing.</param>
-        public void Publish(string section, IFlatBufferEx protocol, string exchangeName, string routeKey)
+        public void Publish(uint? world, IFlatBufferEx protocol, string exchangeName, string routeKey)
         {
-            if (string.IsNullOrEmpty(section))
+            if (world == null)
             {
                 Broadcast(protocol, exchangeName, routeKey);
                 return;
             }
 
-            var channel = GetChannel(section);
+            var channel = GetChannel(world.Value);
             channel.BasicPublish(exchange: exchangeName, routingKey: routeKey, basicProperties: null, body: protocol.ToBytes());
         }
 
         /// <summary>
-        /// Broadcasts a FlatBuffer protocol message to all sections.
-        /// Publishes the message to the specified exchange with routing key for each configured section.
+        /// Broadcasts a FlatBuffer protocol message to all worlds.
+        /// Publishes the message to the specified exchange with routing key for each configured world.
         /// </summary>
         /// <param name="protocol">The FlatBuffer protocol message to publish.</param>
         /// <param name="exchangeName">The name of the exchange to publish to.</param>
@@ -95,21 +97,22 @@ namespace Http.Service
         public void Broadcast(IFlatBufferEx protocol, string exchangeName, string routeKey)
         {
             var rabbitMqSection = _configuration.GetSection("RabbitMQ");
-            var sections = rabbitMqSection.GetChildren()
-                .Select(child => child.Key);
+            var worlds = rabbitMqSection.GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _) || child.Key == "unified-global")
+                .Select(child => child.Key == "unified-global" ? 0 : uint.Parse(child.Key));
 
-            foreach (var section in sections)
+            foreach (var world in worlds)
             {
                 try
                 {
-                    var channel = GetChannel(section);
+                    var channel = GetChannel(world);
                     channel.BasicPublish(exchange: exchangeName, routingKey: routeKey, basicProperties: null, body: protocol.ToBytes());
                 }
                 catch (Exception ex)
                 {
-                    // Log error but continue publishing to other sections
+                    // Log error but continue publishing to other worlds
                     // Note: In production, you might want to inject ILogger here
-                    System.Diagnostics.Debug.WriteLine($"Failed to publish to section {section}: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Failed to publish to world {world}: {ex.Message}");
                 }
             }
         }

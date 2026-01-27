@@ -53,11 +53,11 @@ server::send_mail(const character& ch, const std::string& to, const std::string&
 {
     auto   weak   = ch.weak_from_this();
     auto   thread = ch.thread();
-    auto section = fb::config<std::string>("section");
+    auto   world  = fb::config<uint32_t>("world");
     auto&& resp =
         co_await this->http.post("internal",
                                  "/mail/write",
-                                 internal_reqs::WriteMail{section, ch.id, to, title, contents, config<uint32_t>("id")});
+                                 internal_reqs::WriteMail{world, ch.id, to, title, contents, config<uint32_t>("id")});
     co_await this->threads.switching(weak);
 
     this->assert_mail(resp.error);
@@ -67,11 +67,11 @@ server::send_mail(const character& ch, const std::string& to, const std::string&
 
 async::task<internal_resp::GetMailList> server::mail_list(const character& ch, uint16_t offset, uint16_t count)
 {
-    auto   weak    = ch.weak_from_this();
-    auto   section = fb::config<std::string>("section");
-    auto&& resp    = co_await this->http.get<internal_resp::GetMailList>(
+    auto   weak  = ch.weak_from_this();
+    auto   world = fb::config<uint32_t>("world");
+    auto&& resp  = co_await this->http.get<internal_resp::GetMailList>(
         "internal",
-        std::format("/mail/{}/{}?offset={}&count={}", section, ch.id, offset, count));
+        std::format("/mail/{}/{}?offset={}&count={}", world, ch.id, offset, count));
     co_await this->threads.switching(weak);
 
     this->assert_mail(resp.error);
@@ -80,10 +80,10 @@ async::task<internal_resp::GetMailList> server::mail_list(const character& ch, u
 
 async::task<internal_resp::GetMail> server::read_mail(character& ch, uint16_t id)
 {
-    auto   weak    = ch.weak_from_this();
-    auto   section = fb::config<std::string>("section");
-    auto   url     = std::format("/mail/{}/{}/{}", section, ch.id, id);
-    auto&& resp    = co_await this->http.get<internal_resp::GetMail>("internal", url);
+    auto   weak  = ch.weak_from_this();
+    auto   world = fb::config<uint32_t>("world");
+    auto   url   = std::format("/mail/{}/{}/{}", world, ch.id, id);
+    auto&& resp  = co_await this->http.get<internal_resp::GetMail>("internal", url);
     co_await this->threads.switching(weak);
 
     this->assert_mail(resp.error);
@@ -93,9 +93,9 @@ async::task<internal_resp::GetMail> server::read_mail(character& ch, uint16_t id
 
 async::task<internal_resp::DeleteMail> server::delete_mail(character& ch, uint16_t id)
 {
-    auto   weak = ch.weak_from_this();
-    auto section = fb::config<std::string>("section");
-    auto&& resp = co_await this->http.post("internal", "/mail/delete", internal_reqs::DeleteMail{section, ch.id, id});
+    auto   weak  = ch.weak_from_this();
+    auto   world = fb::config<uint32_t>("world");
+    auto&& resp  = co_await this->http.post("internal", "/mail/delete", internal_reqs::DeleteMail{world, ch.id, id});
     co_await this->threads.switching(weak);
     this->assert_mail(resp.error);
     ch.mail_box.unread_count(resp.unread);

@@ -33,10 +33,10 @@ namespace Internal.Controllers
             _logger = logger;
         }
 
-        [HttpGet("{section}/{bulletinSection}")]
-        public async Task<Response.GetArticleList> GetArticleList(string section, uint bulletinSection, [FromQuery(Name = "offset")] ushort offset)
+        [HttpGet("{world}/{bulletinSection}")]
+        public async Task<Response.GetArticleList> GetArticleList(uint world, uint bulletinSection, [FromQuery(Name = "offset")] ushort offset)
         {
-            var articleList = await _bulletinService.GetArticleListAsync(section, bulletinSection, offset);
+            var articleList = await _bulletinService.GetArticleListAsync(world, bulletinSection, offset);
 
             var summaryList = _mapper.Map<List<Http.Model.Bulletin>, List<ArticleSummary>>(articleList);
             return new Response.GetArticleList
@@ -45,12 +45,12 @@ namespace Internal.Controllers
             };
         }
 
-        [HttpGet("{section}/{bulletinSection}/{id}")]
-        public async Task<Response.GetArticle> GetArticle(string section, uint bulletinSection, ushort id)
+        [HttpGet("{world}/{bulletinSection}/{id}")]
+        public async Task<Response.GetArticle> GetArticle(uint world, uint bulletinSection, ushort id)
         {
             try
             {
-                var (article, next) = await _bulletinService.GetArticleAsync(section, bulletinSection, id);
+                var (article, next) = await _bulletinService.GetArticleAsync(world, bulletinSection, id);
 
                 if (article == null)
                 {
@@ -79,8 +79,8 @@ namespace Internal.Controllers
             try
             {
                 var success = await _bulletinService.Write(
+                    request.World,
                     request.Section,
-                    request.ArticleSection,
                     request.User,
                     request.Title,
                     request.Contents
@@ -107,8 +107,8 @@ namespace Internal.Controllers
             try
             {
                 var result = await _bulletinService.Delete(
+                    request.World,
                     request.Section,
-                    request.ArticleSection,
                     request.Id,
                     request.User
                 );

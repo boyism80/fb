@@ -52,10 +52,10 @@ async::task<void> server::update_status()
 {
     try
     {
-        auto section = fb::config<std::string>("section");
+        auto world = fb::config<uint32_t>("world");
         std::ignore = co_await this->http.post("internal",
                                                "/server/heartbeat",
-                                               internal_reqs::Heartbeat{section,
+                                               internal_reqs::Heartbeat{world,
                                                                         internal::Service::Login,
                                                                         this->id(),
                                                                         this->name(),

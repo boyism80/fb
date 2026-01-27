@@ -24,7 +24,7 @@ namespace Internal.Controllers
             try
             {
                 var success = await _serverStateService.UpdateHeartbeat(
-                    request.Section,
+                    request.World,
                     request.Service,
                     request.Id,
                     request.Name,
@@ -38,7 +38,7 @@ namespace Internal.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "heartbeat failed for section {Section}, service {Service}, id {Id}", request.Section, request.Service, request.Id);
+                _logger.LogError(e, "heartbeat failed for world {World}, service {Service}, id {Id}", request.World, request.Service, request.Id);
                 return new Response.Heartbeat
                 {
                     Success = false

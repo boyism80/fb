@@ -25,12 +25,12 @@ struct CancelBuilder;
 struct Cancel FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef CancelBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SECTION = 4,
+    VT_WORLD = 4,
     VT_CHARACTER_ID = 6,
     VT_LISTING_ID = 8
   };
-  const ::flatbuffers::String *section() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_SECTION);
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
   }
   uint32_t character_id() const {
     return GetField<uint32_t>(VT_CHARACTER_ID, 0);
@@ -40,8 +40,7 @@ struct Cancel FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_SECTION) &&
-           verifier.VerifyString(section()) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_CHARACTER_ID, 4) &&
            VerifyOffset(verifier, VT_LISTING_ID) &&
            verifier.VerifyString(listing_id()) &&
@@ -53,8 +52,8 @@ struct CancelBuilder {
   typedef Cancel Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_section(::flatbuffers::Offset<::flatbuffers::String> section) {
-    fbb_.AddOffset(Cancel::VT_SECTION, section);
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(Cancel::VT_WORLD, world, 0);
   }
   void add_character_id(uint32_t character_id) {
     fbb_.AddElement<uint32_t>(Cancel::VT_CHARACTER_ID, character_id, 0);
@@ -75,26 +74,25 @@ struct CancelBuilder {
 
 inline ::flatbuffers::Offset<Cancel> CreateCancel(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::String> section = 0,
+    uint32_t world = 0,
     uint32_t character_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0) {
   CancelBuilder builder_(_fbb);
   builder_.add_listing_id(listing_id);
   builder_.add_character_id(character_id);
-  builder_.add_section(section);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Cancel> CreateCancelDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const char *section = nullptr,
+    uint32_t world = 0,
     uint32_t character_id = 0,
     const char *listing_id = nullptr) {
-  auto section__ = section ? _fbb.CreateString(section) : 0;
   auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
   return fb::protocol::marketplace::request::raw::CreateCancel(
       _fbb,
-      section__,
+      world,
       character_id,
       listing_id__);
 }

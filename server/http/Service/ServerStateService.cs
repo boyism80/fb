@@ -59,7 +59,7 @@ namespace Http.Service
         /// <returns>A list of running server information.</returns>
         public async Task<List<ServerInfo>> GetRunningServers()
         {
-            var redis = _redisService.Redis("unified-global");
+            var redis = _redisService.Redis(0);
             if (redis == null)
                 return new List<ServerInfo>();
 
@@ -69,7 +69,7 @@ namespace Http.Service
             foreach (var key in keys)
             {
                 var keyStr = key.ToString();
-                // Parse key format: heart-beat:Section:Service:Id
+                // Parse key format: heart-beat:World:Service:Id
                 var parts = keyStr.Split(':');
                 if (parts.Length != 4)
                     continue;
@@ -113,7 +113,7 @@ namespace Http.Service
         /// <returns>True if any servers are running; otherwise, false.</returns>
         public async Task<bool> HasRunningServers()
         {
-            var redis = _redisService.Redis("unified-global");
+            var redis = _redisService.Redis(0);
             if (redis == null)
                 return false;
 
@@ -124,18 +124,18 @@ namespace Http.Service
         /// <summary>
         /// Updates the heartbeat for a server.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "section-2").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="service">The service type (Game, Login, etc.).</param>
         /// <param name="id">The server ID.</param>
         /// <param name="name">The server name.</param>
         /// <param name="ip">The server IP address.</param>
         /// <param name="port">The server port.</param>
         /// <returns>True if the heartbeat was successfully updated; otherwise, false.</returns>
-        public async Task<bool> UpdateHeartbeat(string section, Protocol.Service service, byte id, string name, string ip, ushort port)
+        public async Task<bool> UpdateHeartbeat(uint world, Protocol.Service service, byte id, string name, string ip, ushort port)
         {
             try
             {
-                var redis = _redisService.Redis("unified-global");
+                var redis = _redisService.Redis(0); // unified-global is 0
                 if (redis == null)
                     return false;
 
@@ -145,7 +145,7 @@ namespace Http.Service
                     IP = ip,
                     Port = port
                 };
-                var key = new HeartBeatKey { Section = section, Service = service, Id = id };
+                var key = new HeartBeatKey { World = world, Service = service, Id = id };
                 var json = JsonConvert.SerializeObject(config);
 
                 await redis.Connection.StringSetAsync(key.Key, json);
@@ -162,17 +162,17 @@ namespace Http.Service
         /// <summary>
         /// Retrieves the host configuration for a specific server.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "section-2").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="service">The service type (Game, Login, etc.).</param>
         /// <param name="id">The server ID.</param>
         /// <returns>The host configuration if found; otherwise, null.</returns>
-        public async Task<HostConfig> GetHostConfig(string section, Protocol.Service service, byte id)
+        public async Task<HostConfig> GetHostConfig(uint world, Protocol.Service service, byte id)
         {
-            var redis = _redisService.Redis("unified-global");
+            var redis = _redisService.Redis(0); // unified-global is 0
             if (redis == null)
                 return null;
 
-            var key = new HeartBeatKey { Section = section, Service = service, Id = id };
+            var key = new HeartBeatKey { World = world, Service = service, Id = id };
             return await redis.Connection.JsonGetAsync<HostConfig>(key.Key);
         }
 

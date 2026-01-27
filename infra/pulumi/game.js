@@ -9,12 +9,13 @@ module.exports = function () {
             const resources = []
             let index = 0
             const ports = []
-            for(const [section, sectionConf] of Object.entries(conf.game)) {
-                for(const [i, container] of Object.entries(sectionConf.containers)) {
+            for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+                if (!worldConf.game || !worldConf.game.containers) continue
+                for(const [i, container] of Object.entries(worldConf.game.containers)) {
                     const config = {
                         id: parseInt(i),
-                        name: `game-${section}-${i}`,
-                        section: section,
+                        name: `game-${worldName}-${i}`,
+                        world: worldConf.id,
                         delay: 5,
                         ip: conf.host,
                         port: container.port,
@@ -31,41 +32,41 @@ module.exports = function () {
                             ip: "marketplace",
                             port: conf.marketplace.port.cluster
                         },
-                        login: { ip: conf.host, port: conf.login[sectionConf.login].port },
+                        login: { ip: conf.host, port: worldConf.login.port },
                         amqp: {
                             internal: {
-                                ip: `rabbitmq-${sectionConf.rabbitmq}-internal`,
-                                port: conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
+                                ip: `rabbitmq-${worldName}-internal`,
+                                port: worldConf.rabbitmq.internal.port.amqp.cluster,
                                 uid: "fb",
                                 pwd: "admin"
                             },
                             log: {
-                                ip: `rabbitmq-${sectionConf.rabbitmq}-log`,
-                                port: conf.rabbitmq[sectionConf.rabbitmq].log.port.amqp.cluster,
+                                ip: `rabbitmq-${worldName}-log`,
+                                port: worldConf.rabbitmq.log.port.amqp.cluster,
                                 uid: "fb",
                                 pwd: "admin",
                                 queue_size: 128
                             }
                         },
                         log: {
-                            ip: `log-${sectionConf.log}`,
-                            port: conf.log[sectionConf.log].port.cluster,
+                            ip: `log-${worldName}`,
+                            port: worldConf.log.port.cluster,
                             level: ["info", "warn", "fatal"]
                         },
                         exp_multiplier: 1.0,
                         drop_rate_multiplier: 1.0
                     }
 
-                    const configMap = new k8s.core.v1.ConfigMap(`game-${section}-${i}`, {
-                        metadata: { name: `game-${section}-${i}`, namespace: namespace.metadata.name },
+                    const configMap = new k8s.core.v1.ConfigMap(`game-${worldName}-${i}`, {
+                        metadata: { name: `game-${worldName}-${i}`, namespace: namespace.metadata.name },
                         data: {
                             "config.json": JSON.stringify(config),
                         },
                     })
 
-                    const statefulSet = new k8s.apps.v1.StatefulSet(`game-${section}-${i}`, {
+                    const statefulSet = new k8s.apps.v1.StatefulSet(`game-${worldName}-${i}`, {
                         metadata: {
-                            name: `game-${section}-${i}`,
+                            name: `game-${worldName}-${i}`,
                             namespace: namespace.metadata.name,
                         },
                         spec: {
@@ -153,7 +154,7 @@ module.exports = function () {
                     resources.push(statefulSet)
 
                     ports.push({
-                        name: `game-${section}-${i}`,
+                        name: `game-${worldName}-${i}`,
                         port: container.port,
                         targetPort: `game-${index}`,
                         nodePort: container.port 

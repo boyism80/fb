@@ -25,14 +25,14 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves a clan by section and its unique identifier.
+        /// Retrieves a clan by world and its unique identifier.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="id">The unique identifier of the clan.</param>
         /// <returns>The clan if found; otherwise, null.</returns>
-        public async Task<Clan> Get(string section, uint id)
+        public async Task<Clan> Get(uint world, uint id)
         {
-            return await base.Get(section, new ClanKey { Id = id });
+            return await base.Get(world, new ClanKey { Id = id });
         }
 
         /// <summary>

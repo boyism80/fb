@@ -29,14 +29,14 @@ namespace Http.Reepository
 
 
         /// <summary>
-        /// Retrieves a ban by section and user ID.
+        /// Retrieves a ban by world and user ID.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="userId">The unique identifier of the user.</param>
         /// <returns>The ban if found; otherwise, null.</returns>
-        public async Task<Ban> Get(string section, uint userId)
+        public async Task<Ban> Get(uint world, uint userId)
         {
-            await using var conn = _dbContext.Connection(section, -1);
+            await using var conn = _dbContext.Connection(world, -1);
             var value = await conn.QuerySingleOrDefaultAsync<Ban>(OnSelect(new BanKey { User = userId }));
             if (value == null)
                 return null;
@@ -94,19 +94,19 @@ namespace Http.Reepository
 
 
         /// <summary>
-        /// Soft deletes a ban by section and user ID (sets deleted = 1).
+        /// Soft deletes a ban by world and user ID (sets deleted = 1).
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="userId">The unique identifier of the user.</param>
-        public async Task Delete(string section, uint userId)
+        public async Task Delete(uint world, uint userId)
         {
-            var ban = await Get(section, userId);
+            var ban = await Get(world, userId);
             if (ban == null)
                 return;
 
             ban.Deleted = true;
-            // Note: Set method needs to be updated to support section, but for now use direct connection
-            await using var conn = _dbContext.Connection(section, -1);
+            // Note: Set method needs to be updated to support world, but for now use direct connection
+            await using var conn = _dbContext.Connection(world, -1);
             await conn.ExecuteAsync(OnUpsert(ban));
         }
     }

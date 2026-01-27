@@ -31,18 +31,18 @@ namespace Http.Service
 
 
         /// <summary>
-        /// Bans a user in the specified section with the specified reason and duration.
+        /// Bans a user in the specified world with the specified reason and duration.
         /// If days is null, the ban is permanent.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to ban.</param>
         /// <param name="reason">The reason for the ban.</param>
         /// <param name="days">The number of days to ban the user. Null for permanent ban.</param>
         /// <returns>A result object containing the operation outcome and related data.</returns>
-        public async Task<BanResult> Ban(string section, string name, string reason, uint? days)
+        public async Task<BanResult> Ban(uint world, string name, string reason, uint? days)
         {
             // Get user ID from name
-            var userId = await _dbContext.Character.GetCharacterId(section, name) ??
+            var userId = await _dbContext.Character.GetCharacterId(world, name) ??
                 throw new LogicException(ErrorCode.NotFoundCharacter);
 
             // Calculate expire date
@@ -63,18 +63,18 @@ namespace Http.Service
             };
 
             // Use BanRepository's Set method which will use the correct connection
-            // Note: This still uses the old connection method, but Ban is stored in global DB (-1)
-            _dbContext.Ban.Set(section, ban);
+            // Note: Ban is stored in world-global DB (-1)
+            _dbContext.Ban.Set(world, ban);
 
-            _logger.LogInformation("User {Name} (ID: {UserId}) in section {Section} has been banned. Reason: {Reason}, Expire: {ExpireDate}",
-                name, userId, section, reason, expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Permanent");
+            _logger.LogInformation("User {Name} (ID: {UserId}) in world {World} has been banned. Reason: {Reason}, Expire: {ExpireDate}",
+                name, userId, world, reason, expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Permanent");
 
             // Log ban event
             _logService?.Write("ban", new
             {
                 account_name = name,
                 uid = userId,
-                section = section,
+                world = world,
                 reason = reason,
                 expire_date = expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
             });
@@ -90,33 +90,33 @@ namespace Http.Service
 
 
         /// <summary>
-        /// Removes a ban from a user in the specified section.
+        /// Removes a ban from a user in the specified world.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to unban.</param>
         /// <returns>A result object containing the operation outcome and related data.</returns>
-        public async Task<UnbanResult> Unban(string section, string name)
+        public async Task<UnbanResult> Unban(uint world, string name)
         {
             // Get user ID from name
-            var userId = await _dbContext.Character.GetCharacterId(section, name) ??
+            var userId = await _dbContext.Character.GetCharacterId(world, name) ??
                 throw new LogicException(ErrorCode.NotFoundCharacter);
 
             // Check if ban exists
-            var ban = await _dbContext.Ban.Get(section, userId);
+            var ban = await _dbContext.Ban.Get(world, userId);
             if (ban == null || ban.Deleted)
                 throw new LogicException(ErrorCode.NotFoundBan);
 
             // Delete ban (soft delete)
-            await _dbContext.Ban.Delete(section, userId);
+            await _dbContext.Ban.Delete(world, userId);
 
-            _logger.LogInformation("User {Name} (ID: {UserId}) in section {Section} has been unbanned.", name, userId, section);
+            _logger.LogInformation("User {Name} (ID: {UserId}) in world {World} has been unbanned.", name, userId, world);
 
             // Log unban event
             _logService?.Write("unban", new
             {
                 account_name = name,
                 uid = userId,
-                section = section
+                world = world
             });
 
             return new UnbanResult
@@ -129,18 +129,18 @@ namespace Http.Service
 
 
         /// <summary>
-        /// Checks if a user is banned in the specified section and automatically removes expired bans.
+        /// Checks if a user is banned in the specified world and automatically removes expired bans.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to check.</param>
         /// <returns>A result object containing the ban status. Returns null if the user does not exist or has no ban.</returns>
-        public async Task<BanCheckResult> IsBanned(string section, string name)
+        public async Task<BanCheckResult> IsBanned(uint world, string name)
         {
-            var userId = await _dbContext.Character.GetCharacterId(section, name);
+            var userId = await _dbContext.Character.GetCharacterId(world, name);
             if (!userId.HasValue)
                 return null;
 
-            var ban = await _dbContext.Ban.Get(section, userId.Value);
+            var ban = await _dbContext.Ban.Get(world, userId.Value);
             if (ban == null)
                 return null;
 
@@ -148,8 +148,8 @@ namespace Http.Service
             if (ban.ExpireDate.HasValue && ban.ExpireDate.Value <= DateTime.Now)
             {
                 // Ban expired, remove it
-                await _dbContext.Ban.Delete(section, userId.Value);
-                _logger.LogInformation("Expired ban removed for user {Name} (ID: {UserId}) in section {Section}", name, userId.Value, section);
+                await _dbContext.Ban.Delete(world, userId.Value);
+                _logger.LogInformation("Expired ban removed for user {Name} (ID: {UserId}) in world {World}", name, userId.Value, world);
                 return null;
             }
 

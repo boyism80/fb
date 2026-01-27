@@ -171,8 +171,8 @@
 </div>
 
 @code {
-    [CascadingParameter(Name = "SelectedSection")]
-    private string? selectedSection { get; set; }
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
     private List<ServerStateService.ServerInfo>? servers;
     private bool isLoading = false;
     private bool isSessionProcessing = false;
@@ -230,12 +230,12 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 return;
             }
-            var cleared = await CacheService.ClearUserSessions(selectedSection);
+            var cleared = await CacheService.ClearUserSessions(selectedWorld.Value);
             if (cleared)
             {
                 successMessage = "User sessions have been cleared successfully.";
@@ -271,13 +271,13 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 return Task.CompletedTask;
             }
             var packet = new Response.BroadcastSave();
-            RabbitMqService.Publish(selectedSection, packet, "amq.direct", "fb.system");
+            RabbitMqService.Publish(selectedWorld.Value, packet, "amq.direct", "fb.system");
             successMessage = "Save instruction broadcasted to all game servers.";
         }
         catch (Exception ex)
@@ -307,13 +307,13 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 return Task.CompletedTask;
             }
             var packet = new Response.Shutdown();
-            RabbitMqService.Publish(selectedSection, packet, "amq.direct", "fb.system");
+            RabbitMqService.Publish(selectedWorld.Value, packet, "amq.direct", "fb.system");
             successMessage = "Shutdown instruction sent to all game servers.";
         }
         catch (Exception ex)

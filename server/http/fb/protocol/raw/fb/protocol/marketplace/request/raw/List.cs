@@ -20,13 +20,7 @@ public struct List : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public List __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint CharacterId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public string ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
@@ -39,7 +33,7 @@ public struct List : IFlatbufferObject
   public uint Price { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.marketplace.request.raw.List> CreateList(FlatBufferBuilder builder,
-      StringOffset sectionOffset = default(StringOffset),
+      uint world = 0,
       uint character_id = 0,
       StringOffset listing_idOffset = default(StringOffset),
       Offset<fb.protocol.marketplace.raw.Item> itemOffset = default(Offset<fb.protocol.marketplace.raw.Item>),
@@ -49,12 +43,12 @@ public struct List : IFlatbufferObject
     List.AddItem(builder, itemOffset);
     List.AddListingId(builder, listing_idOffset);
     List.AddCharacterId(builder, character_id);
-    List.AddSection(builder, sectionOffset);
+    List.AddWorld(builder, world);
     return List.EndList(builder);
   }
 
   public static void StartList(FlatBufferBuilder builder) { builder.StartTable(5); }
-  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddCharacterId(FlatBufferBuilder builder, uint characterId) { builder.AddUint(1, characterId, 0); }
   public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(2, listingIdOffset.Value, 0); }
   public static void AddItem(FlatBufferBuilder builder, Offset<fb.protocol.marketplace.raw.Item> itemOffset) { builder.AddOffset(3, itemOffset.Value, 0); }
@@ -73,7 +67,7 @@ static public class ListVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*CharacterId*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 8 /*ListingId*/, false)
       && verifier.VerifyTable(tablePos, 10 /*Item*/, fb.protocol.marketplace.raw.ItemVerify.Verify, false)

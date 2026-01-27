@@ -1,6 +1,7 @@
 using Dapper;
 using Http.Extension;
 using Http.Service;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
@@ -14,16 +15,21 @@ namespace Log.Repository
     {
         private readonly DbContext _dbContext;
         private readonly ILogger<LogRepository> _logger;
+        private readonly IConfiguration _configuration;
+        private readonly uint _world;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LogRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context for connection management.</param>
         /// <param name="logger">The logger instance.</param>
-        public LogRepository(DbContext dbContext, ILogger<LogRepository> logger)
+        /// <param name="configuration">The application configuration for reading world ID.</param>
+        public LogRepository(DbContext dbContext, ILogger<LogRepository> logger, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _configuration = configuration;
+            _world = (uint)_configuration.GetValue<int>("World", 0);
         }
 
         private readonly Random _random = new Random();
@@ -40,9 +46,10 @@ namespace Log.Repository
             if (logList.Count == 0)
                 return;
 
-            if (_dbContext.SharedDbSize == 0)
+            var shardSize = _dbContext.GetShardDbSize(_world);
+            if (shardSize == 0)
             {
-                _logger.LogWarning("No MySQL shards available");
+                _logger.LogWarning("No MySQL shards available for world {World}", _world);
                 return;
             }
 
@@ -66,11 +73,11 @@ namespace Log.Repository
                 return;
 
             // Get MySQL shard using random selection
-            var shard = (uint)_random.Next((int)_dbContext.SharedDbSize);
+            var shard = (uint)_random.Next((int)shardSize);
 
             try
             {
-                await using var conn = _dbContext.Connection(shard);
+                await using var conn = _dbContext.Connection(_world, (int)shard);
                 await conn.OpenAsync();
 
                 var sql = BuildBulkInsertQuery(entries);
@@ -78,7 +85,7 @@ namespace Log.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Failed to bulk insert logs for shard {shard}");
+                _logger.LogError(ex, $"Failed to bulk insert logs for world {_world} shard {shard}");
             }
         }
 

@@ -96,8 +96,8 @@
 </div>
 
 @code {
-    [CascadingParameter(Name = "SelectedSection")]
-    private string? selectedSection { get; set; }
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
     
     private SystemMailModel mailModel = new();
     private string? errorMessage;
@@ -141,14 +141,14 @@
 
         try
         {
-            if (string.IsNullOrEmpty(selectedSection))
+            if (!selectedWorld.HasValue)
             {
-                errorMessage = "Section is not selected.";
+                errorMessage = "World is not selected.";
                 return;
             }
             DateTime? expireDate = expireDateValue;
 
-            var systemMail = await DbContext.SystemMail.Write(selectedSection, currentUserId, mailModel.Title, mailModel.Contents, expireDate);
+            var systemMail = await DbContext.SystemMail.Write(selectedWorld.Value, currentUserId, mailModel.Title, mailModel.Contents, expireDate);
             await DbContext.SaveChangesAsync();
 
             // Publish notification to all game servers via RabbitMQ
@@ -168,7 +168,7 @@
                 Error = 0
             };
 
-            RabbitMqService.Publish(selectedSection, response, "amq.direct", "fb.system");
+            RabbitMqService.Publish(selectedWorld.Value, response, "amq.direct", "fb.system");
 
             successMessage = $"System mail has been created successfully. Mail ID: {systemMail.Id}";
             ResetForm();

@@ -41,30 +41,30 @@ namespace Internal.Services
         }
 
         /// <summary>
-        /// Gets group details by section and group ID.
+        /// Gets group details by world and group ID.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="id">The group ID.</param>
-        public async Task<Response.GroupDetails> Get(string section, uint id)
+        public async Task<Response.GroupDetails> Get(uint world, uint id)
         {
             try
             {
-                var redis = _redisService.Redis(section, id);
+                var redis = _redisService.Redis(world, id);
                 if (redis == null)
                     throw new LogicException(ErrorCode.Unhandled);
 
-                await using (await _distributedLock.Lock(Group.DistributedLockKey(id)))
+                await using (await _distributedLock.Lock(world, Group.DistributedLockKey(id)))
                 {
-                    var group = await _dbContext.Group.Get(section, id) ??
+                    var group = await _dbContext.Group.Get(world, id) ??
                         throw new LogicException(ErrorCode.GroupNotFound);
 
-                    var master = await _dbContext.Character.Get(section, group.Master) ??
+                    var master = await _dbContext.Character.Get(world, group.Master) ??
                         throw new LogicException(ErrorCode.NotFoundCharacter);
 
                     var members = new List<Protocol.CharacterRef>();
                     foreach (var uid in group.Members)
                     {
-                        var ch = await _dbContext.Character.Get(section, uid) ??
+                        var ch = await _dbContext.Character.Get(world, uid) ??
                             throw new LogicException(ErrorCode.NotFoundCharacter);
                         members.Add(new Protocol.CharacterRef
                         {
@@ -128,33 +128,33 @@ namespace Internal.Services
         {
             try
             {
-                var section = request.Section;
-                var actor = await _dbContext.Character.Get(section, request.Master) ??
+                var world = request.World;
+                var actor = await _dbContext.Character.Get(world, request.Master) ??
                     throw new Exception($"user {request.Master} not found");
 
                 if (actor.Name == request.Member)
                     throw new LogicException(ErrorCode.CannotGroupSelf);
 
-                if (await _sessionService.Get(section, actor.Name) == null)
+                if (await _sessionService.Get(world, actor.Name) == null)
                     throw new Exception($"user {request.Master} is offline");
 
                 if (Table.Map.TryGetValue(actor.Map, out var map) == false)
                     throw new Exception("invalid map");
 
-                var targetSession = await _sessionService.Get(section, request.Member) ??
+                var targetSession = await _sessionService.Get(world, request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var target = await _dbContext.Character.Get(section, targetSession.Uid) ??
+                var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(actor.Id)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(actor.Id)))
                 {
-                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(target.Id)))
+                    await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(target.Id)))
                     {
-                        var actorSync = await _dbContext.CharacterSync.Get(section, actor.Id) ??
+                        var actorSync = await _dbContext.CharacterSync.Get(world, actor.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var targetSync = await _dbContext.CharacterSync.Get(section, target.Id) ??
+                        var targetSync = await _dbContext.CharacterSync.Get(world, target.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                         // Create group - actor must not be in a group
@@ -164,19 +164,19 @@ namespace Internal.Services
                         if (targetSync.Group != null)
                             throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
 
-                        var masterSetting = await _dbContext.Option.Get(section, actor.Id) ??
+                        var masterSetting = await _dbContext.Option.Get(world, actor.Id) ??
                             throw new Exception($"user option {request.Master} not found");
 
                         if (masterSetting.Group == false)
                             throw new LogicException(ErrorCode.DisabledGroup);
 
-                        var memberSetting = await _dbContext.Option.Get(section, target.Id) ??
+                        var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
                             throw new Exception($"user option {request.Member} not found");
 
                         if (memberSetting.Group == false)
                             throw new LogicException(ErrorCode.DisabledGroupTarget);
 
-                        await using (await _distributedLock.Lock(Group.DistributedLockKey(actor.Id)))
+                        await using (await _distributedLock.Lock(world, Group.DistributedLockKey(actor.Id)))
                         {
                             var group = new Group
                             {
@@ -186,9 +186,9 @@ namespace Internal.Services
 
                             actorSync.Group = group.Master;
                             targetSync.Group = group.Master;
-                            _dbContext.CharacterSync.Set(section, actorSync);
-                            _dbContext.CharacterSync.Set(section, targetSync);
-                            _dbContext.Group.Set(section, group);
+                            _dbContext.CharacterSync.Set(world, actorSync);
+                            _dbContext.CharacterSync.Set(world, targetSync);
+                            _dbContext.Group.Set(world, group);
 
                             var members = new List<Protocol.CharacterRef>
                             {
@@ -222,7 +222,7 @@ namespace Internal.Services
                                 Error = (uint)ErrorCode.None
                             };
 
-                            _rabbitMqService.Publish(section, response, "amq.direct", $"fb.group");
+                            _rabbitMqService.Publish(world, response, "amq.direct", $"fb.group");
                             return response;
                         }
                     }
@@ -259,33 +259,33 @@ namespace Internal.Services
         {
             try
             {
-                var section = request.Section;
-                var actor = await _dbContext.Character.Get(section, request.Master) ??
+                var world = request.World;
+                var actor = await _dbContext.Character.Get(world, request.Master) ??
                     throw new Exception($"user {request.Master} not found");
 
                 if (actor.Name == request.Member)
                     throw new LogicException(ErrorCode.CannotGroupSelf);
 
-                if (await _sessionService.Get(section, actor.Name) == null)
+                if (await _sessionService.Get(world, actor.Name) == null)
                     throw new Exception($"user {request.Master} is offline");
 
                 if (Table.Map.TryGetValue(actor.Map, out var map) == false)
                     throw new Exception("invalid map");
 
-                var targetSession = await _sessionService.Get(section, request.Member) ??
+                var targetSession = await _sessionService.Get(world, request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var target = await _dbContext.Character.Get(section, targetSession.Uid) ??
+                var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(actor.Id)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(actor.Id)))
                 {
-                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(target.Id)))
+                    await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(target.Id)))
                     {
-                        var actorSync = await _dbContext.CharacterSync.Get(section, actor.Id) ??
+                        var actorSync = await _dbContext.CharacterSync.Get(world, actor.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var targetSync = await _dbContext.CharacterSync.Get(section, target.Id) ??
+                        var targetSync = await _dbContext.CharacterSync.Get(world, target.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                         // Enter group - actor must be group master
@@ -298,21 +298,21 @@ namespace Internal.Services
                         if (targetSync.Group != null)
                             throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
 
-                        var masterSetting = await _dbContext.Option.Get(section, actor.Id) ??
+                        var masterSetting = await _dbContext.Option.Get(world, actor.Id) ??
                             throw new Exception($"user option {request.Master} not found");
 
                         if (masterSetting.Group == false)
                             throw new LogicException(ErrorCode.DisabledGroup);
 
-                        var memberSetting = await _dbContext.Option.Get(section, target.Id) ??
+                        var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
                             throw new Exception($"user option {request.Member} not found");
 
                         if (memberSetting.Group == false)
                             throw new LogicException(ErrorCode.DisabledGroupTarget);
 
-                        await using (await _distributedLock.Lock(Group.DistributedLockKey(actor.Id)))
+                        await using (await _distributedLock.Lock(world, Group.DistributedLockKey(actor.Id)))
                         {
-                            return await EnterInternal(section, actor, target, actorSync, targetSync, map);
+                            return await EnterInternal(world, actor, target, actorSync, targetSync, map);
                         }
                     }
                 }
@@ -344,27 +344,27 @@ namespace Internal.Services
         {
             try
             {
-                var section = request.Section;
-                var session = await _sessionService.Get(section, request.Member) ??
+                var world = request.World;
+                var session = await _sessionService.Get(world, request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var character = await _dbContext.Character.Get(section, session.Uid) ??
+                var character = await _dbContext.Character.Get(world, session.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 if (Table.Map.TryGetValue(character.Map, out var map) == false)
                     throw new LogicException(ErrorCode.NotFoundMap);
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(character.Id)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(character.Id)))
                 {
-                    var sync = await _dbContext.CharacterSync.Get(section, character.Id) ??
+                    var sync = await _dbContext.CharacterSync.Get(world, character.Id) ??
                         throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                     var groupId = sync.Group ??
                         throw new LogicException(ErrorCode.GroupNotJoined);
 
-                    await using (await _distributedLock.Lock(Group.DistributedLockKey(groupId)))
+                    await using (await _distributedLock.Lock(world, Group.DistributedLockKey(groupId)))
                     {
-                        var group = await _dbContext.Group.Get(section, groupId) ??
+                        var group = await _dbContext.Group.Get(world, groupId) ??
                             throw new LogicException(ErrorCode.GroupNotFound);
 
                         // Leave group - character must not be master
@@ -375,12 +375,12 @@ namespace Internal.Services
                             throw new LogicException(ErrorCode.GroupNotJoined);
 
                         group.Members.Remove(character.Id);
-                        _dbContext.Group.Set(section, group);
+                        _dbContext.Group.Set(world, group);
 
                         sync.Group = null;
-                        _dbContext.CharacterSync.Set(section, sync);
+                        _dbContext.CharacterSync.Set(world, sync);
 
-                        var master = await _dbContext.Character.Get(section, group.Master) ??
+                        var master = await _dbContext.Character.Get(world, group.Master) ??
                             throw new LogicException(ErrorCode.NotFoundCharacter);
 
                         await _dbContext.SaveChangesAsync();
@@ -404,7 +404,7 @@ namespace Internal.Services
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(section, response, "amq.direct", $"fb.group");
+                        _rabbitMqService.Publish(world, response, "amq.direct", $"fb.group");
                         return response;
                     }
                 }
@@ -436,18 +436,18 @@ namespace Internal.Services
         {
             try
             {
-                var section = request.Section;
+                var world = request.World;
                 // Get actor session and character
-                var actorSession = await _sessionService.Get(section, request.Kicker) ??
+                var actorSession = await _sessionService.Get(world, request.Kicker) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var actor = await _dbContext.Character.Get(section, actorSession.Uid) ??
+                var actor = await _dbContext.Character.Get(world, actorSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 // Get target character
-                var targetUid = await _dbContext.Character.GetCharacterId(section, request.Target) ??
+                var targetUid = await _dbContext.Character.GetCharacterId(world, request.Target) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
-                var target = await _dbContext.Character.Get(section, targetUid) ??
+                var target = await _dbContext.Character.Get(world, targetUid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 // Prevent self-kicking
@@ -457,14 +457,14 @@ namespace Internal.Services
                 if (Table.Map.TryGetValue(actor.Map, out var map) == false)
                     throw new LogicException(ErrorCode.NotFoundMap);
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(actor.Id)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(actor.Id)))
                 {
-                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(target.Id)))
+                    await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(target.Id)))
                     {
-                        var actorSync = await _dbContext.CharacterSync.Get(section, actor.Id) ??
+                        var actorSync = await _dbContext.CharacterSync.Get(world, actor.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var targetSync = await _dbContext.CharacterSync.Get(section, target.Id) ??
+                        var targetSync = await _dbContext.CharacterSync.Get(world, target.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                         // Check if actor is in a group
@@ -475,9 +475,9 @@ namespace Internal.Services
                         if (targetSync.Group != actorSync.Group)
                             throw new LogicException(ErrorCode.GroupNotJoined);
 
-                        await using (await _distributedLock.Lock(Group.DistributedLockKey(actorSync.Group.Value)))
+                        await using (await _distributedLock.Lock(world, Group.DistributedLockKey(actorSync.Group.Value)))
                         {
-                            return await KickInternal(section, actor, target, actorSync, targetSync, map);
+                            return await KickInternal(world, actor, target, actorSync, targetSync, map);
                         }
                     }
                 }
@@ -509,27 +509,27 @@ namespace Internal.Services
         {
             try
             {
-                var section = request.Section;
-                var session = await _sessionService.Get(section, request.Master) ??
+                var world = request.World;
+                var session = await _sessionService.Get(world, request.Master) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var character = await _dbContext.Character.Get(section, session.Uid) ??
+                var character = await _dbContext.Character.Get(world, session.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 if (Table.Map.TryGetValue(character.Map, out var map) == false)
                     throw new LogicException(ErrorCode.NotFoundMap);
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(character.Id)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(character.Id)))
                 {
-                    var sync = await _dbContext.CharacterSync.Get(section, character.Id) ??
+                    var sync = await _dbContext.CharacterSync.Get(world, character.Id) ??
                         throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                     var groupId = sync.Group ??
                         throw new LogicException(ErrorCode.GroupNotJoined);
 
-                    await using (await _distributedLock.Lock(Group.DistributedLockKey(groupId)))
+                    await using (await _distributedLock.Lock(world, Group.DistributedLockKey(groupId)))
                     {
-                        var group = await _dbContext.Group.Get(section, groupId) ??
+                        var group = await _dbContext.Group.Get(world, groupId) ??
                             throw new LogicException(ErrorCode.GroupNotFound);
 
                         // Destroy group - character must be master
@@ -540,25 +540,25 @@ namespace Internal.Services
                         var memberNames = new List<string>();
                         foreach (var uid in group.Members)
                         {
-                            await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(uid)))
+                            await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(uid)))
                             {
-                                var member = await _dbContext.Character.Get(section, uid) ??
+                                var member = await _dbContext.Character.Get(world, uid) ??
                                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                                var memberSync = await _dbContext.CharacterSync.Get(section, uid) ??
+                                var memberSync = await _dbContext.CharacterSync.Get(world, uid) ??
                                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                                 memberSync.Group = null;
-                                _dbContext.CharacterSync.Set(section, memberSync);
+                                _dbContext.CharacterSync.Set(world, memberSync);
                                 memberNames.Add(member.Name);
                             }
                         }
 
                         sync.Group = null;
-                        _dbContext.CharacterSync.Set(section, sync);
+                        _dbContext.CharacterSync.Set(world, sync);
 
                         group.Deleted = true;
-                        _dbContext.Group.Set(section, group);
+                        _dbContext.Group.Set(world, group);
 
                         await _dbContext.SaveChangesAsync();
 
@@ -575,7 +575,7 @@ namespace Internal.Services
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(section, response, "amq.direct", $"fb.group");
+                        _rabbitMqService.Publish(world, response, "amq.direct", $"fb.group");
                         return response;
                     }
                 }
@@ -605,10 +605,10 @@ namespace Internal.Services
         {
             try
             {
-                var section = request.Section;
-                await using (await _distributedLock.Lock(Group.DistributedLockKey(request.Group)))
+                var world = request.World;
+                await using (await _distributedLock.Lock(world, Group.DistributedLockKey(request.Group)))
                 {
-                    var group = await _dbContext.Group.Get(section, request.Group) ??
+                    var group = await _dbContext.Group.Get(world, request.Group) ??
                         throw new LogicException(ErrorCode.GroupNotFound);
 
                     var response = new Response.BroadcastGroup
@@ -619,7 +619,7 @@ namespace Internal.Services
                         Type = request.Type,
                         Error = (uint)ErrorCode.None
                     };
-                    _rabbitMqService.Publish(section, response, "amq.direct", $"fb.group");
+                    _rabbitMqService.Publish(world, response, "amq.direct", $"fb.group");
                     return response;
                 }
             }
@@ -648,33 +648,33 @@ namespace Internal.Services
         {
             try
             {
-                var section = request.Section;
-                var actor = await _dbContext.Character.Get(section, request.Master) ??
+                var world = request.World;
+                var actor = await _dbContext.Character.Get(world, request.Master) ??
                     throw new Exception($"user {request.Master} not found");
 
                 if (actor.Name == request.Member)
                     throw new LogicException(ErrorCode.CannotGroupSelf);
 
-                if (await _sessionService.Get(section, actor.Name) == null)
+                if (await _sessionService.Get(world, actor.Name) == null)
                     throw new Exception($"user {request.Master} is offline");
 
                 if (Table.Map.TryGetValue(actor.Map, out var map) == false)
                     throw new Exception("invalid map");
 
-                var targetSession = await _sessionService.Get(section, request.Member) ??
+                var targetSession = await _sessionService.Get(world, request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var target = await _dbContext.Character.Get(section, targetSession.Uid) ??
+                var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(actor.Id)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(actor.Id)))
                 {
-                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(target.Id)))
+                    await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(target.Id)))
                     {
-                        var actorSync = await _dbContext.CharacterSync.Get(section, actor.Id) ??
+                        var actorSync = await _dbContext.CharacterSync.Get(world, actor.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var targetSync = await _dbContext.CharacterSync.Get(section, target.Id) ??
+                        var targetSync = await _dbContext.CharacterSync.Get(world, target.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                         // Toggle requires actor to be group master
@@ -684,13 +684,13 @@ namespace Internal.Services
                         if (actorSync.Group.Value != actor.Id)
                             throw new LogicException(ErrorCode.NotGroupMaster);
 
-                        await using (await _distributedLock.Lock(Group.DistributedLockKey(actor.Id)))
+                        await using (await _distributedLock.Lock(world, Group.DistributedLockKey(actor.Id)))
                         {
                             // Check if target is in the same group
                             if (targetSync.Group == actorSync.Group)
                             {
                                 // Kick the member
-                                return await KickInternal(section, actor, target, actorSync, targetSync, map);
+                                return await KickInternal(world, actor, target, actorSync, targetSync, map);
                             }
                             else
                             {
@@ -698,19 +698,19 @@ namespace Internal.Services
                                 if (targetSync.Group != null)
                                     throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
 
-                                var masterSetting = await _dbContext.Option.Get(section, actor.Id) ??
+                                var masterSetting = await _dbContext.Option.Get(world, actor.Id) ??
                                     throw new Exception($"user option {request.Master} not found");
 
                                 if (masterSetting.Group == false)
                                     throw new LogicException(ErrorCode.DisabledGroup);
 
-                                var memberSetting = await _dbContext.Option.Get(section, target.Id) ??
+                                var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
                                     throw new Exception($"user option {request.Member} not found");
 
-                        if (memberSetting.Group == false)
-                            throw new LogicException(ErrorCode.DisabledGroupTarget);
+                                if (memberSetting.Group == false)
+                                    throw new LogicException(ErrorCode.DisabledGroupTarget);
 
-                        return await EnterInternal(section, actor, target, actorSync, targetSync, map);
+                                return await EnterInternal(world, actor, target, actorSync, targetSync, map);
                             }
                         }
                     }
@@ -743,9 +743,9 @@ namespace Internal.Services
         /// <summary>
         /// Internal method to add a member to a group. Assumes locks are already acquired.
         /// </summary>
-        private async Task<Response.UpdatedGroup> EnterInternal(string section, Character actor, Character target, CharacterSync actorSync, CharacterSync targetSync, Map map)
+        private async Task<Response.UpdatedGroup> EnterInternal(uint world, Character actor, Character target, CharacterSync actorSync, CharacterSync targetSync, Map map)
         {
-            var group = await _dbContext.Group.Get(section, actor.Id) ??
+            var group = await _dbContext.Group.Get(world, actor.Id) ??
                 throw new LogicException(ErrorCode.GroupNotFound);
 
             if (group.Members.Contains(target.Id))
@@ -753,8 +753,8 @@ namespace Internal.Services
 
             group.Members.Add(target.Id);
             targetSync.Group = group.Master;
-            _dbContext.Group.Set(section, group);
-            _dbContext.CharacterSync.Set(section, targetSync);
+            _dbContext.Group.Set(world, group);
+            _dbContext.CharacterSync.Set(world, targetSync);
 
             await _dbContext.SaveChangesAsync();
 
@@ -777,16 +777,16 @@ namespace Internal.Services
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(section, response, "amq.direct", $"fb.group");
+            _rabbitMqService.Publish(world, response, "amq.direct", $"fb.group");
             return response;
         }
 
         /// <summary>
         /// Internal method to kick a member from a group. Assumes locks are already acquired.
         /// </summary>
-        private async Task<Response.UpdatedGroup> KickInternal(string section, Character actor, Character target, CharacterSync actorSync, CharacterSync targetSync, Map map)
+        private async Task<Response.UpdatedGroup> KickInternal(uint world, Character actor, Character target, CharacterSync actorSync, CharacterSync targetSync, Map map)
         {
-            var group = await _dbContext.Group.Get(section, actorSync.Group.Value) ??
+            var group = await _dbContext.Group.Get(world, actorSync.Group.Value) ??
                 throw new LogicException(ErrorCode.GroupNotFound);
 
             // Check if actor is the group master
@@ -799,10 +799,10 @@ namespace Internal.Services
 
             // Remove target from group
             group.Members.Remove(target.Id);
-            _dbContext.Group.Set(section, group);
+            _dbContext.Group.Set(world, group);
 
             targetSync.Group = null;
-            _dbContext.CharacterSync.Set(section, targetSync);
+            _dbContext.CharacterSync.Set(world, targetSync);
 
             await _dbContext.SaveChangesAsync();
 
@@ -825,7 +825,7 @@ namespace Internal.Services
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(section, response, "amq.direct", $"fb.group");
+            _rabbitMqService.Publish(world, response, "amq.direct", $"fb.group");
             return response;
         }
     }

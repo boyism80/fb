@@ -27,8 +27,8 @@ namespace Internal.Controllers
         {
             try
             {
-                var section = request.Section;
-                var result = await _banService.Ban(section, request.Name, request.Reason, request.Days);
+                var world = request.World;
+                var result = await _banService.Ban(world, request.Name, request.Reason, request.Days);
                 await _dbContext.SaveChangesAsync();
 
                 var response = new Response.Ban
@@ -40,7 +40,7 @@ namespace Internal.Controllers
                 };
 
                 // Publish notification via RabbitMQ
-                _rabbitMqService.Publish(request.Section, response, "amq.direct", "fb.ban");
+                _rabbitMqService.Publish(request.World, response, "amq.direct", "fb.ban");
 
                 return response;
             }
@@ -69,8 +69,8 @@ namespace Internal.Controllers
         {
             try
             {
-                var section = request.Section;
-                var result = await _banService.Unban(section, request.Name);
+                var world = request.World;
+                var result = await _banService.Unban(world, request.Name);
                 await _dbContext.SaveChangesAsync();
 
                 var response = new Response.Unban
@@ -80,7 +80,7 @@ namespace Internal.Controllers
                 };
 
                 // Publish notification via RabbitMQ
-                _rabbitMqService.Publish(request.Section, response, "amq.direct", "fb.unban");
+                _rabbitMqService.Publish(request.World, response, "amq.direct", "fb.unban");
 
                 return response;
             }

@@ -29,14 +29,14 @@ namespace Http.Reepository
 
 
         /// <summary>
-        /// Retrieves a character by section and their unique identifier.
+        /// Retrieves a character by world and their unique identifier.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="id">The unique identifier of the character.</param>
         /// <returns>The character if found; otherwise, null.</returns>
-        public async Task<Character> Get(string section, uint id)
+        public async Task<Character> Get(uint world, uint id)
         {
-            await using var conn = _dbContext.Connection(section, id);
+            await using var conn = _dbContext.Connection(world, id);
             var value = await conn.QuerySingleOrDefaultAsync<Character>(OnSelect(new CharacterKey { Id = id }));
             if (value == null)
                 return null;
@@ -202,15 +202,15 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves a character ID by section and their name using a stored procedure.
-        /// Uses the section-specific database connection for name lookup operations.
+        /// Retrieves a character ID by world and their name using a stored procedure.
+        /// Uses the world-specific database connection for name lookup operations.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to look up.</param>
         /// <returns>The character ID if found; otherwise, null.</returns>
-        public async Task<uint?> GetCharacterId(string section, string name)
+        public async Task<uint?> GetCharacterId(uint world, string name)
         {
-            await using var conn = _dbContext.Connection(section, -1);
+            await using var conn = _dbContext.Connection(world, -1);
             var result = await conn.QueryAsync<uint>("USP_NAME_GET_ID", new
             {
                 n = name
@@ -223,32 +223,32 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves a character name by section and their unique identifier.
-        /// Uses the section-specific database connection for name lookup operations.
+        /// Retrieves a character name by world and their unique identifier.
+        /// Uses the world-specific database connection for name lookup operations.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="id">The unique identifier of the character.</param>
         /// <returns>The character name if found; otherwise, null.</returns>
-        public async Task<string> GetName(string section, uint id)
+        public async Task<string> GetName(uint world, uint id)
         {
-            await using var conn = _dbContext.Connection(section, -1);
+            await using var conn = _dbContext.Connection(world, -1);
             var result = await conn.QueryFirstOrDefaultAsync<CharacterName>($"SELECT id, name FROM name WHERE id = {id}");
             return result?.Name;
         }
 
         /// <summary>
-        /// Retrieves multiple character names by section and their unique identifiers in a single query.
-        /// Uses the section-specific database connection for batch name lookup operations.
+        /// Retrieves multiple character names by world and their unique identifiers in a single query.
+        /// Uses the world-specific database connection for batch name lookup operations.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="ids">The collection of character IDs to look up.</param>
         /// <returns>A read-only dictionary mapping character IDs to their names.</returns>
-        public async Task<IReadOnlyDictionary<uint, string>> GetName(string section, IEnumerable<uint> ids)
+        public async Task<IReadOnlyDictionary<uint, string>> GetName(uint world, IEnumerable<uint> ids)
         {
             if (ids.Any() == false)
                 return new Dictionary<uint, string>();
 
-            await using var conn = _dbContext.Connection(section, -1);
+            await using var conn = _dbContext.Connection(world, -1);
             var result = await conn.QueryAsync<CharacterName>($"SELECT id, name FROM name WHERE id IN ({string.Join(',', ids)})");
             return result.ToDictionary(x => x.Id, x => x.Name);
         }

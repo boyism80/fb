@@ -9,27 +9,28 @@ module.exports = function () {
             const resources = []
             let index = 0
             const ports = []
-            for(const [section, sectionConf] of Object.entries(conf.login)) {
+            for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+                if (!worldConf.login) continue
                 const config = {
                     id: 0,
-                    name: `login-${section}`,
-                    section: section,
+                    name: `login-${worldName}`,
+                    world: worldConf.id,
                     ip: conf.host,
-                    port: sectionConf.port,
+                    port: worldConf.login.port,
                     thread: {
                         logic: 32,
                         io: 12
                     },
                     amqp: {
                         internal: {
-                            ip: `rabbitmq-${sectionConf.rabbitmq}-internal`,
-                            port: conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
+                            ip: `rabbitmq-${worldName}-internal`,
+                            port: worldConf.rabbitmq.internal.port.amqp.cluster,
                             uid: "fb",
                             pwd: "admin"
                         },
                         log: {
-                            ip: `rabbitmq-${sectionConf.rabbitmq}-log`,
-                            port: conf.rabbitmq[sectionConf.rabbitmq].log.port.amqp.cluster,
+                            ip: `rabbitmq-${worldName}-log`,
+                            port: worldConf.rabbitmq.log.port.amqp.cluster,
                             uid: "fb",
                             pwd: "admin",
                             queue_size: 128
@@ -44,8 +45,8 @@ module.exports = function () {
                     agreement: "바람의나라에 접속하셨습니다.\n\n중요한 내용입니다. 꼭 읽어주세요.\n읽어보시고 동의하시면 'a'키를, 동의하지 않으시면 'd' 키를 눌러주세요.\n'a' 키를 누르심으로써 여러분은 아래 계약을 따르기로 동의합니다.\n\n1. 바람의나라 이용자는 지정된 아이디를 사용하며 본 게임의 호스트 컴퓨터에 정당한 방법으로만 접속하여 본 게임을 이용하실 수 있습니다.\n기타 게임내의 각종 이벤트와 아이템 게임내용 자체는 서버에서 모든 권리를 소유하며, 수정이 필요하다고 판단될 때는 임의로 변경할 권리가 서버에 있습니다.\n이러한 게임내 변경사항의 적용을 위해서나 기타 필요하다고 판단될 때, 서버는 서비스의 감정적인 중단을 할 권리를 갖습니다.\n\n2. 본 게임이나 호스트 컴퓨터에 정당하지 아니한 방법으로 접속하거나, 타인의 아이디/계정을 무단으로 도용하여 사용하는 행위가 적발될 시에는 서버내에서 제재를 받을 수 있습니다.\n서버는 이용자가 다음 각 호에 해당하는 행위를 하였을경우 사전 통지없이 이용 계약을 해지하거나 또는, 기간을 정하여 서비스 이용을 중지할 수 있습니다.",
                     admin_mode: false,
                     log: {
-                        ip: `log-${sectionConf.log}`,
-                        port: conf.log[sectionConf.log].port.cluster,
+                        ip: `log-${worldName}`,
+                        port: worldConf.log.port.cluster,
                         level: ["info", "warn", "fatal"]
                     },
                     init: {
@@ -76,21 +77,21 @@ module.exports = function () {
                 }
 
 
-                const configMap = new k8s.core.v1.ConfigMap(`login-${section}`, {
-                    metadata: { name: `login-${section}`, namespace: namespace.metadata.name },
+                const configMap = new k8s.core.v1.ConfigMap(`login-${worldName}`, {
+                    metadata: { name: `login-${worldName}`, namespace: namespace.metadata.name },
                     data: {
                         "config.json": JSON.stringify(config),
                     },
                 })
 
-                const statefulSet = new k8s.apps.v1.StatefulSet(`login-${section}`, {
+                const statefulSet = new k8s.apps.v1.StatefulSet(`login-${worldName}`, {
                     metadata: {
-                        name: `login-${section}`,
+                        name: `login-${worldName}`,
                         namespace: namespace.metadata.name,
                     },
                     spec: {
                         serviceName: "login",
-                        replicas: sectionConf.replicas,
+                        replicas: 1,
                         selector: {
                             matchLabels: {
                                 app: "login",
@@ -128,7 +129,7 @@ module.exports = function () {
                                             }
                                         },
                                         ports: [
-                                            { containerPort: sectionConf.port, name: `login-${index}` },
+                                            { containerPort: worldConf.login.port, name: `login-${index}` },
                                         ],
                                         readinessProbe: {
                                             tcpSocket: {
@@ -173,10 +174,10 @@ module.exports = function () {
                 resources.push(statefulSet)
 
                 ports.push({
-                    name: `login-${section}`,
-                    port: sectionConf.port,
+                    name: `login-${worldName}`,
+                    port: worldConf.login.port,
                     targetPort: `login-${index}`,
-                    nodePort: sectionConf.port 
+                    nodePort: worldConf.login.port 
                 })
 
                 index++

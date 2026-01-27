@@ -1877,7 +1877,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Login;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t uid = 0;
     std::string name;
     uint8_t host = 0;
@@ -1887,15 +1887,15 @@ public:
     Login() = default;
 
     Login(const Login& x)
-        : section(x.section), uid(x.uid), name(x.name), host(x.host), force(x.force)
+        : world(x.world), uid(x.uid), name(x.name), host(x.host), force(x.force)
     { }
 
-    Login(const std::string& section, uint32_t uid, const std::string& name, uint8_t host, bool force)
-        : section(section), uid(uid), name(name), host(host), force(force)
+    Login(uint32_t world, uint32_t uid, const std::string& name, uint8_t host, bool force)
+        : world(world), uid(uid), name(name), host(host), force(force)
     { }
 
     Login(const fb::protocol::internal::request::raw::Login& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), host(raw.host()), force(raw.force())
+        : world(raw.world()), uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), host(raw.host()), force(raw.force())
     { }
 
 public:
@@ -1920,22 +1920,22 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Logout;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     std::string name;
 
 public:
     Logout() = default;
 
     Logout(const Logout& x)
-        : section(x.section), name(x.name)
+        : world(x.world), name(x.name)
     { }
 
-    Logout(const std::string& section, const std::string& name)
-        : section(section), name(name)
+    Logout(uint32_t world, const std::string& name)
+        : world(world), name(name)
     { }
 
     Logout(const fb::protocol::internal::request::raw::Logout& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), name(flatbuffers::option::decode(raw.name()->c_str()))
+        : world(raw.world()), name(flatbuffers::option::decode(raw.name()->c_str()))
     { }
 
 public:
@@ -1960,7 +1960,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Transfer;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     fb::protocol::internal::Service service;
     uint8_t id = 0;
     std::optional<std::string> name = std::nullopt;
@@ -1970,15 +1970,15 @@ public:
     Transfer() = default;
 
     Transfer(const Transfer& x)
-        : section(x.section), service(x.service), id(x.id), name(x.name), force_shutdown(x.force_shutdown)
+        : world(x.world), service(x.service), id(x.id), name(x.name), force_shutdown(x.force_shutdown)
     { }
 
-    Transfer(const std::string& section, fb::protocol::internal::Service service, uint8_t id, const std::optional<std::string>& name, bool force_shutdown)
-        : section(section), service(service), id(id), name(name), force_shutdown(force_shutdown)
+    Transfer(uint32_t world, fb::protocol::internal::Service service, uint8_t id, const std::optional<std::string>& name, bool force_shutdown)
+        : world(world), service(service), id(id), name(name), force_shutdown(force_shutdown)
     { }
 
     Transfer(const fb::protocol::internal::request::raw::Transfer& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), service((fb::protocol::internal::Service)raw.service()), id(raw.id()), name(raw.name() != nullptr ? flatbuffers::option::decode(raw.name()->c_str()) : std::optional<std::string>()), force_shutdown(raw.force_shutdown())
+        : world(raw.world()), service((fb::protocol::internal::Service)raw.service()), id(raw.id()), name(raw.name() != nullptr ? flatbuffers::option::decode(raw.name()->c_str()) : std::optional<std::string>()), force_shutdown(raw.force_shutdown())
     { }
 
 public:
@@ -2003,7 +2003,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Whisper;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     std::string from;
     std::string to;
     std::string message;
@@ -2012,15 +2012,15 @@ public:
     Whisper() = default;
 
     Whisper(const Whisper& x)
-        : section(x.section), from(x.from), to(x.to), message(x.message)
+        : world(x.world), from(x.from), to(x.to), message(x.message)
     { }
 
-    Whisper(const std::string& section, const std::string& from, const std::string& to, const std::string& message)
-        : section(section), from(from), to(to), message(message)
+    Whisper(uint32_t world, const std::string& from, const std::string& to, const std::string& message)
+        : world(world), from(from), to(to), message(message)
     { }
 
     Whisper(const fb::protocol::internal::request::raw::Whisper& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), from(flatbuffers::option::decode(raw.from()->c_str())), to(flatbuffers::option::decode(raw.to()->c_str())), message(flatbuffers::option::decode(raw.message()->c_str()))
+        : world(raw.world()), from(flatbuffers::option::decode(raw.from()->c_str())), to(flatbuffers::option::decode(raw.to()->c_str())), message(flatbuffers::option::decode(raw.message()->c_str()))
     { }
 
 public:
@@ -2045,22 +2045,22 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::KickOut;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t uid = 0;
 
 public:
     KickOut() = default;
 
     KickOut(const KickOut& x)
-        : section(x.section), uid(x.uid)
+        : world(x.world), uid(x.uid)
     { }
 
-    KickOut(const std::string& section, uint32_t uid)
-        : section(section), uid(uid)
+    KickOut(uint32_t world, uint32_t uid)
+        : world(world), uid(uid)
     { }
 
     KickOut(const fb::protocol::internal::request::raw::KickOut& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), uid(raw.uid())
+        : world(raw.world()), uid(raw.uid())
     { }
 
 public:
@@ -2085,22 +2085,22 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Account;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t uid = 0;
 
 public:
     Account() = default;
 
     Account(const Account& x)
-        : section(x.section), uid(x.uid)
+        : world(x.world), uid(x.uid)
     { }
 
-    Account(const std::string& section, uint32_t uid)
-        : section(section), uid(uid)
+    Account(uint32_t world, uint32_t uid)
+        : world(world), uid(uid)
     { }
 
     Account(const fb::protocol::internal::request::raw::Account& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), uid(raw.uid())
+        : world(raw.world()), uid(raw.uid())
     { }
 
 public:
@@ -2125,7 +2125,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::ChangePw;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t uid = 0;
     std::string before;
     std::string after;
@@ -2135,15 +2135,15 @@ public:
     ChangePw() = default;
 
     ChangePw(const ChangePw& x)
-        : section(x.section), uid(x.uid), before(x.before), after(x.after), birthday(x.birthday)
+        : world(x.world), uid(x.uid), before(x.before), after(x.after), birthday(x.birthday)
     { }
 
-    ChangePw(const std::string& section, uint32_t uid, const std::string& before, const std::string& after, uint32_t birthday)
-        : section(section), uid(uid), before(before), after(after), birthday(birthday)
+    ChangePw(uint32_t world, uint32_t uid, const std::string& before, const std::string& after, uint32_t birthday)
+        : world(world), uid(uid), before(before), after(after), birthday(birthday)
     { }
 
     ChangePw(const fb::protocol::internal::request::raw::ChangePw& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), uid(raw.uid()), before(flatbuffers::option::decode(raw.before()->c_str())), after(flatbuffers::option::decode(raw.after()->c_str())), birthday(raw.birthday())
+        : world(raw.world()), uid(raw.uid()), before(flatbuffers::option::decode(raw.before()->c_str())), after(flatbuffers::option::decode(raw.after()->c_str())), birthday(raw.birthday())
     { }
 
 public:
@@ -2168,7 +2168,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::InitCharacter;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t uid = 0;
     std::string name;
     std::string pw;
@@ -2183,15 +2183,15 @@ public:
     InitCharacter() = default;
 
     InitCharacter(const InitCharacter& x)
-        : section(x.section), uid(x.uid), name(x.name), pw(x.pw), hp(x.hp), mp(x.mp), map(x.map), x(x.x), y(x.y), role(x.role)
+        : world(x.world), uid(x.uid), name(x.name), pw(x.pw), hp(x.hp), mp(x.mp), map(x.map), x(x.x), y(x.y), role(x.role)
     { }
 
-    InitCharacter(const std::string& section, uint32_t uid, const std::string& name, const std::string& pw, uint32_t hp, uint32_t mp, uint16_t map, uint16_t x, uint16_t y, uint8_t role)
-        : section(section), uid(uid), name(name), pw(pw), hp(hp), mp(mp), map(map), x(x), y(y), role(role)
+    InitCharacter(uint32_t world, uint32_t uid, const std::string& name, const std::string& pw, uint32_t hp, uint32_t mp, uint16_t map, uint16_t x, uint16_t y, uint8_t role)
+        : world(world), uid(uid), name(name), pw(pw), hp(hp), mp(mp), map(map), x(x), y(y), role(role)
     { }
 
     InitCharacter(const fb::protocol::internal::request::raw::InitCharacter& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), hp(raw.hp()), mp(raw.mp()), map(raw.map()), x(raw.x()), y(raw.y()), role(raw.role())
+        : world(raw.world()), uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), hp(raw.hp()), mp(raw.mp()), map(raw.map()), x(raw.x()), y(raw.y()), role(raw.role())
     { }
 
 public:
@@ -2216,7 +2216,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Authenticate;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t uid = 0;
     std::string pw;
 
@@ -2224,15 +2224,15 @@ public:
     Authenticate() = default;
 
     Authenticate(const Authenticate& x)
-        : section(x.section), uid(x.uid), pw(x.pw)
+        : world(x.world), uid(x.uid), pw(x.pw)
     { }
 
-    Authenticate(const std::string& section, uint32_t uid, const std::string& pw)
-        : section(section), uid(uid), pw(pw)
+    Authenticate(uint32_t world, uint32_t uid, const std::string& pw)
+        : world(world), uid(uid), pw(pw)
     { }
 
     Authenticate(const fb::protocol::internal::request::raw::Authenticate& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), uid(raw.uid()), pw(flatbuffers::option::decode(raw.pw()->c_str()))
+        : world(raw.world()), uid(raw.uid()), pw(flatbuffers::option::decode(raw.pw()->c_str()))
     { }
 
 public:
@@ -2257,22 +2257,22 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Init;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t uid = 0;
 
 public:
     Init() = default;
 
     Init(const Init& x)
-        : section(x.section), uid(x.uid)
+        : world(x.world), uid(x.uid)
     { }
 
-    Init(const std::string& section, uint32_t uid)
-        : section(section), uid(uid)
+    Init(uint32_t world, uint32_t uid)
+        : world(world), uid(uid)
     { }
 
     Init(const fb::protocol::internal::request::raw::Init& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), uid(raw.uid())
+        : world(raw.world()), uid(raw.uid())
     { }
 
 public:
@@ -2297,7 +2297,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::MakeCharacter;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t uid = 0;
     uint16_t hair = 0;
     uint8_t gender = 0;
@@ -2308,15 +2308,15 @@ public:
     MakeCharacter() = default;
 
     MakeCharacter(const MakeCharacter& x)
-        : section(x.section), uid(x.uid), hair(x.hair), gender(x.gender), nation(x.nation), creature(x.creature)
+        : world(x.world), uid(x.uid), hair(x.hair), gender(x.gender), nation(x.nation), creature(x.creature)
     { }
 
-    MakeCharacter(const std::string& section, uint32_t uid, uint16_t hair, uint8_t gender, uint8_t nation, uint8_t creature)
-        : section(section), uid(uid), hair(hair), gender(gender), nation(nation), creature(creature)
+    MakeCharacter(uint32_t world, uint32_t uid, uint16_t hair, uint8_t gender, uint8_t nation, uint8_t creature)
+        : world(world), uid(uid), hair(hair), gender(gender), nation(nation), creature(creature)
     { }
 
     MakeCharacter(const fb::protocol::internal::request::raw::MakeCharacter& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), uid(raw.uid()), hair(raw.hair()), gender(raw.gender()), nation(raw.nation()), creature(raw.creature())
+        : world(raw.world()), uid(raw.uid()), hair(raw.hair()), gender(raw.gender()), nation(raw.nation()), creature(raw.creature())
     { }
 
 public:
@@ -2341,22 +2341,22 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::ReserveName;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     std::string name;
 
 public:
     ReserveName() = default;
 
     ReserveName(const ReserveName& x)
-        : section(x.section), name(x.name)
+        : world(x.world), name(x.name)
     { }
 
-    ReserveName(const std::string& section, const std::string& name)
-        : section(section), name(name)
+    ReserveName(uint32_t world, const std::string& name)
+        : world(world), name(name)
     { }
 
     ReserveName(const fb::protocol::internal::request::raw::ReserveName& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), name(flatbuffers::option::decode(raw.name()->c_str()))
+        : world(raw.world()), name(flatbuffers::option::decode(raw.name()->c_str()))
     { }
 
 public:
@@ -2381,7 +2381,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Save;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     fb::protocol::internal::Character character;
     std::vector<fb::protocol::internal::Item> items = {};
     std::vector<fb::protocol::internal::Spell> spells = {};
@@ -2395,15 +2395,15 @@ public:
     Save() = default;
 
     Save(const Save& x)
-        : section(x.section), character(x.character), items(x.items), spells(x.spells), achievements(x.achievements), quests(x.quests), received_system_mails(x.received_system_mails), storage_boxes(x.storage_boxes), storage_reward_marks(x.storage_reward_marks)
+        : world(x.world), character(x.character), items(x.items), spells(x.spells), achievements(x.achievements), quests(x.quests), received_system_mails(x.received_system_mails), storage_boxes(x.storage_boxes), storage_reward_marks(x.storage_reward_marks)
     { }
 
-    Save(const std::string& section, const fb::protocol::internal::Character& character, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::Achievement> achievements, std::vector<fb::protocol::internal::Quest> quests, std::vector<fb::protocol::internal::SystemMailUser> received_system_mails, std::vector<fb::protocol::internal::StorageBox> storage_boxes, std::vector<fb::protocol::internal::StorageRewardMark> storage_reward_marks)
-        : section(section), character(character), items(items), spells(spells), achievements(achievements), quests(quests), received_system_mails(received_system_mails), storage_boxes(storage_boxes), storage_reward_marks(storage_reward_marks)
+    Save(uint32_t world, const fb::protocol::internal::Character& character, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::Achievement> achievements, std::vector<fb::protocol::internal::Quest> quests, std::vector<fb::protocol::internal::SystemMailUser> received_system_mails, std::vector<fb::protocol::internal::StorageBox> storage_boxes, std::vector<fb::protocol::internal::StorageRewardMark> storage_reward_marks)
+        : world(world), character(character), items(items), spells(spells), achievements(achievements), quests(quests), received_system_mails(received_system_mails), storage_boxes(storage_boxes), storage_reward_marks(storage_reward_marks)
     { }
 
     Save(const fb::protocol::internal::request::raw::Save& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), character(*raw.character()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), quests(unpack<fb::protocol::internal::Quest>(raw.quests())), received_system_mails(unpack<fb::protocol::internal::SystemMailUser>(raw.received_system_mails())), storage_boxes(unpack<fb::protocol::internal::StorageBox>(raw.storage_boxes())), storage_reward_marks(unpack<fb::protocol::internal::StorageRewardMark>(raw.storage_reward_marks()))
+        : world(raw.world()), character(*raw.character()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), quests(unpack<fb::protocol::internal::Quest>(raw.quests())), received_system_mails(unpack<fb::protocol::internal::SystemMailUser>(raw.received_system_mails())), storage_boxes(unpack<fb::protocol::internal::StorageBox>(raw.storage_boxes())), storage_reward_marks(unpack<fb::protocol::internal::StorageRewardMark>(raw.storage_reward_marks()))
     { }
 
 public:
@@ -2428,8 +2428,8 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::WriteArticle;
 
 public:
-    std::string section;
-    uint32_t article_section = 0;
+    uint32_t world = 0;
+    uint32_t section = 0;
     uint32_t user = 0;
     std::string title;
     std::string contents;
@@ -2438,15 +2438,15 @@ public:
     WriteArticle() = default;
 
     WriteArticle(const WriteArticle& x)
-        : section(x.section), article_section(x.article_section), user(x.user), title(x.title), contents(x.contents)
+        : world(x.world), section(x.section), user(x.user), title(x.title), contents(x.contents)
     { }
 
-    WriteArticle(const std::string& section, uint32_t article_section, uint32_t user, const std::string& title, const std::string& contents)
-        : section(section), article_section(article_section), user(user), title(title), contents(contents)
+    WriteArticle(uint32_t world, uint32_t section, uint32_t user, const std::string& title, const std::string& contents)
+        : world(world), section(section), user(user), title(title), contents(contents)
     { }
 
     WriteArticle(const fb::protocol::internal::request::raw::WriteArticle& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), article_section(raw.article_section()), user(raw.user()), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str()))
+        : world(raw.world()), section(raw.section()), user(raw.user()), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str()))
     { }
 
 public:
@@ -2471,24 +2471,24 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::DeleteArticle;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t id = 0;
-    uint32_t article_section = 0;
+    uint32_t section = 0;
     uint32_t user = 0;
 
 public:
     DeleteArticle() = default;
 
     DeleteArticle(const DeleteArticle& x)
-        : section(x.section), id(x.id), article_section(x.article_section), user(x.user)
+        : world(x.world), id(x.id), section(x.section), user(x.user)
     { }
 
-    DeleteArticle(const std::string& section, uint32_t id, uint32_t article_section, uint32_t user)
-        : section(section), id(id), article_section(article_section), user(user)
+    DeleteArticle(uint32_t world, uint32_t id, uint32_t section, uint32_t user)
+        : world(world), id(id), section(section), user(user)
     { }
 
     DeleteArticle(const fb::protocol::internal::request::raw::DeleteArticle& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), id(raw.id()), article_section(raw.article_section()), user(raw.user())
+        : world(raw.world()), id(raw.id()), section(raw.section()), user(raw.user())
     { }
 
 public:
@@ -2513,7 +2513,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::WriteMail;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t sender = 0;
     std::string user;
     std::string title;
@@ -2524,15 +2524,15 @@ public:
     WriteMail() = default;
 
     WriteMail(const WriteMail& x)
-        : section(x.section), sender(x.sender), user(x.user), title(x.title), contents(x.contents), host(x.host)
+        : world(x.world), sender(x.sender), user(x.user), title(x.title), contents(x.contents), host(x.host)
     { }
 
-    WriteMail(const std::string& section, uint32_t sender, const std::string& user, const std::string& title, const std::string& contents, uint32_t host)
-        : section(section), sender(sender), user(user), title(title), contents(contents), host(host)
+    WriteMail(uint32_t world, uint32_t sender, const std::string& user, const std::string& title, const std::string& contents, uint32_t host)
+        : world(world), sender(sender), user(user), title(title), contents(contents), host(host)
     { }
 
     WriteMail(const fb::protocol::internal::request::raw::WriteMail& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), sender(raw.sender()), user(flatbuffers::option::decode(raw.user()->c_str())), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str())), host(raw.host())
+        : world(raw.world()), sender(raw.sender()), user(flatbuffers::option::decode(raw.user()->c_str())), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str())), host(raw.host())
     { }
 
 public:
@@ -2557,7 +2557,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::DeleteMail;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t user = 0;
     uint16_t id = 0;
 
@@ -2565,15 +2565,15 @@ public:
     DeleteMail() = default;
 
     DeleteMail(const DeleteMail& x)
-        : section(x.section), user(x.user), id(x.id)
+        : world(x.world), user(x.user), id(x.id)
     { }
 
-    DeleteMail(const std::string& section, uint32_t user, uint16_t id)
-        : section(section), user(user), id(id)
+    DeleteMail(uint32_t world, uint32_t user, uint16_t id)
+        : world(world), user(user), id(id)
     { }
 
     DeleteMail(const fb::protocol::internal::request::raw::DeleteMail& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), user(raw.user()), id(raw.id())
+        : world(raw.world()), user(raw.user()), id(raw.id())
     { }
 
 public:
@@ -2598,7 +2598,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::SetOption;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t user = 0;
     uint8_t type = 0;
     bool enabled = false;
@@ -2607,15 +2607,15 @@ public:
     SetOption() = default;
 
     SetOption(const SetOption& x)
-        : section(x.section), user(x.user), type(x.type), enabled(x.enabled)
+        : world(x.world), user(x.user), type(x.type), enabled(x.enabled)
     { }
 
-    SetOption(const std::string& section, uint32_t user, uint8_t type, bool enabled)
-        : section(section), user(user), type(type), enabled(enabled)
+    SetOption(uint32_t world, uint32_t user, uint8_t type, bool enabled)
+        : world(world), user(user), type(type), enabled(enabled)
     { }
 
     SetOption(const fb::protocol::internal::request::raw::SetOption& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), user(raw.user()), type(raw.type()), enabled(raw.enabled())
+        : world(raw.world()), user(raw.user()), type(raw.type()), enabled(raw.enabled())
     { }
 
 public:
@@ -2640,7 +2640,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::CreateGroup;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     uint32_t master = 0;
     std::string member;
@@ -2649,15 +2649,15 @@ public:
     CreateGroup() = default;
 
     CreateGroup(const CreateGroup& x)
-        : section(x.section), host(x.host), master(x.master), member(x.member)
+        : world(x.world), host(x.host), master(x.master), member(x.member)
     { }
 
-    CreateGroup(const std::string& section, uint32_t host, uint32_t master, const std::string& member)
-        : section(section), host(host), master(master), member(member)
+    CreateGroup(uint32_t world, uint32_t host, uint32_t master, const std::string& member)
+        : world(world), host(host), master(master), member(member)
     { }
 
     CreateGroup(const fb::protocol::internal::request::raw::CreateGroup& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), master(raw.master()), member(flatbuffers::option::decode(raw.member()->c_str()))
+        : world(raw.world()), host(raw.host()), master(raw.master()), member(flatbuffers::option::decode(raw.member()->c_str()))
     { }
 
 public:
@@ -2682,7 +2682,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::EnterGroup;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     uint32_t master = 0;
     std::string member;
@@ -2691,15 +2691,15 @@ public:
     EnterGroup() = default;
 
     EnterGroup(const EnterGroup& x)
-        : section(x.section), host(x.host), master(x.master), member(x.member)
+        : world(x.world), host(x.host), master(x.master), member(x.member)
     { }
 
-    EnterGroup(const std::string& section, uint32_t host, uint32_t master, const std::string& member)
-        : section(section), host(host), master(master), member(member)
+    EnterGroup(uint32_t world, uint32_t host, uint32_t master, const std::string& member)
+        : world(world), host(host), master(master), member(member)
     { }
 
     EnterGroup(const fb::protocol::internal::request::raw::EnterGroup& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), master(raw.master()), member(flatbuffers::option::decode(raw.member()->c_str()))
+        : world(raw.world()), host(raw.host()), master(raw.master()), member(flatbuffers::option::decode(raw.member()->c_str()))
     { }
 
 public:
@@ -2724,7 +2724,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::BroadcastGroup;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     uint32_t group = 0;
     std::string message;
@@ -2734,15 +2734,15 @@ public:
     BroadcastGroup() = default;
 
     BroadcastGroup(const BroadcastGroup& x)
-        : section(x.section), host(x.host), group(x.group), message(x.message), type(x.type)
+        : world(x.world), host(x.host), group(x.group), message(x.message), type(x.type)
     { }
 
-    BroadcastGroup(const std::string& section, uint32_t host, uint32_t group, const std::string& message, uint8_t type)
-        : section(section), host(host), group(group), message(message), type(type)
+    BroadcastGroup(uint32_t world, uint32_t host, uint32_t group, const std::string& message, uint8_t type)
+        : world(world), host(host), group(group), message(message), type(type)
     { }
 
     BroadcastGroup(const fb::protocol::internal::request::raw::BroadcastGroup& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), group(raw.group()), message(flatbuffers::option::decode(raw.message()->c_str())), type(raw.type())
+        : world(raw.world()), host(raw.host()), group(raw.group()), message(flatbuffers::option::decode(raw.message()->c_str())), type(raw.type())
     { }
 
 public:
@@ -2767,7 +2767,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::LeaveGroup;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     std::string member;
 
@@ -2775,15 +2775,15 @@ public:
     LeaveGroup() = default;
 
     LeaveGroup(const LeaveGroup& x)
-        : section(x.section), host(x.host), member(x.member)
+        : world(x.world), host(x.host), member(x.member)
     { }
 
-    LeaveGroup(const std::string& section, uint32_t host, const std::string& member)
-        : section(section), host(host), member(member)
+    LeaveGroup(uint32_t world, uint32_t host, const std::string& member)
+        : world(world), host(host), member(member)
     { }
 
     LeaveGroup(const fb::protocol::internal::request::raw::LeaveGroup& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), member(flatbuffers::option::decode(raw.member()->c_str()))
+        : world(raw.world()), host(raw.host()), member(flatbuffers::option::decode(raw.member()->c_str()))
     { }
 
 public:
@@ -2808,7 +2808,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::KickGroup;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     std::string kicker;
     std::string target;
@@ -2817,15 +2817,15 @@ public:
     KickGroup() = default;
 
     KickGroup(const KickGroup& x)
-        : section(x.section), host(x.host), kicker(x.kicker), target(x.target)
+        : world(x.world), host(x.host), kicker(x.kicker), target(x.target)
     { }
 
-    KickGroup(const std::string& section, uint32_t host, const std::string& kicker, const std::string& target)
-        : section(section), host(host), kicker(kicker), target(target)
+    KickGroup(uint32_t world, uint32_t host, const std::string& kicker, const std::string& target)
+        : world(world), host(host), kicker(kicker), target(target)
     { }
 
     KickGroup(const fb::protocol::internal::request::raw::KickGroup& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), kicker(flatbuffers::option::decode(raw.kicker()->c_str())), target(flatbuffers::option::decode(raw.target()->c_str()))
+        : world(raw.world()), host(raw.host()), kicker(flatbuffers::option::decode(raw.kicker()->c_str())), target(flatbuffers::option::decode(raw.target()->c_str()))
     { }
 
 public:
@@ -2850,7 +2850,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::DestroyGroup;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     std::string master;
 
@@ -2858,15 +2858,15 @@ public:
     DestroyGroup() = default;
 
     DestroyGroup(const DestroyGroup& x)
-        : section(x.section), host(x.host), master(x.master)
+        : world(x.world), host(x.host), master(x.master)
     { }
 
-    DestroyGroup(const std::string& section, uint32_t host, const std::string& master)
-        : section(section), host(host), master(master)
+    DestroyGroup(uint32_t world, uint32_t host, const std::string& master)
+        : world(world), host(host), master(master)
     { }
 
     DestroyGroup(const fb::protocol::internal::request::raw::DestroyGroup& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), master(flatbuffers::option::decode(raw.master()->c_str()))
+        : world(raw.world()), host(raw.host()), master(flatbuffers::option::decode(raw.master()->c_str()))
     { }
 
 public:
@@ -2891,7 +2891,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::CreateClan;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     uint32_t master = 0;
     std::string name;
@@ -2900,15 +2900,15 @@ public:
     CreateClan() = default;
 
     CreateClan(const CreateClan& x)
-        : section(x.section), host(x.host), master(x.master), name(x.name)
+        : world(x.world), host(x.host), master(x.master), name(x.name)
     { }
 
-    CreateClan(const std::string& section, uint32_t host, uint32_t master, const std::string& name)
-        : section(section), host(host), master(master), name(name)
+    CreateClan(uint32_t world, uint32_t host, uint32_t master, const std::string& name)
+        : world(world), host(host), master(master), name(name)
     { }
 
     CreateClan(const fb::protocol::internal::request::raw::CreateClan& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), master(raw.master()), name(flatbuffers::option::decode(raw.name()->c_str()))
+        : world(raw.world()), host(raw.host()), master(raw.master()), name(flatbuffers::option::decode(raw.name()->c_str()))
     { }
 
 public:
@@ -2933,7 +2933,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::DestroyClan;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     uint32_t master = 0;
 
@@ -2941,15 +2941,15 @@ public:
     DestroyClan() = default;
 
     DestroyClan(const DestroyClan& x)
-        : section(x.section), host(x.host), master(x.master)
+        : world(x.world), host(x.host), master(x.master)
     { }
 
-    DestroyClan(const std::string& section, uint32_t host, uint32_t master)
-        : section(section), host(host), master(master)
+    DestroyClan(uint32_t world, uint32_t host, uint32_t master)
+        : world(world), host(host), master(master)
     { }
 
     DestroyClan(const fb::protocol::internal::request::raw::DestroyClan& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), master(raw.master())
+        : world(raw.world()), host(raw.host()), master(raw.master())
     { }
 
 public:
@@ -2974,7 +2974,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::JoinClan;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     uint32_t inviter_uid = 0;
     std::string invitee_name;
@@ -2983,15 +2983,15 @@ public:
     JoinClan() = default;
 
     JoinClan(const JoinClan& x)
-        : section(x.section), host(x.host), inviter_uid(x.inviter_uid), invitee_name(x.invitee_name)
+        : world(x.world), host(x.host), inviter_uid(x.inviter_uid), invitee_name(x.invitee_name)
     { }
 
-    JoinClan(const std::string& section, uint32_t host, uint32_t inviter_uid, const std::string& invitee_name)
-        : section(section), host(host), inviter_uid(inviter_uid), invitee_name(invitee_name)
+    JoinClan(uint32_t world, uint32_t host, uint32_t inviter_uid, const std::string& invitee_name)
+        : world(world), host(host), inviter_uid(inviter_uid), invitee_name(invitee_name)
     { }
 
     JoinClan(const fb::protocol::internal::request::raw::JoinClan& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), inviter_uid(raw.inviter_uid()), invitee_name(flatbuffers::option::decode(raw.invitee_name()->c_str()))
+        : world(raw.world()), host(raw.host()), inviter_uid(raw.inviter_uid()), invitee_name(flatbuffers::option::decode(raw.invitee_name()->c_str()))
     { }
 
 public:
@@ -3016,7 +3016,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::LeaveClan;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     uint32_t clan = 0;
     std::string name;
@@ -3025,15 +3025,15 @@ public:
     LeaveClan() = default;
 
     LeaveClan(const LeaveClan& x)
-        : section(x.section), host(x.host), clan(x.clan), name(x.name)
+        : world(x.world), host(x.host), clan(x.clan), name(x.name)
     { }
 
-    LeaveClan(const std::string& section, uint32_t host, uint32_t clan, const std::string& name)
-        : section(section), host(host), clan(clan), name(name)
+    LeaveClan(uint32_t world, uint32_t host, uint32_t clan, const std::string& name)
+        : world(world), host(host), clan(clan), name(name)
     { }
 
     LeaveClan(const fb::protocol::internal::request::raw::LeaveClan& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), clan(raw.clan()), name(flatbuffers::option::decode(raw.name()->c_str()))
+        : world(raw.world()), host(raw.host()), clan(raw.clan()), name(flatbuffers::option::decode(raw.name()->c_str()))
     { }
 
 public:
@@ -3058,7 +3058,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::KickClan;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     uint32_t clan = 0;
     std::string kicker;
@@ -3068,15 +3068,15 @@ public:
     KickClan() = default;
 
     KickClan(const KickClan& x)
-        : section(x.section), host(x.host), clan(x.clan), kicker(x.kicker), target(x.target)
+        : world(x.world), host(x.host), clan(x.clan), kicker(x.kicker), target(x.target)
     { }
 
-    KickClan(const std::string& section, uint32_t host, uint32_t clan, const std::string& kicker, const std::string& target)
-        : section(section), host(host), clan(clan), kicker(kicker), target(target)
+    KickClan(uint32_t world, uint32_t host, uint32_t clan, const std::string& kicker, const std::string& target)
+        : world(world), host(host), clan(clan), kicker(kicker), target(target)
     { }
 
     KickClan(const fb::protocol::internal::request::raw::KickClan& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), clan(raw.clan()), kicker(flatbuffers::option::decode(raw.kicker()->c_str())), target(flatbuffers::option::decode(raw.target()->c_str()))
+        : world(raw.world()), host(raw.host()), clan(raw.clan()), kicker(flatbuffers::option::decode(raw.kicker()->c_str())), target(flatbuffers::option::decode(raw.target()->c_str()))
     { }
 
 public:
@@ -3101,7 +3101,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::SetClanTitle;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     uint32_t changer = 0;
     std::optional<std::string> title = std::nullopt;
@@ -3110,15 +3110,15 @@ public:
     SetClanTitle() = default;
 
     SetClanTitle(const SetClanTitle& x)
-        : section(x.section), host(x.host), changer(x.changer), title(x.title)
+        : world(x.world), host(x.host), changer(x.changer), title(x.title)
     { }
 
-    SetClanTitle(const std::string& section, uint32_t host, uint32_t changer, const std::optional<std::string>& title)
-        : section(section), host(host), changer(changer), title(title)
+    SetClanTitle(uint32_t world, uint32_t host, uint32_t changer, const std::optional<std::string>& title)
+        : world(world), host(host), changer(changer), title(title)
     { }
 
     SetClanTitle(const fb::protocol::internal::request::raw::SetClanTitle& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), changer(raw.changer()), title(raw.title() != nullptr ? flatbuffers::option::decode(raw.title()->c_str()) : std::optional<std::string>())
+        : world(raw.world()), host(raw.host()), changer(raw.changer()), title(raw.title() != nullptr ? flatbuffers::option::decode(raw.title()->c_str()) : std::optional<std::string>())
     { }
 
 public:
@@ -3143,7 +3143,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::BroadcastClan;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     uint32_t clan = 0;
     std::string message;
@@ -3153,15 +3153,15 @@ public:
     BroadcastClan() = default;
 
     BroadcastClan(const BroadcastClan& x)
-        : section(x.section), host(x.host), clan(x.clan), message(x.message), type(x.type)
+        : world(x.world), host(x.host), clan(x.clan), message(x.message), type(x.type)
     { }
 
-    BroadcastClan(const std::string& section, uint32_t host, uint32_t clan, const std::string& message, uint8_t type)
-        : section(section), host(host), clan(clan), message(message), type(type)
+    BroadcastClan(uint32_t world, uint32_t host, uint32_t clan, const std::string& message, uint8_t type)
+        : world(world), host(host), clan(clan), message(message), type(type)
     { }
 
     BroadcastClan(const fb::protocol::internal::request::raw::BroadcastClan& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), clan(raw.clan()), message(flatbuffers::option::decode(raw.message()->c_str())), type(raw.type())
+        : world(raw.world()), host(raw.host()), clan(raw.clan()), message(flatbuffers::option::decode(raw.message()->c_str())), type(raw.type())
     { }
 
 public:
@@ -3186,7 +3186,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::ChangeClanRole;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     uint32_t changer_uid = 0;
     std::string target_name;
@@ -3197,15 +3197,15 @@ public:
     ChangeClanRole() = default;
 
     ChangeClanRole(const ChangeClanRole& x)
-        : section(x.section), host(x.host), changer_uid(x.changer_uid), target_name(x.target_name), clan(x.clan), new_role(x.new_role)
+        : world(x.world), host(x.host), changer_uid(x.changer_uid), target_name(x.target_name), clan(x.clan), new_role(x.new_role)
     { }
 
-    ChangeClanRole(const std::string& section, uint32_t host, uint32_t changer_uid, const std::string& target_name, uint32_t clan, uint32_t new_role)
-        : section(section), host(host), changer_uid(changer_uid), target_name(target_name), clan(clan), new_role(new_role)
+    ChangeClanRole(uint32_t world, uint32_t host, uint32_t changer_uid, const std::string& target_name, uint32_t clan, uint32_t new_role)
+        : world(world), host(host), changer_uid(changer_uid), target_name(target_name), clan(clan), new_role(new_role)
     { }
 
     ChangeClanRole(const fb::protocol::internal::request::raw::ChangeClanRole& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), changer_uid(raw.changer_uid()), target_name(flatbuffers::option::decode(raw.target_name()->c_str())), clan(raw.clan()), new_role(raw.new_role())
+        : world(raw.world()), host(raw.host()), changer_uid(raw.changer_uid()), target_name(flatbuffers::option::decode(raw.target_name()->c_str())), clan(raw.clan()), new_role(raw.new_role())
     { }
 
 public:
@@ -3230,7 +3230,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Broadcast;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t host = 0;
     std::string message;
     uint8_t type = 0;
@@ -3239,15 +3239,15 @@ public:
     Broadcast() = default;
 
     Broadcast(const Broadcast& x)
-        : section(x.section), host(x.host), message(x.message), type(x.type)
+        : world(x.world), host(x.host), message(x.message), type(x.type)
     { }
 
-    Broadcast(const std::string& section, uint32_t host, const std::string& message, uint8_t type)
-        : section(section), host(host), message(message), type(type)
+    Broadcast(uint32_t world, uint32_t host, const std::string& message, uint8_t type)
+        : world(world), host(host), message(message), type(type)
     { }
 
     Broadcast(const fb::protocol::internal::request::raw::Broadcast& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), host(raw.host()), message(flatbuffers::option::decode(raw.message()->c_str())), type(raw.type())
+        : world(raw.world()), host(raw.host()), message(flatbuffers::option::decode(raw.message()->c_str())), type(raw.type())
     { }
 
 public:
@@ -3272,7 +3272,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::UpdateFriends;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t user = 0;
     std::vector<std::string> names = {};
 
@@ -3280,15 +3280,15 @@ public:
     UpdateFriends() = default;
 
     UpdateFriends(const UpdateFriends& x)
-        : section(x.section), user(x.user), names(x.names)
+        : world(x.world), user(x.user), names(x.names)
     { }
 
-    UpdateFriends(const std::string& section, uint32_t user, std::vector<std::string> names)
-        : section(section), user(user), names(names)
+    UpdateFriends(uint32_t world, uint32_t user, std::vector<std::string> names)
+        : world(world), user(user), names(names)
     { }
 
     UpdateFriends(const fb::protocol::internal::request::raw::UpdateFriends& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), user(raw.user()), names(unpack<std::string>(raw.names()))
+        : world(raw.world()), user(raw.user()), names(unpack<std::string>(raw.names()))
     { }
 
 public:
@@ -3313,22 +3313,22 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::GetStoragePending;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t user = 0;
 
 public:
     GetStoragePending() = default;
 
     GetStoragePending(const GetStoragePending& x)
-        : section(x.section), user(x.user)
+        : world(x.world), user(x.user)
     { }
 
-    GetStoragePending(const std::string& section, uint32_t user)
-        : section(section), user(user)
+    GetStoragePending(uint32_t world, uint32_t user)
+        : world(world), user(user)
     { }
 
     GetStoragePending(const fb::protocol::internal::request::raw::GetStoragePending& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), user(raw.user())
+        : world(raw.world()), user(raw.user())
     { }
 
 public:
@@ -3353,7 +3353,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::WriteSystemMail;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t sender = 0;
     std::string title;
     std::string contents;
@@ -3363,15 +3363,15 @@ public:
     WriteSystemMail() = default;
 
     WriteSystemMail(const WriteSystemMail& x)
-        : section(x.section), sender(x.sender), title(x.title), contents(x.contents), expire_date(x.expire_date)
+        : world(x.world), sender(x.sender), title(x.title), contents(x.contents), expire_date(x.expire_date)
     { }
 
-    WriteSystemMail(const std::string& section, uint32_t sender, const std::string& title, const std::string& contents, const std::optional<std::string>& expire_date)
-        : section(section), sender(sender), title(title), contents(contents), expire_date(expire_date)
+    WriteSystemMail(uint32_t world, uint32_t sender, const std::string& title, const std::string& contents, const std::optional<std::string>& expire_date)
+        : world(world), sender(sender), title(title), contents(contents), expire_date(expire_date)
     { }
 
     WriteSystemMail(const fb::protocol::internal::request::raw::WriteSystemMail& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), sender(raw.sender()), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str())), expire_date(raw.expire_date() != nullptr ? flatbuffers::option::decode(raw.expire_date()->c_str()) : std::optional<std::string>())
+        : world(raw.world()), sender(raw.sender()), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str())), expire_date(raw.expire_date() != nullptr ? flatbuffers::option::decode(raw.expire_date()->c_str()) : std::optional<std::string>())
     { }
 
 public:
@@ -3396,7 +3396,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Ban;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     std::string name;
     std::string reason;
     std::optional<uint32_t> days = std::nullopt;
@@ -3405,15 +3405,15 @@ public:
     Ban() = default;
 
     Ban(const Ban& x)
-        : section(x.section), name(x.name), reason(x.reason), days(x.days)
+        : world(x.world), name(x.name), reason(x.reason), days(x.days)
     { }
 
-    Ban(const std::string& section, const std::string& name, const std::string& reason, const std::optional<uint32_t>& days)
-        : section(section), name(name), reason(reason), days(days)
+    Ban(uint32_t world, const std::string& name, const std::string& reason, const std::optional<uint32_t>& days)
+        : world(world), name(name), reason(reason), days(days)
     { }
 
     Ban(const fb::protocol::internal::request::raw::Ban& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), name(flatbuffers::option::decode(raw.name()->c_str())), reason(flatbuffers::option::decode(raw.reason()->c_str())), days(raw.days() != nullptr ? raw.days()->value() : std::optional<uint32_t>())
+        : world(raw.world()), name(flatbuffers::option::decode(raw.name()->c_str())), reason(flatbuffers::option::decode(raw.reason()->c_str())), days(raw.days() != nullptr ? raw.days()->value() : std::optional<uint32_t>())
     { }
 
 public:
@@ -3438,22 +3438,22 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Unban;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     std::string name;
 
 public:
     Unban() = default;
 
     Unban(const Unban& x)
-        : section(x.section), name(x.name)
+        : world(x.world), name(x.name)
     { }
 
-    Unban(const std::string& section, const std::string& name)
-        : section(section), name(name)
+    Unban(uint32_t world, const std::string& name)
+        : world(world), name(name)
     { }
 
     Unban(const fb::protocol::internal::request::raw::Unban& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), name(flatbuffers::option::decode(raw.name()->c_str()))
+        : world(raw.world()), name(flatbuffers::option::decode(raw.name()->c_str()))
     { }
 
 public:
@@ -3478,7 +3478,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Heartbeat;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     fb::protocol::internal::Service service;
     uint8_t id = 0;
     std::string name;
@@ -3489,15 +3489,15 @@ public:
     Heartbeat() = default;
 
     Heartbeat(const Heartbeat& x)
-        : section(x.section), service(x.service), id(x.id), name(x.name), ip(x.ip), port(x.port)
+        : world(x.world), service(x.service), id(x.id), name(x.name), ip(x.ip), port(x.port)
     { }
 
-    Heartbeat(const std::string& section, fb::protocol::internal::Service service, uint8_t id, const std::string& name, const std::string& ip, uint16_t port)
-        : section(section), service(service), id(id), name(name), ip(ip), port(port)
+    Heartbeat(uint32_t world, fb::protocol::internal::Service service, uint8_t id, const std::string& name, const std::string& ip, uint16_t port)
+        : world(world), service(service), id(id), name(name), ip(ip), port(port)
     { }
 
     Heartbeat(const fb::protocol::internal::request::raw::Heartbeat& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), service((fb::protocol::internal::Service)raw.service()), id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port())
+        : world(raw.world()), service((fb::protocol::internal::Service)raw.service()), id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port())
     { }
 
 public:
@@ -3522,22 +3522,22 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::SetExpMultiplier;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     double value = 0.0;
 
 public:
     SetExpMultiplier() = default;
 
     SetExpMultiplier(const SetExpMultiplier& x)
-        : section(x.section), value(x.value)
+        : world(x.world), value(x.value)
     { }
 
-    SetExpMultiplier(const std::string& section, double value)
-        : section(section), value(value)
+    SetExpMultiplier(uint32_t world, double value)
+        : world(world), value(value)
     { }
 
     SetExpMultiplier(const fb::protocol::internal::request::raw::SetExpMultiplier& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), value(raw.value())
+        : world(raw.world()), value(raw.value())
     { }
 
 public:
@@ -3562,22 +3562,22 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::SetDropRateMultiplier;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     double value = 0.0;
 
 public:
     SetDropRateMultiplier() = default;
 
     SetDropRateMultiplier(const SetDropRateMultiplier& x)
-        : section(x.section), value(x.value)
+        : world(x.world), value(x.value)
     { }
 
-    SetDropRateMultiplier(const std::string& section, double value)
-        : section(section), value(value)
+    SetDropRateMultiplier(uint32_t world, double value)
+        : world(world), value(value)
     { }
 
     SetDropRateMultiplier(const fb::protocol::internal::request::raw::SetDropRateMultiplier& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), value(raw.value())
+        : world(raw.world()), value(raw.value())
     { }
 
 public:
@@ -5618,7 +5618,7 @@ public:
     static inline fb::protocol::marketplace::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::marketplace::request::FlatBufferProtocolType::List;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t character_id = 0;
     std::string listing_id;
     fb::protocol::marketplace::Item item;
@@ -5628,15 +5628,15 @@ public:
     List() = default;
 
     List(const List& x)
-        : section(x.section), character_id(x.character_id), listing_id(x.listing_id), item(x.item), price(x.price)
+        : world(x.world), character_id(x.character_id), listing_id(x.listing_id), item(x.item), price(x.price)
     { }
 
-    List(const std::string& section, uint32_t character_id, const std::string& listing_id, const fb::protocol::marketplace::Item& item, uint32_t price)
-        : section(section), character_id(character_id), listing_id(listing_id), item(item), price(price)
+    List(uint32_t world, uint32_t character_id, const std::string& listing_id, const fb::protocol::marketplace::Item& item, uint32_t price)
+        : world(world), character_id(character_id), listing_id(listing_id), item(item), price(price)
     { }
 
     List(const fb::protocol::marketplace::request::raw::List& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), character_id(raw.character_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), item(*raw.item()), price(raw.price())
+        : world(raw.world()), character_id(raw.character_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), item(*raw.item()), price(raw.price())
     { }
 
 public:
@@ -5661,7 +5661,7 @@ public:
     static inline fb::protocol::marketplace::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::marketplace::request::FlatBufferProtocolType::Cancel;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t character_id = 0;
     std::string listing_id;
 
@@ -5669,15 +5669,15 @@ public:
     Cancel() = default;
 
     Cancel(const Cancel& x)
-        : section(x.section), character_id(x.character_id), listing_id(x.listing_id)
+        : world(x.world), character_id(x.character_id), listing_id(x.listing_id)
     { }
 
-    Cancel(const std::string& section, uint32_t character_id, const std::string& listing_id)
-        : section(section), character_id(character_id), listing_id(listing_id)
+    Cancel(uint32_t world, uint32_t character_id, const std::string& listing_id)
+        : world(world), character_id(character_id), listing_id(listing_id)
     { }
 
     Cancel(const fb::protocol::marketplace::request::raw::Cancel& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), character_id(raw.character_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str()))
+        : world(raw.world()), character_id(raw.character_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str()))
     { }
 
 public:
@@ -5702,7 +5702,7 @@ public:
     static inline fb::protocol::marketplace::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::marketplace::request::FlatBufferProtocolType::Purchase;
 
 public:
-    std::string section;
+    uint32_t world = 0;
     uint32_t buyer_id = 0;
     std::string listing_id;
     uint16_t purchase_count = 0;
@@ -5712,15 +5712,15 @@ public:
     Purchase() = default;
 
     Purchase(const Purchase& x)
-        : section(x.section), buyer_id(x.buyer_id), listing_id(x.listing_id), purchase_count(x.purchase_count), purchase_id(x.purchase_id)
+        : world(x.world), buyer_id(x.buyer_id), listing_id(x.listing_id), purchase_count(x.purchase_count), purchase_id(x.purchase_id)
     { }
 
-    Purchase(const std::string& section, uint32_t buyer_id, const std::string& listing_id, uint16_t purchase_count, const std::string& purchase_id)
-        : section(section), buyer_id(buyer_id), listing_id(listing_id), purchase_count(purchase_count), purchase_id(purchase_id)
+    Purchase(uint32_t world, uint32_t buyer_id, const std::string& listing_id, uint16_t purchase_count, const std::string& purchase_id)
+        : world(world), buyer_id(buyer_id), listing_id(listing_id), purchase_count(purchase_count), purchase_id(purchase_id)
     { }
 
     Purchase(const fb::protocol::marketplace::request::raw::Purchase& raw)
-        : section(flatbuffers::option::decode(raw.section()->c_str())), buyer_id(raw.buyer_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), purchase_count(raw.purchase_count()), purchase_id(flatbuffers::option::decode(raw.purchase_id()->c_str()))
+        : world(raw.world()), buyer_id(raw.buyer_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), purchase_count(raw.purchase_count()), purchase_id(flatbuffers::option::decode(raw.purchase_id()->c_str()))
     { }
 
 public:
@@ -6435,7 +6435,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value)
 {
     return fb::protocol::internal::request::raw::CreateLogin(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<std::string>(builder, value.name),
             flatbuffers::build<uint8_t>(builder, value.host),
@@ -6445,14 +6445,14 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> build<fb::protocol::internal::request::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Logout& value)
 {
     return fb::protocol::internal::request::raw::CreateLogout(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<std::string>(builder, value.name));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Transfer> build<fb::protocol::internal::request::Transfer>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Transfer& value)
 {
     return fb::protocol::internal::request::raw::CreateTransfer(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<fb::protocol::internal::Service>(builder, value.service),
             flatbuffers::build<uint8_t>(builder, value.id),
             flatbuffers::build<std::optional<std::string>>(builder, value.name),
@@ -6462,7 +6462,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Whisper> build<fb::protocol::internal::request::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Whisper& value)
 {
     return fb::protocol::internal::request::raw::CreateWhisper(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<std::string>(builder, value.from),
             flatbuffers::build<std::string>(builder, value.to),
             flatbuffers::build<std::string>(builder, value.message));
@@ -6471,21 +6471,21 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::KickOut> build<fb::protocol::internal::request::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::request::KickOut& value)
 {
     return fb::protocol::internal::request::raw::CreateKickOut(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.uid));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Account> build<fb::protocol::internal::request::Account>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Account& value)
 {
     return fb::protocol::internal::request::raw::CreateAccount(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.uid));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::ChangePw> build<fb::protocol::internal::request::ChangePw>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ChangePw& value)
 {
     return fb::protocol::internal::request::raw::CreateChangePw(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<std::string>(builder, value.before),
             flatbuffers::build<std::string>(builder, value.after),
@@ -6495,7 +6495,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::InitCharacter> build<fb::protocol::internal::request::InitCharacter>(FlatBufferBuilder& builder, const fb::protocol::internal::request::InitCharacter& value)
 {
     return fb::protocol::internal::request::raw::CreateInitCharacter(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<std::string>(builder, value.name),
             flatbuffers::build<std::string>(builder, value.pw),
@@ -6510,7 +6510,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Authenticate> build<fb::protocol::internal::request::Authenticate>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Authenticate& value)
 {
     return fb::protocol::internal::request::raw::CreateAuthenticate(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<std::string>(builder, value.pw));
 }
@@ -6518,14 +6518,14 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Init> build<fb::protocol::internal::request::Init>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Init& value)
 {
     return fb::protocol::internal::request::raw::CreateInit(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.uid));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::MakeCharacter> build<fb::protocol::internal::request::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::internal::request::MakeCharacter& value)
 {
     return fb::protocol::internal::request::raw::CreateMakeCharacter(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<uint16_t>(builder, value.hair),
             flatbuffers::build<uint8_t>(builder, value.gender),
@@ -6536,14 +6536,14 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::ReserveName> build<fb::protocol::internal::request::ReserveName>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ReserveName& value)
 {
     return fb::protocol::internal::request::raw::CreateReserveName(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<std::string>(builder, value.name));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Save> build<fb::protocol::internal::request::Save>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Save& value)
 {
     return fb::protocol::internal::request::raw::CreateSave(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<fb::protocol::internal::Character>(builder, value.character),
             flatbuffers::build<std::vector<fb::protocol::internal::Item>>(builder, value.items),
             flatbuffers::build<std::vector<fb::protocol::internal::Spell>>(builder, value.spells),
@@ -6557,8 +6557,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::WriteArticle> build<fb::protocol::internal::request::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteArticle& value)
 {
     return fb::protocol::internal::request::raw::CreateWriteArticle(builder,
-            flatbuffers::build<std::string>(builder, value.section),
-            flatbuffers::build<uint32_t>(builder, value.article_section),
+            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<uint32_t>(builder, value.section),
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<std::string>(builder, value.title),
             flatbuffers::build<std::string>(builder, value.contents));
@@ -6567,16 +6567,16 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteArticle> build<fb::protocol::internal::request::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::DeleteArticle& value)
 {
     return fb::protocol::internal::request::raw::CreateDeleteArticle(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.id),
-            flatbuffers::build<uint32_t>(builder, value.article_section),
+            flatbuffers::build<uint32_t>(builder, value.section),
             flatbuffers::build<uint32_t>(builder, value.user));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::WriteMail> build<fb::protocol::internal::request::WriteMail>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteMail& value)
 {
     return fb::protocol::internal::request::raw::CreateWriteMail(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.sender),
             flatbuffers::build<std::string>(builder, value.user),
             flatbuffers::build<std::string>(builder, value.title),
@@ -6587,7 +6587,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteMail> build<fb::protocol::internal::request::DeleteMail>(FlatBufferBuilder& builder, const fb::protocol::internal::request::DeleteMail& value)
 {
     return fb::protocol::internal::request::raw::CreateDeleteMail(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<uint16_t>(builder, value.id));
 }
@@ -6595,7 +6595,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetOption> build<fb::protocol::internal::request::SetOption>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetOption& value)
 {
     return fb::protocol::internal::request::raw::CreateSetOption(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<uint8_t>(builder, value.type),
             flatbuffers::build<bool>(builder, value.enabled));
@@ -6604,7 +6604,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::CreateGroup> build<fb::protocol::internal::request::CreateGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::CreateGroup& value)
 {
     return fb::protocol::internal::request::raw::CreateCreateGroup(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.master),
             flatbuffers::build<std::string>(builder, value.member));
@@ -6613,7 +6613,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::EnterGroup> build<fb::protocol::internal::request::EnterGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::EnterGroup& value)
 {
     return fb::protocol::internal::request::raw::CreateEnterGroup(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.master),
             flatbuffers::build<std::string>(builder, value.member));
@@ -6622,7 +6622,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::BroadcastGroup> build<fb::protocol::internal::request::BroadcastGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::BroadcastGroup& value)
 {
     return fb::protocol::internal::request::raw::CreateBroadcastGroup(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.group),
             flatbuffers::build<std::string>(builder, value.message),
@@ -6632,7 +6632,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::LeaveGroup> build<fb::protocol::internal::request::LeaveGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::LeaveGroup& value)
 {
     return fb::protocol::internal::request::raw::CreateLeaveGroup(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<std::string>(builder, value.member));
 }
@@ -6640,7 +6640,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::KickGroup> build<fb::protocol::internal::request::KickGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::KickGroup& value)
 {
     return fb::protocol::internal::request::raw::CreateKickGroup(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<std::string>(builder, value.kicker),
             flatbuffers::build<std::string>(builder, value.target));
@@ -6649,7 +6649,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::DestroyGroup> build<fb::protocol::internal::request::DestroyGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::DestroyGroup& value)
 {
     return fb::protocol::internal::request::raw::CreateDestroyGroup(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<std::string>(builder, value.master));
 }
@@ -6657,7 +6657,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::CreateClan> build<fb::protocol::internal::request::CreateClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::CreateClan& value)
 {
     return fb::protocol::internal::request::raw::CreateCreateClan(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.master),
             flatbuffers::build<std::string>(builder, value.name));
@@ -6666,7 +6666,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::DestroyClan> build<fb::protocol::internal::request::DestroyClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::DestroyClan& value)
 {
     return fb::protocol::internal::request::raw::CreateDestroyClan(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.master));
 }
@@ -6674,7 +6674,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::JoinClan> build<fb::protocol::internal::request::JoinClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::JoinClan& value)
 {
     return fb::protocol::internal::request::raw::CreateJoinClan(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.inviter_uid),
             flatbuffers::build<std::string>(builder, value.invitee_name));
@@ -6683,7 +6683,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::LeaveClan> build<fb::protocol::internal::request::LeaveClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::LeaveClan& value)
 {
     return fb::protocol::internal::request::raw::CreateLeaveClan(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.clan),
             flatbuffers::build<std::string>(builder, value.name));
@@ -6692,7 +6692,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::KickClan> build<fb::protocol::internal::request::KickClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::KickClan& value)
 {
     return fb::protocol::internal::request::raw::CreateKickClan(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.clan),
             flatbuffers::build<std::string>(builder, value.kicker),
@@ -6702,7 +6702,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetClanTitle> build<fb::protocol::internal::request::SetClanTitle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetClanTitle& value)
 {
     return fb::protocol::internal::request::raw::CreateSetClanTitle(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.changer),
             flatbuffers::build<std::optional<std::string>>(builder, value.title));
@@ -6711,7 +6711,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::BroadcastClan> build<fb::protocol::internal::request::BroadcastClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::BroadcastClan& value)
 {
     return fb::protocol::internal::request::raw::CreateBroadcastClan(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.clan),
             flatbuffers::build<std::string>(builder, value.message),
@@ -6721,7 +6721,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::ChangeClanRole> build<fb::protocol::internal::request::ChangeClanRole>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ChangeClanRole& value)
 {
     return fb::protocol::internal::request::raw::CreateChangeClanRole(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.changer_uid),
             flatbuffers::build<std::string>(builder, value.target_name),
@@ -6732,7 +6732,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Broadcast> build<fb::protocol::internal::request::Broadcast>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Broadcast& value)
 {
     return fb::protocol::internal::request::raw::CreateBroadcast(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<std::string>(builder, value.message),
             flatbuffers::build<uint8_t>(builder, value.type));
@@ -6741,7 +6741,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::UpdateFriends> build<fb::protocol::internal::request::UpdateFriends>(FlatBufferBuilder& builder, const fb::protocol::internal::request::UpdateFriends& value)
 {
     return fb::protocol::internal::request::raw::CreateUpdateFriends(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<std::vector<std::string>>(builder, value.names));
 }
@@ -6749,14 +6749,14 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::GetStoragePending> build<fb::protocol::internal::request::GetStoragePending>(FlatBufferBuilder& builder, const fb::protocol::internal::request::GetStoragePending& value)
 {
     return fb::protocol::internal::request::raw::CreateGetStoragePending(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.user));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::WriteSystemMail> build<fb::protocol::internal::request::WriteSystemMail>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteSystemMail& value)
 {
     return fb::protocol::internal::request::raw::CreateWriteSystemMail(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.sender),
             flatbuffers::build<std::string>(builder, value.title),
             flatbuffers::build<std::string>(builder, value.contents),
@@ -6766,7 +6766,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Ban> build<fb::protocol::internal::request::Ban>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Ban& value)
 {
     return fb::protocol::internal::request::raw::CreateBan(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<std::string>(builder, value.name),
             flatbuffers::build<std::string>(builder, value.reason),
             flatbuffers::build<std::optional<uint32_t>>(builder, value.days));
@@ -6775,14 +6775,14 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Unban> build<fb::protocol::internal::request::Unban>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Unban& value)
 {
     return fb::protocol::internal::request::raw::CreateUnban(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<std::string>(builder, value.name));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Heartbeat> build<fb::protocol::internal::request::Heartbeat>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Heartbeat& value)
 {
     return fb::protocol::internal::request::raw::CreateHeartbeat(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<fb::protocol::internal::Service>(builder, value.service),
             flatbuffers::build<uint8_t>(builder, value.id),
             flatbuffers::build<std::string>(builder, value.name),
@@ -6793,14 +6793,14 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetExpMultiplier> build<fb::protocol::internal::request::SetExpMultiplier>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetExpMultiplier& value)
 {
     return fb::protocol::internal::request::raw::CreateSetExpMultiplier(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<double>(builder, value.value));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetDropRateMultiplier> build<fb::protocol::internal::request::SetDropRateMultiplier>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetDropRateMultiplier& value)
 {
     return fb::protocol::internal::request::raw::CreateSetDropRateMultiplier(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<double>(builder, value.value));
 }
 template <>
@@ -7204,7 +7204,7 @@ template <>
 flatbuffers::Offset<fb::protocol::marketplace::request::raw::List> build<fb::protocol::marketplace::request::List>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::List& value)
 {
     return fb::protocol::marketplace::request::raw::CreateList(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.character_id),
             flatbuffers::build<std::string>(builder, value.listing_id),
             flatbuffers::build<fb::protocol::marketplace::Item>(builder, value.item),
@@ -7214,7 +7214,7 @@ template <>
 flatbuffers::Offset<fb::protocol::marketplace::request::raw::Cancel> build<fb::protocol::marketplace::request::Cancel>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::Cancel& value)
 {
     return fb::protocol::marketplace::request::raw::CreateCancel(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.character_id),
             flatbuffers::build<std::string>(builder, value.listing_id));
 }
@@ -7222,7 +7222,7 @@ template <>
 flatbuffers::Offset<fb::protocol::marketplace::request::raw::Purchase> build<fb::protocol::marketplace::request::Purchase>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::Purchase& value)
 {
     return fb::protocol::marketplace::request::raw::CreatePurchase(builder,
-            flatbuffers::build<std::string>(builder, value.section),
+            flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.buyer_id),
             flatbuffers::build<std::string>(builder, value.listing_id),
             flatbuffers::build<uint16_t>(builder, value.purchase_count),

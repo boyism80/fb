@@ -20,30 +20,24 @@ public struct UpdateFriends : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public UpdateFriends __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public string Names(int j) { int o = __p.__offset(8); return o != 0 ? __p.__string(__p.__vector(o) + j * 4) : null; }
   public int NamesLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<fb.protocol._internal.request.raw.UpdateFriends> CreateUpdateFriends(FlatBufferBuilder builder,
-      StringOffset sectionOffset = default(StringOffset),
+      uint world = 0,
       uint user = 0,
       VectorOffset namesOffset = default(VectorOffset)) {
     builder.StartTable(3);
     UpdateFriends.AddNames(builder, namesOffset);
     UpdateFriends.AddUser(builder, user);
-    UpdateFriends.AddSection(builder, sectionOffset);
+    UpdateFriends.AddWorld(builder, world);
     return UpdateFriends.EndUpdateFriends(builder);
   }
 
   public static void StartUpdateFriends(FlatBufferBuilder builder) { builder.StartTable(3); }
-  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
   public static void AddNames(FlatBufferBuilder builder, VectorOffset namesOffset) { builder.AddOffset(2, namesOffset.Value, 0); }
   public static VectorOffset CreateNamesVector(FlatBufferBuilder builder, StringOffset[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
@@ -65,7 +59,7 @@ static public class UpdateFriendsVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyVectorOfStrings(tablePos, 8 /*Names*/, false)
       && verifier.VerifyTableEnd(tablePos);

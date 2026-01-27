@@ -16,10 +16,10 @@ namespace Internal.Controllers
             _groupService = groupService;
         }
 
-        [HttpGet("{section}/{id}")]
-        public async Task<Response.GroupDetails> Get(string section, uint id)
+        [HttpGet("{world}/{id}")]
+        public async Task<Response.GroupDetails> Get(uint world, uint id)
         {
-            return await _groupService.Get(section, id);
+            return await _groupService.Get(world, id);
         }
 
         [HttpPost("create")]

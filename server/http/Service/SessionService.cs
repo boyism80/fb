@@ -48,15 +48,15 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Retrieves a session by section and name.
+        /// Retrieves a session by world and name.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to retrieve the session for.</param>
         /// <returns>The session if found; otherwise, null.</returns>
-        public async Task<Session> Get(string section, string name)
+        public async Task<Session> Get(uint world, string name)
         {
             var key = new SessionKey().Key;
-            var conn = _redisService.Redis(section, -1).Connection;
+            var conn = _redisService.Redis(world, -1).Connection;
             var data = await conn.HashGetAsync(new RedisKey(key), new RedisValue(name));
             if (data.IsNull)
                 return null;
@@ -65,46 +65,46 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Sets a session for a character name in the specified section and refreshes the TTL.
+        /// Sets a session for a character name in the specified world and refreshes the TTL.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name.</param>
         /// <param name="session">The session data to store.</param>
-        public async Task Set(string section, string name, Session session)
+        public async Task Set(uint world, string name, Session session)
         {
             var key = new SessionKey().Key;
-            var redis = _redisService.Redis(section, -1);
+            var redis = _redisService.Redis(world, -1);
             var conn = redis.Connection;
 
             await conn.JsonHashSetAsync(new RedisKey(key), new RedisValue(name), session);
-            await RefreshTTL(section);
+            await RefreshTTL(world);
         }
 
         /// <summary>
-        /// Deletes a session for a character name in the specified section and refreshes the TTL.
+        /// Deletes a session for a character name in the specified world and refreshes the TTL.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to delete the session for.</param>
-        public async Task Delete(string section, string name)
+        public async Task Delete(uint world, string name)
         {
             var key = new SessionKey().Key;
-            var conn = _redisService.Redis(section, -1).Connection;
+            var conn = _redisService.Redis(world, -1).Connection;
 
             await conn.HashDeleteAsync(new RedisKey(key), name);
-            await RefreshTTL(section);
+            await RefreshTTL(world);
         }
 
         /// <summary>
-        /// Atomically gets and deletes a session by section and name using the get_and_delete_session.lua script.
+        /// Atomically gets and deletes a session by world and name using the get_and_delete_session.lua script.
         /// Returns the session if it existed, null otherwise.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to get and delete the session for.</param>
         /// <returns>The session if it existed and was deleted; otherwise, null.</returns>
-        public async Task<Session> GetAndDelete(string section, string name)
+        public async Task<Session> GetAndDelete(uint world, string name)
         {
             var key = new SessionKey().Key;
-            var redis = _redisService.Redis(section, -1);
+            var redis = _redisService.Redis(world, -1);
 
             var redisResult = await redis.ScriptEvaluateAsync("get_and_delete_session.lua", new
             {
@@ -123,19 +123,19 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Attempts to login by setting a session in the specified section.
+        /// Attempts to login by setting a session in the specified world.
         /// If force is false, uses try_login.lua script which does not delete existing sessions.
         /// If force is true, uses login.lua script which deletes existing sessions and publishes KickOut message.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name.</param>
         /// <param name="session">The session data to store.</param>
         /// <param name="force">If true, replaces existing session. If false, fails if session exists.</param>
         /// <returns>True if login was successful (new session created), false if an existing session was found.</returns>
-        public async Task<bool> Login(string section, string name, Session session, bool force = false)
+        public async Task<bool> Login(uint world, string name, Session session, bool force = false)
         {
             var key = new SessionKey().Key;
-            var redis = _redisService.Redis(section, -1);
+            var redis = _redisService.Redis(world, -1);
 
             string scriptName = force ? "login.lua" : "try_login.lua";
             var redisResult = await redis.ScriptEvaluateAsync(scriptName, new
@@ -158,7 +158,7 @@ namespace Http.Service
                 var existingSession = JsonConvert.DeserializeObject<Session>(redisResult[1].ToString());
 
                 // Publish KickOut message to notify the game server to disconnect the existing user
-                _rabbitMqService.Publish(section, new Response.KickOut
+                _rabbitMqService.Publish(world, new Response.KickOut
                 {
                     Uid = existingSession.Uid,
                     Name = name
@@ -169,16 +169,16 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Refreshes the TTL of the session hash key in the specified section using an atomic Lua script.
+        /// Refreshes the TTL of the session hash key in the specified world using an atomic Lua script.
         /// Only refreshes if the current TTL is below the minimum threshold to prevent redundant operations.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
-        public async Task RefreshTTL(string section)
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        public async Task RefreshTTL(uint world)
         {
             try
             {
                 var key = new SessionKey().Key;
-                var redis = _redisService.Redis(section, -1);
+                var redis = _redisService.Redis(world, -1);
                 var script = LuaScript.Prepare(SessionTtlRefreshScript).Load(redis.GetServer());
 
                 await redis.Connection.ScriptEvaluateAsync(script.Hash,

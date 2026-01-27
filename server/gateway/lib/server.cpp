@@ -127,11 +127,11 @@ async::task<void> server::update_status()
 {
     try
     {
-        // Gateway is a global service that doesn't belong to any specific section
-        // Use "unified-global" as the section identifier for gateway heartbeat
+        // Gateway is a global service that doesn't belong to any specific world
+        // Use 0 as the world identifier for gateway heartbeat (0 represents unified-global)
         std::ignore = co_await this->http.post("internal",
                                                "/server/heartbeat",
-                                               internal_reqs::Heartbeat{"unified-global",
+                                               internal_reqs::Heartbeat{0,
                                                                         internal::Service::Gateway,
                                                                         this->id(),
                                                                         this->name(),

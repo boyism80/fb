@@ -22,7 +22,7 @@ namespace WriteBack.Service
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly ILogger<Http.Service.WriteBackService> _logger;
-        private readonly string _section;
+        private readonly uint _world;
         private static readonly TimeSpan _delay = TimeSpan.FromSeconds(5);
 
         /// <summary>
@@ -41,7 +41,9 @@ namespace WriteBack.Service
             _configuration = configuration;
             _logger = logger;
             _dbContext = ActivatorUtilities.CreateInstance<DbContext>(serviceProvider);
-            _section = _configuration["Section"] ?? throw new Exception("Section configuration is required");
+            _world = _configuration.GetValue<uint>("World");
+            if (_world == 0 && _configuration["World"] != "0")
+                throw new Exception("World configuration is required");
         }
 
         /// <summary>
@@ -52,10 +54,11 @@ namespace WriteBack.Service
         /// <returns>A task representing the asynchronous execution of the background service.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var mysqlSection = _configuration.GetSection($"ConnectionStrings:MySql:{_section}");
+            var worldKey = _world == 0 ? "unified-global" : _world.ToString();
+            var mysqlSection = _configuration.GetSection($"ConnectionStrings:MySql:{worldKey}");
             if (!mysqlSection.Exists())
             {
-                throw new Exception($"MySQL configuration not found for section: {_section}");
+                throw new Exception($"MySQL configuration not found for world: {_world}");
             }
 
             var threads = mysqlSection.GetChildren().Select(x => new Thread(() =>
@@ -68,7 +71,7 @@ namespace WriteBack.Service
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
-                    _logger.LogInformation("Write-back worker for section {Section} DB {DbId} cancelled.", _section, dbId);
+                    _logger.LogInformation("Write-back worker for world {World} DB {DbId} cancelled.", _world, dbId);
                 }
             })).ToArray();
 
@@ -83,7 +86,7 @@ namespace WriteBack.Service
                 await Task.Delay(_delay, stoppingToken);
             }
 
-            _logger.LogInformation("All write-back workers stopped for section {Section}, all Redis data processed", _section);
+            _logger.LogInformation("All write-back workers stopped for world {World}, all Redis data processed", _world);
         }
 
         /// <summary>
@@ -98,15 +101,15 @@ namespace WriteBack.Service
             var bufferKey = $"{Const.RedisBufferKey}:{db}";
             var continuous = true;
             var bulk = 100;
-            var shardSize = _redisService.GetShardSize(_section);
+            var shardSize = _redisService.GetShardSize(_world);
             while (continuous || !stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    var redisSqlConn = _redisService.Redis(_section, db);
+                    var redisSqlConn = _redisService.Redis(_world, db);
                     if (redisSqlConn == null)
                     {
-                        _logger.LogError("Redis connection not found for section {Section} DB {Db}", _section, db);
+                        _logger.LogError("Redis connection not found for world {World} DB {Db}", _world, db);
                         await Task.Delay(_delay, stoppingToken);
                         continue;
                     }
@@ -124,7 +127,7 @@ namespace WriteBack.Service
                         continue;
                     }
 
-                    await using var dbConn = _dbContext.Connection(_section, db);
+                    await using var dbConn = _dbContext.Connection(_world, db);
                     var backgroundCommitEntryList = ((RedisResult[])result).Select((x => JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString())));
                     foreach (var g in backgroundCommitEntryList.GroupBy(x => x.Hash != null ? (int)(x.Hash % shardSize) : -1))
                     {
@@ -145,7 +148,7 @@ namespace WriteBack.Service
                             values.Add(count);
                         }
 
-                        var redisRefConn = _redisService.Redis(_section, mod);
+                        var redisRefConn = _redisService.Redis(_world, mod);
                         if (redisRefConn != null)
                         {
                             await redisRefConn.ScriptEvaluateAsync("end_of_ref.lua",

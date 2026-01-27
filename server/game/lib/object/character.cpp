@@ -1291,10 +1291,10 @@ async::task<void> character::process_system_mails()
                     }
 
                     const auto& mail = *mail_ptr;
-                    auto section = fb::config<std::string>("section");
+                    auto world = fb::config<uint32_t>("world");
                     auto&&      resp = co_await this->server.http.post("internal",
                                                                   "/mail/write",
-                                                                  internal_reqs::WriteMail{section,
+                                                                  internal_reqs::WriteMail{world,
                                                                                            mail.sender,
                                                                                            this->name(),
                                                                                            mail.title,

@@ -113,12 +113,12 @@ async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count
     // Send request to marketplace server
     try
     {
-        auto   section = fb::config<std::string>("section");
+        auto   world = fb::config<uint32_t>("world");
         auto&& resp    = co_await this->_owner.server.http.post(
             "marketplace",
             "/marketplace/list",
             mp_reqs::List{
-                section,
+                world,
                 this->_owner.id,
                 id,
                 mp::Item{this->_owner.id, model.id, count, durability, custom_name},
@@ -195,8 +195,8 @@ async::task<bool> marketplace::cancel(const std::string& id)
     this->_owner.server.log.write("marketplace_cancel", log_data_before);
 
     auto   weak    = this->_owner.weak_from_this_as<fb::game::character>();
-    auto   section = fb::config<std::string>("section");
-    auto   req     = mp_reqs::Cancel{section, this->_owner.id, id_copy};
+    auto   world = fb::config<uint32_t>("world");
+    auto   req     = mp_reqs::Cancel{world, this->_owner.id, id_copy};
     auto&& resp    = co_await this->_owner.server.http.post("marketplace", "/marketplace/cancel", req);
 
     co_await this->_owner.server.threads.switching(weak);
@@ -284,12 +284,12 @@ async::task<marketplace::listing> marketplace::purchase(const std::string& listi
     this->_owner.server.log.write("marketplace_purchase", log_data_before);
 
     // Send purchase request to marketplace server
-    auto   section         = fb::config<std::string>("section");
+    auto   world         = fb::config<uint32_t>("world");
     auto   unhandled_error = true;
 
     try
     {
-        auto   req  = mp_reqs::Purchase{section, this->_owner.id, listing_id_copy, purchase_count, purchase_id};
+        auto   req  = mp_reqs::Purchase{world, this->_owner.id, listing_id_copy, purchase_count, purchase_id};
         auto&& resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/purchase", req);
 
         co_await this->_owner.server.threads.switching(weak);

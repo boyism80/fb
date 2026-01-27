@@ -39,7 +39,7 @@ public class MarketplaceController : ControllerBase
             }
 
             var listing = await _marketplaceService.ListItemAsync(
-                request.Section,
+                request.World,
                 request.CharacterId,
                 request.ListingId,
                 request.Item.Model,
@@ -81,7 +81,7 @@ public class MarketplaceController : ControllerBase
     {
         try
         {
-            await _marketplaceService.CancelListingAsync(request.Section, request.CharacterId, request.ListingId);
+            await _marketplaceService.CancelListingAsync(request.World, request.CharacterId, request.ListingId);
 
             return new Response.Cancel
             {
@@ -114,7 +114,7 @@ public class MarketplaceController : ControllerBase
                 throw new LogicException(ErrorCode.MarketplaceListingNotFound);
 
             var result = await _marketplaceService.PurchaseItemAsync(
-                request.Section,
+                request.World,
                 request.BuyerId,
                 request.ListingId,
                 request.PurchaseCount,

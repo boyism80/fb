@@ -59,10 +59,10 @@ async::task<void> server::whisper(character& sender, std::string receiver_name, 
     }
 
     // Target not found in same thread - call API for cross-server whisper
-    auto section = fb::config<std::string>("section");
+    auto world = fb::config<uint32_t>("world");
     auto&& resp = co_await this->http.post("internal",
                                            "/in-game/whisper",
-                                           internal_reqs::Whisper{section, sender_name, receiver_name, message});
+                                           internal_reqs::Whisper{world, sender_name, receiver_name, message});
     co_await this->threads.switching(sender_weak);
 
     co_await this->on_whisper(resp);

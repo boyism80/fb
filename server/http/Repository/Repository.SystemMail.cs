@@ -27,26 +27,26 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves a specific system mail by section and its ID.
+        /// Retrieves a specific system mail by world and its ID.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="id">The unique identifier of the system mail.</param>
         /// <returns>The system mail if found; otherwise, null.</returns>
-        public async Task<SystemMail> Get(string section, uint id)
+        public async Task<SystemMail> Get(uint world, uint id)
         {
-            return await base.Get(section, new SystemMailKey { Id = id });
+            return await base.Get(world, new SystemMailKey { Id = id });
         }
 
         /// <summary>
-        /// Retrieves all active (non-expired and non-deleted) system mails for the specified section.
+        /// Retrieves all active (non-expired and non-deleted) system mails for the specified world.
         /// Filters out expired mails based on current time.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <returns>A list of active system mails that have not expired.</returns>
-        public async Task<List<SystemMail>> GetAll(string section)
+        public async Task<List<SystemMail>> GetAll(uint world)
         {
             // Use a dummy key to get all system mails from the same hash
-            var allMails = await base.GetAll(section, new SystemMailKey { Id = 0 });
+            var allMails = await base.GetAll(world, new SystemMailKey { Id = 0 });
             var now = DateTime.Now;
             return allMails
                 .Where(m => !m.Deleted && (m.ExpireDate == null || m.ExpireDate > now))
@@ -121,21 +121,21 @@ namespace Http.Reepository
         /// <summary>
         /// Creates a new system mail and queues it for database write-back.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="sender">The sender's user ID for the system mail.</param>
         /// <param name="title">The title/subject of the system mail.</param>
         /// <param name="contents">The body content of the system mail.</param>
         /// <param name="expireDate">Optional expiration date for the system mail.</param>
         /// <returns>The created system mail with assigned ID.</returns>
-        public async Task<SystemMail> Write(string section, uint sender, string title, string contents, DateTime? expireDate)
+        public async Task<SystemMail> Write(uint world, uint sender, string title, string contents, DateTime? expireDate)
         {
             var query = @"
                 INSERT INTO system_mail (sender, title, contents, expire_date, deleted, created_date, updated_date)
                 VALUES (@sender, @title, @contents, @expireDate, 0, NOW(), NOW());
                 SELECT LAST_INSERT_ID();";
 
-            // SystemMail uses section-global database
-            await using var conn = _dbContext.Connection(section, null);
+            // SystemMail uses world-global database
+            await using var conn = _dbContext.Connection(world, null);
             var id = await conn.QueryFirstOrDefaultAsync<uint>(query, new { sender, title, contents, expireDate });
 
             var systemMail = new SystemMail
@@ -151,7 +151,7 @@ namespace Http.Reepository
             };
 
             // Update Redis cache using the caching system
-            Set(section, systemMail);
+            Set(world, systemMail);
             await SaveChangesAsync();
 
             return systemMail;

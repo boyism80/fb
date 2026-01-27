@@ -20,13 +20,7 @@ public struct SetClanTitle : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public SetClanTitle __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Section { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetSectionBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetSectionBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetSectionArray() { return __p.__vector_as_array<byte>(4); }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Changer { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public string Title { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
@@ -38,7 +32,7 @@ public struct SetClanTitle : IFlatbufferObject
   public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(10); }
 
   public static Offset<fb.protocol._internal.request.raw.SetClanTitle> CreateSetClanTitle(FlatBufferBuilder builder,
-      StringOffset sectionOffset = default(StringOffset),
+      uint world = 0,
       uint host = 0,
       uint changer = 0,
       StringOffset titleOffset = default(StringOffset)) {
@@ -46,12 +40,12 @@ public struct SetClanTitle : IFlatbufferObject
     SetClanTitle.AddTitle(builder, titleOffset);
     SetClanTitle.AddChanger(builder, changer);
     SetClanTitle.AddHost(builder, host);
-    SetClanTitle.AddSection(builder, sectionOffset);
+    SetClanTitle.AddWorld(builder, world);
     return SetClanTitle.EndSetClanTitle(builder);
   }
 
   public static void StartSetClanTitle(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddSection(FlatBufferBuilder builder, StringOffset sectionOffset) { builder.AddOffset(0, sectionOffset.Value, 0); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
   public static void AddChanger(FlatBufferBuilder builder, uint changer) { builder.AddUint(2, changer, 0); }
   public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(3, titleOffset.Value, 0); }
@@ -69,7 +63,7 @@ static public class SetClanTitleVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Section*/, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Changer*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 10 /*Title*/, false)

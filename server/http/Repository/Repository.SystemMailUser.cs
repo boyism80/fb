@@ -25,15 +25,15 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves a specific system mail user record by section, user ID and mail ID.
+        /// Retrieves a specific system mail user record by world, user ID and mail ID.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="user">The unique identifier of the user.</param>
         /// <param name="mailId">The unique identifier of the system mail.</param>
         /// <returns>The system mail user record if found; otherwise, null.</returns>
-        public async Task<SystemMailUser> Get(string section, uint user, uint mailId)
+        public async Task<SystemMailUser> Get(uint world, uint user, uint mailId)
         {
-            return await base.Get(section, new SystemMailUserKey
+            return await base.Get(world, new SystemMailUserKey
             {
                 User = user,
                 MailId = mailId
@@ -43,12 +43,12 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves all system mail user records for a specific user.
         /// </summary>
-        /// <param name="section">The section identifier (e.g., "section-1", "unified-global").</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="user">The unique identifier of the user.</param>
         /// <returns>A collection of all system mail user records for the specified user.</returns>
-        public async Task<IEnumerable<SystemMailUser>> Get(string section, uint user)
+        public async Task<IEnumerable<SystemMailUser>> Get(uint world, uint user)
         {
-            return await base.GetAll(section, new SystemMailUserKey
+            return await base.GetAll(world, new SystemMailUserKey
             {
                 User = user,
                 MailId = 0
