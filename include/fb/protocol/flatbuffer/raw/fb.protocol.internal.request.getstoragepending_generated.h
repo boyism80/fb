@@ -25,13 +25,18 @@ struct GetStoragePendingBuilder;
 struct GetStoragePending FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef GetStoragePendingBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_USER = 4
+    VT_WORLD = 4,
+    VT_USER = 6
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            verifier.EndTable();
   }
@@ -41,6 +46,9 @@ struct GetStoragePendingBuilder {
   typedef GetStoragePending Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(GetStoragePending::VT_WORLD, world, 0);
+  }
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(GetStoragePending::VT_USER, user, 0);
   }
@@ -57,9 +65,11 @@ struct GetStoragePendingBuilder {
 
 inline ::flatbuffers::Offset<GetStoragePending> CreateGetStoragePending(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t user = 0) {
   GetStoragePendingBuilder builder_(_fbb);
   builder_.add_user(user);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 

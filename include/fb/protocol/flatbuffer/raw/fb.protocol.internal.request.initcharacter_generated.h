@@ -25,16 +25,20 @@ struct InitCharacterBuilder;
 struct InitCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef InitCharacterBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_UID = 4,
-    VT_NAME = 6,
-    VT_PW = 8,
-    VT_HP = 10,
-    VT_MP = 12,
-    VT_MAP = 14,
-    VT_X = 16,
-    VT_Y = 18,
-    VT_ROLE = 20
+    VT_WORLD = 4,
+    VT_UID = 6,
+    VT_NAME = 8,
+    VT_PW = 10,
+    VT_HP = 12,
+    VT_MP = 14,
+    VT_MAP = 16,
+    VT_X = 18,
+    VT_Y = 20,
+    VT_ROLE = 22
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
   }
@@ -64,6 +68,7 @@ struct InitCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
@@ -83,6 +88,9 @@ struct InitCharacterBuilder {
   typedef InitCharacter Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(InitCharacter::VT_WORLD, world, 0);
+  }
   void add_uid(uint32_t uid) {
     fbb_.AddElement<uint32_t>(InitCharacter::VT_UID, uid, 0);
   }
@@ -123,6 +131,7 @@ struct InitCharacterBuilder {
 
 inline ::flatbuffers::Offset<InitCharacter> CreateInitCharacter(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t uid = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> pw = 0,
@@ -138,6 +147,7 @@ inline ::flatbuffers::Offset<InitCharacter> CreateInitCharacter(
   builder_.add_pw(pw);
   builder_.add_name(name);
   builder_.add_uid(uid);
+  builder_.add_world(world);
   builder_.add_y(y);
   builder_.add_x(x);
   builder_.add_map(map);
@@ -147,6 +157,7 @@ inline ::flatbuffers::Offset<InitCharacter> CreateInitCharacter(
 
 inline ::flatbuffers::Offset<InitCharacter> CreateInitCharacterDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t uid = 0,
     const char *name = nullptr,
     const char *pw = nullptr,
@@ -160,6 +171,7 @@ inline ::flatbuffers::Offset<InitCharacter> CreateInitCharacterDirect(
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   return fb::protocol::internal::request::raw::CreateInitCharacter(
       _fbb,
+      world,
       uid,
       name__,
       pw__,

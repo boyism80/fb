@@ -25,10 +25,14 @@ struct JoinClanBuilder;
 struct JoinClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef JoinClanBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HOST = 4,
-    VT_INVITER_UID = 6,
-    VT_INVITEE_NAME = 8
+    VT_WORLD = 4,
+    VT_HOST = 6,
+    VT_INVITER_UID = 8,
+    VT_INVITEE_NAME = 10
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
@@ -40,6 +44,7 @@ struct JoinClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_INVITER_UID, 4) &&
            VerifyOffset(verifier, VT_INVITEE_NAME) &&
@@ -52,6 +57,9 @@ struct JoinClanBuilder {
   typedef JoinClan Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(JoinClan::VT_WORLD, world, 0);
+  }
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(JoinClan::VT_HOST, host, 0);
   }
@@ -74,6 +82,7 @@ struct JoinClanBuilder {
 
 inline ::flatbuffers::Offset<JoinClan> CreateJoinClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t host = 0,
     uint32_t inviter_uid = 0,
     ::flatbuffers::Offset<::flatbuffers::String> invitee_name = 0) {
@@ -81,17 +90,20 @@ inline ::flatbuffers::Offset<JoinClan> CreateJoinClan(
   builder_.add_invitee_name(invitee_name);
   builder_.add_inviter_uid(inviter_uid);
   builder_.add_host(host);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<JoinClan> CreateJoinClanDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t host = 0,
     uint32_t inviter_uid = 0,
     const char *invitee_name = nullptr) {
   auto invitee_name__ = invitee_name ? _fbb.CreateString(invitee_name) : 0;
   return fb::protocol::internal::request::raw::CreateJoinClan(
       _fbb,
+      world,
       host,
       inviter_uid,
       invitee_name__);

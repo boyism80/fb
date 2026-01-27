@@ -25,10 +25,14 @@ struct WhisperBuilder;
 struct Whisper FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef WhisperBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_FROM = 4,
-    VT_TO = 6,
-    VT_MESSAGE = 8
+    VT_WORLD = 4,
+    VT_FROM = 6,
+    VT_TO = 8,
+    VT_MESSAGE = 10
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   const ::flatbuffers::String *from() const {
     return GetPointer<const ::flatbuffers::String *>(VT_FROM);
   }
@@ -40,6 +44,7 @@ struct Whisper FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyOffset(verifier, VT_FROM) &&
            verifier.VerifyString(from()) &&
            VerifyOffset(verifier, VT_TO) &&
@@ -54,6 +59,9 @@ struct WhisperBuilder {
   typedef Whisper Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(Whisper::VT_WORLD, world, 0);
+  }
   void add_from(::flatbuffers::Offset<::flatbuffers::String> from) {
     fbb_.AddOffset(Whisper::VT_FROM, from);
   }
@@ -76,6 +84,7 @@ struct WhisperBuilder {
 
 inline ::flatbuffers::Offset<Whisper> CreateWhisper(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     ::flatbuffers::Offset<::flatbuffers::String> from = 0,
     ::flatbuffers::Offset<::flatbuffers::String> to = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0) {
@@ -83,11 +92,13 @@ inline ::flatbuffers::Offset<Whisper> CreateWhisper(
   builder_.add_message(message);
   builder_.add_to(to);
   builder_.add_from(from);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Whisper> CreateWhisperDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     const char *from = nullptr,
     const char *to = nullptr,
     const char *message = nullptr) {
@@ -96,6 +107,7 @@ inline ::flatbuffers::Offset<Whisper> CreateWhisperDirect(
   auto message__ = message ? _fbb.CreateString(message) : 0;
   return fb::protocol::internal::request::raw::CreateWhisper(
       _fbb,
+      world,
       from__,
       to__,
       message__);

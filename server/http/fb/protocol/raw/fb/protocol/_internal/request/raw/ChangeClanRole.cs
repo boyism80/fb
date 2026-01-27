@@ -20,39 +20,43 @@ public struct ChangeClanRole : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public ChangeClanRole __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint ChangerUid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string TargetName { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint ChangerUid { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string TargetName { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetTargetNameBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetTargetNameBytes() { return __p.__vector_as_span<byte>(10, 1); }
 #else
-  public ArraySegment<byte>? GetTargetNameBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetTargetNameBytes() { return __p.__vector_as_arraysegment(10); }
 #endif
-  public byte[] GetTargetNameArray() { return __p.__vector_as_array<byte>(8); }
-  public uint Clan { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint NewRole { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public byte[] GetTargetNameArray() { return __p.__vector_as_array<byte>(10); }
+  public uint Clan { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint NewRole { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.ChangeClanRole> CreateChangeClanRole(FlatBufferBuilder builder,
+      uint world = 0,
       uint host = 0,
       uint changer_uid = 0,
       StringOffset target_nameOffset = default(StringOffset),
       uint clan = 0,
       uint new_role = 0) {
-    builder.StartTable(5);
+    builder.StartTable(6);
     ChangeClanRole.AddNewRole(builder, new_role);
     ChangeClanRole.AddClan(builder, clan);
     ChangeClanRole.AddTargetName(builder, target_nameOffset);
     ChangeClanRole.AddChangerUid(builder, changer_uid);
     ChangeClanRole.AddHost(builder, host);
+    ChangeClanRole.AddWorld(builder, world);
     return ChangeClanRole.EndChangeClanRole(builder);
   }
 
-  public static void StartChangeClanRole(FlatBufferBuilder builder) { builder.StartTable(5); }
-  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
-  public static void AddChangerUid(FlatBufferBuilder builder, uint changerUid) { builder.AddUint(1, changerUid, 0); }
-  public static void AddTargetName(FlatBufferBuilder builder, StringOffset targetNameOffset) { builder.AddOffset(2, targetNameOffset.Value, 0); }
-  public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(3, clan, 0); }
-  public static void AddNewRole(FlatBufferBuilder builder, uint newRole) { builder.AddUint(4, newRole, 0); }
+  public static void StartChangeClanRole(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
+  public static void AddChangerUid(FlatBufferBuilder builder, uint changerUid) { builder.AddUint(2, changerUid, 0); }
+  public static void AddTargetName(FlatBufferBuilder builder, StringOffset targetNameOffset) { builder.AddOffset(3, targetNameOffset.Value, 0); }
+  public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(4, clan, 0); }
+  public static void AddNewRole(FlatBufferBuilder builder, uint newRole) { builder.AddUint(5, newRole, 0); }
   public static Offset<fb.protocol._internal.request.raw.ChangeClanRole> EndChangeClanRole(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.ChangeClanRole>(o);
@@ -67,11 +71,12 @@ static public class ChangeClanRoleVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*ChangerUid*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*TargetName*/, false)
-      && verifier.VerifyField(tablePos, 10 /*Clan*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 12 /*NewRole*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*ChangerUid*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 10 /*TargetName*/, false)
+      && verifier.VerifyField(tablePos, 12 /*Clan*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*NewRole*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

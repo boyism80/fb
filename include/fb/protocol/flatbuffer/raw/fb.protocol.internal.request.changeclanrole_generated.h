@@ -25,12 +25,16 @@ struct ChangeClanRoleBuilder;
 struct ChangeClanRole FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ChangeClanRoleBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HOST = 4,
-    VT_CHANGER_UID = 6,
-    VT_TARGET_NAME = 8,
-    VT_CLAN = 10,
-    VT_NEW_ROLE = 12
+    VT_WORLD = 4,
+    VT_HOST = 6,
+    VT_CHANGER_UID = 8,
+    VT_TARGET_NAME = 10,
+    VT_CLAN = 12,
+    VT_NEW_ROLE = 14
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
@@ -48,6 +52,7 @@ struct ChangeClanRole FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_CHANGER_UID, 4) &&
            VerifyOffset(verifier, VT_TARGET_NAME) &&
@@ -62,6 +67,9 @@ struct ChangeClanRoleBuilder {
   typedef ChangeClanRole Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(ChangeClanRole::VT_WORLD, world, 0);
+  }
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(ChangeClanRole::VT_HOST, host, 0);
   }
@@ -90,6 +98,7 @@ struct ChangeClanRoleBuilder {
 
 inline ::flatbuffers::Offset<ChangeClanRole> CreateChangeClanRole(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t host = 0,
     uint32_t changer_uid = 0,
     ::flatbuffers::Offset<::flatbuffers::String> target_name = 0,
@@ -101,11 +110,13 @@ inline ::flatbuffers::Offset<ChangeClanRole> CreateChangeClanRole(
   builder_.add_target_name(target_name);
   builder_.add_changer_uid(changer_uid);
   builder_.add_host(host);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<ChangeClanRole> CreateChangeClanRoleDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t host = 0,
     uint32_t changer_uid = 0,
     const char *target_name = nullptr,
@@ -114,6 +125,7 @@ inline ::flatbuffers::Offset<ChangeClanRole> CreateChangeClanRoleDirect(
   auto target_name__ = target_name ? _fbb.CreateString(target_name) : 0;
   return fb::protocol::internal::request::raw::CreateChangeClanRole(
       _fbb,
+      world,
       host,
       changer_uid,
       target_name__,

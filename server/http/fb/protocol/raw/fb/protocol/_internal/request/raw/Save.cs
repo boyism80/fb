@@ -20,23 +20,25 @@ public struct Save : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Save __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public fb.protocol._internal.raw.Character? Character { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol._internal.raw.Character?)(new fb.protocol._internal.raw.Character()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public fb.protocol._internal.raw.Item? Items(int j) { int o = __p.__offset(6); return o != 0 ? (fb.protocol._internal.raw.Item?)(new fb.protocol._internal.raw.Item()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int ItemsLength { get { int o = __p.__offset(6); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol._internal.raw.Spell? Spells(int j) { int o = __p.__offset(8); return o != 0 ? (fb.protocol._internal.raw.Spell?)(new fb.protocol._internal.raw.Spell()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int SpellsLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol._internal.raw.Achievement? Achievements(int j) { int o = __p.__offset(10); return o != 0 ? (fb.protocol._internal.raw.Achievement?)(new fb.protocol._internal.raw.Achievement()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int AchievementsLength { get { int o = __p.__offset(10); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol._internal.raw.Quest? Quests(int j) { int o = __p.__offset(12); return o != 0 ? (fb.protocol._internal.raw.Quest?)(new fb.protocol._internal.raw.Quest()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int QuestsLength { get { int o = __p.__offset(12); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol._internal.raw.SystemMailUser? ReceivedSystemMails(int j) { int o = __p.__offset(14); return o != 0 ? (fb.protocol._internal.raw.SystemMailUser?)(new fb.protocol._internal.raw.SystemMailUser()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int ReceivedSystemMailsLength { get { int o = __p.__offset(14); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol._internal.raw.StorageBox? StorageBoxes(int j) { int o = __p.__offset(16); return o != 0 ? (fb.protocol._internal.raw.StorageBox?)(new fb.protocol._internal.raw.StorageBox()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int StorageBoxesLength { get { int o = __p.__offset(16); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol._internal.raw.StorageRewardMark? StorageRewardMarks(int j) { int o = __p.__offset(18); return o != 0 ? (fb.protocol._internal.raw.StorageRewardMark?)(new fb.protocol._internal.raw.StorageRewardMark()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int StorageRewardMarksLength { get { int o = __p.__offset(18); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public fb.protocol._internal.raw.Character? Character { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol._internal.raw.Character?)(new fb.protocol._internal.raw.Character()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public fb.protocol._internal.raw.Item? Items(int j) { int o = __p.__offset(8); return o != 0 ? (fb.protocol._internal.raw.Item?)(new fb.protocol._internal.raw.Item()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int ItemsLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol._internal.raw.Spell? Spells(int j) { int o = __p.__offset(10); return o != 0 ? (fb.protocol._internal.raw.Spell?)(new fb.protocol._internal.raw.Spell()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int SpellsLength { get { int o = __p.__offset(10); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol._internal.raw.Achievement? Achievements(int j) { int o = __p.__offset(12); return o != 0 ? (fb.protocol._internal.raw.Achievement?)(new fb.protocol._internal.raw.Achievement()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int AchievementsLength { get { int o = __p.__offset(12); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol._internal.raw.Quest? Quests(int j) { int o = __p.__offset(14); return o != 0 ? (fb.protocol._internal.raw.Quest?)(new fb.protocol._internal.raw.Quest()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int QuestsLength { get { int o = __p.__offset(14); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol._internal.raw.SystemMailUser? ReceivedSystemMails(int j) { int o = __p.__offset(16); return o != 0 ? (fb.protocol._internal.raw.SystemMailUser?)(new fb.protocol._internal.raw.SystemMailUser()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int ReceivedSystemMailsLength { get { int o = __p.__offset(16); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol._internal.raw.StorageBox? StorageBoxes(int j) { int o = __p.__offset(18); return o != 0 ? (fb.protocol._internal.raw.StorageBox?)(new fb.protocol._internal.raw.StorageBox()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int StorageBoxesLength { get { int o = __p.__offset(18); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol._internal.raw.StorageRewardMark? StorageRewardMarks(int j) { int o = __p.__offset(20); return o != 0 ? (fb.protocol._internal.raw.StorageRewardMark?)(new fb.protocol._internal.raw.StorageRewardMark()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int StorageRewardMarksLength { get { int o = __p.__offset(20); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<fb.protocol._internal.request.raw.Save> CreateSave(FlatBufferBuilder builder,
+      uint world = 0,
       Offset<fb.protocol._internal.raw.Character> characterOffset = default(Offset<fb.protocol._internal.raw.Character>),
       VectorOffset itemsOffset = default(VectorOffset),
       VectorOffset spellsOffset = default(VectorOffset),
@@ -45,7 +47,7 @@ public struct Save : IFlatbufferObject
       VectorOffset received_system_mailsOffset = default(VectorOffset),
       VectorOffset storage_boxesOffset = default(VectorOffset),
       VectorOffset storage_reward_marksOffset = default(VectorOffset)) {
-    builder.StartTable(8);
+    builder.StartTable(9);
     Save.AddStorageRewardMarks(builder, storage_reward_marksOffset);
     Save.AddStorageBoxes(builder, storage_boxesOffset);
     Save.AddReceivedSystemMails(builder, received_system_mailsOffset);
@@ -54,48 +56,50 @@ public struct Save : IFlatbufferObject
     Save.AddSpells(builder, spellsOffset);
     Save.AddItems(builder, itemsOffset);
     Save.AddCharacter(builder, characterOffset);
+    Save.AddWorld(builder, world);
     return Save.EndSave(builder);
   }
 
-  public static void StartSave(FlatBufferBuilder builder) { builder.StartTable(8); }
-  public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Character> characterOffset) { builder.AddOffset(0, characterOffset.Value, 0); }
-  public static void AddItems(FlatBufferBuilder builder, VectorOffset itemsOffset) { builder.AddOffset(1, itemsOffset.Value, 0); }
+  public static void StartSave(FlatBufferBuilder builder) { builder.StartTable(9); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Character> characterOffset) { builder.AddOffset(1, characterOffset.Value, 0); }
+  public static void AddItems(FlatBufferBuilder builder, VectorOffset itemsOffset) { builder.AddOffset(2, itemsOffset.Value, 0); }
   public static VectorOffset CreateItemsVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Item>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateItemsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Item>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateItemsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.Item>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateItemsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.Item>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartItemsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddSpells(FlatBufferBuilder builder, VectorOffset spellsOffset) { builder.AddOffset(2, spellsOffset.Value, 0); }
+  public static void AddSpells(FlatBufferBuilder builder, VectorOffset spellsOffset) { builder.AddOffset(3, spellsOffset.Value, 0); }
   public static VectorOffset CreateSpellsVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Spell>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateSpellsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Spell>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateSpellsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.Spell>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateSpellsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.Spell>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartSpellsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddAchievements(FlatBufferBuilder builder, VectorOffset achievementsOffset) { builder.AddOffset(3, achievementsOffset.Value, 0); }
+  public static void AddAchievements(FlatBufferBuilder builder, VectorOffset achievementsOffset) { builder.AddOffset(4, achievementsOffset.Value, 0); }
   public static VectorOffset CreateAchievementsVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Achievement>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateAchievementsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Achievement>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateAchievementsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.Achievement>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateAchievementsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.Achievement>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartAchievementsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddQuests(FlatBufferBuilder builder, VectorOffset questsOffset) { builder.AddOffset(4, questsOffset.Value, 0); }
+  public static void AddQuests(FlatBufferBuilder builder, VectorOffset questsOffset) { builder.AddOffset(5, questsOffset.Value, 0); }
   public static VectorOffset CreateQuestsVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Quest>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateQuestsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Quest>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateQuestsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.Quest>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateQuestsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.Quest>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartQuestsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddReceivedSystemMails(FlatBufferBuilder builder, VectorOffset receivedSystemMailsOffset) { builder.AddOffset(5, receivedSystemMailsOffset.Value, 0); }
+  public static void AddReceivedSystemMails(FlatBufferBuilder builder, VectorOffset receivedSystemMailsOffset) { builder.AddOffset(6, receivedSystemMailsOffset.Value, 0); }
   public static VectorOffset CreateReceivedSystemMailsVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.SystemMailUser>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateReceivedSystemMailsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.SystemMailUser>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateReceivedSystemMailsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.SystemMailUser>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateReceivedSystemMailsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.SystemMailUser>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartReceivedSystemMailsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddStorageBoxes(FlatBufferBuilder builder, VectorOffset storageBoxesOffset) { builder.AddOffset(6, storageBoxesOffset.Value, 0); }
+  public static void AddStorageBoxes(FlatBufferBuilder builder, VectorOffset storageBoxesOffset) { builder.AddOffset(7, storageBoxesOffset.Value, 0); }
   public static VectorOffset CreateStorageBoxesVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.StorageBox>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateStorageBoxesVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.StorageBox>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateStorageBoxesVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.StorageBox>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateStorageBoxesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.StorageBox>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartStorageBoxesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddStorageRewardMarks(FlatBufferBuilder builder, VectorOffset storageRewardMarksOffset) { builder.AddOffset(7, storageRewardMarksOffset.Value, 0); }
+  public static void AddStorageRewardMarks(FlatBufferBuilder builder, VectorOffset storageRewardMarksOffset) { builder.AddOffset(8, storageRewardMarksOffset.Value, 0); }
   public static VectorOffset CreateStorageRewardMarksVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.StorageRewardMark>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateStorageRewardMarksVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.StorageRewardMark>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateStorageRewardMarksVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.StorageRewardMark>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
@@ -115,14 +119,15 @@ static public class SaveVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyTable(tablePos, 4 /*Character*/, fb.protocol._internal.raw.CharacterVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 6 /*Items*/, fb.protocol._internal.raw.ItemVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 8 /*Spells*/, fb.protocol._internal.raw.SpellVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 10 /*Achievements*/, fb.protocol._internal.raw.AchievementVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 12 /*Quests*/, fb.protocol._internal.raw.QuestVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 14 /*ReceivedSystemMails*/, fb.protocol._internal.raw.SystemMailUserVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 16 /*StorageBoxes*/, fb.protocol._internal.raw.StorageBoxVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 18 /*StorageRewardMarks*/, fb.protocol._internal.raw.StorageRewardMarkVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyTable(tablePos, 6 /*Character*/, fb.protocol._internal.raw.CharacterVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 8 /*Items*/, fb.protocol._internal.raw.ItemVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 10 /*Spells*/, fb.protocol._internal.raw.SpellVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 12 /*Achievements*/, fb.protocol._internal.raw.AchievementVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 14 /*Quests*/, fb.protocol._internal.raw.QuestVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 16 /*ReceivedSystemMails*/, fb.protocol._internal.raw.SystemMailUserVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 18 /*StorageBoxes*/, fb.protocol._internal.raw.StorageBoxVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 20 /*StorageRewardMarks*/, fb.protocol._internal.raw.StorageRewardMarkVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

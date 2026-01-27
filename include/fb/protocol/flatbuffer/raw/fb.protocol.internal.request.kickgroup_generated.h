@@ -25,10 +25,14 @@ struct KickGroupBuilder;
 struct KickGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef KickGroupBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HOST = 4,
-    VT_KICKER = 6,
-    VT_TARGET = 8
+    VT_WORLD = 4,
+    VT_HOST = 6,
+    VT_KICKER = 8,
+    VT_TARGET = 10
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
@@ -40,6 +44,7 @@ struct KickGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyOffset(verifier, VT_KICKER) &&
            verifier.VerifyString(kicker()) &&
@@ -53,6 +58,9 @@ struct KickGroupBuilder {
   typedef KickGroup Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(KickGroup::VT_WORLD, world, 0);
+  }
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(KickGroup::VT_HOST, host, 0);
   }
@@ -75,6 +83,7 @@ struct KickGroupBuilder {
 
 inline ::flatbuffers::Offset<KickGroup> CreateKickGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t host = 0,
     ::flatbuffers::Offset<::flatbuffers::String> kicker = 0,
     ::flatbuffers::Offset<::flatbuffers::String> target = 0) {
@@ -82,11 +91,13 @@ inline ::flatbuffers::Offset<KickGroup> CreateKickGroup(
   builder_.add_target(target);
   builder_.add_kicker(kicker);
   builder_.add_host(host);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<KickGroup> CreateKickGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t host = 0,
     const char *kicker = nullptr,
     const char *target = nullptr) {
@@ -94,6 +105,7 @@ inline ::flatbuffers::Offset<KickGroup> CreateKickGroupDirect(
   auto target__ = target ? _fbb.CreateString(target) : 0;
   return fb::protocol::internal::request::raw::CreateKickGroup(
       _fbb,
+      world,
       host,
       kicker__,
       target__);

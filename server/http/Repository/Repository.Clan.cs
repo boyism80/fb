@@ -25,13 +25,14 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves a clan by its unique identifier.
+        /// Retrieves a clan by world and its unique identifier.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="id">The unique identifier of the clan.</param>
         /// <returns>The clan if found; otherwise, null.</returns>
-        public async Task<Clan> Get(uint id)
+        public async Task<Clan> Get(uint world, uint id)
         {
-            return await Get(new ClanKey { Id = id });
+            return await base.Get(world, new ClanKey { Id = id });
         }
 
         /// <summary>

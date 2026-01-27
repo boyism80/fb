@@ -105,12 +105,12 @@ namespace Internal.Controllers
             _logger = logger;
             _logService = logService;
         }
-        [HttpGet("uid/{name}")]
-        public async Task<Response.GetUid> Uid(string name)
+        [HttpGet("{world}/uid/{name}")]
+        public async Task<Response.GetUid> Uid(uint world, string name)
         {
             try
             {
-                var uid = await _dbContext.Character.GetCharacterId(name) ??
+                var uid = await _dbContext.Character.GetCharacterId(world, name) ??
                 throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 return new Response.GetUid
@@ -130,7 +130,8 @@ namespace Internal.Controllers
         [HttpPost("authenticate")]
         public async Task<Response.Authenticate> Authenticate(Request.Authenticate request)
         {
-            var ch = await _dbContext.Character.Get(request.Uid);
+            var world = request.World;
+            var ch = await _dbContext.Character.Get(world, request.Uid);
             if (ch == null)
             {
                 return new Response.Authenticate
@@ -156,7 +157,8 @@ namespace Internal.Controllers
         [HttpPost("reserve")]
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
-            await using var connection = _dbContext.Connection(-1);
+            var world = request.World;
+            await using var connection = _dbContext.Connection(world, -1);
             var result = await connection.QueryFirstAsync<ReserveNameResult>("USP_NAME_SET", new
             {
                 uname = request.Name
@@ -171,6 +173,7 @@ namespace Internal.Controllers
         [HttpPost("init")]
         public async Task<Response.InitCharacter> InitCharacter(Request.InitCharacter request)
         {
+            var world = request.World;
             var ch = new Character
             {
                 Id = request.Uid,
@@ -187,7 +190,7 @@ namespace Internal.Controllers
                 Direction = (byte)Direction.Bottom,
                 Role = (Role)request.Role
             };
-            _dbContext.Character.Set(ch);
+            _dbContext.Character.Set(world, ch);
 
             await _dbContext.SaveChangesAsync();
 
@@ -208,17 +211,18 @@ namespace Internal.Controllers
         {
             try
             {
-                var ch = await _dbContext.Character.Get(request.Uid) ??
+                var world = request.World;
+                var ch = await _dbContext.Character.Get(world, request.Uid) ??
                     throw new Exception($"user {request.Uid} not found");
 
                 ch.Look = request.Hair;
                 ch.Gender = request.Gender;
                 ch.Nation = request.Nation;
                 ch.Creature = request.Creature;
-                _dbContext.Character.Set(ch);
+                _dbContext.Character.Set(world, ch);
 
                 var baramTime = DateTime.Now.ToBaramTime();
-                _dbContext.Achievement.Set(new Achievement
+                _dbContext.Achievement.Set(world, new Achievement
                 {
                     Uid = request.Uid,
                     Model = 0,
@@ -244,7 +248,8 @@ namespace Internal.Controllers
         {
             try
             {
-                var ch = await _dbContext.Character.Get(request.Uid) ??
+                var world = request.World;
+                var ch = await _dbContext.Character.Get(world, request.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 if (ch.Pw != SHA256Hash(request.Before))
@@ -254,7 +259,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.BirthdayNotMatched);
 
                 ch.Pw = SHA256Hash(request.After);
-                _dbContext.Character.Set(ch);
+                _dbContext.Character.Set(world, ch);
 
                 await _dbContext.SaveChangesAsync();
 

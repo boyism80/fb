@@ -7,6 +7,7 @@ table Shutdown {
 }
 
 table Login {
+  world: uint;
   uid: uint;
   name: string;
   host: ubyte;
@@ -15,11 +16,13 @@ table Login {
 
 
 table Logout {
+  world: uint;
   name: string;
 }
 
 
 table Transfer {
+  world: uint;
   service: fb.protocol.internal.Service;
   id: ubyte;
   name: string?;
@@ -28,6 +31,7 @@ table Transfer {
 
 
 table Whisper {
+  world: uint;
   from: string;
   to: string;
   message: string;
@@ -35,15 +39,18 @@ table Whisper {
 
 
 table KickOut {
+  world: uint;
   uid: uint;
 }
 
 table Account {
+  world: uint;
   uid: uint;
 }
 
 
 table ChangePw {
+  world: uint;
   uid: uint;
   before: string;
   after: string;
@@ -52,6 +59,7 @@ table ChangePw {
 
 
 table InitCharacter {
+  world: uint;
   uid: uint;
   name: string;
   pw: string;
@@ -64,17 +72,20 @@ table InitCharacter {
 }
 
 table Authenticate {
+  world: uint;
   uid: uint;
   pw: string;
 }
 
 
 table Init {
+  world: uint;
   uid: uint;
 }
 
 
 table MakeCharacter {
+  world: uint;
   uid: uint;
   hair: ushort;
   gender: ubyte;
@@ -84,11 +95,13 @@ table MakeCharacter {
 
 
 table ReserveName {
+  world: uint;
   name: string;
 }
 
 
 table Save {
+  world: uint;
   character: fb.protocol.internal.Character;
   items: [fb.protocol.internal.Item];
   spells: [fb.protocol.internal.Spell];
@@ -101,6 +114,7 @@ table Save {
 
 
 table WriteArticle {
+  world: uint;
   section: uint;
   user: uint;
   title: string;
@@ -109,12 +123,14 @@ table WriteArticle {
 
 
 table DeleteArticle {
+  world: uint;
   id: uint;
   section: uint;
   user: uint;
 }
 
 table WriteMail {
+  world: uint;
   sender: uint;
   user: string;
   title: string;
@@ -123,30 +139,35 @@ table WriteMail {
 }
 
 table DeleteMail {
+  world: uint;
   user: uint;
   id: ushort;
 }
 
 
 table SetOption {
+  world: uint;
   user: uint;
   type: ubyte;
   enabled: bool;
 }
 
 table CreateGroup {
+  world: uint;
   host: uint;
   master: uint;
   member: string;
 }
 
 table EnterGroup {
+  world: uint;
   host: uint;
   master: uint;
   member: string;
 }
 
 table BroadcastGroup {
+  world: uint;
   host: uint;
   group: uint;
   message: string;
@@ -154,45 +175,53 @@ table BroadcastGroup {
 }
 
 table LeaveGroup {
+  world: uint;
   host: uint;
   member: string;
 }
 
 table KickGroup {
+  world: uint;
   host: uint;
   kicker: string;
   target: string;
 }
 
 table DestroyGroup {
+  world: uint;
   host: uint;
   master: string;
 }
 
 table CreateClan {
+  world: uint;
   host: uint;
   master: uint;
   name: string;
 }
 
 table DestroyClan {
+  world: uint;
   host: uint;
   master: uint;
 }
 
 table JoinClan {
+  world: uint;
   host: uint;
   inviter_uid: uint;
   invitee_name: string;
 }
 
 table LeaveClan {
+  world: uint;
   host: uint;
   clan: uint;
   name: string;
 }
 
 table KickClan {
+  world: uint;
   host: uint;
   clan: uint;
   kicker: string;
@@ -200,12 +229,14 @@ table KickClan {
 }
 
 table SetClanTitle {
+  world: uint;
   host: uint;
   changer: uint;
   title: string?;
 }
 
 table BroadcastClan {
+  world: uint;
   host: uint;
   clan: uint;
   message: string;
@@ -213,6 +244,7 @@ table BroadcastClan {
 }
 
 table ChangeClanRole {
+  world: uint;
   host: uint;
   changer_uid: uint;
   target_name: string;
@@ -221,21 +253,25 @@ table ChangeClanRole {
 }
 
 table Broadcast {
+  world: uint;
   host: uint;
   message: string;
   type: ubyte;
 }
 
 table UpdateFriends {
+  world: uint;
   user: uint;
   names: [string];
 }
 
 table GetStoragePending {
+  world: uint;
   user: uint;
 }
 
 table WriteSystemMail {
+  world: uint;
   sender: uint;
   title: string;
   contents: string;
@@ -243,16 +279,19 @@ table WriteSystemMail {
 }
 
 table Ban {
+  world: uint;
   name: string;
   reason: string;
   days: uint?;
 }
 
 table Unban {
+  world: uint;
   name: string;
 }
 
 table Heartbeat {
+  world: uint;
   service: fb.protocol.internal.Service;
   id: ubyte;
   name: string;
@@ -261,9 +300,11 @@ table Heartbeat {
 }
 
 table SetExpMultiplier {
+  world: uint;
   value: double;
 }
 
 table SetDropRateMultiplier {
+  world: uint;
   value: double;
 }

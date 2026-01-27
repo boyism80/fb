@@ -27,11 +27,15 @@ struct TransferBuilder;
 struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef TransferBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SERVICE = 4,
-    VT_ID = 6,
-    VT_NAME = 8,
-    VT_FORCE_SHUTDOWN = 10
+    VT_WORLD = 4,
+    VT_SERVICE = 6,
+    VT_ID = 8,
+    VT_NAME = 10,
+    VT_FORCE_SHUTDOWN = 12
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   fb::protocol::internal::raw::Service service() const {
     return static_cast<fb::protocol::internal::raw::Service>(GetField<int8_t>(VT_SERVICE, 0));
   }
@@ -46,6 +50,7 @@ struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<int8_t>(verifier, VT_SERVICE, 1) &&
            VerifyField<uint8_t>(verifier, VT_ID, 1) &&
            VerifyOffset(verifier, VT_NAME) &&
@@ -59,6 +64,9 @@ struct TransferBuilder {
   typedef Transfer Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(Transfer::VT_WORLD, world, 0);
+  }
   void add_service(fb::protocol::internal::raw::Service service) {
     fbb_.AddElement<int8_t>(Transfer::VT_SERVICE, static_cast<int8_t>(service), 0);
   }
@@ -84,12 +92,14 @@ struct TransferBuilder {
 
 inline ::flatbuffers::Offset<Transfer> CreateTransfer(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     fb::protocol::internal::raw::Service service = fb::protocol::internal::raw::Service_Gateway,
     uint8_t id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     bool force_shutdown = false) {
   TransferBuilder builder_(_fbb);
   builder_.add_name(name);
+  builder_.add_world(world);
   builder_.add_force_shutdown(force_shutdown);
   builder_.add_id(id);
   builder_.add_service(service);
@@ -98,6 +108,7 @@ inline ::flatbuffers::Offset<Transfer> CreateTransfer(
 
 inline ::flatbuffers::Offset<Transfer> CreateTransferDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     fb::protocol::internal::raw::Service service = fb::protocol::internal::raw::Service_Gateway,
     uint8_t id = 0,
     const char *name = nullptr,
@@ -105,6 +116,7 @@ inline ::flatbuffers::Offset<Transfer> CreateTransferDirect(
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return fb::protocol::internal::request::raw::CreateTransfer(
       _fbb,
+      world,
       service,
       id,
       name__,

@@ -29,7 +29,7 @@ namespace Http.Reepository
     /// <typeparam name="TKey">The key type that implements IModelKey for sharding support.</typeparam>
     public abstract class Repository<TModel, TKey> : IRepository where TModel : class, IModel, TKey where TKey : IModelKey
     {
-        private readonly DbContext _dbContext;
+        protected readonly DbContext _dbContext;
 
         /// <summary>
         /// Gets the buffer queue for pending database operations.
@@ -77,14 +77,16 @@ namespace Http.Reepository
         protected virtual string OnUpsert(TModel[] values) { throw new NotImplementedException(); }
 
         /// <summary>
-        /// Retrieves a single entity from the database using the specified key.
+        /// Retrieves a single entity from the database using the specified world and key.
         /// Automatically filters out soft-deleted entities.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="key">The key identifying the entity to retrieve.</param>
         /// <returns>The entity if found and not deleted; otherwise, null.</returns>
-        protected virtual async Task<TModel> Get(TKey key)
+        protected virtual async Task<TModel> Get(uint world, TKey key)
         {
-            await using var conn = _dbContext.Connection(key.GetHash());
+            var hash = key.GetHash();
+            await using var conn = _dbContext.Connection(world, hash);
             var value = await conn.QuerySingleOrDefaultAsync<TModel>(OnSelect(key));
             if (value == null)
                 return null;
@@ -96,14 +98,16 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves all entities from the database using the specified key.
+        /// Retrieves all entities from the database using the specified world and key.
         /// Automatically filters out soft-deleted entities.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="key">The key identifying the entities to retrieve.</param>
         /// <returns>A collection of entities that are not soft-deleted.</returns>
-        protected virtual async Task<IEnumerable<TModel>> GetAll(TKey key)
+        protected virtual async Task<IEnumerable<TModel>> GetAll(uint world, TKey key)
         {
-            await using var conn = _dbContext.Connection(key.GetHash());
+            var hash = key.GetHash();
+            await using var conn = _dbContext.Connection(world, hash);
             return (await conn.QueryAsync<TModel>(OnSelectBulk(key))).Where(x => !x.Deleted);
         }
 
@@ -111,13 +115,15 @@ namespace Http.Reepository
         /// Queues a single entity for upsert operation during the next save.
         /// The operation is buffered and executed when SaveChangesAsync is called.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="value">The entity to upsert.</param>
         /// <returns>The same entity instance for method chaining.</returns>
-        public virtual TModel Set(TModel value)
+        public virtual TModel Set(uint world, TModel value)
         {
             _buffer.Enqueue(async () =>
             {
-                await using var conn = _dbContext.Connection(value.GetHash());
+                var hash = value.GetHash();
+                await using var conn = _dbContext.Connection(world, hash);
                 await conn.ExecuteAsync(OnUpsert(value));
             });
             return value;
@@ -127,13 +133,14 @@ namespace Http.Reepository
         /// Queues multiple entities for upsert operation during the next save.
         /// Entities are grouped by shard for efficient batch operations.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="values">The entities to upsert.</param>
         /// <returns>The same entity array for method chaining.</returns>
-        public virtual TModel[] Set(TModel[] values)
+        public virtual TModel[] Set(uint world, TModel[] values)
         {
             _buffer.Enqueue(async () =>
             {
-                foreach (var (conn, items) in _dbContext.Connections(values, value => value.GetHash()))
+                foreach (var (conn, items) in _dbContext.Connections(world, values, value => value.GetHash()))
                 {
                     await conn.ExecuteAsync(OnUpsert(items));
                 }
@@ -216,11 +223,12 @@ namespace Http.Reepository
         /// Retrieves a single entity with multi-level caching (local, Redis, database).
         /// Uses distributed locking to ensure consistency across cache levels.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="key">The key identifying the entity to retrieve.</param>
         /// <returns>The entity if found and not deleted; otherwise, null.</returns>
-        protected override async Task<TModel> Get(TKey key)
+        protected override async Task<TModel> Get(uint world, TKey key)
         {
-            await using (await _distributedLock.Lock(GetLockKey(key)))
+            await using (await _distributedLock.Lock(world, GetLockKey(key)))
             {
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValue))
                 {
@@ -231,7 +239,11 @@ namespace Http.Reepository
                     return value;
                 }
 
-                var redis = _redisService.Redis(key);
+                var hash = key.GetHash();
+                var redis = _redisService.Redis(world, hash);
+                if (redis == null)
+                    return null;
+
                 var redisValues = await redis.Connection.JsonGetAsync<TModel>(key.GetRedisKey());
                 if (redisValues != null)
                 {
@@ -241,7 +253,7 @@ namespace Http.Reepository
                     return redisValues;
                 }
 
-                var mysqlValue = await base.Get(key);
+                var mysqlValue = await base.Get(world, key);
                 if (mysqlValue != null)
                 {
                     if (!_updateValueExpiryScripts.TryGetValue(redis, out var script))
@@ -271,10 +283,11 @@ namespace Http.Reepository
         /// <summary>
         /// This operation is not supported for Redis value repositories.
         /// </summary>
+        /// <param name="world">The world identifier (unused).</param>
         /// <param name="key">The key parameter (unused).</param>
         /// <returns>Never returns normally.</returns>
         /// <exception cref="InvalidOperationException">Always thrown as this operation is not supported.</exception>
-        protected override sealed Task<IEnumerable<TModel>> GetAll(TKey key)
+        protected override sealed Task<IEnumerable<TModel>> GetAll(uint world, TKey key)
         {
             throw new InvalidOperationException();
         }
@@ -283,16 +296,21 @@ namespace Http.Reepository
         /// Queues a single entity for upsert with Redis caching and write-back support.
         /// Updates local cache, Redis cache, and schedules database write-back.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="value">The entity to upsert.</param>
         /// <returns>The same entity instance for method chaining.</returns>
-        public override TModel Set(TModel value)
+        public override TModel Set(uint world, TModel value)
         {
             _buffer.Enqueue(async () =>
             {
                 value.UpdatedDate = DateTime.Now;
 
-                var redis = _redisService.Redis(value).Connection;
-                await redis.TransactAsync(cmd =>
+                var hash = value.GetHash();
+                var redis = _redisService.Redis(world, hash);
+                if (redis == null)
+                    return;
+
+                await redis.Connection.TransactAsync(cmd =>
                 {
                     cmd.Enqueue(trans => trans.JsonSetAsync(value.GetRedisKey(), value));
                     cmd.Enqueue(trans => trans.KeyExpireAsync(value.GetRedisKey(), expiry: (TimeSpan?)null));
@@ -302,7 +320,7 @@ namespace Http.Reepository
                 _local[value.GetRedisKey()] = JsonConvert.SerializeObject(value);
 
                 var sql = OnUpsert(value);
-                await _dbExecuteService.Post(value.GetHash(), sql, value.GetRedisKey().ToString());
+                await _dbExecuteService.Post(world, value.GetHash(), sql, value.GetRedisKey().ToString());
             });
             return value;
         }
@@ -310,10 +328,11 @@ namespace Http.Reepository
         /// <summary>
         /// This operation is not supported for Redis value repositories.
         /// </summary>
+        /// <param name="world">The world identifier (unused).</param>
         /// <param name="values">The values parameter (unused).</param>
         /// <returns>Never returns normally.</returns>
         /// <exception cref="InvalidOperationException">Always thrown as this operation is not supported.</exception>
-        public override sealed TModel[] Set(TModel[] values)
+        public override sealed TModel[] Set(uint world, TModel[] values)
         {
             throw new InvalidOperationException();
         }
@@ -454,12 +473,13 @@ namespace Http.Reepository
         /// Synchronizes cache from database by loading entities and updating both Redis and local cache.
         /// Retrieves entities from database, stores them in Redis using Lua script, and updates local cache.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="redis">The Redis service instance for cache operations.</param>
         /// <param name="key">The key identifying the entities to retrieve and cache.</param>
         /// <returns>A collection of entities loaded from the database.</returns>
-        private async Task<IEnumerable<TModel>> SyncCacheFromDatabase(Service.Redis redis, TKey key)
+        private async Task<IEnumerable<TModel>> SyncCacheFromDatabase(uint world, Service.Redis redis, TKey key)
         {
-            var mysqlValues = await base.GetAll(key);
+            var mysqlValues = await base.GetAll(world, key);
             if (mysqlValues.Any())
             {
                 foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
@@ -503,11 +523,12 @@ namespace Http.Reepository
         /// Retrieves a single entity with multi-level caching (local, Redis hash, database).
         /// Uses distributed locking to ensure consistency across cache levels and handles hash-based Redis operations.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="key">The key identifying the entity to retrieve.</param>
         /// <returns>The entity if found and not deleted; otherwise, null.</returns>
-        protected override async Task<TModel> Get(TKey key)
+        protected override async Task<TModel> Get(uint world, TKey key)
         {
-            await using (await _distributedLock.Lock(GetLockKey(key)))
+            await using (await _distributedLock.Lock(world, GetLockKey(key)))
             {
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValues) && localValues.TryGetValue(key.GetRedisField(), out var localValue))
                 {
@@ -518,7 +539,11 @@ namespace Http.Reepository
                     return value;
                 }
 
-                var redis = _redisService.Redis(key.GetHash());
+                var hash = key.GetHash();
+                var redis = _redisService.Redis(world, hash);
+                if (redis == null)
+                    return null;
+
                 var redisValues = await redis.Connection.JsonHashGetAllAsync<TModel>(key.GetRedisKey());
                 if (redisValues.Count > 0)
                 {
@@ -533,7 +558,7 @@ namespace Http.Reepository
                     }
                 }
 
-                var mysqlValues = await SyncCacheFromDatabase(redis, key);
+                var mysqlValues = await SyncCacheFromDatabase(world, redis, key);
                 var found = mysqlValues.FirstOrDefault(x =>
                 {
                     if (x.GetRedisKey() != key.GetRedisKey())
@@ -559,16 +584,21 @@ namespace Http.Reepository
         /// Retrieves all entities with multi-level caching (local, Redis hash, database).
         /// Uses distributed locking and handles hash-based Redis operations for bulk retrieval.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="key">The key identifying the entities to retrieve.</param>
         /// <returns>A collection of entities that are not soft-deleted.</returns>
-        protected override async Task<IEnumerable<TModel>> GetAll(TKey key)
+        protected override async Task<IEnumerable<TModel>> GetAll(uint world, TKey key)
         {
-            await using (await _distributedLock.Lock(GetLockKey(key)))
+            await using (await _distributedLock.Lock(world, GetLockKey(key)))
             {
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValues))
                     return localValues.Values.Select(x => JsonConvert.DeserializeObject<TModel>(x)).Where(x => !x.Deleted);
 
-                var redis = _redisService.Redis(key.GetHash());
+                var hash = key.GetHash();
+                var redis = _redisService.Redis(world, hash);
+                if (redis == null)
+                    return Enumerable.Empty<TModel>();
+
                 var redisValues = await redis.Connection.JsonHashGetAsync<TModel>(key.GetRedisKey());
                 if (redisValues.Count > 0)
                 {
@@ -577,7 +607,7 @@ namespace Http.Reepository
                     return redisValues.Values.Where(x => !x.Deleted);
                 }
 
-                var mysqlValues = await SyncCacheFromDatabase(redis, key);
+                var mysqlValues = await SyncCacheFromDatabase(world, redis, key);
                 return mysqlValues.Where(x => !x.Deleted);
             }
         }
@@ -587,19 +617,23 @@ namespace Http.Reepository
         /// Updates local cache, Redis hash cache, and schedules database write-back.
         /// If Redis key doesn't exist, calls GetAll to synchronize cache with database.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="value">The entity to upsert.</param>
         /// <returns>The same entity instance for method chaining.</returns>
-        public override TModel Set(TModel value)
+        public override TModel Set(uint world, TModel value)
         {
             _buffer.Enqueue(async () =>
             {
                 value.UpdatedDate = DateTime.Now;
 
                 var redisKey = value.GetRedisKey();
-                var redis = _redisService.Redis(value.GetHash());
+                var hash = value.GetHash();
+                var redis = _redisService.Redis(world, hash);
+                if (redis == null)
+                    return;
 
                 // Use distributed lock to ensure cache synchronization
-                await using (await _distributedLock.Lock(GetLockKey(value)))
+                await using (await _distributedLock.Lock(world, GetLockKey(value)))
                 {
                     // Check if Redis key exists
                     var keyExists = await redis.Connection.KeyExistsAsync(redisKey);
@@ -607,7 +641,7 @@ namespace Http.Reepository
                     {
                         // Redis key doesn't exist, clear local cache and call SyncCacheFromDatabase to synchronize cache with database
                         _local.TryRemove(redisKey, out _);
-                        await SyncCacheFromDatabase(redis, value);
+                        await SyncCacheFromDatabase(world, redis, value);
                     }
 
                     // Add the new entity to Redis cache using Lua script
@@ -635,7 +669,7 @@ namespace Http.Reepository
                 }
 
                 var sql = OnUpsert(value);
-                await _dbExecuteService.Post(value.GetHash(), sql, redisKey.ToString());
+                await _dbExecuteService.Post(world, value.GetHash(), sql, redisKey.ToString());
             });
 
             return value;
@@ -646,9 +680,10 @@ namespace Http.Reepository
         /// Entities are grouped by hash and Redis key for efficient batch operations with hash structures.
         /// If Redis key doesn't exist, calls GetAll to synchronize cache with database.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="values">The entities to upsert.</param>
         /// <returns>The same entity array for method chaining.</returns>
-        public override TModel[] Set(TModel[] values)
+        public override TModel[] Set(uint world, TModel[] values)
         {
             _buffer.Enqueue(async () =>
             {
@@ -660,7 +695,9 @@ namespace Http.Reepository
                 foreach (var hashGroup in values.GroupBy(x => x.GetHash()))
                 {
                     var hash = hashGroup.Key;
-                    var redis = _redisService.Redis(hash);
+                    var redis = _redisService.Redis(world, hash);
+                    if (redis == null)
+                        continue;
 
                     // Process keyGroups sequentially
                     foreach (var keyGroup in hashGroup.GroupBy(x => x.GetRedisKey()))
@@ -669,7 +706,7 @@ namespace Http.Reepository
                         var valueSet = keyGroup.ToDictionary(x => x.GetRedisField(), x => x);
 
                         // Use distributed lock to ensure cache synchronization
-                        await using (await _distributedLock.Lock(GetLockKey(redisKey)))
+                        await using (await _distributedLock.Lock(world, GetLockKey(redisKey)))
                         {
                             // Check if Redis key exists
                             var keyExists = await redis.Connection.KeyExistsAsync(redisKey);
@@ -677,7 +714,7 @@ namespace Http.Reepository
                             {
                                 // Redis key doesn't exist, clear local cache and call SyncCacheFromDatabase to synchronize cache with database
                                 _local.TryRemove(redisKey, out _);
-                                await SyncCacheFromDatabase(redis, keyGroup.First());
+                                await SyncCacheFromDatabase(world, redis, keyGroup.First());
                             }
 
                             // Add the new entities to Redis cache using Lua script
@@ -715,7 +752,7 @@ namespace Http.Reepository
 
                         // Execute OnUpsert and Post for each keyGroup (same hash connection, but grouped by redisKey)
                         var sql = OnUpsert(keyGroup.ToArray());
-                        await _dbExecuteService.Post(hash, sql, redisKey.ToString());
+                        await _dbExecuteService.Post(world, hash, sql, redisKey.ToString());
                     }
                 }
             });

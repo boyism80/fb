@@ -2,9 +2,12 @@
 @implements IDisposable
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.WebUtilities
 @using AdminTool.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
+@inject IConfiguration Configuration
 
 <PageTitle>Admin Tool</PageTitle>
 
@@ -16,12 +19,25 @@
                 <div class="header-center">
                     <div class="header-search">
                         <span class="oi oi-magnifying-glass"></span>
-                        <input type="text" class="search-input" placeholder="Search users..." 
-                               @bind="globalSearchTerm" @bind:event="oninput" 
-                               @onkeypress="HandleSearchKeyPress" />
+                        <input type="text" class="search-input" placeholder="Search users..." @bind="globalSearchTerm"
+                               @bind:event="oninput" @onkeypress="HandleSearchKeyPress" />
                     </div>
                 </div>
                 <div class="header-actions">
+                    <div class="world-selector">
+                        <label for="world-select" class="world-label">Server:</label>
+                        <select id="world-select" class="form-select form-select-sm world-select" @bind="selectedWorld"
+                                @bind:after="OnWorldChanged">
+                            @if (worlds != null && worlds.Any())
+                            {
+                                @foreach (var worldId in worlds)
+                                {
+                                    var serverName = GetServerName(worldId);
+                                    <option value="@worldId">@serverName</option>
+                                }
+                            }
+                        </select>
+                    </div>
                     @if (isAuthenticated)
                     {
                         <button class="btn btn-outline-secondary" @onclick="HandleLogout">Logout</button>
@@ -30,15 +46,23 @@
                     {
                         <button class="btn btn-primary" @onclick="NavigateToLogin">Login</button>
                     }
-                    <a href="https://github.com/boyism80/fb" target="_blank" rel="noopener noreferrer" class="header-link">Contact</a>
+                    <a href="https://github.com/boyism80/fb" target="_blank" rel="noopener noreferrer"
+                       class="header-link">Contact</a>
                 </div>
             </div>
         </div>
         <div class="header-info">
             <div class="header-info-container">
                 <div class="info-text">
-                    <p>fb is a 2D MMORPG game server written in C++20. High-performance, microservices architecture with Lua scripting support.</p>
-                    <p>Created by <a href="https://github.com/boyism80" target="_blank" rel="noopener noreferrer" class="info-link">boyism80</a>. <a href="https://github.com/boyism80/fb" target="_blank" rel="noopener noreferrer" class="info-link">View on GitHub</a></p>
+                    <p>
+                        fb is a 2D MMORPG game server written in C++20. High-performance, microservices architecture with
+                        Lua scripting support.
+                    </p>
+                    <p>
+                        Created by <a href="https://github.com/boyism80" target="_blank" rel="noopener noreferrer"
+                                      class="info-link">boyism80</a>. <a href="https://github.com/boyism80/fb" target="_blank"
+                                                                         rel="noopener noreferrer" class="info-link">View on GitHub</a>
+                    </p>
                 </div>
             </div>
         </div>
@@ -50,19 +74,121 @@
     </header>
 
     <main class="app-main">
-        <div class="content-wrapper">
-            @Body
-        </div>
+        <CascadingValue Value="selectedWorld" Name="SelectedWorld">
+            <div class="content-wrapper">
+                @Body
+            </div>
+        </CascadingValue>
     </main>
 </div>
 
 @code {
     private bool isAuthenticated = false;
     private string globalSearchTerm = string.Empty;
+    private List<uint>? worlds;
+    private uint? selectedWorld;
+    private Dictionary<uint, string>? worldToServerName;
 
     protected override async Task OnInitializedAsync()
     {
         await CheckAuthenticationState();
+        LoadWorlds();
+        LoadWorldFromQuery();
+    }
+
+    private void LoadWorlds()
+    {
+        try
+        {
+            var rabbitMqSection = Configuration.GetSection("RabbitMQ");
+            worlds = rabbitMqSection.GetChildren()
+            .Where(child => uint.TryParse(child.Key, out _))
+            .Select(child => uint.Parse(child.Key))
+            .ToList();
+
+            // Load world to server name mapping
+            var worldServersSection = Configuration.GetSection("WorldServers");
+            worldToServerName = worldServersSection.GetChildren()
+            .Where(child => uint.TryParse(child.Key, out _))
+            .ToDictionary(
+            child => uint.Parse(child.Key),
+            child => child.Value ?? child.Key);
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't break the layout
+            System.Diagnostics.Debug.WriteLine($"Error loading worlds: {ex.Message}");
+        }
+    }
+
+    private string GetServerName(uint world)
+    {
+        if (worldToServerName != null && worldToServerName.TryGetValue(world, out var serverName))
+        {
+            return serverName;
+        }
+        return world.ToString();
+    }
+
+    private void LoadWorldFromQuery()
+    {
+        try
+        {
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            var queryParams = QueryHelpers.ParseQuery(uri.Query);
+
+            if (queryParams.TryGetValue("world", out var worldValue) && !string.IsNullOrEmpty(worldValue))
+            {
+                if (uint.TryParse(worldValue, out var worldId) && worlds != null && worlds.Contains(worldId))
+                {
+                    selectedWorld = worldId;
+                    return;
+                }
+            }
+
+            // If no valid world in query or worlds not loaded yet, use first world as default
+            if (worlds != null && worlds.Any() && !selectedWorld.HasValue)
+            {
+                selectedWorld = worlds.First();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading world from query: {ex.Message}");
+        }
+    }
+
+    private void OnWorldChanged()
+    {
+        UpdateUrlWithWorld();
+        StateHasChanged();
+    }
+
+    private void UpdateUrlWithWorld()
+    {
+        try
+        {
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            var queryParams = QueryHelpers.ParseQuery(uri.Query);
+
+            if (selectedWorld.HasValue)
+            {
+                queryParams["world"] = selectedWorld.Value.ToString();
+            }
+
+            var queryDict = queryParams.ToDictionary(
+            kvp => kvp.Key,
+            kvp => (string?)(kvp.Value.ToString() ?? string.Empty));
+            var newQueryString = QueryHelpers.AddQueryString(
+            uri.GetLeftPart(UriPartial.Path),
+            queryDict);
+
+            Navigation.NavigateTo(newQueryString, false);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error updating URL with world: {ex.Message}");
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -70,6 +196,7 @@
         if (firstRender)
         {
             AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+            Navigation.LocationChanged += OnLocationChanged;
         }
     }
 
@@ -85,12 +212,13 @@
         isAuthenticated = authState.User.Identity?.IsAuthenticated == true;
     }
 
-    private async Task HandleSearchKeyPress(KeyboardEventArgs e)
+    private Task HandleSearchKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(globalSearchTerm))
         {
             Navigation.NavigateTo($"/users?search={Uri.EscapeDataString(globalSearchTerm)}");
         }
+        return Task.CompletedTask;
     }
 
     private void NavigateToLogin()
@@ -107,11 +235,18 @@
         }
     }
 
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        LoadWorldFromQuery();
+        StateHasChanged();
+    }
+
     public void Dispose()
     {
         if (AuthenticationStateProvider != null)
         {
             AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         }
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 }

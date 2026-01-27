@@ -25,11 +25,15 @@ struct WriteArticleBuilder;
 struct WriteArticle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef WriteArticleBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SECTION = 4,
-    VT_USER = 6,
-    VT_TITLE = 8,
-    VT_CONTENTS = 10
+    VT_WORLD = 4,
+    VT_SECTION = 6,
+    VT_USER = 8,
+    VT_TITLE = 10,
+    VT_CONTENTS = 12
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t section() const {
     return GetField<uint32_t>(VT_SECTION, 0);
   }
@@ -44,6 +48,7 @@ struct WriteArticle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_SECTION, 4) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyOffset(verifier, VT_TITLE) &&
@@ -58,6 +63,9 @@ struct WriteArticleBuilder {
   typedef WriteArticle Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(WriteArticle::VT_WORLD, world, 0);
+  }
   void add_section(uint32_t section) {
     fbb_.AddElement<uint32_t>(WriteArticle::VT_SECTION, section, 0);
   }
@@ -83,6 +91,7 @@ struct WriteArticleBuilder {
 
 inline ::flatbuffers::Offset<WriteArticle> CreateWriteArticle(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t section = 0,
     uint32_t user = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
@@ -92,11 +101,13 @@ inline ::flatbuffers::Offset<WriteArticle> CreateWriteArticle(
   builder_.add_title(title);
   builder_.add_user(user);
   builder_.add_section(section);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<WriteArticle> CreateWriteArticleDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t section = 0,
     uint32_t user = 0,
     const char *title = nullptr,
@@ -105,6 +116,7 @@ inline ::flatbuffers::Offset<WriteArticle> CreateWriteArticleDirect(
   auto contents__ = contents ? _fbb.CreateString(contents) : 0;
   return fb::protocol::internal::request::raw::CreateWriteArticle(
       _fbb,
+      world,
       section,
       user,
       title__,

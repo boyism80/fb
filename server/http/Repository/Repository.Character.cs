@@ -13,11 +13,9 @@ namespace Http.Reepository
     /// </summary>
     public class CharacterRepository : RedisValueRepository<Character, CharacterKey>
     {
-        private readonly DbContext _dbContext;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="CharacterRepository"/> class.
-        /// </summary>Level
+        /// </summary>
         /// <param name="dbContext">The database context for connection management.</param>
         /// <param name="redisService">The Redis service for cache operations.</param>
         /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
@@ -27,17 +25,26 @@ namespace Http.Reepository
             RedisDistributedLockService distributedLock,
             WriteBackService dbExecuteService) : base(dbContext, redisService, distributedLock, dbExecuteService)
         {
-            _dbContext = dbContext;
         }
 
+
         /// <summary>
-        /// Retrieves a character by their unique identifier.
+        /// Retrieves a character by world and their unique identifier.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="id">The unique identifier of the character.</param>
         /// <returns>The character if found; otherwise, null.</returns>
-        public async Task<Character> Get(uint id)
+        public async Task<Character> Get(uint world, uint id)
         {
-            return await Get(new CharacterKey { Id = id });
+            await using var conn = _dbContext.Connection(world, id);
+            var value = await conn.QuerySingleOrDefaultAsync<Character>(OnSelect(new CharacterKey { Id = id }));
+            if (value == null)
+                return null;
+
+            if (value.Deleted)
+                return null;
+
+            return value;
         }
 
         /// <summary>
@@ -195,14 +202,15 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves a character ID by their name using a stored procedure.
-        /// Uses the default database connection for name lookup operations.
+        /// Retrieves a character ID by world and their name using a stored procedure.
+        /// Uses the world-specific database connection for name lookup operations.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to look up.</param>
         /// <returns>The character ID if found; otherwise, null.</returns>
-        public async Task<uint?> GetCharacterId(string name)
+        public async Task<uint?> GetCharacterId(uint world, string name)
         {
-            await using var conn = _dbContext.Connection(-1);
+            await using var conn = _dbContext.Connection(world, -1);
             var result = await conn.QueryAsync<uint>("USP_NAME_GET_ID", new
             {
                 n = name
@@ -215,30 +223,32 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves a character name by their unique identifier.
-        /// Uses the default database connection for name lookup operations.
+        /// Retrieves a character name by world and their unique identifier.
+        /// Uses the world-specific database connection for name lookup operations.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="id">The unique identifier of the character.</param>
         /// <returns>The character name if found; otherwise, null.</returns>
-        public async Task<string> GetName(uint id)
+        public async Task<string> GetName(uint world, uint id)
         {
-            await using var conn = _dbContext.Connection(-1);
+            await using var conn = _dbContext.Connection(world, -1);
             var result = await conn.QueryFirstOrDefaultAsync<CharacterName>($"SELECT id, name FROM name WHERE id = {id}");
             return result?.Name;
         }
 
         /// <summary>
-        /// Retrieves multiple character names by their unique identifiers in a single query.
-        /// Uses the default database connection for batch name lookup operations.
+        /// Retrieves multiple character names by world and their unique identifiers in a single query.
+        /// Uses the world-specific database connection for batch name lookup operations.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="ids">The collection of character IDs to look up.</param>
         /// <returns>A read-only dictionary mapping character IDs to their names.</returns>
-        public async Task<IReadOnlyDictionary<uint, string>> GetName(IEnumerable<uint> ids)
+        public async Task<IReadOnlyDictionary<uint, string>> GetName(uint world, IEnumerable<uint> ids)
         {
             if (ids.Any() == false)
                 return new Dictionary<uint, string>();
 
-            await using var conn = _dbContext.Connection(-1);
+            await using var conn = _dbContext.Connection(world, -1);
             var result = await conn.QueryAsync<CharacterName>($"SELECT id, name FROM name WHERE id IN ({string.Join(',', ids)})");
             return result.ToDictionary(x => x.Id, x => x.Name);
         }

@@ -20,21 +20,25 @@ public struct DeleteMail : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public DeleteMail __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint User { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public ushort Id { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ushort Id { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.DeleteMail> CreateDeleteMail(FlatBufferBuilder builder,
+      uint world = 0,
       uint user = 0,
       ushort id = 0) {
-    builder.StartTable(2);
+    builder.StartTable(3);
     DeleteMail.AddUser(builder, user);
+    DeleteMail.AddWorld(builder, world);
     DeleteMail.AddId(builder, id);
     return DeleteMail.EndDeleteMail(builder);
   }
 
-  public static void StartDeleteMail(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
-  public static void AddId(FlatBufferBuilder builder, ushort id) { builder.AddUshort(1, id, 0); }
+  public static void StartDeleteMail(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
+  public static void AddId(FlatBufferBuilder builder, ushort id) { builder.AddUshort(2, id, 0); }
   public static Offset<fb.protocol._internal.request.raw.DeleteMail> EndDeleteMail(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.DeleteMail>(o);
@@ -49,8 +53,9 @@ static public class DeleteMailVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Id*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Id*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

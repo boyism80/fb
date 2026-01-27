@@ -6,8 +6,13 @@ module.exports = {
 
         const deployments = []
         const appLabels = { app: "write-back" }
-        for(const [section, sectionConf] of Object.entries(conf['write-back'])) {
+        for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+            // Skip if write-back is not configured (empty object)
+            if (!worldConf['write-back'] || Object.keys(worldConf['write-back']).length === 0) continue
+            
+            const worldId = worldConf.id.toString()
             const config = {
+                "World": worldConf.id,
                 "Logging": {
                     "LogLevel": {
                         "Default": "Information",
@@ -18,21 +23,7 @@ module.exports = {
                     "MySql": {}
                 },
                 "Redis": {},
-                "RabbitMQ": {
-                    "Internal": {
-                        "Host": `rabbitmq-${sectionConf.rabbitmq}-internal`,
-                        "Port": conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
-                        "Uid": "fb",
-                        "Pwd": "admin"
-                    },
-                    "Log": {
-                        "Host": `rabbitmq-${sectionConf.rabbitmq}-log`,
-                        "Port": conf.rabbitmq[sectionConf.rabbitmq].log.port.amqp.cluster,
-                        "Uid": "fb",
-                        "Pwd": "admin",
-                        "QueueSize": 128
-                    }
-                },
+                "RabbitMQ": {},
                 "Log": {
                     "Enabled": true,
                     "ServerId": "0",
@@ -40,19 +31,51 @@ module.exports = {
                 }
             }
 
-            for(const [id, mysqlConfig] of Object.entries(conf.mysql[sectionConf.mysql].data)) {
-                config.ConnectionStrings.MySql[id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
-            }
-
-            for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
-                config.Redis[id] = {
-                    Host: `redis-${sectionConf.redis}`,
-                    Port: conf.redis[sectionConf.redis][id].port.cluster
+            // Build MySQL connections for this world (nested structure: MySql:{worldId}:{id})
+            if (worldConf.mysql && worldConf.mysql.data) {
+                if (!config.ConnectionStrings.MySql[worldId]) {
+                    config.ConnectionStrings.MySql[worldId] = {}
+                }
+                for(const [id, mysqlConfig] of Object.entries(worldConf.mysql.data)) {
+                    config.ConnectionStrings.MySql[worldId][id] = `Server=mysql-${worldName};Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
                 }
             }
 
-            const configMap = new k8s.core.v1.ConfigMap(`write-back-${section}`, {
-                metadata: { name: `write-back-${section}`, namespace: namespace.metadata.name },
+            // Build Redis connections for this world (nested structure: Redis:{worldId}:{id})
+            if (worldConf.redis) {
+                if (!config.Redis[worldId]) {
+                    config.Redis[worldId] = {}
+                }
+                for(const [id, redisConf] of Object.entries(worldConf.redis)) {
+                    config.Redis[worldId][id] = {
+                        Host: `redis-${worldName}`,
+                        Port: redisConf.port.cluster
+                    }
+                }
+            }
+
+            // Build RabbitMQ connections for this world (nested structure: RabbitMQ:{worldId}:{Internal/Log})
+            if (worldConf.rabbitmq) {
+                if (!config.RabbitMQ[worldId]) {
+                    config.RabbitMQ[worldId] = {}
+                }
+                config.RabbitMQ[worldId]["Internal"] = {
+                    "Host": `rabbitmq-${worldName}-internal`,
+                    "Port": worldConf.rabbitmq.internal.port.amqp.cluster,
+                    "Uid": "fb",
+                    "Pwd": "admin"
+                }
+                config.RabbitMQ[worldId]["Log"] = {
+                    "Host": `rabbitmq-${worldName}-log`,
+                    "Port": worldConf.rabbitmq.log.port.amqp.cluster,
+                    "Uid": "fb",
+                    "Pwd": "admin",
+                    "QueueSize": 128
+                }
+            }
+
+            const configMap = new k8s.core.v1.ConfigMap(`write-back-${worldName}`, {
+                metadata: { name: `write-back-${worldName}`, namespace: namespace.metadata.name },
                 data: {
                     "appsettings.json": JSON.stringify(config),
                 },
@@ -74,8 +97,8 @@ module.exports = {
                 }],
             }
 
-            const deployment = new k8s.apps.v1.Deployment(`write-back-${section}`, {
-                metadata: { name: `write-back-${section}`, namespace: namespace.metadata.name },
+            const deployment = new k8s.apps.v1.Deployment(`write-back-${worldName}`, {
+                metadata: { name: `write-back-${worldName}`, namespace: namespace.metadata.name },
                 spec: {
                     selector: { matchLabels: appLabels },
                     replicas: 1,

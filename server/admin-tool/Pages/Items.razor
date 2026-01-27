@@ -76,11 +76,11 @@
                                     <div class="col-md-5">
                                         <label class="form-label small">Item Name</label>
                                         <div class="position-relative">
-                                            <input type="text" class="form-control" 
-                                                   @bind="itemSearchText" 
+                                            <input type="text" class="form-control"
+                                                   @bind="itemSearchText"
                                                    @bind:event="oninput"
                                                    @bind:after="HandleItemSearchInput"
-                                                   @onkeydown="HandleItemSearchKeyDown" 
+                                                   @onkeydown="HandleItemSearchKeyDown"
                                                    @onfocus="() => showItemSuggestions = !string.IsNullOrWhiteSpace(itemSearchText) && filteredItems.Any()"
                                                    @onblur="() => Task.Delay(200).ContinueWith(_ => InvokeAsync(() => { showItemSuggestions = false; StateHasChanged(); }))"
                                                    placeholder="Search item name..." />
@@ -89,7 +89,7 @@
                                                 <div class="list-group position-absolute w-100" style="z-index: 1000; max-height: 200px; overflow-y: auto;">
                                                     @foreach (var item in filteredItems.Take(10))
                                                     {
-                                                        <button type="button" class="list-group-item list-group-item-action" 
+                                                        <button type="button" class="list-group-item list-group-item-action"
                                                                 @onclick="() => SelectItem(item)">
                                                             @item.Name (ID: @item.Id)
                                                         </button>
@@ -201,7 +201,9 @@
                 </div>
                 <div class="d-flex justify-content-end gap-2">
                     <button type="button" class="btn btn-secondary" @onclick="ResetForm"
-                        disabled="@isProcessing">Reset</button>
+                            disabled="@isProcessing">
+                        Reset
+                    </button>
                     <button type="submit" class="btn btn-primary" disabled="@isProcessing">
                         @if (isProcessing)
                         {
@@ -216,6 +218,9 @@
 </div>
 
 @code {
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
+
     private StoragePendingForm model = new();
     private string? errorMessage;
     private string? successMessage;
@@ -235,7 +240,7 @@
     protected override void OnInitialized()
     {
         allItems = Table.Item.Values.ToList();
-        
+
         // Set default expired date to today + 30 days (date only, no time)
         model.ExpiredDate = DateTime.Today.AddDays(30);
     }
@@ -248,7 +253,7 @@
                 return Enumerable.Empty<Fb.Model.Item>();
 
             var searchLower = itemSearchText.ToLowerInvariant();
-            return allItems.Where(item => 
+            return allItems.Where(item =>
                 item.Name.ToLowerInvariant().Contains(searchLower))
                 .OrderBy(item => item.Name)
                 .Take(20);
@@ -257,7 +262,7 @@
 
     private bool canEditQuantity => selectedItem != null && selectedItem.Capacity > 1;
 
-    private bool canAddItem => selectedItem != null && 
+    private bool canAddItem => selectedItem != null &&
                                (!IsBundleItem(selectedItem) || !HasBundleItemInAttachments(selectedItem)) &&
                                itemCount < 52;
 
@@ -407,10 +412,10 @@
 
     private bool HasBundleItemInAttachments(Fb.Model.Item item)
     {
-        return model.Attachments.Any(a => 
-            a.Header == Fb.Model.EnumValue.Dsl.Item && 
-            a.Params != null && 
-            a.Params.Length > 0 && 
+        return model.Attachments.Any(a =>
+            a.Header == Fb.Model.EnumValue.Dsl.Item &&
+            a.Params != null &&
+            a.Params.Length > 0 &&
             (uint)a.Params[0] == item.Id);
     }
 
@@ -446,7 +451,13 @@
         isProcessing = true;
         try
         {
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                return;
+            }
             var result = await StorageService.CreatePendingAsync(
+                selectedWorld.Value,
                 model.Title.Trim(),
                 model.Message.Trim(),
                 model.IsGlobal ? null : model.UserName?.Trim(),

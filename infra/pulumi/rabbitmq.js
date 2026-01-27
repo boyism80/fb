@@ -53,9 +53,11 @@ module.exports = {
         
         resources.push(serviceAccount, role, roleBinding);
         
-        const sections = Object.entries(conf.rabbitmq)
-        
-        for(const [section, sectionConf] of sections) {
+        // Process worlds' RabbitMQ instances
+        for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+            if (!worldConf.rabbitmq) continue
+            const section = worldName
+            const sectionConf = worldConf.rabbitmq
             for(const [type, typeConf] of Object.entries(sectionConf)) {
                 if (type !== "internal" && type !== "log") continue
                 
@@ -227,7 +229,7 @@ exec docker-entrypoint.sh rabbitmq-server
                     resources.push(configMap, headlessService, statefulSet, clusterIPService, nodeportService)
                 }
             }
-            
-            return resources
+        
+        return resources
         }
     }

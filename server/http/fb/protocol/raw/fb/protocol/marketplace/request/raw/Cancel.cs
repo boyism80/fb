@@ -20,27 +20,31 @@ public struct Cancel : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Cancel __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint CharacterId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string ListingId { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint CharacterId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetListingIdBytes() { return __p.__vector_as_span<byte>(6, 1); }
+  public Span<byte> GetListingIdBytes() { return __p.__vector_as_span<byte>(8, 1); }
 #else
-  public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(6); }
+  public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
-  public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(6); }
+  public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(8); }
 
   public static Offset<fb.protocol.marketplace.request.raw.Cancel> CreateCancel(FlatBufferBuilder builder,
+      uint world = 0,
       uint character_id = 0,
       StringOffset listing_idOffset = default(StringOffset)) {
-    builder.StartTable(2);
+    builder.StartTable(3);
     Cancel.AddListingId(builder, listing_idOffset);
     Cancel.AddCharacterId(builder, character_id);
+    Cancel.AddWorld(builder, world);
     return Cancel.EndCancel(builder);
   }
 
-  public static void StartCancel(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddCharacterId(FlatBufferBuilder builder, uint characterId) { builder.AddUint(0, characterId, 0); }
-  public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(1, listingIdOffset.Value, 0); }
+  public static void StartCancel(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddCharacterId(FlatBufferBuilder builder, uint characterId) { builder.AddUint(1, characterId, 0); }
+  public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(2, listingIdOffset.Value, 0); }
   public static Offset<fb.protocol.marketplace.request.raw.Cancel> EndCancel(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.marketplace.request.raw.Cancel>(o);
@@ -55,8 +59,9 @@ static public class CancelVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*CharacterId*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 6 /*ListingId*/, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*CharacterId*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 8 /*ListingId*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

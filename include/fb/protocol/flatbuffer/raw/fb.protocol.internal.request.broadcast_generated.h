@@ -25,10 +25,14 @@ struct BroadcastBuilder;
 struct Broadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef BroadcastBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HOST = 4,
-    VT_MESSAGE = 6,
-    VT_TYPE = 8
+    VT_WORLD = 4,
+    VT_HOST = 6,
+    VT_MESSAGE = 8,
+    VT_TYPE = 10
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
@@ -40,6 +44,7 @@ struct Broadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
            verifier.VerifyString(message()) &&
@@ -52,6 +57,9 @@ struct BroadcastBuilder {
   typedef Broadcast Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(Broadcast::VT_WORLD, world, 0);
+  }
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(Broadcast::VT_HOST, host, 0);
   }
@@ -74,24 +82,28 @@ struct BroadcastBuilder {
 
 inline ::flatbuffers::Offset<Broadcast> CreateBroadcast(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t host = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     uint8_t type = 0) {
   BroadcastBuilder builder_(_fbb);
   builder_.add_message(message);
   builder_.add_host(host);
+  builder_.add_world(world);
   builder_.add_type(type);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Broadcast> CreateBroadcastDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t host = 0,
     const char *message = nullptr,
     uint8_t type = 0) {
   auto message__ = message ? _fbb.CreateString(message) : 0;
   return fb::protocol::internal::request::raw::CreateBroadcast(
       _fbb,
+      world,
       host,
       message__,
       type);

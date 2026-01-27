@@ -25,12 +25,16 @@ struct MakeCharacterBuilder;
 struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef MakeCharacterBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_UID = 4,
-    VT_HAIR = 6,
-    VT_GENDER = 8,
-    VT_NATION = 10,
-    VT_CREATURE = 12
+    VT_WORLD = 4,
+    VT_UID = 6,
+    VT_HAIR = 8,
+    VT_GENDER = 10,
+    VT_NATION = 12,
+    VT_CREATURE = 14
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
   }
@@ -48,6 +52,7 @@ struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
            VerifyField<uint16_t>(verifier, VT_HAIR, 2) &&
            VerifyField<uint8_t>(verifier, VT_GENDER, 1) &&
@@ -61,6 +66,9 @@ struct MakeCharacterBuilder {
   typedef MakeCharacter Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(MakeCharacter::VT_WORLD, world, 0);
+  }
   void add_uid(uint32_t uid) {
     fbb_.AddElement<uint32_t>(MakeCharacter::VT_UID, uid, 0);
   }
@@ -89,6 +97,7 @@ struct MakeCharacterBuilder {
 
 inline ::flatbuffers::Offset<MakeCharacter> CreateMakeCharacter(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t uid = 0,
     uint16_t hair = 0,
     uint8_t gender = 0,
@@ -96,6 +105,7 @@ inline ::flatbuffers::Offset<MakeCharacter> CreateMakeCharacter(
     uint8_t creature = 0) {
   MakeCharacterBuilder builder_(_fbb);
   builder_.add_uid(uid);
+  builder_.add_world(world);
   builder_.add_hair(hair);
   builder_.add_creature(creature);
   builder_.add_nation(nation);

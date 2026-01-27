@@ -953,9 +953,10 @@ int builtin::server::builtin_exp_multiplier(lua_State* L)
         static auto fn = [](fb::game::server* server, fb::lua::context* lua, double value) -> async::task<void> {
             auto   success = false;
             auto   error   = std::string{};
+            auto world = fb::config<uint32_t>("world");
             auto&& resp    = co_await server->http.post("internal",
                                                      "/in-game/set-exp-multiplier",
-                                                     internal_reqs::SetExpMultiplier{value});
+                                                     internal_reqs::SetExpMultiplier{world, value});
             if (resp.error == 0)
             {
                 success = true;
@@ -1004,9 +1005,10 @@ int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
         static auto fn = [](fb::game::server* server, fb::lua::context* lua, double value) -> async::task<void> {
             auto   success = false;
             auto   error   = std::string{};
+            auto world = fb::config<uint32_t>("world");
             auto&& resp    = co_await server->http.post("internal",
                                                      "/in-game/set-drop-rate-multiplier",
-                                                     internal_reqs::SetDropRateMultiplier{value});
+                                                     internal_reqs::SetDropRateMultiplier{world, value});
 
             lua->pushboolean(resp.error == 0);
             if (resp.error == 0)

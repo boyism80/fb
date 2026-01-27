@@ -12,6 +12,7 @@ namespace Http.Service
     {
         private readonly RedisService _redisService;
         private readonly ILogger<CacheService> _logger;
+        private readonly IConfiguration _configuration;
         private readonly ServerStateService _serverStateService;
 
         /// <summary>
@@ -20,10 +21,11 @@ namespace Http.Service
         /// <param name="redisService">The Redis service for cache operations.</param>
         /// <param name="logger">The logger for recording cache operations.</param>
         /// <param name="serverStateService">The server state service for checking running servers (optional).</param>
-        public CacheService(RedisService redisService, ILogger<CacheService> logger, ServerStateService serverStateService = null)
+        public CacheService(RedisService redisService, ILogger<CacheService> logger, IConfiguration configuration, ServerStateService serverStateService)
         {
             _redisService = redisService;
             _logger = logger;
+            _configuration = configuration;
             _serverStateService = serverStateService;
         }
 
@@ -31,13 +33,14 @@ namespace Http.Service
         /// Deletes cache entries matching a specific pattern from a Redis shard.
         /// Scans for keys matching the pattern and deletes them in batches.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="shardIndex">The Redis shard index to operate on.</param>
         /// <param name="pattern">The key pattern to match for deletion.</param>
         /// <param name="count">The maximum number of keys to scan in one operation.</param>
         /// <returns>The number of keys that were deleted.</returns>
-        private async Task<int> DeleteCache(int shardIndex, string pattern, int count)
+        private async Task<int> DeleteCache(uint world, int shardIndex, string pattern, int count)
         {
-            var redis = _redisService.Redis(shardIndex);
+            var redis = _redisService.Redis(world, shardIndex);
             if (redis == null)
                 return 0;
 
@@ -57,14 +60,22 @@ namespace Http.Service
         public async Task<int> ClearCache()
         {
             var count = 0;
-            var batch = 10;
-            for (int i = 0; i < _redisService.ShardSize; i++)
+            var redisSection = _configuration.GetSection("Redis");
+            var worlds = redisSection.GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _) || child.Key == "unified-global")
+                .Select(child => child.Key == "unified-global" ? 0 : uint.Parse(child.Key));
+
+            foreach (var world in worlds)
             {
-                count += await DeleteCache(i, "cache:*", batch);
-                count += await DeleteCache(i, Const.ReferenceCountKey, 10);
-                count += await DeleteCache(i, $"{Const.RedisBufferKey}:*", 10);
+                var batch = 10;
+                for (int i = 0; i < _redisService.GetShardSize(world); i++)
+                {
+                    count += await DeleteCache(world, i, "cache:*", batch);
+                    count += await DeleteCache(world, i, Const.ReferenceCountKey, 10);
+                    count += await DeleteCache(world, i, $"{Const.RedisBufferKey}:*", 10);
+                }
+                _logger.LogInformation("Cache cleared for world {World}: {Count} keys deleted", world, count);
             }
-            _logger.LogInformation("Cache cleared: {Count} keys deleted", count);
             return count;
         }
 
@@ -73,7 +84,7 @@ namespace Http.Service
         /// This operation is only safe when no servers are running.
         /// </summary>
         /// <returns>True if sessions were cleared; false if servers are still running or ServerStateService is not available.</returns>
-        public async Task<bool> ClearUserSessions()
+        public async Task<bool> ClearUserSessions(uint world)
         {
             if (_serverStateService == null)
             {
@@ -88,7 +99,7 @@ namespace Http.Service
                 return false;
             }
 
-            var redis = _redisService.Redis(-1);
+            var redis = _redisService.Redis(world, -1);
             var sessionKey = new SessionKey().Key;
             await redis.Connection.KeyDeleteAsync(new RedisKey(sessionKey));
             _logger.LogInformation("User sessions cleared");
