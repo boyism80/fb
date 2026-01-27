@@ -473,8 +473,8 @@ function on_npc_chat(me, message, shout)
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.RENAME) == NPC_INTERACTION.RENAME
         end, func = function(npc, params)
-            local from = params.from
-            local to = params.to
+            local from = params.weapon
+            local to = params.name
             return npc_rename_weapon(me, npc, from, to)
         end },
         { pattern = CONST.REGEX.HOLD_ITEM_LIST, condition = function(npc)
@@ -497,7 +497,7 @@ function on_npc_chat(me, message, shout)
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.REVIVE) == NPC_INTERACTION.REVIVE
         end, func = function(npc, params)
-            local discourteous = params.discourteous ~= nil
+            local discourteous = params.no ~= nil
             return npc_revive(me, npc, discourteous)
         end },
         { pattern = CONST.REGEX.APPRECIATE, condition = function(npc)
