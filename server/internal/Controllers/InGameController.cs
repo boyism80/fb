@@ -26,6 +26,7 @@ namespace Internal.Controllers
         private readonly BanService _banService;
         private readonly ServerStateService _serverStateService;
         private readonly LogService _logService;
+        private readonly MaintenanceService _maintenanceService;
         public InGameController(ILogger<InGameController> logger,
             RabbitMqService rabbitMqService,
             SessionService sessionService,
@@ -35,7 +36,8 @@ namespace Internal.Controllers
             StorageService storageService,
             BanService banService,
             ServerStateService serverStateService,
-            LogService logService)
+            LogService logService,
+            MaintenanceService maintenanceService)
         {
             _logger = logger;
             _rabbitMqService = rabbitMqService;
@@ -47,6 +49,7 @@ namespace Internal.Controllers
             _banService = banService;
             _serverStateService = serverStateService;
             _logService = logService;
+            _maintenanceService = maintenanceService;
         }
         [HttpPost("login")]
         public async Task<Response.Login> Login(Request.Login request)
@@ -65,6 +68,27 @@ namespace Internal.Controllers
                         BanReason = banCheck.Reason,
                         BanExpireDate = banCheck.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss")
                     };
+                }
+
+                // Check if maintenance is active
+                var maintenanceInfo = await _maintenanceService.GetMaintenanceInfo(world);
+                if (maintenanceInfo != null && maintenanceInfo.IsActive)
+                {
+                    // Check if user is admin
+                    var characterId = await _dbContext.Character.GetCharacterId(world, request.Name);
+                    if (characterId.HasValue)
+                    {
+                        var character = await _dbContext.Character.Get(world, characterId.Value);
+                        if (character != null && character.Role < Fb.Model.EnumValue.Role.Admin)
+                        {
+                            return new Response.Login
+                            {
+                                Error = (uint)ErrorCode.Maintenance,
+                                MaintenanceMessage = maintenanceInfo.Message,
+                                MaintenanceEndTime = maintenanceInfo.EndTime.ToString("yyyy-MM-dd HH:mm:ss")
+                            };
+                        }
+                    }
                 }
 
                 var conf = await _serverStateService.GetHostConfig(world, fb.protocol._internal.Service.Game, request.Host);
@@ -135,6 +159,27 @@ namespace Internal.Controllers
                             BanReason = banCheck.Reason,
                             BanExpireDate = banCheck.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss")
                         };
+                    }
+
+                    // Check if maintenance is active
+                    var maintenanceInfo = await _maintenanceService.GetMaintenanceInfo(world);
+                    if (maintenanceInfo != null && maintenanceInfo.IsActive)
+                    {
+                        // Check if user is admin
+                        var characterId = await _dbContext.Character.GetCharacterId(world, request.Name);
+                        if (characterId.HasValue)
+                        {
+                            var character = await _dbContext.Character.Get(world, characterId.Value);
+                            if (character != null && character.Role < Fb.Model.EnumValue.Role.Admin)
+                            {
+                                return new Response.Transfer
+                                {
+                                    Error = (uint)ErrorCode.Maintenance,
+                                    MaintenanceMessage = maintenanceInfo.Message,
+                                    MaintenanceEndTime = maintenanceInfo.EndTime.ToString("yyyy-MM-dd HH:mm:ss")
+                                };
+                            }
+                        }
                     }
                 }
 

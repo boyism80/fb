@@ -44,6 +44,20 @@ public struct Login : IFlatbufferObject
   public ArraySegment<byte>? GetBanExpireDateBytes() { return __p.__vector_as_arraysegment(14); }
 #endif
   public byte[] GetBanExpireDateArray() { return __p.__vector_as_array<byte>(14); }
+  public string MaintenanceMessage { get { int o = __p.__offset(16); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetMaintenanceMessageBytes() { return __p.__vector_as_span<byte>(16, 1); }
+#else
+  public ArraySegment<byte>? GetMaintenanceMessageBytes() { return __p.__vector_as_arraysegment(16); }
+#endif
+  public byte[] GetMaintenanceMessageArray() { return __p.__vector_as_array<byte>(16); }
+  public string MaintenanceEndTime { get { int o = __p.__offset(18); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetMaintenanceEndTimeBytes() { return __p.__vector_as_span<byte>(18, 1); }
+#else
+  public ArraySegment<byte>? GetMaintenanceEndTimeBytes() { return __p.__vector_as_arraysegment(18); }
+#endif
+  public byte[] GetMaintenanceEndTimeArray() { return __p.__vector_as_array<byte>(18); }
 
   public static Offset<fb.protocol._internal.response.raw.Login> CreateLogin(FlatBufferBuilder builder,
       uint error = 0,
@@ -51,8 +65,12 @@ public struct Login : IFlatbufferObject
       StringOffset ipOffset = default(StringOffset),
       ushort port = 0,
       StringOffset ban_reasonOffset = default(StringOffset),
-      StringOffset ban_expire_dateOffset = default(StringOffset)) {
-    builder.StartTable(6);
+      StringOffset ban_expire_dateOffset = default(StringOffset),
+      StringOffset maintenance_messageOffset = default(StringOffset),
+      StringOffset maintenance_end_timeOffset = default(StringOffset)) {
+    builder.StartTable(8);
+    Login.AddMaintenanceEndTime(builder, maintenance_end_timeOffset);
+    Login.AddMaintenanceMessage(builder, maintenance_messageOffset);
     Login.AddBanExpireDate(builder, ban_expire_dateOffset);
     Login.AddBanReason(builder, ban_reasonOffset);
     Login.AddIp(builder, ipOffset);
@@ -62,13 +80,15 @@ public struct Login : IFlatbufferObject
     return Login.EndLogin(builder);
   }
 
-  public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(8); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(0, error, 0); }
   public static void AddLogon(FlatBufferBuilder builder, bool logon) { builder.AddBool(1, logon, false); }
   public static void AddIp(FlatBufferBuilder builder, StringOffset ipOffset) { builder.AddOffset(2, ipOffset.Value, 0); }
   public static void AddPort(FlatBufferBuilder builder, ushort port) { builder.AddUshort(3, port, 0); }
   public static void AddBanReason(FlatBufferBuilder builder, StringOffset banReasonOffset) { builder.AddOffset(4, banReasonOffset.Value, 0); }
   public static void AddBanExpireDate(FlatBufferBuilder builder, StringOffset banExpireDateOffset) { builder.AddOffset(5, banExpireDateOffset.Value, 0); }
+  public static void AddMaintenanceMessage(FlatBufferBuilder builder, StringOffset maintenanceMessageOffset) { builder.AddOffset(6, maintenanceMessageOffset.Value, 0); }
+  public static void AddMaintenanceEndTime(FlatBufferBuilder builder, StringOffset maintenanceEndTimeOffset) { builder.AddOffset(7, maintenanceEndTimeOffset.Value, 0); }
   public static Offset<fb.protocol._internal.response.raw.Login> EndLogin(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.Login>(o);
@@ -89,6 +109,8 @@ static public class LoginVerify
       && verifier.VerifyField(tablePos, 10 /*Port*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyString(tablePos, 12 /*BanReason*/, false)
       && verifier.VerifyString(tablePos, 14 /*BanExpireDate*/, false)
+      && verifier.VerifyString(tablePos, 16 /*MaintenanceMessage*/, false)
+      && verifier.VerifyString(tablePos, 18 /*MaintenanceEndTime*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

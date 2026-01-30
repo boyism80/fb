@@ -191,13 +191,14 @@
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
             Navigation.LocationChanged += OnLocationChanged;
         }
+        return Task.CompletedTask;
     }
 
     private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)

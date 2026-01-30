@@ -48,9 +48,13 @@ namespace Http.Service
                         // Parse world key: "1", "2", "unified-global", etc.
                         uint world;
                         if (worldKey == "unified-global")
+                        {
                             world = 0;
+                        }
                         else if (uint.TryParse(worldKey, out world))
-                            ; // world is already set
+                        {
+                            // world is already set
+                        }
                         else
                             continue; // Skip invalid keys
 

@@ -56,6 +56,9 @@
 #include <fb/game/handler/amqp/broadcast_save.h>
 #include <fb/game/handler/amqp/storage_pending_personal.h>
 #include <fb/game/handler/amqp/storage_pending_fetch.h>
+#include <fb/game/handler/amqp/set_exp_multiplier.h>
+#include <fb/game/handler/amqp/set_drop_rate_multiplier.h>
+#include <fb/game/handler/amqp/start_maintenance.h>
 
 #include <fb/game/handler/timer/heart_beat.h>
 #include <fb/game/handler/timer/update_time.h>
@@ -68,5 +71,6 @@
 #include <fb/game/handler/timer/save_timer.h>
 #include <fb/game/handler/timer/marketplace_restore_timer.h>
 #include <fb/game/handler/timer/afk_timer.h>
+#include <fb/game/handler/timer/schedule_timer.h>
 
 #endif // FB_GAME_HANDLER_H

@@ -70,6 +70,9 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
         case ERROR_CODE::BANNED:
             throw id_exception(build_ban_message(resp3.ban_reason, resp3.ban_expire_date));
 
+        case ERROR_CODE::MAINTENANCE:
+            throw id_exception(build_maintenance_message(resp3.maintenance_message, resp3.maintenance_end_time));
+
         default:
             throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp3.error));
         }
@@ -128,4 +131,19 @@ std::string login::build_ban_message(const std::string& reason, const std::optio
         ban_message += _TEXT(MESSAGE_ACCOUNT_BAN_PERMANENT);
     }
     return ban_message;
+}
+
+std::string login::build_maintenance_message(const std::optional<std::string>& message,
+                                             const std::optional<std::string>& end_time)
+{
+    auto maintenance_message = std::string(_TEXT(MESSAGE_MAINTENANCE_IN_PROGRESS));
+    if (message.has_value() && !message.value().empty())
+    {
+        maintenance_message += "\n" + message.value();
+    }
+    if (end_time.has_value() && !end_time.value().empty())
+    {
+        maintenance_message += "\n" + std::format(_TEXT(MESSAGE_MAINTENANCE_END_TIME), end_time.value());
+    }
+    return maintenance_message;
 }

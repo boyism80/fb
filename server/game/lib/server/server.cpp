@@ -1,9 +1,6 @@
 #include <fb/game/server.h>
 #include <fb/game/handler.h>
 #include <fb/game/builtin/server.h>
-#include <fb/game/handler/amqp/set_exp_multiplier.h>
-#include <fb/game/handler/amqp/set_drop_rate_multiplier.h>
-#include <fb/game/handler/timer/schedule_timer.h>
 #include <fb/log_collector.h>
 #include <fb/encoding.h>
 #include <json/json.h>
@@ -242,12 +239,12 @@ async::task<void> server::on_start()
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
     this->bind_thread_timer<fb::game::handler::timer::marketplace_restore_timer>(30s);
 
-    auto world = config<uint32_t>("world");
+    auto world     = config<uint32_t>("world");
     auto host_name = std::format("fb.{}.game.{}", world, config<uint32_t>("id"));
     this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::whisper>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_personal>(host_name);
-    this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.global");  // Shutdown: all servers
+    this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
     this->handler.amqp.bind<fb::game::handler::amqp::write_system_mail>(std::format("fb.{}.system", world));
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_fetch>(std::format("fb.{}.global", world));
@@ -263,6 +260,8 @@ async::task<void> server::on_start()
     this->handler.amqp.bind<fb::game::handler::amqp::ban>(std::format("fb.{}.ban", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(std::format("fb.{}.global", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(
+        std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
 
     // Fetch system mails on server startup
     co_await this->system_mail.fetch();
@@ -660,8 +659,8 @@ const fb::model::datetime& server::time() const
 void server::on_init_amqp(fb::amqp::socket& amqp)
 {
     auto world = config<uint32_t>("world");
-    this->handler.amqp.declare_queue("amq.direct", "fb.global");  // Shutdown: all servers
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.system", world));  // System mail, broadcast save
+    this->handler.amqp.declare_queue("amq.direct", "fb.global");                        // Shutdown: all servers
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.system", world)); // System mail, broadcast save
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.global", world));
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.group", world));

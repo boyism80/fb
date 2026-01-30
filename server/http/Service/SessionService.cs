@@ -201,5 +201,39 @@ namespace Http.Service
                 // This prevents TTL refresh failures from affecting other operations
             }
         }
+
+        /// <summary>
+        /// Gets all active sessions for the specified world.
+        /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <returns>A list of all active sessions for the world.</returns>
+        public async Task<List<Session>> GetAllSessions(uint world)
+        {
+            var key = new SessionKey().Key;
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return new List<Session>();
+
+            var allSessions = await redis.Connection.HashGetAllAsync(new RedisKey(key));
+            var sessions = new List<Session>();
+
+            foreach (var entry in allSessions)
+            {
+                try
+                {
+                    var session = JsonConvert.DeserializeObject<Session>(entry.Value.ToString());
+                    if (session != null)
+                    {
+                        sessions.Add(session);
+                    }
+                }
+                catch
+                {
+                    // Skip invalid session entries
+                }
+            }
+
+            return sessions;
+        }
     }
 }
