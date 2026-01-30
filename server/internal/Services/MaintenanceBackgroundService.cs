@@ -1,7 +1,5 @@
-using Http.Model;
 using Http.Redis;
 using Http.Service;
-using StackExchange.Redis;
 
 namespace Internal.Services
 {
@@ -15,8 +13,8 @@ namespace Internal.Services
         private readonly RedisService _redisService;
         private readonly ILogger<MaintenanceBackgroundService> _logger;
 
-        private static readonly TimeSpan ProcessingInterval = TimeSpan.FromSeconds(30);
-        private static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan ProcessingInterval = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(5);
         private const string LockKey = "maintenance:background:lock";
         private const int LockTtlSeconds = 60; // Longer than processing interval to prevent overlap
 
@@ -115,7 +113,7 @@ namespace Internal.Services
         }
 
         /// <summary>
-        /// Processes maintenance checks for all worlds and triggers force logout if needed.
+        /// Processes maintenance checks for all configured worlds and triggers force logout if needed.
         /// </summary>
         /// <param name="maintenanceService">The maintenance service.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -124,30 +122,13 @@ namespace Internal.Services
             MaintenanceService maintenanceService,
             CancellationToken cancellationToken)
         {
-            // Get all worlds from Redis keys (maintenance:index:*)
-            var redis = _redisService.GetUnifiedConnection();
-            if (redis == null)
+            var worlds = _redisService.GetConfiguredWorlds();
+            if (worlds.Count == 0)
                 return;
-
-            var keys = await redis.Connection.ScanKeysAsync("maintenance:index:*", 1000);
-            var worlds = new HashSet<uint>();
-            var processedWorlds = new HashSet<uint>();
-
-            foreach (var key in keys)
-            {
-                var keyStr = key.ToString();
-                // Format: maintenance:index:{world}
-                var parts = keyStr.Split(':');
-                if (parts.Length == 3 && uint.TryParse(parts[2], out var world))
-                {
-                    worlds.Add(world);
-                }
-            }
 
             var now = DateTime.Now;
             var lastMaintenanceState = new Dictionary<uint, bool>();
 
-            // Check each world for maintenance status
             foreach (var world in worlds)
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -168,7 +149,6 @@ namespace Internal.Services
                     }
 
                     lastMaintenanceState[world] = isInMaintenance;
-                    processedWorlds.Add(world);
                 }
                 catch (Exception ex)
                 {
@@ -176,21 +156,21 @@ namespace Internal.Services
                 }
             }
 
-            // Clean up expired one-time schedules
-            await CleanupExpiredSchedulesAsync(maintenanceService, processedWorlds, now, cancellationToken);
+            // Remove expired one-time schedules from all configured worlds
+            await CleanupExpiredSchedulesAsync(maintenanceService, worlds, now, cancellationToken);
         }
 
         /// <summary>
-        /// Cleans up expired one-time maintenance schedules.
+        /// Removes expired one-time maintenance schedules from Redis for all configured worlds.
         /// </summary>
         /// <param name="maintenanceService">The maintenance service.</param>
-        /// <param name="worlds">The worlds to check.</param>
-        /// <param name="now">The current time.</param>
+        /// <param name="worlds">The worlds to clean up.</param>
+        /// <param name="now">The cutoff time; schedules with EndTime before this are removed.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task CleanupExpiredSchedulesAsync(
             MaintenanceService maintenanceService,
-            HashSet<uint> worlds,
+            IReadOnlyList<uint> worlds,
             DateTime now,
             CancellationToken cancellationToken)
         {
@@ -201,26 +181,7 @@ namespace Internal.Services
 
                 try
                 {
-                    var schedules = await maintenanceService.GetAllSchedules(world);
-                    foreach (var schedule in schedules)
-                    {
-                        if (cancellationToken.IsCancellationRequested)
-                            break;
-
-                        // Only clean up one-time schedules that have expired
-                        if (schedule.RepeatType == MaintenanceRepeatType.None &&
-                            schedule.IsActive &&
-                            schedule.EndTime < now)
-                        {
-                            // Remove from active sorted set (already done by expiration, but ensure cleanup)
-                            var redis = _redisService.GetUnifiedConnection();
-                            if (redis != null)
-                            {
-                                var activeKey = $"maintenance:active:{world}";
-                                await redis.Connection.SortedSetRemoveAsync(activeKey, schedule.Id);
-                            }
-                        }
-                    }
+                    await maintenanceService.RemoveExpiredSchedules(world, now);
                 }
                 catch (Exception ex)
                 {

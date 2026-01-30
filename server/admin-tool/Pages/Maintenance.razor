@@ -1,12 +1,12 @@
 @page "/maintenance"
-@using AdminTool.Services
 @using AdminTool.Authentication
 @using Http.Model
+@using Http.Service
 @using Fb.Model.EnumValue
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
-@inject AdminTool.Services.MaintenanceService MaintenanceService
+@inject Http.Service.MaintenanceService MaintenanceService
 @inject ILogger<Maintenance> Logger
 @attribute [AuthorizeRole(Role.Admin)]
 

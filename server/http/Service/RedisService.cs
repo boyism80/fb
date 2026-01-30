@@ -231,5 +231,16 @@ namespace Http.Service
             return _worldShardRedis.TryGetValue(world, out var shardList) ? shardList.Count : 0;
         }
 
+        /// <summary>
+        /// Gets the list of world identifiers loaded from configuration (Redis:worlds).
+        /// Use this to iterate all configured worlds without scanning Redis keys.
+        /// </summary>
+        /// <returns>Sorted list of configured world IDs.</returns>
+        public IReadOnlyList<uint> GetConfiguredWorlds()
+        {
+            var worlds = new List<uint>(_worldGlobalRedis.Keys);
+            worlds.Sort();
+            return worlds;
+        }
     }
 }

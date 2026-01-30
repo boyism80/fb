@@ -9,30 +9,19 @@ start_maintenance::start_maintenance(fb::game::server& server) :
 
 async::task<void> start_maintenance::handle(const internal_resp::StartMaintenance& message)
 {
-    // Collect all regular (non-admin) users first
-    std::vector<std::shared_ptr<fb::game::character>> regular_users;
+    this->server.characters.write([&message](auto& container) {
+        container.foreach_enqueue([message = message.message](auto& ch) -> async::task<void> {
+            if (ch->role() >= ROLE::ADMIN)
+                co_return;
 
-    this->server.characters.read([&regular_users](const auto& container) {
-        for (auto& [_, ch] : container)
-        {
-            if (ch->role() < ROLE::ADMIN)
-            {
-                regular_users.push_back(ch);
-            }
-        }
-    });
+            auto socket_ptr = ch->socket_ptr();
+            if (socket_ptr == nullptr)
+                co_return;
 
-    // Disconnect regular users (outside of read lock)
-    for (auto& ch : regular_users)
-    {
-        auto socket_ptr = ch->socket_ptr();
-        if (socket_ptr != nullptr)
-        {
-            // Send maintenance message before disconnecting
-            ch->message(message.message, MESSAGE_TYPE::STATE);
+            ch->message(message, MESSAGE_TYPE::STATE);
             socket_ptr->close();
-        }
-    }
+        });
+    });
 
     co_return;
 }

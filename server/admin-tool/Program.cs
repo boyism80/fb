@@ -45,7 +45,6 @@ builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationP
 builder.Services.AddScoped<AdminTool.Services.AuthService>();
 builder.Services.AddScoped<AdminTool.Services.UserService>();
 builder.Services.AddSingleton<Http.Service.MaintenanceService>();
-builder.Services.AddScoped<AdminTool.Services.MaintenanceService>();
 
 var app = builder.Build();
 

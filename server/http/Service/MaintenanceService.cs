@@ -8,14 +8,22 @@ namespace Http.Service
 {
     /// <summary>
     /// Provides maintenance schedule management functionality.
-    /// Handles creation, retrieval, and cancellation of maintenance schedules stored in Redis.
+    /// Stores each world's schedules in a single Redis Sorted Set per world (key: maintenance:{world}).
+    /// Member is full schedule JSON; score is EndTime as Unix timestamp.
     /// </summary>
     public class MaintenanceService
     {
+        private const string MaintenanceKeyPrefix = "maintenance:";
+
+        /// <summary>
+        /// Far-future Unix timestamp used as Sorted Set score for recurring schedules
+        /// so they always appear in ZRANGEBYSCORE (score >= now) and remain queryable.
+        /// </summary>
+        private static readonly double RecurringScheduleScore = ((DateTimeOffset)new DateTime(2099, 12, 31, 23, 59, 59, DateTimeKind.Utc)).ToUnixTimeSeconds();
+
         private readonly RedisService _redisService;
         private readonly SessionService _sessionService;
         private readonly RabbitMqService _rabbitMqService;
-        private readonly DbContext _dbContext;
         private readonly ServerStateService _serverStateService;
         private readonly ILogger<MaintenanceService> _logger;
 
@@ -25,21 +33,18 @@ namespace Http.Service
         /// <param name="redisService">The Redis service for accessing Redis connections.</param>
         /// <param name="sessionService">The session service for retrieving online users.</param>
         /// <param name="rabbitMqService">The RabbitMQ service for publishing messages.</param>
-        /// <param name="dbContext">The database context for character role lookups.</param>
         /// <param name="serverStateService">The server state service for getting running game servers.</param>
         /// <param name="logger">The logger for recording operations.</param>
         public MaintenanceService(
             RedisService redisService,
             SessionService sessionService,
             RabbitMqService rabbitMqService,
-            DbContext dbContext,
             ServerStateService serverStateService,
             ILogger<MaintenanceService> logger)
         {
             _redisService = redisService;
             _sessionService = sessionService;
             _rabbitMqService = rabbitMqService;
-            _dbContext = dbContext;
             _serverStateService = serverStateService;
             _logger = logger;
         }
@@ -69,25 +74,19 @@ namespace Http.Service
             if (redis == null)
                 return null;
 
-            // Get all active schedules for this world
-            var activeKey = $"maintenance:active:{world}";
+            var key = GetMaintenanceKey(world);
             var currentTimestamp = ((DateTimeOffset)now).ToUnixTimeSeconds();
 
-            // Get schedules that haven't ended yet (score >= currentTimestamp)
-            var activeScheduleIds = await redis.Connection.SortedSetRangeByScoreAsync(
-                activeKey,
+            // Get schedules that haven't ended yet (score >= currentTimestamp); member is full JSON
+            var members = await redis.Connection.SortedSetRangeByScoreAsync(
+                key,
                 start: currentTimestamp,
                 stop: double.PositiveInfinity,
                 take: 10);
 
-            if (activeScheduleIds.Length == 0)
-                return null;
-
-            // Check each schedule to see if it's currently active
-            foreach (var scheduleIdValue in activeScheduleIds)
+            foreach (var member in members)
             {
-                var scheduleId = scheduleIdValue.ToString();
-                var schedule = await GetSchedule(world, scheduleId);
+                var schedule = DeserializeSchedule(member.ToString());
                 if (schedule == null || !schedule.IsActive)
                     continue;
 
@@ -126,25 +125,10 @@ namespace Http.Service
 
             try
             {
-                // Store schedule
-                var scheduleKey = $"maintenance:schedule:{schedule.World}:{schedule.Id}";
+                var key = GetMaintenanceKey(schedule.World);
                 var scheduleJson = JsonConvert.SerializeObject(schedule);
-                await redis.Connection.StringSetAsync(scheduleKey, scheduleJson);
-
-                // Add to index
-                var indexKey = $"maintenance:index:{schedule.World}";
-                await redis.Connection.SetAddAsync(indexKey, schedule.Id);
-
-                // Add to active sorted set (score = end time as Unix timestamp)
-                var activeKey = $"maintenance:active:{schedule.World}";
-                var endTimestamp = ((DateTimeOffset)schedule.EndTime).ToUnixTimeSeconds();
-                await redis.Connection.SortedSetAddAsync(activeKey, schedule.Id, endTimestamp);
-
-                // If one-time schedule, set expiration on active key entry
-                if (schedule.RepeatType == MaintenanceRepeatType.None)
-                {
-                    // Note: We can't set TTL on individual sorted set members, so we'll clean up in background service
-                }
+                var score = GetScoreForSchedule(schedule);
+                await redis.Connection.SortedSetAddAsync(key, scheduleJson, score);
 
                 _logger.LogInformation("Created maintenance schedule {ScheduleId} for world {World}", schedule.Id, schedule.World);
                 return true;
@@ -164,8 +148,8 @@ namespace Http.Service
         /// <returns>True if the schedule was cancelled successfully; otherwise, false.</returns>
         public async Task<bool> CancelMaintenanceSchedule(uint world, string scheduleId)
         {
-            var schedule = await GetSchedule(world, scheduleId);
-            if (schedule == null)
+            var (schedule, existingMember) = await FindScheduleAndMember(world, scheduleId);
+            if (schedule == null || string.IsNullOrEmpty(existingMember))
                 return false;
 
             schedule.IsActive = false;
@@ -177,14 +161,11 @@ namespace Http.Service
 
             try
             {
-                // Update schedule
-                var scheduleKey = $"maintenance:schedule:{world}:{scheduleId}";
-                var scheduleJson = JsonConvert.SerializeObject(schedule);
-                await redis.Connection.StringSetAsync(scheduleKey, scheduleJson);
-
-                // Remove from active sorted set
-                var activeKey = $"maintenance:active:{world}";
-                await redis.Connection.SortedSetRemoveAsync(activeKey, scheduleId);
+                var key = GetMaintenanceKey(world);
+                await redis.Connection.SortedSetRemoveAsync(key, existingMember);
+                var updatedJson = JsonConvert.SerializeObject(schedule);
+                var score = GetScoreForSchedule(schedule);
+                await redis.Connection.SortedSetAddAsync(key, updatedJson, score);
 
                 _logger.LogInformation("Cancelled maintenance schedule {ScheduleId} for world {World}", scheduleId, world);
                 return true;
@@ -207,14 +188,12 @@ namespace Http.Service
             if (redis == null)
                 return new List<MaintenanceSchedule>();
 
-            var indexKey = $"maintenance:index:{world}";
-            var scheduleIds = await redis.Connection.SetMembersAsync(indexKey);
-
+            var key = GetMaintenanceKey(world);
+            var members = await redis.Connection.SortedSetRangeByRankAsync(key, 0, -1);
             var schedules = new List<MaintenanceSchedule>();
-            foreach (var scheduleIdValue in scheduleIds)
+            foreach (var member in members)
             {
-                var scheduleId = scheduleIdValue.ToString();
-                var schedule = await GetSchedule(world, scheduleId);
+                var schedule = DeserializeSchedule(member.ToString());
                 if (schedule != null)
                     schedules.Add(schedule);
             }
@@ -223,34 +202,16 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Applies a maintenance schedule to all worlds.
+        /// Applies a maintenance schedule to all configured worlds.
         /// </summary>
         /// <param name="schedule">The maintenance schedule to apply. World property will be ignored.</param>
         /// <returns>True if the schedule was applied to all worlds successfully; otherwise, false.</returns>
         public async Task<bool> ApplyToAllWorlds(MaintenanceSchedule schedule)
         {
-            // Get all configured worlds from Redis configuration
-            var redis = _redisService.GetUnifiedConnection();
-            if (redis == null)
+            var worlds = _redisService.GetConfiguredWorlds();
+            if (worlds.Count == 0)
                 return false;
 
-            // Get all worlds from Redis keys (maintenance:index:*)
-            var keys = await redis.Connection.ScanKeysAsync("maintenance:index:*", 1000);
-            var worlds = new HashSet<uint>();
-
-            foreach (var key in keys)
-            {
-                var keyStr = key.ToString();
-                // Format: maintenance:index:{world}
-                var parts = keyStr.Split(':');
-                if (parts.Length == 3 && uint.TryParse(parts[2], out var world))
-                {
-                    worlds.Add(world);
-                }
-            }
-
-            // Also check for any world-specific Redis connections
-            // This is a fallback - in practice, worlds should be known from configuration
             var success = true;
             foreach (var world in worlds)
             {
@@ -353,6 +314,61 @@ namespace Http.Service
         }
 
         /// <summary>
+        /// Gets the Redis key for a world's maintenance Sorted Set.
+        /// </summary>
+        private static string GetMaintenanceKey(uint world) => $"{MaintenanceKeyPrefix}{world}";
+
+        /// <summary>
+        /// Gets the Sorted Set score for a schedule. Recurring schedules use a far-future score
+        /// so they are always included in ZRANGEBYSCORE (score >= now); one-time uses EndTime.
+        /// </summary>
+        private static double GetScoreForSchedule(MaintenanceSchedule schedule)
+        {
+            if (schedule.RepeatType != MaintenanceRepeatType.None)
+                return RecurringScheduleScore;
+            return ((DateTimeOffset)schedule.EndTime).ToUnixTimeSeconds();
+        }
+
+        /// <summary>
+        /// Deserializes a schedule JSON string; returns null on failure.
+        /// </summary>
+        private MaintenanceSchedule DeserializeSchedule(string json)
+        {
+            if (string.IsNullOrEmpty(json))
+                return null;
+            try
+            {
+                return JsonConvert.DeserializeObject<MaintenanceSchedule>(json);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Finds a schedule by ID and returns it with the exact Redis member string (for ZREM).
+        /// </summary>
+        private async Task<(MaintenanceSchedule schedule, string memberJson)> FindScheduleAndMember(uint world, string scheduleId)
+        {
+            var redis = _redisService.GetUnifiedConnection();
+            if (redis == null)
+                return (null, null);
+
+            var key = GetMaintenanceKey(world);
+            var members = await redis.Connection.SortedSetRangeByRankAsync(key, 0, -1);
+            foreach (var member in members)
+            {
+                var memberStr = member.ToString();
+                var schedule = DeserializeSchedule(memberStr);
+                if (schedule != null && schedule.Id == scheduleId)
+                    return (schedule, memberStr);
+            }
+
+            return (null, null);
+        }
+
+        /// <summary>
         /// Gets a maintenance schedule by ID.
         /// </summary>
         /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
@@ -360,24 +376,48 @@ namespace Http.Service
         /// <returns>The maintenance schedule if found; otherwise, null.</returns>
         private async Task<MaintenanceSchedule> GetSchedule(uint world, string scheduleId)
         {
+            var (schedule, _) = await FindScheduleAndMember(world, scheduleId);
+            return schedule;
+        }
+
+        /// <summary>
+        /// Removes expired one-time schedules (RepeatType.None, EndTime &lt; cutoff) from the world's Sorted Set.
+        /// Called by the background service to prevent accumulation of invalid data.
+        /// </summary>
+        /// <param name="world">The world identifier.</param>
+        /// <param name="cutoff">Schedules with EndTime before this time are removed if one-time.</param>
+        /// <returns>The number of schedules removed.</returns>
+        public async Task<int> RemoveExpiredSchedules(uint world, DateTime cutoff)
+        {
             var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
-                return null;
+                return 0;
 
-            var scheduleKey = $"maintenance:schedule:{world}:{scheduleId}";
-            var scheduleJson = await redis.Connection.StringGetAsync(scheduleKey);
-            if (scheduleJson.IsNull)
-                return null;
+            var key = GetMaintenanceKey(world);
+            var members = await redis.Connection.SortedSetRangeByRankAsync(key, 0, -1);
+            var toRemove = new List<RedisValue>();
+            foreach (var member in members)
+            {
+                var schedule = DeserializeSchedule(member.ToString());
+                if (schedule != null &&
+                    schedule.RepeatType == MaintenanceRepeatType.None &&
+                    schedule.EndTime < cutoff)
+                {
+                    toRemove.Add(member);
+                }
+            }
 
-            try
+            foreach (var member in toRemove)
             {
-                return JsonConvert.DeserializeObject<MaintenanceSchedule>(scheduleJson.ToString());
+                await redis.Connection.SortedSetRemoveAsync(key, member);
             }
-            catch (Exception ex)
+
+            if (toRemove.Count > 0)
             {
-                _logger.LogWarning(ex, "Failed to deserialize maintenance schedule {ScheduleId}", scheduleId);
-                return null;
+                _logger.LogInformation("Removed {Count} expired one-time maintenance schedule(s) for world {World}", toRemove.Count, world);
             }
+
+            return toRemove.Count;
         }
 
         /// <summary>
