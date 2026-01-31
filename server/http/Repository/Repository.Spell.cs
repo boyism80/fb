@@ -28,12 +28,13 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves a specific spell for a character by owner ID and slot number.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="owner">The unique identifier of the character who owns the spell.</param>
         /// <param name="slot">The spell slot number where the spell is stored.</param>
         /// <returns>The spell if found; otherwise, null.</returns>
-        public async Task<Spell> Get(uint owner, byte slot)
+        public async Task<Spell> Get(uint world, uint owner, byte slot)
         {
-            return await base.Get(new SpellKey
+            return await base.Get(world, new SpellKey
             {
                 Owner = owner,
                 Slot = slot
@@ -43,11 +44,12 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves all spells for a specific character by owner ID.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="owner">The unique identifier of the character who owns the spells.</param>
         /// <returns>A collection of all spells for the specified character.</returns>
-        public async Task<IEnumerable<Spell>> Get(uint owner)
+        public async Task<IEnumerable<Spell>> Get(uint world, uint owner)
         {
-            return await base.GetAll(new SpellKey
+            return await base.GetAll(world, new SpellKey
             {
                 Owner = owner
             });

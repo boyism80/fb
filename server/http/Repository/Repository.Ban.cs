@@ -1,6 +1,8 @@
+using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
+using System.Data;
 
 namespace Http.Reepository
 {
@@ -11,9 +13,6 @@ namespace Http.Reepository
     /// </summary>
     public class BanRepository : RedisValueRepository<Ban, BanKey>
     {
-        private readonly DbContext _dbContext;
-        private readonly RedisService _redisService;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BanRepository"/> class.
         /// </summary>
@@ -26,18 +25,26 @@ namespace Http.Reepository
             RedisDistributedLockService distributedLock,
             WriteBackService dbExecuteService) : base(dbContext, redisService, distributedLock, dbExecuteService)
         {
-            _dbContext = dbContext;
-            _redisService = redisService;
         }
 
+
         /// <summary>
-        /// Retrieves a ban by user ID.
+        /// Retrieves a ban by world and user ID.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="userId">The unique identifier of the user.</param>
         /// <returns>The ban if found; otherwise, null.</returns>
-        public async Task<Ban> Get(uint userId)
+        public async Task<Ban> Get(uint world, uint userId)
         {
-            return await Get(new BanKey { User = userId });
+            await using var conn = _dbContext.GetGlobalConnection(world);
+            var value = await conn.QuerySingleOrDefaultAsync<Ban>(OnSelect(new BanKey { User = userId }));
+            if (value == null)
+                return null;
+
+            if (value.Deleted)
+                return null;
+
+            return value;
         }
 
         /// <summary>
@@ -85,18 +92,22 @@ namespace Http.Reepository
             return sql;
         }
 
+
         /// <summary>
-        /// Soft deletes a ban by user ID (sets deleted = 1).
+        /// Soft deletes a ban by world and user ID (sets deleted = 1).
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="userId">The unique identifier of the user.</param>
-        public async Task Delete(uint userId)
+        public async Task Delete(uint world, uint userId)
         {
-            var ban = await Get(userId);
+            var ban = await Get(world, userId);
             if (ban == null)
                 return;
 
             ban.Deleted = true;
-            Set(ban);
+            // Note: Set method needs to be updated to support world, but for now use direct connection
+            await using var conn = _dbContext.GetGlobalConnection(world);
+            await conn.ExecuteAsync(OnUpsert(ban));
         }
     }
 }

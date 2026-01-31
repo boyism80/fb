@@ -7,6 +7,10 @@ module.exports = function () {
         setup: function (namespace, conf, dependsOn) {
 
             const resources = []
+            // Get first world for gateway log (gateway is global, uses first world's log infrastructure)
+            const firstWorldName = Object.keys(conf.worlds)[0]
+            const firstWorld = conf.worlds[firstWorldName]
+            
             const config = {
                 id: 0,
                 name: `gateway`,
@@ -17,25 +21,25 @@ module.exports = function () {
                     io: 12
                 },
                 log: {
-                    ip: `log-${conf.gateway.log || 'section-1'}`,
-                    port: conf.log[conf.gateway.log || 'section-1'].port.cluster,
+                    ip: `log-${firstWorldName}`,
+                    port: firstWorld.log.port.cluster,
                     level: ["info", "warn", "fatal"]
                 },
                 entrypoints: [],
                 internal: {
-                    ip: `internal-${conf.gateway.internal || 'section-1'}`, 
-                    port: conf.internal[conf.gateway.internal || 'section-1'].port.cluster
+                    ip: "internal",
+                    port: conf.internal.port.cluster
                 },
                 amqp: {
                     internal: {
-                        ip: "rabbitmq-section-1-internal",
-                        port: conf.rabbitmq['section-1'].internal.port.amqp.cluster,
+                        ip: "rabbitmq-internal",
+                        port: conf["unified-infra"].rabbitmq.internal.port.amqp.cluster,
                         uid: "fb",
                         pwd: "admin"
                     },
                     log: {
-                        ip: "rabbitmq-section-1-log",
-                        port: conf.rabbitmq['section-1'].log.port.amqp.cluster,
+                        ip: "rabbitmq-log",
+                        port: conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
                         uid: "fb",
                         pwd: "admin",
                         queue_size: 128
@@ -43,12 +47,13 @@ module.exports = function () {
                 },
             }
 
-            for(const [section, loginContainerConf] of Object.entries(conf.login)) {
+            for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+                if (!worldConf.login) continue
                 config.entrypoints.push({
-                    name: loginContainerConf.name,
-                    desc: loginContainerConf.desc,
+                    name: worldConf.name,
+                    desc: worldConf.desc,
                     ip: conf.host,
-                    port: loginContainerConf.port
+                    port: worldConf.login.port
                 })
             }
 

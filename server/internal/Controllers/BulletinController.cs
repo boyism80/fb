@@ -33,10 +33,10 @@ namespace Internal.Controllers
             _logger = logger;
         }
 
-        [HttpGet("{section}")]
-        public async Task<Response.GetArticleList> GetArticleList(uint section, [FromQuery(Name = "offset")] ushort offset)
+        [HttpGet("{world}/{bulletinSection}")]
+        public async Task<Response.GetArticleList> GetArticleList(uint world, uint bulletinSection, [FromQuery(Name = "offset")] ushort offset)
         {
-            var articleList = await _bulletinService.GetArticleListAsync(section, offset);
+            var articleList = await _bulletinService.GetArticleListAsync(world, bulletinSection, offset);
 
             var summaryList = _mapper.Map<List<Http.Model.Bulletin>, List<ArticleSummary>>(articleList);
             return new Response.GetArticleList
@@ -45,12 +45,12 @@ namespace Internal.Controllers
             };
         }
 
-        [HttpGet("{section}/{id}")]
-        public async Task<Response.GetArticle> GetArticle(uint section, ushort id)
+        [HttpGet("{world}/{bulletinSection}/{id}")]
+        public async Task<Response.GetArticle> GetArticle(uint world, uint bulletinSection, ushort id)
         {
             try
             {
-                var (article, next) = await _bulletinService.GetArticleAsync(section, id);
+                var (article, next) = await _bulletinService.GetArticleAsync(world, bulletinSection, id);
 
                 if (article == null)
                 {
@@ -79,6 +79,7 @@ namespace Internal.Controllers
             try
             {
                 var success = await _bulletinService.Write(
+                    request.World,
                     request.Section,
                     request.User,
                     request.Title,
@@ -106,6 +107,7 @@ namespace Internal.Controllers
             try
             {
                 var result = await _bulletinService.Delete(
+                    request.World,
                     request.Section,
                     request.Id,
                     request.User

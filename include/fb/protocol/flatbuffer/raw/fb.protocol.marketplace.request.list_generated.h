@@ -27,11 +27,15 @@ struct ListBuilder;
 struct List FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ListBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_CHARACTER_ID = 4,
-    VT_LISTING_ID = 6,
-    VT_ITEM = 8,
-    VT_PRICE = 10
+    VT_WORLD = 4,
+    VT_CHARACTER_ID = 6,
+    VT_LISTING_ID = 8,
+    VT_ITEM = 10,
+    VT_PRICE = 12
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t character_id() const {
     return GetField<uint32_t>(VT_CHARACTER_ID, 0);
   }
@@ -46,6 +50,7 @@ struct List FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_CHARACTER_ID, 4) &&
            VerifyOffset(verifier, VT_LISTING_ID) &&
            verifier.VerifyString(listing_id()) &&
@@ -60,6 +65,9 @@ struct ListBuilder {
   typedef List Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(List::VT_WORLD, world, 0);
+  }
   void add_character_id(uint32_t character_id) {
     fbb_.AddElement<uint32_t>(List::VT_CHARACTER_ID, character_id, 0);
   }
@@ -85,6 +93,7 @@ struct ListBuilder {
 
 inline ::flatbuffers::Offset<List> CreateList(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t character_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
@@ -94,11 +103,13 @@ inline ::flatbuffers::Offset<List> CreateList(
   builder_.add_item(item);
   builder_.add_listing_id(listing_id);
   builder_.add_character_id(character_id);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<List> CreateListDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t character_id = 0,
     const char *listing_id = nullptr,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
@@ -106,6 +117,7 @@ inline ::flatbuffers::Offset<List> CreateListDirect(
   auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
   return fb::protocol::marketplace::request::raw::CreateList(
       _fbb,
+      world,
       character_id,
       listing_id__,
       item,

@@ -1,4 +1,4 @@
-﻿using Http.Model.Redis;
+using Http.Model.Redis;
 using Http.Redis;
 using Http.Redis.Key;
 using Newtonsoft.Json;
@@ -48,14 +48,18 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Retrieves a session by name.
+        /// Retrieves a session by world and name.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to retrieve the session for.</param>
         /// <returns>The session if found; otherwise, null.</returns>
-        public async Task<Session> Get(string name)
+        public async Task<Session> Get(uint world, string name)
         {
             var key = new SessionKey().Key;
-            var conn = _redisService.Redis(-1).Connection;
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return null;
+            var conn = redis.Connection;
             var data = await conn.HashGetAsync(new RedisKey(key), new RedisValue(name));
             if (data.IsNull)
                 return null;
@@ -64,43 +68,53 @@ namespace Http.Service
         }
 
         /// <summary>
-        /// Sets a session for a character name and refreshes the TTL.
+        /// Sets a session for a character name in the specified world and refreshes the TTL.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name.</param>
         /// <param name="session">The session data to store.</param>
-        public async Task Set(string name, Session session)
+        public async Task Set(uint world, string name, Session session)
         {
             var key = new SessionKey().Key;
-            var redis = _redisService.Redis(-1);
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return;
             var conn = redis.Connection;
 
             await conn.JsonHashSetAsync(new RedisKey(key), new RedisValue(name), session);
-            await RefreshTTL();
+            await RefreshTTL(world);
         }
 
         /// <summary>
-        /// Deletes a session for a character name and refreshes the TTL.
+        /// Deletes a session for a character name in the specified world and refreshes the TTL.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to delete the session for.</param>
-        public async Task Delete(string name)
+        public async Task Delete(uint world, string name)
         {
             var key = new SessionKey().Key;
-            var conn = _redisService.Redis(-1).Connection;
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return;
+            var conn = redis.Connection;
 
             await conn.HashDeleteAsync(new RedisKey(key), name);
-            await RefreshTTL();
+            await RefreshTTL(world);
         }
 
         /// <summary>
-        /// Atomically gets and deletes a session by name using the get_and_delete_session.lua script.
+        /// Atomically gets and deletes a session by world and name using the get_and_delete_session.lua script.
         /// Returns the session if it existed, null otherwise.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to get and delete the session for.</param>
         /// <returns>The session if it existed and was deleted; otherwise, null.</returns>
-        public async Task<Session> GetAndDelete(string name)
+        public async Task<Session> GetAndDelete(uint world, string name)
         {
             var key = new SessionKey().Key;
-            var redis = _redisService.Redis(-1);
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return null;
 
             var redisResult = await redis.ScriptEvaluateAsync("get_and_delete_session.lua", new
             {
@@ -110,27 +124,28 @@ namespace Http.Service
 
             var found = (bool)redisResult[0];
             if (!found)
-            {
                 return null;
-            }
 
             var sessionJson = redisResult[1].ToString();
             return JsonConvert.DeserializeObject<Session>(sessionJson);
         }
 
         /// <summary>
-        /// Attempts to login by setting a session.
+        /// Attempts to login by setting a session in the specified world.
         /// If force is false, uses try_login.lua script which does not delete existing sessions.
         /// If force is true, uses login.lua script which deletes existing sessions and publishes KickOut message.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name.</param>
         /// <param name="session">The session data to store.</param>
         /// <param name="force">If true, replaces existing session. If false, fails if session exists.</param>
         /// <returns>True if login was successful (new session created), false if an existing session was found.</returns>
-        public async Task<bool> Login(string name, Session session, bool force = false)
+        public async Task<bool> Login(uint world, string name, Session session, bool force = false)
         {
             var key = new SessionKey().Key;
-            var redis = _redisService.Redis(-1);
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return false;
 
             string scriptName = force ? "login.lua" : "try_login.lua";
             var redisResult = await redis.ScriptEvaluateAsync(scriptName, new
@@ -143,9 +158,7 @@ namespace Http.Service
 
             var success = (bool)redisResult[0];
             if (success)
-            {
                 return true;
-            }
 
             // If force is true and login failed, publish KickOut message
             if (force)
@@ -157,22 +170,25 @@ namespace Http.Service
                 {
                     Uid = existingSession.Uid,
                     Name = name
-                }, "amq.direct", $"fb.game.{existingSession.Host}");
+                }, "amq.direct", $"fb.{world}.game.{existingSession.Host}");
             }
 
             return false;
         }
 
         /// <summary>
-        /// Refreshes the TTL of the session hash key using an atomic Lua script.
+        /// Refreshes the TTL of the session hash key in the specified world using an atomic Lua script.
         /// Only refreshes if the current TTL is below the minimum threshold to prevent redundant operations.
         /// </summary>
-        public async Task RefreshTTL()
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        public async Task RefreshTTL(uint world)
         {
             try
             {
                 var key = new SessionKey().Key;
-                var redis = _redisService.Redis(-1);
+                var redis = _redisService.GetGlobalConnection(world);
+                if (redis == null)
+                    return;
                 var script = LuaScript.Prepare(SessionTtlRefreshScript).Load(redis.GetServer());
 
                 await redis.Connection.ScriptEvaluateAsync(script.Hash,
@@ -184,6 +200,40 @@ namespace Http.Service
                 // Silently ignore errors during TTL refresh
                 // This prevents TTL refresh failures from affecting other operations
             }
+        }
+
+        /// <summary>
+        /// Gets all active sessions for the specified world.
+        /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <returns>A list of all active sessions for the world.</returns>
+        public async Task<List<Session>> GetAllSessions(uint world)
+        {
+            var key = new SessionKey().Key;
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null)
+                return new List<Session>();
+
+            var allSessions = await redis.Connection.HashGetAllAsync(new RedisKey(key));
+            var sessions = new List<Session>();
+
+            foreach (var entry in allSessions)
+            {
+                try
+                {
+                    var session = JsonConvert.DeserializeObject<Session>(entry.Value.ToString());
+                    if (session != null)
+                    {
+                        sessions.Add(session);
+                    }
+                }
+                catch
+                {
+                    // Skip invalid session entries
+                }
+            }
+
+            return sessions;
         }
     }
 }

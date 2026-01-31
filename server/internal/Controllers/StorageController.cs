@@ -25,12 +25,12 @@ namespace Internal.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("pending")]
-        public async Task<Response.GetStoragePending> GetPending()
+        [HttpGet("pending/{world}")]
+        public async Task<Response.GetStoragePending> GetPending(uint world)
         {
             try
             {
-                var pending = await _storageService.GetGlobalPendingAsync();
+                var pending = await _storageService.GetGlobalPendingAsync(world);
                 return BuildResponse(null, pending);
             }
             catch (Exception e)
@@ -40,12 +40,12 @@ namespace Internal.Controllers
             }
         }
 
-        [HttpGet("pending/{user}")]
-        public async Task<Response.GetStoragePending> GetPendingByUser(uint user)
+        [HttpGet("pending/{world}/{user}")]
+        public async Task<Response.GetStoragePending> GetPendingByUser(uint world, uint user)
         {
             try
             {
-                var pending = await _storageService.GetPendingForUserAsync(user);
+                var pending = await _storageService.GetPendingForUserAsync(world, user);
                 return BuildResponse(user, pending);
             }
             catch (Exception e)

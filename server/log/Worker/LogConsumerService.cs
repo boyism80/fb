@@ -11,7 +11,7 @@ namespace Log.Worker
 {
     /// <summary>
     /// Background service that consumes log messages from RabbitMQ queues and stores them in the database.
-    /// Creates an auto-generated queue and binds it to all log routing keys (fb.log.0 to fb.log.127) to receive messages.
+    /// Creates queues and binds them to log routing keys (fb.{world}.log.0 to fb.{world}.log.{queueSize-1}) to receive messages for the specific world.
     /// </summary>
     public class LogConsumerService : BackgroundService
     {
@@ -24,7 +24,7 @@ namespace Log.Worker
         private static readonly TimeSpan ProcessInterval = TimeSpan.FromSeconds(10);
         private const int BatchSize = 1000;
         private const string ExchangeName = "amq.direct";
-        private const string RoutingKeyPrefix = "fb.log.";
+        private readonly uint _world;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LogConsumerService"/> class.
@@ -40,6 +40,11 @@ namespace Log.Worker
             _configuration = configuration;
             _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
+            _world = (uint)_configuration.GetValue<int>("World", 0);
+            if (_world == 0)
+            {
+                throw new Exception("Log consumer service requires a world > 0. Unified-global is not supported.");
+            }
         }
 
         /// <summary>
@@ -179,7 +184,7 @@ namespace Log.Worker
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ConnectToRabbitMQAsync(CancellationToken cancellationToken)
         {
-            var section = _configuration.GetSection("RabbitMQ");
+            var section = _configuration.GetSection("RabbitMQ:Log");
             var hostName = section.GetValue<string>("Host");
             var port = section.GetValue<int>("Port");
             var userName = section.GetValue<string>("Uid");
@@ -204,14 +209,14 @@ namespace Log.Worker
             _channel.ExchangeDeclare(ExchangeName, ExchangeType.Direct, durable: true);
 
             // Get queue size from configuration
-            var queueSize = _configuration.GetValue<int>("RabbitMQ:QueueSize", 128);
+            var queueSize = _configuration.GetValue<int>("RabbitMQ:Log:QueueSize", 128);
 
-            // Declare queues with names matching routing keys (fb.log.0 to fb.log.{queueSize-1})
+            // Declare queues with names matching routing keys (fb.{world}.log.0 to fb.{world}.log.{queueSize-1})
             // All consumer instances use the same queue names, allowing RabbitMQ to distribute
             // messages among multiple consumers, ensuring each message is consumed only once
             for (int i = 0; i < queueSize; i++)
             {
-                var routingKey = $"{RoutingKeyPrefix}{i}";
+                var routingKey = $"fb.{_world}.log.{i}";
                 var queueName = routingKey; // Queue name = Routing key
 
                 try
@@ -236,7 +241,7 @@ namespace Log.Worker
                 }
             }
 
-            _logger.LogInformation($"Connected to RabbitMQ and declared {queueSize} queues (fb.log.0 to fb.log.{queueSize - 1})");
+            _logger.LogInformation($"Connected to RabbitMQ and declared {queueSize} queues (fb.{_world}.log.0 to fb.{_world}.log.{queueSize - 1})");
             await Task.CompletedTask;
         }
 

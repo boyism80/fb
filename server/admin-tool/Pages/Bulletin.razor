@@ -13,11 +13,9 @@
 
 <PageTitle>Bulletin - Admin Tool</PageTitle>
 
-<div class="container-fluid mt-4">
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <h2>Bulletin Management</h2>
-        </div>
+<div>
+    <div class="page-header mb-4">
+        <h1>Bulletin Management</h1>
     </div>
 
     @if (!string.IsNullOrEmpty(errorMessage))
@@ -38,38 +36,36 @@
 
     <div class="row">
         <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Sections</h5>
-                </div>
-                <div class="card-body">
-                    @if (sections != null && sections.Any())
-                    {
-                        <div class="list-group">
-                            @foreach (var sectionItem in sections)
-                            {
+            <div class="section-sidebar">
+                <h5 class="section-sidebar-title">Sections</h5>
+                @if (sections != null && sections.Any())
+                {
+                    <ul class="section-list">
+                        @foreach (var sectionItem in sections)
+                        {
+                            <li>
                                 <button type="button"
-                                    class="list-group-item list-group-item-action @(selectedSection == sectionItem.Key ? "active" : "")"
-                                    @onclick="() => SelectSection(sectionItem.Key)">
+                                        class="section-item @(selectedBulletinSection == sectionItem.Key ? "active" : "")"
+                                        @onclick="() => SelectSection(sectionItem.Key)">
                                     @sectionItem.Value.Name
                                 </button>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <p class="text-muted">No sections available</p>
-                    }
-                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">No sections available</p>
+                }
             </div>
         </div>
 
         <div class="col-md-9">
-            @if (selectedSection.HasValue)
+            @if (selectedBulletinSection.HasValue)
             {
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Articles - @GetSectionName(selectedSection.Value)</h5>
+                        <h5 class="mb-0">Articles - @GetSectionName(selectedBulletinSection.Value)</h5>
                         <button class="btn btn-primary btn-sm" @onclick="ShowWriteModal" disabled="@isProcessing">
                             <span class="oi oi-plus" aria-hidden="true"></span> Write Article
                         </button>
@@ -78,7 +74,7 @@
                         <div class="row mb-3">
                             <div class="col-md-8">
                                 <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="Search by title, contents, or author name..." 
+                                    <input type="text" class="form-control" placeholder="Search by title, contents, or author name..."
                                            @bind="searchQuery" @bind:event="oninput" @onkeypress="HandleSearchKeyPress" />
                                     <button class="btn btn-outline-secondary" type="button" @onclick="SearchArticles" disabled="@isLoading">
                                         <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Search
@@ -111,54 +107,48 @@
                         }
                         else if (articles != null && articles.Any())
                         {
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 40px;">
-                                                <input type="checkbox" @onchange="ToggleSelectAll" checked="@IsAllSelected" />
-                                            </th>
-                                            <th>ID</th>
-                                            <th>Title</th>
-                                            <th>Author</th>
-                                            <th>Created Date</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var article in articles)
-                                        {
-                                            <tr>
-                                                <td>
-                                                    <input type="checkbox" checked="@selectedArticleIds.Contains(article.Id)" 
-                                                           @onchange="() => ToggleArticleSelection(article.Id)" />
-                                                </td>
-                                                <td>@article.Id</td>
-                                                <td>
-                                                    <a href="#" class="text-decoration-none text-primary" 
-                                                       @onclick="() => ShowViewModal(article)" 
-                                                       @onclick:preventDefault 
-                                                       style="cursor: pointer;">
-                                                        @article.Title
-                                                    </a>
-                                                </td>
-                                                <td>@article.UserName</td>
-                                                <td>@article.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-secondary me-2"
-                                                        @onclick="() => ShowEditModal(article)" disabled="@isProcessing">
-                                                        Edit
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-secondary"
-                                                        @onclick="() => ShowDeleteModal(article)" disabled="@isProcessing">
-                                                        Delete
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
+                            <div class="mb-3">
+                                <input type="checkbox" @onchange="ToggleSelectAll" checked="@IsAllSelected" />
+                                <label class="ms-2 text-muted">Select All</label>
                             </div>
+                            <ul class="clean-list">
+                                @{
+                                    int index = (currentPage - 1) * pageSize + 1;
+                                }
+                                @foreach (var article in articles)
+                                {
+                                    <li class="clean-list-item">
+                                        <input type="checkbox" checked="@selectedArticleIds.Contains(article.Id)"
+                                               @onchange="() => ToggleArticleSelection(article.Id)"
+                                               style="flex-shrink: 0;" />
+                                        <span class="clean-list-item-number">@index</span>
+                                        <div class="clean-list-item-content">
+                                            <div class="clean-list-item-main">
+                                                <a href="#" class="text-decoration-none"
+                                                   @onclick="() => ShowViewModal(article)"
+                                                   @onclick:preventDefault
+                                                   style="color: var(--text-primary); cursor: pointer;">
+                                                    @article.Title
+                                                </a>
+                                            </div>
+                                            <div class="clean-list-item-secondary">
+                                                @article.UserName · @article.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                                            </div>
+                                        </div>
+                                        <div class="clean-list-item-actions">
+                                            <button class="btn btn-sm btn-outline-secondary"
+                                                    @onclick="() => ShowEditModal(article)" disabled="@isProcessing">
+                                                Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary"
+                                                    @onclick="() => ShowDeleteModal(article)" disabled="@isProcessing">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </li>
+                                    index++;
+                                }
+                            </ul>
 
                             @if (currentPage > 1 || (articles != null && articles.Count == pageSize))
                             {
@@ -166,14 +156,14 @@
                                     <ul class="pagination justify-content-center">
                                         <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
                                             <a class="page-link" href="#" @onclick="() => ChangePage(currentPage - 1)"
-                                                @onclick:preventDefault>Previous</a>
+                                               @onclick:preventDefault>Previous</a>
                                         </li>
                                         <li class="page-item active">
                                             <span class="page-link">Page @currentPage</span>
                                         </li>
                                         <li class="page-item @(articles == null || articles.Count < pageSize ? "disabled" : "")">
                                             <a class="page-link" href="#" @onclick="() => ChangePage(currentPage + 1)"
-                                                @onclick:preventDefault>Next</a>
+                                               @onclick:preventDefault>Next</a>
                                         </li>
                                     </ul>
                                 </nav>
@@ -211,7 +201,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Write Article - @GetSectionName(selectedSection!.Value)</h5>
+                    <h5 class="modal-title">Write Article - @GetSectionName(selectedBulletinSection!.Value)</h5>
                     <button type="button" class="btn-close" @onclick="CloseWriteModal"></button>
                 </div>
                 <div class="modal-body">
@@ -225,7 +215,7 @@
                         <div class="mb-3">
                             <label for="writeContents" class="form-label">Contents</label>
                             <InputTextArea id="writeContents" class="form-control" rows="10"
-                                @bind-Value="writeModel.Contents" />
+                                           @bind-Value="writeModel.Contents" />
                             <ValidationMessage For="@(() => writeModel.Contents)" />
                         </div>
                         <div class="modal-footer">
@@ -266,7 +256,7 @@
                         <div class="mb-3">
                             <label for="editContents" class="form-label">Contents</label>
                             <InputTextArea id="editContents" class="form-control" rows="10"
-                                @bind-Value="editModel.Contents" />
+                                           @bind-Value="editModel.Contents" />
                             <ValidationMessage For="@(() => editModel.Contents)" />
                         </div>
                         <div class="modal-footer">
@@ -378,8 +368,11 @@
 }
 
 @code {
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
+
     private Dictionary<uint, Fb.Model.Bulletin>? sections;
-    private uint? selectedSection;
+    private uint? selectedBulletinSection;
     private List<Http.Model.Bulletin>? articles;
     private int currentPage = 1;
     private const int pageSize = 20;
@@ -428,9 +421,9 @@
         try
         {
             sections = Table.Bulletin?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-            if (sections != null && sections.Any() && !selectedSection.HasValue)
+            if (sections != null && sections.Any() && !selectedBulletinSection.HasValue)
             {
-                selectedSection = sections.Keys.First();
+                selectedBulletinSection = sections.Keys.First();
                 await LoadArticles();
             }
         }
@@ -442,7 +435,7 @@
 
     private async Task SelectSection(uint section)
     {
-        selectedSection = section;
+        selectedBulletinSection = section;
         currentPage = 1;
         searchQuery = string.Empty;
         selectedArticleIds.Clear();
@@ -454,14 +447,14 @@
 
     private async Task LoadArticles()
     {
-        if (!selectedSection.HasValue)
+        if (!selectedBulletinSection.HasValue)
             return;
 
         // Reset position if section or search query changed
-        if (lastSelectedSection != selectedSection.Value || lastSearchQuery != searchQuery)
+        if (lastSelectedSection != selectedBulletinSection.Value || lastSearchQuery != searchQuery)
         {
             currentPosition = null;
-            lastSelectedSection = selectedSection.Value;
+            lastSelectedSection = selectedBulletinSection.Value;
             lastSearchQuery = searchQuery;
         }
 
@@ -492,8 +485,14 @@
                 position = 0xFFFF;
             }
 
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                return;
+            }
             articles = await BulletinService.GetArticleListAsync(
-                selectedSection.Value,
+                selectedWorld.Value,
+                selectedBulletinSection.Value,
                 position,
                 string.IsNullOrWhiteSpace(searchQuery) ? null : searchQuery);
 
@@ -612,7 +611,7 @@
 
     private async Task HandleWrite()
     {
-        if (!selectedSection.HasValue || currentUserId == 0)
+        if (!selectedBulletinSection.HasValue || currentUserId == 0)
         {
             errorMessage = "Invalid section or user ID.";
             return;
@@ -624,8 +623,14 @@
 
         try
         {
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                return;
+            }
             var success = await BulletinService.Write(
-                selectedSection.Value,
+                selectedWorld.Value,
+                selectedBulletinSection.Value,
                 currentUserId,
                 writeModel.Title,
                 writeModel.Contents);
@@ -653,7 +658,7 @@
 
     private async Task ShowEditModal(Http.Model.Bulletin article)
     {
-        if (!selectedSection.HasValue)
+        if (!selectedBulletinSection.HasValue)
             return;
 
         isProcessing = true;
@@ -661,9 +666,14 @@
 
         try
         {
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                return;
+            }
             // Get full article data including contents
-            var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedSection.Value, article.Id);
-            
+            var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedWorld.Value, selectedBulletinSection.Value, article.Id);
+
             if (fullArticle == null)
             {
                 errorMessage = "Article not found.";
@@ -698,7 +708,7 @@
 
     private async Task HandleEdit()
     {
-        if (selectedArticle == null || !selectedSection.HasValue || currentUserId == 0)
+        if (selectedArticle == null || !selectedBulletinSection.HasValue || currentUserId == 0)
         {
             errorMessage = "Invalid article or user ID.";
             return;
@@ -710,8 +720,14 @@
 
         try
         {
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                return;
+            }
             var result = await BulletinService.Update(
-                selectedSection.Value,
+                selectedWorld.Value,
+                selectedBulletinSection.Value,
                 selectedArticle.Id,
                 currentUserId,
                 editModel.Title,
@@ -741,7 +757,7 @@
 
     private async Task ShowViewModal(Http.Model.Bulletin article)
     {
-        if (!selectedSection.HasValue)
+        if (!selectedBulletinSection.HasValue)
             return;
 
         isProcessing = true;
@@ -749,9 +765,14 @@
 
         try
         {
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                return;
+            }
             // Get full article data including contents
-            var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedSection.Value, article.Id);
-            
+            var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedWorld.Value, selectedBulletinSection.Value, article.Id);
+
             if (fullArticle == null)
             {
                 errorMessage = "Article not found.";
@@ -791,7 +812,7 @@
 
     private async Task HandleDelete()
     {
-        if (selectedArticle == null || !selectedSection.HasValue || currentUserId == 0)
+        if (selectedArticle == null || !selectedBulletinSection.HasValue || currentUserId == 0)
         {
             errorMessage = "Invalid article or user ID.";
             return;
@@ -803,8 +824,14 @@
 
         try
         {
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                return;
+            }
             var result = await BulletinService.Delete(
-                selectedSection.Value,
+                selectedWorld.Value,
+                selectedBulletinSection.Value,
                 selectedArticle.Id,
                 currentUserId,
                 true);
@@ -842,7 +869,7 @@
 
     private async Task HandleBulkDelete()
     {
-        if (!selectedArticleIds.Any() || !selectedSection.HasValue || currentUserId == 0)
+        if (!selectedArticleIds.Any() || !selectedBulletinSection.HasValue || currentUserId == 0)
         {
             errorMessage = "No articles selected or invalid section/user ID.";
             return;
@@ -854,9 +881,15 @@
 
         try
         {
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                return;
+            }
             var ids = selectedArticleIds.ToList();
             var result = await BulletinService.DeleteBatch(
-                selectedSection.Value,
+                selectedWorld.Value,
+                selectedBulletinSection.Value,
                 ids,
                 currentUserId,
                 true);

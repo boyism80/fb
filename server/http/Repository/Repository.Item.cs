@@ -27,14 +27,15 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves a specific item by its complete identification parameters.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="owner">The unique identifier of the character who owns the item.</param>
         /// <param name="index">The inventory slot index where the item is located.</param>
         /// <param name="parts">The equipment parts identifier for the item.</param>
         /// <param name="stored">The storage type identifier where the item is stored.</param>
         /// <returns>The item if found; otherwise, null.</returns>
-        public async Task<Item> Get(uint owner, short index, short parts, short stored)
+        public async Task<Item> Get(uint world, uint owner, short index, short parts, short stored)
         {
-            return await Get(new ItemKey
+            return await base.Get(world, new ItemKey
             {
                 Owner = owner,
                 Index = index,
@@ -46,11 +47,12 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves all items belonging to a specific character.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="owner">The unique identifier of the character who owns the items.</param>
         /// <returns>A collection of all items belonging to the specified character.</returns>
-        public async Task<IEnumerable<Item>> Get(uint owner)
+        public async Task<IEnumerable<Item>> Get(uint world, uint owner)
         {
-            return await GetAll(new ItemKey
+            return await base.GetAll(world, new ItemKey
             {
                 Owner = owner
             });

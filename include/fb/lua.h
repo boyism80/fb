@@ -275,7 +275,9 @@ public:
 
 public:
     template <class... Args>
-    context&                          load(const std::string& fmt, Args&&... args);
+    context& load(const std::string& fmt, Args&&... args);
+    template <class... Args>
+    context&                          execute(const std::string& fmt, Args&&... args);
     template <class... Args> context& func(const std::string& fmt, Args&&... args);
     context&                          pushstring(const std::string& value);
     context&                          pushinteger(lua_Integer value);
@@ -739,6 +741,52 @@ fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
     if (lua_pcall(*this, 0, LUA_MULTRET, 0))
         throw std::runtime_error(std::format("cannot run script {}", fname));
 
+#endif
+    return *this;
+}
+
+template <class... Args>
+fb::lua::context& fb::lua::context::execute(const std::string& fmt, Args&&... args)
+{
+    auto fname = std::vformat(fmt, std::make_format_args(args...));
+#if defined DEBUG || defined _DEBUG
+    // DEBUG mode: load and execute file directly every time
+    if (luaL_loadfile(*this, fname.c_str()) != LUA_OK)
+    {
+        auto error = lua_tostring(*this, -1);
+        this->pop(1); // pop error message
+        throw std::runtime_error(error);
+    }
+
+    if (lua_pcall(*this, 0, LUA_MULTRET, 0) != LUA_OK)
+    {
+        auto error = lua_tostring(*this, -1);
+        this->pop(1); // pop error message
+        throw std::runtime_error(error);
+    }
+#else
+    // Release mode: cache bytecode and load from cache
+    auto root = static_cast<fb::lua::root*>(this->owner);
+    root->dump(fname);
+
+    auto it = root->_bytecodes.find(fname);
+    if (it == root->_bytecodes.end())
+        throw std::runtime_error(std::format("cannot find script {}", fname));
+
+    const auto& bytes = it->second;
+    if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0) != LUA_OK)
+    {
+        auto error = lua_tostring(*this, -1);
+        this->pop(1); // pop error message
+        throw std::runtime_error(std::format("cannot load script {}", fname));
+    }
+
+    if (lua_pcall(*this, 0, LUA_MULTRET, 0) != LUA_OK)
+    {
+        auto error = lua_tostring(*this, -1);
+        this->pop(1); // pop error message
+        throw std::runtime_error(std::format("cannot run script {}", fname));
+    }
 #endif
     return *this;
 }

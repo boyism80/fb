@@ -49,7 +49,7 @@ namespace Marketplace.Services
                 try
                 {
                     // Use Lua script to atomically check and acquire lock
-                    var redis = _redisService.Redis(LockKey);
+                    var redis = _redisService.GetUnifiedConnection();
                     var acquireLockScript = @"
                         if redis.call('exists', KEYS[1]) == 0 then
                             redis.call('set', KEYS[1], '1')
@@ -119,7 +119,7 @@ namespace Marketplace.Services
             LogService logService,
             CancellationToken cancellationToken)
         {
-            await using var conn = dbContext.Connection(-1);
+            await using var conn = dbContext.GetUnifiedConnection();
             await conn.OpenAsync(cancellationToken);
             await using var transaction = await conn.BeginTransactionAsync(cancellationToken);
 
@@ -226,6 +226,7 @@ namespace Marketplace.Services
                 : string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessage.ToCSharpFormat(), itemName, listing.RemainingCount);
 
             await storageService.CreatePendingAsync(
+                listing.World,
                 Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredTitle,
                 message,
                 listing.SellerId,

@@ -25,9 +25,13 @@ struct DeleteMailBuilder;
 struct DeleteMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef DeleteMailBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_USER = 4,
-    VT_ID = 6
+    VT_WORLD = 4,
+    VT_USER = 6,
+    VT_ID = 8
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
@@ -36,6 +40,7 @@ struct DeleteMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyField<uint16_t>(verifier, VT_ID, 2) &&
            verifier.EndTable();
@@ -46,6 +51,9 @@ struct DeleteMailBuilder {
   typedef DeleteMail Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(DeleteMail::VT_WORLD, world, 0);
+  }
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(DeleteMail::VT_USER, user, 0);
   }
@@ -65,10 +73,12 @@ struct DeleteMailBuilder {
 
 inline ::flatbuffers::Offset<DeleteMail> CreateDeleteMail(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t user = 0,
     uint16_t id = 0) {
   DeleteMailBuilder builder_(_fbb);
   builder_.add_user(user);
+  builder_.add_world(world);
   builder_.add_id(id);
   return builder_.Finish();
 }

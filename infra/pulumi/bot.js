@@ -7,35 +7,37 @@ module.exports = function () {
         setup: function (namespace, conf, dependsOn) {
 
             const resources = []
-            for(const [section, sectionConf] of Object.entries(conf.bot)) {
+            for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+                if (!worldConf.bot) continue
+                const botConf = worldConf.bot
                 const config = {
                     log: ["info", "warn", "fatal"],
                     ip: conf.host,
                     port: conf.gateway.port,
-                    io_size: sectionConf.io_size,
-                    interval: sectionConf.interval,
-                    spawn_per_interval: sectionConf.spawn_per_interval,
-                    spawn_count: sectionConf.spawn_count,
+                    io_size: botConf.io_size,
+                    interval: botConf.interval,
+                    spawn_per_interval: botConf.spawn_per_interval,
+                    spawn_count: botConf.spawn_count,
                     thread: {
-                        logic: sectionConf.thread.logic
+                        logic: botConf.thread.logic
                     }
                 }
 
-                const configMap = new k8s.core.v1.ConfigMap(`bot-${section}`, {
-                    metadata: { name: `bot-${section}`, namespace: namespace.metadata.name },
+                const configMap = new k8s.core.v1.ConfigMap(`bot-${worldName}`, {
+                    metadata: { name: `bot-${worldName}`, namespace: namespace.metadata.name },
                     data: {
                         "config.json": JSON.stringify(config),
                     },
                 })
 
-                const statefulSet = new k8s.apps.v1.StatefulSet(`bot-${section}`, {
+                const statefulSet = new k8s.apps.v1.StatefulSet(`bot-${worldName}`, {
                     metadata: {
-                        name: `bot-${section}`,
+                        name: `bot-${worldName}`,
                         namespace: namespace.metadata.name,
                     },
                     spec: {
                         serviceName: "bot",
-                        replicas: sectionConf.replicas,
+                        replicas: botConf.replicas,
                         selector: {
                             matchLabels: {
                                 app: "bot",

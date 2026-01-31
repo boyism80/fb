@@ -30,7 +30,9 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_IP = 8,
     VT_PORT = 10,
     VT_BAN_REASON = 12,
-    VT_BAN_EXPIRE_DATE = 14
+    VT_BAN_EXPIRE_DATE = 14,
+    VT_MAINTENANCE_MESSAGE = 16,
+    VT_MAINTENANCE_END_TIME = 18
   };
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
@@ -50,6 +52,12 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *ban_expire_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_BAN_EXPIRE_DATE);
   }
+  const ::flatbuffers::String *maintenance_message() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_MAINTENANCE_MESSAGE);
+  }
+  const ::flatbuffers::String *maintenance_end_time() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_MAINTENANCE_END_TIME);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
@@ -61,6 +69,10 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(ban_reason()) &&
            VerifyOffset(verifier, VT_BAN_EXPIRE_DATE) &&
            verifier.VerifyString(ban_expire_date()) &&
+           VerifyOffset(verifier, VT_MAINTENANCE_MESSAGE) &&
+           verifier.VerifyString(maintenance_message()) &&
+           VerifyOffset(verifier, VT_MAINTENANCE_END_TIME) &&
+           verifier.VerifyString(maintenance_end_time()) &&
            verifier.EndTable();
   }
 };
@@ -87,6 +99,12 @@ struct LoginBuilder {
   void add_ban_expire_date(::flatbuffers::Offset<::flatbuffers::String> ban_expire_date) {
     fbb_.AddOffset(Login::VT_BAN_EXPIRE_DATE, ban_expire_date);
   }
+  void add_maintenance_message(::flatbuffers::Offset<::flatbuffers::String> maintenance_message) {
+    fbb_.AddOffset(Login::VT_MAINTENANCE_MESSAGE, maintenance_message);
+  }
+  void add_maintenance_end_time(::flatbuffers::Offset<::flatbuffers::String> maintenance_end_time) {
+    fbb_.AddOffset(Login::VT_MAINTENANCE_END_TIME, maintenance_end_time);
+  }
   explicit LoginBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -105,8 +123,12 @@ inline ::flatbuffers::Offset<Login> CreateLogin(
     ::flatbuffers::Offset<::flatbuffers::String> ip = 0,
     uint16_t port = 0,
     ::flatbuffers::Offset<::flatbuffers::String> ban_reason = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> ban_expire_date = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> ban_expire_date = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> maintenance_message = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> maintenance_end_time = 0) {
   LoginBuilder builder_(_fbb);
+  builder_.add_maintenance_end_time(maintenance_end_time);
+  builder_.add_maintenance_message(maintenance_message);
   builder_.add_ban_expire_date(ban_expire_date);
   builder_.add_ban_reason(ban_reason);
   builder_.add_ip(ip);
@@ -123,10 +145,14 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
     const char *ip = nullptr,
     uint16_t port = 0,
     const char *ban_reason = nullptr,
-    const char *ban_expire_date = nullptr) {
+    const char *ban_expire_date = nullptr,
+    const char *maintenance_message = nullptr,
+    const char *maintenance_end_time = nullptr) {
   auto ip__ = ip ? _fbb.CreateString(ip) : 0;
   auto ban_reason__ = ban_reason ? _fbb.CreateString(ban_reason) : 0;
   auto ban_expire_date__ = ban_expire_date ? _fbb.CreateString(ban_expire_date) : 0;
+  auto maintenance_message__ = maintenance_message ? _fbb.CreateString(maintenance_message) : 0;
+  auto maintenance_end_time__ = maintenance_end_time ? _fbb.CreateString(maintenance_end_time) : 0;
   return fb::protocol::internal::response::raw::CreateLogin(
       _fbb,
       error,
@@ -134,7 +160,9 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
       ip__,
       port,
       ban_reason__,
-      ban_expire_date__);
+      ban_expire_date__,
+      maintenance_message__,
+      maintenance_end_time__);
 }
 
 inline const fb::protocol::internal::response::raw::Login *GetLogin(const void *buf) {

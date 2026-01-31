@@ -1,6 +1,7 @@
 using Dapper;
 using Http.Extension;
 using Http.Service;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
@@ -14,16 +15,21 @@ namespace Log.Repository
     {
         private readonly DbContext _dbContext;
         private readonly ILogger<LogRepository> _logger;
+        private readonly IConfiguration _configuration;
+        private readonly uint _world;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LogRepository"/> class.
         /// </summary>
         /// <param name="dbContext">The database context for connection management.</param>
         /// <param name="logger">The logger instance.</param>
-        public LogRepository(DbContext dbContext, ILogger<LogRepository> logger)
+        /// <param name="configuration">The application configuration for reading world ID.</param>
+        public LogRepository(DbContext dbContext, ILogger<LogRepository> logger, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _configuration = configuration;
+            _world = (uint)_configuration.GetValue<int>("World", 0);
         }
 
         private readonly Random _random = new Random();
@@ -40,9 +46,10 @@ namespace Log.Repository
             if (logList.Count == 0)
                 return;
 
-            if (_dbContext.SharedDbSize == 0)
+            var shardSize = _dbContext.GetShardDbSize(_world);
+            if (shardSize == 0)
             {
-                _logger.LogWarning("No MySQL shards available");
+                _logger.LogWarning("No MySQL shards available for world {World}", _world);
                 return;
             }
 
@@ -66,11 +73,11 @@ namespace Log.Repository
                 return;
 
             // Get MySQL shard using random selection
-            var shard = (uint)_random.Next((int)_dbContext.SharedDbSize);
+            var shard = (uint)_random.Next((int)shardSize);
 
             try
             {
-                await using var conn = _dbContext.Connection(shard);
+                await using var conn = _dbContext.GetDataConnection(_world, (int)shard);
                 await conn.OpenAsync();
 
                 var sql = BuildBulkInsertQuery(entries);
@@ -78,7 +85,7 @@ namespace Log.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Failed to bulk insert logs for shard {shard}");
+                _logger.LogError(ex, $"Failed to bulk insert logs for world {_world} shard {shard}");
             }
         }
 
@@ -87,13 +94,23 @@ namespace Log.Repository
         /// </summary>
         /// <param name="log">The JSON log element to parse.</param>
         /// <returns>A LogEntry object, or null if parsing fails.</returns>
-        private LogEntry ParseLogEntry(JsonElement log)
+        private static LogEntry ParseLogEntry(JsonElement log)
         {
             try
             {
+                string timestampStr;
+                if (log.TryGetProperty("timestamp", out var ts) && ts.ValueKind == System.Text.Json.JsonValueKind.String)
+                {
+                    timestampStr = ts.GetString() ?? DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+                else
+                {
+                    timestampStr = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+
                 return new LogEntry
                 {
-                    Timestamp = log.TryGetProperty("timestamp", out var ts) ? ts.GetInt64() : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                    Timestamp = timestampStr,
                     Event = log.TryGetProperty("event", out var evt) ? evt.GetString() ?? string.Empty : string.Empty,
                     ServerId = log.TryGetProperty("server_id", out var sid) ? sid.GetString() ?? string.Empty : string.Empty,
                     ServerName = log.TryGetProperty("server_name", out var sname) ? sname.GetString() ?? string.Empty : string.Empty,
@@ -115,7 +132,7 @@ namespace Log.Repository
         private static string BuildBulkInsertQuery(List<LogEntry> entries)
         {
             var values = string.Join(", ", entries.Select(e =>
-                $"({e.Timestamp}, {e.Event.Escape()}, {e.ServerId.Escape()}, {e.ServerName.Escape()}, {e.Data.Escape()})"));
+                $"({e.Timestamp.Escape()}, {e.Event.Escape()}, {e.ServerId.Escape()}, {e.ServerName.Escape()}, {e.Data.Escape()})"));
 
             return $"INSERT INTO log (`timestamp`, `event`, `server_id`, `server_name`, `data`) VALUES {values}";
         }
@@ -125,7 +142,7 @@ namespace Log.Repository
         /// </summary>
         private class LogEntry
         {
-            public long Timestamp { get; set; }
+            public string Timestamp { get; set; } = string.Empty;
             public string Event { get; set; } = string.Empty;
             public string ServerId { get; set; } = string.Empty;
             public string ServerName { get; set; } = string.Empty;

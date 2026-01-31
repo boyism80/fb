@@ -1,8 +1,94 @@
-﻿@page "/"
+@page "/"
 @attribute [Authorize]
 
-<PageTitle>Admin Tool</PageTitle>
+<PageTitle>Admin Tool - Dashboard</PageTitle>
 
-<h1>Admin Tool</h1>
+<div>
+    <div class="page-header mb-4">
+        <h1>Admin Tool</h1>
+        <p class="text-muted">Welcome to the administration dashboard</p>
+    </div>
 
-<p>Welcome to the admin tool.</p>
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <span class="oi oi-people"></span>
+            </div>
+            <div class="dashboard-card-content">
+                <h3 class="dashboard-card-title">Users</h3>
+                <p class="dashboard-card-description">Manage user accounts</p>
+                <a href="/users" class="btn btn-primary mt-3">Go to Users</a>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <span class="oi oi-monitor"></span>
+            </div>
+            <div class="dashboard-card-content">
+                <h3 class="dashboard-card-title">Servers</h3>
+                <p class="dashboard-card-description">Monitor server status</p>
+                <a href="/servers" class="btn btn-primary mt-3">Go to Servers</a>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <span class="oi oi-box"></span>
+            </div>
+            <div class="dashboard-card-content">
+                <h3 class="dashboard-card-title">Items</h3>
+                <p class="dashboard-card-description">Manage game items</p>
+                <a href="/items" class="btn btn-primary mt-3">Go to Items</a>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <span class="oi oi-envelope-closed"></span>
+            </div>
+            <div class="dashboard-card-content">
+                <h3 class="dashboard-card-title">System Mail</h3>
+                <p class="dashboard-card-description">Send system messages</p>
+                <a href="/systemmail" class="btn btn-primary mt-3">Go to System Mail</a>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <span class="oi oi-document"></span>
+            </div>
+            <div class="dashboard-card-content">
+                <h3 class="dashboard-card-title">Bulletin</h3>
+                <p class="dashboard-card-description">Manage announcements</p>
+                <a href="/bulletin" class="btn btn-primary mt-3">Go to Bulletin</a>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <span class="oi oi-megaphone"></span>
+            </div>
+            <div class="dashboard-card-content">
+                <h3 class="dashboard-card-title">Broadcast</h3>
+                <p class="dashboard-card-description">Broadcast messages</p>
+                <a href="/broadcast" class="btn btn-primary mt-3">Go to Broadcast</a>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <span class="oi oi-wrench"></span>
+            </div>
+            <div class="dashboard-card-content">
+                <h3 class="dashboard-card-title">Maintenance</h3>
+                <p class="dashboard-card-description">Schedule and manage server maintenance</p>
+                <a href="/maintenance" class="btn btn-primary mt-3">Go to Maintenance</a>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <span class="oi oi-dashboard"></span>
+            </div>
+            <div class="dashboard-card-content">
+                <h3 class="dashboard-card-title">Cache</h3>
+                <p class="dashboard-card-description">Manage cache entries</p>
+                <a href="/cache" class="btn btn-primary mt-3">Go to Cache</a>
+            </div>
+        </div>
+    </div>
+</div>

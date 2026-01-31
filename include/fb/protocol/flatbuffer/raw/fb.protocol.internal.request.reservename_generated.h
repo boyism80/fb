@@ -25,13 +25,18 @@ struct ReserveNameBuilder;
 struct ReserveName FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ReserveNameBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_NAME = 4
+    VT_WORLD = 4,
+    VT_NAME = 6
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
            verifier.EndTable();
@@ -42,6 +47,9 @@ struct ReserveNameBuilder {
   typedef ReserveName Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(ReserveName::VT_WORLD, world, 0);
+  }
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(ReserveName::VT_NAME, name);
   }
@@ -58,18 +66,22 @@ struct ReserveNameBuilder {
 
 inline ::flatbuffers::Offset<ReserveName> CreateReserveName(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0) {
   ReserveNameBuilder builder_(_fbb);
   builder_.add_name(name);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<ReserveName> CreateReserveNameDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     const char *name = nullptr) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return fb::protocol::internal::request::raw::CreateReserveName(
       _fbb,
+      world,
       name__);
 }
 

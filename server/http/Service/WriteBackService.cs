@@ -1,4 +1,4 @@
-﻿using Http.Redis;
+using Http.Redis;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
@@ -63,15 +63,19 @@ namespace Http.Service
         /// Posts a database operation to the write-back queue for a specific database shard.
         /// The operation will be processed asynchronously by background workers.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="db">The database shard identifier.</param>
         /// <param name="sql">The SQL statement to execute.</param>
         /// <param name="key">The Redis key associated with this operation.</param>
         /// <param name="hash">The hash value for sharding.</param>
         /// <returns>A task representing the asynchronous queue operation.</returns>
-        public async Task Post(int db, string sql, string key, uint? hash)
+        public async Task Post(uint world, int db, string sql, string key, uint? hash)
         {
             var bufferKey = $"{Const.RedisBufferKey}:{db}";
-            var redis = _redisService.Redis(bufferKey).Connection;
+            var redisInstance = db == -1 ? _redisService.GetGlobalConnection(world) : _redisService.GetDataConnection(world, db);
+            if (redisInstance == null)
+                return;
+            var redis = redisInstance.Connection;
             await redis.ListRightPushAsync(
                 new RedisKey(bufferKey),
                 new RedisValue(JsonConvert.SerializeObject(new BackgroundCommitEntry
@@ -86,14 +90,16 @@ namespace Http.Service
         /// Posts a database operation to the write-back queue using hash-based sharding.
         /// Automatically determines the appropriate database shard based on the hash value.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="hash">The hash value used for determining the database shard.</param>
         /// <param name="sql">The SQL statement to execute.</param>
         /// <param name="key">The Redis key associated with this operation.</param>
         /// <returns>A task representing the asynchronous queue operation.</returns>
-        public async Task Post(uint? hash, string sql, string key)
+        public async Task Post(uint world, uint? hash, string sql, string key)
         {
-            int db = hash != null ? (int)(hash % _dbContext.SharedDbSize) : -1;
-            await Post(db, sql, key, hash);
+            var sharedSize = _dbContext.GetShardDbSize(world);
+            int db = hash != null ? (int)(hash % sharedSize) : -1;
+            await Post(world, db, sql, key, hash);
         }
     }
 }

@@ -49,9 +49,10 @@ async::task<bool> change_password::handle(fb::socket<fb::login::session>&       
         if (request.pw == request.new_pw)
             throw newpw_exception(_TEXT(MESSAGE_ACCOUNT_NEW_PW_EQUALIZATION));
 
-        auto&& resp1 =
-            co_await this->server.http.get<internal::response::GetUid>("internal",
-                                                                       std::format("/account/uid/{}", request.name));
+        auto   world = fb::config<uint32_t>("world");
+        auto&& resp1   = co_await this->server.http.get<internal::response::GetUid>(
+            "internal",
+            std::format("/{}/account/uid/{}", world, request.name));
         co_await this->server.threads.switching(weak);
 
         if (resp1.success == false)
@@ -59,10 +60,10 @@ async::task<bool> change_password::handle(fb::socket<fb::login::session>&       
 
         auto uid = resp1.uid;
 
-        auto&& resp2 =
-            co_await this->server.http.post("internal",
-                                            "/account/change-pw",
-                                            internal_reqs::ChangePw{uid, request.pw, request.new_pw, request.birthday});
+        auto&& resp2 = co_await this->server.http.post(
+            "internal",
+            "/account/change-pw",
+            internal_reqs::ChangePw{world, uid, request.pw, request.new_pw, request.birthday});
 
         co_await this->server.threads.switching(weak);
 

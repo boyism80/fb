@@ -26,13 +26,14 @@ namespace Http.Reepository
         /// Retrieves a paginated list of mail messages for a specific user.
         /// Automatically resolves sender names and handles pagination.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="user">The unique identifier of the user to retrieve mail for.</param>
         /// <param name="offset">The starting position for pagination (0-based).</param>
         /// <param name="count">The maximum number of mail messages to retrieve.</param>
         /// <returns>A list of mail messages with resolved sender names.</returns>
-        public async Task<List<Mail>> GetList(uint user, ushort offset, ushort count)
+        public async Task<List<Mail>> GetList(uint world, uint user, ushort offset, ushort count)
         {
-            await using var conn = _dbContext.Connection(user);
+            await using var conn = _dbContext.GetShardConnection(world, user);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("user", user);
             dynamicParams.Add("position", offset);
@@ -46,13 +47,14 @@ namespace Http.Reepository
         /// Retrieves and marks as read a specific mail message for a user.
         /// Automatically resolves the sender name and updates the read status.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="user">The unique identifier of the user who owns the mail.</param>
         /// <param name="id">The unique identifier of the mail message.</param>
         /// <returns>The mail message with resolved sender name.</returns>
         /// <exception cref="LogicException">Thrown when the mail does not exist.</exception>
-        public async Task<Mail> Get(uint user, uint id)
+        public async Task<Mail> Get(uint world, uint user, uint id)
         {
-            await using var conn = _dbContext.Connection(user);
+            await using var conn = _dbContext.GetShardConnection(world, user);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("user", user);
             dynamicParams.Add("id", id);
@@ -65,13 +67,14 @@ namespace Http.Reepository
         /// <summary>
         /// Creates and sends a new mail message to a specified user.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="user">The name of the recipient character or user ID as string.</param>
         /// <param name="sender">The sender's user ID.</param>
         /// <param name="title">The subject/title of the mail message.</param>
         /// <param name="contents">The body content of the mail message.</param>
         /// <returns>The created mail message with resolved sender name.</returns>
         /// <exception cref="LogicException">Thrown when the recipient character is not found, or mail creation fails.</exception>
-        public async Task<Mail> Write(string user, uint sender, string title, string contents)
+        public async Task<Mail> Write(uint world, string user, uint sender, string title, string contents)
         {
             uint uid;
             if (uint.TryParse(user, out var userId))
@@ -82,11 +85,11 @@ namespace Http.Reepository
             else
             {
                 // Character name provided
-                uid = await _dbContext.Character.GetCharacterId(user) ??
+                uid = await _dbContext.Character.GetCharacterId(world, user) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
             }
 
-            await using var conn = _dbContext.Connection(uid);
+            await using var conn = _dbContext.GetShardConnection(world, uid);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("user", uid);
             dynamicParams.Add("sender", sender);
@@ -107,23 +110,27 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves the count of unread mail messages for a specific user.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="user">The unique identifier of the user to check unread mail for.</param>
         /// <returns>The number of unread mail messages.</returns>
-        public async Task<ushort> Unread(uint user)
+        public async Task<ushort> Unread(uint world, uint user)
         {
-            return await _dbContext.Connection(user).QueryFirstOrDefaultAsync<ushort>($"SELECT COUNT(id) FROM mail WHERE user = {user} AND `read` = 0 AND deleted = 0;");
+            await using var conn = _dbContext.GetShardConnection(world, user);
+            return await conn.QueryFirstOrDefaultAsync<ushort>($"SELECT COUNT(id) FROM mail WHERE user = {user} AND `read` = 0 AND deleted = 0;");
         }
 
         /// <summary>
         /// Soft-deletes a mail message by marking it as deleted.
         /// The mail remains in the database but is hidden from normal queries.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="user">The unique identifier of the user who owns the mail.</param>
         /// <param name="id">The unique identifier of the mail message to delete.</param>
         /// <returns>A task representing the asynchronous delete operation.</returns>
-        public async Task<bool> Delete(uint user, uint id)
+        public async Task<bool> Delete(uint world, uint user, uint id)
         {
-            var affectedRows = await _dbContext.Connection(user).ExecuteAsync($"UPDATE `mail` SET deleted = 1 WHERE `user` = {user} AND `id` = {id} AND `deleted` = 0");
+            await using var conn = _dbContext.GetShardConnection(world, user);
+            var affectedRows = await conn.ExecuteAsync($"UPDATE `mail` SET deleted = 1 WHERE `user` = {user} AND `id` = {id} AND `deleted` = 0");
             return affectedRows == 1;
         }
 

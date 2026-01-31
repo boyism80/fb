@@ -28,9 +28,12 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves a specific storage entry for a user.
         /// </summary>
-        public Task<StorageBox> Get(uint user, uint id)
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="user">The user ID.</param>
+        /// <param name="id">The storage box ID.</param>
+        public Task<StorageBox> Get(uint world, uint user, uint id)
         {
-            return base.Get(new StorageBoxKey
+            return base.Get(world, new StorageBoxKey
             {
                 User = user,
                 Id = id
@@ -40,9 +43,11 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves all storage entries for a user.
         /// </summary>
-        public Task<IEnumerable<StorageBox>> Get(uint user)
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="user">The user ID.</param>
+        public Task<IEnumerable<StorageBox>> Get(uint world, uint user)
         {
-            return base.GetAll(new StorageBoxKey
+            return base.GetAll(world, new StorageBoxKey
             {
                 User = user
             });

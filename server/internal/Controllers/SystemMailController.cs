@@ -22,12 +22,12 @@ namespace Internal.Controllers
             _logService = logService;
         }
 
-        [HttpGet]
-        public async Task<Response.GetSystemMails> GetSystemMails()
+        [HttpGet("{world}")]
+        public async Task<Response.GetSystemMails> GetSystemMails(uint world)
         {
             try
             {
-                var systemMails = await _dbContext.SystemMail.GetAll();
+                var systemMails = await _dbContext.SystemMail.GetAll(world);
                 var protocolMails = systemMails.Select(m => new Protocol.SystemMail
                 {
                     Id = m.Id,
@@ -62,7 +62,7 @@ namespace Internal.Controllers
                 if (!string.IsNullOrEmpty(request.ExpireDate) && DateTime.TryParse(request.ExpireDate, out var parsedDate))
                     expireDate = parsedDate;
 
-                var systemMail = await _dbContext.SystemMail.Write(request.Sender, request.Title, request.Contents, expireDate);
+                var systemMail = await _dbContext.SystemMail.Write(request.World, request.Sender, request.Title, request.Contents, expireDate);
                 var protocolMail = new Protocol.SystemMail
                 {
                     Id = systemMail.Id,
@@ -87,7 +87,7 @@ namespace Internal.Controllers
                     expire_date = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
                 });
 
-                _rabbitMqService.Publish(response, "amq.direct", "fb.system");
+                _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.system");
                 return response;
             }
             catch (Exception)

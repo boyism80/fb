@@ -25,10 +25,14 @@ struct SetOptionBuilder;
 struct SetOption FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SetOptionBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_USER = 4,
-    VT_TYPE = 6,
-    VT_ENABLED = 8
+    VT_WORLD = 4,
+    VT_USER = 6,
+    VT_TYPE = 8,
+    VT_ENABLED = 10
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
@@ -40,6 +44,7 @@ struct SetOption FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyField<uint8_t>(verifier, VT_TYPE, 1) &&
            VerifyField<uint8_t>(verifier, VT_ENABLED, 1) &&
@@ -51,6 +56,9 @@ struct SetOptionBuilder {
   typedef SetOption Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(SetOption::VT_WORLD, world, 0);
+  }
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(SetOption::VT_USER, user, 0);
   }
@@ -73,11 +81,13 @@ struct SetOptionBuilder {
 
 inline ::flatbuffers::Offset<SetOption> CreateSetOption(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t user = 0,
     uint8_t type = 0,
     bool enabled = false) {
   SetOptionBuilder builder_(_fbb);
   builder_.add_user(user);
+  builder_.add_world(world);
   builder_.add_enabled(enabled);
   builder_.add_type(type);
   return builder_.Finish();

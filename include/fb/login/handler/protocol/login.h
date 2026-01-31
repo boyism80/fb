@@ -28,6 +28,15 @@ public:
     /// <param name="expire_date">Optional ban expire date string.</param>
     /// <returns>Formatted ban message string.</returns>
     static std::string build_ban_message(const std::string& reason, const std::optional<std::string>& expire_date);
+
+    /// <summary>
+    /// Builds a maintenance message string with message and end time.
+    /// </summary>
+    /// <param name="message">Optional maintenance message string.</param>
+    /// <param name="end_time">Optional maintenance end time string.</param>
+    /// <returns>Formatted maintenance message string.</returns>
+    static std::string build_maintenance_message(const std::optional<std::string>& message,
+                                                 const std::optional<std::string>& end_time);
 };
 
 } // namespace fb::login::handler::protocol

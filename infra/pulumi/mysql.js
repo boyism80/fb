@@ -2,10 +2,10 @@ const pulumi = require("@pulumi/pulumi");
 const k8s = require("@pulumi/kubernetes");
 
 module.exports = function () {
-
+    
     return {
         setup: function (namespace, conf) {
-
+            
             secret = new k8s.core.v1.Secret("mysql-secret", {
                 metadata: {
                     name: "mysql-secret",
@@ -18,8 +18,8 @@ module.exports = function () {
                 }
             })
             configMap = new k8s.core.v1.ConfigMap("init-sql", {
-                metadata: { 
-                    name: "init-sql", 
+                metadata: {
+                    name: "init-sql",
                     namespace: namespace.metadata.name
                 },
                 data: {
@@ -32,29 +32,170 @@ module.exports = function () {
 
             const resources = []
             let globalIndex = 0
-            for(const [section, sectionConfs] of Object.entries(conf.mysql)) {
-                // Process data MySQL instances
-                if (sectionConfs.data) {
+            
+            // Process worlds' MySQL instances
+            for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+                if (!worldConf.mysql)
+                    continue
+
+                const sectionConfs = worldConf.mysql
+                const section = worldName
+                
+                // Process global MySQL instance
+                if (sectionConfs.global) {
+                    const globalServiceName = `mysql-${section}-global`
+                    const globalConf = sectionConfs.global
+                    const containerPortName = `m${globalIndex}`
+                    
+                    // Create ClusterIP service for global
+                    const globalClusterIPService = new k8s.core.v1.Service(`mysql-${section}-global`, {
+                        metadata: { name: globalServiceName, namespace: namespace.metadata.name },
+                        spec: {
+                            type: "ClusterIP",
+                            selector: { app: "mysql", section: section, type: "global" },
+                            ports: [{
+                                name: `mysql-${section}-global`,
+                                port: globalConf.port.cluster,
+                                targetPort: containerPortName,
+                            }],
+                        },
+                    });
+                    
+                    // Create StatefulSet for global
+                    const globalStatefulSet = new k8s.apps.v1.StatefulSet(`mysql-${section}-global`, {
+                        metadata: {
+                            name: `mysql-${section}-global`,
+                            namespace: namespace.metadata.name,
+                        },
+                        spec: {
+                            serviceName: globalServiceName,
+                            replicas: 1,
+                            selector: {
+                                matchLabels: {
+                                    app: "mysql",
+                                    section: section,
+                                    type: "global",
+                                },
+                            },
+                            template: {
+                                metadata: {
+                                    labels: {
+                                        app: "mysql",
+                                        section: section,
+                                        type: "global",
+                                    },
+                                },
+                                spec: {
+                                    affinity: {
+                                        nodeAffinity: {
+                                            requiredDuringSchedulingIgnoredDuringExecution: {
+                                                nodeSelectorTerms: [{
+                                                    matchExpressions: [{
+                                                        key: "infra",
+                                                        operator: "In",
+                                                        values: ["true"]
+                                                    }]
+                                                }]
+                                            }
+                                        }
+                                    },
+                                    containers: [
+                                        {
+                                            name: "mysql",
+                                            image: "mysql:8.4.3",
+                                            conf: [
+                                                "--mysql-native-password=ON"
+                                            ],
+                                            ports: [
+                                                { containerPort: 3306, name: containerPortName, protocol: "TCP" },
+                                            ],
+                                            env: [
+                                                {
+                                                    name: "MYSQL_ROOT_PASSWORD",
+                                                    valueFrom: { secretKeyRef: { name: secret.metadata.name, key: "MYSQL_ROOT_PASSWORD" } },
+                                                },
+                                                {
+                                                    name: "MYSQL_USER", 
+                                                    valueFrom: { secretKeyRef: { name: secret.metadata.name, key: "MYSQL_USER" } }
+                                                },
+                                                { 
+                                                    name: "MYSQL_PASSWORD", 
+                                                    valueFrom: { secretKeyRef: { name: secret.metadata.name, key: "MYSQL_PASSWORD" } }
+                                                },
+                                            ],
+                                            volumeMounts: [
+                                                {
+                                                    name: `data-volume-${section}-global`,
+                                                    mountPath: "/var/lib/mysql",
+                                                },
+                                                {
+                                                    name: "init-sql-volume",
+                                                    mountPath: "/docker-entrypoint-initdb.d"
+                                                }
+                                            ],
+                                        },
+                                    ],
+                                    volumes: [
+                                        {
+                                            name: `data-volume-${section}-global`,
+                                            hostPath: {
+                                                path: `/mnt/fb/mysql/${section}/global`,
+                                                type: "DirectoryOrCreate"
+                                            }
+                                        },
+                                        {
+                                            name: "init-sql-volume",
+                                            configMap: { name: configMap.metadata.name }
+                                        }
+                                    ]
+                                },
+                            }
+                        },
+                    }, { dependsOn: [secret, globalClusterIPService] });
+                    
+                    // Create NodePort service for global
+                    const globalNodeportService = new k8s.core.v1.Service(`mysql-${section}-global-nodeport`, {
+                        metadata: { name: `${globalServiceName}-nodeport`, namespace: namespace.metadata.name },
+                        spec: {
+                            type: "NodePort",
+                            selector: { app: "mysql", section: section, type: "global" },
+                            ports: [{
+                                name: `mysql-${section}-global`,
+                                port: globalConf.port.cluster,
+                                targetPort: containerPortName,
+                                nodePort: globalConf.port.node,
+                            }],
+                        },
+                    }, { dependsOn: [globalClusterIPService] });
+                    
+                    resources.push(globalClusterIPService)
+                    resources.push(globalNodeportService)
+                    resources.push(globalStatefulSet)
+                    globalIndex++
+                }
+                
+                // Process data MySQL instances (array)
+                if (sectionConfs.data && Array.isArray(sectionConfs.data)) {
                     const serviceName = `mysql-${section}`
                     const clusterPorts = []
                     const nodePorts = []
                     
                     // Collect all ports first with unique containerPort names using global index
-                    for(const [id, sectionConf] of Object.entries(sectionConfs.data)) {
+                    sectionConfs.data.forEach((sectionConf, index) => {
                         const containerPortName = `m${globalIndex}`
                         clusterPorts.push({
-                            name: `mysql-${section}-${id}`,
+                            name: `mysql-${section}-${index}`,
                             port: sectionConf.port.cluster,
                             targetPort: containerPortName,
                         })
                         nodePorts.push({
-                            name: `mysql-${section}-${id}`,
+                            name: `mysql-${section}-${index}`,
                             port: sectionConf.port.cluster,
                             targetPort: containerPortName,
                             nodePort: sectionConf.port.node,
                         })
                         globalIndex++
-                    }
+                    })
                     
                     // Create ClusterIP service for internal access with all ports
                     const clusterIPService = new k8s.core.v1.Service(`mysql-${section}`, {
@@ -68,13 +209,14 @@ module.exports = function () {
                     
                     // Create StatefulSets
                     const statefulSets = []
-                    globalIndex = globalIndex - Object.keys(sectionConfs.data).length
-                    for(const [id, sectionConf] of Object.entries(sectionConfs.data)) {
+                    const startIndex = globalIndex - clusterPorts.length
+                    globalIndex = startIndex
+                    sectionConfs.data.forEach((sectionConf, index) => {
                         const containerPortName = `m${globalIndex}`
                         globalIndex++
-                        const statefulSet = new k8s.apps.v1.StatefulSet(`mysql-${section}-${id}`, {
+                        const statefulSet = new k8s.apps.v1.StatefulSet(`mysql-${section}-${index}`, {
                             metadata: {
-                                name: `mysql-${section}-${id}`,
+                                name: `mysql-${section}-${index}`,
                                 namespace: namespace.metadata.name,
                             },
                             spec: {
@@ -135,7 +277,7 @@ module.exports = function () {
                                                 ],
                                                 volumeMounts: [
                                                     {
-                                                        name: `data-volume-${section}-${id}`,
+                                                        name: `data-volume-${section}-${index}`,
                                                         mountPath: "/var/lib/mysql",
                                                     },
                                                     {
@@ -146,23 +288,24 @@ module.exports = function () {
                                             },
                                         ],
                                         volumes: [
-                                        {
-                                            name: `data-volume-${section}-${id}`,
-                                            hostPath: {
-                                                path: `/mnt/fb/mysql/${section}/${id}`,
-                                                type: "DirectoryOrCreate"
+                                            {
+                                                name: `data-volume-${section}-${index}`,
+                                                hostPath: {
+                                                    path: `/mnt/fb/mysql/${section}/${index}`,
+                                                    type: "DirectoryOrCreate"
+                                                }
+                                            },
+                                            {
+                                                name: "init-sql-volume",
+                                                configMap: { name: configMap.metadata.name }
                                             }
-                                        },
-                                        {
-                                            name: "init-sql-volume",
-                                            configMap: { name: configMap.metadata.name }
-                                        }]
+                                        ]
                                     },
                                 }
                             },
                         }, { dependsOn: [secret, clusterIPService] });
                         statefulSets.push(statefulSet)
-                    }
+                    })
                     
                     // Create NodePort service for external access
                     const nodeportService = new k8s.core.v1.Service(`mysql-${section}-nodeport`, {
@@ -327,6 +470,140 @@ module.exports = function () {
                     resources.push(logNodeportService)
                     resources.push(...logStatefulSets)
                 }
+            }
+            
+            // Process unified-infra MySQL instances (unified-infra has no global key, direct access)
+            if (conf["unified-infra"] && conf["unified-infra"].mysql && conf["unified-infra"].mysql.port) {
+                const unifiedMysql = conf["unified-infra"].mysql
+                const section = "unified-global"
+                const serviceName = `mysql-${section}`
+                const containerPortName = `m${globalIndex}`
+                
+                // Create ClusterIP service for unified MySQL
+                const clusterIPService = new k8s.core.v1.Service(`mysql-${section}`, {
+                    metadata: { name: serviceName, namespace: namespace.metadata.name },
+                    spec: {
+                        type: "ClusterIP",
+                        selector: { app: "mysql", section: section, type: "data" },
+                        ports: [{
+                            name: `mysql-${section}`,
+                            port: unifiedMysql.port.cluster,
+                            targetPort: containerPortName,
+                        }],
+                    },
+                });
+                
+                // Create StatefulSet for unified MySQL
+                const statefulSet = new k8s.apps.v1.StatefulSet(`mysql-${section}`, {
+                    metadata: {
+                        name: `mysql-${section}`,
+                        namespace: namespace.metadata.name,
+                    },
+                    spec: {
+                        serviceName: serviceName,
+                        replicas: 1,
+                        selector: {
+                            matchLabels: {
+                                app: "mysql",
+                                section: section,
+                                type: "data",
+                            },
+                        },
+                        template: {
+                            metadata: {
+                                labels: {
+                                    app: "mysql",
+                                    section: section,
+                                    type: "data",
+                                },
+                            },
+                            spec: {
+                                affinity: {
+                                    nodeAffinity: {
+                                        requiredDuringSchedulingIgnoredDuringExecution: {
+                                            nodeSelectorTerms: [{
+                                                matchExpressions: [{
+                                                    key: "infra",
+                                                    operator: "In",
+                                                    values: ["true"]
+                                                }]
+                                            }]
+                                        }
+                                    }
+                                },
+                                containers: [
+                                    {
+                                        name: "mysql",
+                                        image: "mysql:8.4.3",
+                                        conf: [
+                                            "--mysql-native-password=ON"
+                                        ],
+                                        ports: [
+                                            { containerPort: 3306, name: containerPortName, protocol: "TCP" },
+                                        ],
+                                        env: [
+                                            {
+                                                name: "MYSQL_ROOT_PASSWORD",
+                                                valueFrom: { secretKeyRef: { name: secret.metadata.name, key: "MYSQL_ROOT_PASSWORD" } },
+                                            },
+                                            {
+                                                name: "MYSQL_USER", 
+                                                valueFrom: { secretKeyRef: { name: secret.metadata.name, key: "MYSQL_USER" } }
+                                            },
+                                            { 
+                                                name: "MYSQL_PASSWORD", 
+                                                valueFrom: { secretKeyRef: { name: secret.metadata.name, key: "MYSQL_PASSWORD" } }
+                                            },
+                                        ],
+                                        volumeMounts: [
+                                            {
+                                                name: `data-volume-${section}`,
+                                                mountPath: "/var/lib/mysql",
+                                            },
+                                            {
+                                                name: "init-sql-volume",
+                                                mountPath: "/docker-entrypoint-initdb.d"
+                                            }
+                                        ],
+                                    },
+                                ],
+                                volumes: [
+                                {
+                                    name: `data-volume-${section}`,
+                                    hostPath: {
+                                        path: `/mnt/fb/mysql/${section}`,
+                                        type: "DirectoryOrCreate"
+                                    }
+                                },
+                                {
+                                    name: "init-sql-volume",
+                                    configMap: { name: configMap.metadata.name }
+                                }]
+                            },
+                        }
+                    },
+                }, { dependsOn: [secret, clusterIPService] });
+                
+                // Create NodePort service for external access
+                const nodeportService = new k8s.core.v1.Service(`mysql-${section}-nodeport`, {
+                    metadata: { name: `${serviceName}-nodeport`, namespace: namespace.metadata.name },
+                    spec: {
+                        type: "NodePort",
+                        selector: { app: "mysql", section: section, type: "data" },
+                        ports: [{
+                            name: `mysql-${section}`,
+                            port: unifiedMysql.port.cluster,
+                            targetPort: containerPortName,
+                            nodePort: unifiedMysql.port.node,
+                        }],
+                    },
+                }, { dependsOn: [clusterIPService] });
+                
+                // Return all resources (Services and StatefulSets)
+                resources.push(clusterIPService)
+                resources.push(nodeportService)
+                resources.push(statefulSet)
+                globalIndex++
             }
 
             return resources

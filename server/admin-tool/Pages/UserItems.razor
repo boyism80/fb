@@ -11,15 +11,13 @@
 
 <PageTitle>User Items - Admin Tool</PageTitle>
 
-<div class="container-fluid mt-4">
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <h2>User Items</h2>
-            @if (userDetail != null)
-            {
-                <p class="text-muted">Items for: <strong>@userDetail.Name</strong> (ID: @userDetail.Id)</p>
-            }
-        </div>
+<div>
+    <div class="page-header mb-4">
+        <h1>User Items</h1>
+        @if (userDetail != null)
+        {
+            <p class="text-muted">Items for: <strong>@userDetail.Name</strong> (ID: @userDetail.Id)</p>
+        }
     </div>
 
     @if (!string.IsNullOrEmpty(errorMessage))
@@ -176,6 +174,8 @@
 </div>
 
 @code {
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
     [Parameter]
     public int UserId { get; set; }
 
@@ -198,8 +198,15 @@
 
         try
         {
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                isLoading = false;
+                return;
+            }
+
             // Get user detail
-            var character = await DbContext.Character.Get((uint)UserId);
+            var character = await DbContext.Character.Get(selectedWorld.Value, (uint)UserId);
             if (character == null)
             {
                 errorMessage = "User not found.";
@@ -207,7 +214,7 @@
                 return;
             }
 
-            userDetail = await UserService.GetUserByName(character.Name);
+            userDetail = await UserService.GetUserByName(selectedWorld.Value, character.Name);
             if (userDetail == null)
             {
                 errorMessage = "User not found.";
@@ -216,7 +223,7 @@
             }
 
             // Get all items for the user
-            var allItems = (await DbContext.Item.Get((uint)UserId)).ToList();
+            var allItems = (await DbContext.Item.Get(selectedWorld.Value, (uint)UserId)).ToList();
 
             // Categorize items
             // Equipped: stored == -1 and parts != 0

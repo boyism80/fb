@@ -1,0 +1,422 @@
+@page "/maintenance"
+@using AdminTool.Authentication
+@using Http.Model
+@using Http.Service
+@using Fb.Model.EnumValue
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@inject Http.Service.MaintenanceService MaintenanceService
+@inject ILogger<Maintenance> Logger
+@attribute [AuthorizeRole(Role.Admin)]
+
+<PageTitle>Maintenance - Admin Tool</PageTitle>
+
+<div>
+    <div class="page-header mb-4">
+        <h1>Maintenance Management</h1>
+        <p class="text-muted">Schedule and manage server maintenance periods</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @successMessage
+            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Current Status</h5>
+                </div>
+                <div class="card-body">
+                    @if (currentMaintenanceInfo != null && currentMaintenanceInfo.IsActive)
+                    {
+                        <div class="alert alert-warning">
+                            <strong>Maintenance Active</strong>
+                            <p class="mb-1">@currentMaintenanceInfo.Message</p>
+                            <small>Ends: @FormatDateTime(currentMaintenanceInfo.EndTime)</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success">
+                            <strong>No Active Maintenance</strong>
+                            <p class="mb-0">Server is running normally.</p>
+                        </div>
+                    }
+                    <button class="btn btn-sm btn-outline-primary" @onclick="RefreshStatus" disabled="@isLoading">
+                        <span class="oi oi-reload" aria-hidden="true"></span> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Create Maintenance Schedule</h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@scheduleModel" OnValidSubmit="@HandleSubmit">
+                        <DataAnnotationsValidator />
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="title" class="form-label">Title</label>
+                                <InputText id="title" class="form-control" @bind-Value="scheduleModel.Title" />
+                                <ValidationMessage For="@(() => scheduleModel.Title)" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="world" class="form-label">World</label>
+                                <InputSelect id="world" class="form-select" @bind-Value="scheduleModel.World">
+                                    <option value="0">All Worlds</option>
+                                    @if (selectedWorld.HasValue && selectedWorld.Value > 0)
+                                    {
+                                        <option value="@selectedWorld.Value">World @selectedWorld.Value</option>
+                                    }
+                                </InputSelect>
+                                <small class="form-text text-muted">Select 0 to apply to all worlds</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message</label>
+                            <InputTextArea id="message" class="form-control" rows="3" @bind-Value="scheduleModel.Message" />
+                            <ValidationMessage For="@(() => scheduleModel.Message)" />
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="startTime" class="form-label">Start Time</label>
+                                <InputText id="startTime" type="datetime-local" class="form-control" @bind-Value="startTimeString" />
+                                <ValidationMessage For="@(() => scheduleModel.StartTime)" />
+                                <small class="form-text text-muted">KST (UTC+9)</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="endTime" class="form-label">End Time</label>
+                                <InputText id="endTime" type="datetime-local" class="form-control" @bind-Value="endTimeString" />
+                                <ValidationMessage For="@(() => scheduleModel.EndTime)" />
+                                <small class="form-text text-muted">KST (UTC+9)</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="repeatType" class="form-label">Repeat Type</label>
+                            <InputSelect id="repeatType" class="form-select" @bind-Value="scheduleModel.RepeatType">
+                                <option value="@MaintenanceRepeatType.None">One-time</option>
+                                <option value="@MaintenanceRepeatType.Daily">Daily</option>
+                                <option value="@MaintenanceRepeatType.Weekly">Weekly</option>
+                                <option value="@MaintenanceRepeatType.Monthly">Monthly</option>
+                                <option value="@MaintenanceRepeatType.Yearly">Yearly</option>
+                            </InputSelect>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" @onclick="ResetForm" disabled="@isProcessing">
+                                Reset
+                            </button>
+                            <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                }
+                                Create Schedule
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Scheduled Maintenance</h5>
+                </div>
+                <div class="card-body">
+                    @if (isLoading)
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (schedules == null || !schedules.Any())
+                    {
+                        <p class="text-muted text-center py-4">No maintenance schedules found.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>World</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
+                                        <th>Repeat</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var schedule in schedules)
+                                    {
+                                        <tr>
+                                            <td>@schedule.Title</td>
+                                            <td>@(schedule.World == 0 ? "All Worlds" : $"World {schedule.World}")</td>
+                                            <td>@FormatDateTime(schedule.StartTime)</td>
+                                            <td>@FormatDateTime(schedule.EndTime)</td>
+                                            <td>@GetRepeatTypeName(schedule.RepeatType)</td>
+                                            <td>
+                                                @if (schedule.IsActive)
+                                                {
+                                                    <span class="badge bg-success">Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Cancelled</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (schedule.IsActive)
+                                                {
+                                                    <button class="btn btn-sm btn-danger" @onclick="() => CancelSchedule(schedule)" disabled="@isProcessing">
+                                                        Cancel
+                                                    </button>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
+
+    private MaintenanceScheduleModel scheduleModel = new();
+    private List<MaintenanceSchedule>? schedules;
+    private MaintenanceInfo? currentMaintenanceInfo;
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isProcessing;
+    private bool isLoading;
+
+    private string startTimeString
+    {
+        get => scheduleModel.StartTime.ToString("yyyy-MM-ddTHH:mm");
+        set
+        {
+            if (DateTime.TryParse(value, out var dateTime))
+            {
+                scheduleModel.StartTime = dateTime;
+            }
+        }
+    }
+
+    private string endTimeString
+    {
+        get => scheduleModel.EndTime.ToString("yyyy-MM-ddTHH:mm");
+        set
+        {
+            if (DateTime.TryParse(value, out var dateTime))
+            {
+                scheduleModel.EndTime = dateTime;
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            var world = selectedWorld ?? 0;
+            schedules = await MaintenanceService.GetAllSchedules(world);
+            currentMaintenanceInfo = await MaintenanceService.GetMaintenanceInfo(world);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load maintenance data");
+            errorMessage = "Failed to load maintenance data.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            // All times are stored in KST
+            var schedule = new MaintenanceSchedule
+            {
+                Id = Guid.NewGuid().ToString(),
+                World = scheduleModel.World,
+                Title = scheduleModel.Title,
+                Message = scheduleModel.Message,
+                StartTime = scheduleModel.StartTime,
+                EndTime = scheduleModel.EndTime,
+                RepeatType = scheduleModel.RepeatType,
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            };
+
+            bool success;
+            if (schedule.World == 0)
+            {
+                success = await MaintenanceService.ApplyToAllWorlds(schedule);
+            }
+            else
+            {
+                success = await MaintenanceService.CreateMaintenanceSchedule(schedule);
+            }
+
+            if (success)
+            {
+                successMessage = schedule.World == 0
+                    ? "Maintenance schedule created for all worlds."
+                    : $"Maintenance schedule created for World {schedule.World}.";
+                ResetForm();
+                await LoadData();
+            }
+            else
+            {
+                errorMessage = "Failed to create maintenance schedule.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to create maintenance schedule");
+            errorMessage = $"Failed to create maintenance schedule: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task CancelSchedule(MaintenanceSchedule schedule)
+    {
+        if (!await ConfirmCancel(schedule))
+            return;
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var success = await MaintenanceService.CancelMaintenanceSchedule(schedule.World, schedule.Id);
+            if (success)
+            {
+                successMessage = "Maintenance schedule cancelled successfully.";
+                await LoadData();
+            }
+            else
+            {
+                errorMessage = "Failed to cancel maintenance schedule.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to cancel maintenance schedule");
+            errorMessage = $"Failed to cancel maintenance schedule: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task<bool> ConfirmCancel(MaintenanceSchedule schedule)
+    {
+        // Simple confirmation - in a real app, you might use a modal
+        return await Task.FromResult(true);
+    }
+
+    private async Task RefreshStatus()
+    {
+        await LoadData();
+    }
+
+    private void ResetForm()
+    {
+        scheduleModel = new MaintenanceScheduleModel
+        {
+            World = selectedWorld ?? 0,
+            StartTime = DateTime.Now,
+            EndTime = DateTime.Now.AddHours(1),
+            RepeatType = MaintenanceRepeatType.None
+        };
+    }
+
+    private string FormatDateTime(DateTime dateTime)
+    {
+        return dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+    }
+
+    private string GetRepeatTypeName(MaintenanceRepeatType repeatType)
+    {
+        return repeatType switch
+        {
+            MaintenanceRepeatType.None => "One-time",
+            MaintenanceRepeatType.Daily => "Daily",
+            MaintenanceRepeatType.Weekly => "Weekly",
+            MaintenanceRepeatType.Monthly => "Monthly",
+            MaintenanceRepeatType.Yearly => "Yearly",
+            _ => "Unknown"
+        };
+    }
+
+    private class MaintenanceScheduleModel
+    {
+        [Required(ErrorMessage = "Title is required.")]
+        [StringLength(100, ErrorMessage = "Title must be 100 characters or less.")]
+        public string Title { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Message is required.")]
+        [StringLength(500, ErrorMessage = "Message must be 500 characters or less.")]
+        public string Message { get; set; } = string.Empty;
+
+        public uint World { get; set; }
+
+        [Required(ErrorMessage = "Start time is required.")]
+        public DateTime StartTime { get; set; } = DateTime.Now;
+
+        [Required(ErrorMessage = "End time is required.")]
+        public DateTime EndTime { get; set; } = DateTime.Now.AddHours(1);
+
+        public MaintenanceRepeatType RepeatType { get; set; } = MaintenanceRepeatType.None;
+    }
+}

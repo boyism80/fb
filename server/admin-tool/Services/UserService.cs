@@ -32,13 +32,14 @@ namespace AdminTool.Services
         /// Retrieves a paginated list of users with optional search filtering.
         /// Uses the global 'name' table to efficiently query across sharded 'user' tables.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="page">The page number (1-based).</param>
         /// <param name="pageSize">The number of items per page.</param>
         /// <param name="searchTerm">Optional search term to filter by character name.</param>
         /// <returns>A result object containing the user list and pagination information.</returns>
-        public async Task<UserListResult> GetUsers(int page, int pageSize, string? searchTerm = null)
+        public async Task<UserListResult> GetUsers(uint world, int page, int pageSize, string? searchTerm = null)
         {
-            await using var globalConn = _dbContext.Connection(-1);
+            await using var globalConn = _dbContext.GetGlobalConnection(world);
 
             var offset = (page - 1) * pageSize;
             var whereClause = "";
@@ -98,7 +99,7 @@ namespace AdminTool.Services
             var userDetailsDict = new Dictionary<uint, UserListItem>();
 
             // Query each shard for user details
-            foreach (var (conn, idList) in _dbContext.Connections(userIds))
+            foreach (var (conn, idList) in _dbContext.GetShardConnections(world, userIds))
             {
                 var userQuery = """
                     SELECT 
@@ -148,20 +149,21 @@ namespace AdminTool.Services
         /// <summary>
         /// Retrieves a user by their character name.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="name">The character name to look up.</param>
         /// <returns>The user if found; otherwise, null.</returns>
-        public async Task<UserDetail?> GetUserByName(string name)
+        public async Task<UserDetail?> GetUserByName(uint world, string name)
         {
-            var userId = await _dbContext.Character.GetCharacterId(name);
+            var userId = await _dbContext.Character.GetCharacterId(world, name);
             if (!userId.HasValue)
                 return null;
 
-            var character = await _dbContext.Character.Get(userId.Value);
+            var character = await _dbContext.Character.Get(world, userId.Value);
             if (character == null)
                 return null;
 
             // Get ban information if exists
-            var ban = await _dbContext.Ban.Get(userId.Value);
+            var ban = await _dbContext.Ban.Get(world, userId.Value);
 
             return new UserDetail
             {
@@ -181,16 +183,17 @@ namespace AdminTool.Services
         /// <summary>
         /// Determines whether a user is currently online by inspecting the session cache.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="userName">The character name to inspect.</param>
         /// <returns>True if the user has an active session; otherwise, false.</returns>
-        public async Task<bool> IsOnline(string userName)
+        public async Task<bool> IsOnline(uint world, string userName)
         {
             if (string.IsNullOrWhiteSpace(userName))
                 return false;
 
             try
             {
-                var redis = _redisService.Redis(-1);
+                var redis = _redisService.GetGlobalConnection(world);
                 if (redis == null)
                 {
                     _logger.LogWarning("Redis service instance is not available for IsOnline check.");

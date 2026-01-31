@@ -6,6 +6,7 @@ namespace Marketplace.Model;
 public class MarketplaceListing : BaseModel
 {
     public string Id { get; set; }
+    public uint World { get; set; } // World identifier (e.g., 1, 2)
     public uint SellerId { get; set; }
     public uint ItemModel { get; set; }
     public ushort RemainingCount { get; set; }

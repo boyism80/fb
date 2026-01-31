@@ -43,14 +43,32 @@ public struct Transfer : IFlatbufferObject
   public ArraySegment<byte>? GetBanExpireDateBytes() { return __p.__vector_as_arraysegment(12); }
 #endif
   public byte[] GetBanExpireDateArray() { return __p.__vector_as_array<byte>(12); }
+  public string MaintenanceMessage { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetMaintenanceMessageBytes() { return __p.__vector_as_span<byte>(14, 1); }
+#else
+  public ArraySegment<byte>? GetMaintenanceMessageBytes() { return __p.__vector_as_arraysegment(14); }
+#endif
+  public byte[] GetMaintenanceMessageArray() { return __p.__vector_as_array<byte>(14); }
+  public string MaintenanceEndTime { get { int o = __p.__offset(16); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetMaintenanceEndTimeBytes() { return __p.__vector_as_span<byte>(16, 1); }
+#else
+  public ArraySegment<byte>? GetMaintenanceEndTimeBytes() { return __p.__vector_as_arraysegment(16); }
+#endif
+  public byte[] GetMaintenanceEndTimeArray() { return __p.__vector_as_array<byte>(16); }
 
   public static Offset<fb.protocol._internal.response.raw.Transfer> CreateTransfer(FlatBufferBuilder builder,
       uint error = 0,
       StringOffset ipOffset = default(StringOffset),
       ushort port = 0,
       StringOffset ban_reasonOffset = default(StringOffset),
-      StringOffset ban_expire_dateOffset = default(StringOffset)) {
-    builder.StartTable(5);
+      StringOffset ban_expire_dateOffset = default(StringOffset),
+      StringOffset maintenance_messageOffset = default(StringOffset),
+      StringOffset maintenance_end_timeOffset = default(StringOffset)) {
+    builder.StartTable(7);
+    Transfer.AddMaintenanceEndTime(builder, maintenance_end_timeOffset);
+    Transfer.AddMaintenanceMessage(builder, maintenance_messageOffset);
     Transfer.AddBanExpireDate(builder, ban_expire_dateOffset);
     Transfer.AddBanReason(builder, ban_reasonOffset);
     Transfer.AddIp(builder, ipOffset);
@@ -59,12 +77,14 @@ public struct Transfer : IFlatbufferObject
     return Transfer.EndTransfer(builder);
   }
 
-  public static void StartTransfer(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartTransfer(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(0, error, 0); }
   public static void AddIp(FlatBufferBuilder builder, StringOffset ipOffset) { builder.AddOffset(1, ipOffset.Value, 0); }
   public static void AddPort(FlatBufferBuilder builder, ushort port) { builder.AddUshort(2, port, 0); }
   public static void AddBanReason(FlatBufferBuilder builder, StringOffset banReasonOffset) { builder.AddOffset(3, banReasonOffset.Value, 0); }
   public static void AddBanExpireDate(FlatBufferBuilder builder, StringOffset banExpireDateOffset) { builder.AddOffset(4, banExpireDateOffset.Value, 0); }
+  public static void AddMaintenanceMessage(FlatBufferBuilder builder, StringOffset maintenanceMessageOffset) { builder.AddOffset(5, maintenanceMessageOffset.Value, 0); }
+  public static void AddMaintenanceEndTime(FlatBufferBuilder builder, StringOffset maintenanceEndTimeOffset) { builder.AddOffset(6, maintenanceEndTimeOffset.Value, 0); }
   public static Offset<fb.protocol._internal.response.raw.Transfer> EndTransfer(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.Transfer>(o);
@@ -84,6 +104,8 @@ static public class TransferVerify
       && verifier.VerifyField(tablePos, 8 /*Port*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyString(tablePos, 10 /*BanReason*/, false)
       && verifier.VerifyString(tablePos, 12 /*BanExpireDate*/, false)
+      && verifier.VerifyString(tablePos, 14 /*MaintenanceMessage*/, false)
+      && verifier.VerifyString(tablePos, 16 /*MaintenanceEndTime*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

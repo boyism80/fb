@@ -30,10 +30,19 @@ namespace Marketplace.Service
             return repository as T;
         }
 
-        public MySqlConnection Connection(int db)
+        /// <summary>
+        /// Gets unified-global database connection.
+        /// Marketplace uses unified-global database for all sections.
+        /// </summary>
+        /// <returns>A new <see cref="MySqlConnection"/> instance for the unified-global database.</returns>
+        public MySqlConnection GetUnifiedConnection()
         {
-            return new MySqlConnection(_configuration.GetConnectionString($"MySql:{db}"));
+            var connectionString = _configuration.GetValue<string>("ConnectionStrings:MySql:unified");
+            if (string.IsNullOrEmpty(connectionString))
+                throw new Exception("Unified connection string not found");
+            return new MySqlConnection(connectionString);
         }
+
 
         public async Task SaveChangesAsync()
         {

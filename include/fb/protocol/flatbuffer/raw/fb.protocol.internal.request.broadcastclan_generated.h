@@ -25,11 +25,15 @@ struct BroadcastClanBuilder;
 struct BroadcastClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef BroadcastClanBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HOST = 4,
-    VT_CLAN = 6,
-    VT_MESSAGE = 8,
-    VT_TYPE = 10
+    VT_WORLD = 4,
+    VT_HOST = 6,
+    VT_CLAN = 8,
+    VT_MESSAGE = 10,
+    VT_TYPE = 12
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
@@ -44,6 +48,7 @@ struct BroadcastClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
@@ -57,6 +62,9 @@ struct BroadcastClanBuilder {
   typedef BroadcastClan Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(BroadcastClan::VT_WORLD, world, 0);
+  }
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(BroadcastClan::VT_HOST, host, 0);
   }
@@ -82,6 +90,7 @@ struct BroadcastClanBuilder {
 
 inline ::flatbuffers::Offset<BroadcastClan> CreateBroadcastClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t host = 0,
     uint32_t clan = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
@@ -90,12 +99,14 @@ inline ::flatbuffers::Offset<BroadcastClan> CreateBroadcastClan(
   builder_.add_message(message);
   builder_.add_clan(clan);
   builder_.add_host(host);
+  builder_.add_world(world);
   builder_.add_type(type);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<BroadcastClan> CreateBroadcastClanDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t host = 0,
     uint32_t clan = 0,
     const char *message = nullptr,
@@ -103,6 +114,7 @@ inline ::flatbuffers::Offset<BroadcastClan> CreateBroadcastClanDirect(
   auto message__ = message ? _fbb.CreateString(message) : 0;
   return fb::protocol::internal::request::raw::CreateBroadcastClan(
       _fbb,
+      world,
       host,
       clan,
       message__,

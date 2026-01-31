@@ -25,16 +25,19 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
     {
         this->server.assert_account(name, pw);
 
-        auto&& resp1 = co_await this->server.http.get<internal::response::GetUid>("internal",
-                                                                                  std::format("/account/uid/{}", name));
+        auto   world = fb::config<uint32_t>("world");
+        auto&& resp1 =
+            co_await this->server.http.get<internal::response::GetUid>("internal",
+                                                                       std::format("/account/{}/uid/{}", world, name));
         co_await this->server.threads.switching(weak);
 
         if (resp1.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
-        auto   uid = resp1.uid;
-        auto&& resp2 =
-            co_await this->server.http.post("internal", "/account/authenticate", internal_reqs::Authenticate{uid, pw});
+        auto   uid   = resp1.uid;
+        auto&& resp2 = co_await this->server.http.post("internal",
+                                                       "/account/authenticate",
+                                                       internal_reqs::Authenticate{world, uid, pw});
         co_await this->server.threads.switching(weak);
 
         switch (resp2.error_code)
@@ -50,7 +53,7 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
         auto&& resp3 = co_await this->server.http.post(
             "internal",
             "/in-game/transfer",
-            internal_reqs::Transfer{fb::protocol::internal::Service ::Game, table::map[map].host, name, true});
+            internal_reqs::Transfer{world, fb::protocol::internal::Service ::Game, table::map[map].host, name, true});
         co_await this->server.threads.switching(weak);
 
         switch (static_cast<ERROR_CODE>(resp3.error))
@@ -66,6 +69,9 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
 
         case ERROR_CODE::BANNED:
             throw id_exception(build_ban_message(resp3.ban_reason, resp3.ban_expire_date));
+
+        case ERROR_CODE::MAINTENANCE:
+            throw id_exception(build_maintenance_message(resp3.maintenance_message, resp3.maintenance_end_time));
 
         default:
             throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp3.error));
@@ -125,4 +131,19 @@ std::string login::build_ban_message(const std::string& reason, const std::optio
         ban_message += _TEXT(MESSAGE_ACCOUNT_BAN_PERMANENT);
     }
     return ban_message;
+}
+
+std::string login::build_maintenance_message(const std::optional<std::string>& message,
+                                             const std::optional<std::string>& end_time)
+{
+    auto maintenance_message = std::string(_TEXT(MESSAGE_MAINTENANCE_IN_PROGRESS));
+    if (message.has_value() && !message.value().empty())
+    {
+        maintenance_message += "\n" + message.value();
+    }
+    if (end_time.has_value() && !end_time.value().empty())
+    {
+        maintenance_message += "\n" + std::format(_TEXT(MESSAGE_MAINTENANCE_END_TIME), end_time.value());
+    }
+    return maintenance_message;
 }

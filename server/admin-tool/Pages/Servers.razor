@@ -8,15 +8,15 @@
 @inject CacheService CacheService
 @inject RabbitMqService RabbitMqService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IConfiguration Configuration
 @attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>Server Status - Admin Tool</PageTitle>
 
-<div class="container-fluid mt-4">
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <h2>Server Status</h2>
-        </div>
+<div>
+    <div class="page-header mb-4">
+        <h1>Server Status</h1>
+        <p class="text-muted">Monitor and manage game servers</p>
     </div>
 
     @if (!string.IsNullOrEmpty(errorMessage))
@@ -35,20 +35,19 @@
         </div>
     }
 
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <button class="btn btn-primary" @onclick="LoadServers" disabled="@isLoading">
-                @if (isLoading)
-                {
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    <span>Loading...</span>
-                }
-                else
-                {
-                    <span>Refresh</span>
-                }
-            </button>
-        </div>
+    <div class="mb-4">
+        <button class="btn btn-primary" @onclick="LoadServers" disabled="@isLoading">
+            @if (isLoading)
+            {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <span>Loading...</span>
+            }
+            else
+            {
+                <span class="oi oi-reload me-2" aria-hidden="true"></span>
+                <span>Refresh</span>
+            }
+        </button>
     </div>
 
     @if (servers != null)
@@ -172,6 +171,8 @@
 </div>
 
 @code {
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
     private List<ServerStateService.ServerInfo>? servers;
     private bool isLoading = false;
     private bool isSessionProcessing = false;
@@ -229,7 +230,12 @@
 
         try
         {
-            var cleared = await CacheService.ClearUserSessions();
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                return;
+            }
+            var cleared = await CacheService.ClearUserSessions(selectedWorld.Value);
             if (cleared)
             {
                 successMessage = "User sessions have been cleared successfully.";
@@ -265,8 +271,13 @@
 
         try
         {
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                return Task.CompletedTask;
+            }
             var packet = new Response.BroadcastSave();
-            RabbitMqService.Publish(packet, "amq.direct", "fb.system");
+            RabbitMqService.Publish(packet, "amq.direct", $"fb.{selectedWorld.Value}.system");
             successMessage = "Save instruction broadcasted to all game servers.";
         }
         catch (Exception ex)
@@ -296,8 +307,14 @@
 
         try
         {
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                return Task.CompletedTask;
+            }
             var packet = new Response.Shutdown();
-            RabbitMqService.Publish(packet, "amq.direct", "fb.system");
+            // Shutdown uses fb.global (no world prefix - all servers receive)
+            RabbitMqService.Publish(packet, "amq.direct", "fb.global");
             successMessage = "Shutdown instruction sent to all game servers.";
         }
         catch (Exception ex)
@@ -311,5 +328,6 @@
 
         return Task.CompletedTask;
     }
+
 }
 

@@ -8,15 +8,14 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject DbContext DbContext
 @inject RabbitMqService RabbitMqService
+@inject IConfiguration Configuration
 @attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>System Mail - Admin Tool</PageTitle>
 
-<div class="container-fluid mt-4">
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <h2>System Mail</h2>
-        </div>
+<div>
+    <div class="page-header mb-4">
+        <h1>System Mail</h1>
     </div>
 
     @if (!string.IsNullOrEmpty(errorMessage))
@@ -97,6 +96,9 @@
 </div>
 
 @code {
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
+    
     private SystemMailModel mailModel = new();
     private string? errorMessage;
     private string? successMessage;
@@ -139,9 +141,14 @@
 
         try
         {
+            if (!selectedWorld.HasValue)
+            {
+                errorMessage = "World is not selected.";
+                return;
+            }
             DateTime? expireDate = expireDateValue;
 
-            var systemMail = await DbContext.SystemMail.Write(currentUserId, mailModel.Title, mailModel.Contents, expireDate);
+            var systemMail = await DbContext.SystemMail.Write(selectedWorld.Value, currentUserId, mailModel.Title, mailModel.Contents, expireDate);
             await DbContext.SaveChangesAsync();
 
             // Publish notification to all game servers via RabbitMQ
@@ -161,7 +168,7 @@
                 Error = 0
             };
 
-            RabbitMqService.Publish(response, "amq.direct", "fb.system");
+            RabbitMqService.Publish(response, "amq.direct", $"fb.{selectedWorld.Value}.system");
 
             successMessage = $"System mail has been created successfully. Mail ID: {systemMail.Id}";
             ResetForm();
@@ -181,6 +188,7 @@
         mailModel = new SystemMailModel();
         expireDateValue = null;
     }
+
 
     private class SystemMailModel
     {

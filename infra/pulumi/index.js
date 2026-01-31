@@ -26,6 +26,15 @@ const content = fs.readFileSync(filePath, 'utf-8')
 const conf = JSON.parse(content)
 conf.host = new pulumi.Config().require('host')
 
+// Filter out worlds with deploy === false
+if (conf.worlds) {
+    Object.keys(conf.worlds).forEach(worldName => {
+        if (conf.worlds[worldName].deploy === false) {
+            delete conf.worlds[worldName]
+        }
+    })
+}
+
 
 // Setup mysql, redis, rabbitmq in parallel (no dependsOn between them)
 const mysqlResources = mysql.setup(namespace, conf)

@@ -5,65 +5,128 @@ module.exports = {
     setup: function (namespace, conf, dependsOn) {
 
         const resources = []
-        const ports = []
-        for(const [section, sectionConf] of Object.entries(conf.internal)) {
-            const appLabels = { app: `internal-${section}` }
-            const config = {
-                "Logging": {
-                    "LogLevel": {
-                        "Default": "Information",
-                        "Microsoft.AspNetCore": "Warning"
-                    }
-                },
-                "ConnectionStrings": {
-                    "MySql": {}
-                },
-                "Redis": {},
-                "RabbitMQ": {
-                    "Internal": {
-                        "Host": `rabbitmq-${sectionConf.rabbitmq}-internal`,
-                        "Port": conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
-                        "Uid": "fb",
-                        "Pwd": "admin"
-                    },
-                    "Log": {
-                        "Host": `rabbitmq-${sectionConf.rabbitmq}-log`,
-                        "Port": conf.rabbitmq[sectionConf.rabbitmq].log.port.amqp.cluster,
-                        "Uid": "fb",
-                        "Pwd": "admin",
-                        "QueueSize": 128
-                    }
-                },
-                "Log": {
-                    "Enabled": true,
-                    "ServerId": "0",
-                    "ServerName": "internal"
+        const internalConf = conf.internal
+        const appLabels = { app: "internal" }
+        const config = {
+            "Logging": {
+                "LogLevel": {
+                    "Default": "Information",
+                    "Microsoft.AspNetCore": "Warning"
+                }
+            },
+            "ConnectionStrings": {
+                "MySql": {}
+            },
+            "Redis": {},
+            "RabbitMQ": {},
+            "Log": {
+                "Enabled": true,
+                "ServerId": "0",
+                "ServerName": "internal"
+            }
+        }
+
+        // Add unified MySQL connection (string)
+        if (conf["unified-infra"] && conf["unified-infra"].mysql && conf["unified-infra"].mysql.port) {
+            const unifiedMysql = conf["unified-infra"].mysql
+            if (unifiedMysql) {
+                config.ConnectionStrings.MySql["unified"] = `Server=mysql-unified-global;Port=${unifiedMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+            }
+        }
+
+        // Add unified Redis connection (string)
+        if (conf["unified-infra"] && conf["unified-infra"].redis && conf["unified-infra"].redis.port) {
+            const unifiedRedis = conf["unified-infra"].redis
+            if (unifiedRedis) {
+                config.Redis["unified"] = {
+                    Host: `redis-unified-global`,
+                    Port: unifiedRedis.port.cluster
                 }
             }
+        }
 
-            for(const [id, mysqlConf] of Object.entries(conf.mysql[sectionConf.mysql].data)) {
-                config.ConnectionStrings.MySql[id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
-            }
-
-            for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
-                config.Redis[id] = {
-                    Host: `redis-${sectionConf.redis}`,
-                    Port: conf.redis[sectionConf.redis][id].port.cluster
+        // Build MySQL and Redis connections for all worlds (unified/global/data structure)
+        config.ConnectionStrings.MySql["worlds"] = {}
+        config.Redis["worlds"] = {}
+        for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+            const worldId = worldConf.id.toString()
+            
+            // Build MySQL: worlds:{worldId}:{global, data[]}
+            if (worldConf.mysql) {
+                config.ConnectionStrings.MySql["worlds"][worldId] = {}
+                
+                // Global connection
+                if (worldConf.mysql.global) {
+                    const globalMysql = worldConf.mysql.global
+                    config.ConnectionStrings.MySql["worlds"][worldId]["global"] = `Server=mysql-${worldName}-global;Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+                }
+                
+                // Data array (shard connections)
+                if (worldConf.mysql.data && Array.isArray(worldConf.mysql.data)) {
+                    const dataArray = worldConf.mysql.data.map(mysqlConf => 
+                        `Server=mysql-${worldName};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                    )
+                    if (dataArray.length > 0) {
+                        config.ConnectionStrings.MySql["worlds"][worldId]["data"] = dataArray
+                    }
                 }
             }
+            
+            // Build Redis: worlds:{worldId}:{global, data[]}
+            if (worldConf.redis) {
+                config.Redis["worlds"][worldId] = {}
+                
+                // Global Redis
+                if (worldConf.redis.global) {
+                    const globalRedis = worldConf.redis.global
+                    config.Redis["worlds"][worldId]["global"] = {
+                        Host: `redis-${worldName}`,
+                        Port: globalRedis.port.cluster
+                    }
+                }
+                
+                // Data array (shard Redis)
+                if (worldConf.redis.data && Array.isArray(worldConf.redis.data)) {
+                    const dataArray = worldConf.redis.data.map(redisConf => ({
+                        Host: `redis-${worldName}`,
+                        Port: redisConf.port.cluster
+                    }))
+                    if (dataArray.length > 0) {
+                        config.Redis["worlds"][worldId]["data"] = dataArray
+                    }
+                }
+            }
+        }
 
-            const configMap = new k8s.core.v1.ConfigMap(`internal-${section}`, {
-                metadata: { name: `internal-${section}`, namespace: namespace.metadata.name },
-                data: {
-                    "appsettings.k8s.json": JSON.stringify(config),
-                },
-            })
+        // Build RabbitMQ connections using unified-global (flat structure: RabbitMQ:{Internal/Log})
+        if (conf["unified-infra"] && conf["unified-infra"].rabbitmq) {
+            config.RabbitMQ["Internal"] = {
+                "Host": "rabbitmq-internal",
+                "Port": conf["unified-infra"].rabbitmq.internal.port.amqp.cluster,
+                "Uid": "fb",
+                "Pwd": "admin"
+            }
+            config.RabbitMQ["Log"] = {
+                "Host": "rabbitmq-log",
+                "Port": conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
+                "Uid": "fb",
+                "Pwd": "admin",
+                "QueueSize": 128
+            }
+        }
 
-            const deployment = new k8s.apps.v1.Deployment(`internal-${section}`, {
-                metadata: { name: `internal-${section}`, namespace: namespace.metadata.name },
-                spec: {
-                    selector: { matchLabels: appLabels },
-                    replicas: 1,
+        const configMap = new k8s.core.v1.ConfigMap("internal", {
+            metadata: { name: "internal", namespace: namespace.metadata.name },
+            data: {
+                "appsettings.k8s.json": JSON.stringify(config),
+            },
+        })
+
+        const deployment = new k8s.apps.v1.Deployment("internal", {
+            metadata: { name: "internal", namespace: namespace.metadata.name },
+            spec: {
+                selector: { matchLabels: appLabels },
+                // replicas is managed by HPA, do not set it here
                     template: {
                         metadata: { labels: appLabels },
                         spec: {
@@ -131,52 +194,51 @@ module.exports = {
                     },
                 }, { dependsOn: dependsOn })
 
-            const hpa = new k8s.autoscaling.v2.HorizontalPodAutoscaler(`internal-hpa-${section}`, {
-                metadata: {
-                    namespace: namespace.metadata.name,
+        const hpa = new k8s.autoscaling.v2.HorizontalPodAutoscaler("internal-hpa", {
+            metadata: {
+                namespace: namespace.metadata.name,
+            },
+            spec: {
+                scaleTargetRef: {
+                    apiVersion: "apps/v1",
+                    kind: "Deployment",
+                    name: deployment.metadata.name,
                 },
-                spec: {
-                    scaleTargetRef: {
-                        apiVersion: "apps/v1",
-                        kind: "Deployment",
-                        name: deployment.metadata.name,
-                    },
-                    minReplicas: 5,
-                    maxReplicas: 30,
-                    metrics: [{
-                        type: "Resource",
-                        resource: {
-                            name: "cpu",
-                            target: {
-                                type: "Utilization",
-                                averageUtilization: 50,
-                            },
+                minReplicas: 5,
+                maxReplicas: 30,
+                metrics: [{
+                    type: "Resource",
+                    resource: {
+                        name: "cpu",
+                        target: {
+                            type: "Utilization",
+                            averageUtilization: 50,
                         },
-                    }],
-                },
-            })
+                    },
+                }],
+            },
+        })
 
-            const service = new k8s.core.v1.Service(`internal-${section}`, {
-                metadata: { name: `internal-${section}`, namespace: namespace.metadata.name },
-                spec: {
-                    type: "NodePort",
-                    ports: [{ 
-                        name: `internal-${section}`,
-                        port: sectionConf.port.cluster,
-                        targetPort: `internal`,
-                        protocol: "TCP",
-                        nodePort: sectionConf.port.node 
-                    }],
-                    selector: appLabels,
-                },
-            }, { dependsOn: dependsOn })
-            
-            // Collect all resources
-            resources.push(configMap)
-            resources.push(deployment)
-            resources.push(hpa)
-            resources.push(service)
-        }
+        const service = new k8s.core.v1.Service("internal", {
+            metadata: { name: "internal", namespace: namespace.metadata.name },
+            spec: {
+                type: "NodePort",
+                ports: [{ 
+                    name: "internal",
+                    port: internalConf.port.cluster,
+                    targetPort: "internal",
+                    protocol: "TCP",
+                    nodePort: internalConf.port.node 
+                }],
+                selector: appLabels,
+            },
+        }, { dependsOn: dependsOn })
+        
+        // Collect all resources
+        resources.push(configMap)
+        resources.push(deployment)
+        resources.push(hpa)
+        resources.push(service)
         
         return resources
     }

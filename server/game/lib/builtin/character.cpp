@@ -3396,10 +3396,12 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
                         const std::string&                contents,
                         const std::optional<std::string>& expire_date) -> async::task<void> {
         auto   success = false;
+        auto world = fb::config<uint32_t>("world");
         auto&& resp    = co_await server->http.post(
             "internal",
             "/mail/system",
-            internal_reqs::WriteSystemMail{sender,
+            internal_reqs::WriteSystemMail{world,
+                                           sender,
                                            title,
                                            contents,
                                            expire_date.has_value() ? expire_date.value() : std::string{}});

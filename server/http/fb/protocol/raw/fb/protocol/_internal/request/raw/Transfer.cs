@@ -20,35 +20,39 @@ public struct Transfer : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Transfer __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public fb.protocol._internal.raw.Service Service { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol._internal.raw.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol._internal.raw.Service.Gateway; } }
-  public byte Id { get { int o = __p.__offset(6); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public string Name { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public fb.protocol._internal.raw.Service Service { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol._internal.raw.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol._internal.raw.Service.Gateway; } }
+  public byte Id { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public string Name { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(10, 1); }
 #else
-  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(10); }
 #endif
-  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(8); }
-  public bool ForceShutdown { get { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(10); }
+  public bool ForceShutdown { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol._internal.request.raw.Transfer> CreateTransfer(FlatBufferBuilder builder,
+      uint world = 0,
       fb.protocol._internal.raw.Service service = fb.protocol._internal.raw.Service.Gateway,
       byte id = 0,
       StringOffset nameOffset = default(StringOffset),
       bool force_shutdown = false) {
-    builder.StartTable(4);
+    builder.StartTable(5);
     Transfer.AddName(builder, nameOffset);
+    Transfer.AddWorld(builder, world);
     Transfer.AddForceShutdown(builder, force_shutdown);
     Transfer.AddId(builder, id);
     Transfer.AddService(builder, service);
     return Transfer.EndTransfer(builder);
   }
 
-  public static void StartTransfer(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddService(FlatBufferBuilder builder, fb.protocol._internal.raw.Service service) { builder.AddSbyte(0, (sbyte)service, 0); }
-  public static void AddId(FlatBufferBuilder builder, byte id) { builder.AddByte(1, id, 0); }
-  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
-  public static void AddForceShutdown(FlatBufferBuilder builder, bool forceShutdown) { builder.AddBool(3, forceShutdown, false); }
+  public static void StartTransfer(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddService(FlatBufferBuilder builder, fb.protocol._internal.raw.Service service) { builder.AddSbyte(1, (sbyte)service, 0); }
+  public static void AddId(FlatBufferBuilder builder, byte id) { builder.AddByte(2, id, 0); }
+  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(3, nameOffset.Value, 0); }
+  public static void AddForceShutdown(FlatBufferBuilder builder, bool forceShutdown) { builder.AddBool(4, forceShutdown, false); }
   public static Offset<fb.protocol._internal.request.raw.Transfer> EndTransfer(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Transfer>(o);
@@ -63,10 +67,11 @@ static public class TransferVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Service*/, 1 /*fb.protocol._internal.raw.Service*/, 1, false)
-      && verifier.VerifyField(tablePos, 6 /*Id*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyString(tablePos, 8 /*Name*/, false)
-      && verifier.VerifyField(tablePos, 10 /*ForceShutdown*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Service*/, 1 /*fb.protocol._internal.raw.Service*/, 1, false)
+      && verifier.VerifyField(tablePos, 8 /*Id*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyString(tablePos, 10 /*Name*/, false)
+      && verifier.VerifyField(tablePos, 12 /*ForceShutdown*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

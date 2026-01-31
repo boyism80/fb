@@ -25,9 +25,13 @@ struct UpdateFriendsBuilder;
 struct UpdateFriends FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef UpdateFriendsBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_USER = 4,
-    VT_NAMES = 6
+    VT_WORLD = 4,
+    VT_USER = 6,
+    VT_NAMES = 8
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
@@ -36,6 +40,7 @@ struct UpdateFriends FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyOffset(verifier, VT_NAMES) &&
            verifier.VerifyVector(names()) &&
@@ -48,6 +53,9 @@ struct UpdateFriendsBuilder {
   typedef UpdateFriends Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(UpdateFriends::VT_WORLD, world, 0);
+  }
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(UpdateFriends::VT_USER, user, 0);
   }
@@ -67,21 +75,25 @@ struct UpdateFriendsBuilder {
 
 inline ::flatbuffers::Offset<UpdateFriends> CreateUpdateFriends(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t user = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> names = 0) {
   UpdateFriendsBuilder builder_(_fbb);
   builder_.add_names(names);
   builder_.add_user(user);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<UpdateFriends> CreateUpdateFriendsDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t user = 0,
     const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *names = nullptr) {
   auto names__ = names ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*names) : 0;
   return fb::protocol::internal::request::raw::CreateUpdateFriends(
       _fbb,
+      world,
       user,
       names__);
 }

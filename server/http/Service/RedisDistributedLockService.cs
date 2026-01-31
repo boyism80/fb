@@ -1,4 +1,4 @@
-﻿using Medallion.Threading.Redis;
+using Medallion.Threading.Redis;
 
 namespace Http.Service
 {
@@ -25,9 +25,12 @@ namespace Http.Service
         /// </summary>
         /// <param name="key">The unique key identifying the resource to lock.</param>
         /// <returns>A Redis distributed lock handle that must be disposed to release the lock.</returns>
-        public async Task<RedisDistributedLockHandle> Lock(string key)
+        public async Task<RedisDistributedLockHandle> Lock(uint world, string key)
         {
-            return await new RedisDistributedLock(key, _redisService.Redis(key).Connection).AcquireAsync();
+            var redis = _redisService.GetShardConnection(world, key);
+            if (redis == null)
+                throw new Exception($"Redis instance not found for world {world} and key {key}");
+            return await new RedisDistributedLock(key, redis.Connection).AcquireAsync();
         }
     }
 }

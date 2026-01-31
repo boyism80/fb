@@ -25,11 +25,15 @@ struct WriteSystemMailBuilder;
 struct WriteSystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef WriteSystemMailBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SENDER = 4,
-    VT_TITLE = 6,
-    VT_CONTENTS = 8,
-    VT_EXPIRE_DATE = 10
+    VT_WORLD = 4,
+    VT_SENDER = 6,
+    VT_TITLE = 8,
+    VT_CONTENTS = 10,
+    VT_EXPIRE_DATE = 12
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t sender() const {
     return GetField<uint32_t>(VT_SENDER, 0);
   }
@@ -44,6 +48,7 @@ struct WriteSystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_SENDER, 4) &&
            VerifyOffset(verifier, VT_TITLE) &&
            verifier.VerifyString(title()) &&
@@ -59,6 +64,9 @@ struct WriteSystemMailBuilder {
   typedef WriteSystemMail Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(WriteSystemMail::VT_WORLD, world, 0);
+  }
   void add_sender(uint32_t sender) {
     fbb_.AddElement<uint32_t>(WriteSystemMail::VT_SENDER, sender, 0);
   }
@@ -84,6 +92,7 @@ struct WriteSystemMailBuilder {
 
 inline ::flatbuffers::Offset<WriteSystemMail> CreateWriteSystemMail(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t sender = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> contents = 0,
@@ -93,11 +102,13 @@ inline ::flatbuffers::Offset<WriteSystemMail> CreateWriteSystemMail(
   builder_.add_contents(contents);
   builder_.add_title(title);
   builder_.add_sender(sender);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<WriteSystemMail> CreateWriteSystemMailDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t sender = 0,
     const char *title = nullptr,
     const char *contents = nullptr,
@@ -107,6 +118,7 @@ inline ::flatbuffers::Offset<WriteSystemMail> CreateWriteSystemMailDirect(
   auto expire_date__ = expire_date ? _fbb.CreateString(expire_date) : 0;
   return fb::protocol::internal::request::raw::CreateWriteSystemMail(
       _fbb,
+      world,
       sender,
       title__,
       contents__,

@@ -14,11 +14,7 @@ afk_timer::afk_timer(fb::game::server& server) :
 
 async::task<void> afk_timer::handle(const fb::model::datetime& now, std::thread::id id)
 {
-#if defined(DEBUG) || defined(_DEBUG)
-    constexpr auto idle_threshold = 30s;
-#else
-    constexpr auto idle_threshold = 5min;
-#endif
+    constexpr auto idle_threshold  = 10min;
     constexpr auto action_interval = 10s;
 
     auto thread = this->server.threads.at(id);

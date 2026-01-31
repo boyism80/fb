@@ -20,6 +20,8 @@ table Login {
   port: ushort;
   ban_reason: string;
   ban_expire_date: string?;
+  maintenance_message: string?;
+  maintenance_end_time: string?;
 }
 
 
@@ -36,6 +38,8 @@ table Transfer {
   port: ushort;
   ban_reason: string;
   ban_expire_date: string?;
+  maintenance_message: string?;
+  maintenance_end_time: string?; // ISO 8601 format
 }
 
 
@@ -275,4 +279,19 @@ table Unban {
 
 table Heartbeat {
   success: bool;
+}
+
+table SetExpMultiplier {
+  value: double;
+  error: uint;
+}
+
+table SetDropRateMultiplier {
+  value: double;
+  error: uint;
+}
+
+table StartMaintenance {
+  message: string;
+  end_time: string;
 }

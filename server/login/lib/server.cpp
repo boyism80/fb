@@ -16,7 +16,8 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<std::string>("amqp:log:pwd"),
         std::to_string(fb::config<uint32_t>("id")),
         fb::config<std::string>("name"),
-        fb::config<size_t>("amqp:log:queue_size"))
+        fb::config<size_t>("amqp:log:queue_size"),
+        fb::config<uint32_t>("world"))
 {
     this->handler.protocol.bind<fb::login::handler::protocol::login>();
     this->handler.protocol.bind<fb::login::handler::protocol::agreement>();
@@ -45,16 +46,18 @@ async::task<void> server::on_start()
     co_await fb::acceptor<session>::on_start();
 
     this->bind_timer<fb::login::handler::timer::heart_beat>(1s);
-    this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.system");
+    this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.global");  // Shutdown: all servers
 }
 
 async::task<void> server::update_status()
 {
     try
     {
+        auto world = fb::config<uint32_t>("world");
         std::ignore = co_await this->http.post("internal",
                                                "/server/heartbeat",
-                                               internal_reqs::Heartbeat{internal::Service::Login,
+                                               internal_reqs::Heartbeat{world,
+                                                                        internal::Service::Login,
                                                                         this->id(),
                                                                         this->name(),
                                                                         fb::config<std::string>("ip"),
@@ -113,5 +116,5 @@ async::task<bool> server::on_disconnected(fb::socket<session>& socket)
 
 void server::on_init_amqp(fb::amqp::socket& amqp)
 {
-    this->handler.amqp.declare_queue("amq.direct", "fb.system");
+    this->handler.amqp.declare_queue("amq.direct", "fb.global");  // Shutdown: all servers
 }

@@ -14,7 +14,6 @@
 #include <fb/redis.h>
 #include <fb/shard_container.h>
 #include <fb/game/clan.h>
-#include <fb/game/npc_interaction_handler.h>
 #include <fb/game/system_mail.h>
 #include <fb/game/storage.h>
 #include <fb/game/channel/system_mail_channel.h>
@@ -57,6 +56,9 @@ REGISTER_RESPONSE(fb::protocol::internal::request::GetStoragePending,
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol::internal::response::WriteSystemMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Ban, fb::protocol::internal::response::Ban)
 REGISTER_RESPONSE(fb::protocol::internal::request::Unban, fb::protocol::internal::response::Unban)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetExpMultiplier, fb::protocol::internal::response::SetExpMultiplier)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetDropRateMultiplier,
+                  fb::protocol::internal::response::SetDropRateMultiplier)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::List, fb::protocol::marketplace::response::List)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Cancel, fb::protocol::marketplace::response::Cancel)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Purchase, fb::protocol::marketplace::response::Purchase)
@@ -84,18 +86,18 @@ public:
     LUA_PROTOTYPE
 
 public:
-    using object_set                   = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
-    using protocol_generator           = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
-    using clan_ptr                     = std::shared_ptr<fb::game::clan>;
-    using group_ptr                    = std::shared_ptr<fb::game::group>;
-    using npc_interaction_handler_ptr  = std::unique_ptr<fb::game::npc_interaction_handler>;
-    using npc_interaction_handler_list = std::vector<npc_interaction_handler_ptr>;
-    using ensure_group_fn              = std::function<async::task<void>(group_ptr&)>;
-    using ensure_clan_fn               = std::function<async::task<void>(clan_ptr&)>;
+    using object_set         = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
+    using protocol_generator = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
+    using clan_ptr           = std::shared_ptr<fb::game::clan>;
+    using group_ptr          = std::shared_ptr<fb::game::group>;
+    using ensure_group_fn    = std::function<async::task<void>(group_ptr&)>;
+    using ensure_clan_fn     = std::function<async::task<void>(clan_ptr&)>;
 
 private:
-    fb::model::datetime          _time;
-    npc_interaction_handler_list _npc_interaction_handlers;
+    fb::model::datetime                               _time;
+    double                                            _exp_multiplier;
+    double                                            _drop_rate_multiplier;
+    std::unordered_map<uint32_t, fb::model::datetime> _scheduled_tasks;
 
 public:
     fb::log_collector                                       log;
@@ -113,13 +115,6 @@ public:
     server(const server&) = delete;
     server(server&&)      = delete;
     ~server();
-
-private:
-    template <typename HandlerType> void bind_npc_interaction()
-    {
-        auto handler = std::make_unique<HandlerType>(*this);
-        this->_npc_interaction_handlers.push_back(std::move(handler));
-    }
 
 public:
     void assert_whisper(const internal_resp::Whisper& response) const;
@@ -209,7 +204,6 @@ public:
     async::task<internal_resp::Unban>          unban(const std::string& name);
     async::task<void>                          update_status();
     void                                       update_time();
-    async::task<bool>                          npc_interaction(character& ch, const std::string& message, const std::vector<std::shared_ptr<npc>>& npcs);
     async::task<void>                          leave_clan_member(const clan& clan, const std::string& name);
     async::task<void>                          join_clan_member(const clan& clan, character& inviter, character& invitee);
     void                                       rezen_force();
@@ -217,6 +211,12 @@ public:
     async::task<void>                          ensure_group(uint32_t id, ensure_group_fn fn);
     void                                       update_clan(clan& clan, internal::Clan& clan_dto, const std::vector<internal::ClanMember>& members_dto) const;
     async::task<void>                          ensure_clan(uint32_t id, ensure_clan_fn fn);
+    double                                     exp_multiplier() const;
+    void                                       exp_multiplier(double value);
+    double                                     drop_rate_multiplier() const;
+    void                                       drop_rate_multiplier(double value);
+    void                                       initialize_schedules();
+    std::unordered_map<uint32_t, fb::model::datetime>& scheduled_tasks();
     // clang-format on
 };
 

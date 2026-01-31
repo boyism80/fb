@@ -41,7 +41,10 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<std::string>("amqp:log:pwd"),
         std::to_string(fb::config<uint32_t>("id")),
         fb::config<std::string>("name"),
-        fb::config<size_t>("amqp:log:queue_size"))
+        fb::config<size_t>("amqp:log:queue_size"),
+        fb::config<uint32_t>("world")),
+    _exp_multiplier(fb::config<double>("exp_multiplier")),
+    _drop_rate_multiplier(fb::config<double>("drop_rate_multiplier"))
 {
     auto& ist = fb::lua::context_pool::ist();
     ist.setup(this->threads);
@@ -113,12 +116,16 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("shutdown", builtin::server::builtin_shutdown);
     lua::build("ban", builtin::server::builtin_ban);
     lua::build("unban", builtin::server::builtin_unban);
+    lua::build("regex", builtin::server::builtin_regex);
+    lua::build("exp_multiplier", builtin::server::builtin_exp_multiplier);
+    lua::build("drop_rate_multiplier", builtin::server::builtin_drop_rate_multiplier);
 
     for (auto& [_, root] : ist)
     {
         auto& thread = root->initial_thread();
         std::ignore  = thread.dispatch([root](auto&) -> async::task<void> {
             fb::model::lua::map_enum(*root);
+            fb::model::lua::map_const(*root);
             co_return;
         });
     }
@@ -216,6 +223,9 @@ async::task<void> server::on_start()
 
     this->bind_timer<fb::game::handler::timer::heart_beat>(1s);
     this->bind_timer<fb::game::handler::timer::update_time>(1s);
+    this->bind_timer<fb::game::handler::timer::schedule_timer>(1s);
+
+    this->initialize_schedules();
     this->bind_timer<fb::game::handler::timer::announce>(
         std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
     // log_flush timer removed - logs are now published immediately to RabbitMQ
@@ -229,42 +239,29 @@ async::task<void> server::on_start()
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
     this->bind_thread_timer<fb::game::handler::timer::marketplace_restore_timer>(30s);
 
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::sell>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::buy>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::repair>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::deposit_money>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::withdraw_money>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::store_item>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::retrieve_item>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::sell_list>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::buy_list>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::sell_price>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::buy_price>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::show_deposited_money>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::rename_weapon>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::store_item_list>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::store_item_count>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::revive>();
-    this->bind_npc_interaction<fb::game::handler::npc_interaction::appreciate>();
-
-    auto host_name = std::format("fb.game.{}", config<uint32_t>("id"));
+    auto world     = config<uint32_t>("world");
+    auto host_name = std::format("fb.{}.game.{}", world, config<uint32_t>("id"));
     this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::whisper>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_personal>(host_name);
-    this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.system");
-    this->handler.amqp.bind<fb::game::handler::amqp::write_system_mail>("fb.system");
-    this->handler.amqp.bind<fb::game::handler::amqp::broadcast>("fb.global");
-    this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_fetch>("fb.global");
-    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>("fb.system");
-    this->handler.amqp.bind<fb::game::handler::amqp::create_group>("fb.group");
-    this->handler.amqp.bind<fb::game::handler::amqp::updated_group>("fb.group");
-    this->handler.amqp.bind<fb::game::handler::amqp::destroy_group>("fb.group");
-    this->handler.amqp.bind<fb::game::handler::amqp::create_clan>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::destroy_clan>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>("fb.clan");
-    this->handler.amqp.bind<fb::game::handler::amqp::write_mail>("fb.mail");
-    this->handler.amqp.bind<fb::game::handler::amqp::ban>("fb.ban");
+    this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
+    this->handler.amqp.bind<fb::game::handler::amqp::write_system_mail>(std::format("fb.{}.system", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(std::format("fb.{}.global", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_fetch>(std::format("fb.{}.global", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>(std::format("fb.{}.system", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::create_group>(std::format("fb.{}.group", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_group>(std::format("fb.{}.group", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::destroy_group>(std::format("fb.{}.group", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::create_clan>(std::format("fb.{}.clan", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::destroy_clan>(std::format("fb.{}.clan", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>(std::format("fb.{}.clan", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>(std::format("fb.{}.clan", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::write_mail>(std::format("fb.{}.mail", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::ban>(std::format("fb.{}.ban", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(std::format("fb.{}.global", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(std::format("fb.{}.global", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(
+        std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
 
     // Fetch system mails on server startup
     co_await this->system_mail.fetch();
@@ -316,7 +313,8 @@ async::task<bool> server::on_disconnected(fb::socket<character>& socket)
     try
     {
         co_await this->save(*ch);
-        std::ignore = co_await this->http.post("internal", "/in-game/logout", internal_reqs::Logout{ch->name()});
+        auto world  = fb::config<uint32_t>("world");
+        std::ignore = co_await this->http.post("internal", "/in-game/logout", internal_reqs::Logout{world, ch->name()});
     }
     catch (std::exception& e)
     {
@@ -599,9 +597,11 @@ async::task<void> server::save(character& ch)
         storage_reward_marks.emplace_back(mark.user, pending_id, expired_date_str);
     }
 
+    auto world  = fb::config<uint32_t>("world");
     std::ignore = co_await this->http.post("internal",
                                            "/in-game/save",
-                                           internal_reqs::Save{ch.to_protocol(),
+                                           internal_reqs::Save{world,
+                                                               ch.to_protocol(),
                                                                items,
                                                                spells,
                                                                achievements,
@@ -658,13 +658,15 @@ const fb::model::datetime& server::time() const
 
 void server::on_init_amqp(fb::amqp::socket& amqp)
 {
-    this->handler.amqp.declare_queue("amq.direct", "fb.system");
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
-    this->handler.amqp.declare_queue("amq.direct", "fb.global");
-    this->handler.amqp.declare_queue("amq.direct", "fb.group");
-    this->handler.amqp.declare_queue("amq.direct", "fb.clan");
-    this->handler.amqp.declare_queue("amq.direct", "fb.mail");
-    this->handler.amqp.declare_queue("amq.direct", "fb.ban");
+    auto world = config<uint32_t>("world");
+    this->handler.amqp.declare_queue("amq.direct", "fb.global");                        // Shutdown: all servers
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.system", world)); // System mail, broadcast save
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.global", world));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.group", world));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.clan", world));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.mail", world));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.ban", world));
 }
 
 async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)
@@ -673,10 +675,11 @@ async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE typ
     {
     case BROADCAST_TYPE::GLOBAL:
     {
-        auto&& resp = co_await this->http.post(
+        auto   world = fb::config<uint32_t>("world");
+        auto&& resp  = co_await this->http.post(
             "internal",
             "/in-game/broadcast",
-            internal_reqs::Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
+            internal_reqs::Broadcast{world, fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
         co_await this->on_broadcast(resp);
     }
     break;
@@ -732,9 +735,11 @@ async::task<void> server::update_status()
 {
     try
     {
+        auto world  = fb::config<uint32_t>("world");
         std::ignore = co_await this->http.post("internal",
                                                "/server/heartbeat",
-                                               internal_reqs::Heartbeat{internal::Service::Game,
+                                               internal_reqs::Heartbeat{world,
+                                                                        internal::Service::Game,
                                                                         this->id(),
                                                                         this->name(),
                                                                         fb::config<std::string>("ip"),
@@ -762,24 +767,41 @@ void server::update_time()
     this->_time = updated;
 }
 
-async::task<bool> server::npc_interaction(character&                                         ch,
-                                          const std::string&                                 message,
-                                          const std::vector<std::shared_ptr<fb::game::npc>>& npcs)
+double server::exp_multiplier() const
 {
-    ch.assert_thread();
+    return this->_exp_multiplier;
+}
 
-    if (npcs.size() == 0)
-        co_return false;
+void server::exp_multiplier(double value)
+{
+    this->_exp_multiplier = value;
+}
 
-    // Try new handler system first
-    for (auto& handler : this->_npc_interaction_handlers)
+double server::drop_rate_multiplier() const
+{
+    return this->_drop_rate_multiplier;
+}
+
+void server::drop_rate_multiplier(double value)
+{
+    this->_drop_rate_multiplier = value;
+}
+
+void server::initialize_schedules()
+{
+    auto now = fb::model::datetime();
+
+    for (const auto& schedule : table::schedule)
     {
-        if (handler->matches(message))
+        auto next = schedule.next_execution(now);
+        if (next.has_value())
         {
-            co_await handler->handle(ch, message, npcs);
-            co_return true;
+            this->_scheduled_tasks[schedule.id] = next.value();
         }
     }
+}
 
-    co_return false;
+std::unordered_map<uint32_t, fb::model::datetime>& server::scheduled_tasks()
+{
+    return this->_scheduled_tasks;
 }

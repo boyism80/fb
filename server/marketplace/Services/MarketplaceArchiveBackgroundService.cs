@@ -45,7 +45,7 @@ namespace Marketplace.Services
                 try
                 {
                     // Use Lua script to atomically check and acquire lock
-                    var redis = _redisService.Redis(LockKey);
+                    var redis = _redisService.GetUnifiedConnection();
                     var acquireLockScript = @"
                         if redis.call('exists', KEYS[1]) == 0 then
                             redis.call('set', KEYS[1], '1')
@@ -112,7 +112,7 @@ namespace Marketplace.Services
             LogService logService,
             CancellationToken cancellationToken)
         {
-            await using var conn = dbContext.Connection(-1);
+            await using var conn = dbContext.GetUnifiedConnection();
             await conn.OpenAsync(cancellationToken);
             await using var transaction = await conn.BeginTransactionAsync(cancellationToken);
 
@@ -122,6 +122,7 @@ namespace Marketplace.Services
                 var archiveSql = $@"
                     INSERT INTO `marketplace_listing_archive` (
                         `id`,
+                        `world`,
                         `seller_id`,
                         `item_model`,
                         `remaining_count`,
@@ -136,6 +137,7 @@ namespace Marketplace.Services
                         `archived_date`)
                     SELECT 
                         `id`,
+                        `world`,
                         `seller_id`,
                         `item_model`,
                         `remaining_count`,

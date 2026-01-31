@@ -20,23 +20,27 @@ public struct Unban : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Unban __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Name { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Name { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(4, 1); }
+  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(6, 1); }
 #else
-  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(4); }
+  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
-  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(4); }
+  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
 
   public static Offset<fb.protocol._internal.request.raw.Unban> CreateUnban(FlatBufferBuilder builder,
+      uint world = 0,
       StringOffset nameOffset = default(StringOffset)) {
-    builder.StartTable(1);
+    builder.StartTable(2);
     Unban.AddName(builder, nameOffset);
+    Unban.AddWorld(builder, world);
     return Unban.EndUnban(builder);
   }
 
-  public static void StartUnban(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(0, nameOffset.Value, 0); }
+  public static void StartUnban(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.Unban> EndUnban(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Unban>(o);
@@ -51,7 +55,8 @@ static public class UnbanVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Name*/, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 6 /*Name*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -25,13 +25,14 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves character synchronization data by character unique identifier.
+        /// Retrieves character synchronization data by world and character unique identifier.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="uid">The unique identifier of the character.</param>
         /// <returns>The character synchronization data if found; otherwise, null.</returns>
-        public async Task<CharacterSync> Get(uint uid)
+        public async Task<CharacterSync> Get(uint world, uint uid)
         {
-            return await Get(new CharacterSyncKey { Uid = uid });
+            return await base.Get(world, new CharacterSyncKey { Uid = uid });
         }
 
         /// <summary>

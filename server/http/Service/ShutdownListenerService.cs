@@ -1,4 +1,4 @@
-﻿using Google.FlatBuffers;
+using Google.FlatBuffers;
 using Http.Redis;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -52,7 +52,7 @@ namespace Http.Service
             try
             {
                 _queueName = _channel.QueueDeclare(string.Empty, durable: false, exclusive: false, autoDelete: false, arguments: null);
-                _channel.QueueBind(_queueName, "amq.direct", "fb.system");
+                _channel.QueueBind(_queueName, "amq.direct", "fb.global");
             }
             catch (RabbitMQ.Client.Exceptions.OperationInterruptedException ex)
             {
@@ -101,7 +101,14 @@ namespace Http.Service
 
                     _logger.LogWarning("Shutdown message received.");
 
-                    var redis = _redisService.Redis(-1);
+                    var redis = _redisService.GetUnifiedConnection();
+                    if (redis == null)
+                    {
+                        _logger.LogError("unified-global Redis not available, shutting down immediately.");
+                        _lifetime.StopApplication();
+                        return;
+                    }
+
                     while (true)
                     {
                         var isEmpty = redis.Connection.ScanKeysAsync("heart-beat:*", 1).Result.Count == 0;

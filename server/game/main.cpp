@@ -56,6 +56,7 @@ int main(int argc, char* argv[])
         ::set_console_icon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
         fb::model::option::decoding(cp949);
+        fb::model::option::encoding(utf8);
         flatbuffers::option::encoding(utf8);
         flatbuffers::option::decoding(cp949);
 #endif

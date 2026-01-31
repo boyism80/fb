@@ -3,23 +3,23 @@
 @using Http.Service
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components
 @using System.ComponentModel.DataAnnotations
 @using Response = fb.protocol._internal.response
 @inject RabbitMqService RabbitMqService
 @inject LogService LogService
+@inject IConfiguration Configuration
 @attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>Broadcast - Admin Tool</PageTitle>
 
-<div class="container-fluid mt-4">
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <h2>Broadcast Message</h2>
-            <p class="text-muted">
-                Send a global broadcast message to every game server. Host is fixed to 0xFFFFFFFF so all servers receive
-                it.
-            </p>
-        </div>
+<div>
+    <div class="page-header mb-4">
+        <h1>Broadcast Message</h1>
+        <p class="text-muted">
+            Send a global broadcast message to every game server. Host is fixed to 0xFFFFFFFF so all servers receive
+            it.
+        </p>
     </div>
 
     @if (!string.IsNullOrEmpty(errorMessage))
@@ -63,6 +63,17 @@
                                            @bind-Value="broadcastModel.Message" />
                             <ValidationMessage For="@(() => broadcastModel.Message)" />
                         </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <InputCheckbox id="useBroadcast" class="form-check-input" @bind-Value="useBroadcast" />
+                                <label class="form-check-label" for="useBroadcast">
+                                    Broadcast to all worlds
+                                </label>
+                                <small class="form-text text-muted d-block">
+                                    If checked, message will be sent to all worlds using Broadcast method. If unchecked, message will be sent only to the selected world.
+                                </small>
+                            </div>
+                        </div>
                         <div class="d-flex justify-content-end gap-2">
                             <button type="button" class="btn btn-secondary" @onclick="ResetForm"
                                     disabled="@isProcessing">
@@ -90,6 +101,9 @@
     private string? errorMessage;
     private string? successMessage;
     private bool isProcessing;
+    private bool useBroadcast = false;
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
 
     private IEnumerable<MessageType> MessageTypes => Enum.GetValues<MessageType>();
 
@@ -109,25 +123,49 @@
             else
             {
                 var message = new Response.Broadcast
-                    {
-                        Message = trimmedMessage,
-                        Type = (byte)broadcastModel.Type,
-                        Host = BroadcastHost,
-                        Error = 0
-                    };
+                {
+                    Message = trimmedMessage,
+                    Type = (byte)broadcastModel.Type,
+                    Host = BroadcastHost,
+                    Error = 0
+                };
 
-                RabbitMqService.Publish(message, "amq.direct", "fb.global");
+                if (useBroadcast)
+                {
+                    // Publish to all worlds
+                    var worlds = GetWorlds();
+                    foreach (var world in worlds)
+                    {
+                        RabbitMqService.Publish(message, "amq.direct", $"fb.{world}.global");
+                    }
+                }
+                else
+                {
+                    // Publish to selected world only
+                    if (!selectedWorld.HasValue)
+                    {
+                        errorMessage = "World is required when not using broadcast to all worlds.";
+                        return;
+                    }
+                    RabbitMqService.Publish(message, "amq.direct", $"fb.{selectedWorld.Value}.global");
+                }
 
                 // Log broadcast event
                 LogService.Write("broadcast", new
                 {
                     message_type = broadcastModel.Type.ToString(),
                     message = trimmedMessage,
-                    message_length = trimmedMessage.Length
+                    message_length = trimmedMessage.Length,
+                    world = useBroadcast ? "all" : selectedWorld?.ToString() ?? "unknown",
+                    use_broadcast = useBroadcast
                 });
 
-                successMessage = "Broadcast sent successfully.";
-                ResetForm();
+                successMessage = useBroadcast
+                    ? "Broadcast sent successfully to all worlds."
+                    : $"Broadcast sent successfully to world: {selectedWorld?.ToString() ?? "unknown"}";
+
+                // Clear only the message, keep the message type
+                broadcastModel.Message = string.Empty;
             }
         }
         catch (Exception ex)
@@ -145,6 +183,22 @@
     private void ResetForm()
     {
         broadcastModel = new BroadcastModel();
+    }
+
+    private List<uint> GetWorlds()
+    {
+        try
+        {
+            var worldServersSection = Configuration.GetSection("WorldServers");
+            return worldServersSection.GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _))
+                .Select(child => uint.Parse(child.Key))
+                .ToList();
+        }
+        catch
+        {
+            return new List<uint>();
+        }
     }
 
     private class BroadcastModel

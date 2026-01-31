@@ -20,25 +20,29 @@ public struct SetOption : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public SetOption __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint User { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public byte Type { get { int o = __p.__offset(6); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public bool Enabled { get { int o = __p.__offset(8); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public byte Type { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public bool Enabled { get { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol._internal.request.raw.SetOption> CreateSetOption(FlatBufferBuilder builder,
+      uint world = 0,
       uint user = 0,
       byte type = 0,
       bool enabled = false) {
-    builder.StartTable(3);
+    builder.StartTable(4);
     SetOption.AddUser(builder, user);
+    SetOption.AddWorld(builder, world);
     SetOption.AddEnabled(builder, enabled);
     SetOption.AddType(builder, type);
     return SetOption.EndSetOption(builder);
   }
 
-  public static void StartSetOption(FlatBufferBuilder builder) { builder.StartTable(3); }
-  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
-  public static void AddType(FlatBufferBuilder builder, byte type) { builder.AddByte(1, type, 0); }
-  public static void AddEnabled(FlatBufferBuilder builder, bool enabled) { builder.AddBool(2, enabled, false); }
+  public static void StartSetOption(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
+  public static void AddType(FlatBufferBuilder builder, byte type) { builder.AddByte(2, type, 0); }
+  public static void AddEnabled(FlatBufferBuilder builder, bool enabled) { builder.AddBool(3, enabled, false); }
   public static Offset<fb.protocol._internal.request.raw.SetOption> EndSetOption(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.SetOption>(o);
@@ -53,9 +57,10 @@ static public class SetOptionVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Type*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 8 /*Enabled*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Type*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 10 /*Enabled*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

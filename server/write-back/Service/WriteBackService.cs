@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Redis;
@@ -22,6 +22,7 @@ namespace WriteBack.Service
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly ILogger<Http.Service.WriteBackService> _logger;
+        private readonly uint _world;
         private static readonly TimeSpan _delay = TimeSpan.FromSeconds(5);
 
         /// <summary>
@@ -40,6 +41,9 @@ namespace WriteBack.Service
             _configuration = configuration;
             _logger = logger;
             _dbContext = ActivatorUtilities.CreateInstance<DbContext>(serviceProvider);
+            _world = _configuration.GetValue<uint>("World");
+            if (_world == 0 && _configuration["World"] != "0")
+                throw new Exception("World configuration is required");
         }
 
         /// <summary>
@@ -50,20 +54,61 @@ namespace WriteBack.Service
         /// <returns>A task representing the asynchronous execution of the background service.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var section = _configuration.GetSection("ConnectionStrings:MySql");
-            var threads = section.GetChildren().Select(x => new Thread(() =>
+            if (_world == 0)
             {
-                var dbId = int.Parse(x.Key);
-                var task = OnWork(dbId, stoppingToken);
-                try
+                throw new Exception("Write-back service requires a world > 0. Unified-global is not supported.");
+            }
+
+            var worldKey = _world.ToString();
+            var mysqlSection = _configuration.GetSection($"ConnectionStrings:MySql:worlds:{worldKey}");
+            if (!mysqlSection.Exists())
+            {
+                throw new Exception($"MySQL configuration not found for world: {_world}");
+            }
+
+            var threadList = new List<Thread>();
+
+            // Add thread for global database (-1)
+            var globalSection = mysqlSection.GetSection("global");
+            if (globalSection.Exists())
+            {
+                threadList.Add(new Thread(() =>
                 {
-                    task.Wait(stoppingToken);
-                }
-                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                    var task = OnWork(-1, stoppingToken);
+                    try
+                    {
+                        task.Wait(stoppingToken);
+                    }
+                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                    {
+                        _logger.LogInformation("Write-back worker for world {World} DB {DbId} cancelled.", _world, -1);
+                    }
+                }));
+            }
+
+            // Add threads for data shards (0, 1, 2, ...)
+            var dataArray = mysqlSection.GetSection("data").Get<string[]>();
+            if (dataArray != null && dataArray.Length > 0)
+            {
+                for (int i = 0; i < dataArray.Length; i++)
                 {
-                    _logger.LogInformation("Write-back worker for DB {DbId} cancelled.", dbId);
+                    var shardIndex = i; // Capture loop variable
+                    threadList.Add(new Thread(() =>
+                    {
+                        var task = OnWork(shardIndex, stoppingToken);
+                        try
+                        {
+                            task.Wait(stoppingToken);
+                        }
+                        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                        {
+                            _logger.LogInformation("Write-back worker for world {World} DB {DbId} cancelled.", _world, shardIndex);
+                        }
+                    }));
                 }
-            })).ToArray();
+            }
+
+            var threads = threadList.ToArray();
 
             foreach (var thread in threads)
             {
@@ -76,7 +121,7 @@ namespace WriteBack.Service
                 await Task.Delay(_delay, stoppingToken);
             }
 
-            _logger.LogInformation("All write-back workers stopped, all Redis data processed");
+            _logger.LogInformation("All write-back workers stopped for world {World}, all Redis data processed", _world);
         }
 
         /// <summary>
@@ -91,11 +136,19 @@ namespace WriteBack.Service
             var bufferKey = $"{Const.RedisBufferKey}:{db}";
             var continuous = true;
             var bulk = 100;
+            var shardSize = _redisService.GetShardSize(_world);
             while (continuous || !stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    var redisSqlConn = _redisService.Redis(bufferKey);
+                    var redisSqlConn = db == -1 ? _redisService.GetGlobalConnection(_world) : _redisService.GetDataConnection(_world, db);
+                    if (redisSqlConn == null)
+                    {
+                        _logger.LogError("Redis connection not found for world {World} DB {Db}", _world, db);
+                        await Task.Delay(_delay, stoppingToken);
+                        continue;
+                    }
+
                     var result = await redisSqlConn.ScriptEvaluateAsync("pop_sql_range.lua", new
                     {
                         key = new RedisKey(bufferKey),
@@ -109,9 +162,9 @@ namespace WriteBack.Service
                         continue;
                     }
 
-                    await using var dbConn = _dbContext.Connection(db);
+                    await using var dbConn = db == -1 ? _dbContext.GetGlobalConnection(_world) : _dbContext.GetDataConnection(_world, db);
                     var backgroundCommitEntryList = ((RedisResult[])result).Select((x => JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString())));
-                    foreach (var g in backgroundCommitEntryList.GroupBy(x => x.Hash != null ? (int)(x.Hash % _redisService.ShardSize) : -1))
+                    foreach (var g in backgroundCommitEntryList.GroupBy(x => x.Hash != null ? (int)(x.Hash % shardSize) : -1))
                     {
                         var mod = g.Key;
                         var sql = string.Join(Environment.NewLine, g.Select(x => x.SQL));
@@ -130,9 +183,13 @@ namespace WriteBack.Service
                             values.Add(count);
                         }
 
-                        await _redisService.Redis(mod).ScriptEvaluateAsync("end_of_ref.lua",
-                            keys: [new RedisKey(Const.ReferenceCountKey)],
-                            values: [.. values]);
+                        var redisRefConn = mod == -1 ? _redisService.GetGlobalConnection(_world) : _redisService.GetDataConnection(_world, mod);
+                        if (redisRefConn != null)
+                        {
+                            await redisRefConn.ScriptEvaluateAsync("end_of_ref.lua",
+                                keys: [new RedisKey(Const.ReferenceCountKey)],
+                                values: [.. values]);
+                        }
                     }
                 }
                 catch (LogicException e)

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Dapper;
 using Fb.Model.EnumValue;
 using Http;
@@ -39,10 +39,10 @@ namespace Internal.Controllers
             _distributedLock = distributedLock;
             _sessionService = sessionService;
         }
-        private async Task<List<Protocol.ClanMember>> GetClanMemberResponse(uint id)
+        private async Task<List<Protocol.ClanMember>> GetClanMemberResponse(uint world, uint id)
         {
-            var members = await _dbContext.ClanMember.Get(id);
-            var conn = _dbContext.Connection(-1);
+            var members = await _dbContext.ClanMember.Get(world, id);
+            await using var conn = _dbContext.GetGlobalConnection(world);
             var names = await conn.QueryAsync($"SELECT `id`, `name` FROM `name` WHERE id IN ({string.Join(',', members.Select(x => x.User))})");
             var nameDict = names.ToDictionary(x => x.id, x => x.name);
 
@@ -57,21 +57,21 @@ namespace Internal.Controllers
             }).ToList();
         }
 
-        [HttpGet("{id}")]
-        public async Task<Response.ClanDetails> Get(uint id)
+        [HttpGet("{world}/{id}")]
+        public async Task<Response.ClanDetails> Get(uint world, uint id)
         {
             try
             {
-                await using (await _distributedLock.Lock(Clan.DistributedLockKey(id)))
+                await using (await _distributedLock.Lock(world, Clan.DistributedLockKey(id)))
                 {
-                    var clan = await _dbContext.Clan.Get(id) ??
+                    var clan = await _dbContext.Clan.Get(world, id) ??
                         throw new LogicException(ErrorCode.NotFoundClan);
 
                     return new Response.ClanDetails
                     {
                         Action = Protocol.ClanDetailsAction.Query,
                         Clan = _mapper.Map<Protocol.Clan>(clan),
-                        Members = await GetClanMemberResponse(id),
+                        Members = await GetClanMemberResponse(world, id),
                         Error = (uint)ErrorCode.None
                     };
                 }
@@ -98,12 +98,13 @@ namespace Internal.Controllers
         [HttpPost("create")]
         public async Task<Response.ClanDetails> Create(Request.CreateClan request)
         {
-            await using var db = _dbContext.Connection(-1);
+            var world = request.World;
+            await using var db = _dbContext.GetGlobalConnection(world);
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
             try
             {
-                var ch = await _dbContext.Character.Get(request.Master) ??
+                var ch = await _dbContext.Character.Get(world, request.Master) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 var existing = await db.QueryFirstOrDefaultAsync<uint?>(
@@ -120,17 +121,17 @@ namespace Internal.Controllers
                     transaction: trans
                 );
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(ch.Id)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(ch.Id)))
                 {
-                    await using (await _distributedLock.Lock(Clan.DistributedLockKey(newClanId)))
+                    await using (await _distributedLock.Lock(world, Clan.DistributedLockKey(newClanId)))
                     {
-                        var sync = await _dbContext.CharacterSync.Get(ch.Id) ??
+                        var sync = await _dbContext.CharacterSync.Get(world, ch.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                         if (sync.Clan != null)
                             throw new LogicException(ErrorCode.ClanAlreadyJoined);
 
-                        var clan = _dbContext.Clan.Set(new Clan
+                        var clan = _dbContext.Clan.Set(world, new Clan
                         {
                             Id = newClanId,
                             Name = request.Name,
@@ -138,7 +139,7 @@ namespace Internal.Controllers
                             Deleted = false
                         });
 
-                        _dbContext.ClanMember.Set(new ClanMember
+                        _dbContext.ClanMember.Set(world, new ClanMember
                         {
                             Clan = clan.Id,
                             User = request.Master,
@@ -146,7 +147,7 @@ namespace Internal.Controllers
                         });
 
                         sync.Clan = clan.Id;
-                        _dbContext.CharacterSync.Set(sync);
+                        _dbContext.CharacterSync.Set(world, sync);
 
                         await _dbContext.SaveChangesAsync();
                         await trans.CommitAsync();
@@ -156,11 +157,11 @@ namespace Internal.Controllers
                             Host = request.Host,
                             Action = Protocol.ClanDetailsAction.Create,
                             Clan = _mapper.Map<Protocol.Clan>(clan),
-                            Members = await GetClanMemberResponse(clan.Id),
+                            Members = await GetClanMemberResponse(world, clan.Id),
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                         return response;
                     }
                 }
@@ -193,28 +194,29 @@ namespace Internal.Controllers
         [HttpPost("destroy")]
         public async Task<Response.DestroyClan> Destroy(Request.DestroyClan request)
         {
-            await using var db = _dbContext.Connection(-1);
+            var world = request.World;
+            await using var db = _dbContext.GetGlobalConnection(world);
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
             try
             {
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(request.Master)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(request.Master)))
                 {
-                    var ch = await _dbContext.Character.Get(request.Master) ??
+                    var ch = await _dbContext.Character.Get(world, request.Master) ??
                         throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                    var sync = await _dbContext.CharacterSync.Get(ch.Id) ??
+                    var sync = await _dbContext.CharacterSync.Get(world, ch.Id) ??
                         throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                     if (sync.Clan == null)
                         throw new LogicException(ErrorCode.ClanNotJoined);
 
-                    await using (await _distributedLock.Lock(Clan.DistributedLockKey(sync.Clan.Value)))
+                    await using (await _distributedLock.Lock(world, Clan.DistributedLockKey(sync.Clan.Value)))
                     {
-                        var clan = await _dbContext.Clan.Get(sync.Clan.Value) ??
+                        var clan = await _dbContext.Clan.Get(world, sync.Clan.Value) ??
                             throw new LogicException(ErrorCode.NotFoundClan);
 
-                        var members = (await _dbContext.ClanMember.Get(clan.Id)).ToList();
+                        var members = (await _dbContext.ClanMember.Get(world, clan.Id)).ToList();
                         if (members.Count != 1)
                             throw new LogicException(ErrorCode.ClanMemberExists);
 
@@ -226,14 +228,14 @@ namespace Internal.Controllers
                             throw new LogicException(ErrorCode.ClanNoPrivilege);
 
                         master.Deleted = true;
-                        _dbContext.ClanMember.Set(master);
+                        _dbContext.ClanMember.Set(world, master);
 
                         sync.Clan = null;
-                        _dbContext.CharacterSync.Set(sync);
+                        _dbContext.CharacterSync.Set(world, sync);
 
                         var oldTitle = clan.Title;
                         clan.Deleted = true;
-                        _dbContext.Clan.Set(clan);
+                        _dbContext.Clan.Set(world, clan);
 
                         await db.ExecuteAsync("USP_CLAN_NAME_DELETE", new
                         {
@@ -243,7 +245,7 @@ namespace Internal.Controllers
                         await _dbContext.SaveChangesAsync();
                         await trans.CommitAsync();
 
-                        var conn = _dbContext.Connection(-1);
+                        var conn = _dbContext.GetGlobalConnection(world);
                         var masterName = await conn.QueryFirstOrDefaultAsync<string>(
                             $"SELECT `name` FROM `name` WHERE id = {ch.Id}");
 
@@ -260,7 +262,7 @@ namespace Internal.Controllers
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                         return response;
                     }
                 }
@@ -293,25 +295,26 @@ namespace Internal.Controllers
         {
             try
             {
+                var world = request.World;
                 // Get changer character
-                var changer = await _dbContext.Character.Get(request.Changer) ??
+                var changer = await _dbContext.Character.Get(world, request.Changer) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(changer.Id)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(changer.Id)))
                 {
-                    var sync = await _dbContext.CharacterSync.Get(changer.Id) ??
+                    var sync = await _dbContext.CharacterSync.Get(world, changer.Id) ??
                         throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                     if (sync.Clan == null)
                         throw new LogicException(ErrorCode.ClanNotJoined);
 
-                    await using (await _distributedLock.Lock(Clan.DistributedLockKey(sync.Clan.Value)))
+                    await using (await _distributedLock.Lock(world, Clan.DistributedLockKey(sync.Clan.Value)))
                     {
-                        var clan = await _dbContext.Clan.Get(sync.Clan.Value) ??
+                        var clan = await _dbContext.Clan.Get(world, sync.Clan.Value) ??
                             throw new LogicException(ErrorCode.NotFoundClan);
 
                         // Get changer's clan member info
-                        var changerMember = await _dbContext.ClanMember.Get(clan.Id, changer.Id) ??
+                        var changerMember = await _dbContext.ClanMember.Get(world, clan.Id, changer.Id) ??
                             throw new LogicException(ErrorCode.NotFoundClanMember);
 
                         // Check if changer has sufficient privileges (Master role or higher)
@@ -325,7 +328,7 @@ namespace Internal.Controllers
                             throw new LogicException(ErrorCode.ClanTitleTooShort);
 
                         clan.Title = request.Title;
-                        _dbContext.Clan.Set(clan);
+                        _dbContext.Clan.Set(world, clan);
 
                         await _dbContext.SaveChangesAsync();
 
@@ -344,7 +347,7 @@ namespace Internal.Controllers
                             NewTitle = request.Title,
                             Error = (uint)ErrorCode.None
                         };
-                        _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                         return response;
                     }
                 }
@@ -375,32 +378,33 @@ namespace Internal.Controllers
         {
             try
             {
+                var world = request.World;
                 // Get inviter character (the one doing the inviting)
-                var inviter = await _dbContext.Character.Get(request.InviterUid) ??
+                var inviter = await _dbContext.Character.Get(world, request.InviterUid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 if (inviter.Name == request.InviteeName)
                     throw new LogicException(ErrorCode.CannotInviteSelf);
 
                 // Get invitee session and character (the one being invited)
-                var inviteeSession = await _sessionService.Get(request.InviteeName) ??
+                var inviteeSession = await _sessionService.Get(world, request.InviteeName) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var invitee = await _dbContext.Character.Get(inviteeSession.Uid) ??
+                var invitee = await _dbContext.Character.Get(world, inviteeSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
                 // Prevent self-invitation
                 if (inviter.Id == invitee.Id)
                     throw new LogicException(ErrorCode.CannotInviteSelf);
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(inviter.Id)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(inviter.Id)))
                 {
-                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(invitee.Id)))
+                    await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(invitee.Id)))
                     {
-                        var inviterSync = await _dbContext.CharacterSync.Get(inviter.Id) ??
+                        var inviterSync = await _dbContext.CharacterSync.Get(world, inviter.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var inviteeSync = await _dbContext.CharacterSync.Get(invitee.Id) ??
+                        var inviteeSync = await _dbContext.CharacterSync.Get(world, invitee.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                         // Check if inviter is in a clan
@@ -411,13 +415,13 @@ namespace Internal.Controllers
                         if (inviteeSync.Clan != null)
                             throw new LogicException(ErrorCode.ClanAlreadyJoined);
 
-                        await using (await _distributedLock.Lock(Clan.DistributedLockKey(inviterSync.Clan.Value)))
+                        await using (await _distributedLock.Lock(world, Clan.DistributedLockKey(inviterSync.Clan.Value)))
                         {
-                            var clan = await _dbContext.Clan.Get(inviterSync.Clan.Value) ??
+                            var clan = await _dbContext.Clan.Get(world, inviterSync.Clan.Value) ??
                                 throw new LogicException(ErrorCode.NotFoundClan);
 
                             // Get inviter's clan member info
-                            var inviterMember = await _dbContext.ClanMember.Get(clan.Id, inviter.Id) ??
+                            var inviterMember = await _dbContext.ClanMember.Get(world, clan.Id, inviter.Id) ??
                                 throw new LogicException(ErrorCode.NotFoundClanMember);
 
                             // Check if inviter has sufficient privileges
@@ -425,7 +429,7 @@ namespace Internal.Controllers
                                 throw new LogicException(ErrorCode.ClanNoPrivilege);
 
                             // Add invitee to clan
-                            var cm = _dbContext.ClanMember.Set(new ClanMember
+                            var cm = _dbContext.ClanMember.Set(world, new ClanMember
                             {
                                 Clan = clan.Id,
                                 Role = (uint)ClanRole.Mate,
@@ -434,7 +438,7 @@ namespace Internal.Controllers
                             });
 
                             inviteeSync.Clan = clan.Id;
-                            _dbContext.CharacterSync.Set(inviteeSync);
+                            _dbContext.CharacterSync.Set(world, inviteeSync);
 
                             await _dbContext.SaveChangesAsync();
 
@@ -462,7 +466,7 @@ namespace Internal.Controllers
                                 Error = (uint)ErrorCode.None
                             };
 
-                            _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                             return response;
                         }
                     }
@@ -492,15 +496,16 @@ namespace Internal.Controllers
         {
             try
             {
-                var uid = await _dbContext.Character.GetCharacterId(request.Name) ??
+                var world = request.World;
+                var uid = await _dbContext.Character.GetCharacterId(world, request.Name) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(uid)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(uid)))
                 {
-                    var ch = await _dbContext.Character.Get(uid) ??
+                    var ch = await _dbContext.Character.Get(world, uid) ??
                         throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                    var sync = await _dbContext.CharacterSync.Get(ch.Id) ??
+                    var sync = await _dbContext.CharacterSync.Get(world, ch.Id) ??
                         throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                     if (sync.Clan == null)
@@ -509,22 +514,22 @@ namespace Internal.Controllers
                     if (sync.Clan.Value != request.Clan)
                         throw new LogicException(ErrorCode.ClanNotMatched);
 
-                    await using (await _distributedLock.Lock(Clan.DistributedLockKey(sync.Clan.Value)))
+                    await using (await _distributedLock.Lock(world, Clan.DistributedLockKey(sync.Clan.Value)))
                     {
-                        var clan = await _dbContext.Clan.Get(sync.Clan.Value) ??
+                        var clan = await _dbContext.Clan.Get(world, sync.Clan.Value) ??
                             throw new LogicException(ErrorCode.NotFoundClan);
 
-                        var member = await _dbContext.ClanMember.Get(clan.Id, ch.Id) ??
+                        var member = await _dbContext.ClanMember.Get(world, clan.Id, ch.Id) ??
                             throw new LogicException(ErrorCode.NotFoundClanMember);
 
                         if (member.Role == (uint)ClanRole.Master)
                             throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
 
                         member.Deleted = true;
-                        _dbContext.ClanMember.Set(member);
+                        _dbContext.ClanMember.Set(world, member);
 
                         sync.Clan = null;
-                        _dbContext.CharacterSync.Set(sync);
+                        _dbContext.CharacterSync.Set(world, sync);
 
                         await _dbContext.SaveChangesAsync();
 
@@ -552,7 +557,7 @@ namespace Internal.Controllers
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                         return response;
                     }
                 }
@@ -583,30 +588,31 @@ namespace Internal.Controllers
         {
             try
             {
+                var world = request.World;
                 // Get kicker character
-                var kickerUid = await _dbContext.Character.GetCharacterId(request.Kicker) ??
+                var kickerUid = await _dbContext.Character.GetCharacterId(world, request.Kicker) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
-                var kicker = await _dbContext.Character.Get(kickerUid) ??
+                var kicker = await _dbContext.Character.Get(world, kickerUid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 // Get target character
-                var targetUid = await _dbContext.Character.GetCharacterId(request.Target) ??
+                var targetUid = await _dbContext.Character.GetCharacterId(world, request.Target) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
-                var target = await _dbContext.Character.Get(targetUid) ??
+                var target = await _dbContext.Character.Get(world, targetUid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 // Prevent self-kicking
                 if (kicker.Name == target.Name)
                     throw new LogicException(ErrorCode.CannotKickSelf);
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(kicker.Id)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(kicker.Id)))
                 {
-                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(target.Id)))
+                    await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(target.Id)))
                     {
-                        var kickerSync = await _dbContext.CharacterSync.Get(kicker.Id) ??
+                        var kickerSync = await _dbContext.CharacterSync.Get(world, kicker.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
+                        var targetSync = await _dbContext.CharacterSync.Get(world, target.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                         // Check if kicker is in a clan
@@ -617,17 +623,17 @@ namespace Internal.Controllers
                         if (targetSync.Clan != kickerSync.Clan)
                             throw new LogicException(ErrorCode.ClanNotJoined);
 
-                        await using (await _distributedLock.Lock(Clan.DistributedLockKey(kickerSync.Clan.Value)))
+                        await using (await _distributedLock.Lock(world, Clan.DistributedLockKey(kickerSync.Clan.Value)))
                         {
-                            var clan = await _dbContext.Clan.Get(kickerSync.Clan.Value) ??
+                            var clan = await _dbContext.Clan.Get(world, kickerSync.Clan.Value) ??
                                 throw new LogicException(ErrorCode.NotFoundClan);
 
                             // Get kicker's clan member info
-                            var kickerMember = await _dbContext.ClanMember.Get(clan.Id, kicker.Id) ??
+                            var kickerMember = await _dbContext.ClanMember.Get(world, clan.Id, kicker.Id) ??
                                 throw new LogicException(ErrorCode.NotFoundClanMember);
 
                             // Get target's clan member info
-                            var targetMember = await _dbContext.ClanMember.Get(clan.Id, target.Id) ??
+                            var targetMember = await _dbContext.ClanMember.Get(world, clan.Id, target.Id) ??
                                 throw new LogicException(ErrorCode.NotFoundClanMember);
 
                             // Check if kicker has minimum kickable role
@@ -644,10 +650,10 @@ namespace Internal.Controllers
 
                             // Remove target from clan
                             targetMember.Deleted = true;
-                            _dbContext.ClanMember.Set(targetMember);
+                            _dbContext.ClanMember.Set(world, targetMember);
 
                             targetSync.Clan = null;
-                            _dbContext.CharacterSync.Set(targetSync);
+                            _dbContext.CharacterSync.Set(world, targetSync);
 
                             await _dbContext.SaveChangesAsync();
 
@@ -675,7 +681,7 @@ namespace Internal.Controllers
                                 Error = (uint)ErrorCode.None
                             };
 
-                            _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                             return response;
                         }
                     }
@@ -705,9 +711,10 @@ namespace Internal.Controllers
         {
             try
             {
-                await using (await _distributedLock.Lock(Clan.DistributedLockKey(request.Clan)))
+                var world = request.World;
+                await using (await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan)))
                 {
-                    var clan = await _dbContext.Clan.Get(request.Clan) ??
+                    var clan = await _dbContext.Clan.Get(world, request.Clan) ??
                         throw new LogicException(ErrorCode.NotFoundClan);
 
                     var response = new Response.BroadcastClan
@@ -717,7 +724,7 @@ namespace Internal.Controllers
                         Type = request.Type,
                         Error = (uint)ErrorCode.None
                     };
-                    _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                    _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.clan");
                     return response;
                 }
             }
@@ -743,28 +750,29 @@ namespace Internal.Controllers
         {
             try
             {
+                var world = request.World;
                 // Get changer character (the one making the change)
-                var changer = await _dbContext.Character.Get(request.ChangerUid) ??
+                var changer = await _dbContext.Character.Get(world, request.ChangerUid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 // Get target character (the one being changed)
-                var targetUid = await _dbContext.Character.GetCharacterId(request.TargetName) ??
+                var targetUid = await _dbContext.Character.GetCharacterId(world, request.TargetName) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
-                var target = await _dbContext.Character.Get(targetUid) ??
+                var target = await _dbContext.Character.Get(world, targetUid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 // Prevent self-role change
                 if (changer.Id == target.Id)
                     throw new LogicException(ErrorCode.CannotChangeClanRoleSelf);
 
-                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(changer.Id)))
+                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(changer.Id)))
                 {
-                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(target.Id)))
+                    await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(target.Id)))
                     {
-                        var changerSync = await _dbContext.CharacterSync.Get(changer.Id) ??
+                        var changerSync = await _dbContext.CharacterSync.Get(world, changer.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
+                        var targetSync = await _dbContext.CharacterSync.Get(world, target.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                         // Check if changer is in a clan
@@ -775,17 +783,17 @@ namespace Internal.Controllers
                         if (targetSync.Clan != changerSync.Clan)
                             throw new LogicException(ErrorCode.ClanNotJoined);
 
-                        await using (await _distributedLock.Lock(Clan.DistributedLockKey(changerSync.Clan.Value)))
+                        await using (await _distributedLock.Lock(world, Clan.DistributedLockKey(changerSync.Clan.Value)))
                         {
-                            var clan = await _dbContext.Clan.Get(changerSync.Clan.Value) ??
+                            var clan = await _dbContext.Clan.Get(world, changerSync.Clan.Value) ??
                                 throw new LogicException(ErrorCode.NotFoundClan);
 
                             // Get changer's clan member info
-                            var changerMember = await _dbContext.ClanMember.Get(clan.Id, changer.Id) ??
+                            var changerMember = await _dbContext.ClanMember.Get(world, clan.Id, changer.Id) ??
                                 throw new LogicException(ErrorCode.NotFoundClanMember);
 
                             // Get target's clan member info
-                            var targetMember = await _dbContext.ClanMember.Get(clan.Id, target.Id) ??
+                            var targetMember = await _dbContext.ClanMember.Get(world, clan.Id, target.Id) ??
                                 throw new LogicException(ErrorCode.NotFoundClanMember);
 
                             // Check if changer has sufficient privileges
@@ -815,7 +823,7 @@ namespace Internal.Controllers
 
                             // Update target's role
                             targetMember.Role = request.NewRole;
-                            _dbContext.ClanMember.Set(targetMember);
+                            _dbContext.ClanMember.Set(world, targetMember);
 
                             await _dbContext.SaveChangesAsync();
 
@@ -840,7 +848,7 @@ namespace Internal.Controllers
                                 Error = (uint)ErrorCode.None
                             };
 
-                            _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
                             return response;
                         }
                     }

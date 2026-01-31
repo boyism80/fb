@@ -31,7 +31,7 @@ namespace Marketplace.Reepository
         /// <returns>The marketplace listing if found; otherwise, null.</returns>
         public async Task<MarketplaceListing> GetListingByIdAsync(string listingId)
         {
-            await using var conn = _dbContext.Connection(-1);
+            await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $@"
                 SELECT * FROM `marketplace_listing` 
                 WHERE `id` = {listingId.Escape()} AND `status` != {ListingState.EXPIRED.Escape()}";
@@ -59,7 +59,7 @@ namespace Marketplace.Reepository
             }
             else
             {
-                await using var conn = _dbContext.Connection(-1);
+                await using var conn = _dbContext.GetUnifiedConnection();
                 return await conn.QueryFirstOrDefaultAsync<MarketplaceListing>(sql);
             }
         }
@@ -76,7 +76,7 @@ namespace Marketplace.Reepository
                 return new List<MarketplaceListing>();
             }
 
-            await using var conn = _dbContext.Connection(-1);
+            await using var conn = _dbContext.GetUnifiedConnection();
             var parameters = new DynamicParameters();
             parameters.Add("ListingIds", listingIds);
 
@@ -102,7 +102,7 @@ namespace Marketplace.Reepository
                 return new Dictionary<string, MarketplacePurchase>();
             }
 
-            await using var conn = _dbContext.Connection(-1);
+            await using var conn = _dbContext.GetUnifiedConnection();
             var parameters = new DynamicParameters();
             parameters.Add("ListingIds", listingIds);
             parameters.Add("BuyerId", buyerId);
@@ -120,6 +120,7 @@ namespace Marketplace.Reepository
         /// Creates a new marketplace listing.
         /// </summary>
         /// <param name="listingId">The unique identifier of the listing (UUID string).</param>
+        /// <param name="world">The world identifier (e.g., 1, 2).</param>
         /// <param name="sellerId">The unique identifier of the seller.</param>
         /// <param name="itemModel">The item model identifier.</param>
         /// <param name="remainingCount">The number of items available for purchase.</param>
@@ -130,6 +131,7 @@ namespace Marketplace.Reepository
         /// <returns>The unique identifier of the created listing (UUID string).</returns>
         public async Task<string> CreateListingAsync(
             string listingId,
+            uint world,
             uint sellerId,
             uint itemModel,
             ushort remainingCount,
@@ -138,10 +140,11 @@ namespace Marketplace.Reepository
             uint price,
             DateTime expireDate)
         {
-            await using var conn = _dbContext.Connection(-1);
+            await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $"""
                 INSERT INTO `marketplace_listing` (
                     `id`,
+                    `world`,
                     `seller_id`,
                     `item_model`,
                     `remaining_count`,
@@ -152,6 +155,7 @@ namespace Marketplace.Reepository
                     `expire_date`)
                 VALUES (
                     {listingId.Escape()},
+                    {world.Escape()},
                     {sellerId.Escape()},
                     {itemModel.Escape()},
                     {remainingCount.Escape()},
@@ -174,7 +178,7 @@ namespace Marketplace.Reepository
         /// <returns>True if the update was successful; otherwise, false.</returns>
         public async Task<bool> UpdateListingStatusAsync(string listingId, ListingState status)
         {
-            await using var conn = _dbContext.Connection(-1);
+            await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $@"
                 UPDATE `marketplace_listing` 
                 SET `status` = {status.Escape()},
@@ -233,7 +237,7 @@ namespace Marketplace.Reepository
             }
             else
             {
-                await using var conn = _dbContext.Connection(-1);
+                await using var conn = _dbContext.GetUnifiedConnection();
                 rowsAffected = await conn.ExecuteAsync(sql);
             }
 
@@ -248,7 +252,7 @@ namespace Marketplace.Reepository
         /// <returns>True if the listing ID exists; otherwise, false.</returns>
         public async Task<bool> CheckListingIdExistsAsync(string listingId)
         {
-            await using var conn = _dbContext.Connection(-1);
+            await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $@"
                 SELECT COUNT(*) FROM `marketplace_listing` 
                 WHERE `id` = {listingId.Escape()}";
@@ -333,7 +337,7 @@ namespace Marketplace.Reepository
             }
             else
             {
-                await using var conn = _dbContext.Connection(-1);
+                await using var conn = _dbContext.GetUnifiedConnection();
                 return (await conn.QueryAsync<MarketplaceListing>(sql, parameters)).ToList();
             }
         }
@@ -394,7 +398,7 @@ namespace Marketplace.Reepository
             }
             else
             {
-                await using var conn = _dbContext.Connection(-1);
+                await using var conn = _dbContext.GetUnifiedConnection();
                 return await conn.QuerySingleAsync<int>(sql, parameters);
             }
         }
@@ -407,7 +411,7 @@ namespace Marketplace.Reepository
         /// <returns>The count of active listings for the seller.</returns>
         public async Task<int> CountActiveListingsBySellerAsync(uint sellerId)
         {
-            await using var conn = _dbContext.Connection(-1);
+            await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $@"
                 SELECT COUNT(*) FROM `marketplace_listing` 
                 WHERE `seller_id` = {sellerId.Escape()} 

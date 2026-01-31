@@ -1,12 +1,14 @@
 #include <fb/log_collector.h>
 #include <fb/amqp.h>
 #include <fb/logger.h>
+#include <fb/model/datetime.h>
 #include <json/json.h>
 #include <json/writer.h>
 #include <sstream>
 #include <chrono>
 #include <format>
 #include <random.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 using namespace fb;
 
@@ -16,10 +18,12 @@ log_collector::log_collector(const std::string& hostname,
                              const std::string& pwd,
                              const std::string& server_id,
                              const std::string& server_name,
-                             size_t             queue_size) :
+                             size_t             queue_size,
+                             uint32_t           world) :
     _server_id(server_id),
     _server_name(server_name),
-    _queue_size(queue_size)
+    _queue_size(queue_size),
+    _world(world)
 {
     // Create and connect to RabbitMQ
     this->_amqp    = std::make_unique<fb::amqp::socket>();
@@ -35,10 +39,8 @@ void log_collector::write(const std::string& event_type, const Json::Value& data
 {
     try
     {
-        // Create log entry
-        auto now                 = std::chrono::system_clock::now().time_since_epoch();
         auto log_entry           = Json::Value{};
-        log_entry["timestamp"]   = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
+        log_entry["timestamp"]   = fb::model::datetime().to_string();
         log_entry["event"]       = event_type;
         log_entry["server_id"]   = this->_server_id;
         log_entry["server_name"] = this->_server_name;
@@ -87,5 +89,9 @@ std::string log_collector::serialize_log_entry(const Json::Value& log_entry) con
 std::string log_collector::select_random_routing_key() const
 {
     auto queue_index = ::random<size_t>(0, this->_queue_size - 1);
+    if (this->_world > 0)
+    {
+        return std::format("fb.{}.log.{}", this->_world, queue_index);
+    }
     return std::format("fb.log.{}", queue_index);
 }

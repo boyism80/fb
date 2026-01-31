@@ -1,4 +1,3 @@
-﻿using Http.Model;
 using StackExchange.Redis;
 using StackExchange.Redis.Extensions.Core.Configuration;
 using System.Text;
@@ -83,105 +82,165 @@ namespace Http.Service
     /// </summary>
     public class RedisService
     {
-        private readonly Dictionary<int, Redis> _redis = new Dictionary<int, Redis>();
-
-        /// <summary>
-        /// Gets the number of Redis shards available for distribution.
-        /// </summary>
-        /// <value>The total count of Redis shards excluding the default (-1) instance.</value>
-        public int ShardSize { get; private set; }
+        private Redis _unifiedRedis;
+        private readonly Dictionary<uint, Redis> _worldGlobalRedis = new Dictionary<uint, Redis>();
+        private readonly Dictionary<uint, List<Redis>> _worldShardRedis = new Dictionary<uint, List<Redis>>();
+        private readonly IConfiguration _configuration;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RedisService"/> class.
-        /// Creates Redis connections for all configured instances and calculates shard size.
+        /// Creates Redis connections using unified/global/data structure: Redis:{unified|worlds:{world}:{global|data}}.
         /// </summary>
         /// <param name="configuration">The application configuration containing Redis connection settings.</param>
         public RedisService(IConfiguration configuration)
         {
-            var size = 0;
-            foreach (var section in configuration.GetSection("Redis").GetChildren())
-            {
-                var id = int.Parse(section.Key);
-                var host = section.Get<RedisHost>();
-                _redis.Add(id, new Redis(host));
+            _configuration = configuration;
 
-                if (id != -1)
-                    size++;
+            // Load unified Redis
+            var unifiedHost = _configuration.GetSection("Redis:unified").Get<RedisHost>();
+            if (unifiedHost != null)
+            {
+                _unifiedRedis = new Redis(unifiedHost);
             }
 
-            ShardSize = size;
+            // Load world-specific Redis
+            var worldsSection = _configuration.GetSection("Redis:worlds");
+            foreach (var worldChild in worldsSection.GetChildren())
+            {
+                if (uint.TryParse(worldChild.Key, out var world))
+                {
+                    // Load global Redis for this world
+                    var globalHost = worldChild.GetSection("global").Get<RedisHost>();
+                    if (globalHost != null)
+                    {
+                        _worldGlobalRedis[world] = new Redis(globalHost);
+                    }
+
+                    // Load shard Redis array for this world
+                    var dataArray = worldChild.GetSection("data").Get<RedisHost[]>();
+                    if (dataArray != null && dataArray.Length > 0)
+                    {
+                        var shardList = dataArray.Select(host => new Redis(host)).ToList();
+                        _worldShardRedis[world] = shardList;
+                    }
+                }
+            }
         }
 
         /// <summary>
-        /// Gets the Redis instance for the specified shard ID.
+        /// Gets unified-global Redis instance.
+        /// Use this for services that need cross-world data.
+        /// Unified Redis is shared across all worlds (no world parameter needed).
         /// </summary>
-        /// <param name="id">The shard ID to retrieve the Redis instance for.</param>
-        /// <returns>The Redis instance for the specified shard, or null if not found.</returns>
-        public Redis Redis(int id)
+        /// <returns>The unified-global Redis instance, or null if not found.</returns>
+        public Redis GetUnifiedConnection()
         {
-            if (_redis.ContainsKey(id) == false)
+            return _unifiedRedis;
+        }
+
+        /// <summary>
+        /// Gets world-global Redis instance for the specified world.
+        /// Use this for world-specific global data.
+        /// </summary>
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <returns>The world-global Redis instance, or null if not found.</returns>
+        public Redis GetGlobalConnection(uint world)
+        {
+            if (world == 0)
+                throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
+
+            return _worldGlobalRedis.TryGetValue(world, out var redis) ? redis : null;
+        }
+
+        /// <summary>
+        /// Gets shard Redis instance for the specified world and shard index.
+        /// Use this for sharded data.
+        /// </summary>
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <param name="index">The shard index (0-based array index).</param>
+        /// <returns>The shard Redis instance, or null if not found.</returns>
+        public Redis GetDataConnection(uint world, int index)
+        {
+            if (world == 0)
+                throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
+
+            if (index < 0)
+                return GetGlobalConnection(world);
+
+            if (!_worldShardRedis.TryGetValue(world, out var shardList))
                 return null;
 
-            return _redis[id];
+            if (index >= shardList.Count)
+                return null;
+
+            return shardList[index];
         }
 
         /// <summary>
-        /// Gets the Redis instance for the specified unsigned integer ID using modulo sharding.
+        /// Gets shard Redis instance using ID-based sharding.
+        /// Automatically calculates shard index from ID using modulo operation.
         /// </summary>
-        /// <param name="id">The unsigned integer ID to determine the target shard.</param>
-        /// <returns>The Redis instance for the calculated shard.</returns>
-        public Redis Redis(uint id)
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <param name="id">The ID used for sharding calculation.</param>
+        /// <returns>The shard Redis instance, or null if not found.</returns>
+        public Redis GetShardConnection(uint world, uint id)
         {
-            return Redis((int)(id % ShardSize));
-        }
+            var shardSize = GetShardSize(world);
+            if (shardSize == 0)
+                return null;
 
-        public Redis Redis(uint? id)
-        {
-            if (id == null)
-                return Redis(-1);
-            else
-                return Redis(id.Value);
+            var index = (int)(id % (uint)shardSize);
+            return GetDataConnection(world, index);
         }
 
         /// <summary>
-        /// Gets the Redis instance for the specified string key using hash-based sharding.
-        /// Uses a simple hash algorithm to distribute keys across shards.
+        /// Gets shard Redis instance using string key-based sharding.
+        /// Calculates hash from string key and uses modulo operation.
         /// </summary>
-        /// <param name="key">The string key to determine the target shard.</param>
-        /// <returns>The Redis instance for the calculated shard based on key hash.</returns>
-        public Redis Redis(string key)
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <param name="key">The string key used for sharding calculation.</param>
+        /// <returns>The shard Redis instance, or null if not found.</returns>
+        public Redis GetShardConnection(uint world, string key)
         {
+            if (world == 0)
+                throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
+
+            var shardSize = GetShardSize(world);
+            if (shardSize == 0)
+                return null;
+
             ulong hash = 0;
             foreach (var b in Encoding.UTF8.GetBytes(key))
             {
                 hash = hash * 31 + b;
             }
-
-            return Redis((int)(hash % (ulong)ShardSize));
+            var shardIndex = (int)(hash % (ulong)shardSize);
+            return GetDataConnection(world, shardIndex);
         }
 
         /// <summary>
-        /// Gets the Redis instance for the specified Redis value key using its hash method.
+        /// Gets the shard size for the specified world.
         /// </summary>
-        /// <param name="key">The Redis value key implementing <see cref="IRedisValueKey"/>.</param>
-        /// <returns>The Redis instance for the calculated shard based on key hash.</returns>
-        public Redis Redis(IRedisValueKey key)
+        /// <param name="world">The world identifier (must be > 0).</param>
+        /// <returns>The count of Redis shards for the specified world.</returns>
+        public int GetShardSize(uint world)
         {
-            var hash = key.GetHash();
-            if (hash == null)
-                return Redis(-1);
-            else
-                return Redis(hash.Value);
+            if (world == 0)
+                throw new ArgumentException("World must be greater than 0. Unified has no shards.");
+
+            return _worldShardRedis.TryGetValue(world, out var shardList) ? shardList.Count : 0;
         }
 
         /// <summary>
-        /// Gets the Redis instance for the specified Redis key using string-based sharding.
+        /// Gets the list of world identifiers loaded from configuration (Redis:worlds).
+        /// Use this to iterate all configured worlds without scanning Redis keys.
         /// </summary>
-        /// <param name="key">The Redis key to determine the target shard.</param>
-        /// <returns>The Redis instance for the calculated shard based on key string representation.</returns>
-        public Redis Redis(RedisKey key)
+        /// <returns>Sorted list of configured world IDs.</returns>
+        public IReadOnlyList<uint> GetConfiguredWorlds()
         {
-            return Redis(key.ToString());
+            var worlds = new List<uint>(_worldGlobalRedis.Keys);
+            worlds.Sort();
+            return worlds;
         }
     }
 }

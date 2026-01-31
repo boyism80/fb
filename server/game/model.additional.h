@@ -523,4 +523,9 @@ public:                               \
 public:                         \
     LUA_PROTOTYPE
 
+#define DECLARE_SCHEDULE_EXTENSION \
+                                   \
+public:                            \
+    std::optional<fb::model::datetime> next_execution(const fb::model::datetime& now) const;
+
 #endif

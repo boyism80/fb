@@ -425,8 +425,10 @@ async::task<void> mob::drop_items()
             case DSL::item:
             {
                 auto params = fb::model::dsl::item(dsl.params);
+                auto multiplier = this->server.drop_rate_multiplier();
+                auto adjusted_percent = std::min(100.0, params.percent * multiplier);
                 auto random = std::rand() % 100;
-                if (random > (int)params.percent)
+                if (random > (int)adjusted_percent)
                     continue;
 
                 auto item   = table::item[params.id].make(this->server);

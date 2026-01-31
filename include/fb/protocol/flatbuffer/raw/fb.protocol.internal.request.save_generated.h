@@ -34,15 +34,19 @@ struct SaveBuilder;
 struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SaveBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_CHARACTER = 4,
-    VT_ITEMS = 6,
-    VT_SPELLS = 8,
-    VT_ACHIEVEMENTS = 10,
-    VT_QUESTS = 12,
-    VT_RECEIVED_SYSTEM_MAILS = 14,
-    VT_STORAGE_BOXES = 16,
-    VT_STORAGE_REWARD_MARKS = 18
+    VT_WORLD = 4,
+    VT_CHARACTER = 6,
+    VT_ITEMS = 8,
+    VT_SPELLS = 10,
+    VT_ACHIEVEMENTS = 12,
+    VT_QUESTS = 14,
+    VT_RECEIVED_SYSTEM_MAILS = 16,
+    VT_STORAGE_BOXES = 18,
+    VT_STORAGE_REWARD_MARKS = 20
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
   }
@@ -69,6 +73,7 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
            verifier.VerifyTable(character()) &&
            VerifyOffset(verifier, VT_ITEMS) &&
@@ -100,6 +105,9 @@ struct SaveBuilder {
   typedef Save Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(Save::VT_WORLD, world, 0);
+  }
   void add_character(::flatbuffers::Offset<fb::protocol::internal::raw::Character> character) {
     fbb_.AddOffset(Save::VT_CHARACTER, character);
   }
@@ -137,6 +145,7 @@ struct SaveBuilder {
 
 inline ::flatbuffers::Offset<Save> CreateSave(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
@@ -154,11 +163,13 @@ inline ::flatbuffers::Offset<Save> CreateSave(
   builder_.add_spells(spells);
   builder_.add_items(items);
   builder_.add_character(character);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Save> CreateSaveDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
@@ -176,6 +187,7 @@ inline ::flatbuffers::Offset<Save> CreateSaveDirect(
   auto storage_reward_marks__ = storage_reward_marks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>>(*storage_reward_marks) : 0;
   return fb::protocol::internal::request::raw::CreateSave(
       _fbb,
+      world,
       character,
       items__,
       spells__,

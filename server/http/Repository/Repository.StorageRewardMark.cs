@@ -13,17 +13,17 @@ namespace Http.Reepository
         {
         }
 
-        public Task<IEnumerable<StorageRewardMark>> Get(uint user)
+        public Task<IEnumerable<StorageRewardMark>> Get(uint world, uint user)
         {
-            return base.GetAll(new StorageRewardMarkKey
+            return base.GetAll(world, new StorageRewardMarkKey
             {
                 User = user
             });
         }
 
-        public Task<StorageRewardMark> Get(uint user, string pendingId)
+        public Task<StorageRewardMark> Get(uint world, uint user, string pendingId)
         {
-            return base.Get(new StorageRewardMarkKey
+            return base.Get(world, new StorageRewardMarkKey
             {
                 User = user,
                 PendingId = pendingId

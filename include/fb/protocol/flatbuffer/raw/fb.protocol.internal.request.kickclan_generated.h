@@ -25,11 +25,15 @@ struct KickClanBuilder;
 struct KickClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef KickClanBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HOST = 4,
-    VT_CLAN = 6,
-    VT_KICKER = 8,
-    VT_TARGET = 10
+    VT_WORLD = 4,
+    VT_HOST = 6,
+    VT_CLAN = 8,
+    VT_KICKER = 10,
+    VT_TARGET = 12
   };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
@@ -44,6 +48,7 @@ struct KickClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
            VerifyOffset(verifier, VT_KICKER) &&
@@ -58,6 +63,9 @@ struct KickClanBuilder {
   typedef KickClan Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(KickClan::VT_WORLD, world, 0);
+  }
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(KickClan::VT_HOST, host, 0);
   }
@@ -83,6 +91,7 @@ struct KickClanBuilder {
 
 inline ::flatbuffers::Offset<KickClan> CreateKickClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t host = 0,
     uint32_t clan = 0,
     ::flatbuffers::Offset<::flatbuffers::String> kicker = 0,
@@ -92,11 +101,13 @@ inline ::flatbuffers::Offset<KickClan> CreateKickClan(
   builder_.add_kicker(kicker);
   builder_.add_clan(clan);
   builder_.add_host(host);
+  builder_.add_world(world);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<KickClan> CreateKickClanDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
     uint32_t host = 0,
     uint32_t clan = 0,
     const char *kicker = nullptr,
@@ -105,6 +116,7 @@ inline ::flatbuffers::Offset<KickClan> CreateKickClanDirect(
   auto target__ = target ? _fbb.CreateString(target) : 0;
   return fb::protocol::internal::request::raw::CreateKickClan(
       _fbb,
+      world,
       host,
       clan,
       kicker__,

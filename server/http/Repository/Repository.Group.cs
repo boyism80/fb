@@ -26,13 +26,14 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Retrieves a group by the master (leader) character ID.
+        /// Retrieves a group by world and the master (leader) character ID.
         /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
         /// <param name="master">The unique identifier of the group master/leader.</param>
         /// <returns>The group if found; otherwise, null.</returns>
-        public async Task<Group> Get(uint master)
+        public async Task<Group> Get(uint world, uint master)
         {
-            return await Get(new GroupKey { Master = master });
+            return await base.Get(world, new GroupKey { Master = master });
         }
 
         /// <summary>

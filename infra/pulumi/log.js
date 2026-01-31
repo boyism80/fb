@@ -6,8 +6,10 @@ module.exports = {
 
         const resources = []
         const appLabels = { app: "log" }
-        for(const [section, sectionConf] of Object.entries(conf.log)) {
+        for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+            if (!worldConf.log) continue
             const config = {
+                "World": parseInt(worldConf.id),
                 "Logging": {
                     "LogLevel": {
                         "Default": "Information",
@@ -18,26 +20,48 @@ module.exports = {
                     "MySql": {}
                 },
                 "RabbitMQ": {
-                    "Host": `rabbitmq-${sectionConf.rabbitmq || "section-1"}-log`,
-                    "Port": conf.rabbitmq[sectionConf.rabbitmq || "section-1"].log.port.amqp.cluster,
-                    "Uid": "fb",
-                    "Pwd": "admin",
-                    "QueueSize": 128
+                    "Internal": {
+                        "Host": "rabbitmq-internal",
+                        "Port": conf["unified-infra"].rabbitmq.internal.port.amqp.cluster,
+                        "Uid": "fb",
+                        "Pwd": "admin"
+                    },
+                    "Log": {
+                        "Host": "rabbitmq-log",
+                        "Port": conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
+                        "Uid": "fb",
+                        "Pwd": "admin",
+                        "QueueSize": 128
+                    }
                 },
                 "Log": {
                     "InstanceCount": 5
                 }
             }
 
-            // Use log MySQL instances
-            if (conf.mysql[section] && conf.mysql[section].log && Array.isArray(conf.mysql[section].log)) {
-                conf.mysql[section].log.forEach((logConf, index) => {
-                    config.ConnectionStrings.MySql[index.toString()] = `Server=mysql-${section}-log;Port=${logConf.port.cluster};User ID=fb; Password=admin; Database=fb`
-                })
+            // Use log MySQL instances (unified/global/data structure)
+            const worldId = parseInt(worldConf.id);
+            config.ConnectionStrings.MySql["worlds"] = config.ConnectionStrings.MySql["worlds"] || {}
+            config.ConnectionStrings.MySql["worlds"][worldId.toString()] = {};
+            
+            // Global connection
+            if (worldConf.mysql && worldConf.mysql.global) {
+                const globalMysql = worldConf.mysql.global
+                config.ConnectionStrings.MySql["worlds"][worldId.toString()]["global"] = `Server=mysql-${worldName}-global;Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+            }
+            
+            // Data array (log shard connections)
+            if (worldConf.mysql && worldConf.mysql.log && Array.isArray(worldConf.mysql.log)) {
+                const dataArray = worldConf.mysql.log.map(logConf => 
+                    `Server=mysql-${worldName}-log;Port=${logConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                )
+                if (dataArray.length > 0) {
+                    config.ConnectionStrings.MySql["worlds"][worldId.toString()]["data"] = dataArray
+                }
             }
 
-            const configMap = new k8s.core.v1.ConfigMap(`log-${section}`, {
-                metadata: { name: `log-${section}`, namespace: namespace.metadata.name },
+            const configMap = new k8s.core.v1.ConfigMap(`log-${worldName}`, {
+                metadata: { name: `log-${worldName}`, namespace: namespace.metadata.name },
                 data: {
                     "appsettings.json": JSON.stringify(config),
                 },
@@ -67,11 +91,11 @@ module.exports = {
                 }],
             }
 
-            const deployment = new k8s.apps.v1.Deployment(`log-${section}`, {
-                metadata: { name: `log-${section}`, namespace: namespace.metadata.name },
+            const deployment = new k8s.apps.v1.Deployment(`log-${worldName}`, {
+                metadata: { name: `log-${worldName}`, namespace: namespace.metadata.name },
                 spec: {
                     selector: { matchLabels: appLabels },
-                    replicas: 1,
+                    // replicas is managed by HPA, do not set it here
                     template: {
                         metadata: { labels: appLabels },
                         spec: {
@@ -101,7 +125,7 @@ module.exports = {
                 },
             }, { dependsOn: dependsOn })
 
-            const hpa = new k8s.autoscaling.v2.HorizontalPodAutoscaler(`log-hpa-${section}`, {
+            const hpa = new k8s.autoscaling.v2.HorizontalPodAutoscaler(`log-hpa-${worldName}`, {
                 metadata: {
                     namespace: namespace.metadata.name,
                 },

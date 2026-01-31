@@ -25,13 +25,13 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
     if (ch->role() == ROLE::USER && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_TALK))
         co_return true;
 
-    auto stop = false;
-    auto lua  = fb::lua::new_context();
+    auto lua = fb::lua::new_context();
     if (lua != nullptr)
     {
 #if defined DEBUG | defined _DEBUG
         lua->load("scripts/interaction.lua");
         lua->load("scripts/command.lua");
+        lua->load("scripts/npc.lua");
 #endif
         lua->func("on_chat");
         lua->pushobject(ch);
@@ -45,10 +45,9 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
         }
         co_await ch->thread()->switching();
 
-        stop = lua->toboolean(1);
+        auto stop = lua->toboolean(1);
         lua->release();
 
-        // Log command execution event (script executed via chat)
         if (stop)
         {
             auto log_data              = Json::Value();
@@ -64,44 +63,18 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
             co_return true;
         }
     }
-    if (stop)
-        co_return true;
 
     auto message = fb::model::table::blocked_word.filter(request.message);
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
     ch->chat(message, type, true);
 
-    // Log chat event
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
     log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
     log_data["message"]        = UTF8(message, PLATFORM::WINDOWS);
     log_data["chat_type"]      = request.shout ? "shout" : "normal";
-    if (map != nullptr)
-    {
-        log_data["map"] = map->model.id;
-    }
+    log_data["map"]            = map->model.id;
     this->server.log.write("chat", log_data);
 
-    auto npcs = std::vector<std::shared_ptr<fb::game::npc>>();
-    if (type == CHAT_TYPE::SHOUT)
-    {
-        for (auto& [fd, obj] : ch->map()->objects)
-        {
-            if (obj->is(OBJECT_TYPE::NPC))
-            {
-                npcs.push_back(std::static_pointer_cast<fb::game::npc>(obj));
-            }
-        }
-    }
-    else
-    {
-        for (auto npc : ch->sight_in(OBJECT_TYPE::NPC))
-        {
-            npcs.push_back(std::static_pointer_cast<fb::game::npc>(npc));
-        }
-    }
-
-    std::ignore = co_await this->server.npc_interaction(*ch, request.message, npcs);
     co_return true;
 }

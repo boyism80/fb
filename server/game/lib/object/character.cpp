@@ -163,15 +163,14 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
 
 uint32_t character::limited_exp(uint32_t exp) const
 {
-#if defined DEBUG | defined _DEBUG
-    return exp * 100;
-#else
     if (this->max_level())
         return exp;
 
-    auto range = table::ability[this->_class][this->_level].exp;
-    return std::min(uint32_t(range / 100.0f * 3.3f + 1), exp);
-#endif
+    auto range         = table::ability[this->_class][this->_level].exp;
+    auto multiplier    = this->server.exp_multiplier();
+    auto limit_percent = 3.3 * multiplier;
+    auto limited       = static_cast<uint32_t>(range / 100.0 * limit_percent + 1);
+    return std::min(limited, exp);
 }
 
 uint32_t character::normal_attack_damage(MOB_SIZE size) const
@@ -640,6 +639,10 @@ void character::exp(uint32_t value)
 uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
 {
     this->assert_thread();
+
+    // Apply experience multiplier
+    auto multiplier = this->server.exp_multiplier();
+    value           = static_cast<uint32_t>(value * multiplier);
 
     if (limit)
         value = this->limited_exp(value);
@@ -1288,9 +1291,11 @@ async::task<void> character::process_system_mails()
                     }
 
                     const auto& mail = *mail_ptr;
+                    auto world = fb::config<uint32_t>("world");
                     auto&&      resp = co_await this->server.http.post("internal",
                                                                   "/mail/write",
-                                                                  internal_reqs::WriteMail{mail.sender,
+                                                                  internal_reqs::WriteMail{world,
+                                                                                           mail.sender,
                                                                                            this->name(),
                                                                                            mail.title,
                                                                                            mail.contents,

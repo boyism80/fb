@@ -6,8 +6,14 @@ module.exports = {
 
         const deployments = []
         const appLabels = { app: "write-back" }
-        for(const [section, sectionConf] of Object.entries(conf['write-back'])) {
+        for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
+            // Skip if write-back is not configured
+            if (!worldConf['write-back'])
+                continue
+            
+            const worldId = worldConf.id.toString()
             const config = {
+                "World": worldConf.id,
                 "Logging": {
                     "LogLevel": {
                         "Default": "Information",
@@ -18,21 +24,7 @@ module.exports = {
                     "MySql": {}
                 },
                 "Redis": {},
-                "RabbitMQ": {
-                    "Internal": {
-                        "Host": `rabbitmq-${sectionConf.rabbitmq}-internal`,
-                        "Port": conf.rabbitmq[sectionConf.rabbitmq].internal.port.amqp.cluster,
-                        "Uid": "fb",
-                        "Pwd": "admin"
-                    },
-                    "Log": {
-                        "Host": `rabbitmq-${sectionConf.rabbitmq}-log`,
-                        "Port": conf.rabbitmq[sectionConf.rabbitmq].log.port.amqp.cluster,
-                        "Uid": "fb",
-                        "Pwd": "admin",
-                        "QueueSize": 128
-                    }
-                },
+                "RabbitMQ": {},
                 "Log": {
                     "Enabled": true,
                     "ServerId": "0",
@@ -40,19 +32,73 @@ module.exports = {
                 }
             }
 
-            for(const [id, mysqlConfig] of Object.entries(conf.mysql[sectionConf.mysql].data)) {
-                config.ConnectionStrings.MySql[id] = `Server=mysql-${sectionConf.mysql};Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
-            }
-
-            for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
-                config.Redis[id] = {
-                    Host: `redis-${sectionConf.redis}`,
-                    Port: conf.redis[sectionConf.redis][id].port.cluster
+            // Build MySQL connections for this world (unified/global/data structure)
+            if (worldConf.mysql) {
+                config.ConnectionStrings.MySql["worlds"] = config.ConnectionStrings.MySql["worlds"] || {}
+                config.ConnectionStrings.MySql["worlds"][worldId] = {}
+                
+                // Global connection
+                if (worldConf.mysql.global) {
+                    const globalMysql = worldConf.mysql.global
+                    config.ConnectionStrings.MySql["worlds"][worldId]["global"] = `Server=mysql-${worldName}-global;Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+                }
+                
+                // Data array (shard connections)
+                if (worldConf.mysql.data && Array.isArray(worldConf.mysql.data)) {
+                    const dataArray = worldConf.mysql.data.map(mysqlConfig => 
+                        `Server=mysql-${worldName};Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
+                    )
+                    if (dataArray.length > 0) {
+                        config.ConnectionStrings.MySql["worlds"][worldId]["data"] = dataArray
+                    }
                 }
             }
 
-            const configMap = new k8s.core.v1.ConfigMap(`write-back-${section}`, {
-                metadata: { name: `write-back-${section}`, namespace: namespace.metadata.name },
+            // Build Redis connections for this world (unified/global/data structure)
+            if (worldConf.redis) {
+                config.Redis["worlds"] = config.Redis["worlds"] || {}
+                config.Redis["worlds"][worldId] = {}
+                
+                // Global Redis
+                if (worldConf.redis.global) {
+                    const globalRedis = worldConf.redis.global
+                    config.Redis["worlds"][worldId]["global"] = {
+                        Host: `redis-${worldName}`,
+                        Port: globalRedis.port.cluster
+                    }
+                }
+                
+                // Data array (shard Redis)
+                if (worldConf.redis.data && Array.isArray(worldConf.redis.data)) {
+                    const dataArray = worldConf.redis.data.map(redisConf => ({
+                        Host: `redis-${worldName}`,
+                        Port: redisConf.port.cluster
+                    }))
+                    if (dataArray.length > 0) {
+                        config.Redis["worlds"][worldId]["data"] = dataArray
+                    }
+                }
+            }
+
+            // Build RabbitMQ connections using unified-global (flat structure: RabbitMQ:{Internal/Log})
+            if (conf["unified-infra"] && conf["unified-infra"].rabbitmq) {
+                config.RabbitMQ["Internal"] = {
+                    "Host": "rabbitmq-internal",
+                    "Port": conf["unified-infra"].rabbitmq.internal.port.amqp.cluster,
+                    "Uid": "fb",
+                    "Pwd": "admin"
+                }
+                config.RabbitMQ["Log"] = {
+                    "Host": "rabbitmq-log",
+                    "Port": conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
+                    "Uid": "fb",
+                    "Pwd": "admin",
+                    "QueueSize": 128
+                }
+            }
+
+            const configMap = new k8s.core.v1.ConfigMap(`write-back-${worldName}`, {
+                metadata: { name: `write-back-${worldName}`, namespace: namespace.metadata.name },
                 data: {
                     "appsettings.json": JSON.stringify(config),
                 },
@@ -74,8 +120,8 @@ module.exports = {
                 }],
             }
 
-            const deployment = new k8s.apps.v1.Deployment(`write-back-${section}`, {
-                metadata: { name: `write-back-${section}`, namespace: namespace.metadata.name },
+            const deployment = new k8s.apps.v1.Deployment(`write-back-${worldName}`, {
+                metadata: { name: `write-back-${worldName}`, namespace: namespace.metadata.name },
                 spec: {
                     selector: { matchLabels: appLabels },
                     replicas: 1,

@@ -20,35 +20,39 @@ public struct Login : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Login __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Uid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Name { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Uid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Name { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(6, 1); }
+  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(8, 1); }
 #else
-  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
+  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
-  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
-  public byte Host { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public bool Force { get { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(8); }
+  public byte Host { get { int o = __p.__offset(10); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public bool Force { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol._internal.request.raw.Login> CreateLogin(FlatBufferBuilder builder,
+      uint world = 0,
       uint uid = 0,
       StringOffset nameOffset = default(StringOffset),
       byte host = 0,
       bool force = false) {
-    builder.StartTable(4);
+    builder.StartTable(5);
     Login.AddName(builder, nameOffset);
     Login.AddUid(builder, uid);
+    Login.AddWorld(builder, world);
     Login.AddForce(builder, force);
     Login.AddHost(builder, host);
     return Login.EndLogin(builder);
   }
 
-  public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(0, uid, 0); }
-  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
-  public static void AddHost(FlatBufferBuilder builder, byte host) { builder.AddByte(2, host, 0); }
-  public static void AddForce(FlatBufferBuilder builder, bool force) { builder.AddBool(3, force, false); }
+  public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(1, uid, 0); }
+  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
+  public static void AddHost(FlatBufferBuilder builder, byte host) { builder.AddByte(3, host, 0); }
+  public static void AddForce(FlatBufferBuilder builder, bool force) { builder.AddBool(4, force, false); }
   public static Offset<fb.protocol._internal.request.raw.Login> EndLogin(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Login>(o);
@@ -63,10 +67,11 @@ static public class LoginVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Uid*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 6 /*Name*/, false)
-      && verifier.VerifyField(tablePos, 8 /*Host*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 10 /*Force*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Uid*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 8 /*Name*/, false)
+      && verifier.VerifyField(tablePos, 10 /*Host*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 12 /*Force*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
