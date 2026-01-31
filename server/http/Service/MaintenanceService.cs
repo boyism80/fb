@@ -131,6 +131,16 @@ namespace Http.Service
                 await redis.Connection.SortedSetAddAsync(key, scheduleJson, score);
 
                 _logger.LogInformation("Created maintenance schedule {ScheduleId} for world {World}", schedule.Id, schedule.World);
+
+                // If the new schedule is already active, notify game servers immediately so regular users are kicked
+                // without waiting for the background service's next cycle.
+                var maintenanceInfo = await GetMaintenanceInfo(schedule.World);
+                if (maintenanceInfo != null && maintenanceInfo.IsActive)
+                {
+                    var messageCount = await ForceLogoutRegularUsers(schedule.World);
+                    _logger.LogInformation("Maintenance already active for world {World}, sent immediate kick to {Count} game server(s)", schedule.World, messageCount);
+                }
+
                 return true;
             }
             catch (Exception ex)

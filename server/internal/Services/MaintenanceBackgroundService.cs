@@ -14,7 +14,7 @@ namespace Internal.Services
         private readonly ILogger<MaintenanceBackgroundService> _logger;
 
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(1);
         private const string LockKey = "maintenance:background:lock";
         private const int LockTtlSeconds = 60; // Longer than processing interval to prevent overlap
 
