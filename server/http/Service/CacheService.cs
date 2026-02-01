@@ -33,7 +33,7 @@ namespace Http.Service
         /// Deletes cache entries matching a specific pattern from a Redis shard.
         /// Scans for keys matching the pattern and deletes them in batches.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="shardIndex">The Redis shard index to operate on.</param>
         /// <param name="pattern">The key pattern to match for deletion.</param>
         /// <param name="count">The maximum number of keys to scan in one operation.</param>

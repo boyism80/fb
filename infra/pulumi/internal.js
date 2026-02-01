@@ -30,7 +30,7 @@ module.exports = {
         if (conf["unified-infra"] && conf["unified-infra"].mysql && conf["unified-infra"].mysql.port) {
             const unifiedMysql = conf["unified-infra"].mysql
             if (unifiedMysql) {
-                config.ConnectionStrings.MySql["unified"] = `Server=mysql-unified-global;Port=${unifiedMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+                config.ConnectionStrings.MySql["unified"] = `Server=mysql-unified;Port=${unifiedMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
             }
         }
 
@@ -39,7 +39,7 @@ module.exports = {
             const unifiedRedis = conf["unified-infra"].redis
             if (unifiedRedis) {
                 config.Redis["unified"] = {
-                    Host: `redis-unified-global`,
+                    Host: `redis-unified`,
                     Port: unifiedRedis.port.cluster
                 }
             }
@@ -98,7 +98,7 @@ module.exports = {
             }
         }
 
-        // Build RabbitMQ connections using unified-global (flat structure: RabbitMQ:{Internal/Log})
+        // Build RabbitMQ connections using unified (flat structure: RabbitMQ:{Internal/Log})
         if (conf["unified-infra"] && conf["unified-infra"].rabbitmq) {
             config.RabbitMQ["Internal"] = {
                 "Host": "rabbitmq-internal",

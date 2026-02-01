@@ -35,9 +35,11 @@ namespace Http.Service
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // Get all game worlds from configuration
-            var mysqlSection = _configuration.GetSection("ConnectionStrings:MySql");
-            var worldKeys = mysqlSection.GetChildren().Select(x => x.Key).ToList();
+            // Get world keys: DbContext uses ConnectionStrings:MySql:worlds:{world}:...
+            var worldsSection = _configuration.GetSection("ConnectionStrings:MySql:worlds");
+            var worldKeys = worldsSection.Exists()
+                ? worldsSection.GetChildren().Select(x => x.Key).ToList()
+                : _configuration.GetSection("ConnectionStrings:MySql").GetChildren().Select(x => x.Key).ToList();
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -45,26 +47,17 @@ namespace Http.Service
                 {
                     try
                     {
-                        // Parse world key: "1", "2", "unified-global", etc.
-                        uint world;
-                        if (worldKey == "unified-global")
-                        {
-                            world = 0;
-                        }
-                        else if (uint.TryParse(worldKey, out world))
-                        {
-                            // world is already set
-                        }
-                        else
-                            continue; // Skip invalid keys
+                        // Parse world key: "1", "2", etc. (must be numeric; bulletin uses per-world DB)
+                        if (!uint.TryParse(worldKey, out var world) || world == 0)
+                            continue;
 
-                        var writes = _bulletinService.DequeueBatch(_maxBatchSize);
+                        var writes = _bulletinService.DequeueBatch(world, _maxBatchSize);
                         await ProcessWritesAsync(world, writes, stoppingToken);
                         await Task.Delay(_processingInterval, stoppingToken);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, $"Error processing bulletin operation batch for world {worldKey}");
+                        _logger.LogError(ex, "Error processing bulletin operation batch for world {WorldKey}", worldKey);
                     }
                 }
                 await Task.Delay(_processingInterval, stoppingToken);

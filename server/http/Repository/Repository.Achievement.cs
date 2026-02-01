@@ -28,7 +28,7 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves a specific achievement for a character by user ID and achievement model.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="uid">The unique identifier of the character.</param>
         /// <param name="model">The achievement model identifier.</param>
         /// <returns>The achievement if found; otherwise, null.</returns>
@@ -44,7 +44,7 @@ namespace Http.Reepository
         /// <summary>
         /// Retrieves all achievements for a specific character by user ID.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="uid">The unique identifier of the character.</param>
         /// <returns>A collection of all achievements for the specified character.</returns>
         public async Task<IEnumerable<Achievement>> Get(uint world, uint uid)

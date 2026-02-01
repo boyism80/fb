@@ -100,11 +100,11 @@ namespace Http.Service
 
 
         /// <summary>
-        /// Gets unified-global database connection.
+        /// Gets unified database connection.
         /// Use this for services that need cross-world data (e.g., marketplace, admin-tool).
         /// Unified connection is shared across all worlds (no world parameter needed).
         /// </summary>
-        /// <returns>A new <see cref="MySqlConnection"/> instance for unified-global database.</returns>
+        /// <returns>A new <see cref="MySqlConnection"/> instance for unified database.</returns>
         public MySqlConnection GetUnifiedConnection()
         {
             var connectionString = _configuration.GetValue<string>("ConnectionStrings:MySql:unified");
@@ -122,7 +122,7 @@ namespace Http.Service
         public MySqlConnection GetGlobalConnection(uint world)
         {
             if (world == 0)
-                throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
+                throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified.");
 
             var connectionString = _configuration.GetValue<string>($"ConnectionStrings:MySql:worlds:{world}:global");
             if (string.IsNullOrEmpty(connectionString))
@@ -140,7 +140,7 @@ namespace Http.Service
         public MySqlConnection GetDataConnection(uint world, int index)
         {
             if (world == 0)
-                throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
+                throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified.");
 
             if (index < 0)
                 throw new ArgumentException("Shard index must be >= 0. Use GetWorldGlobalConnection() for world-global.");
@@ -219,7 +219,7 @@ namespace Http.Service
         /// Creates multiple MySQL connections grouped by shard for the specified world and ID list.
         /// Groups IDs by their target shard to optimize database operations.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="idList">The collection of IDs to group by shard.</param>
         /// <returns>An enumerable of tuples containing the connection and associated ID array for each shard.</returns>
         /// <exception cref="Exception">Thrown when shard size is zero for the world.</exception>
@@ -239,7 +239,7 @@ namespace Http.Service
         /// Creates multiple MySQL connections grouped by shard for the specified world and nullable ID list.
         /// Groups IDs by their target shard to optimize database operations.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="idList">The collection of nullable IDs to group by shard.</param>
         /// <returns>An enumerable of tuples containing the connection and associated ID array for each shard.</returns>
         /// <exception cref="Exception">Thrown when shard size is zero for the world.</exception>
@@ -270,7 +270,7 @@ namespace Http.Service
         /// Uses a selector function to extract the sharding key from each value.
         /// </summary>
         /// <typeparam name="T">The type of values to group by shard.</typeparam>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="values">The collection of values to group by shard.</param>
         /// <param name="selector">A function to extract the nullable sharding key from each value.</param>
         /// <returns>An enumerable of tuples containing the connection and associated value array for each shard.</returns>

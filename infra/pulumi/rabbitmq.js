@@ -53,7 +53,7 @@ module.exports = {
         
         resources.push(serviceAccount, role, roleBinding);
         
-        // Process unified-global RabbitMQ instances
+        // Process unified RabbitMQ instances
         if (conf["unified-infra"] && conf["unified-infra"].rabbitmq) {
             const unifiedRabbitMqConf = conf["unified-infra"].rabbitmq;
             for(const [type, typeConf] of Object.entries(unifiedRabbitMqConf)) {

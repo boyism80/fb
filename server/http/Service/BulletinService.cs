@@ -7,7 +7,7 @@ namespace Http.Service
 {
     public class BulletinService
     {
-        private readonly ConcurrentDictionary<uint, ConcurrentQueue<BulletinWriteRequest>> _writeQueues = new();
+        private readonly ConcurrentDictionary<(uint World, uint Section), ConcurrentQueue<BulletinWriteRequest>> _writeQueues = new();
         private readonly BulletinCacheService _cacheService;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly LogService _logService;
@@ -31,7 +31,7 @@ namespace Http.Service
                 CompletionSource = new TaskCompletionSource<bool>()
             };
 
-            var queue = _writeQueues.GetOrAdd(section, _ => new ConcurrentQueue<BulletinWriteRequest>());
+            var queue = _writeQueues.GetOrAdd((world, section), _ => new ConcurrentQueue<BulletinWriteRequest>());
             queue.Enqueue(request);
 
             return request.CompletionSource.Task;
@@ -192,18 +192,24 @@ namespace Http.Service
             }
         }
 
-        public Dictionary<uint, List<BulletinWriteRequest>> DequeueBatch(int maxBatchSize)
+        /// <summary>
+        /// Dequeues pending write requests for the specified world only.
+        /// </summary>
+        public Dictionary<uint, List<BulletinWriteRequest>> DequeueBatch(uint world, int maxBatchSize)
         {
             var writes = new Dictionary<uint, List<BulletinWriteRequest>>();
-            foreach (var (section, queue) in _writeQueues)
+            foreach (var (key, queue) in _writeQueues)
             {
+                if (key.World != world)
+                    continue;
+
                 var batch = new List<BulletinWriteRequest>();
                 while (batch.Count < maxBatchSize && queue.TryDequeue(out var request))
                 {
                     batch.Add(request);
                 }
                 if (batch.Count > 0)
-                    writes[section] = batch;
+                    writes[key.Section] = batch;
             }
 
             return writes;

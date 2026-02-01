@@ -104,7 +104,7 @@ namespace Http.Service
                     var redis = _redisService.GetUnifiedConnection();
                     if (redis == null)
                     {
-                        _logger.LogError("unified-global Redis not available, shutting down immediately.");
+                        _logger.LogError("unified Redis not available, shutting down immediately.");
                         _lifetime.StopApplication();
                         return;
                     }

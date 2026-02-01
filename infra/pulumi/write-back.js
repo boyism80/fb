@@ -80,7 +80,7 @@ module.exports = {
                 }
             }
 
-            // Build RabbitMQ connections using unified-global (flat structure: RabbitMQ:{Internal/Log})
+            // Build RabbitMQ connections using unified (flat structure: RabbitMQ:{Internal/Log})
             if (conf["unified-infra"] && conf["unified-infra"].rabbitmq) {
                 config.RabbitMQ["Internal"] = {
                     "Host": "rabbitmq-internal",

@@ -32,7 +32,7 @@ namespace AdminTool.Services
         /// Retrieves a paginated list of users with optional search filtering.
         /// Uses the global 'name' table to efficiently query across sharded 'user' tables.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="page">The page number (1-based).</param>
         /// <param name="pageSize">The number of items per page.</param>
         /// <param name="searchTerm">Optional search term to filter by character name.</param>
@@ -142,7 +142,7 @@ namespace AdminTool.Services
         /// <summary>
         /// Retrieves a user by their character name.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="name">The character name to look up.</param>
         /// <returns>The user if found; otherwise, null.</returns>
         public async Task<UserDetail?> GetUserByName(uint world, string name)
@@ -176,7 +176,7 @@ namespace AdminTool.Services
         /// <summary>
         /// Determines whether a user is currently online by inspecting the session cache.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="userName">The character name to inspect.</param>
         /// <returns>True if the user has an active session; otherwise, false.</returns>
         public async Task<bool> IsOnline(uint world, string userName)

@@ -33,10 +33,10 @@ namespace Internal.Controllers
             _logger = logger;
         }
 
-        [HttpGet("{world}/{bulletinSection}")]
-        public async Task<Response.GetArticleList> GetArticleList(uint world, uint bulletinSection, [FromQuery(Name = "offset")] ushort offset)
+        [HttpGet("{world}/{section}")]
+        public async Task<Response.GetArticleList> GetArticleList(uint world, uint section, [FromQuery(Name = "offset")] ushort offset)
         {
-            var articleList = await _bulletinService.GetArticleListAsync(world, bulletinSection, offset);
+            var articleList = await _bulletinService.GetArticleListAsync(world, section, offset);
 
             var summaryList = _mapper.Map<List<Http.Model.Bulletin>, List<ArticleSummary>>(articleList);
             return new Response.GetArticleList
@@ -45,12 +45,12 @@ namespace Internal.Controllers
             };
         }
 
-        [HttpGet("{world}/{bulletinSection}/{id}")]
-        public async Task<Response.GetArticle> GetArticle(uint world, uint bulletinSection, ushort id)
+        [HttpGet("{world}/{section}/{id}")]
+        public async Task<Response.GetArticle> GetArticle(uint world, uint section, ushort id)
         {
             try
             {
-                var (article, next) = await _bulletinService.GetArticleAsync(world, bulletinSection, id);
+                var (article, next) = await _bulletinService.GetArticleAsync(world, section, id);
 
                 if (article == null)
                 {

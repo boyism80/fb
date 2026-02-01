@@ -33,9 +33,10 @@ namespace Http.Service
         {
             // Get all game worlds from configuration
             var mysqlSection = _configuration.GetSection("ConnectionStrings:MySql");
+            // Config uses key "unified" (not "unified") for world 0; see appsettings and Pulumi
             var worlds = mysqlSection.GetChildren()
-                .Where(child => uint.TryParse(child.Key, out _) || child.Key == "unified-global")
-                .Select(child => child.Key == "unified-global" ? 0 : uint.Parse(child.Key))
+                .Where(child => uint.TryParse(child.Key, out _) || child.Key == "unified")
+                .Select(child => child.Key == "unified" ? 0u : uint.Parse(child.Key))
                 .ToList();
 
             while (!stoppingToken.IsCancellationRequested)

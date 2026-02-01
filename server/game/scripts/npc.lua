@@ -151,7 +151,6 @@ function npc_deposited_money(me, npc)
 end
 
 function npc_deposit_money(me, npc, money)
-
     local my_money = me:money()
     if money == nil then
         money = my_money
@@ -180,7 +179,6 @@ function npc_deposit_money(me, npc, money)
 end
 
 function npc_withdraw_money(me, npc, money)
-
     local deposited = me:deposited_money()
     if money == nil then
         money = deposited
@@ -213,7 +211,7 @@ function npc_withdraw_money(me, npc, money)
 end
 
 function npc_repair(me, npc, name)
-    local all = (name == '')
+    local all = (name == nil)
     local items = {}
     if not all then
         local model = name2item(name)

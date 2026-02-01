@@ -31,10 +31,10 @@ namespace Marketplace.Service
         }
 
         /// <summary>
-        /// Gets unified-global database connection.
-        /// Marketplace uses unified-global database for all sections.
+        /// Gets unified database connection.
+        /// Marketplace uses unified database for all sections.
         /// </summary>
-        /// <returns>A new <see cref="MySqlConnection"/> instance for the unified-global database.</returns>
+        /// <returns>A new <see cref="MySqlConnection"/> instance for the unified database.</returns>
         public MySqlConnection GetUnifiedConnection()
         {
             var connectionString = _configuration.GetValue<string>("ConnectionStrings:MySql:unified");

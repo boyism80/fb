@@ -61,7 +61,7 @@ namespace Http.Service
         /// <summary>
         /// Creates a new storage pending box entry with the specified user ID.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="title">The title of the pending box entry.</param>
         /// <param name="message">The message content of the pending box entry.</param>
         /// <param name="userId">The user ID to assign the pending box to (null for global).</param>
@@ -126,7 +126,7 @@ namespace Http.Service
         /// Creates a new storage pending box entry with the specified user name.
         /// Converts the user name to user ID and calls the userId-based overload.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="title">The title of the pending box entry.</param>
         /// <param name="message">The message content of the pending box entry.</param>
         /// <param name="userName">The user name to assign the pending box to (null for global).</param>

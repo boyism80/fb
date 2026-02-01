@@ -48,7 +48,7 @@ namespace Http.Service
             _serverId = logConfig["ServerId"] ?? "0";
             _serverName = logConfig["ServerName"] ?? "unknown";
 
-            // Read world from configuration (0 means unified-global, >0 means specific world)
+            // Read world from configuration (0 means unified, >0 means specific world)
             _world = (uint)configuration.GetValue<int>("World", 0);
 
             // Read RabbitMQ connection info from RabbitMQ.Log section
@@ -128,7 +128,7 @@ namespace Http.Service
         /// <summary>
         /// Selects a random routing key for log message distribution.
         /// </summary>
-        /// <returns>A routing key in the format "fb.{world}.log.{0-queue_size-1}" for world > 0, or "fb.log.{0-queue_size-1}" for unified-global.</returns>
+        /// <returns>A routing key in the format "fb.{world}.log.{0-queue_size-1}" for world > 0, or "fb.log.{0-queue_size-1}" for unified.</returns>
         private string SelectRandomRoutingKey()
         {
             var queueIndex = _random.Next(0, _queueSize);

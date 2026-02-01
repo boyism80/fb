@@ -18,7 +18,7 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         std::to_string(fb::config<uint32_t>("id")),
         fb::config<std::string>("name"),
         fb::config<size_t>("amqp:log:queue_size"),
-        0) // Gateway is unified-global (world = 0)
+        0) // Gateway is unified (world = 0)
 {
     this->handler.protocol.bind<fb::gateway::handler::protocol::check_version>();
     this->handler.protocol.bind<fb::gateway::handler::protocol::entry_list>();
@@ -91,7 +91,7 @@ async::task<void> server::on_start()
     static constexpr const char* message = "CONNECTED SERVER\n";
 
     this->bind_timer<fb::gateway::handler::timer::heart_beat>(1s);
-    this->handler.amqp.bind<fb::gateway::handler::amqp::shutdown>("fb.global");  // Shutdown: all servers
+    this->handler.amqp.bind<fb::gateway::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
 
     auto writer = fb::stream_writer<big_endian>(this->_connection_cache);
     writer.write<uint8_t>(0x7E);
@@ -121,7 +121,7 @@ async::task<bool> server::on_disconnected(fb::socket<session>& socket)
 
 void server::on_init_amqp(fb::amqp::socket& amqp)
 {
-    this->handler.amqp.declare_queue("amq.direct", "fb.global");  // Shutdown: all servers
+    this->handler.amqp.declare_queue("amq.direct", "fb.global"); // Shutdown: all servers
 }
 
 async::task<void> server::update_status()
@@ -129,7 +129,7 @@ async::task<void> server::update_status()
     try
     {
         // Gateway is a global service that doesn't belong to any specific world
-        // Use 0 as the world identifier for gateway heartbeat (0 represents unified-global)
+        // Use 0 as the world identifier for gateway heartbeat (0 represents unified)
         std::ignore = co_await this->http.post("internal",
                                                "/server/heartbeat",
                                                internal_reqs::Heartbeat{0,
