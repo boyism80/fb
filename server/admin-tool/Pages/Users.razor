@@ -348,20 +348,24 @@
     private RoleModel roleModel = new();
     private Role currentUserRole = Role.User;
     private uint currentUserId = 0;
+    private uint? loginWorld = null;
+    private uint? _lastLoadedWorld = null;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadCurrentUserRole();
-        
-        // Check for search query from URL
-        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
-        var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-        if (queryParams.TryGetValue("search", out var searchValue) && !string.IsNullOrWhiteSpace(searchValue))
+        SyncFromUrl();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        SyncFromUrl();
+        if (selectedWorld.HasValue && selectedWorld.Value != _lastLoadedWorld)
         {
-            searchTerm = searchValue.ToString();
+            _lastLoadedWorld = selectedWorld.Value;
+            await LoadUsers();
+            UpdateUsersUrl();
         }
-        
-        await LoadUsers();
     }
 
     private async Task LoadCurrentUserRole()
@@ -371,6 +375,7 @@
         {
             var roleClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Role);
             var idClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var loginWorldClaim = authState.User.FindFirst(CustomAuthenticationStateProvider.LoginWorldClaimType);
             if (idClaim != null && uint.TryParse(idClaim.Value, out var uid))
             {
                 currentUserId = uid;
@@ -379,7 +384,22 @@
             {
                 currentUserRole = role;
             }
+            if (loginWorldClaim != null && uint.TryParse(loginWorldClaim.Value, out var world))
+            {
+                loginWorld = world;
+            }
         }
+    }
+
+    /// <summary>
+    /// True when the user is the logged-in user on the same world (avoids cross-world ID collision).
+    /// </summary>
+    private bool IsSelfUser(UserListItem user)
+    {
+        return user.Id == currentUserId
+            && loginWorld.HasValue
+            && selectedWorld.HasValue
+            && selectedWorld.Value == loginWorld.Value;
     }
 
     private bool CanModifyUser(UserListItem user)
@@ -390,7 +410,7 @@
 
     private bool RequiresElevationForTarget(UserListItem user)
     {
-        if (user.Id == currentUserId)
+        if (IsSelfUser(user))
             return false;
 
         return !CanModifyUser(user);
@@ -429,7 +449,7 @@
 
     private string GetChangeRoleButtonTitle(UserListItem user)
     {
-        if (user.Id == currentUserId)
+        if (IsSelfUser(user))
             return "Modify your own role. The elevation secret is required only for promotions.";
 
         return RequiresElevationForTarget(user)
@@ -440,6 +460,39 @@
     private List<Role> GetAvailableRoles()
     {
         return Enum.GetValues<Role>().ToList();
+    }
+
+    private void SyncFromUrl()
+    {
+        try
+        {
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            if (uri.AbsolutePath != "/users")
+                return;
+            var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+            if (queryParams.TryGetValue("search", out var searchValue))
+                searchTerm = searchValue.ToString() ?? string.Empty;
+            if (queryParams.TryGetValue("page", out var pageValue) && int.TryParse(pageValue, out var page) && page >= 1)
+                currentPage = page;
+        }
+        catch { /* ignore URL parse errors */ }
+    }
+
+    private void UpdateUsersUrl()
+    {
+        try
+        {
+            var query = new Dictionary<string, string?>();
+            if (selectedWorld.HasValue)
+                query["world"] = selectedWorld.Value.ToString();
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+                query["search"] = searchTerm;
+            if (currentPage > 1)
+                query["page"] = currentPage.ToString();
+            var url = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("/users", query);
+            Navigation.NavigateTo(url);
+        }
+        catch { /* ignore */ }
     }
 
     private async Task LoadUsers()
@@ -470,6 +523,7 @@
     {
         currentPage = 1;
         await LoadUsers();
+        UpdateUsersUrl();
     }
 
     private async Task ClearSearch()
@@ -477,6 +531,7 @@
         searchTerm = string.Empty;
         currentPage = 1;
         await LoadUsers();
+        UpdateUsersUrl();
     }
 
     private async Task HandleKeyPress(KeyboardEventArgs e)
@@ -493,6 +548,7 @@
         {
             currentPage = page;
             await LoadUsers();
+            UpdateUsersUrl();
         }
     }
 
@@ -546,7 +602,7 @@
             return;
 
         var targetRole = (Role)selectedUser.Role;
-        var isSelf = selectedUser.Id == currentUserId;
+        var isSelf = IsSelfUser(selectedUser);
 
         if (!selectedWorld.HasValue)
         {
@@ -632,7 +688,8 @@
                     {
                         UserId = currentUserId,
                         UserName = character.Name,
-                        Role = newRole.ToString()
+                        Role = newRole.ToString(),
+                        LoginWorld = loginWorld
                     };
                     await customProvider.MarkUserAsAuthenticated(authData);
                 }

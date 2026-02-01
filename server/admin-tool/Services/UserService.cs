@@ -94,33 +94,26 @@ namespace AdminTool.Services
                 };
             }
 
-            // Get user details from sharded user tables
+            // Get user details via Character repository (Redis cache) so list matches role changes.
             var userIds = nameList.Select(n => n.Id).ToList();
             var userDetailsDict = new Dictionary<uint, UserListItem>();
 
-            // Query each shard for user details
-            foreach (var (conn, idList) in _dbContext.GetShardConnections(world, userIds))
+            foreach (var userId in userIds)
             {
-                var userQuery = """
-                    SELECT 
-                        `id`,
-                        `name`,
-                        `role`,
-                        `level`,
-                        `money`,
-                        `created_date`,
-                        `updated_date`
-                    FROM `user`
-                    WHERE `id` IN @userIds AND `deleted` = 0
-                    """;
+                var character = await _dbContext.Character.Get(world, userId);
+                if (character == null || character.Deleted)
+                    continue;
 
-                var shardUsers = await conn.QueryAsync<UserListItem>(userQuery, new { userIds = idList });
-                foreach (var user in shardUsers)
+                userDetailsDict[userId] = new UserListItem
                 {
-                    userDetailsDict[user.Id] = user;
-                }
-
-                await conn.DisposeAsync();
+                    Id = character.Id,
+                    Name = character.Name,
+                    Role = (byte)character.Role,
+                    Level = (ushort)character.Level,
+                    Money = character.Money,
+                    CreatedDate = character.CreatedDate,
+                    UpdatedDate = character.UpdatedDate
+                };
             }
 
             // Combine name/ban info with user details
