@@ -23,6 +23,12 @@ namespace AdminTool.Authentication
         }
 
         /// <summary>
+        /// Claim type for the world (server) the user logged in from.
+        /// Used to distinguish same user across worlds when changing roles.
+        /// </summary>
+        public const string LoginWorldClaimType = "LoginWorld";
+
+        /// <summary>
         /// Gets the current authentication state asynchronously.
         /// </summary>
         /// <returns>The current authentication state.</returns>
@@ -43,6 +49,10 @@ namespace AdminTool.Authentication
                     new Claim(ClaimTypes.NameIdentifier, authData.UserId.ToString()),
                     new Claim(ClaimTypes.Role, authData.Role.ToString())
                 };
+                if (authData.LoginWorld.HasValue)
+                {
+                    claims.Add(new Claim(LoginWorldClaimType, authData.LoginWorld.Value.ToString()));
+                }
 
                 var identity = new ClaimsIdentity(claims, "admin");
                 var user = new ClaimsPrincipal(identity);
@@ -109,6 +119,12 @@ namespace AdminTool.Authentication
         /// Gets or sets the user role.
         /// </summary>
         public string Role { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the world (server) the user logged in from.
+        /// Used to avoid treating a different-world user with the same character ID as "self".
+        /// </summary>
+        public uint? LoginWorld { get; set; }
     }
 }
 

@@ -217,7 +217,11 @@
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(globalSearchTerm))
         {
-            Navigation.NavigateTo($"/users?search={Uri.EscapeDataString(globalSearchTerm)}");
+            var query = new Dictionary<string, string?> { ["search"] = globalSearchTerm.Trim() };
+            if (selectedWorld.HasValue)
+                query["world"] = selectedWorld.Value.ToString();
+            var queryString = QueryHelpers.AddQueryString("/users", query);
+            Navigation.NavigateTo(queryString);
         }
         return Task.CompletedTask;
     }

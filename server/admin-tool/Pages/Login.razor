@@ -143,7 +143,8 @@
                     {
                         UserId = result.UserId.Value,
                         UserName = result.UserName,
-                        Role = result.Role.Value.ToString()
+                        Role = result.Role.Value.ToString(),
+                        LoginWorld = world
                     };
                     await customProvider.MarkUserAsAuthenticated(authData);
                 }
