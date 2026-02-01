@@ -41,8 +41,7 @@
             "ip": "127.0.0.1",
             "port": 5672,
             "uid": "guest",
-            "pwd": "guest",
-            "queue_size": 128
+            "pwd": "guest"
         }
     }
 }

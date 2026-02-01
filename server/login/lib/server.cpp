@@ -16,7 +16,6 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<std::string>("amqp:log:pwd"),
         std::to_string(fb::config<uint32_t>("id")),
         fb::config<std::string>("name"),
-        fb::config<size_t>("amqp:log:queue_size"),
         fb::config<uint32_t>("world"))
 {
     this->handler.protocol.bind<fb::login::handler::protocol::login>();

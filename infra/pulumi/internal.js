@@ -110,8 +110,7 @@ module.exports = {
                 "Host": "rabbitmq-log",
                 "Port": conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
                 "Uid": "fb",
-                "Pwd": "admin",
-                "QueueSize": 128
+                "Pwd": "admin"
             }
         }
 
