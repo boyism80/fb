@@ -127,13 +127,13 @@ namespace Log.Worker
                             var body = result.Body.ToArray();
                             var jsonString = Encoding.UTF8.GetString(body);
                             using var doc = JsonDocument.Parse(jsonString);
-                            allLogs.Add(doc.RootElement.Clone());
+                            ParseLogMessage(doc.RootElement, allLogs);
                             messagesToAck.Add((queueName, result.DeliveryTag));
                             processedCount++;
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogWarning(ex, $"Failed to parse log message from queue {queueName}");
+                            _logger.LogWarning(ex, "Failed to parse log message from queue {QueueName}", queueName);
                             _channel.BasicAck(result.DeliveryTag, false);
                         }
                     }
@@ -208,41 +208,46 @@ namespace Log.Worker
             // Declare exchange (should already exist, but ensure it's durable)
             _channel.ExchangeDeclare(ExchangeName, ExchangeType.Direct, durable: true);
 
-            // Get queue size from configuration
-            var queueSize = _configuration.GetValue<int>("RabbitMQ:Log:QueueSize", 128);
+            // Single queue per world: game server publishes batched log arrays to fb.{world}.log
+            var routingKey = $"fb.{_world}.log";
+            var queueName = routingKey;
 
-            // Declare queues with names matching routing keys (fb.{world}.log.0 to fb.{world}.log.{queueSize-1})
-            // All consumer instances use the same queue names, allowing RabbitMQ to distribute
-            // messages among multiple consumers, ensuring each message is consumed only once
-            for (int i = 0; i < queueSize; i++)
+            try
             {
-                var routingKey = $"fb.{_world}.log.{i}";
-                var queueName = routingKey; // Queue name = Routing key
+                _channel.QueueDeclare(
+                    queue: queueName,
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null);
 
-                try
-                {
-                    // Declare queue with name matching routing key
-                    _channel.QueueDeclare(
-                        queue: queueName,
-                        durable: true,
-                        exclusive: false,
-                        autoDelete: false,
-                        arguments: null);
-
-                    // Bind queue to the corresponding routing key
-                    _channel.QueueBind(queueName, ExchangeName, routingKey);
-
-                    _queueNames.Add(queueName);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to declare or bind queue '{QueueName}' to routing key '{RoutingKey}'", queueName, routingKey);
-                    throw;
-                }
+                _channel.QueueBind(queueName, ExchangeName, routingKey);
+                _queueNames.Add(queueName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to declare or bind queue '{QueueName}' to routing key '{RoutingKey}'", queueName, routingKey);
+                throw;
             }
 
-            _logger.LogInformation($"Connected to RabbitMQ and declared {queueSize} queues (fb.{_world}.log.0 to fb.{_world}.log.{queueSize - 1})");
+            _logger.LogInformation("Connected to RabbitMQ and declared queue {QueueName}", queueName);
             await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Parses a log message body: array of log entries (new format) or single object (legacy).
+        /// </summary>
+        private static void ParseLogMessage(JsonElement root, List<JsonElement> allLogs)
+        {
+            if (root.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var element in root.EnumerateArray())
+                    allLogs.Add(element.Clone());
+            }
+            else if (root.ValueKind == JsonValueKind.Object)
+            {
+                allLogs.Add(root.Clone());
+            }
         }
 
         /// <summary>
@@ -276,14 +281,13 @@ namespace Log.Worker
                         var body = result.Body.ToArray();
                         var jsonString = Encoding.UTF8.GetString(body);
                         using var doc = JsonDocument.Parse(jsonString);
-                        allLogs.Add(doc.RootElement.Clone());
+                        ParseLogMessage(doc.RootElement, allLogs);
                         messagesToAck.Add((queueName, result.DeliveryTag));
                         messageCount++;
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, $"Failed to parse log message from queue {queueName}");
-                        // Acknowledge even if parsing fails to avoid reprocessing
+                        _logger.LogWarning(ex, "Failed to parse log message from queue {QueueName}", queueName);
                         _channel.BasicAck(result.DeliveryTag, false);
                     }
                 }
@@ -294,7 +298,6 @@ namespace Log.Worker
                 return;
             }
 
-            // Acknowledge all processed messages
             foreach (var (queueName, deliveryTag) in messagesToAck)
             {
                 try

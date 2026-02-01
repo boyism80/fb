@@ -80,7 +80,7 @@ module.exports = {
                 }
             }
 
-            // Build RabbitMQ connections using unified-global (flat structure: RabbitMQ:{Internal/Log})
+            // Build RabbitMQ connections using unified (flat structure: RabbitMQ:{Internal/Log})
             if (conf["unified-infra"] && conf["unified-infra"].rabbitmq) {
                 config.RabbitMQ["Internal"] = {
                     "Host": "rabbitmq-internal",
@@ -92,8 +92,7 @@ module.exports = {
                     "Host": "rabbitmq-log",
                     "Port": conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
                     "Uid": "fb",
-                    "Pwd": "admin",
-                    "QueueSize": 128
+                    "Pwd": "admin"
                 }
             }
 

@@ -475,7 +475,7 @@ module.exports = function () {
             // Process unified-infra MySQL instances (unified-infra has no global key, direct access)
             if (conf["unified-infra"] && conf["unified-infra"].mysql && conf["unified-infra"].mysql.port) {
                 const unifiedMysql = conf["unified-infra"].mysql
-                const section = "unified-global"
+                const section = "unified"
                 const serviceName = `mysql-${section}`
                 const containerPortName = `m${globalIndex}`
                 

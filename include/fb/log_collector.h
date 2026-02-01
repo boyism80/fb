@@ -3,7 +3,11 @@
 
 #include <json/json.h>
 #include <fb/amqp.h>
-#include <random.h>
+#include <atomic>
+#include <condition_variable>
+#include <deque>
+#include <mutex>
+#include <thread>
 
 namespace fb {
 
@@ -13,8 +17,13 @@ private:
     std::unique_ptr<fb::amqp::socket> _amqp;
     std::string                       _server_id;
     std::string                       _server_name;
-    size_t                            _queue_size;
     uint32_t                          _world;
+
+    std::deque<Json::Value>           _buffer;
+    std::mutex                        _buffer_mutex;
+    std::condition_variable           _buffer_cv;
+    std::atomic<bool>                 _stop_requested{false};
+    std::thread                       _worker;
 
 public:
     log_collector(const std::string& hostname,
@@ -23,9 +32,8 @@ public:
                   const std::string& pwd,
                   const std::string& server_id,
                   const std::string& server_name,
-                  size_t             queue_size,
                   uint32_t           world);
-    ~log_collector() = default;
+    ~log_collector();
 
     log_collector(const log_collector&)             = delete;
     log_collector(log_collector&&)                  = delete;
@@ -35,9 +43,16 @@ public:
 public:
     void write(const std::string& event_type, const Json::Value& data);
 
+    /**
+     * Requests shutdown and blocks until the worker thread has flushed all
+     * buffered logs and exited. Call before destruction if not relying on dtor.
+     */
+    void stop();
+
 private:
-    std::string serialize_log_entry(const Json::Value& log_entry) const;
-    std::string select_random_routing_key() const;
+    void worker_run();
+    std::string serialize_log_array(const std::vector<Json::Value>& entries) const;
+    std::string get_routing_key() const;
 };
 
 } // namespace fb

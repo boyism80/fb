@@ -7,8 +7,7 @@
     "port": 3004,
     "thread": {
         "logic": 12,
-        "io": 12,
-        "background": 8
+        "io": 12
     },
     "save": 600,
     "internal": {
@@ -44,8 +43,7 @@
             "ip": "127.0.0.1",
             "port": 5672,
             "uid": "guest",
-            "pwd": "guest",
-            "queue_size": 128
+            "pwd": "guest"
         }
     },
     "exp_multiplier": 100.0,

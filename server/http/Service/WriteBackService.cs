@@ -63,7 +63,7 @@ namespace Http.Service
         /// Posts a database operation to the write-back queue for a specific database shard.
         /// The operation will be processed asynchronously by background workers.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="db">The database shard identifier.</param>
         /// <param name="sql">The SQL statement to execute.</param>
         /// <param name="key">The Redis key associated with this operation.</param>
@@ -90,7 +90,7 @@ namespace Http.Service
         /// Posts a database operation to the write-back queue using hash-based sharding.
         /// Automatically determines the appropriate database shard based on the hash value.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="hash">The hash value used for determining the database shard.</param>
         /// <param name="sql">The SQL statement to execute.</param>
         /// <param name="key">The Redis key associated with this operation.</param>

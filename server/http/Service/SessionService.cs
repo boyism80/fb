@@ -50,7 +50,7 @@ namespace Http.Service
         /// <summary>
         /// Retrieves a session by world and name.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="name">The character name to retrieve the session for.</param>
         /// <returns>The session if found; otherwise, null.</returns>
         public async Task<Session> Get(uint world, string name)
@@ -70,7 +70,7 @@ namespace Http.Service
         /// <summary>
         /// Sets a session for a character name in the specified world and refreshes the TTL.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="name">The character name.</param>
         /// <param name="session">The session data to store.</param>
         public async Task Set(uint world, string name, Session session)
@@ -88,7 +88,7 @@ namespace Http.Service
         /// <summary>
         /// Deletes a session for a character name in the specified world and refreshes the TTL.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="name">The character name to delete the session for.</param>
         public async Task Delete(uint world, string name)
         {
@@ -106,7 +106,7 @@ namespace Http.Service
         /// Atomically gets and deletes a session by world and name using the get_and_delete_session.lua script.
         /// Returns the session if it existed, null otherwise.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="name">The character name to get and delete the session for.</param>
         /// <returns>The session if it existed and was deleted; otherwise, null.</returns>
         public async Task<Session> GetAndDelete(uint world, string name)
@@ -135,7 +135,7 @@ namespace Http.Service
         /// If force is false, uses try_login.lua script which does not delete existing sessions.
         /// If force is true, uses login.lua script which deletes existing sessions and publishes KickOut message.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="name">The character name.</param>
         /// <param name="session">The session data to store.</param>
         /// <param name="force">If true, replaces existing session. If false, fails if session exists.</param>
@@ -180,7 +180,7 @@ namespace Http.Service
         /// Refreshes the TTL of the session hash key in the specified world using an atomic Lua script.
         /// Only refreshes if the current TTL is below the minimum threshold to prevent redundant operations.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         public async Task RefreshTTL(uint world)
         {
             try
@@ -205,7 +205,7 @@ namespace Http.Service
         /// <summary>
         /// Gets all active sessions for the specified world.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <returns>A list of all active sessions for the world.</returns>
         public async Task<List<Session>> GetAllSessions(uint world)
         {

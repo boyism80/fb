@@ -43,7 +43,7 @@ namespace Internal.Services
         /// <summary>
         /// Gets group details by world and group ID.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="id">The group ID.</param>
         public async Task<Response.GroupDetails> Get(uint world, uint id)
         {

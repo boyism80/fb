@@ -32,8 +32,7 @@ module.exports = function () {
                             ip: "rabbitmq-log",
                             port: conf["unified-infra"].rabbitmq.log.port.amqp.cluster,
                             uid: "fb",
-                            pwd: "admin",
-                            queue_size: 128
+                            pwd: "admin"
                         }
                     },
                     internal: {

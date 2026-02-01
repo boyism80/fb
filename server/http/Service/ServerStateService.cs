@@ -124,7 +124,7 @@ namespace Http.Service
         /// <summary>
         /// Updates the heartbeat for a server.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="service">The service type (Game, Login, etc.).</param>
         /// <param name="id">The server ID.</param>
         /// <param name="name">The server name.</param>
@@ -135,7 +135,7 @@ namespace Http.Service
         {
             try
             {
-                var redis = _redisService.GetUnifiedConnection(); // unified-global is 0
+                var redis = _redisService.GetUnifiedConnection(); // unified is 0
                 if (redis == null)
                     return false;
 
@@ -162,13 +162,13 @@ namespace Http.Service
         /// <summary>
         /// Retrieves the host configuration for a specific server.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="service">The service type (Game, Login, etc.).</param>
         /// <param name="id">The server ID.</param>
         /// <returns>The host configuration if found; otherwise, null.</returns>
         public async Task<HostConfig> GetHostConfig(uint world, Protocol.Service service, byte id)
         {
-            var redis = _redisService.GetUnifiedConnection(); // unified-global is 0
+            var redis = _redisService.GetUnifiedConnection(); // unified is 0
             if (redis == null)
                 return null;
 

@@ -206,7 +206,7 @@ async::task<bool> chat_interaction_test::test_scenario_2(int index)
                 if (resp.oid != npc_oid)
                     return false;
 
-                return resp.text.find(_TEXT(MESSAGE_ITEM_CANNOT_REPAIR)) != std::string::npos;
+                return resp.text.find(_TEXT(MESSAGE_ITEM_NOT_REPAIRABLE)) != std::string::npos;
             },
             DEFAULT_TIMEOUT);
 

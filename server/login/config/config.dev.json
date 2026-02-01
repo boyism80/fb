@@ -10,8 +10,7 @@
     "admin_mode": true,
     "thread": {
         "logic": 12,
-        "io": 12,
-        "background": 8
+        "io": 12
     },
     "amqp": {
         "internal": {
@@ -24,8 +23,7 @@
             "ip": "127.0.0.1",
             "port": 5672,
             "uid": "guest",
-            "pwd": "guest",
-            "queue_size": 128
+            "pwd": "guest"
         }
     },
     "internal": {

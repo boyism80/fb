@@ -5,8 +5,7 @@
     "port": 3001,
     "thread": {
         "logic": 12,
-        "io": 12,
-        "background": 8
+        "io": 12
     },
     "entrypoints": [
         {
@@ -41,8 +40,7 @@
             "ip": "127.0.0.1",
             "port": 5672,
             "uid": "guest",
-            "pwd": "guest",
-            "queue_size": 128
+            "pwd": "guest"
         }
     }
 }

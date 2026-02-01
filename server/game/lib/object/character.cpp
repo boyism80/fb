@@ -582,7 +582,6 @@ void character::cls(CLASS value)
     auto old_class = this->_class;
     this->_class   = value;
     this->update_id();
-    this->update(UPDATE_STATE_LEVEL::ALL);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
@@ -607,8 +606,6 @@ void character::promotion(uint8_t value)
 
     auto old_promotion = this->_promotion;
     this->_promotion   = value;
-    this->update_id();
-    this->update(UPDATE_STATE_LEVEL::ALL);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
@@ -1290,9 +1287,9 @@ async::task<void> character::process_system_mails()
                         continue;
                     }
 
-                    const auto& mail = *mail_ptr;
-                    auto world = fb::config<uint32_t>("world");
-                    auto&&      resp = co_await this->server.http.post("internal",
+                    const auto& mail  = *mail_ptr;
+                    auto        world = fb::config<uint32_t>("world");
+                    auto&&      resp  = co_await this->server.http.post("internal",
                                                                   "/mail/write",
                                                                   internal_reqs::WriteMail{world,
                                                                                            mail.sender,

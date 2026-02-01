@@ -366,10 +366,12 @@ function on_npc_chat(me, message, shout)
         end, func = function(npc, params)
             local name = params.name
             local count = nil
-            if params.count ~= nil then
-                count = tonumber(params.count)
-            elseif params.all ~= nil then
+            if params.all ~= nil then
                 count = nil
+            elseif params.count ~= nil then
+                count = tonumber(params.count)
+            else
+                count = 1
             end
             return npc_buy_item(me, npc, name, count)
         end },
@@ -382,18 +384,24 @@ function on_npc_chat(me, message, shout)
                 return npc_repair(me, npc, nil)
             elseif params.name ~= nil then
                 return npc_repair(me, npc, params.name)
+            else
+                return false
             end
-            return false
         end },
         { pattern = CONST.REGEX.DEPOSIT_MONEY, condition = function(npc)
             local model = npc:model()
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
         end, func = function(npc, params)
-            local money = tonumber(params.money)
-            if money == nil then
+            local money = nil
+            if params.all ~= nil then
+                money = me:money()
+            elseif params.money ~= nil then
+                money = tonumber(params.money)
+            else
                 return false
             end
+
             return npc_deposit_money(me, npc, money)
         end },
         { pattern = CONST.REGEX.WITHDRAW_MONEY, condition = function(npc)
@@ -401,10 +409,15 @@ function on_npc_chat(me, message, shout)
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
         end, func = function(npc, params)
-            local money = tonumber(params.money)
-            if money == nil then
+            local money = nil
+            if params.all ~= nil then
+                money = nil
+            elseif params.money ~= nil then
+                money = tonumber(params.money)
+            else
                 return false
             end
+
             return npc_withdraw_money(me, npc, money)
         end },
         { pattern = CONST.REGEX.STORE_ITEM, condition = function(npc)
@@ -413,9 +426,13 @@ function on_npc_chat(me, message, shout)
             return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
         end, func = function(npc, params)
             local name = params.name
-            local count = 1
-            if params.count ~= nil then
+            local count = nil
+            if params.all ~= nil then
+                count = nil
+            elseif params.count ~= nil then
                 count = tonumber(params.count)
+            else
+                count = 1
             end
             return npc_store_item(me, npc, name, count)
         end },
@@ -425,9 +442,13 @@ function on_npc_chat(me, message, shout)
             return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
         end, func = function(npc, params)
             local name = params.name
-            local count = 1
-            if params.count ~= nil then
+            local count = nil
+            if params.all ~= nil then
+                count = nil
+            elseif params.count ~= nil then
                 count = tonumber(params.count)
+            else
+                count = 1
             end
             return npc_retrieve_item(me, npc, name, count)
         end },

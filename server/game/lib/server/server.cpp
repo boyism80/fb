@@ -41,7 +41,6 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<std::string>("amqp:log:pwd"),
         std::to_string(fb::config<uint32_t>("id")),
         fb::config<std::string>("name"),
-        fb::config<size_t>("amqp:log:queue_size"),
         fb::config<uint32_t>("world")),
     _exp_multiplier(fb::config<double>("exp_multiplier")),
     _drop_rate_multiplier(fb::config<double>("drop_rate_multiplier"))

@@ -7,8 +7,7 @@
 #include <sstream>
 #include <chrono>
 #include <format>
-#include <random.h>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <vector>
 
 using namespace fb;
 
@@ -18,80 +17,137 @@ log_collector::log_collector(const std::string& hostname,
                              const std::string& pwd,
                              const std::string& server_id,
                              const std::string& server_name,
-                             size_t             queue_size,
                              uint32_t           world) :
     _server_id(server_id),
     _server_name(server_name),
-    _queue_size(queue_size),
     _world(world)
 {
-    // Create and connect to RabbitMQ
-    this->_amqp    = std::make_unique<fb::amqp::socket>();
+    this->_amqp = std::make_unique<fb::amqp::socket>();
     auto connected = this->_amqp->connect(hostname, port, uid, pwd, "/");
     if (!connected)
     {
         fb::logger::warn("Failed to connect to log RabbitMQ at {}:{}", hostname, port);
         this->_amqp.reset();
     }
+
+    this->_worker = std::thread(&log_collector::worker_run, this);
+}
+
+log_collector::~log_collector()
+{
+    stop();
 }
 
 void log_collector::write(const std::string& event_type, const Json::Value& data)
 {
     try
     {
-        auto log_entry           = Json::Value{};
-        log_entry["timestamp"]   = fb::model::datetime().to_string();
-        log_entry["event"]       = event_type;
-        log_entry["server_id"]   = this->_server_id;
-        log_entry["server_name"] = this->_server_name;
-        log_entry["data"]        = data;
+        Json::Value entry;
+        entry["timestamp"]    = fb::model::datetime().to_string();
+        entry["event"]        = event_type;
+        entry["server_id"]    = this->_server_id;
+        entry["server_name"]  = this->_server_name;
+        entry["data"]         = data;
 
-        // Serialize to JSON string
-        auto json_string = this->serialize_log_entry(log_entry);
-
-        // Convert to byte vector
-        auto message = std::vector<uint8_t>(json_string.begin(), json_string.end());
-
-        // Select random routing key
-        auto routing_key = this->select_random_routing_key();
-
-        // Publish to RabbitMQ (using amq.direct exchange with routing key)
-        if (this->_amqp == nullptr)
-        {
-            fb::logger::warn("AMQP connection not available, skipping log publish");
-            return;
-        }
-
-        if (!this->_amqp->publish("amq.direct", routing_key, message))
-        {
-            fb::logger::warn("Failed to publish log with routing key: {}", routing_key);
-        }
+        std::lock_guard<std::mutex> lock(this->_buffer_mutex);
+        this->_buffer.push_back(std::move(entry));
     }
     catch (const std::exception& e)
     {
-        fb::logger::warn("Failed to write log: {}", e.what());
+        fb::logger::warn("Failed to buffer log: {}", e.what());
     }
 }
 
-std::string log_collector::serialize_log_entry(const Json::Value& log_entry) const
+void log_collector::stop()
 {
-    // Use StreamWriterBuilder to output UTF-8 characters without escape sequences
-    auto builder           = Json::StreamWriterBuilder{};
-    builder["emitUTF8"]    = true; // Output UTF-8 characters directly without escape sequences
-    builder["indentation"] = "";   // Compact output (no indentation)
+    if (this->_stop_requested.exchange(true))
+        return;
+
+    this->_buffer_cv.notify_all();
+
+    if (this->_worker.joinable())
+        this->_worker.join();
+}
+
+void log_collector::worker_run()
+{
+    const auto batch_interval = std::chrono::seconds(1);
+
+    while (!this->_stop_requested.load(std::memory_order_relaxed))
+    {
+        std::vector<Json::Value> batch;
+        {
+            std::unique_lock<std::mutex> lock(this->_buffer_mutex);
+            this->_buffer_cv.wait_for(lock, batch_interval, [this] {
+                return this->_stop_requested.load(std::memory_order_relaxed) || !this->_buffer.empty();
+            });
+            batch.reserve(this->_buffer.size());
+            while (!this->_buffer.empty())
+            {
+                batch.push_back(std::move(this->_buffer.front()));
+                this->_buffer.pop_front();
+            }
+        }
+
+        if (batch.empty())
+            continue;
+
+        if (this->_amqp != nullptr)
+        {
+            auto body = this->serialize_log_array(batch);
+            auto message = std::vector<uint8_t>(body.begin(), body.end());
+            auto routing_key = this->get_routing_key();
+            if (!this->_amqp->publish("amq.direct", routing_key, message))
+                fb::logger::warn("Failed to publish log batch ({} entries) with routing key: {}", batch.size(), routing_key);
+        }
+    }
+
+    // Drain remaining buffer on shutdown
+    while (true)
+    {
+        std::vector<Json::Value> batch;
+        {
+            std::lock_guard<std::mutex> lock(this->_buffer_mutex);
+            if (this->_buffer.empty())
+                break;
+            batch.reserve(this->_buffer.size());
+            while (!this->_buffer.empty())
+            {
+                batch.push_back(std::move(this->_buffer.front()));
+                this->_buffer.pop_front();
+            }
+        }
+
+        if (this->_amqp != nullptr)
+        {
+            auto body = this->serialize_log_array(batch);
+            auto message = std::vector<uint8_t>(body.begin(), body.end());
+            auto routing_key = this->get_routing_key();
+            if (!this->_amqp->publish("amq.direct", routing_key, message))
+                fb::logger::warn("Failed to publish final log batch ({} entries) with routing key: {}", batch.size(), routing_key);
+        }
+    }
+}
+
+std::string log_collector::serialize_log_array(const std::vector<Json::Value>& entries) const
+{
+    Json::Value root(Json::arrayValue);
+    for (const auto& e : entries)
+        root.append(e);
+
+    Json::StreamWriterBuilder builder;
+    builder["emitUTF8"]    = true;
+    builder["indentation"] = "";
 
     auto writer = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
-    auto stream = std::ostringstream{};
-    writer->write(log_entry, &stream);
+    std::ostringstream stream;
+    writer->write(root, &stream);
     return stream.str();
 }
 
-std::string log_collector::select_random_routing_key() const
+std::string log_collector::get_routing_key() const
 {
-    auto queue_index = ::random<size_t>(0, this->_queue_size - 1);
     if (this->_world > 0)
-    {
-        return std::format("fb.{}.log.{}", this->_world, queue_index);
-    }
-    return std::format("fb.log.{}", queue_index);
+        return std::format("fb.{}.log", this->_world);
+    return "fb.log";
 }

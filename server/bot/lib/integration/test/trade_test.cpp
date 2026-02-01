@@ -69,6 +69,7 @@ async::task<void> trade_test::on_scenario_finished(uint32_t scenario_index)
         co_await bot->change_money(0, DEFAULT_TIMEOUT);
     }
 
+    co_await this->sleep(1s);
     co_return;
 }
 

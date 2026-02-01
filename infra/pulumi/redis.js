@@ -241,7 +241,7 @@ module.exports = {
         // Process unified-infra Redis instances (unified-infra has no global key, direct access)
         if (conf["unified-infra"] && conf["unified-infra"].redis && conf["unified-infra"].redis.port) {
             const unifiedRedis = conf["unified-infra"].redis
-            const section = "unified-global"
+            const section = "unified"
             const serviceName = `redis-${section}`
             const containerPortName = `r${globalIndex}`
             

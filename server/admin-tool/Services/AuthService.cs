@@ -81,7 +81,7 @@ namespace AdminTool.Services
         /// Authenticates a user with their character name and password.
         /// Verifies credentials and checks if the user has admin or higher role.
         /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
+        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="name">The character name to authenticate.</param>
         /// <param name="password">The password to verify.</param>
         /// <returns>A result object containing authentication status and user information.</returns>
