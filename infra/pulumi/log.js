@@ -32,9 +32,6 @@ module.exports = {
                         "Uid": "fb",
                         "Pwd": "admin"
                     }
-                },
-                "Log": {
-                    "InstanceCount": 5
                 }
             }
 

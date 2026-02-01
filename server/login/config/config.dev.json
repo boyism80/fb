@@ -10,8 +10,7 @@
     "admin_mode": true,
     "thread": {
         "logic": 12,
-        "io": 12,
-        "background": 8
+        "io": 12
     },
     "amqp": {
         "internal": {

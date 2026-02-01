@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Runner.Command;
@@ -724,6 +724,7 @@ namespace Runner.ViewModel
                     var conf = new JObject();
                     conf["id"] = i;
                     conf["name"] = $"login-{i}";
+                    conf["world"] = 1;
                     conf["ip"] = ExternalIP;
                     conf["port"] = setting.Port;
                     conf["transfer delay"] = 0;
@@ -735,12 +736,21 @@ namespace Runner.ViewModel
                         logic = 12,
                         io = 12
                     });
+                    var amqp = new JObject();
+                    amqp["internal"] = JObject.FromObject(new { ip = RabbitMq.IP, port = RabbitMq.Port, uid = RabbitMq.ID, pwd = RabbitMq.PW });
+                    amqp["log"] = JObject.FromObject(new { ip = RabbitMq.IP, port = RabbitMq.Port, uid = RabbitMq.ID, pwd = RabbitMq.PW });
+                    conf["amqp"] = amqp;
                     conf["internal"] = JObject.FromObject(new
                     {
                         ip = "127.0.0.1",
                         port = InternalPort
                     });
-                    conf["log"] = new JArray("debug", "info", "warn", "fatal");
+                    conf["log"] = JObject.FromObject(new
+                    {
+                        ip = ExternalIP,
+                        port = (ushort)3005,
+                        level = new JArray("debug", "info", "warn", "fatal")
+                    });
                     conf["init"] = new JObject();
                     conf["init"]["map"] = InitMap;
                     conf["init"]["position"] = new JArray();
@@ -779,10 +789,11 @@ namespace Runner.ViewModel
 
                     var conf = new JObject();
                     conf["id"] = setting.ID;
+                    conf["name"] = $"game-{setting.ID}";
+                    conf["world"] = 1;
+                    conf["delay"] = 5;
                     conf["ip"] = ExternalIP;
                     conf["port"] = setting.Port;
-                    conf["name"] = $"game-{setting.ID}";
-                    conf["delay"] = 5;
                     conf["thread"] = JObject.FromObject(new
                     {
                         logic = 12,
@@ -794,19 +805,28 @@ namespace Runner.ViewModel
                         ip = "127.0.0.1",
                         port = InternalPort
                     });
+                    conf["marketplace"] = JObject.FromObject(new
+                    {
+                        ip = ExternalIP,
+                        port = (ushort)3010
+                    });
                     conf["login"] = JObject.FromObject(new
                     {
                         ip = ExternalIP,
                         port = Login[0].Port
                     });
-                    conf["amqp"] = JObject.FromObject(new
+                    var gameAmqp = new JObject();
+                    gameAmqp["internal"] = JObject.FromObject(new { ip = RabbitMq.IP, port = RabbitMq.Port, uid = RabbitMq.ID, pwd = RabbitMq.PW });
+                    gameAmqp["log"] = JObject.FromObject(new { ip = RabbitMq.IP, port = RabbitMq.Port, uid = RabbitMq.ID, pwd = RabbitMq.PW });
+                    conf["amqp"] = gameAmqp;
+                    conf["log"] = JObject.FromObject(new
                     {
-                        ip = RabbitMq.IP,
-                        port = RabbitMq.Port,
-                        uid = RabbitMq.ID,
-                        pwd = RabbitMq.PW
+                        ip = ExternalIP,
+                        port = (ushort)3005,
+                        level = new JArray("debug", "info", "warn", "fatal")
                     });
-                    conf["log"] = new JArray("debug", "info", "warn", "fatal");
+                    conf["exp_multiplier"] = 100.0;
+                    conf["drop_rate_multiplier"] = 100.0;
                     File.WriteAllText(Path.Combine([gameDir, $"config_game_{setting.ID}.json"]), conf.ToString(Formatting.Indented));
                 }
 
@@ -823,7 +843,12 @@ namespace Runner.ViewModel
                     logic = 12,
                     io = 12
                 });
-                gatewayConf["log"] = new JArray("debug", "info", "warn", "fatal");
+                gatewayConf["log"] = JObject.FromObject(new
+                {
+                    ip = ExternalIP,
+                    port = (ushort)3005,
+                    level = new JArray("debug", "info", "warn", "fatal")
+                });
                 gatewayConf["entrypoints"] = new JArray();
                 for (int i = 0; i < Login.Count; i++)
                 {
@@ -836,6 +861,15 @@ namespace Runner.ViewModel
                         port = setting.Port
                     }));
                 }
+                gatewayConf["internal"] = JObject.FromObject(new
+                {
+                    ip = "127.0.0.1",
+                    port = InternalPort
+                });
+                var gatewayAmqp = new JObject();
+                gatewayAmqp["internal"] = JObject.FromObject(new { ip = RabbitMq.IP, port = RabbitMq.Port, uid = RabbitMq.ID, pwd = RabbitMq.PW });
+                gatewayAmqp["log"] = JObject.FromObject(new { ip = RabbitMq.IP, port = RabbitMq.Port, uid = RabbitMq.ID, pwd = RabbitMq.PW });
+                gatewayConf["amqp"] = gatewayAmqp;
 
                 File.WriteAllText(Path.Combine([gatewayDir, $"config_gateway.json"]), gatewayConf.ToString(Formatting.Indented));
 
@@ -845,54 +879,105 @@ namespace Runner.ViewModel
                 internalConf["Logging"]["LogLevel"]["Default"] = "Information";
                 internalConf["Logging"]["LogLevel"]["Microsoft.AspNetCore"] = "Warning";
 
+                var internalMySql = new JObject();
+                if (MySQL.Count > 0)
+                {
+                    var first = MySQL[0];
+                    internalMySql["unified"] = $"Server={first.IP};Port={first.Port};User ID={first.ID}; Password={first.PW}; Database=fb";
+                }
+                var internalMySqlWorlds = new JObject();
+                var world1MySql = new JObject();
+                var dataConnStrings = new JArray();
+                foreach (var db in MySQL)
+                    dataConnStrings.Add($"Server={db.IP};Port={db.Port};User ID={db.ID}; Password={db.PW}; Database=fb");
+                if (MySQL.Count > 0)
+                {
+                    var first = MySQL[0];
+                    world1MySql["global"] = $"Server={first.IP};Port={first.Port};User ID={first.ID}; Password={first.PW}; Database=fb";
+                    if (dataConnStrings.Count > 0)
+                        world1MySql["data"] = dataConnStrings;
+                }
+                internalMySqlWorlds["1"] = world1MySql;
+                internalMySql["worlds"] = internalMySqlWorlds;
                 internalConf["ConnectionStrings"] = new JObject();
-                internalConf["ConnectionStrings"]["MySql"] = new JObject();
-                for (int i = 0; i < MySQL.Count; i++)
-                {
-                    var db = MySQL[i];
-                    internalConf["ConnectionStrings"]["MySql"][(i - 1).ToString()] = $"Server={db.IP};Port={db.Port};User ID={db.ID}; Password={db.PW}; Database=fb";
-                }
+                internalConf["ConnectionStrings"]["MySql"] = internalMySql;
 
-                internalConf["Redis"] = new JObject();
-                for (int i = 0; i < Redis.Count; i++)
+                var internalRedis = new JObject();
+                if (Redis.Count > 0)
                 {
-                    var db = Redis[i];
-                    var node = new JObject();
-                    node["Host"] = db.IP;
-                    node["Port"] = db.Port;
-                    internalConf["Redis"][(i - 1).ToString()] = node;
+                    var first = Redis[0];
+                    internalRedis["unified"] = JObject.FromObject(new { Host = first.IP, Port = first.Port });
                 }
+                var internalRedisWorlds = new JObject();
+                var world1Redis = new JObject();
+                var redisDataArray = new JArray();
+                foreach (var r in Redis)
+                    redisDataArray.Add(JObject.FromObject(new { Host = r.IP, Port = r.Port }));
+                if (Redis.Count > 0)
+                {
+                    var first = Redis[0];
+                    world1Redis["global"] = JObject.FromObject(new { Host = first.IP, Port = first.Port });
+                    if (redisDataArray.Count > 0)
+                        world1Redis["data"] = redisDataArray;
+                }
+                internalRedisWorlds["1"] = world1Redis;
+                internalRedis["worlds"] = internalRedisWorlds;
+                internalConf["Redis"] = internalRedis;
 
-                internalConf["RabbitMQ"] = new JObject();
-                internalConf["RabbitMQ"]["Host"] = RabbitMq.IP;
-                internalConf["RabbitMQ"]["Port"] = RabbitMq.Port;
-                internalConf["RabbitMQ"]["Uid"] = RabbitMq.ID;
-                internalConf["RabbitMQ"]["Pwd"] = RabbitMq.Port;
+                var internalRabbit = new JObject();
+                internalRabbit["Internal"] = JObject.FromObject(new { Host = RabbitMq.IP, Port = RabbitMq.Port, Uid = RabbitMq.ID, Pwd = RabbitMq.PW });
+                internalRabbit["Log"] = JObject.FromObject(new { Host = RabbitMq.IP, Port = RabbitMq.Port, Uid = RabbitMq.ID, Pwd = RabbitMq.PW });
+                internalConf["RabbitMQ"] = internalRabbit;
+                internalConf["Log"] = JObject.FromObject(new { Enabled = true, ServerId = "0", ServerName = "internal" });
                 File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "internal", "appsettings.internal.json"]), internalConf.ToString(Formatting.Indented));
 
                 var wbConf = new JObject();
+                wbConf["World"] = 1;
                 wbConf["Logging"] = new JObject();
                 wbConf["Logging"]["LogLevel"] = new JObject();
                 wbConf["Logging"]["LogLevel"]["Default"] = "Information";
                 wbConf["Logging"]["LogLevel"]["Microsoft.AspNetCore"] = "Warning";
 
+                var wbMySql = new JObject();
+                var wbMySqlWorlds = new JObject();
+                var wbWorld1MySql = new JObject();
+                var wbDataConnStrings = new JArray();
+                foreach (var db in MySQL)
+                    wbDataConnStrings.Add($"Server={db.IP};Port={db.Port};User ID={db.ID}; Password={db.PW}; Database=fb");
+                if (MySQL.Count > 0)
+                {
+                    var first = MySQL[0];
+                    wbWorld1MySql["global"] = $"Server={first.IP};Port={first.Port};User ID={first.ID}; Password={first.PW}; Database=fb";
+                    if (wbDataConnStrings.Count > 0)
+                        wbWorld1MySql["data"] = wbDataConnStrings;
+                }
+                wbMySqlWorlds["1"] = wbWorld1MySql;
+                wbMySql["worlds"] = wbMySqlWorlds;
                 wbConf["ConnectionStrings"] = new JObject();
-                wbConf["ConnectionStrings"]["MySql"] = new JObject();
-                for (int i = 0; i < MySQL.Count; i++)
-                {
-                    var db = MySQL[i];
-                    wbConf["ConnectionStrings"]["MySql"][(i - 1).ToString()] = $"Server={db.IP};Port={db.Port};User ID={db.ID}; Password= {db.PW} ; Database=fb";
-                }
+                wbConf["ConnectionStrings"]["MySql"] = wbMySql;
 
-                wbConf["Redis"] = new JObject();
-                for (int i = 0; i < Redis.Count; i++)
+                var wbRedis = new JObject();
+                var wbRedisWorlds = new JObject();
+                var wbWorld1Redis = new JObject();
+                var wbRedisDataArray = new JArray();
+                foreach (var r in Redis)
+                    wbRedisDataArray.Add(JObject.FromObject(new { Host = r.IP, Port = r.Port }));
+                if (Redis.Count > 0)
                 {
-                    var db = Redis[i];
-                    var node = new JObject();
-                    node["Host"] = db.IP;
-                    node["Port"] = db.Port;
-                    wbConf["Redis"][(i - 1).ToString()] = node;
+                    var first = Redis[0];
+                    wbWorld1Redis["global"] = JObject.FromObject(new { Host = first.IP, Port = first.Port });
+                    if (wbRedisDataArray.Count > 0)
+                        wbWorld1Redis["data"] = wbRedisDataArray;
                 }
+                wbRedisWorlds["1"] = wbWorld1Redis;
+                wbRedis["worlds"] = wbRedisWorlds;
+                wbConf["Redis"] = wbRedis;
+
+                var wbRabbit = new JObject();
+                wbRabbit["Internal"] = JObject.FromObject(new { Host = RabbitMq.IP, Port = RabbitMq.Port, Uid = RabbitMq.ID, Pwd = RabbitMq.PW });
+                wbRabbit["Log"] = JObject.FromObject(new { Host = RabbitMq.IP, Port = RabbitMq.Port, Uid = RabbitMq.ID, Pwd = RabbitMq.PW });
+                wbConf["RabbitMQ"] = wbRabbit;
+                wbConf["Log"] = JObject.FromObject(new { Enabled = true, ServerId = "0", ServerName = "write-back" });
                 File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "write-back", "appsettings.write-back.json"]), wbConf.ToString(Formatting.Indented));
 
                 var gateway = new ProcessGroup { Type = ServerType.Gateway };
