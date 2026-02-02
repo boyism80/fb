@@ -93,7 +93,8 @@ public:
 class server : public fb::acceptor<fb::login::session>
 {
 private:
-    fb::protocol::login::response::agreement _agreement = CP949(fb::config<std::string_view>("agreement"), PLATFORM::BOTH);
+    fb::protocol::login::response::agreement _agreement{
+        CP949(fb::config<std::string_view>("agreement"), PLATFORM::BOTH)};
     std::vector<boost::asio::deadline_timer> _timers;
 
 public:
