@@ -205,8 +205,6 @@ public:
     async::task<internal_resp::Unban>          unban(std::string_view name);
     async::task<void>                          update_status();
     void                                       update_time();
-    async::task<void>                          leave_clan_member(const clan& clan, std::string_view name);
-    async::task<void>                          join_clan_member(const clan& clan, character& inviter, character& invitee);
     void                                       rezen_force();
     void                                       rezen_force(const fb::game::map& map);
     async::task<void>                          ensure_group(uint32_t id, ensure_group_fn fn);

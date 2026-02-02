@@ -63,7 +63,8 @@ public:
             "(?:\\.(?P<ms>\\d+))?");
             
         auto what = boost::xpressive::smatch();
-        if (boost::xpressive::regex_match(std::string(f), what, regex) == false)
+        auto f_str = std::string{f};
+        if (boost::xpressive::regex_match(f_str, what, regex) == false)
             throw std::runtime_error(std::format("cannot parse timespan. value : {}", f));
 
         auto day   = what["day"].matched ? std::stoi(what["day"].str()) : 0;

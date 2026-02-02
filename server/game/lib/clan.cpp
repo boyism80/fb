@@ -62,11 +62,27 @@ const std::unordered_map<std::string, clan_member>& clan::members() const
 clan_member* clan::member(std::string_view name)
 {
     auto name_str = std::string(name);
-    auto it = this->_members.find(name_str);
+    auto it       = this->_members.find(name_str);
     if (it != this->_members.end())
         return &it->second;
 
     return nullptr;
+}
+
+const clan_member* clan::member(std::string_view name) const
+{
+    auto name_str = std::string(name);
+    auto it       = this->_members.find(name_str);
+    if (it != this->_members.end())
+        return &it->second;
+
+    return nullptr;
+}
+
+bool clan::contains(std::string_view name) const
+{
+    auto name_str = std::string(name);
+    return this->_members.contains(name_str);
 }
 
 void clan::join(const clan_member& member)
@@ -83,7 +99,7 @@ void clan::leave(std::string_view member)
 void clan::change_role(std::string_view member_name, CLAN_ROLE new_role)
 {
     auto member_name_str = std::string(member_name);
-    auto it = this->_members.find(member_name_str);
+    auto it              = this->_members.find(member_name_str);
     if (it != this->_members.end())
     {
         it->second.role = new_role;

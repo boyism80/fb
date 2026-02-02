@@ -45,6 +45,8 @@ public:
     void                              title(const std::optional<std::string>& title);
     const member_map&                 members() const;
     clan_member*                      member(std::string_view name);
+    const clan_member*                member(std::string_view name) const;
+    bool                              contains(std::string_view name) const;
     void                              join(const clan_member& member);
     void                              leave(std::string_view member);
     void                              change_role(std::string_view member_name, CLAN_ROLE new_role);
