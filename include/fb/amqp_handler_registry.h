@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <functional>
 #include <string>
+#include <string_view>
 #include <async/task.h>
 #include <fb/amqp.h>
 #include <fb/logger.h>
@@ -54,16 +55,16 @@ public:
                 this->_amqp = std::make_unique<fb::amqp::socket>();
 
                 // Attempt to connect
-                auto connected = this->_amqp->connect(fb::config<std::string>("amqp:internal:ip"),
+                auto connected = this->_amqp->connect(fb::config<std::string_view>("amqp:internal:ip"),
                                                       fb::config<uint16_t>("amqp:internal:port"),
-                                                      fb::config<std::string>("amqp:internal:uid"),
-                                                      fb::config<std::string>("amqp:internal:pwd"),
+                                                      fb::config<std::string_view>("amqp:internal:uid"),
+                                                      fb::config<std::string_view>("amqp:internal:pwd"),
                                                       "/");
 
                 if (connected == false)
                 {
                     fb::logger::warn("Failed to connect to RabbitMQ at {}:{}",
-                                     fb::config<std::string>("amqp:internal:ip"),
+                                     fb::config<std::string_view>("amqp:internal:ip"),
                                      fb::config<uint16_t>("amqp:internal:port"));
                     // Clean up failed connection before retry
                     this->_amqp.reset();
@@ -107,23 +108,25 @@ public:
     }
 
     template <typename HandlerType>
-    void bind(const std::string& route)
+    void bind(std::string_view route)
     {
         using message_type = typename HandlerType::message_type;
 
-        if (!this->_handlers.contains(route))
-            this->_handlers.insert({route, std::unordered_map<uint32_t, handler_func>()});
+        auto route_str = std::string(route);
+        if (!this->_handlers.contains(route_str))
+            this->_handlers.insert({route_str, std::unordered_map<uint32_t, handler_func>()});
 
         auto cmd = static_cast<uint32_t>(message_type::FlatBufferProtocolType);
-        this->_handlers[route].insert({cmd, [this](const uint8_t* ptr) -> async::task<void> {
-                                           auto  protocol = message_type::Deserialize(ptr);
-                                           auto& server = static_cast<typename HandlerType::server_type&>(this->_owner);
-                                           auto  handler = std::make_shared<HandlerType>(server);
-                                           co_await handler->handle(protocol);
-                                       }});
+        this->_handlers[route_str].insert({cmd, [this](const uint8_t* ptr) -> async::task<void> {
+                                               auto  protocol = message_type::Deserialize(ptr);
+                                               auto& server =
+                                                   static_cast<typename HandlerType::server_type&>(this->_owner);
+                                               auto handler = std::make_shared<HandlerType>(server);
+                                               co_await handler->handle(protocol);
+                                           }});
     }
 
-    void declare_queue(const std::string& exchange, const std::string& route_key)
+    void declare_queue(std::string_view exchange, std::string_view route_key)
     {
         try
         {
@@ -151,24 +154,26 @@ public:
         }
     }
 
-    handler_func get_handler(const std::string& exchange, uint32_t key) const
+    handler_func get_handler(std::string_view exchange, uint32_t key) const
     {
-        if (!this->_handlers.contains(exchange))
+        auto exchange_str = std::string(exchange);
+        if (!this->_handlers.contains(exchange_str))
             return nullptr;
 
-        const auto& exchange_handlers = this->_handlers.at(exchange);
+        const auto& exchange_handlers = this->_handlers.at(exchange_str);
         if (!exchange_handlers.contains(key))
             return nullptr;
 
         return exchange_handlers.at(key);
     }
 
-    bool has_handler(const std::string& exchange, uint32_t key) const
+    bool has_handler(std::string_view exchange, uint32_t key) const
     {
-        if (!this->_handlers.contains(exchange))
+        auto exchange_str = std::string(exchange);
+        if (!this->_handlers.contains(exchange_str))
             return false;
 
-        const auto& exchange_handlers = this->_handlers.at(exchange);
+        const auto& exchange_handlers = this->_handlers.at(exchange_str);
         return exchange_handlers.contains(key);
     }
 };

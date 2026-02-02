@@ -28,7 +28,7 @@ private:
     void                  init_system_mail(const std::vector<internal::SystemMailUser>& response, character& ch);
     void                  init_storage(const internal_resp::Init& response, character& ch);
     async::task<ch_ptr_t> init(const game_reqs::login& request, fb::socket<character>& session);
-    std::string           elapsed_message(const std::string& dt);
+    std::string           elapsed_message(std::string_view dt);
     async::task<bool>     assert_login(const game_reqs::login& request);
 
 public:

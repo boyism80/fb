@@ -1,18 +1,15 @@
 #include <fb/game/mst.recipe.h>
 
 fb::model::__recipe::__recipe() :
-    fb::model::array_container<fb::model::recipe>(std::string("json/recipe.json"))
+    fb::model::array_container<fb::model::recipe>(std::string_view("json/recipe.json"))
 {
-    this->_root      = new fb::model::recipe_node();
+    this->_root      = std::make_unique<fb::model::recipe_node>();
     this->hook.built = [this](auto& value) {
         this->_root->add(value);
     };
 }
 
-fb::model::__recipe::~__recipe()
-{
-    delete this->_root;
-}
+fb::model::__recipe::~__recipe() = default;
 
 const fb::model::recipe* fb::model::__recipe::find(const std::vector<fb::model::dsl::item>& dsl) const
 {

@@ -5,13 +5,13 @@ namespace fb::protocol::game::response {
 #ifndef BOT
 dialog_item::dialog_item(const fb::model::object&            obj,
                          const fb::game::dialog::item_pairs& items,
-                         const std::string&                  message,
-                         uint32_t                            oid,
-                         uint16_t                            pursuit,
-                         fb::game::dialog::interaction       interaction) :
+                         std::string_view                      message,
+                         uint32_t                             oid,
+                         uint16_t                             pursuit,
+                         fb::game::dialog::interaction        interaction) :
     portrait(fb::game::portrait_factory::create(obj)),
     items(items),
-    message(message),
+    message(std::string(message)),
     oid(oid),
     pursuit(pursuit),
     interaction(interaction)
@@ -19,13 +19,13 @@ dialog_item::dialog_item(const fb::model::object&            obj,
 
 dialog_item::dialog_item(const fb::game::object&             object,
                          const fb::game::dialog::item_pairs& items,
-                         const std::string&                  message,
-                         uint32_t                            oid,
-                         uint16_t                            pursuit,
-                         fb::game::dialog::interaction       interaction) :
+                         std::string_view                      message,
+                         uint32_t                             oid,
+                         uint16_t                             pursuit,
+                         fb::game::dialog::interaction        interaction) :
     portrait(fb::game::portrait_factory::create(object)),
     items(items),
-    message(message),
+    message(std::string(message)),
     oid(oid),
     pursuit(pursuit),
     interaction(interaction)

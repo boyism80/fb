@@ -3,6 +3,7 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <string_view>
 
 namespace fb::protocol::game::response {
 
@@ -15,14 +16,14 @@ public:
 
 public:
 #ifndef BOT
-    const std::string& message;
+    const std::string message;
 #else
     std::string message;
 #endif
 
 public:
 #ifndef BOT
-    trade_close(const std::string& message);
+    trade_close(std::string_view message);
 #else
     trade_close() = default;
 #endif

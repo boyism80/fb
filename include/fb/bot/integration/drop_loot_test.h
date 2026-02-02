@@ -2,6 +2,7 @@
 #define __BOT_INTEGRATION_DROP_LOOT_TEST_H__
 
 #include <fb/bot/integration/test_case.h>
+#include <string_view>
 
 namespace fb::bot::integration {
 
@@ -33,9 +34,9 @@ private:
     async::task<bool> test_scenario_5();
 
 private:
-    bool     has_item(const std::shared_ptr<game_bot>& bot, const std::string& name);
-    uint16_t get_item_count(const std::shared_ptr<game_bot>& bot, const std::string& name);
-    uint8_t  get_item_slot(const std::shared_ptr<game_bot>& bot, const std::string& name);
+    bool     has_item(const std::shared_ptr<game_bot>& bot, std::string_view name);
+    uint16_t get_item_count(const std::shared_ptr<game_bot>& bot, std::string_view name);
+    uint8_t  get_item_slot(const std::shared_ptr<game_bot>& bot, std::string_view name);
 };
 
 } // namespace fb::bot::integration

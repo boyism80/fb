@@ -19,6 +19,8 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <string>
+#include <string_view>
 
 #ifdef _WIN32
 #define CONSOLE_TITLE "Private kingdom of the wind - http://cshyeon.com"
@@ -73,20 +75,20 @@ private:
 
     public:
         virtual ~console_policy()                                                 = default;
-        virtual void put(align_type align, color color, const std::string& text)  = 0;
-        virtual void puts(align_type align, color color, const std::string& text) = 0;
-        virtual void comment(color color, const std::string& text)                = 0;
+        virtual void put(align_type align, color color, std::string_view text)  = 0;
+        virtual void puts(align_type align, color color, std::string_view text) = 0;
+        virtual void comment(color color, std::string_view text)                = 0;
         virtual void newline()                                                    = 0;
         virtual void clear()                                                      = 0;
         virtual void save_point()                                                 = 0;
         virtual void restore_point()                                              = 0;
         virtual void up(uint8_t line)                                             = 0;
         virtual void down(uint8_t line)                                           = 0;
-        virtual void progress(const std::string& text, float progress)            = 0;
+        virtual void progress(std::string_view text, float progress)            = 0;
 
     protected:
         // Common alignment logic used by both policies
-        std::string get_aligned_text(align_type align, const std::string& text);
+        std::string get_aligned_text(align_type align, std::string_view text);
     };
 
     class tty_policy : public console_policy
@@ -95,31 +97,31 @@ private:
         uint16_t _comment_line = 0;
 
     public:
-        void put(align_type align, color color, const std::string& text) override;
-        void puts(align_type align, color color, const std::string& text) override;
-        void comment(color color, const std::string& text) override;
+        void put(align_type align, color color, std::string_view text) override;
+        void puts(align_type align, color color, std::string_view text) override;
+        void comment(color color, std::string_view text) override;
         void newline() override;
         void clear() override;
         void save_point() override;
         void restore_point() override;
         void up(uint8_t line) override;
         void down(uint8_t line) override;
-        void progress(const std::string& text, float progress) override;
+        void progress(std::string_view text, float progress) override;
     };
 
     class plain_policy : public console_policy
     {
     public:
-        void put(align_type align, color color, const std::string& text) override;
-        void puts(align_type align, color color, const std::string& text) override;
-        void comment(color color, const std::string& text) override;
+        void put(align_type align, color color, std::string_view text) override;
+        void puts(align_type align, color color, std::string_view text) override;
+        void comment(color color, std::string_view text) override;
         void newline() override;
         void clear() override;
         void save_point() override;
         void restore_point() override;
         void up(uint8_t line) override;
         void down(uint8_t line) override;
-        void progress(const std::string& text, float progress) override;
+        void progress(std::string_view text, float progress) override;
     };
 
 private:
@@ -171,62 +173,62 @@ public:
     static void restore_point();
     static void up(uint8_t line);
     static void down(uint8_t line);
-    static void progress(const std::string& text, float progress);
+    static void progress(std::string_view text, float progress);
 
 public:
     template <class... Args>
-    static void put(align_type align, color color, const std::string& fmt, Args&&... args)
+    static void put(align_type align, color color, std::string_view fmt, Args&&... args)
     {
         auto _    = std::lock_guard(_mutex);
         auto text = std::vformat(fmt, std::make_format_args(args...));
         _current_policy->put(align, color, text);
     }
     template <class... Args>
-    static void put(align_type align, const std::string& fmt, Args&&... args)
+    static void put(align_type align, std::string_view fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         put(align, color::reset, fmt, std::forward<Args>(args)...);
     }
     template <class... Args>
-    static void put(const std::string& fmt, Args&&... args)
+    static void put(std::string_view fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         put(align_type::left, color::reset, fmt, std::forward<Args>(args)...);
     }
     template <class... Args>
-    static void puts(align_type align, color color, const std::string& fmt, Args&&... args)
+    static void puts(align_type align, color color, std::string_view fmt, Args&&... args)
     {
         auto _    = std::lock_guard(_mutex);
         auto text = std::vformat(fmt, std::make_format_args(args...));
         _current_policy->puts(align, color, text);
     }
     template <class... Args>
-    static void puts(color color, const std::string& fmt, Args&&... args)
+    static void puts(color color, std::string_view fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         puts(align_type::left, color, fmt, std::forward<Args>(args)...);
     }
     template <class... Args>
-    static void puts(align_type align, const std::string& fmt, Args&&... args)
+    static void puts(align_type align, std::string_view fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         puts(align, color::reset, fmt, std::forward<Args>(args)...);
     }
     template <class... Args>
-    static void puts(const std::string& fmt, Args&&... args)
+    static void puts(std::string_view fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         puts(align_type::left, color::reset, fmt, std::forward<Args>(args)...);
     }
     template <class... Args>
-    static void comment(color color, const std::string& fmt, Args&&... args)
+    static void comment(color color, std::string_view fmt, Args&&... args)
     {
         auto _    = std::lock_guard(_mutex);
         auto text = std::vformat(fmt, std::make_format_args(args...));
         _current_policy->comment(color, text);
     }
     template <class... Args>
-    static void comment(const std::string& fmt, Args&&... args)
+    static void comment(std::string_view fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         comment(color::reset, fmt, std::forward<Args>(args)...);

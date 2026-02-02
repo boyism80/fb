@@ -124,13 +124,13 @@ void object::oid(uint32_t value)
     this->update_id();
 }
 
-void object::chat(const std::string& message, CHAT_TYPE chat_type, bool decorate)
+void object::chat(std::string_view message, CHAT_TYPE chat_type, bool decorate)
 {
     this->assert_thread();
 
     if (decorate)
     {
-        auto decorated = std::string{message};
+        auto decorated = std::string{};
         switch (chat_type)
         {
         case CHAT_TYPE::SHOUT:

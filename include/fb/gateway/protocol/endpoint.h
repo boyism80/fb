@@ -3,6 +3,7 @@
 
 #include <fb/protocol/header.h>
 #include <format>
+#include <string_view>
 
 namespace fb::protocol::gateway {
 
@@ -15,8 +16,8 @@ public:
     uint16_t    port = 0;
 
 public:
-    endpoint(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port);
-    endpoint(const std::string& name, const std::string& desc, const std::string& ip, uint16_t port);
+    endpoint(std::string_view name, std::string_view desc, uint32_t ip, uint16_t port);
+    endpoint(std::string_view name, std::string_view desc, std::string_view ip, uint16_t port);
     endpoint(const endpoint& right);
     ~endpoint() = default;
 };

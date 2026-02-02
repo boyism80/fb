@@ -2,9 +2,9 @@
 
 using namespace fb::login;
 
-gateway::gateway(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port) :
-    _name(name),
-    _desc(desc),
+gateway::gateway(std::string_view name, std::string_view desc, uint32_t ip, uint16_t port) :
+    _name(std::string(name)),
+    _desc(std::string(desc)),
     _ip(ip),
     _port(port)
 { }

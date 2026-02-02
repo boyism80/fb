@@ -19,6 +19,7 @@
 #include <fb/redis.h>
 #include <fb/log_collector.h>
 #include <memory>
+#include <string_view>
 
 #define MAX_NXCLUB_SIZE 14
 
@@ -45,8 +46,8 @@ private:
     uint8_t _exc_type;
 
 public:
-    login_exception(uint8_t type, const std::string& what) :
-        std::runtime_error(what),
+    login_exception(uint8_t type, std::string_view what) :
+        std::runtime_error(std::string(what)),
         _exc_type(type)
     { }
 
@@ -60,7 +61,7 @@ public:
 class id_exception : public login_exception
 {
 public:
-    id_exception(const std::string& what) :
+    id_exception(std::string_view what) :
         login_exception(0x0E, what)
     { }
 };
@@ -68,7 +69,7 @@ public:
 class pw_exception : public login_exception
 {
 public:
-    pw_exception(const std::string& what) :
+    pw_exception(std::string_view what) :
         login_exception(0x0F, what)
     { }
 };
@@ -76,7 +77,7 @@ public:
 class newpw_exception : public login_exception
 {
 public:
-    newpw_exception(const std::string& what) :
+    newpw_exception(std::string_view what) :
         login_exception(0x05, what)
     { }
 };
@@ -92,7 +93,7 @@ public:
 class server : public fb::acceptor<fb::login::session>
 {
 private:
-    fb::protocol::login::response::agreement _agreement = CP949(fb::config<std::string>("agreement"), PLATFORM::BOTH);
+    fb::protocol::login::response::agreement _agreement = CP949(fb::config<std::string_view>("agreement"), PLATFORM::BOTH);
     std::vector<boost::asio::deadline_timer> _timers;
 
 public:
@@ -105,7 +106,7 @@ public:
     ~server();
 
     const fb::protocol::login::response::agreement& agreement() const;
-    void                                            assert_account(const std::string& id, const std::string& pw) const;
+    void                                            assert_account(std::string_view id, std::string_view pw) const;
 
 protected:
     bool                            decrypt_policy(uint8_t cmd) const override final;

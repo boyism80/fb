@@ -329,7 +329,7 @@ bool items::store(uint8_t index, uint16_t count)
     return result;
 }
 
-bool items::store(const std::string& name, uint16_t count)
+bool items::store(std::string_view name, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -449,7 +449,7 @@ std::shared_ptr<item> items::retrieve(uint8_t index, uint16_t count)
     }
 }
 
-std::shared_ptr<item> items::retrieve(const std::string& name, uint16_t count)
+std::shared_ptr<item> items::retrieve(std::string_view name, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -905,7 +905,7 @@ std::shared_ptr<auxiliary> items::auxiliary(std::shared_ptr<fb::game::auxiliary>
     return before;
 }
 
-std::shared_ptr<item> items::find(const std::string& name) const
+std::shared_ptr<item> items::find(std::string_view name) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)

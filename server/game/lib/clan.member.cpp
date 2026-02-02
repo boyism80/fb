@@ -2,7 +2,7 @@
 
 using namespace fb::game;
 
-clan_member::clan_member(const std::string& name, CLAN_ROLE role) :
-    name(name),
+clan_member::clan_member(std::string_view name, CLAN_ROLE role) :
+    name(std::string(name)),
     role(role)
 { }

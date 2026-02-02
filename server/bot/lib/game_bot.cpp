@@ -129,23 +129,23 @@ const std::set<std::string>& game_bot::active_buffs() const
     return this->_active_buffs;
 }
 
-void game_bot::add_buff(const std::string& name)
+void game_bot::add_buff(std::string_view name)
 {
-    this->_active_buffs.insert(name);
+    this->_active_buffs.insert(std::string(name));
 }
 
-void game_bot::remove_buff(const std::string& name)
+void game_bot::remove_buff(std::string_view name)
 {
-    this->_active_buffs.erase(name);
+    this->_active_buffs.erase(std::string(name));
 }
 
-bool game_bot::has_buff(const std::string& name) const
+bool game_bot::has_buff(std::string_view name) const
 {
-    return this->_active_buffs.count(name) > 0;
+    return this->_active_buffs.count(std::string(name)) > 0;
 }
 
 // Spell management method implementations
-void game_bot::update_spell(uint8_t slot, const std::string& name, uint8_t type)
+void game_bot::update_spell(uint8_t slot, std::string_view name, uint8_t type)
 {
     this->_spells[slot] = simple_spell(name, type);
 }
@@ -421,9 +421,9 @@ const std::string& game_bot::name() const
     return this->_name;
 }
 
-void game_bot::set_name(const std::string& value)
+void game_bot::set_name(std::string_view value)
 {
-    this->_name = value;
+    this->_name = std::string(value);
 }
 
 const std::string& game_bot::clan_name() const
@@ -431,9 +431,9 @@ const std::string& game_bot::clan_name() const
     return this->_clan_name;
 }
 
-void game_bot::set_clan_name(const std::string& value)
+void game_bot::set_clan_name(std::string_view value)
 {
-    this->_clan_name = value;
+    this->_clan_name = std::string(value);
 }
 
 const std::string& game_bot::clan_title() const
@@ -441,9 +441,9 @@ const std::string& game_bot::clan_title() const
     return this->_clan_title;
 }
 
-void game_bot::set_clan_title(const std::string& value)
+void game_bot::set_clan_title(std::string_view value)
 {
-    this->_clan_title = value;
+    this->_clan_title = std::string(value);
 }
 
 const std::string& game_bot::title() const
@@ -451,9 +451,9 @@ const std::string& game_bot::title() const
     return this->_title;
 }
 
-void game_bot::set_title(const std::string& value)
+void game_bot::set_title(std::string_view value)
 {
-    this->_title = value;
+    this->_title = std::string(value);
 }
 
 const std::string& game_bot::group_info() const
@@ -461,9 +461,9 @@ const std::string& game_bot::group_info() const
     return this->_group_info;
 }
 
-void game_bot::set_group_info(const std::string& value)
+void game_bot::set_group_info(std::string_view value)
 {
-    this->_group_info = value;
+    this->_group_info = std::string(value);
 }
 
 uint8_t game_bot::group_option() const
@@ -520,10 +520,11 @@ async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model:
 }
 
 async::task<void>
-game_bot::map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
+game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
 {
-    auto command = std::format("/맵이동 {} {} {}", map_name, x, y);
-    auto map     = table::map.name2map(map_name);
+    auto map_name_str = std::string(map_name);
+    auto command      = std::format("/맵이동 {} {} {}", map_name_str, x, y);
+    auto map          = table::map.name2map(map_name_str);
     if (map == nullptr)
     {
         co_return;
@@ -832,7 +833,7 @@ async::task<void> game_bot::pattern_bulletin_sections()
 }
 
 // Simple item management method implementations
-void game_bot::update_item(uint8_t slot, const std::string& name, uint32_t count)
+void game_bot::update_item(uint8_t slot, std::string_view name, uint32_t count)
 {
     this->_items[slot] = simple_item(name, count);
 }
@@ -872,38 +873,42 @@ const std::map<uint8_t, game_bot::simple_item>& game_bot::items() const
     return this->_items;
 }
 
-bool game_bot::has_item_by_name(const std::string& name) const
+bool game_bot::has_item_by_name(std::string_view name) const
 {
+    auto name_str = std::string(name);
     for (const auto& [slot, item] : this->_items)
     {
-        if (item.name.find(name) != std::string::npos)
+        if (item.name.find(name_str) != std::string::npos)
             return true;
     }
     return false;
 }
 
-uint16_t game_bot::get_item_count_by_name(const std::string& name) const
+uint16_t game_bot::get_item_count_by_name(std::string_view name) const
 {
+    auto name_str = std::string(name);
     for (const auto& [slot, item] : this->_items)
     {
-        if (item.name.find(name) != std::string::npos)
+        if (item.name.find(name_str) != std::string::npos)
             return item.count;
     }
     return 0;
 }
 
-uint8_t game_bot::get_item_slot_by_name(const std::string& name) const
+uint8_t game_bot::get_item_slot_by_name(std::string_view name) const
 {
-    auto it = std::find_if(this->_items.begin(), this->_items.end(), [&name](const auto& item) {
-        return item.second.name.find(name) != std::string::npos;
+    auto name_str = std::string(name);
+    auto it       = std::find_if(this->_items.begin(), this->_items.end(), [&name_str](const auto& item) {
+        return item.second.name.find(name_str) != std::string::npos;
     });
     return it != this->_items.end() ? it->first : 0xFF;
 }
 
-uint8_t game_bot::get_spell_slot_by_name(const std::string& name) const
+uint8_t game_bot::get_spell_slot_by_name(std::string_view name) const
 {
-    auto it = std::find_if(this->_spells.begin(), this->_spells.end(), [&name](const auto& spell) {
-        return spell.second.name.find(name) != std::string::npos;
+    auto name_str = std::string(name);
+    auto it       = std::find_if(this->_spells.begin(), this->_spells.end(), [&name_str](const auto& spell) {
+        return spell.second.name.find(name_str) != std::string::npos;
     });
     return it != this->_spells.end() ? it->first : 0xFF;
 }
@@ -913,28 +918,30 @@ void game_bot::remove_buffs()
     this->send(game_reqs::chat{false, "/버프해제"});
 }
 
-void game_bot::chat(const std::string& message)
+void game_bot::chat(std::string_view message)
 {
-    this->send(game_reqs::chat{false, message});
+    this->send(game_reqs::chat{false, std::string(message)});
 }
 
-async::task<void> game_bot::create_item(const std::string& item_name, uint32_t count, std::chrono::milliseconds timeout)
+async::task<void> game_bot::create_item(std::string_view item_name, uint32_t count, std::chrono::milliseconds timeout)
 {
-    auto command = std::format("/아이템생성 {} {}", item_name, count);
-    std::ignore  = co_await this->request<game_resp::item_update>(
+    auto item_name_str = std::string(item_name);
+    auto command       = std::format("/아이템생성 {} {}", item_name_str, count);
+    std::ignore        = co_await this->request<game_resp::item_update>(
         game_reqs::chat{false, command},
-        [item_name, count](auto& resp) -> bool {
-            return resp.name.starts_with(item_name) && resp.count == count;
+        [item_name_str, count](auto& resp) -> bool {
+            return resp.name.starts_with(item_name_str) && resp.count == count;
         },
         timeout);
 }
 
-async::task<game_bot::simple_npc> game_bot::create_npc(const std::string& npc_name, std::chrono::milliseconds timeout)
+async::task<game_bot::simple_npc> game_bot::create_npc(std::string_view npc_name, std::chrono::milliseconds timeout)
 {
-    auto command = std::format("/엔피씨생성 {}", npc_name);
-    auto model   = table::npc.name2npc(npc_name);
+    auto npc_name_str = std::string(npc_name);
+    auto command      = std::format("/엔피씨생성 {}", npc_name_str);
+    auto model        = table::npc.name2npc(npc_name_str);
     if (!model)
-        throw std::runtime_error(std::format("Failed to find NPC model for {}", npc_name));
+        throw std::runtime_error(std::format("Failed to find NPC model for {}", npc_name_str));
 
     auto   look = model->look;
     auto&& resp = co_await this->request<game_resp::update>(
@@ -1058,30 +1065,31 @@ async::task<void> game_bot::sleep(std::chrono::milliseconds timeout)
     co_await this->thread()->sleep(timeout);
 }
 
-async::task<void> game_bot::change_class(const std::string& class_name, std::chrono::milliseconds timeout)
+async::task<void> game_bot::change_class(std::string_view class_name, std::chrono::milliseconds timeout)
 {
-    auto command = std::format("/직업바꾸기 {}", class_name);
+    auto class_name_str = std::string(class_name);
+    auto command        = std::format("/직업바꾸기 {}", class_name_str);
     this->chat(command);
     co_return;
 }
 
 async::task<spawned_monster_info>
 game_bot::spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot>            bot,
-                                       const std::string&                            monster_name,
+                                       std::string_view                              monster_name,
                                        uint16_t                                      x,
                                        uint16_t                                      y,
                                        std::function<bool(const game_resp::update&)> validator,
                                        std::chrono::milliseconds                     timeout)
 {
-
-    auto&& spawn_response = co_await this->request<game_resp::update>(
-        game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
+    auto   monster_name_str = std::string(monster_name);
+    auto&& spawn_response   = co_await this->request<game_resp::update>(
+        game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name_str, x, y)},
         validator,
         timeout);
 
     if (spawn_response.objects_data.empty())
     {
-        throw std::runtime_error(std::format("Failed to spawn monster {} at ({}, {})", monster_name, x, y));
+        throw std::runtime_error(std::format("Failed to spawn monster {} at ({}, {})", monster_name_str, x, y));
     }
 
     auto&                mob = spawn_response.objects_data.front();
@@ -1094,12 +1102,13 @@ game_bot::spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot>       
 }
 
 async::task<spawned_monster_info>
-game_bot::spawn_monster(const std::string& monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
+game_bot::spawn_monster(std::string_view monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
 {
-    auto expected_look = table::mob.name2mob(monster_name)->look;
+    auto monster_name_str = std::string(monster_name);
+    auto expected_look    = table::mob.name2mob(monster_name_str)->look;
 
     auto&& spawn_response = co_await this->request<game_resp::update>(
-        game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, x, y)},
+        game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name_str, x, y)},
         [expected_look](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
@@ -1111,7 +1120,7 @@ game_bot::spawn_monster(const std::string& monster_name, uint16_t x, uint16_t y,
 
     if (spawn_response.objects_data.empty())
     {
-        throw std::runtime_error(std::format("Failed to spawn monster {} at ({}, {})", monster_name, x, y));
+        throw std::runtime_error(std::format("Failed to spawn monster {} at ({}, {})", monster_name_str, x, y));
     }
 
     auto&                mob = spawn_response.objects_data.front();
@@ -1123,14 +1132,15 @@ game_bot::spawn_monster(const std::string& monster_name, uint16_t x, uint16_t y,
     co_return monster_info;
 }
 
-async::task<void> game_bot::spawn_monsters_bulk(const std::string&        monster_name,
+async::task<void> game_bot::spawn_monsters_bulk(std::string_view          monster_name,
                                                 uint8_t                   range,
                                                 std::chrono::milliseconds timeout)
 {
-    auto expected_look = table::mob.name2mob(monster_name)->look;
+    auto monster_name_str = std::string(monster_name);
+    auto expected_look    = table::mob.name2mob(monster_name_str)->look;
 
     std::ignore = co_await this->request<game_resp::update>(
-        game_reqs::chat{false, std::format("/몬스터범위생성 {} {}", monster_name, range)},
+        game_reqs::chat{false, std::format("/몬스터범위생성 {} {}", monster_name_str, range)},
         [expected_look](auto& resp) -> bool {
             for (const auto& mob : resp.objects_data)
             {
@@ -1144,13 +1154,13 @@ async::task<void> game_bot::spawn_monsters_bulk(const std::string&        monste
 
 async::task<std::vector<spawned_monster_info>>
 game_bot::spawn_monsters_relative_with_validator(std::shared_ptr<fb::bot::game_bot>            bot,
-                                                 const std::string&                            monster_name,
+                                                 std::string_view                              monster_name,
                                                  const std::vector<std::pair<int, int>>&       relative_positions,
                                                  std::function<bool(const game_resp::update&)> validator,
                                                  std::chrono::milliseconds                     timeout)
 {
-
-    auto                              caster_pos = this->position();
+    auto                              monster_name_str = std::string(monster_name);
+    auto                              caster_pos       = this->position();
     std::vector<spawned_monster_info> spawned_monsters;
 
     for (const auto& [rel_x, rel_y] : relative_positions)
@@ -1159,14 +1169,14 @@ game_bot::spawn_monsters_relative_with_validator(std::shared_ptr<fb::bot::game_b
         auto monster_y = caster_pos.y + rel_y;
 
         auto&& spawn_response = co_await this->request<game_resp::update>(
-            game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
+            game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name_str, monster_x, monster_y)},
             validator,
             timeout);
 
         if (spawn_response.objects_data.empty())
         {
             throw std::runtime_error(
-                std::format("Failed to spawn monster {} at ({}, {})", monster_name, monster_x, monster_y));
+                std::format("Failed to spawn monster {} at ({}, {})", monster_name_str, monster_x, monster_y));
         }
 
         auto&                mob = spawn_response.objects_data.front();
@@ -1181,11 +1191,12 @@ game_bot::spawn_monsters_relative_with_validator(std::shared_ptr<fb::bot::game_b
 }
 
 async::task<std::vector<spawned_monster_info>>
-game_bot::spawn_monsters_relative(const std::string&                      monster_name,
+game_bot::spawn_monsters_relative(std::string_view                        monster_name,
                                   const std::vector<std::pair<int, int>>& relative_positions,
                                   std::chrono::milliseconds               timeout)
 {
-    auto expected_look = table::mob.name2mob(monster_name)->look;
+    auto monster_name_str = std::string(monster_name);
+    auto expected_look    = table::mob.name2mob(monster_name_str)->look;
 
     auto                              caster_pos = this->position();
     std::vector<spawned_monster_info> spawned_monsters;
@@ -1196,7 +1207,7 @@ game_bot::spawn_monsters_relative(const std::string&                      monste
         auto monster_y = caster_pos.y + rel_y;
 
         auto&& spawn_response = co_await this->request<game_resp::update>(
-            game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
+            game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name_str, monster_x, monster_y)},
             [expected_look, monster_x, monster_y](auto& resp) -> bool {
                 if (resp.objects_data.empty())
                     return false;
@@ -1231,19 +1242,20 @@ game_bot::spawn_monsters_relative(const std::string&                      monste
     co_return spawned_monsters;
 }
 
-async::task<spawned_monster_info> game_bot::spawn_monster_relative(const std::string&        monster_name,
+async::task<spawned_monster_info> game_bot::spawn_monster_relative(std::string_view          monster_name,
                                                                    int                       relative_x,
                                                                    int                       relative_y,
                                                                    std::chrono::milliseconds timeout)
 {
-    auto expected_look = table::mob.name2mob(monster_name)->look;
+    auto monster_name_str = std::string(monster_name);
+    auto expected_look    = table::mob.name2mob(monster_name_str)->look;
 
     auto caster_pos = this->position();
     auto monster_x  = caster_pos.x + relative_x;
     auto monster_y  = caster_pos.y + relative_y;
 
     auto&& spawn_response = co_await this->request<game_resp::update>(
-        game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name, monster_x, monster_y)},
+        game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name_str, monster_x, monster_y)},
         [expected_look, monster_x, monster_y](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
@@ -1371,10 +1383,11 @@ async::task<bool> game_bot::setup_bot_stats(int                       max_hp,
     co_return true;
 }
 
-async::task<uint8_t> game_bot::learn_spell(const std::string& spell_name, std::chrono::milliseconds timeout)
+async::task<uint8_t> game_bot::learn_spell(std::string_view spell_name, std::chrono::milliseconds timeout)
 {
-    auto&& resp = co_await this->request<game_resp::spell_update>(
-        game_reqs::chat{false, std::format("/마법배우기 {}", spell_name)},
+    auto   spell_name_str = std::string(spell_name);
+    auto&& resp           = co_await this->request<game_resp::spell_update>(
+        game_reqs::chat{false, std::format("/마법배우기 {}", spell_name_str)},
         [](auto& resp) -> bool {
             return resp.index != 0xFF;
         },
@@ -1449,7 +1462,7 @@ async::task<void> game_bot::clear_inventory(std::chrono::milliseconds timeout)
     co_return;
 }
 
-async::task<void> game_bot::fill_inventory(const std::string& name, std::chrono::milliseconds timeout)
+async::task<void> game_bot::fill_inventory(std::string_view name, std::chrono::milliseconds timeout)
 {
     constexpr auto CONTAINER_CAPACITY = 52;
 
@@ -2148,7 +2161,7 @@ async::task<bool> game_bot::destroy_clan(std::chrono::milliseconds timeout)
     co_return true;
 }
 
-async::task<bool> game_bot::change_clan_title(const std::string& title, std::chrono::milliseconds timeout)
+async::task<bool> game_bot::change_clan_title(std::string_view title, std::chrono::milliseconds timeout)
 {
     // Find NPC 낙랑 for clan management
     auto npc = table::npc.name2npc("낙랑");
@@ -2217,8 +2230,9 @@ async::task<bool> game_bot::change_clan_title(const std::string& title, std::chr
     }
 
     // Enter new title
-    auto&& resp4 = co_await this->request<fb::bot::integration::dialog_ext_bot>(
-        game_reqs::dialog(game_reqs::dialog::INTERACTION::INPUT, 0, title, 0, 0, "", DIALOG_RESULT::NEXT),
+    auto   title_str = std::string(title);
+    auto&& resp4     = co_await this->request<fb::bot::integration::dialog_ext_bot>(
+        game_reqs::dialog(game_reqs::dialog::INTERACTION::INPUT, 0, title_str, 0, 0, "", DIALOG_RESULT::NEXT),
         [&npc](auto& resp) {
             if (resp.look != npc->look)
                 return false;

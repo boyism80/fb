@@ -29,9 +29,9 @@ character::container::character_ptr_t character::container::find(uint32_t uid) c
     return it != this->_from_uid.end() ? it->second : nullptr;
 }
 
-bool character::container::contains(const std::string& name) const
+bool character::container::contains(std::string_view name) const
 {
-    return this->_from_name.contains(name);
+    return this->_from_name.contains(std::string(name));
 }
 
 bool character::container::contains(uint32_t uid) const
@@ -39,9 +39,9 @@ bool character::container::contains(uint32_t uid) const
     return this->_from_uid.contains(uid);
 }
 
-character::container::character_ptr_t character::container::find(const std::string& name) const
+character::container::character_ptr_t character::container::find(std::string_view name) const
 {
-    auto it = this->_from_name.find(name);
+    auto it = this->_from_name.find(std::string(name));
     return it != this->_from_name.end() ? it->second : nullptr;
 }
 
@@ -147,7 +147,7 @@ async::task<void> character::container::foreach_async(const std::vector<std::str
     co_await this->foreach_async(std::move(fn), std::move(targets));
 }
 
-async::task<void> character::container::invoke(const std::string&        name,
+async::task<void> character::container::invoke(std::string_view        name,
                                                character_function_t      fn,
                                                character_function_t_miss miss)
 {
@@ -167,7 +167,7 @@ async::task<void> character::container::invoke(const std::string&        name,
         co_await before->switching();
 }
 
-async::task<void> character::container::invoke_async(const std::string&         name,
+async::task<void> character::container::invoke_async(std::string_view         name,
                                                      character_async_function_t fn,
                                                      character_function_t_miss  miss)
 {
@@ -272,7 +272,7 @@ character::container::character_ptr_t character::container::operator[] (uint32_t
     return ch;
 }
 
-character::container::character_ptr_t character::container::operator[] (const std::string& name)
+character::container::character_ptr_t character::container::operator[] (std::string_view name)
 {
     auto ch = this->find(name);
     if (ch == nullptr)

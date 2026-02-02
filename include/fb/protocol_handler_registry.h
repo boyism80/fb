@@ -26,8 +26,9 @@ template <typename T>
 class protocol_handler_registry
 {
 public:
-    using handle_func      = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::header&)>;
-    using deserialize_func = std::function<async::task<fb::protocol::header*>(fb::stream_reader<big_endian>&)>;
+    using handle_func = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::header&)>;
+    using deserialize_func =
+        std::function<async::task<std::shared_ptr<fb::protocol::header>>(fb::stream_reader<big_endian>&)>;
 
 private:
     struct rate_limited_command
@@ -79,10 +80,10 @@ public:
         auto duration = std::chrono::milliseconds(HandlerType::duration_ms);
         auto limit    = HandlerType::limit;
 
-        this->_deserializers.insert({cmd, [](auto& reader) -> async::task<fb::protocol::header*> {
-                                         auto protocol = new typename HandlerType::protocol_type();
+        this->_deserializers.insert({cmd, [](auto& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
+                                         auto protocol = std::make_shared<typename HandlerType::protocol_type>();
                                          co_await protocol->deserialize(reader);
-                                         co_return protocol;
+                                         co_return std::static_pointer_cast<fb::protocol::header>(protocol);
                                      }});
 
         this->_handlers.insert(

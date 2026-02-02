@@ -5,13 +5,13 @@ namespace fb::protocol::game::response {
 #ifndef BOT
 dialog_list::dialog_list(const fb::game::object&         object,
                          const std::vector<std::string>& lists,
-                         const std::string&              message,
-                         bool                            button_prev,
-                         uint32_t                        oid,
-                         fb::game::dialog::interaction   interaction) :
+                         std::string_view                  message,
+                         bool                             button_prev,
+                         uint32_t                         oid,
+                         fb::game::dialog::interaction    interaction) :
     portrait(fb::game::portrait_factory::create(object)),
     lists(lists),
-    message(message),
+    message(std::string(message)),
     button_prev(button_prev),
     oid(oid),
     interaction(interaction)
@@ -19,13 +19,13 @@ dialog_list::dialog_list(const fb::game::object&         object,
 
 dialog_list::dialog_list(const fb::model::object&        object,
                          const std::vector<std::string>& lists,
-                         const std::string&              message,
-                         bool                            button_prev,
-                         uint32_t                        oid,
-                         fb::game::dialog::interaction   interaction) :
+                         std::string_view                  message,
+                         bool                             button_prev,
+                         uint32_t                         oid,
+                         fb::game::dialog::interaction    interaction) :
     portrait(fb::game::portrait_factory::create(object)),
     lists(lists),
-    message(message),
+    message(std::string(message)),
     button_prev(button_prev),
     oid(oid),
     interaction(interaction)
@@ -33,13 +33,13 @@ dialog_list::dialog_list(const fb::model::object&        object,
 
 dialog_list::dialog_list(portrait_ptr&&                  portrait,
                          const std::vector<std::string>& lists,
-                         const std::string&              message,
-                         bool                            button_prev,
-                         uint32_t                        oid,
-                         fb::game::dialog::interaction   interaction) :
+                         std::string_view                  message,
+                         bool                             button_prev,
+                         uint32_t                         oid,
+                         fb::game::dialog::interaction    interaction) :
     portrait(std::move(portrait)),
     lists(lists),
-    message(message),
+    message(std::string(message)),
     button_prev(button_prev),
     oid(oid),
     interaction(interaction)

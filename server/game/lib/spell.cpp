@@ -54,7 +54,7 @@ std::shared_ptr<fb::game::life> spells::owner() const
     return this->_owner.lock();
 }
 
-std::shared_ptr<fb::game::spell> fb::game::spells::find(const std::string& name) const
+std::shared_ptr<fb::game::spell> fb::game::spells::find(std::string_view name) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)

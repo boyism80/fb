@@ -3,8 +3,8 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-spell_buff::spell_buff(const std::string& name, uint32_t time) :
-    name(name),
+spell_buff::spell_buff(std::string_view name, uint32_t time) :
+    name(std::string(name)),
     time(time)
 { }
 spell_buff::spell_buff(const fb::game::buff& buff) :

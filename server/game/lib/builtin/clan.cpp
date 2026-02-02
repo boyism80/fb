@@ -1,6 +1,7 @@
 #include <fb/game/clan.h>
 #include <fb/game/server.h>
 #include <fb/game/builtin/clan.h>
+#include <string_view>
 
 using namespace fb::game;
 
@@ -184,7 +185,7 @@ int builtin::clan::builtin_join(lua_State* L)
     static auto fn = [](fb::lua::context*                  lua,
                         fb::game::server*                  server,
                         std::weak_ptr<fb::game::character> weak_ptr,
-                        const std::string&                 target_name) -> async::task<void> {
+                        std::string_view                   target_name) -> async::task<void> {
         try
         {
             auto shared_ptr = weak_ptr.lock();
@@ -275,7 +276,7 @@ int builtin::clan::builtin_kick(lua_State* L)
     static auto fn = [](fb::lua::context*                  lua,
                         fb::game::server*                  server,
                         std::weak_ptr<fb::game::character> weak_ptr,
-                        const std::string&                 target) -> async::task<void> {
+                        std::string_view                   target) -> async::task<void> {
         try
         {
             auto shared_ptr = weak_ptr.lock();
@@ -329,7 +330,7 @@ int builtin::clan::builtin_change_role(lua_State* L)
     static auto fn = [](fb::lua::context*                  lua,
                         fb::game::server*                  server,
                         std::weak_ptr<fb::game::character> weak_ptr,
-                        const std::string&                 target,
+                        std::string_view                   target,
                         CLAN_ROLE                          role) -> async::task<void> {
         try
         {
@@ -375,7 +376,7 @@ int builtin::clan::builtin_message(lua_State* L)
     static auto fn = [](fb::lua::context*  lua,
                         fb::game::server*  server,
                         uint32_t           clan_id,
-                        const std::string& message,
+                        std::string_view   message,
                         MESSAGE_TYPE       type) -> async::task<void> {
         try
         {

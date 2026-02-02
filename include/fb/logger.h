@@ -4,6 +4,7 @@
 #include <fb/config.h>
 #include <fb/model/datetime.h>
 #include <boost/algorithm/string.hpp>
+#include <string_view>
 
 namespace fb {
 
@@ -39,30 +40,30 @@ private:
     static logger& get();
 
 public:
-    template <class... Args> static fb::logger& debug(const std::string& fmt, Args&&... args);
-    template <class... Args> static fb::logger& debug(fb::console::color color, const std::string& fmt, Args&&... args);
-    template <class... Args> static fb::logger& info(const std::string& fmt, Args&&... args);
-    template <class... Args> static fb::logger& info(fb::console::color color, const std::string& fmt, Args&&... args);
-    template <class... Args> static fb::logger& warn(const std::string& fmt, Args&&... args);
-    template <class... Args> static fb::logger& warn(fb::console::color color, const std::string& fmt, Args&&... args);
-    template <class... Args> static fb::logger& fatal(const std::string& fmt, Args&&... args);
-    template <class... Args> static fb::logger& fatal(fb::console::color color, const std::string& fmt, Args&&... args);
+    template <class... Args> static fb::logger& debug(std::string_view fmt, Args&&... args);
+    template <class... Args> static fb::logger& debug(fb::console::color color, std::string_view fmt, Args&&... args);
+    template <class... Args> static fb::logger& info(std::string_view fmt, Args&&... args);
+    template <class... Args> static fb::logger& info(fb::console::color color, std::string_view fmt, Args&&... args);
+    template <class... Args> static fb::logger& warn(std::string_view fmt, Args&&... args);
+    template <class... Args> static fb::logger& warn(fb::console::color color, std::string_view fmt, Args&&... args);
+    template <class... Args> static fb::logger& fatal(std::string_view fmt, Args&&... args);
+    template <class... Args> static fb::logger& fatal(fb::console::color color, std::string_view fmt, Args&&... args);
     template <class... Args> static fb::logger& comment(fb::console::color color,
-                                                        const std::string& fmt,
+                                                        std::string_view fmt,
                                                         Args&&... args);
-    template <class... Args> static fb::logger& comment(const std::string& fmt, Args&&... args);
+    template <class... Args> static fb::logger& comment(std::string_view fmt, Args&&... args);
 };
 
 } // namespace fb
 
 template <class... Args>
-fb::logger& fb::logger::debug(const std::string& fmt, Args&&... args)
+fb::logger& fb::logger::debug(std::string_view fmt, Args&&... args)
 {
     return debug(fb::console::color::light_gray, fmt, std::forward<Args>(args)...);
 }
 
 template <class... Args>
-fb::logger& fb::logger::debug(fb::console::color color, const std::string& fmt, Args&&... args)
+fb::logger& fb::logger::debug(fb::console::color color, std::string_view fmt, Args&&... args)
 {
     auto& ist = get();
     if (ist.has_flag(fb::logger::level::DEBUG) == false)
@@ -75,13 +76,13 @@ fb::logger& fb::logger::debug(fb::console::color color, const std::string& fmt, 
 }
 
 template <class... Args>
-fb::logger& fb::logger::info(const std::string& fmt, Args&&... args)
+fb::logger& fb::logger::info(std::string_view fmt, Args&&... args)
 {
     return info(fb::console::color::white, fmt, std::forward<Args>(args)...);
 }
 
 template <class... Args>
-fb::logger& fb::logger::info(fb::console::color color, const std::string& fmt, Args&&... args)
+fb::logger& fb::logger::info(fb::console::color color, std::string_view fmt, Args&&... args)
 {
     auto& ist = get();
     if (ist.has_flag(fb::logger::level::INFO) == false)
@@ -94,13 +95,13 @@ fb::logger& fb::logger::info(fb::console::color color, const std::string& fmt, A
 }
 
 template <class... Args>
-fb::logger& fb::logger::warn(const std::string& fmt, Args&&... args)
+fb::logger& fb::logger::warn(std::string_view fmt, Args&&... args)
 {
     return warn(fb::console::color::yellow, fmt, std::forward<Args>(args)...);
 }
 
 template <class... Args>
-fb::logger& fb::logger::warn(fb::console::color color, const std::string& fmt, Args&&... args)
+fb::logger& fb::logger::warn(fb::console::color color, std::string_view fmt, Args&&... args)
 {
     auto& ist = get();
     if (ist.has_flag(fb::logger::level::WARN) == false)
@@ -113,13 +114,13 @@ fb::logger& fb::logger::warn(fb::console::color color, const std::string& fmt, A
 }
 
 template <class... Args>
-fb::logger& fb::logger::fatal(const std::string& fmt, Args&&... args)
+fb::logger& fb::logger::fatal(std::string_view fmt, Args&&... args)
 {
     return fatal(fb::console::color::red, fmt, std::forward<Args>(args)...);
 }
 
 template <class... Args>
-fb::logger& fb::logger::fatal(fb::console::color color, const std::string& fmt, Args&&... args)
+fb::logger& fb::logger::fatal(fb::console::color color, std::string_view fmt, Args&&... args)
 {
     auto& ist = get();
     if (ist.has_flag(fb::logger::level::FATAL) == false)
@@ -132,7 +133,7 @@ fb::logger& fb::logger::fatal(fb::console::color color, const std::string& fmt, 
 }
 
 template <class... Args>
-fb::logger& fb::logger::comment(fb::console::color color, const std::string& fmt, Args&&... args)
+fb::logger& fb::logger::comment(fb::console::color color, std::string_view fmt, Args&&... args)
 {
     auto& ist     = get();
     auto  message = std::vformat(fmt, std::make_format_args(args...));
@@ -142,7 +143,7 @@ fb::logger& fb::logger::comment(fb::console::color color, const std::string& fmt
 }
 
 template <class... Args>
-fb::logger& fb::logger::comment(const std::string& fmt, Args&&... args)
+fb::logger& fb::logger::comment(std::string_view fmt, Args&&... args)
 {
     return comment(fb::console::color::white, fmt, std::forward<Args>(args)...);
 }

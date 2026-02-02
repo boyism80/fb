@@ -6,6 +6,7 @@
 #ifndef BOT
 #include <fb/game/dialog.h>
 #endif
+#include <string_view>
 
 namespace fb::protocol::game::response {
 
@@ -50,17 +51,17 @@ public:
 #ifndef BOT
     dialog_item(const fb::model::object&            obj,
                 const fb::game::dialog::item_pairs& items,
-                const std::string&                  message,
-                uint32_t                            oid         = 0xFFFFFFFD,
-                uint16_t                            pursuit     = 0xFFFF,
-                fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::ITEM);
+                std::string_view                      message,
+                uint32_t                             oid         = 0xFFFFFFFD,
+                uint16_t                             pursuit     = 0xFFFF,
+                fb::game::dialog::interaction        interaction = fb::game::dialog::interaction::ITEM);
 
     dialog_item(const fb::game::object&             object,
                 const fb::game::dialog::item_pairs& items,
-                const std::string&                  message,
-                uint32_t                            oid         = 0xFFFFFFFD,
-                uint16_t                            pursuit     = 0xFFFF,
-                fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::ITEM);
+                std::string_view                      message,
+                uint32_t                             oid         = 0xFFFFFFFD,
+                uint16_t                             pursuit     = 0xFFFF,
+                fb::game::dialog::interaction        interaction = fb::game::dialog::interaction::ITEM);
 #else
     dialog_item() = default;
 #endif

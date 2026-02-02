@@ -13,6 +13,7 @@
 #define __DATETIME_H__
 
 #include <string>
+#include <string_view>
 #include <chrono>
 #include <format>
 #include <boost/xpressive/xpressive.hpp>
@@ -51,7 +52,7 @@ public:
      *
      * @throws     std::runtime_error if the string format is invalid.
      */
-    timespan(const std::string& f)
+    timespan(std::string_view f)
     {
         static const auto regex = boost::xpressive::sregex::compile(
             "(?P<ne>-)?"
@@ -62,7 +63,7 @@ public:
             "(?:\\.(?P<ms>\\d+))?");
             
         auto what = boost::xpressive::smatch();
-        if (boost::xpressive::regex_match(f, what, regex) == false)
+        if (boost::xpressive::regex_match(std::string(f), what, regex) == false)
             throw std::runtime_error(std::format("cannot parse timespan. value : {}", f));
 
         auto day   = what["day"].matched ? std::stoi(what["day"].str()) : 0;
@@ -345,7 +346,7 @@ public:
      *
      * @throws     boost::bad_lexical_cast if the string format is invalid.
      */
-    datetime(const std::string& f) : _ptime(boost::posix_time::time_from_string(f))
+    datetime(std::string_view f) : _ptime(boost::posix_time::time_from_string(std::string(f)))
     {}
 
     /**

@@ -11,7 +11,7 @@
  * @param name The name to check for blocked substrings
  * @return true if the name contains any blocked substring, false otherwise
  */
-bool fb::model::__blocked_name::contains_substring(const std::string& name) const
+bool fb::model::__blocked_name::contains_substring(std::string_view name) const
 {
     for (auto& [key, blocked] : *this)
     {

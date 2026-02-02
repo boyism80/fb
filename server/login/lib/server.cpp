@@ -59,7 +59,7 @@ async::task<void> server::update_status()
                                                                         internal::Service::Login,
                                                                         this->id(),
                                                                         this->name(),
-                                                                        fb::config<std::string>("ip"),
+                                                                        fb::config<std::string_view>("ip"),
                                                                         fb::config<uint16_t>("port")});
     }
     catch (const std::exception& e)
@@ -73,9 +73,10 @@ const fb::protocol::login::response::agreement& server::agreement() const
     return this->_agreement;
 }
 
-void server::assert_account(const std::string& id, const std::string& pw) const
+void server::assert_account(std::string_view id, std::string_view pw) const
 {
-    auto cp949     = CP949(id);
+    auto id_str    = std::string(id);
+    auto cp949     = CP949(id_str);
     auto name_size = cp949.length();
 
     if (name_size < fb::config<int>("name_size:min") || name_size > fb::config<int>("name_size:max"))
@@ -85,10 +86,10 @@ void server::assert_account(const std::string& id, const std::string& pw) const
     if (fb::config<bool>("allow_foreign_name") == false && assert_korean(cp949) == false)
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
-    if (fb::model::table::blocked_name.contains_substring(id))
+    if (fb::model::table::blocked_name.contains_substring(id_str))
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
-    if (fb::model::table::blocked_word.contains_substring(id))
+    if (fb::model::table::blocked_word.contains_substring(id_str))
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
     // Read character's password

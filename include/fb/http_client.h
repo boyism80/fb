@@ -4,6 +4,7 @@
 #include <chrono>
 #include <map>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
@@ -194,29 +195,33 @@ private:
     }
 
 public:
-    template <typename T> async::task<T> get(const std::string& service, const std::string& path)
+    template <typename T> async::task<T> get(std::string_view service, std::string_view path)
     {
-        auto& config = fb::config<>(service);
-        auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
-        auto  thread = this->_executor.threads.current();
-        auto  result = co_await this->boost_get_async<T>(host, path);
+        auto  service_str = std::string(service);
+        auto& config      = fb::config<>(service_str);
+        auto  host        = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
+        auto  path_str    = std::string(path);
+        auto  thread      = this->_executor.threads.current();
+        auto  result      = co_await this->boost_get_async<T>(host, path_str);
         if (thread != nullptr)
             co_await thread->switching();
         co_return result;
     }
 
 private:
-    template <typename Response> [[nodiscard]] async::task<Response> boost_get_async(const std::string& host,
-                                                                                     const std::string& path)
+    template <typename Response> [[nodiscard]] async::task<Response> boost_get_async(std::string_view host,
+                                                                                     std::string_view path)
     {
-        auto promise = std::make_shared<async::task_completion_source<Response>>();
-        auto headers = std::map<std::string, std::string>{
+        auto host_str = std::string(host);
+        auto path_str = std::string(path);
+        auto promise  = std::make_shared<async::task_completion_source<Response>>();
+        auto headers  = std::map<std::string, std::string>{
             {"Content-Type", "application/octet-stream"},
         };
 
         auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
         boost::asio::co_spawn(io_context,
-                              this->boost_get_async(host, path, headers, 5s),
+                              this->boost_get_async(host_str, path_str, headers, 5s),
                               [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
                                   if (ep)
                                   {
@@ -250,12 +255,14 @@ private:
 
 public:
     template <typename Request> [[nodiscard]] async::task<typename response_of<Request>::type>
-    post(const std::string& service, const std::string& path, const Request& request)
+    post(std::string_view service, std::string_view path, const Request& request)
     {
-        auto& config = fb::config<>(service);
-        auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
-        auto  thread = this->_executor.threads.current();
-        auto  result = co_await this->boost_post_async<Request>(host, path, request);
+        auto  service_str = std::string(service);
+        auto& config      = fb::config<>(service_str);
+        auto  host        = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
+        auto  path_str    = std::string(path);
+        auto  thread      = this->_executor.threads.current();
+        auto  result      = co_await this->boost_post_async<Request>(host, path_str, request);
         if (thread != nullptr)
             co_await thread->switching();
         co_return result;
@@ -268,10 +275,12 @@ public:
     /// <param name="path">The path component of the URL.</param>
     /// <param name="data">The binary data to send as request body.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    async::task<void> post(const std::string& url, const std::string& path, const fb::stream& data)
+    async::task<void> post(std::string_view url, std::string_view path, const fb::stream& data)
     {
-        auto thread = this->_executor.threads.current();
-        co_await this->boost_post_binary_async(url, path, data);
+        auto url_str  = std::string(url);
+        auto path_str = std::string(path);
+        auto thread   = this->_executor.threads.current();
+        co_await this->boost_post_binary_async(url_str, path_str, data);
         if (thread != nullptr)
             co_await thread->switching();
     }
@@ -324,12 +333,14 @@ private:
     /// <summary>
     /// Internal method to send POST request with binary data.
     /// </summary>
-    [[nodiscard]] async::task<void> boost_post_binary_async(const std::string& url,
-                                                            const std::string& path,
-                                                            const fb::stream&  data)
+    [[nodiscard]] async::task<void> boost_post_binary_async(std::string_view  url,
+                                                            std::string_view  path,
+                                                            const fb::stream& data)
     {
-        auto promise = std::make_shared<async::task_completion_source<void>>();
-        auto headers = std::map<std::string, std::string>{
+        auto url_str  = std::string(url);
+        auto path_str = std::string(path);
+        auto promise  = std::make_shared<async::task_completion_source<void>>();
+        auto headers  = std::map<std::string, std::string>{
             {"Content-Type",     "application/octet-stream"},
             {"Content-Encoding", "deflate"                 }
         };
@@ -338,7 +349,7 @@ private:
 
         auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
         boost::asio::co_spawn(io_context,
-                              this->boost_post_async(url, path, headers, std::chrono::seconds{30}, body),
+                              this->boost_post_async(url_str, path_str, headers, std::chrono::seconds{30}, body),
                               [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
                                   if (ep)
                                   {

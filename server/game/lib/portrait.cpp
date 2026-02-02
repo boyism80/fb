@@ -90,7 +90,7 @@ std::unique_ptr<portrait> portrait_factory::create(const fb::model::object& obj)
         if (npc_model.preset.has_value())
         {
             auto& preset      = table::preset[npc_model.preset.value()];
-            auto  ptr         = new character_portrait();
+            auto  ptr         = std::make_unique<character_portrait>();
             ptr->gender       = preset.gender;
             ptr->state        = preset.state;
             ptr->hair         = preset.hair;
@@ -101,23 +101,23 @@ std::unique_ptr<portrait> portrait_factory::create(const fb::model::object& obj)
             ptr->armor_color  = preset.armor_color;
             ptr->shield       = preset.shield;
             ptr->shield_color = preset.shield_color;
-            return std::unique_ptr<portrait>(ptr);
+            return std::move(ptr);
         }
         else
         {
-            auto ptr   = new object_portrait();
+            auto ptr   = std::make_unique<object_portrait>();
             ptr->look  = obj.look;
             ptr->color = obj.color;
-            return std::unique_ptr<portrait>(ptr);
+            return std::move(ptr);
         }
     }
 
     default:
     {
-        auto ptr   = new object_portrait();
+        auto ptr   = std::make_unique<object_portrait>();
         ptr->look  = obj.look;
         ptr->color = obj.color;
-        return std::unique_ptr<portrait>(ptr);
+        return std::move(ptr);
     }
     }
 }
@@ -129,7 +129,7 @@ std::unique_ptr<portrait> portrait_factory::create(const fb::game::object& obj)
     case fb::model::enum_value::OBJECT_TYPE::CHARACTER:
     {
         auto& ch        = static_cast<const fb::game::character&>(obj);
-        auto  ptr       = new character_portrait();
+        auto  ptr       = std::make_unique<character_portrait>();
         ptr->gender     = ch.gender();
         ptr->state      = ch.state();
         ptr->hair       = ch.look();
@@ -153,7 +153,7 @@ std::unique_ptr<portrait> portrait_factory::create(const fb::game::object& obj)
             ptr->shield_color = std::nullopt;
         }
 
-        return std::unique_ptr<portrait>(ptr);
+        return std::move(ptr);
     }
     default:
     {

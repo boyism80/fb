@@ -25,7 +25,7 @@ private:
 
 public:
     void                 load(const fb::model::map& model);
-    std::shared_ptr<map> name2map(const std::string& name) const;
+    std::shared_ptr<map> name2map(std::string_view name) const;
 };
 
 } // namespace fb::game

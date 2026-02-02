@@ -47,7 +47,7 @@ public:
     virtual bool              alive() const;
     bool                      active(fb::game::spell& spell);
     bool                      active(fb::game::spell& spell, uint32_t fd);
-    bool                      active(fb::game::spell& spell, const std::string& message);
+    bool                      active(fb::game::spell& spell, std::string_view message);
     bool                      active(fb::game::spell& spell, fb::game::object& to);
     virtual void              action(ACTION action, DURATION duration, uint8_t sound = 0x00);
     virtual uint32_t          normal_attack_damage(MOB_SIZE size) const = 0;

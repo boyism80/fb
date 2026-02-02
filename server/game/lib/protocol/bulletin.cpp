@@ -44,16 +44,16 @@ bulletin::bulletin(BULLETIN_ACTION    action,
                    uint16_t           section,
                    uint16_t           article,
                    uint16_t           offset,
-                   const std::string& title,
-                   const std::string& contents,
-                   const std::string& user) :
+                   std::string_view   title,
+                   std::string_view   contents,
+                   std::string_view   user) :
     action(action),
     section(section),
     article(article),
     offset(offset),
-    title(title),
-    contents(contents),
-    user(user)
+    title(std::string(title)),
+    contents(std::string(contents)),
+    user(std::string(user))
 { }
 
 async::task<void> bulletin::serialize(fb::stream_writer<big_endian>& writer) const

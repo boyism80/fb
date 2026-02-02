@@ -3,6 +3,7 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <string_view>
 
 namespace fb::protocol::game::response {
 
@@ -26,7 +27,7 @@ public:
 #ifdef BOT
     message() = default;
 #else
-    message(const std::string& text, MESSAGE_TYPE type);
+    message(std::string_view text, MESSAGE_TYPE type);
 #endif
 
 public:

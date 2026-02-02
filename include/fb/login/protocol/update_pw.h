@@ -3,6 +3,7 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <string_view>
 
 namespace fb::protocol::login::request {
 
@@ -30,7 +31,7 @@ public:
 #ifndef BOT
     update_pw() = default;
 #else
-    update_pw(const std::string& name, const std::string& pw, const std::string& new_pw, uint32_t birthday);
+    update_pw(std::string_view name, std::string_view pw, std::string_view new_pw, uint32_t birthday);
 #endif
 
 public:

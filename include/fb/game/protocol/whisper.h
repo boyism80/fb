@@ -2,6 +2,7 @@
 #define __GAME_PROTOCOL_WHISPER_H__
 
 #include <fb/protocol/header.h>
+#include <string_view>
 
 namespace fb::protocol::game::request {
 
@@ -21,9 +22,9 @@ public:
 
 public:
 #ifdef BOT // bot only
-    whisper(const std::string& name, const std::string& message) :
-        name(name),
-        message(message)
+    whisper(std::string_view name, std::string_view message) :
+        name(std::string(name)),
+        message(std::string(message))
     { }
 #else
     whisper() = default;

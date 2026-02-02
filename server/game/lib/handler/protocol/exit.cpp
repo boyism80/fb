@@ -16,7 +16,7 @@ async::task<bool> exit::handle(fb::socket<character>& session, game_reqs::exit& 
         co_return true;
 
     std::ignore = this->server.transfer(session,
-                                        fb::config<std::string>("login:ip"),
+                                        fb::config<std::string_view>("login:ip"),
                                         fb::config<uint16_t>("login:port"),
                                         internal::Service::Game);
     co_return true;

@@ -122,7 +122,7 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     for (auto& [_, root] : ist)
     {
         auto& thread = root->initial_thread();
-        std::ignore  = thread.dispatch([root](auto&) -> async::task<void> {
+        std::ignore  = thread.dispatch([&root](auto&) -> async::task<void> {
             fb::model::lua::map_enum(*root);
             fb::model::lua::map_const(*root);
             co_return;
@@ -135,10 +135,7 @@ server::~server()
 
 async::task<void> server::on_start()
 {
-    this->threads.deletor = [](void* data) {
-        auto params = static_cast<thread_params*>(data);
-        delete params;
-    };
+    // deletor no longer needed - RAII handles cleanup automatically
 
     co_await fb::acceptor<character>::on_start();
 
@@ -159,7 +156,7 @@ async::task<void> server::on_start()
     for (auto& [thread, maps] : maps_division)
     {
         async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
-            auto params = new thread_params(*this);
+            auto params = std::make_unique<thread_params>(*this);
             for (auto map : maps)
             {
                 params->maps.insert({map->model.id, map});
@@ -171,7 +168,7 @@ async::task<void> server::on_start()
                     }
                 }
             }
-            thread.data(params);
+            thread.data(std::move(params));
             co_return;
         }));
     }
@@ -668,8 +665,9 @@ void server::on_init_amqp(fb::amqp::socket& amqp)
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.ban", world));
 }
 
-async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)
+async::task<void> server::broadcast(std::string_view message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)
 {
+    auto message_str = std::string(message);
     switch (broadcast_type)
     {
     case BROADCAST_TYPE::GLOBAL:
@@ -678,16 +676,16 @@ async::task<void> server::broadcast(const std::string& message, MESSAGE_TYPE typ
         auto&& resp  = co_await this->http.post(
             "internal",
             "/in-game/broadcast",
-            internal_reqs::Broadcast{world, fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
+            internal_reqs::Broadcast{world, fb::config<uint32_t>("id"), message_str, static_cast<uint8_t>(type)});
         co_await this->on_broadcast(resp);
     }
     break;
 
     case BROADCAST_TYPE::WORLD:
     {
-        this->characters.write([message, type](auto& characters) {
-            characters.foreach_enqueue([message, type](auto& ch) -> async::task<void> {
-                ch->message(message, type);
+        this->characters.write([message_str, type](auto& characters) {
+            characters.foreach_enqueue([message_str, type](auto& ch) -> async::task<void> {
+                ch->message(message_str, type);
                 co_return;
             });
         });
@@ -741,7 +739,7 @@ async::task<void> server::update_status()
                                                                         internal::Service::Game,
                                                                         this->id(),
                                                                         this->name(),
-                                                                        fb::config<std::string>("ip"),
+                                                                        fb::config<std::string_view>("ip"),
                                                                         fb::config<uint16_t>("port")});
     }
     catch (const std::exception& e)

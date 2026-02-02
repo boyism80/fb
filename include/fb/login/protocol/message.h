@@ -1,6 +1,8 @@
 #ifndef __PROTOCOL_LOGIN_MESSAGE_H__
 #define __PROTOCOL_LOGIN_MESSAGE_H__
 
+#include <string_view>
+
 namespace fb::protocol::login::response {
 
 class message : public fb::protocol::header
@@ -21,8 +23,8 @@ public:
 #ifdef BOT
     message() = default;
 #else
-    message(const std::string& text, uint8_t type) :
-        text(text),
+    message(std::string_view text, uint8_t type) :
+        text(std::string(text)),
         type(type)
     { }
 #endif

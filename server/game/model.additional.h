@@ -11,6 +11,7 @@
 
 #include <fb/lua.h>
 #include <fb/model/datetime.h>
+#include <string_view>
 
 #define OVERRIDE_OBJECT_TYPE(v)                   \
     enum_value::OBJECT_TYPE what() const override \
@@ -275,18 +276,18 @@ public:                       \
 #define DECLARE_MOB_CONTAINER_EXTENSION \
                                         \
 public:                                 \
-    fb::model::mob* name2mob(const std::string& name) const;
+    fb::model::mob* name2mob(std::string_view name) const;
 
 #define DECLARE_NPC_CONTAINER_EXTENSION \
                                         \
 public:                                 \
-    fb::model::npc* name2npc(const std::string& name) const;
+    fb::model::npc* name2npc(std::string_view name) const;
 
-#define DECLARE_ITEM_CONTAINER_EXTENSION                                    \
-                                                                            \
-public:                                                                     \
-    fb::model::item*              name2item(const std::string& name) const; \
-    std::vector<fb::model::item*> name2item_prefix(const std::string& prefix) const;
+#define DECLARE_ITEM_CONTAINER_EXTENSION                                  \
+                                                                          \
+public:                                                                   \
+    fb::model::item*              name2item(std::string_view name) const; \
+    std::vector<fb::model::item*> name2item_prefix(std::string_view prefix) const;
 
 #define DECLARE_MAP_INHERIT : public fb::lua::luable
 
@@ -298,7 +299,7 @@ public:                       \
 #define DECLARE_MAP_CONTAINER_EXTENSION \
                                         \
 public:                                 \
-    fb::model::map* name2map(const std::string& name) const;
+    fb::model::map* name2map(std::string_view name) const;
 
 #define DECLARE_DOOR_EXTENSION                                                             \
                                                                                            \
@@ -314,7 +315,7 @@ public:                                                                         
 #define DECLARE_SPELL_CONTAINER_EXTENSION \
                                           \
 public:                                   \
-    fb::model::spell* name2spell(const std::string& name) const;
+    fb::model::spell* name2spell(std::string_view name) const;
 
 #define DECLARE_SPELL_EXTENSION \
                                 \
@@ -324,37 +325,12 @@ public:                         \
 public:                         \
     LUA_PROTOTYPE
 
-#define DECLARE_PROMOTION_CONTAINER_EXTENSION                                                               \
-                                                                                                            \
-public:                                                                                                     \
-    const promotion* operator() (enum_value::CLASS cls, uint8_t promotion) const;                           \
-    bool             name2class(const std::string& name, enum_value::CLASS& cls, uint8_t& promotion) const; \
+#define DECLARE_PROMOTION_CONTAINER_EXTENSION                                                             \
+                                                                                                          \
+public:                                                                                                   \
+    const promotion* operator() (enum_value::CLASS cls, uint8_t promotion) const;                         \
+    bool             name2class(std::string_view name, enum_value::CLASS& cls, uint8_t& promotion) const; \
     bool             class2name(enum_value::CLASS cls, uint8_t promotion, std::string& name) const;
-
-#define DECLARE_CONST_REGEX_EXTENSION                                                                              \
-                                                                                                                   \
-public:                                                                                                            \
-    static bool match_sell_message(const std::string& message, std::string& item, std::optional<uint16_t>& count); \
-    static bool match_buy_message(const std::string& message, std::string& item, uint16_t& count);                 \
-    static bool match_repair_message(const std::string& message, std::string& item);                               \
-    static bool match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money);           \
-    static bool match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money);          \
-    static bool match_store_item_message(const std::string&       message,                                         \
-                                         std::string&             item,                                            \
-                                         std::optional<uint16_t>& count);                                          \
-    static bool match_retrieve_item_message(const std::string&       message,                                      \
-                                            std::string&             item,                                         \
-                                            std::optional<uint16_t>& count);                                       \
-    static bool match_sell_list(const std::string& message);                                                       \
-    static bool match_buy_list(const std::string& message);                                                        \
-    static bool match_sell_price(const std::string& message, std::string& item);                                   \
-    static bool match_buy_price(const std::string& message, std::string& item);                                    \
-    static bool match_deposited_money(const std::string& message);                                                 \
-    static bool match_rename_weapon(const std::string& message, std::string& weapon, std::string& name);           \
-    static bool match_store_item_list(const std::string& message);                                                 \
-    static bool match_store_item_count(const std::string& message, std::string& item);                             \
-    static bool match_revive(const std::string& message, bool& discourteous);                                      \
-    static bool match_appreciate(const std::string& message);
 
 #define DECLARE_SELL_CONTAINER_EXTENSION                                              \
                                                                                       \
@@ -371,7 +347,7 @@ public:                                                                         
 #define DECLARE_BLOCKED_WORD_CONTAINER_EXTENSION \
                                                  \
 public:                                          \
-    std::string filter(const std::string& message) const;
+    std::string filter(std::string_view message) const;
 
 #define DECLARE_RECIPE_EXTENSION                       \
                                                        \
@@ -391,12 +367,12 @@ public:                                                \
     __recipe(const __recipe&) = delete;             \
     ~__recipe();
 
-#define DECLARE_RECIPE_CONTAINER_EXTENSION \
-                                           \
-private:                                   \
-    fb::model::recipe_node* _root;         \
-                                           \
-public:                                    \
+#define DECLARE_RECIPE_CONTAINER_EXTENSION         \
+                                                   \
+private:                                           \
+    std::unique_ptr<fb::model::recipe_node> _root; \
+                                                   \
+public:                                            \
     const fb::model::recipe* find(const std::vector<fb::model::dsl::item>& dsl) const;
 
 #define DECLARE_AFTER_ENUM                                                                  \

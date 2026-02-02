@@ -143,14 +143,14 @@ void console::down(uint8_t line)
     _current_policy->down(line);
 }
 
-void console::progress(const std::string& text, float progress)
+void console::progress(std::string_view text, float progress)
 {
     auto _ = std::lock_guard(_mutex);
     _current_policy->progress(text, progress);
 }
 
 // Parent class common implementation
-std::string console::console_policy::get_aligned_text(align_type align, const std::string& text)
+std::string console::console_policy::get_aligned_text(align_type align, std::string_view text)
 {
     auto padding = uint16_t{0};
     switch (align)
@@ -165,11 +165,11 @@ std::string console::console_policy::get_aligned_text(align_type align, const st
         padding = 0;
         break;
     }
-    return std::string(padding, ' ') + text;
+    return std::string(padding, ' ') + std::string(text);
 }
 
 // TTY policy implementation methods
-void console::tty_policy::put(align_type align, color color, const std::string& text)
+void console::tty_policy::put(align_type align, color color, std::string_view text)
 {
     auto padded = get_aligned_text(align, text);
     save_point();
@@ -178,13 +178,13 @@ void console::tty_policy::put(align_type align, color color, const std::string& 
     restore_point();
 }
 
-void console::tty_policy::puts(align_type align, color color, const std::string& text)
+void console::tty_policy::puts(align_type align, color color, std::string_view text)
 {
     put(align, color, text);
     newline();
 }
 
-void console::tty_policy::comment(color color, const std::string& text)
+void console::tty_policy::comment(color color, std::string_view text)
 {
     save_point();
     down(++this->_comment_line);
@@ -223,7 +223,7 @@ void console::tty_policy::down(uint8_t line)
     std::cout << std::format("\033[{}B", line);
 }
 
-void console::tty_policy::progress(const std::string& text, float progress)
+void console::tty_policy::progress(std::string_view text, float progress)
 {
 #ifdef _WIN32
     static auto fill_text       = std::string("-");
@@ -255,18 +255,18 @@ void console::tty_policy::progress(const std::string& text, float progress)
 }
 
 // Plain policy implementation methods
-void console::plain_policy::put(align_type align, color color, const std::string& text)
+void console::plain_policy::put(align_type align, color color, std::string_view text)
 {
     auto padded = get_aligned_text(align, text);
     std::cout << colorize(color) << padded << colorize(color::reset) << std::endl;
 }
 
-void console::plain_policy::puts(align_type align, color color, const std::string& text)
+void console::plain_policy::puts(align_type align, color color, std::string_view text)
 {
     put(align, color, text);
 }
 
-void console::plain_policy::comment(color color, const std::string& text)
+void console::plain_policy::comment(color color, std::string_view text)
 {
     std::cout << colorize(color) << text << colorize(color::reset) << std::endl;
 }
@@ -301,7 +301,7 @@ void console::plain_policy::down(uint8_t line)
     // Plain mode: down does nothing
 }
 
-void console::plain_policy::progress(const std::string& text, float progress)
+void console::plain_policy::progress(std::string_view text, float progress)
 {
     std::cout << std::format("{:>7.2f}% {}", progress, text) << std::endl;
 }

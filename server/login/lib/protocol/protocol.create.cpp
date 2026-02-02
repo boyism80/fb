@@ -10,9 +10,9 @@ async::task<void> create::deserialize(fb::stream_reader<big_endian>& reader)
     this->pw = reader.read<std::string, uint8_t>();
 }
 #else
-create::create(const std::string& id, const std::string& pw) :
-    id(id),
-    pw(pw)
+create::create(std::string_view id, std::string_view pw) :
+    id(std::string(id)),
+    pw(std::string(pw))
 { }
 
 async::task<void> create::serialize(fb::stream_writer<big_endian>& writer) const

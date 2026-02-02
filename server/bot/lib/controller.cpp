@@ -12,16 +12,13 @@ bot_container::bot_container(boost::asio::io_context& context, uint32_t thread_c
     _context(context),
     fb::async_executor(context, "BOT", thread_count)
 {
-    this->threads.deletor = [](void* data) {
-        auto params = static_cast<bot_thread_params*>(data);
-        delete params;
-    };
+    // deletor no longer needed - RAII handles cleanup automatically
 
     for (int i = 0; i < this->threads.count(); i++)
     {
         auto thread = this->threads.at(i);
         std::ignore = thread->dispatch([](auto& thread) -> async::task<void> {
-            thread.data(new bot_thread_params{});
+            thread.data(std::make_unique<bot_thread_params>());
             co_return;
         });
     }

@@ -6,6 +6,7 @@
 #ifndef BOT
 #include <fb/game/dialog.h>
 #endif
+#include <string_view>
 
 namespace fb::protocol::game::response {
 
@@ -43,22 +44,22 @@ public:
 #ifndef BOT
     dialog_list(const fb::game::object&         object,
                 const std::vector<std::string>& list,
-                const std::string&              message,
-                bool                            button_prev,
-                uint32_t                        oid         = 0xFFFFFFFD,
-                fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::LIST);
+                std::string_view                  message,
+                bool                             button_prev,
+                uint32_t                         oid         = 0xFFFFFFFD,
+                fb::game::dialog::interaction    interaction = fb::game::dialog::interaction::LIST);
     dialog_list(const fb::model::object&        object,
                 const std::vector<std::string>& list,
-                const std::string&              message,
-                bool                            button_prev,
-                uint32_t                        oid         = 0xFFFFFFFD,
-                fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::LIST);
+                std::string_view                  message,
+                bool                             button_prev,
+                uint32_t                         oid         = 0xFFFFFFFD,
+                fb::game::dialog::interaction    interaction = fb::game::dialog::interaction::LIST);
     dialog_list(portrait_ptr&&                  portrait,
                 const std::vector<std::string>& list,
-                const std::string&              message,
-                bool                            button_prev,
-                uint32_t                        oid         = 0xFFFFFFFD,
-                fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::LIST);
+                std::string_view                  message,
+                bool                             button_prev,
+                uint32_t                         oid         = 0xFFFFFFFD,
+                fb::game::dialog::interaction    interaction = fb::game::dialog::interaction::LIST);
 #else
     dialog_list() = default;
 #endif

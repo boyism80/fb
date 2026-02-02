@@ -3,6 +3,7 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <string_view>
 
 namespace fb::protocol::game::response {
 
@@ -24,9 +25,9 @@ public:
 
 public:
 #ifndef BOT
-    item_tip(uint16_t position, const std::string& message) :
+    item_tip(uint16_t position, std::string_view message) :
         position(position),
-        message(message)
+        message(std::string(message))
     { }
 #else
     item_tip() = default;

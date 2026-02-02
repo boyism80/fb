@@ -7,10 +7,10 @@
 using namespace fb::game;
 using namespace fb::protocol::internal::request;
 
-group::group(server& server, uint32_t id, const std::string& master, const std::vector<std::string>& members) :
+group::group(server& server, uint32_t id, std::string_view master, const std::vector<std::string>& members) :
     _server(server),
     _id(id),
-    _master(master),
+    _master(std::string(master)),
     _members(members)
 { }
 
@@ -47,24 +47,26 @@ void group::detach(std::weak_ptr<character> ch)
     this->_active_members.erase(ptr);
 }
 
-void group::add_member(const std::string& name)
+void group::add_member(std::string_view name)
 {
+    auto name_str = std::string(name);
     // Prevent duplicate entries
     for (auto& member : this->_members)
     {
-        if (member == name)
+        if (member == name_str)
             return;
     }
 
-    this->_members.push_back(name);
+    this->_members.push_back(name_str);
 }
 
-void group::remove_member(const std::string& name)
+void group::remove_member(std::string_view name)
 {
+    auto name_str = std::string(name);
     this->_members.erase(std::remove_if(this->_members.begin(),
                                         this->_members.end(),
-                                        [&name](const std::string& member) {
-                                            return member == name;
+                                        [&name_str](const std::string& member) {
+                                            return member == name_str;
                                         }),
                          this->_members.end());
 }

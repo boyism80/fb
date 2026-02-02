@@ -3,6 +3,7 @@
 
 #include <fb/lua.h>
 #include <fb/model/model.h>
+#include <string_view>
 
 namespace fb::game {
 
@@ -18,7 +19,7 @@ public:
     CLAN_ROLE   role;
 
 public:
-    clan_member(const std::string& name, CLAN_ROLE role);
+    clan_member(std::string_view name, CLAN_ROLE role);
     ~clan_member() = default;
 };
 

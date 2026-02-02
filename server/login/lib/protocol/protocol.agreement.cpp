@@ -33,8 +33,8 @@ async::task<void> agreement::serialize(fb::stream_writer<big_endian>& writer) co
 namespace fb::protocol::login::response {
 
 #ifndef BOT
-agreement::agreement(const std::string& contents) :
-    contents(contents)
+agreement::agreement(std::string_view contents) :
+    contents(std::string(contents))
 { }
 #endif
 
@@ -54,11 +54,10 @@ async::task<void> agreement::deserialize(fb::stream_reader<big_endian>& reader)
     co_await header::deserialize(reader);
     reader.read<uint8_t>();
     auto size   = reader.read<uint16_t>();
-    auto buffer = new uint8_t[size];
-    reader.read(buffer, size);
+    auto buffer = std::vector<uint8_t>(size); // RAII
+    reader.read(buffer.data(), size);
 
-    auto decompressed = fb::stream(buffer, size).decompress();
-    delete[] buffer;
+    auto decompressed = fb::stream(buffer.data(), size).decompress();
 
     decompressed.push_back(0);
     this->contents = std::string((const char*)decompressed.data());

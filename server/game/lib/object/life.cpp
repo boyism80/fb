@@ -220,7 +220,7 @@ bool life::alive() const
     return this->stat.hp() != 0;
 }
 
-bool life::active(fb::game::spell& spell, const std::string& message)
+bool life::active(fb::game::spell& spell, std::string_view message)
 {
     this->assert_thread();
 

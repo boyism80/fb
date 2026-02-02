@@ -3,6 +3,7 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <string_view>
 
 namespace fb::protocol::game::request {
 
@@ -36,12 +37,12 @@ public:
 #else
     spell_cast(SPELL_TYPE                        type,
                uint8_t                           slot,
-               const std::string&                message,
-               uint32_t                          oid,
+               std::string_view                   message,
+               uint32_t                           oid,
                const fb::model::point<uint16_t>& position) :
         type(type),
         slot(slot),
-        message(message),
+        message(std::string(message)),
         oid(oid),
         position(position)
     { }

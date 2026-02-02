@@ -3,6 +3,7 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <string_view>
 
 #ifdef DELETE
 #undef DELETE
@@ -42,9 +43,9 @@ public:
              uint16_t           section  = 0,
              uint16_t           article  = 0,
              uint16_t           offset   = 0,
-             const std::string& title    = "",
-             const std::string& contents = "",
-             const std::string& user     = "");
+             std::string_view   title    = "",
+             std::string_view   contents = "",
+             std::string_view   user     = "");
 #else
     bulletin() = default;
 #endif

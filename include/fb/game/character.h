@@ -19,6 +19,7 @@
 #include <fb/game/storage.h>
 #include <fb/game/marketplace.h>
 #include <set>
+#include <string_view>
 #include <unordered_map>
 
 namespace fb::game {
@@ -212,7 +213,7 @@ public:
     void                                               update_time(uint16_t hours);
     void                                               init();
     const std::string&                                 title() const;
-    void                                               title(const std::string& value);
+    void                                               title(std::string_view value);
     const std::optional<uint32_t>&                     group_id() const;
     std::optional<uint32_t>&                           group_id();
     void                                               group_id(uint32_t gid);
@@ -228,7 +229,7 @@ public:
     void                                               ride();
     void                                               unride();
     bool                                               alive() const;
-    void                                               message(const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
+    void                                               message(std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
     async::task<void>                                  process_system_mails();
     void                                               process_storage_pending();
     void                                               thread(fb::thread* value);
@@ -264,7 +265,7 @@ private:
     using character_function_t       = std::function<void(character_ptr_t&)>;
     using character_predicate_t      = std::function<bool(const character_ptr_t&)>;
     using character_async_function_t = std::function<async::task<void>(character_ptr_t&)>;
-    using character_function_t_miss  = std::function<void(const std::string& name)>;
+    using character_function_t_miss  = std::function<void(std::string_view name)>;
 
 private:
     std::unordered_map<uint32_t, character_ptr_t>    _from_uid;
@@ -286,8 +287,8 @@ public:
     bool              insert(character_ptr_t ch);
     void              remove(character_ptr_t ch);
     character_ptr_t   find(uint32_t uid) const;
-    character_ptr_t   find(const std::string& name) const;
-    bool              contains(const std::string& name) const;
+    character_ptr_t   find(std::string_view name) const;
+    bool              contains(std::string_view name) const;
     bool              contains(uint32_t uid) const;
     async::task<void> foreach (character_function_t&& fn, character_predicate_t predicate = nullptr);
     async::task<void> foreach (character_function_t&& fn, const std::vector<character_ptr_t>& characters);
@@ -298,13 +299,13 @@ public:
     void              foreach_enqueue(character_async_function_t&& fn, character_predicate_t predict = nullptr);
     void              foreach_enqueue(character_async_function_t&& fn, const std::vector<character_ptr_t>& characters);
     void              foreach_enqueue(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss = nullptr);
-    async::task<void> invoke(const std::string& name, character_function_t fn, character_function_t_miss miss = nullptr);
-    async::task<void> invoke_async(const std::string& name, character_async_function_t fn, character_function_t_miss miss = nullptr);
+    async::task<void> invoke(std::string_view name, character_function_t fn, character_function_t_miss miss = nullptr);
+    async::task<void> invoke_async(std::string_view name, character_async_function_t fn, character_function_t_miss miss = nullptr);
     // clang-format on
 
 public:
     character_ptr_t operator[] (uint32_t uid);
-    character_ptr_t operator[] (const std::string& name);
+    character_ptr_t operator[] (std::string_view name);
 
 public:
     iterator       begin();
@@ -322,7 +323,7 @@ struct character::listener_t : public virtual life::listener_t,
 {
 public:
     // clang-format off
-    virtual void              on_message(character& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE)                                                 = 0;
+    virtual void              on_message(character& me, std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE)                                                 = 0;
     virtual void              on_option_changed(character& me, OPTION option, bool enabled)                                                                                  = 0;
     virtual void              on_update_option(character& me)                                                                                                                = 0;
     virtual void              on_update_map(character& ch, const fb::game::map& map)                                                                                         = 0;
@@ -339,7 +340,7 @@ public:
     virtual void              on_show_bulletin(character& ch, const bulletin::article& value, BULLETIN_BUTTON_ENABLE flag)                                                   = 0;
     virtual void              on_show_mail_box(character& ch, const std::vector<mail_box::summary>& mails, MAIL_BUTTON_ENABLE flag)                                          = 0;
     virtual void              on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag)                                                           = 0;
-    virtual void              on_show_bulletin_message(character& ch, const std::string& message, bool success, bool mail)                                                   = 0;
+    virtual void              on_show_bulletin_message(character& ch, std::string_view message, bool success, bool mail)                                                   = 0;
     virtual void              on_show_world_map(character& ch, uint32_t id, uint16_t index)                                                                                  = 0;
     virtual void              on_timer(character& ch, uint32_t time, TIMER_TYPE type)                                                                                        = 0;
     virtual void              on_weather(character& ch, WEATHER_TYPE weather)                                                                                                = 0;

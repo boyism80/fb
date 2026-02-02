@@ -49,15 +49,18 @@ async::task<void> server::on_write_mail(const internal_resp::WriteMail& resp)
 }
 
 async::task<internal_resp::WriteMail>
-server::send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents)
+server::send_mail(const character& ch, std::string_view to, std::string_view title, std::string_view contents)
 {
-    auto   weak   = ch.weak_from_this();
-    auto   thread = ch.thread();
-    auto   world  = fb::config<uint32_t>("world");
-    auto&& resp =
-        co_await this->http.post("internal",
-                                 "/mail/write",
-                                 internal_reqs::WriteMail{world, ch.id, to, title, contents, config<uint32_t>("id")});
+    auto   weak         = ch.weak_from_this();
+    auto   thread       = ch.thread();
+    auto   to_str       = std::string(to);
+    auto   title_str    = std::string(title);
+    auto   contents_str = std::string(contents);
+    auto   world        = fb::config<uint32_t>("world");
+    auto&& resp         = co_await this->http.post(
+        "internal",
+        "/mail/write",
+        internal_reqs::WriteMail{world, ch.id, to_str, title_str, contents_str, config<uint32_t>("id")});
     co_await this->threads.switching(weak);
 
     this->assert_mail(resp.error);

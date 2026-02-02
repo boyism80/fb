@@ -124,7 +124,7 @@ public:
     template <typename R, typename... Args>
     R& add(Args&&... args)
     {
-        auto ptr  = std::unique_ptr<fb::mst<T>>(new R(std::forward<Args>(args)...));
+        auto ptr  = std::unique_ptr<fb::mst<T>>(std::make_unique<R>(std::forward<Args>(args)...));
         auto node = ptr.get();
         this->_allocated.push_back(std::move(ptr));
 

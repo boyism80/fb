@@ -115,7 +115,7 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
     co_return true;
 }
 
-std::string login::build_ban_message(const std::string& reason, const std::optional<std::string>& expire_date)
+std::string login::build_ban_message(std::string_view reason, const std::optional<std::string>& expire_date)
 {
     auto ban_message = std::string(_TEXT(MESSAGE_ACCOUNT_BANNED));
     if (!reason.empty())

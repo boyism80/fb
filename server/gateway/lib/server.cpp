@@ -135,7 +135,7 @@ async::task<void> server::update_status()
                                                                         internal::Service::Gateway,
                                                                         this->id(),
                                                                         this->name(),
-                                                                        fb::config<std::string>("ip"),
+                                                                        fb::config<std::string_view>("ip"),
                                                                         fb::config<uint16_t>("port")});
     }
     catch (const std::exception& e)

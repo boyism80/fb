@@ -75,8 +75,8 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
         auto& thread = root->initial_thread();
         for (auto& script : scripts)
         {
-            co_yield [&thread, root, script]() -> async::task<void> {
-                co_await thread.dispatch([root, script](auto&) -> async::task<void> {
+            co_yield [&thread, &root, script]() -> async::task<void> {
+                co_await thread.dispatch([&root, script](auto&) -> async::task<void> {
                     try
                     {
                         root->dump(script);

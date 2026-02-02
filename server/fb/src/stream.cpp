@@ -25,13 +25,12 @@ stream stream::compress() const
 {
     auto src_size = static_cast<uLongf>(this->size());
     auto dst_size = compressBound(src_size);
-    auto buffer   = std::unique_ptr<uint8_t[]>(new uint8_t[dst_size + 16]);
-    std::memset(buffer.get(), 0xCC, dst_size + 16);
+    auto buffer   = std::vector<uint8_t>(dst_size + 16, 0xCC);
 
-    if (compress2(buffer.get(), &dst_size, this->data(), src_size, Z_BEST_COMPRESSION) != Z_OK)
+    if (compress2(buffer.data(), &dst_size, this->data(), src_size, Z_BEST_COMPRESSION) != Z_OK)
         throw std::runtime_error("compress failed");
 
-    return stream(std::vector<uint8_t>(buffer.get(), buffer.get() + dst_size));
+    return stream(std::vector<uint8_t>(buffer.data(), buffer.data() + dst_size));
 }
 
 stream stream::decompress() const

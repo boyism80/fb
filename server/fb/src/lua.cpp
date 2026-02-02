@@ -17,7 +17,7 @@ context* fb::lua::get(lua_State* ctx)
     return ist.get(ctx);
 }
 
-async::task<void> fb::lua::build(const std::string& name, lua_CFunction fn)
+async::task<void> fb::lua::build(std::string_view name, lua_CFunction fn)
 {
     static auto& ist = context_pool::ist();
     auto         n   = std::string{name};
@@ -28,7 +28,7 @@ async::task<void> fb::lua::build(const std::string& name, lua_CFunction fn)
     }
 }
 
-async::task<void> fb::lua::dump(const std::string& path)
+async::task<void> fb::lua::dump(std::string_view path)
 {
     static auto& ist = context_pool::ist();
     auto         p   = std::string{path};
@@ -60,9 +60,9 @@ context::context(lua_State* ctx, context& owner, context* parent) :
     owner(&owner)
 { }
 
-context& context::pushstring(const std::string& value)
+context& context::pushstring(std::string_view value)
 {
-    lua_pushstring(*this, UTF8(value, PLATFORM::WINDOWS).c_str());
+    lua_pushstring(*this, UTF8(std::string(value), PLATFORM::WINDOWS).c_str());
     return *this;
 }
 
@@ -168,9 +168,9 @@ std::string context::metatable(int offset)
     return name;
 }
 
-std::string fb::lua::context::basetable(const std::string& metaname)
+std::string fb::lua::context::basetable(std::string_view metaname)
 {
-    luaL_getmetatable(*this, metaname.c_str());
+    luaL_getmetatable(*this, std::string(metaname).c_str());
     lua_getfield(*this, -1, "__parent");
 
     if (this->is_table(-1) == false)
@@ -185,13 +185,13 @@ std::string fb::lua::context::basetable(const std::string& metaname)
     return name;
 }
 
-std::string context::tostring(int offset, const std::string& default_value)
+std::string context::tostring(int offset, std::string_view default_value)
 {
     if (this->argc() < offset)
-        return default_value;
+        return std::string(default_value);
 
     if (lua_type(*this, offset) != LUA_TSTRING)
-        return default_value;
+        return std::string(default_value);
 
     auto x = lua_tostring(*this, offset);
     if (x == nullptr)
@@ -562,17 +562,19 @@ context* root::get(lua_State* ctx)
     return it->second.get();
 }
 
-bool root::dump(const std::string& path)
+bool root::dump(std::string_view path)
 {
     if (path.empty())
         return true;
 
+    auto path_str = std::string(path);
+
     // Atomic check-and-load: prevent race conditions
-    if (this->_bytecodes.contains(path))
+    if (this->_bytecodes.contains(path_str))
         return true;
 
     // Load file outside the callback to avoid nested locking issues
-    if (luaL_loadfile(*this, path.c_str()) != LUA_OK)
+    if (luaL_loadfile(*this, path_str.c_str()) != LUA_OK)
     {
         auto error = lua_tostring(*this, -1);
         context::pop(1); // pop error message
@@ -580,10 +582,10 @@ bool root::dump(const std::string& path)
     }
 
     // Prepare bytecode container
-    this->_bytecodes[path] = std::vector<char>();
+    this->_bytecodes[path_str] = std::vector<char>();
 
     // Dump bytecode directly into the container
-    void*      params[] = {&this->_bytecodes[path]};
+    void*      params[] = {&this->_bytecodes[path_str]};
     const auto callback = [](lua_State* ctx, const void* bytes, size_t size, void* p) {
         auto params    = static_cast<void**>(p);
         auto bytecodes = static_cast<std::vector<char>*>(params[0]);
@@ -686,10 +688,7 @@ fb::thread& fb::lua::root::initial_thread()
 
 fb::lua::context_pool::~context_pool()
 {
-    for (auto& [_, root] : this->_roots)
-    {
-        delete root;
-    }
+    // std::unique_ptr handles cleanup automatically
 }
 
 context* fb::lua::context_pool::pop(context* parent)
@@ -718,7 +717,7 @@ void fb::lua::context_pool::setup(fb::thread_container& threads)
     this->_threads = &threads;
     for (auto& [id, thread] : threads)
     {
-        this->_roots.insert({id, new root(*thread)});
+        this->_roots.insert({id, std::make_unique<root>(*thread)});
     }
 }
 
@@ -738,7 +737,7 @@ fb::lua::context_pool& fb::lua::context_pool::ist()
     static std::unique_ptr<context_pool> _ist;
 
     std::call_once(_flag, [] {
-        _ist = std::unique_ptr<context_pool>(new context_pool());
+        _ist = std::make_unique<context_pool>();
     });
     return *_ist;
 }

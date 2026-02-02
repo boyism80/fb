@@ -6,6 +6,7 @@
 #ifndef BOT
 #include <fb/game/spell.h>
 #endif
+#include <string_view>
 
 namespace fb::protocol::game::response {
 
@@ -27,7 +28,7 @@ public:
 
 public:
 #ifndef BOT
-    spell_buff(const std::string& name, uint32_t time);
+    spell_buff(std::string_view name, uint32_t time);
     spell_buff(const fb::game::buff& buff);
 #else
     spell_buff() = default;

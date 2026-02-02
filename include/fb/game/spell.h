@@ -55,7 +55,7 @@ public:
 public:
     void                             owner(std::shared_ptr<fb::game::life> owner);
     std::shared_ptr<fb::game::life>  owner() const;
-    std::shared_ptr<fb::game::spell> find(const std::string& name) const;
+    std::shared_ptr<fb::game::spell> find(std::string_view name) const;
     std::shared_ptr<fb::game::spell> find(const fb::model::spell& model) const;
 
 public:

@@ -5,24 +5,24 @@ namespace fb::protocol::game::response {
 #ifndef BOT
 dialog_slot::dialog_slot(const fb::model::object&      obj,
                          const std::vector<uint8_t>&   slots,
-                         const std::string&            message,
-                         uint32_t                      oid,
-                         fb::game::dialog::interaction interaction) :
+                         std::string_view                message,
+                         uint32_t                       oid,
+                         fb::game::dialog::interaction  interaction) :
     portrait(fb::game::portrait_factory::create(obj)),
     slots(slots),
-    message(message),
+    message(std::string(message)),
     oid(oid),
     interaction(interaction)
 { }
 
 dialog_slot::dialog_slot(const fb::game::object&       object,
                          const std::vector<uint8_t>&   slots,
-                         const std::string&            message,
-                         uint32_t                      oid,
-                         fb::game::dialog::interaction interaction) :
+                         std::string_view                message,
+                         uint32_t                       oid,
+                         fb::game::dialog::interaction  interaction) :
     portrait(fb::game::portrait_factory::create(object)),
     slots(slots),
-    message(message),
+    message(std::string(message)),
     oid(oid),
     interaction(interaction)
 { }

@@ -89,7 +89,7 @@ std::vector<std::shared_ptr<fb::bot::game_bot>> bot_integration_test::get_test_b
 
 async::task<void> bot_integration_test::on_active(game_bot_controller& controller)
 {
-    auto ip = controller.container.ipv4(fb::config<std::string>("ip"));
+    auto ip = controller.container.ipv4(fb::config<std::string_view>("ip"));
     auto endpoint =
         boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
 

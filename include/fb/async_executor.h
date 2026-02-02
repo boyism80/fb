@@ -29,7 +29,7 @@ public:
     thread_container threads;
 
 protected:
-    async_executor(boost::asio::io_context& io_context, const std::string& name, uint32_t thread_count);
+    async_executor(boost::asio::io_context& io_context, std::string_view name, uint32_t thread_count);
 
 public:
     virtual ~async_executor() = default;
@@ -84,7 +84,8 @@ protected:
             boost::asio::detached);
     }
 
-    void bind_thread_timer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)> fn, const std::chrono::steady_clock::duration& duration)
+    void bind_thread_timer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)> fn,
+                           const std::chrono::steady_clock::duration&                                    duration)
     {
         this->threads.settimer(fn, duration);
     }
@@ -168,12 +169,12 @@ protected:
     }
 
 public:
-    std::string ipv4(const std::string& ip) const
+    std::string ipv4(std::string_view ip) const
     {
         try
         {
             auto resolver = boost::asio::ip::tcp::resolver(this->io_context);
-            auto results  = resolver.resolve(ip, "0");
+            auto results  = resolver.resolve(std::string(ip), "0");
 
             for (const auto& entry : results)
             {

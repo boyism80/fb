@@ -355,15 +355,15 @@ async::task<bool> bulletin_test::mail_scenario()
 }
 
 async::task<bool> bulletin_test::write(std::shared_ptr<game_bot> bot,
-                                       const std::string&        title,
-                                       const std::string&        contents)
+                                       std::string_view        title,
+                                       std::string_view        contents)
 {
     if (bot == nullptr)
         co_return false;
 
     // Send the request and wait for response
     auto&& resp = co_await bot->request<fb::bot::integration::bulletin_bot>(
-        game_reqs::bulletin(BULLETIN_ACTION::WRITE, 1, 0, 0, title, contents),
+        game_reqs::bulletin(BULLETIN_ACTION::WRITE, 1, 0, 0, std::string(title), std::string(contents)),
         DEFAULT_TIMEOUT);
 
     // Check if the response indicates success
@@ -427,8 +427,8 @@ bulletin_test::get_articles(std::shared_ptr<game_bot> bot, uint16_t section, uin
 async::task<bool> bulletin_test::read_article(std::shared_ptr<game_bot> bot,
                                               uint16_t                  section,
                                               uint16_t                  article_id,
-                                              const std::string&        expected_title,
-                                              const std::string&        expected_contents)
+                                              std::string_view        expected_title,
+                                              std::string_view        expected_contents)
 {
     if (bot == nullptr || article_id == 0)
         co_return false;
@@ -452,16 +452,18 @@ async::task<bool> bulletin_test::read_article(std::shared_ptr<game_bot> bot,
                       resp.article_title,
                       resp.article_uname);
 
-    if (resp.article_title != expected_title)
+    auto expected_title_str = std::string(expected_title);
+    auto expected_contents_str = std::string(expected_contents);
+    if (resp.article_title != expected_title_str)
     {
-        fb::logger::fatal("Article title mismatch: expected '{}', got '{}'", expected_title, resp.article_title);
+        fb::logger::fatal("Article title mismatch: expected '{}', got '{}'", expected_title_str, resp.article_title);
         co_return false;
     }
 
-    if (resp.article_contents != expected_contents)
+    if (resp.article_contents != expected_contents_str)
     {
         fb::logger::fatal("Article contents mismatch: expected '{}', got '{}'",
-                          expected_contents,
+                          expected_contents_str,
                           resp.article_contents);
         co_return false;
     }
@@ -493,16 +495,16 @@ async::task<bool> bulletin_test::delete_article(std::shared_ptr<game_bot> bot, u
 }
 
 async::task<bool> bulletin_test::send_mail(std::shared_ptr<game_bot> bot,
-                                           const std::string&        to,
-                                           const std::string&        title,
-                                           const std::string&        contents)
+                                           std::string_view        to,
+                                           std::string_view        title,
+                                           std::string_view        contents)
 {
     if (bot == nullptr)
         co_return false;
 
     // Send the request and wait for response
     auto&& resp = co_await bot->request<fb::bot::integration::bulletin_bot>(
-        game_reqs::bulletin(BULLETIN_ACTION::SEND_MAIL, 0, 0, 0, title, contents, to),
+        game_reqs::bulletin(BULLETIN_ACTION::SEND_MAIL, 0, 0, 0, std::string(title), std::string(contents), std::string(to)),
         [](auto& resp) -> bool {
             switch (resp.type)
             {
@@ -545,8 +547,8 @@ bulletin_test::get_mails(std::shared_ptr<game_bot> bot)
 
 async::task<bool> bulletin_test::read_mail(std::shared_ptr<game_bot> bot,
                                            uint16_t                  mail_id,
-                                           const std::string&        expected_title,
-                                           const std::string&        expected_contents)
+                                           std::string_view        expected_title,
+                                           std::string_view        expected_contents)
 {
     if (bot == nullptr)
         co_return false;
@@ -565,15 +567,17 @@ async::task<bool> bulletin_test::read_mail(std::shared_ptr<game_bot> bot,
         },
         DEFAULT_TIMEOUT);
 
-    if (resp.mail_title != expected_title)
+    auto expected_title_str = std::string(expected_title);
+    auto expected_contents_str = std::string(expected_contents);
+    if (resp.mail_title != expected_title_str)
     {
-        fb::logger::fatal("Mail title mismatch: expected '{}', got '{}'", expected_title, resp.mail_title);
+        fb::logger::fatal("Mail title mismatch: expected '{}', got '{}'", expected_title_str, resp.mail_title);
         co_return false;
     }
 
-    if (resp.mail_contents != expected_contents)
+    if (resp.mail_contents != expected_contents_str)
     {
-        fb::logger::fatal("Mail contents mismatch: expected '{}', got '{}'", expected_contents, resp.mail_contents);
+        fb::logger::fatal("Mail contents mismatch: expected '{}', got '{}'", expected_contents_str, resp.mail_contents);
         co_return false;
     }
 

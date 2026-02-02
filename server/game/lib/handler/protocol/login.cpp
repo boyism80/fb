@@ -197,8 +197,9 @@ void login::init_storage(const fb::protocol::internal::response::Init& response,
 async::task<std::shared_ptr<character>> login::init(const game_reqs::login& request, fb::socket<character>& session)
 {
     auto   world = fb::config<uint32_t>("world");
-    auto&& resp    = co_await this->server.http.get<internal_resp::Init>(
-        "internal", std::format("/in-game/init/{}/{}", world, request.id));
+    auto&& resp =
+        co_await this->server.http.get<internal_resp::Init>("internal",
+                                                            std::format("/in-game/init/{}/{}", world, request.id));
     auto map = request.transfer.has_value() ? request.transfer->map : resp.character.map;
 
     auto socket_ptr     = session.shared_from_this_as<fb::socket<character>>();
@@ -375,8 +376,8 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
 async::task<bool> login::assert_login(const game_reqs::login& request)
 {
-    auto world = fb::config<uint32_t>("world");
-    auto&& resp = co_await this->server.http.post(
+    auto   world = fb::config<uint32_t>("world");
+    auto&& resp  = co_await this->server.http.post(
         "internal",
         "/in-game/login",
         internal_reqs::Login{world, request.id, request.name, fb::config<uint8_t>("id"), false});
@@ -395,7 +396,7 @@ async::task<bool> login::assert_login(const game_reqs::login& request)
     }
 }
 
-std::string login::elapsed_message(const std::string& dt)
+std::string login::elapsed_message(std::string_view dt)
 {
     auto elapsed = fb::model::datetime() - fb::model::datetime(dt);
     if (elapsed.total_milliseconds() < 1000 * 60)

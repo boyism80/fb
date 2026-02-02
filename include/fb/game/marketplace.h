@@ -103,8 +103,8 @@ private:
 
 public:
     async::task<listing>              list(uint8_t slot, uint16_t count, uint32_t price, uint16_t expire_hours = 72);
-    async::task<bool>                 cancel(const std::string& id);
-    async::task<listing>              purchase(const std::string& listing_id, uint16_t purchase_count);
+    async::task<bool>                 cancel(std::string_view id);
+    async::task<listing>              purchase(std::string_view listing_id, uint16_t purchase_count);
     async::task<search_result>        search(const search_option& option);
     async::task<std::vector<listing>> get_listings(const string_vector_t& listing_ids, uint32_t buyer_id = 0);
     async::task<purchase_map_t>       get_purchases(const string_vector_t& purchase_ids);
