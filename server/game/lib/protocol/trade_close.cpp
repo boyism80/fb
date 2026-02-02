@@ -3,8 +3,8 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-trade_close::trade_close(const std::string& message) :
-    message(message)
+trade_close::trade_close(std::string_view message) :
+    message(std::string(message))
 { }
 #endif
 

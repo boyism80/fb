@@ -42,7 +42,7 @@ void listener_impl::on_destroy(object& me)
     return;
 }
 
-void listener_impl::on_chat(object& me, const std::string& message, CHAT_TYPE chat_type)
+void listener_impl::on_chat(object& me, std::string_view message, CHAT_TYPE chat_type)
 {
     if (me.is(OBJECT_TYPE::ITEM))
         return;

@@ -5,24 +5,24 @@ namespace fb::protocol::game::response {
 #ifndef BOT
 dialog_menu::dialog_menu(const fb::model::object&        obj,
                          const std::vector<std::string>& menus,
-                         const std::string&              message,
-                         uint32_t                        oid,
-                         fb::game::dialog::interaction   interaction) :
+                         std::string_view                  message,
+                         uint32_t                         oid,
+                         fb::game::dialog::interaction    interaction) :
     portrait(fb::game::portrait_factory::create(obj)),
     menus(menus),
-    message(message),
+    message(std::string(message)),
     oid(oid),
     interaction(interaction)
 { }
 
 dialog_menu::dialog_menu(const fb::game::object&         object,
                          const std::vector<std::string>& menus,
-                         const std::string&              message,
-                         uint32_t                        oid,
-                         fb::game::dialog::interaction   interaction) :
+                         std::string_view                  message,
+                         uint32_t                         oid,
+                         fb::game::dialog::interaction    interaction) :
     portrait(fb::game::portrait_factory::create(object)),
     menus(menus),
-    message(message),
+    message(std::string(message)),
     oid(oid),
     interaction(interaction)
 { }

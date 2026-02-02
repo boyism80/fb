@@ -4,6 +4,7 @@
 #include <thread>
 #include <vector>
 #include <memory>
+#include <string_view>
 #include <boost/asio.hpp>
 #include <fb/console.h>
 #include <fb/config.h>
@@ -33,7 +34,7 @@ inline void display_spawned_bots(const std::vector<std::shared_ptr<fb::bot::bot_
 }
 
 template <fb::bot::test_mode Mode>
-void run_bot_test(const std::string& config_path)
+void run_bot_test(std::string_view config_path)
 {
     if (!fb::init_config(config_path))
     {

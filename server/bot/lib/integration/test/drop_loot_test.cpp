@@ -69,17 +69,17 @@ generator<bot_integration_test::scenario_t> drop_loot_test::on_generate_scenario
     };
 }
 
-bool drop_loot_test::has_item(const std::shared_ptr<game_bot>& bot, const std::string& name)
+bool drop_loot_test::has_item(const std::shared_ptr<game_bot>& bot, std::string_view name)
 {
     return bot->has_item_by_name(name);
 }
 
-uint16_t drop_loot_test::get_item_count(const std::shared_ptr<game_bot>& bot, const std::string& name)
+uint16_t drop_loot_test::get_item_count(const std::shared_ptr<game_bot>& bot, std::string_view name)
 {
     return bot->get_item_count_by_name(name);
 }
 
-uint8_t drop_loot_test::get_item_slot(const std::shared_ptr<game_bot>& bot, const std::string& name)
+uint8_t drop_loot_test::get_item_slot(const std::shared_ptr<game_bot>& bot, std::string_view name)
 {
     return bot->get_item_slot_by_name(name);
 }

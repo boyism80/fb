@@ -51,9 +51,9 @@ std::string quest::param() const
     return this->_param;
 }
 
-void quest::param(const std::string& param)
+void quest::param(std::string_view param)
 {
-    this->_param = param;
+    this->_param = std::string(param);
 }
 
 bool quest::inc_progress(uint32_t value)

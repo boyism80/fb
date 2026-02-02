@@ -2,6 +2,7 @@
 #define __BOT_INTEGRATION_TRADE_TEST_H__
 
 #include <fb/bot/integration/test_case.h>
+#include <string_view>
 
 namespace fb::bot::integration {
 
@@ -33,8 +34,8 @@ private:
 
 private:
     // Helper functions
-    bool     has_item(const std::shared_ptr<game_bot>& bot, const std::string& name);
-    uint16_t get_item_count(const std::shared_ptr<game_bot>& bot, const std::string& name);
+    bool     has_item(const std::shared_ptr<game_bot>& bot, std::string_view name);
+    uint16_t get_item_count(const std::shared_ptr<game_bot>& bot, std::string_view name);
 };
 
 } // namespace fb::bot::integration

@@ -3,14 +3,15 @@
 #include <unordered_map>
 #include <shared_mutex>
 
-fb::model::map* fb::model::__map::name2map(const std::string& name) const
+fb::model::map* fb::model::__map::name2map(std::string_view name) const
 {
     static auto cache       = std::unordered_map<std::string, fb::model::map*>{};
     static auto cache_mutex = std::shared_mutex{};
 
+    auto name_str = std::string(name);
     {
         auto lock = std::shared_lock(cache_mutex);
-        auto it   = cache.find(name);
+        auto it   = cache.find(name_str);
         if (it != cache.end())
             return it->second;
     }
@@ -20,7 +21,7 @@ fb::model::map* fb::model::__map::name2map(const std::string& name) const
         if (v.name == name)
         {
             auto lock   = std::lock_guard(cache_mutex);
-            cache[name] = &v;
+            cache[name_str] = &v;
             return &v;
         }
     }

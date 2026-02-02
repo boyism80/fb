@@ -1,6 +1,7 @@
 #include <fb/game/builtin/object.h>
 #include <fb/game/builtin/character.h>
 #include <fb/game/server.h>
+#include <string_view>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -3396,7 +3397,7 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
                         const std::string&                contents,
                         const std::optional<std::string>& expire_date) -> async::task<void> {
         auto   success = false;
-        auto world = fb::config<uint32_t>("world");
+        auto   world   = fb::config<uint32_t>("world");
         auto&& resp    = co_await server->http.post(
             "internal",
             "/mail/system",

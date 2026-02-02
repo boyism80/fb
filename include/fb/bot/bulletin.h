@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <string_view>
 
 namespace fb::bot {
 
@@ -14,9 +15,9 @@ public:
 
 public:
     bulletin() = default;
-    bulletin(uint16_t id, const std::string& title) :
+    bulletin(uint16_t id, std::string_view title) :
         id(id),
-        title(title)
+        title(std::string(title))
     { }
 
     bulletin(const bulletin& r) :

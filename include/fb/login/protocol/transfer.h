@@ -51,10 +51,9 @@ public:
         this->port = reader.read<uint16_t>();
 
         auto size   = reader.read<uint8_t>();
-        auto buffer = new uint8_t[size];
-        reader.read(buffer, size);
-        this->parameter = fb::stream(buffer, size);
-        delete[] buffer;
+        auto buffer = std::vector<uint8_t>(size);
+        reader.read(buffer.data(), size);
+        this->parameter = fb::stream(buffer.data(), size);
     }
 #endif
 };

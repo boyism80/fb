@@ -36,7 +36,7 @@ public:
     ~queue();
 
 public:
-    bool                            bind(const std::string& exchange, const std::string& route);
+    bool                            bind(std::string_view exchange, std::string_view route);
     const std::string&              name() const;
     const std::string&              route() const;
     const std::string&              consumer_tag() const;

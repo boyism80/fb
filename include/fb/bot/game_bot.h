@@ -10,6 +10,7 @@
 #include <optional>
 #include <fb/bot/integration/dialog_bot.h>
 #include <fb/bot/integration/dialog_ext_bot.h>
+#include <string_view>
 
 namespace fb::bot {
 
@@ -36,8 +37,8 @@ public:
         uint32_t    count = 0;
 
         simple_item() = default;
-        simple_item(const std::string& n, uint32_t c) :
-            name(n),
+        simple_item(std::string_view n, uint32_t c) :
+            name(std::string(n)),
             count(c)
         { }
 
@@ -52,8 +53,8 @@ public:
         uint8_t     type;
 
         simple_spell() = default;
-        simple_spell(const std::string& n, uint8_t t) :
-            name(n),
+        simple_spell(std::string_view n, uint8_t t) :
+            name(std::string(n)),
             type(t)
         { }
     };
@@ -63,9 +64,9 @@ public:
         const uint32_t    oid;
         const std::string name;
 
-        simple_npc(uint32_t o, const std::string& n) :
+        simple_npc(uint32_t o, std::string_view n) :
             oid(o),
-            name(n)
+            name(std::string(n))
         { }
     };
 
@@ -169,11 +170,11 @@ public:
     void set_dead(bool value);
 
     const std::set<std::string>& active_buffs() const;
-    void                         add_buff(const std::string& name);
-    void                         remove_buff(const std::string& name);
-    bool                         has_buff(const std::string& name) const;
+    void                         add_buff(std::string_view name);
+    void                         remove_buff(std::string_view name);
+    bool                         has_buff(std::string_view name) const;
 
-    void                                   update_spell(uint8_t slot, const std::string& name, uint8_t type);
+    void                                   update_spell(uint8_t slot, std::string_view name, uint8_t type);
     void                                   remove_spell(uint8_t slot);
     bool                                   has_spell(uint8_t slot) const;
     const std::map<uint8_t, simple_spell>& spells() const;
@@ -229,21 +230,21 @@ public:
     uint8_t            head_marker() const;
     void               set_head_marker(uint8_t value);
     const std::string& name() const;
-    void               set_name(const std::string& value);
+    void               set_name(std::string_view value);
     const std::string& clan_name() const;
-    void               set_clan_name(const std::string& value);
+    void               set_clan_name(std::string_view value);
     const std::string& clan_title() const;
-    void               set_clan_title(const std::string& value);
+    void               set_clan_title(std::string_view value);
     const std::string& title() const;
-    void               set_title(const std::string& value);
+    void               set_title(std::string_view value);
     const std::string& group_info() const;
-    void               set_group_info(const std::string& value);
+    void               set_group_info(std::string_view value);
     uint8_t            group_option() const;
     void               set_group_option(uint8_t value);
     uint32_t           remained_exp() const;
     void               set_remained_exp(uint32_t value);
     async::task<void>  move(DIRECTION direction, int step = 1, const fb::model::timespan& delay = 500ms);
-    async::task<void>  map_move(const std::string& map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
+    async::task<void>  map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
     async::task<void>  change_level(uint8_t level, std::chrono::milliseconds timeout);
     async::task<void>  change_stats(uint8_t str, uint8_t dex, uint8_t intelligence, std::chrono::milliseconds timeout);
     async::task<void>  change_str(uint8_t str, std::chrono::milliseconds timeout);
@@ -265,55 +266,55 @@ public:
     async::task<void> pattern_bulletin_sections();
 
 public:
-    void                                  update_item(uint8_t slot, const std::string& name, uint32_t count);
+    void                                  update_item(uint8_t slot, std::string_view name, uint32_t count);
     void                                  remove_item(uint8_t slot);
     std::optional<simple_item>            get_item(uint8_t slot) const;
     std::optional<simple_spell>           get_spell(uint8_t slot) const;
     bool                                  has_item(uint8_t slot) const;
     const std::map<uint8_t, simple_item>& items() const;
-    bool                                  has_item_by_name(const std::string& name) const;
-    uint16_t                              get_item_count_by_name(const std::string& name) const;
-    uint8_t                               get_item_slot_by_name(const std::string& name) const;
-    uint8_t                               get_spell_slot_by_name(const std::string& name) const;
+    bool                                  has_item_by_name(std::string_view name) const;
+    uint16_t                              get_item_count_by_name(std::string_view name) const;
+    uint8_t                               get_item_slot_by_name(std::string_view name) const;
+    uint8_t                               get_spell_slot_by_name(std::string_view name) const;
     void                                  remove_buffs();
-    void                                  chat(const std::string& message);
-    async::task<void> create_item(const std::string& item_name, uint32_t count, std::chrono::milliseconds timeout);
-    async::task<simple_npc> create_npc(const std::string& npc_name, std::chrono::milliseconds timeout);
+    void                                  chat(std::string_view message);
+    async::task<void> create_item(std::string_view item_name, uint32_t count, std::chrono::milliseconds timeout);
+    async::task<simple_npc> create_npc(std::string_view npc_name, std::chrono::milliseconds timeout);
     async::task<void>       change_money(uint32_t amount, std::chrono::milliseconds timeout);
     async::task<void>       drop_item(uint8_t index, bool all, std::chrono::milliseconds timeout);
     async::task<void>       drop_money(uint32_t amount, std::chrono::milliseconds timeout);
     async::task<bool>       equip(uint8_t slot, std::chrono::milliseconds timeout);
     async::task<bool>       unequip(EQUIPMENT_PARTS parts, std::chrono::milliseconds timeout);
     async::task<void>       sleep(std::chrono::milliseconds timeout);
-    async::task<void>       change_class(const std::string& class_name, std::chrono::milliseconds timeout);
+    async::task<void>       change_class(std::string_view class_name, std::chrono::milliseconds timeout);
     async::task<spawned_monster_info>
     spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot>                               bot,
-                                 const std::string&                                               monster_name,
+                                 std::string_view                                                  monster_name,
                                  uint16_t                                                         x,
                                  uint16_t                                                         y,
                                  std::function<bool(const fb::protocol::game::response::update&)> validator,
                                  std::chrono::milliseconds                                        timeout);
 
     async::task<spawned_monster_info>
-    spawn_monster(const std::string& monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
+    spawn_monster(std::string_view monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
 
-    async::task<void> spawn_monsters_bulk(const std::string&        monster_name,
+    async::task<void> spawn_monsters_bulk(std::string_view        monster_name,
                                           uint8_t                   range,
                                           std::chrono::milliseconds timeout);
 
     async::task<std::vector<spawned_monster_info>>
     spawn_monsters_relative_with_validator(std::shared_ptr<fb::bot::game_bot>      bot,
-                                           const std::string&                      monster_name,
+                                           std::string_view                        monster_name,
                                            const std::vector<std::pair<int, int>>& relative_positions,
                                            std::function<bool(const fb::protocol::game::response::update&)> validator,
                                            std::chrono::milliseconds                                        timeout);
 
     async::task<std::vector<spawned_monster_info>>
-    spawn_monsters_relative(const std::string&                      monster_name,
+    spawn_monsters_relative(std::string_view                        monster_name,
                             const std::vector<std::pair<int, int>>& relative_positions,
                             std::chrono::milliseconds               timeout);
 
-    async::task<spawned_monster_info> spawn_monster_relative(const std::string&        monster_name,
+    async::task<spawned_monster_info> spawn_monster_relative(std::string_view        monster_name,
                                                              int                       relative_x,
                                                              int                       relative_y,
                                                              std::chrono::milliseconds timeout);
@@ -326,12 +327,12 @@ public:
                                       std::optional<int>        current_mp,
                                       std::chrono::milliseconds timeout);
 
-    async::task<uint8_t> learn_spell(const std::string& spell_name, std::chrono::milliseconds timeout);
+    async::task<uint8_t> learn_spell(std::string_view spell_name, std::chrono::milliseconds timeout);
     async::task<size_t>  learn_spells(const std::vector<std::string>& spell_names, std::chrono::milliseconds timeout);
     async::task<void>    clear_all_spells(std::chrono::milliseconds timeout);
     async::task<void>    clear_all_drop_items(std::chrono::milliseconds timeout);
     async::task<void>    clear_inventory(std::chrono::milliseconds timeout);
-    async::task<void>    fill_inventory(const std::string& name, std::chrono::milliseconds timeout);
+    async::task<void>    fill_inventory(std::string_view name, std::chrono::milliseconds timeout);
     async::task<void>    move_bot_back_to_position(const fb::model::point<uint16_t>& original_position,
                                                    std::chrono::milliseconds         interval,
                                                    std::chrono::milliseconds         timeout);
@@ -352,7 +353,7 @@ public:
     async::task<bool> kick_from_clan(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
     async::task<bool> leave_clan(std::chrono::milliseconds timeout);
     async::task<bool> destroy_clan(std::chrono::milliseconds timeout);
-    async::task<bool> change_clan_title(const std::string& title, std::chrono::milliseconds timeout);
+    async::task<bool> change_clan_title(std::string_view title, std::chrono::milliseconds timeout);
     async::task<std::shared_ptr<game_bot>> transfer(const fb::protocol::header& protocol,
                                                     const fb::model::timespan&  timeout = 15s,
                                                     bool                        encrypt = true,

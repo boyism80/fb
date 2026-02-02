@@ -4,13 +4,13 @@ namespace fb::protocol::game::response {
 
 #ifndef BOT
 dialog::dialog(const fb::model::object&      object,
-               const std::string&            message,
+               std::string_view               message,
                bool                          button_prev,
                bool                          button_next,
                uint32_t                      oid,
                fb::game::dialog::interaction interaction) :
     portrait(fb::game::portrait_factory::create(object)),
-    message(message),
+    message(std::string(message)),
     button_prev(button_prev),
     button_next(button_next),
     oid(oid),
@@ -18,13 +18,13 @@ dialog::dialog(const fb::model::object&      object,
 { }
 
 dialog::dialog(const fb::game::object&       object,
-               const std::string&            message,
+               std::string_view               message,
                bool                          button_prev,
                bool                          button_next,
                uint32_t                      oid,
                fb::game::dialog::interaction interaction) :
     portrait(fb::game::portrait_factory::create(object)),
-    message(message),
+    message(std::string(message)),
     button_prev(button_prev),
     button_next(button_next),
     oid(oid),

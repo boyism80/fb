@@ -3,6 +3,7 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <string_view>
 
 namespace fb::protocol::login::request {
 
@@ -26,7 +27,7 @@ public:
 #ifndef BOT
     create() = default;
 #else
-    create(const std::string& id, const std::string& pw);
+    create(std::string_view id, std::string_view pw);
 #endif
 
 public:

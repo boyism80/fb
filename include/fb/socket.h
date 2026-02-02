@@ -4,6 +4,7 @@
 #include <exception>
 #include <unordered_map>
 #include <deque>
+#include <mutex>
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/system/error_code.hpp>
@@ -91,13 +92,14 @@ public:
     };
 
 private:
-    mutable uint32_t    _fd = 0xFFFFFFFF;
-    fb::async_executor& _executor;
-    fb::encryption      _encryption;
-    handle_read_event   _handle_received;
-    handler_event       _handle_closed;
-    fb::stream          _stream;
-    fb::model::datetime _last_packet_time;
+    mutable std::once_flag _fd_once;
+    mutable uint32_t       _fd = 0xFFFFFFFF;
+    fb::async_executor&    _executor;
+    fb::encryption         _encryption;
+    handle_read_event      _handle_received;
+    handler_event          _handle_closed;
+    fb::stream             _stream;
+    fb::model::datetime    _last_packet_time;
 
 protected:
     std::array<char, MAX_BUFFER_SIZE> _buffer;
@@ -296,10 +298,9 @@ public:
 public:
     uint32_t fd() const
     {
-        if (this->_fd != 0xFFFFFFFF)
-            return this->_fd;
-
-        this->_fd = (uint32_t)const_cast<fb::socket<T>*>(this)->native_handle();
+        std::call_once(this->_fd_once, [this]() {
+            this->_fd = (uint32_t)const_cast<fb::socket<T>*>(this)->native_handle();
+        });
         return this->_fd;
     }
 

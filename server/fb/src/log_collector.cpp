@@ -11,15 +11,15 @@
 
 using namespace fb;
 
-log_collector::log_collector(const std::string& hostname,
+log_collector::log_collector(std::string_view hostname,
                              uint16_t           port,
-                             const std::string& uid,
-                             const std::string& pwd,
-                             const std::string& server_id,
-                             const std::string& server_name,
+                             std::string_view uid,
+                             std::string_view pwd,
+                             std::string_view server_id,
+                             std::string_view server_name,
                              uint32_t           world) :
-    _server_id(server_id),
-    _server_name(server_name),
+    _server_id(std::string(server_id)),
+    _server_name(std::string(server_name)),
     _world(world)
 {
     this->_amqp = std::make_unique<fb::amqp::socket>();
@@ -38,13 +38,13 @@ log_collector::~log_collector()
     stop();
 }
 
-void log_collector::write(const std::string& event_type, const Json::Value& data)
+void log_collector::write(std::string_view event_type, const Json::Value& data)
 {
     try
     {
         Json::Value entry;
         entry["timestamp"]    = fb::model::datetime().to_string();
-        entry["event"]        = event_type;
+        entry["event"]        = std::string(event_type);
         entry["server_id"]    = this->_server_id;
         entry["server_name"]  = this->_server_name;
         entry["data"]         = data;

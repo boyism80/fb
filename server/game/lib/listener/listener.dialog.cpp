@@ -6,7 +6,7 @@ namespace game_resp = fb::protocol::game::response;
 
 void listener_impl::on_dialog(character&               me,
                               const fb::model::object& object,
-                              const std::string&       message,
+                              std::string_view         message,
                               bool                     button_prev,
                               bool                     button_next,
                               uint32_t                 oid)
@@ -16,7 +16,7 @@ void listener_impl::on_dialog(character&               me,
 
 void listener_impl::on_dialog(character&              me,
                               const fb::game::object& obj,
-                              const std::string&      message,
+                              std::string_view        message,
                               bool                    button_prev,
                               bool                    button_next,
                               uint32_t                oid)
@@ -26,7 +26,7 @@ void listener_impl::on_dialog(character&              me,
 
 void listener_impl::on_dialog(character&                      me,
                               const fb::model::object&        obj,
-                              const std::string&              message,
+                              std::string_view                message,
                               const std::vector<std::string>& menus,
                               uint32_t                        oid)
 {
@@ -35,7 +35,7 @@ void listener_impl::on_dialog(character&                      me,
 
 void listener_impl::on_dialog(character&                      me,
                               const fb::game::object&         obj,
-                              const std::string&              message,
+                              std::string_view                message,
                               const std::vector<std::string>& menus,
                               uint32_t                        oid)
 {
@@ -44,27 +44,27 @@ void listener_impl::on_dialog(character&                      me,
 
 void listener_impl::on_dialog(character&                      me,
                               const fb::model::object&        obj,
-                              const std::string&              message,
+                              std::string_view                message,
                               const std::vector<std::string>& menus,
                               bool                            button_prev,
                               uint32_t                        oid)
 {
-    me.send(game_resp::dialog_list(obj, menus, message, button_prev, oid));
+    me.send(game_resp::dialog_list(obj, menus, std::string(message), button_prev, oid));
 }
 
 void listener_impl::on_dialog(character&                      me,
                               const fb::game::object&         obj,
-                              const std::string&              message,
+                              std::string_view                message,
                               const std::vector<std::string>& menus,
                               bool                            button_prev,
                               uint32_t                        oid)
 {
-    me.send(game_resp::dialog_list(obj, menus, message, button_prev, oid));
+    me.send(game_resp::dialog_list(obj, menus, std::string(message), button_prev, oid));
 }
 
 void listener_impl::on_dialog(character&                            me,
                               std::unique_ptr<fb::game::portrait>&& portrait,
-                              const std::string&                    message,
+                              std::string_view                      message,
                               const std::vector<std::string>&       menus,
                               bool                                  button_prev,
                               uint32_t                              oid)
@@ -74,7 +74,7 @@ void listener_impl::on_dialog(character&                            me,
 
 void listener_impl::on_dialog(character&                  me,
                               const fb::model::object&    obj,
-                              const std::string&          message,
+                              std::string_view            message,
                               const std::vector<uint8_t>& item_slots,
                               uint32_t                    oid)
 {
@@ -83,7 +83,7 @@ void listener_impl::on_dialog(character&                  me,
 
 void listener_impl::on_dialog(character&                  me,
                               const fb::game::object&     obj,
-                              const std::string&          message,
+                              std::string_view            message,
                               const std::vector<uint8_t>& item_slots,
                               uint32_t                    oid)
 {
@@ -92,7 +92,7 @@ void listener_impl::on_dialog(character&                  me,
 
 void listener_impl::on_dialog(character&                me,
                               const fb::model::object&  obj,
-                              const std::string&        message,
+                              std::string_view          message,
                               const dialog::item_pairs& pairs,
                               uint32_t                  oid,
                               uint16_t                  pursuit)
@@ -102,7 +102,7 @@ void listener_impl::on_dialog(character&                me,
 
 void listener_impl::on_dialog(character&                me,
                               const fb::game::object&   obj,
-                              const std::string&        message,
+                              std::string_view          message,
                               const dialog::item_pairs& pairs,
                               uint32_t                  oid,
                               uint16_t                  pursuit)
@@ -110,21 +110,21 @@ void listener_impl::on_dialog(character&                me,
     me.send(game_resp::dialog_item(obj, pairs, message, oid, pursuit));
 }
 
-void listener_impl::on_dialog(character& me, const fb::model::object& obj, const std::string& message, uint32_t oid)
+void listener_impl::on_dialog(character& me, const fb::model::object& obj, std::string_view message, uint32_t oid)
 {
     me.send(game_resp::dialog_input(obj, message, oid));
 }
 
-void listener_impl::on_dialog(character& me, const fb::game::object& obj, const std::string& message, uint32_t oid)
+void listener_impl::on_dialog(character& me, const fb::game::object& obj, std::string_view message, uint32_t oid)
 {
     me.send(game_resp::dialog_input(obj, message, oid));
 }
 
 void listener_impl::on_dialog(character&               me,
                               const fb::model::object& obj,
-                              const std::string&       message,
-                              const std::string&       top,
-                              const std::string&       bottom,
+                              std::string_view         message,
+                              std::string_view         top,
+                              std::string_view         bottom,
                               int                      maxlen,
                               bool                     prev,
                               uint32_t                 oid)
@@ -134,9 +134,9 @@ void listener_impl::on_dialog(character&               me,
 
 void listener_impl::on_dialog(character&              me,
                               const fb::game::object& obj,
-                              const std::string&      message,
-                              const std::string&      top,
-                              const std::string&      bottom,
+                              std::string_view        message,
+                              std::string_view        top,
+                              std::string_view        bottom,
                               int                     maxlen,
                               bool                    prev,
                               uint32_t                oid)

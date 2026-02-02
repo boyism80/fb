@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <unordered_map>
 #include <string>
+#include <string_view>
 #include <memory>
 
 namespace fb {
@@ -41,9 +42,9 @@ public:
         return (uint64_t)k % SHARD_MODULAR_SIZE;
     }
 
-    uint32_t mod(const std::string& name) const
+    uint32_t mod(std::string_view name) const
     {
-        auto k = std::hash<std::string>{}(name);
+        auto k = std::hash<std::string_view>{}(name);
         return mod(k);
     }
 
@@ -53,7 +54,7 @@ public:
         return this->_data.at(this->mod(hash)).get();
     }
 
-    T* operator[] (const std::string& val) const
+    T* operator[] (std::string_view val) const
     {
         return this->_data.at(this->mod(val)).get();
     }

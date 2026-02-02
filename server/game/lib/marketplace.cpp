@@ -181,12 +181,12 @@ async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count
     }
 }
 
-async::task<bool> marketplace::cancel(const std::string& id)
+async::task<bool> marketplace::cancel(std::string_view id)
 {
     this->_owner.assert_thread();
 
     // Copy id to avoid coroutine lifetime issues
-    auto id_copy = id;
+    auto id_copy = std::string(id);
 
     // Log before API call
     auto log_data_before            = Json::Value();
@@ -223,12 +223,12 @@ async::task<bool> marketplace::cancel(const std::string& id)
     co_return true;
 }
 
-async::task<marketplace::listing> marketplace::purchase(const std::string& listing_id, uint16_t purchase_count)
+async::task<marketplace::listing> marketplace::purchase(std::string_view listing_id, uint16_t purchase_count)
 {
     this->_owner.assert_thread();
 
     // Copy id to avoid coroutine lifetime issues
-    auto listing_id_copy = listing_id;
+    auto listing_id_copy = std::string(listing_id);
 
     // Generate UUID for purchase_id
     auto purchase_id = generate_uuid();

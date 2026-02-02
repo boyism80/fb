@@ -6,6 +6,7 @@
 #ifndef BOT
 #include <fb/game/object.h>
 #endif
+#include <string_view>
 
 namespace fb::protocol::game::request {
 
@@ -29,7 +30,7 @@ public:
 #ifndef BOT
     chat() = default;
 #else
-    chat(bool shout, const std::string& message);
+    chat(bool shout, std::string_view message);
 #endif
 
 public:
@@ -64,7 +65,7 @@ public:
 
 public:
 #ifndef BOT
-    chat(const fb::game::object& me, const std::string& text, CHAT_TYPE type);
+    chat(const fb::game::object& me, std::string_view text, CHAT_TYPE type);
 #else
     chat() = default;
 #endif

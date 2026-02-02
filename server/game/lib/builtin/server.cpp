@@ -2,6 +2,7 @@
 #include <boost/xpressive/xpressive.hpp>
 #include <unordered_map>
 #include <regex>
+#include <string_view>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -793,8 +794,8 @@ int builtin::server::builtin_ban(lua_State* L)
 
     static auto fn = [](fb::game::server*              server,
                         fb::lua::context*              lua,
-                        const std::string&             name,
-                        const std::string&             reason,
+                        std::string_view              name,
+                        std::string_view              reason,
                         const std::optional<uint32_t>& days) -> async::task<void> {
         auto   success = false;
         auto   error   = std::string{};
@@ -841,7 +842,7 @@ int builtin::server::builtin_unban(lua_State* L)
 
     auto name = lua->tostring(2);
 
-    static auto fn = [](fb::game::server* server, fb::lua::context* lua, const std::string& name) -> async::task<void> {
+    static auto fn = [](fb::game::server* server, fb::lua::context* lua, std::string_view name) -> async::task<void> {
         auto   success = false;
         auto   error   = std::string{};
         auto&& resp    = co_await server->unban(name);

@@ -3,6 +3,7 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <string_view>
 
 namespace fb::protocol::game::response {
 
@@ -26,7 +27,7 @@ public:
 
 public:
 #ifndef BOT
-    bulletin_message(const std::string& text, bool success, bool unknown = false);
+    bulletin_message(std::string_view text, bool success, bool unknown = false);
 #else
     bulletin_message() = default;
 #endif

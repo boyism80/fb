@@ -16,6 +16,8 @@
 #include <fb/lua.h>
 #include <fb/locker.h>
 #include <boost/stacktrace.hpp>
+#include <memory>
+#include <functional>
 
 namespace fb {
 
@@ -40,9 +42,9 @@ private:
     std::thread       _thread;
 
 private:
-    std::unordered_set<const void*> _ptrs;
-    timer_list                      _timers;
-    void*                           _data = nullptr;
+    std::unordered_set<const void*>                   _ptrs;
+    timer_list                                        _timers;
+    std::unique_ptr<void, std::function<void(void*)>> _data;
 
 private:
     fb::locker<std::queue<std::function<void()>>> _queue;
@@ -64,16 +66,22 @@ public:
     uint8_t                    index() const;
     void                       join();
     void                       exit();
-    template <typename T> void data(T* value)
+    template <typename T> void data(std::unique_ptr<T> value)
     {
         this->assert_exec();
-        this->_data = static_cast<void*>(value);
+        auto deleter = [](void* ptr) {
+            delete static_cast<T*>(ptr);
+        };
+        auto* raw   = value.release();
+        this->_data = std::unique_ptr<void, std::function<void(void*)>>(raw, deleter);
     }
 
     template <typename ReturnType> ReturnType* data() const
     {
         this->assert_exec();
-        return static_cast<ReturnType*>(this->_data);
+        if (this->_data == nullptr)
+            return nullptr;
+        return static_cast<ReturnType*>(this->_data.get());
     }
 
 public:

@@ -26,12 +26,12 @@ private:
     std::thread                       _worker;
 
 public:
-    log_collector(const std::string& hostname,
+    log_collector(std::string_view hostname,
                   uint16_t           port,
-                  const std::string& uid,
-                  const std::string& pwd,
-                  const std::string& server_id,
-                  const std::string& server_name,
+                  std::string_view uid,
+                  std::string_view pwd,
+                  std::string_view server_id,
+                  std::string_view server_name,
                   uint32_t           world);
     ~log_collector();
 
@@ -41,7 +41,7 @@ public:
     log_collector& operator= (log_collector&&)      = delete;
 
 public:
-    void write(const std::string& event_type, const Json::Value& data);
+    void write(std::string_view event_type, const Json::Value& data);
 
     /**
      * Requests shutdown and blocks until the worker thread has flushed all

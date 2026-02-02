@@ -7,12 +7,12 @@
 #define DECLARE_BLOCKED_NAME_CONTAINER_EXTENSION \
                                                  \
 public:                                          \
-    bool contains_substring(const std::string& name) const;
+    bool contains_substring(std::string_view name) const;
 
-#define DECLARE_BLOCKED_WORD_CONTAINER_EXTENSION \
-                                                 \
-public:                                          \
-    bool contains_substring(const std::string& name) const; \
-    std::string filter(const std::string& message) const;
+#define DECLARE_BLOCKED_WORD_CONTAINER_EXTENSION                 \
+                                                                 \
+public:                                                          \
+    bool        contains_substring(std::string_view name) const; \
+    std::string filter(std::string_view message) const;
 
 #endif

@@ -27,9 +27,6 @@ public:
     using const_iterator = unique_thread_container::const_iterator;
 
 public:
-    std::function<void(void*)> deletor;
-
-public:
     thread_container(fb::async_executor& executor, uint32_t count);
     thread_container(const thread_container&)             = delete;
     thread_container(thread_container&&)                  = delete;

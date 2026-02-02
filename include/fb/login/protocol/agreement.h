@@ -3,6 +3,7 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <string_view>
 
 namespace fb::protocol::login::request {
 
@@ -58,7 +59,7 @@ public:
 #ifdef BOT
     agreement() = default;
 #else
-    agreement(const std::string& contents);
+    agreement(std::string_view contents);
 #endif
 
 public:

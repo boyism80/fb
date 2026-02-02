@@ -2,6 +2,7 @@
 #define __CONFIG_H__
 
 #include <string>
+#include <string_view>
 #include <iostream>
 #include <memory>
 #include <fstream>
@@ -28,6 +29,11 @@ template <> struct config_value_type<Json::Value>
 template <> struct config_value_type<char*>
 {
     typedef const char* type;
+};
+
+template <> struct config_value_type<std::string_view>
+{
+    typedef std::string_view type;
 };
 
 template <typename T>
@@ -120,12 +126,22 @@ typename config_value_type<std::string>::type json_value<std::string>(const Json
     return value.asString();
 }
 
-inline std::string& config_path_storage(const std::string& path = "", bool set_mode = false)
+template <>
+typename config_value_type<std::string_view>::type json_value<std::string_view>(const Json::Value& value)
+{
+    // Json::Value stores string internally, asCString() returns pointer to internal storage
+    // The static ist in config() ensures the Json::Value lifetime
+    auto cstr = value.asCString();
+    auto str  = value.asString();
+    return std::string_view(cstr, str.size());
+}
+
+inline std::string& config_path_storage(std::string_view path = "", bool set_mode = false)
 {
     static std::string stored_path;
 
     if (set_mode && !path.empty())
-        stored_path = path;
+        stored_path = std::string(path);
 
     return stored_path;
 }
@@ -135,12 +151,12 @@ inline std::string get_config_path()
     return config_path_storage();
 }
 
-inline void set_config_path(const std::string& path)
+inline void set_config_path(std::string_view path)
 {
     config_path_storage(path, true);
 }
 
-inline bool init_config(const std::string& config_path)
+inline bool init_config(std::string_view config_path)
 {
     try
     {
@@ -161,7 +177,7 @@ inline bool init_config(const std::string& config_path)
 }
 
 template <typename T = Json::Value>
-inline static typename config_value_type<T>::type config(const std::string& k)
+inline static typename config_value_type<T>::type config(std::string_view k)
 {
     static std::once_flag flag;
     static Json::Value    ist;
@@ -194,7 +210,7 @@ inline static typename config_value_type<T>::type config(const std::string& k)
     });
 
     const auto* node    = &ist;
-    auto        sstream = std::istringstream{k};
+    auto        sstream = std::istringstream{std::string(k)};
     auto        buffer  = std::string{};
     while (std::getline(sstream, buffer, ':'))
     {

@@ -3,6 +3,7 @@
 
 #include <fb/async_executor.h>
 #include <fb/concurrent.h>
+#include <string_view>
 
 namespace fb {
 
@@ -40,7 +41,7 @@ private:
     [[nodiscard]] async::task<T> on_locked(std::shared_ptr<async::task_completion_source<T>> promise,
                                            const async_wait_func<T>&                         fn,
                                            fb::dead_lock_detector&                           current,
-                                           const std::string                                 key,
+                                           std::string_view                                  key,
                                            std::mutex&                                       mutex)
     {
         {
@@ -67,7 +68,7 @@ private:
     }
 
     template <typename T>
-    T on_locked(const sync_wait_func<T>& fn, fb::dead_lock_detector& current, const std::string key, std::mutex& mutex)
+    T on_locked(const sync_wait_func<T>& fn, fb::dead_lock_detector& current, std::string_view key, std::mutex& mutex)
     {
         auto _ = std::lock_guard(mutex);
 
@@ -77,7 +78,7 @@ private:
     }
 
     template <typename T>
-    T on_locked(const sync_peek_func<T>& fn, const std::string key, std::mutex& mutex)
+    T on_locked(const sync_peek_func<T>& fn, std::string_view key, std::mutex& mutex)
     {
         if (mutex.try_lock())
         {
@@ -100,22 +101,23 @@ private:
     }
 
     template <typename T>
-    async::task<bool> lock(const std::string&                                key,
+    async::task<bool> lock(std::string_view                                key,
                            std::shared_ptr<async::task_completion_source<T>> promise,
                            const async_wait_func<T>&                         fn,
                            fb::thread*                                       thread,
                            fb::dead_lock_detector&                           trans)
     {
+        auto key_str = std::string(key);
         std::mutex* mutex = nullptr;
         {
             auto _ = std::lock_guard(this->_mutex);
-            if (this->_pool.contains(key) == false)
-                this->_pool.insert({key, std::make_unique<std::mutex>()});
+            if (this->_pool.contains(key_str) == false)
+                this->_pool.insert({key_str, std::make_unique<std::mutex>()});
 
-            mutex = this->_pool[key].get();
+            mutex = this->_pool[key_str].get();
         }
 
-        auto& current = static_cast<fb::mst<std::string>&>(trans).add<fb::dead_lock_detector>(key, &trans);
+        auto& current = static_cast<fb::mst<std::string>&>(trans).add<fb::dead_lock_detector>(key_str, &trans);
         try
         {
             concurrent::assert_dead_lock(current);
@@ -128,81 +130,84 @@ private:
 
         if (thread != nullptr)
         {
-            thread->dispatch([this, promise, &fn, &current, key, mutex](auto& thread) mutable -> async::task<void> {
-                co_await this->on_locked(promise, fn, current, key, *mutex);
+            thread->dispatch([this, promise, &fn, &current, key_str, mutex](auto& thread) mutable -> async::task<void> {
+                co_await this->on_locked(promise, fn, current, key_str, *mutex);
             });
         }
         else
         {
-            co_await this->on_locked(promise, fn, current, key, *mutex);
+            co_await this->on_locked(promise, fn, current, key_str, *mutex);
         }
 
         co_return true;
     }
 
     template <typename T>
-    void try_lock(const std::string&                                key,
+    void try_lock(std::string_view                                key,
                   std::shared_ptr<async::task_completion_source<T>> promise,
                   const async_peek_func<T>&                         fn,
                   fb::thread*                                       thread)
     {
+        auto key_str = std::string(key);
         std::mutex* mutex = nullptr;
         {
             auto _ = std::lock_guard(this->_mutex);
-            if (this->_pool.contains(key) == false)
-                this->_pool.insert({key, std::make_unique<std::mutex>()});
+            if (this->_pool.contains(key_str) == false)
+                this->_pool.insert({key_str, std::make_unique<std::mutex>()});
 
-            mutex = this->_pool[key].get();
+            mutex = this->_pool[key_str].get();
         }
 
         if (thread != nullptr)
         {
-            thread->dispatch([this, promise, &fn, key, mutex]() mutable {
-                this->on_locked(promise, fn, key, *mutex);
+            thread->dispatch([this, promise, &fn, key_str, mutex]() mutable {
+                this->on_locked(promise, fn, key_str, *mutex);
             });
         }
         else
         {
-            this->on_locked(promise, fn, key, *mutex);
+            this->on_locked(promise, fn, key_str, *mutex);
         }
     }
 
     template <typename T>
-    T lock(const std::string& key, const sync_wait_func<T>& fn, fb::dead_lock_detector& trans)
+    T lock(std::string_view key, const sync_wait_func<T>& fn, fb::dead_lock_detector& trans)
     {
+        auto key_str = std::string(key);
         std::mutex* mutex = nullptr;
         {
             auto _ = std::lock_guard(this->_mutex);
-            if (this->_pool.contains(key) == false)
-                this->_pool.insert({key, std::make_unique<std::mutex>()});
+            if (this->_pool.contains(key_str) == false)
+                this->_pool.insert({key_str, std::make_unique<std::mutex>()});
 
-            mutex = this->_pool[key].get();
+            mutex = this->_pool[key_str].get();
         }
 
-        auto& current = static_cast<fb::mst<std::string>&>(trans).add<fb::dead_lock_detector>(key, &trans);
+        auto& current = static_cast<fb::mst<std::string>&>(trans).add<fb::dead_lock_detector>(key_str, &trans);
         concurrent::assert_dead_lock(current);
 
-        return this->on_locked(fn, current, key, *mutex);
+        return this->on_locked(fn, current, key_str, *mutex);
     }
 
     template <typename T>
-    T try_lock(const std::string& key, const sync_peek_func<T>& fn)
+    T try_lock(std::string_view key, const sync_peek_func<T>& fn)
     {
+        auto key_str = std::string(key);
         std::mutex* mutex = nullptr;
         {
             auto _ = std::lock_guard(this->_mutex);
-            if (this->_pool.contains(key) == false)
-                this->_pool.insert({key, std::make_unique<std::mutex>()});
+            if (this->_pool.contains(key_str) == false)
+                this->_pool.insert({key_str, std::make_unique<std::mutex>()});
 
-            mutex = this->_pool[key].get();
+            mutex = this->_pool[key_str].get();
         }
 
-        return this->on_locked(fn, key, *mutex);
+        return this->on_locked(fn, key_str, *mutex);
     }
 
 public:
     template <typename T>
-    [[nodiscard]] async::task<T> sync(const std::string&        key,
+    [[nodiscard]] async::task<T> sync(std::string_view        key,
                                       const async_wait_func<T>& fn,
                                       fb::dead_lock_detector&   trans)
     {
@@ -214,7 +219,7 @@ public:
     }
 
     template <typename T>
-    [[nodiscard]] async::task<T> sync(const std::string& key, const async_wait_func<T>& fn)
+    [[nodiscard]] async::task<T> sync(std::string_view key, const async_wait_func<T>& fn)
     {
         if constexpr (std::is_same_v<T, void>)
         {
@@ -226,19 +231,19 @@ public:
         }
     }
     template <typename T>
-    T sync(const std::string& key, const sync_wait_func<T>& fn, fb::dead_lock_detector& trans)
+    T sync(std::string_view key, const sync_wait_func<T>& fn, fb::dead_lock_detector& trans)
     {
         return this->lock(key, fn, trans);
     }
 
     template <typename T>
-    T sync(const std::string& key, const sync_wait_func<T>& fn)
+    T sync(std::string_view key, const sync_wait_func<T>& fn)
     {
         return this->sync(key, fn, this->root);
     }
 
     template <typename T>
-    T try_sync(const std::string& key, const async_peek_func<T>& fn)
+    T try_sync(std::string_view key, const async_peek_func<T>& fn)
     {
         return async::task_completion_source<T>([this, key, &fn](auto& promise) mutable {
             auto thread = this->_executor.threads.current();

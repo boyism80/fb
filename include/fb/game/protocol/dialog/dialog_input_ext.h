@@ -6,6 +6,7 @@
 #ifndef BOT
 #include <fb/game/dialog.h>
 #endif
+#include <string_view>
 
 namespace fb::protocol::game::response {
 
@@ -44,21 +45,21 @@ public:
 public:
 #ifndef BOT
     dialog_input_ext(const fb::model::object&      obj,
-                     const std::string&            message,
-                     const std::string&            top,
-                     const std::string&            bottom,
-                     int                           maxlen      = 0xFF,
-                     bool                          button_prev = false,
-                     uint32_t                      oid         = 0xFFFFFFFD,
-                     fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX);
+                     std::string_view                message,
+                     std::string_view                top,
+                     std::string_view                bottom,
+                     int                            maxlen      = 0xFF,
+                     bool                           button_prev = false,
+                     uint32_t                       oid         = 0xFFFFFFFD,
+                     fb::game::dialog::interaction  interaction = fb::game::dialog::interaction::INPUT_EX);
     dialog_input_ext(const fb::game::object&       object,
-                     const std::string&            message,
-                     const std::string&            top,
-                     const std::string&            bottom,
-                     int                           maxlen      = 0xFF,
-                     bool                          button_prev = false,
-                     uint32_t                      oid         = 0xFFFFFFFD,
-                     fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX);
+                     std::string_view                message,
+                     std::string_view                top,
+                     std::string_view                bottom,
+                     int                            maxlen      = 0xFF,
+                     bool                           button_prev = false,
+                     uint32_t                       oid         = 0xFFFFFFFD,
+                     fb::game::dialog::interaction  interaction = fb::game::dialog::interaction::INPUT_EX);
 #else
     dialog_input_ext() = default;
 #endif

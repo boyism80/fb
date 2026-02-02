@@ -3,6 +3,7 @@
 
 #include <fb/game/character.h>
 #include <fb/game/clan.member.h>
+#include <string_view>
 
 namespace fb::game {
 
@@ -28,7 +29,7 @@ private:
 public:
     clan(server&                           server,
          uint32_t                          id,
-         const std::string&                name,
+         std::string_view                  name,
          const std::optional<std::string>& title,
          const member_map&                 members);
     clan(const clan&) = delete;
@@ -37,16 +38,18 @@ public:
 
 public:
     // clang-format off
-    void                              update(const std::string& name, const std::optional<std::string>& title, const member_map& members);
+    void                              update(std::string_view name, const std::optional<std::string>& title, const member_map& members);
     uint32_t                          id() const;
     const std::string&                name() const;
     const std::optional<std::string>& title() const;
     void                              title(const std::optional<std::string>& title);
     const member_map&                 members() const;
-    clan_member*                      member(const std::string& name);
+    clan_member*                      member(std::string_view name);
+    const clan_member*                member(std::string_view name) const;
+    bool                              contains(std::string_view name) const;
     void                              join(const clan_member& member);
-    void                              leave(const std::string& member);
-    void                              change_role(const std::string& member_name, CLAN_ROLE new_role);
+    void                              leave(std::string_view member);
+    void                              change_role(std::string_view member_name, CLAN_ROLE new_role);
     const character_map&              characters() const;
     void                              attach(character_weak_ptr ch);
     void                              detach(character_weak_ptr ch);

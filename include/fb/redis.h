@@ -3,6 +3,7 @@
 
 #include <hiredis/hiredis.h>
 #include <vector>
+#include <string_view>
 #include <fb/logger.h>
 
 namespace fb {
@@ -124,7 +125,7 @@ private:
     }
 
 public:
-    template <typename T> T command(const std::string& cmd)
+    template <typename T> T command(std::string_view cmd)
     {
         auto context = this->_pool.get();
         if (context == nullptr)
@@ -132,7 +133,8 @@ public:
 
         try
         {
-            auto reply = (redisReply*)redisCommand(context, cmd.c_str());
+            auto cmd_str = std::string(cmd);
+            auto reply   = (redisReply*)redisCommand(context, cmd_str.c_str());
             if (reply == nullptr)
                 throw std::runtime_error("redis command failed");
 

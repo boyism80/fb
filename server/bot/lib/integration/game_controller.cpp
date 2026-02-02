@@ -76,7 +76,7 @@ void game_bot_controller::initialize()
     // Set up integration test timer with different interval (slower for detailed testing)
     this->bind_timer(&game_bot_controller::on_timer, 1000ms);
 
-    auto local = fb::config<std::string>("ip") == "127.0.0.1";
+    auto local = fb::config<std::string_view>("ip") == "127.0.0.1";
 
     // Create tests and add them to the queue
     this->enqueue_test(std::make_unique<movement_test>(*this));

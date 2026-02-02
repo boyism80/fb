@@ -12,7 +12,7 @@ ban::ban(fb::game::server& server) :
     fb::handler::amqp<fb::game::server, internal_resp::Ban>(server)
 { }
 
-std::string ban::build_ban_message(const std::string& reason, const std::optional<std::string>& expire_date)
+std::string ban::build_ban_message(std::string_view reason, const std::optional<std::string>& expire_date)
 {
     auto ban_message = std::string(_TEXT(MESSAGE_ACCOUNT_BANNED));
     if (!reason.empty())

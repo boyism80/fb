@@ -26,7 +26,7 @@ async::task<bool> skill_test::test_special_spells(std::shared_ptr<fb::bot::game_
             post_condition_check; // Called after spell cast to verify effects
     };
 
-    auto local          = fb::config<std::string>("ip") == "127.0.0.1";
+    auto local          = fb::config<std::string_view>("ip") == "127.0.0.1";
     auto weapon_name    = "목도";
     auto special_spells = std::vector<special_spell_test>{
         {"비영승보",

@@ -54,7 +54,7 @@ async::task<bulletin::article> server::read_bulletin(uint16_t section, uint16_t 
 }
 
 async::task<void>
-server::write_bulletin(character& ch, uint16_t section, const std::string& title, const std::string& contents)
+server::write_bulletin(character& ch, uint16_t section, std::string_view title, std::string_view contents)
 {
     if (table::bulletin.contains(section) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_SECTION_NOT_EXIST));
@@ -71,7 +71,7 @@ server::write_bulletin(character& ch, uint16_t section, const std::string& title
     auto   world = fb::config<uint32_t>("world");
     auto&& resp  = co_await this->http.post("internal",
                                            "/bulletin/write",
-                                           internal_reqs::WriteArticle{world, section, ch.id, title, contents});
+                                           internal_reqs::WriteArticle{world, section, ch.id, std::string(title), std::string(contents)});
 
     if (resp.success == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_WRITE_FAILED));

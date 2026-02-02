@@ -17,14 +17,20 @@ queue::~queue()
         amqp_bytes_free(this->_raw_tag);
 }
 
-bool queue::bind(const std::string& exchange, const std::string& route)
+bool queue::bind(std::string_view exchange, std::string_view route)
 {
-    amqp_queue_bind(this->_owner,
-                    1,
-                    this->_raw_name,
-                    amqp_cstring_bytes(exchange.c_str()),
-                    amqp_cstring_bytes(route.c_str()),
-                    amqp_empty_table);
+    // Create amqp_bytes_t directly from string_view (no conversion needed for exchange)
+    amqp_bytes_t exchange_bytes;
+    exchange_bytes.len   = exchange.size();
+    exchange_bytes.bytes = const_cast<void*>(static_cast<const void*>(exchange.data()));
+
+    // route needs conversion only for member assignment at the end
+    auto         route_str = std::string(route);
+    amqp_bytes_t route_bytes;
+    route_bytes.len   = route.size();
+    route_bytes.bytes = const_cast<void*>(static_cast<const void*>(route.data()));
+
+    amqp_queue_bind(this->_owner, 1, this->_raw_name, exchange_bytes, route_bytes, amqp_empty_table);
     if (amqp_get_rpc_reply(this->_owner).reply_type != AMQP_RESPONSE_NORMAL)
         return false;
 
@@ -42,7 +48,8 @@ bool queue::bind(const std::string& exchange, const std::string& route)
     auto tag_bytes_c = static_cast<char*>(this->_raw_tag.bytes);
     this->_tag       = std::string(tag_bytes_c, tag_bytes_c + this->_raw_tag.len);
 
-    this->_route = route;
+    // Only route needs conversion here because _route is std::string member
+    this->_route = route_str;
     return true;
 }
 

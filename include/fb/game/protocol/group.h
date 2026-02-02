@@ -3,6 +3,7 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <string_view>
 
 namespace fb::protocol::game::request {
 
@@ -24,8 +25,8 @@ public:
 #ifndef BOT
     group() = default;
 #else
-    group(const std::string& name) :
-        name(name)
+    group(std::string_view name) :
+        name(std::string(name))
     { }
 #endif
 

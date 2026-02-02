@@ -10,9 +10,9 @@ async::task<void> chat::deserialize(fb::stream_reader<big_endian>& reader)
     this->message = reader.read<std::string, uint8_t>();
 }
 #else
-chat::chat(bool shout, const std::string& message) :
+chat::chat(bool shout, std::string_view message) :
     shout(shout),
-    message(message)
+    message(std::string(message))
 { }
 
 async::task<void> chat::serialize(fb::stream_writer<big_endian>& writer) const
@@ -29,9 +29,9 @@ async::task<void> chat::serialize(fb::stream_writer<big_endian>& writer) const
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-chat::chat(const fb::game::object& me, const std::string& text, CHAT_TYPE type) :
+chat::chat(const fb::game::object& me, std::string_view text, CHAT_TYPE type) :
     me(me),
-    text(text),
+    text(std::string(text)),
     type(type)
 { }
 #endif

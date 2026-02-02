@@ -56,11 +56,11 @@ public:
     uint8_t                       add(item_ptr item, uint8_t index) override;
     bool                          store(item_ptr item);
     bool                          store(uint8_t index, uint16_t count);
-    bool                          store(const std::string& name, uint16_t count);
+    bool                          store(std::string_view name, uint16_t count);
     item_ptr                      stored(const fb::model::item& item) const;
     const std::vector<item_ptr>&  stored() const;
     item_ptr                      retrieve(uint8_t index, uint16_t count);
-    item_ptr                      retrieve(const std::string& name, uint16_t count);
+    item_ptr                      retrieve(std::string_view name, uint16_t count);
     item_ptr                      retrieve(const fb::model::item& item, uint16_t count);
     uint32_t                      deposited() const;
     void                          deposited(uint32_t value);
@@ -88,7 +88,7 @@ public:
     auxiliary_ptr                 auxiliary(EQUIPMENT_POSITION position) const;
     auxiliary_ptr                 auxiliary(auxiliary_ptr auxiliary);
     auxiliary_ptr                 auxiliary(auxiliary_ptr auxiliary, EQUIPMENT_POSITION position);
-    item_ptr                      find(const std::string& name) const;
+    item_ptr                      find(std::string_view name) const;
     item_ptr                      find(const fb::model::item& model) const;
     item_ptr                      drop(uint8_t index, uint8_t count, bool action = true, ITEM_DELETE_TYPE delete_type = ITEM_DELETE_TYPE::DROP);
     void                          loot(bool boost);

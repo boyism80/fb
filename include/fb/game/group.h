@@ -4,6 +4,7 @@
 #include <fb/game/character.h>
 #include <async/task.h>
 #include <unordered_set>
+#include <string_view>
 
 namespace fb::game {
 
@@ -25,7 +26,7 @@ private:
     character_set            _active_members;
 
 public:
-    group(server& server, uint32_t id, const std::string& master, const std::vector<std::string>& members);
+    group(server& server, uint32_t id, std::string_view master, const std::vector<std::string>& members);
     group(const group&) = delete;
     group(group&& g);
     ~group() = default;
@@ -33,8 +34,8 @@ public:
 public:
     void                     enter(std::weak_ptr<character> ch);
     void                     detach(std::weak_ptr<character> ch);
-    void                     add_member(const std::string& name);
-    void                     remove_member(const std::string& name);
+    void                     add_member(std::string_view name);
+    void                     remove_member(std::string_view name);
     uint32_t                 id() const;
     const std::string&       master() const;
     character_set            characters() const;

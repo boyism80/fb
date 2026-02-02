@@ -20,16 +20,7 @@ thread_container::thread_container(fb::async_executor& executor, uint32_t count)
 
 thread_container::~thread_container()
 {
-    if (this->deletor)
-    {
-        for (auto& [id, thread] : this->_logic_threads)
-        {
-            if (thread == nullptr)
-                continue;
-
-            this->deletor(thread->_data);
-        }
-    }
+    // std::unique_ptr in thread::_data handles cleanup automatically
 
     for (auto& [id, thread] : this->_logic_threads)
     {

@@ -12,10 +12,10 @@ async::task<void> update_pw::deserialize(fb::stream_reader<big_endian>& reader)
     this->birthday = reader.read<uint32_t>();
 }
 #else
-update_pw::update_pw(const std::string& name, const std::string& pw, const std::string& new_pw, uint32_t birthday) :
-    name(name),
-    pw(pw),
-    new_pw(new_pw),
+update_pw::update_pw(std::string_view name, std::string_view pw, std::string_view new_pw, uint32_t birthday) :
+    name(std::string(name)),
+    pw(std::string(pw)),
+    new_pw(std::string(new_pw)),
     birthday(birthday)
 { }
 

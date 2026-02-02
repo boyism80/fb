@@ -3,8 +3,8 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-bulletin_message::bulletin_message(const std::string& text, bool success, bool unknown) :
-    text(text),
+bulletin_message::bulletin_message(std::string_view text, bool success, bool unknown) :
+    text(std::string(text)),
     success(success),
     unknown(unknown)
 { }

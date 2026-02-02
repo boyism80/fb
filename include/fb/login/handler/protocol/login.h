@@ -4,6 +4,7 @@
 #include <fb/handler.h>
 #include <fb/login/server.h>
 #include <string>
+#include <string_view>
 #include <optional>
 
 namespace fb::login::handler::protocol {
@@ -27,7 +28,7 @@ public:
     /// <param name="reason">Ban reason string (empty string means no reason).</param>
     /// <param name="expire_date">Optional ban expire date string.</param>
     /// <returns>Formatted ban message string.</returns>
-    static std::string build_ban_message(const std::string& reason, const std::optional<std::string>& expire_date);
+    static std::string build_ban_message(std::string_view reason, const std::optional<std::string>& expire_date);
 
     /// <summary>
     /// Builds a maintenance message string with message and end time.

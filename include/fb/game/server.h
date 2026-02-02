@@ -22,6 +22,7 @@
 #include <fb/locker.h>
 #include <vector>
 #include <memory>
+#include <string_view>
 
 REGISTER_RESPONSE(fb::protocol::internal::request::Shutdown, fb::protocol::internal::response::Shutdown)
 REGISTER_RESPONSE(fb::protocol::internal::request::Heartbeat, fb::protocol::internal::response::Heartbeat)
@@ -118,7 +119,7 @@ public:
 
 public:
     void assert_whisper(const internal_resp::Whisper& response) const;
-    void assert_group(uint32_t error, const std::string& actor) const;
+    void assert_group(uint32_t error, std::string_view actor) const;
     void assert_clan(uint32_t error) const;
     void assert_mail(uint32_t error) const;
 
@@ -176,36 +177,34 @@ public:
     virtual uint32_t                           thread_id(const fb::socket<character>& socket) const;
     fb::thread*                                thread(const fb::game::map& map);
     const fb::model::datetime&                 time() const;
-    async::task<void>                          broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type);
-    async::task<void>                          create_group(character& me, const std::string& target_name);
+    async::task<void>                          broadcast(std::string_view message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type);
+    async::task<void>                          create_group(character& me, std::string_view target_name);
     async::task<void>                          destroy_group(character& me);
-    async::task<void>                          handle_group_action(character& actor, const std::string& target_name);
-    async::task<void>                          toggle_group_member(character& actor, const std::string& target_name);
+    async::task<void>                          handle_group_action(character& actor, std::string_view target_name);
+    async::task<void>                          toggle_group_member(character& actor, std::string_view target_name);
     async::task<void>                          leave_group_member(character& leaver);
-    async::task<void>                          broadcast_group(uint32_t group_id, const std::string& message, MESSAGE_TYPE type);
-    async::task<void>                          create_clan(character& me, std::string name);
+    async::task<void>                          broadcast_group(uint32_t group_id, std::string_view message, MESSAGE_TYPE type);
+    async::task<void>                          create_clan(character& me, std::string_view name);
     async::task<void>                          destroy_clan(character& me);
-    async::task<void>                          join_clan_member(character& inviter, const std::string& target_name);
+    async::task<void>                          join_clan_member(character& inviter, std::string_view target_name);
     async::task<void>                          leave_clan_member(character& leaver);
-    async::task<void>                          kick_clan_member(character& kicker, const std::string& target_name);
-    async::task<void>                          change_clan_role(character& changer, const std::string& target_name, CLAN_ROLE role);
-    async::task<void>                          set_clan_title(character& changer, const std::string& title);
-    async::task<void>                          broadcast_clan(uint32_t clan_id, const std::string& message, MESSAGE_TYPE type);
-    async::task<internal_resp::WriteMail>      send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents);
+    async::task<void>                          kick_clan_member(character& kicker, std::string_view target_name);
+    async::task<void>                          change_clan_role(character& changer, std::string_view target_name, CLAN_ROLE role);
+    async::task<void>                          set_clan_title(character& changer, std::string_view title);
+    async::task<void>                          broadcast_clan(uint32_t clan_id, std::string_view message, MESSAGE_TYPE type);
+    async::task<internal_resp::WriteMail>      send_mail(const character& ch, std::string_view to, std::string_view title, std::string_view contents);
     async::task<internal_resp::GetMailList>    mail_list(const character& ch, uint16_t offset, uint16_t count);
     async::task<internal_resp::GetMail>        read_mail(character& ch, uint16_t id);
     async::task<internal_resp::DeleteMail>     delete_mail(character& ch, uint16_t id);
     async::task<std::list<bulletin::article>>  bulletin_list(uint16_t section, uint16_t offset);
     async::task<bulletin::article>             read_bulletin(uint16_t section, uint16_t id);
-    async::task<void>                          write_bulletin(character& ch, uint16_t section, const std::string& title, const std::string& contents);
+    async::task<void>                          write_bulletin(character& ch, uint16_t section, std::string_view title, std::string_view contents);
     async::task<void>                          delete_bulletin(character& ch, uint16_t section, uint16_t id);
     async::task<void>                          whisper(character& sender, std::string receiver_name, std::string message);
-    async::task<internal_resp::Ban>            ban(const std::string& name, const std::string& reason, const std::optional<uint32_t>& days);
-    async::task<internal_resp::Unban>          unban(const std::string& name);
+    async::task<internal_resp::Ban>            ban(std::string_view name, std::string_view reason, const std::optional<uint32_t>& days);
+    async::task<internal_resp::Unban>          unban(std::string_view name);
     async::task<void>                          update_status();
     void                                       update_time();
-    async::task<void>                          leave_clan_member(const clan& clan, const std::string& name);
-    async::task<void>                          join_clan_member(const clan& clan, character& inviter, character& invitee);
     void                                       rezen_force();
     void                                       rezen_force(const fb::game::map& map);
     async::task<void>                          ensure_group(uint32_t id, ensure_group_fn fn);

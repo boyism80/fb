@@ -50,7 +50,7 @@ protected:
     socket_container_lock _sockets;
 
 protected:
-    acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
+    acceptor(boost::asio::io_context& context, std::string_view name, uint16_t port) :
         fb::async_executor(context, name, config<uint32_t>("thread:logic")),
         boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
         handler(*this),
@@ -125,10 +125,9 @@ private:
                 }
                 else
                 {
-                    auto protocol = std::shared_ptr<fb::protocol::header>(
-                        co_await this->handler.protocol.get_deserializer(cmd)(reader));
-                    auto fd   = socket.fd();
-                    auto weak = socket.template weak_from_this_as<fb::socket<T>>();
+                    auto protocol = co_await this->handler.protocol.get_deserializer(cmd)(reader);
+                    auto fd       = socket.fd();
+                    auto weak     = socket.template weak_from_this_as<fb::socket<T>>();
                     this->threads.enqueue(weak, [this, protocol, weak, fd, cmd](auto& thread) -> async::task<void> {
                         try
                         {
@@ -343,14 +342,14 @@ public:
 
 public:
     [[nodiscard]] async::task<void>
-    transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::Service from)
+    transfer(fb::socket<T>& socket, std::string_view ip, uint16_t port, fb::protocol::internal::Service from)
     {
         co_await this->transfer(socket, inet_addr(this->ipv4(ip).c_str()), port, from);
     }
 
 public:
     [[nodiscard]] async::task<void> transfer(fb::socket<T>&                  socket,
-                                             const std::string&              ip,
+                                             std::string_view                ip,
                                              uint16_t                        port,
                                              fb::protocol::internal::Service from,
                                              const fb::stream&               parameter)

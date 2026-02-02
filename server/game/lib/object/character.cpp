@@ -1,6 +1,5 @@
 #include <fb/game/character.h>
 #include <fb/game/server.h>
-#include <fb/game/regex.h>
 #include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
@@ -947,11 +946,11 @@ const std::string& character::title() const
     return this->_title;
 }
 
-void character::title(const std::string& value)
+void character::title(std::string_view value)
 {
     this->assert_thread();
 
-    this->_title = value;
+    this->_title = std::string(value);
 }
 
 const std::optional<uint32_t>& character::group_id() const
@@ -1208,7 +1207,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
     return true;
 }
 
-void character::message(const std::string& message, MESSAGE_TYPE type)
+void character::message(std::string_view message, MESSAGE_TYPE type)
 {
     this->assert_thread();
     this->listener.on_message(*this, message, type);

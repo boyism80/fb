@@ -11,7 +11,7 @@
  * @param message The chat message to filter
  * @return Filtered message with blocked words replaced
  */
-std::string fb::model::__blocked_word::filter(const std::string& message) const
+std::string fb::model::__blocked_word::filter(std::string_view message) const
 {
     auto filtered = std::string{message};
 

@@ -5,7 +5,7 @@ using namespace fb::game;
 
 namespace game_resp = fb::protocol::game::response;
 
-void listener_impl::on_message(character& me, const std::string& message, MESSAGE_TYPE type)
+void listener_impl::on_message(character& me, std::string_view message, MESSAGE_TYPE type)
 {
     me.send(game_resp::message(message, type));
 }
@@ -135,8 +135,8 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
     auto p     = fb::model::point16_t{position};
     try
     {
-        auto world = fb::config<uint32_t>("world");
-        auto&& resp = co_await this->server.http.post(
+        auto   world = fb::config<uint32_t>("world");
+        auto&& resp  = co_await this->server.http.post(
             "internal",
             "/in-game/transfer",
             internal_reqs::Transfer{world, internal::Service::Game, map.model.host, me.name(), false});
@@ -292,7 +292,7 @@ void listener_impl::on_show_mail_box(character& ch, const mail_box::mail& mail, 
     ch.send(game_resp::bulletin_mail(dto, flag));
 }
 
-void listener_impl::on_show_bulletin_message(character& ch, const std::string& message, bool success, bool unknown)
+void listener_impl::on_show_bulletin_message(character& ch, std::string_view message, bool success, bool unknown)
 {
     ch.send(game_resp::bulletin_message(message, success, unknown));
 }

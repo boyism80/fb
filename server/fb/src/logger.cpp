@@ -34,7 +34,7 @@ fb::logger& fb::logger::get()
             }
         }
 
-        ist = std::unique_ptr<fb::logger>(new fb::logger((fb::logger::level)level));
+        ist = std::unique_ptr<fb::logger>(new fb::logger(static_cast<fb::logger::level>(level)));
     });
     return *ist;
 }

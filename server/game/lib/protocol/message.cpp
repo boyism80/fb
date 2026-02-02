@@ -3,8 +3,8 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-message::message(const std::string& text, MESSAGE_TYPE type) :
-    text(text),
+message::message(std::string_view text, MESSAGE_TYPE type) :
+    text(std::string(text)),
     type(type)
 { }
 #endif

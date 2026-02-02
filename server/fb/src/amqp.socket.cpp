@@ -16,11 +16,11 @@ socket::~socket()
     }
 }
 
-bool socket::connect(const std::string& hostname,
+bool socket::connect(std::string_view hostname,
                      uint16_t           port,
-                     const std::string& id,
-                     const std::string& pw,
-                     const std::string& vhost)
+                     std::string_view id,
+                     std::string_view pw,
+                     std::string_view vhost)
 {
     // Clean up any existing connection before creating a new one
     if (this->_conn != nullptr)
@@ -29,6 +29,11 @@ bool socket::connect(const std::string& hostname,
         this->_conn   = nullptr;
         this->_socket = nullptr;
     }
+
+    auto hostname_str = std::string(hostname);
+    auto id_str = std::string(id);
+    auto pw_str = std::string(pw);
+    auto vhost_str = std::string(vhost);
 
     this->_conn   = amqp_new_connection();
     this->_socket = amqp_tcp_socket_new(this->_conn);
@@ -39,7 +44,7 @@ bool socket::connect(const std::string& hostname,
         return false;
     }
 
-    auto status = amqp_socket_open(this->_socket, hostname.c_str(), port);
+    auto status = amqp_socket_open(this->_socket, hostname_str.c_str(), port);
     if (status)
     {
         amqp_destroy_connection(this->_conn);
@@ -48,7 +53,7 @@ bool socket::connect(const std::string& hostname,
         return false;
     }
 
-    if (amqp_login(this->_conn, vhost.c_str(), 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, id.c_str(), pw.c_str())
+    if (amqp_login(this->_conn, vhost_str.c_str(), 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, id_str.c_str(), pw_str.c_str())
             .reply_type != AMQP_RESPONSE_NORMAL)
     {
         amqp_connection_close(this->_conn, AMQP_REPLY_SUCCESS);
@@ -124,22 +129,26 @@ queue& socket::declare_queue(bool durable, bool exclusive, bool auto_delete, boo
     if (name.bytes == nullptr)
         throw std::runtime_error("Out of memory while copying queue name");
 
-    auto ptr = new queue(*this, name, threads);
-    this->_queues.push_back(std::unique_ptr<queue>(ptr));
+    // queue constructor is private (friend class socket), so cannot use std::make_unique
+    auto  ptr = std::unique_ptr<queue>(new queue(*this, name, threads));
+    auto& ref = *ptr;
+    this->_queues.push_back(std::move(ptr));
 
-    return *ptr;
+    return ref;
 }
 
-bool socket::publish(const std::string&             exchange,
-                     const std::string&             routing_key,
+bool socket::publish(std::string_view             exchange,
+                     std::string_view             routing_key,
                      const std::vector<uint8_t>&    message,
                      const amqp_basic_properties_t* properties)
 {
     if (this->_conn == nullptr)
         return false;
 
-    amqp_bytes_t exchange_bytes    = amqp_cstring_bytes(exchange.c_str());
-    amqp_bytes_t routing_key_bytes = amqp_cstring_bytes(routing_key.c_str());
+    auto exchange_str = std::string(exchange);
+    auto routing_key_str = std::string(routing_key);
+    amqp_bytes_t exchange_bytes    = amqp_cstring_bytes(exchange_str.c_str());
+    amqp_bytes_t routing_key_bytes = amqp_cstring_bytes(routing_key_str.c_str());
     amqp_bytes_t message_bytes;
     message_bytes.len   = message.size();
     message_bytes.bytes = const_cast<void*>(static_cast<const void*>(message.data()));

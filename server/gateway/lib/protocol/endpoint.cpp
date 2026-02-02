@@ -7,15 +7,15 @@
 
 using namespace fb::protocol::gateway;
 
-endpoint::endpoint(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port) :
-    name(name),
-    desc(desc),
+endpoint::endpoint(std::string_view name, std::string_view desc, uint32_t ip, uint16_t port) :
+    name(std::string(name)),
+    desc(std::string(desc)),
     ip(ip),
     port(port)
 { }
 
-endpoint::endpoint(const std::string& name, const std::string& desc, const std::string& ip, uint16_t port) :
-    endpoint(name, desc, inet_addr(ip.c_str()), port)
+endpoint::endpoint(std::string_view name, std::string_view desc, std::string_view ip, uint16_t port) :
+    endpoint(name, desc, inet_addr(std::string(ip).c_str()), port)
 { }
 
 endpoint::endpoint(const endpoint& right) :

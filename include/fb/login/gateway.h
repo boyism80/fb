@@ -2,6 +2,7 @@
 #define __GATEWAY_H__
 
 #include <fb/socket.h>
+#include <string_view>
 
 namespace fb::login {
 
@@ -14,7 +15,7 @@ private:
     uint16_t    _port = 0;
 
 public:
-    gateway(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port);
+    gateway(std::string_view name, std::string_view desc, uint32_t ip, uint16_t port);
     ~gateway();
 
 public:

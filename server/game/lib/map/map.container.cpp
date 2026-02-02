@@ -53,7 +53,7 @@ void map_container::load(const fb::model::map& model)
             throw std::runtime_error(std::format("{} ({})", _TEXT(MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK), model.name));
     }
 
-    auto map = new fb::game::map(this->server, model, active, binary.data(), binary.size());
+    auto map = std::make_shared<fb::game::map>(this->server, model, active, binary.data(), binary.size());
     for (const auto& block : blocks)
     {
         map->block(block["x"].asInt(), block["y"].asInt(), true);
@@ -61,11 +61,11 @@ void map_container::load(const fb::model::map& model)
 
     {
         auto _ = std::lock_guard(this->_mutex);
-        this->push(model.id, std::shared_ptr<fb::game::map>(map));
+        this->push(model.id, map);
     }
 }
 
-std::shared_ptr<fb::game::map> map_container::name2map(const std::string& name) const
+std::shared_ptr<fb::game::map> map_container::name2map(std::string_view name) const
 {
     for (const auto& [id, map] : *this)
     {

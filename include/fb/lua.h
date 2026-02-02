@@ -10,6 +10,7 @@ extern "C"
 
 #include <vector>
 #include <string>
+#include <string_view>
 #include <map>
 #include <list>
 #include <random>
@@ -143,9 +144,9 @@ context* new_context(context* parent = nullptr);
 
 context* get(lua_State* ctx);
 
-async::task<void> build(const std::string& name, lua_CFunction fn);
+async::task<void> build(std::string_view name, lua_CFunction fn);
 
-async::task<void> dump(const std::string& path);
+async::task<void> dump(std::string_view path);
 
 class luable : public std::enable_shared_from_this<luable>
 {
@@ -275,11 +276,11 @@ public:
 
 public:
     template <class... Args>
-    context& load(const std::string& fmt, Args&&... args);
+    context& load(std::string_view fmt, Args&&... args);
     template <class... Args>
-    context&                          execute(const std::string& fmt, Args&&... args);
-    template <class... Args> context& func(const std::string& fmt, Args&&... args);
-    context&                          pushstring(const std::string& value);
+    context&                          execute(std::string_view fmt, Args&&... args);
+    template <class... Args> context& func(std::string_view fmt, Args&&... args);
+    context&                          pushstring(std::string_view value);
     context&                          pushinteger(lua_Integer value);
     context&                          pushnumber(lua_Number value);
     context&                          pushnil();
@@ -440,8 +441,8 @@ public:
 
     std::string       get_type(int offset);
     std::string       metatable(int offset);
-    std::string       basetable(const std::string& metaname);
-    std::string       tostring(int offset, const std::string& default_value = "");
+    std::string       basetable(std::string_view metaname);
+    std::string       tostring(int offset, std::string_view default_value = "");
     std::string       arg_string(int offset);
     std::string       ret_string(int offset);
     async::task<void> switching();
@@ -592,7 +593,7 @@ public:
     root& operator= (root&&) = delete;
 
 public:
-    bool        dump(const std::string& path);
+    bool        dump(std::string_view path);
     context*    pop(context* parent);
     context*    get(lua_State* ctx);
     void        release(context& ctx);
@@ -630,16 +631,16 @@ public:
         luaL_setfuncs(*this, child_metafuncs, 0); // []
     }
 
-    void build(const std::string& name, lua_CFunction fn)
+    void build(std::string_view name, lua_CFunction fn)
     {
-        lua_register(*this, name.c_str(), fn);
+        lua_register(*this, std::string(name).c_str(), fn);
     }
 };
 
 class context_pool
 {
 public:
-    using base_type  = std::unordered_map<std::thread::id, root*>;
+    using base_type  = std::unordered_map<std::thread::id, std::unique_ptr<root>>;
     using setup_func = std::function<void(root& lua)>;
 
 private:
@@ -716,7 +717,7 @@ void lua_pushinteger(lua_State* L, T value)
 }
 
 template <class... Args>
-fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
+fb::lua::context& fb::lua::context::load(std::string_view fmt, Args&&... args)
 {
     auto fname = std::vformat(fmt, std::make_format_args(args...));
 #if defined DEBUG || defined _DEBUG
@@ -746,7 +747,7 @@ fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
 }
 
 template <class... Args>
-fb::lua::context& fb::lua::context::execute(const std::string& fmt, Args&&... args)
+fb::lua::context& fb::lua::context::execute(std::string_view fmt, Args&&... args)
 {
     auto fname = std::vformat(fmt, std::make_format_args(args...));
 #if defined DEBUG || defined _DEBUG
@@ -792,7 +793,7 @@ fb::lua::context& fb::lua::context::execute(const std::string& fmt, Args&&... ar
 }
 
 template <class... Args>
-fb::lua::context& fb::lua::context::func(const std::string& fmt, Args&&... args)
+fb::lua::context& fb::lua::context::func(std::string_view fmt, Args&&... args)
 {
     auto fname = std::vformat(fmt, std::make_format_args(args...));
     lua_getglobal(*this, fname.c_str());

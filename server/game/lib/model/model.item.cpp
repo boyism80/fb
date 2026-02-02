@@ -23,14 +23,15 @@ bool fb::model::item::attr(ITEM_ATTRIBUTE flag) const
     return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
 }
 
-fb::model::item* fb::model::__item::name2item(const std::string& name) const
+fb::model::item* fb::model::__item::name2item(std::string_view name) const
 {
     static auto cache       = std::unordered_map<std::string, fb::model::item*>{};
     static auto cache_mutex = std::shared_mutex{};
 
+    auto name_str = std::string(name);
     {
         auto lock = std::shared_lock(cache_mutex);
-        auto it   = cache.find(name);
+        auto it   = cache.find(name_str);
         if (it != cache.end())
             return it->second;
     }
@@ -40,7 +41,7 @@ fb::model::item* fb::model::__item::name2item(const std::string& name) const
         if (v.name == name)
         {
             auto lock   = std::lock_guard(cache_mutex);
-            cache[name] = &v;
+            cache[name_str] = &v;
             return &v;
         }
     }
@@ -48,7 +49,7 @@ fb::model::item* fb::model::__item::name2item(const std::string& name) const
     return nullptr;
 }
 
-std::vector<fb::model::item*> fb::model::__item::name2item_prefix(const std::string& prefix) const
+std::vector<fb::model::item*> fb::model::__item::name2item_prefix(std::string_view prefix) const
 {
     static auto sorted_items = std::map<std::string, fb::model::item*>{};
     static auto once_flag    = std::once_flag{};
@@ -63,6 +64,7 @@ std::vector<fb::model::item*> fb::model::__item::name2item_prefix(const std::str
     });
 
     auto result = std::vector<fb::model::item*>{};
+    auto prefix_str = std::string(prefix);
 
     {
         auto lock = std::shared_lock(read_mutex);
@@ -75,7 +77,7 @@ std::vector<fb::model::item*> fb::model::__item::name2item_prefix(const std::str
             return result;
         }
 
-        auto it = sorted_items.lower_bound(prefix);
+        auto it = sorted_items.lower_bound(prefix_str);
         while (it != sorted_items.end())
         {
             if (it->first.size() < prefix.size())
