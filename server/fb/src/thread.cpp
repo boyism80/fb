@@ -103,7 +103,7 @@ std::shared_ptr<fb::timer> fb::thread::settimer(fb::timer::handle_callback_type&
     }
 
     auto ptr = new fb::timer(
-        [this, fn = std::move(fn)](const fb::model::datetime&, std::thread::id) -> async::task<void> {
+        [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {
             auto index = this->_index;
             try
             {
