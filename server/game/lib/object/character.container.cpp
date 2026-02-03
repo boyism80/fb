@@ -45,7 +45,7 @@ character::container::character_ptr_t character::container::find(std::string_vie
     return it != this->_from_name.end() ? it->second : nullptr;
 }
 
-async::task<void> character::container::foreach (character_function_t&& fn, character_predicate_t predict)
+async::task<void> character::container::foreach (character_function_t fn, character_predicate_t predict)
 {
     co_await this->foreach_async(
         [fn](character_ptr_t& ch) -> async::task<void> {
@@ -55,7 +55,7 @@ async::task<void> character::container::foreach (character_function_t&& fn, char
         std::move(predict));
 }
 
-async::task<void> character::container::foreach_async(character_async_function_t&& fn, character_predicate_t predict)
+async::task<void> character::container::foreach_async(character_async_function_t fn, character_predicate_t predict)
 {
     auto targets = std::vector<character_ptr_t>();
     for (auto& [uid, ch] : this->_from_uid)
@@ -69,7 +69,7 @@ async::task<void> character::container::foreach_async(character_async_function_t
     co_await this->foreach_async(std::move(fn), std::move(targets));
 }
 
-async::task<void> character::container::foreach (character_function_t&&              fn,
+async::task<void> character::container::foreach (character_function_t                fn,
                                                  const std::vector<character_ptr_t>& characters)
 {
     co_await this->foreach_async(
@@ -77,10 +77,10 @@ async::task<void> character::container::foreach (character_function_t&&         
             fn(ch);
             co_return;
         },
-        std::move(characters));
+        characters);
 }
 
-async::task<void> character::container::foreach_async(character_async_function_t&&        fn,
+async::task<void> character::container::foreach_async(character_async_function_t          fn,
                                                       const std::vector<character_ptr_t>& characters)
 {
     auto thread = this->_server.threads.current();
@@ -114,8 +114,8 @@ async::task<void> character::container::foreach_async(character_async_function_t
 }
 
 async::task<void> character::container::foreach (const std::vector<std::string>& names,
-                                                 character_function_t && fn,
-                                                 character_function_t_miss miss)
+                                                 character_function_t            fn,
+                                                 character_function_t_miss       miss)
 {
     co_await this->foreach_async(
         std::move(names),
@@ -127,7 +127,7 @@ async::task<void> character::container::foreach (const std::vector<std::string>&
 }
 
 async::task<void> character::container::foreach_async(const std::vector<std::string>& names,
-                                                      character_async_function_t&&    fn,
+                                                      character_async_function_t      fn,
                                                       character_function_t_miss       miss)
 {
     auto targets = std::vector<character_ptr_t>();
@@ -147,7 +147,7 @@ async::task<void> character::container::foreach_async(const std::vector<std::str
     co_await this->foreach_async(std::move(fn), std::move(targets));
 }
 
-async::task<void> character::container::invoke(std::string_view        name,
+async::task<void> character::container::invoke(std::string_view          name,
                                                character_function_t      fn,
                                                character_function_t_miss miss)
 {
@@ -167,7 +167,7 @@ async::task<void> character::container::invoke(std::string_view        name,
         co_await before->switching();
 }
 
-async::task<void> character::container::invoke_async(std::string_view         name,
+async::task<void> character::container::invoke_async(std::string_view           name,
                                                      character_async_function_t fn,
                                                      character_function_t_miss  miss)
 {

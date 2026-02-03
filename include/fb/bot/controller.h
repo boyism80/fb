@@ -278,7 +278,7 @@ public:
         params->bots.erase(bot.id);
     }
 
-    template <typename ResponseType> void bind(const std::function<async::task<void>(BotType&, ResponseType&)>& fn)
+    template <typename ResponseType> void bind(std::function<async::task<void>(BotType&, ResponseType&)>&& fn)
     {
         static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>,
                       "ResponseType must inherit from fb::protocol::header");
@@ -295,7 +295,7 @@ public:
              }});
 
         this->_handler.insert(
-            {ResponseType::header, [this, fn](auto& bot, auto& header) -> async::task<void> {
+            {ResponseType::header, [this, fn = std::move(fn)](auto& bot, auto& header) -> async::task<void> {
                  auto          protocol   = static_cast<ResponseType&>(header);
                  volatile auto controller = this;
 
@@ -316,7 +316,7 @@ public:
                       "ResponseType must have 'static constexpr uint8_t header' member");
 
         this->bind<ResponseType>(
-            std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2));
+            std::function<async::task<void>(BotType&, ResponseType&)>(std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2)));
     }
 
     virtual async::task<void> on_bot_connected(BotType& bot)

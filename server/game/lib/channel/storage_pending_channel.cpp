@@ -98,7 +98,7 @@ async::task<void> storage_pending_channel::read_async(
     co_await this->_data.async_read(fn);
 }
 
-void storage_pending_channel::write(std::function<void(std::unordered_map<std::string, storage_box::pending_box>&)> fn)
+void storage_pending_channel::write(const std::function<void(std::unordered_map<std::string, storage_box::pending_box>&)>& fn)
 {
     this->_data.write(fn);
 }

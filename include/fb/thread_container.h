@@ -50,12 +50,11 @@ public:
     bool              valid(thread* thread) const;
 
 public:
-    template <typename ReturnType, typename T> void
-    enqueue(std::weak_ptr<T>                                           pivot,
-            const std::function<bool(fb::thread&)>&                    condition,
-            const std::function<async::task<ReturnType>(fb::thread&)>& fn,
-            const std::function<void(std::exception&)>&                error,
-            const std::function<void(ReturnType&&)>&                   callback)
+    template <typename ReturnType, typename T> void enqueue(std::weak_ptr<T>                   pivot,
+                                                            std::function<bool(fb::thread&)>&& condition,
+                                                            std::function<async::task<ReturnType>(fb::thread&)>&& fn,
+                                                            std::function<void(std::exception&)>&&                error,
+                                                            std::function<void(ReturnType&&)>&& callback)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
@@ -64,7 +63,7 @@ public:
             throw std::runtime_error("no matched thread");
 
         thread->template enqueue<ReturnType>(
-            [=, this]() -> async::task<void> {
+            [=, this, condition = std::move(condition), fn = std::move(fn)]() -> async::task<void> {
                 auto shared = pivot.lock();
                 if (shared == nullptr)
                     throw std::runtime_error("pivot object is expired");
@@ -76,51 +75,50 @@ public:
                 auto current_thread = this->current();
                 if (active_thread != current_thread)
                 {
-                    this->enqueue(shared.week_from_this(), condition, fn);
+                    this->enqueue(shared.week_from_this(), std::move(condition), std::move(fn));
                     throw std::runtime_error("active thread not matched");
                 }
 
                 co_return co_await fn(*thread);
             },
-            error,
-            callback);
+            std::move(error),
+            std::move(callback));
     }
 
-    template <typename ReturnType, typename T> void
-    enqueue(std::weak_ptr<T>                                           pivot,
-            const std::function<bool(fb::thread&)>&                    condition,
-            const std::function<async::task<ReturnType>(fb::thread&)>& fn)
+    template <typename ReturnType, typename T> void enqueue(std::weak_ptr<T>                   pivot,
+                                                            std::function<bool(fb::thread&)>&& condition,
+                                                            std::function<async::task<ReturnType>(fb::thread&)>&& fn)
     {
         return this->enqueue<ReturnType, T>(
             pivot,
-            condition,
-            fn,
+            std::move(condition),
+            std::move(fn),
             [](std::exception& e) {
             },
             [](ReturnType&& value) {
             });
     }
 
-    template <typename ReturnType, typename T> void
-    enqueue(std::weak_ptr<T> pivot, const std::function<async::task<ReturnType>(fb::thread&)>& fn)
+    template <typename ReturnType, typename T> void enqueue(std::weak_ptr<T>                                      pivot,
+                                                            std::function<async::task<ReturnType>(fb::thread&)>&& fn)
     {
         return this->enqueue<ReturnType, T>(
             pivot,
             [](auto& thread) -> bool {
                 return true;
             },
-            fn,
+            std::move(fn),
             [](std::exception& e) {
             },
             [](ReturnType&& value) {
             });
     }
 
-    template <typename T> void enqueue(std::weak_ptr<T>                            pivot,
-                                       const std::function<bool(fb::thread&)>&     condition,
-                                       const thread::handle_func_type<void>&       fn,
-                                       const std::function<void(std::exception&)>& error,
-                                       const std::function<void()>&                callback)
+    template <typename T> void enqueue(std::weak_ptr<T>                       pivot,
+                                       std::function<bool(fb::thread&)>&&     condition,
+                                       thread::handle_func_type<void>&&       fn,
+                                       std::function<void(std::exception&)>&& error,
+                                       std::function<void()>&&                callback)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
@@ -133,7 +131,7 @@ public:
             throw std::runtime_error("no matched thread");
 
         thread->enqueue(
-            [=, this](auto& thread) -> async::task<void> {
+            [=, this, condition = std::move(condition), fn = std::move(fn)](auto& thread) mutable -> async::task<void> {
                 auto shared = pivot.lock();
                 if (shared == nullptr)
                     throw std::runtime_error("pivot object is expired");
@@ -144,34 +142,34 @@ public:
                 auto active_thread = shared->thread();
                 if (active_thread != &thread)
                 {
-                    this->enqueue(pivot, condition, fn);
+                    this->enqueue(pivot, std::move(condition), std::move(fn));
                 }
                 else
                 {
                     co_await fn(*active_thread);
                 }
             },
-            error,
-            callback);
+            std::move(error),
+            std::move(callback));
     }
 
-    template <typename T> void enqueue(std::weak_ptr<T>                        pivot,
-                                       const std::function<bool(fb::thread&)>& condition,
-                                       const thread::handle_func_type<void>&   fn)
+    template <typename T> void enqueue(std::weak_ptr<T>                   pivot,
+                                       std::function<bool(fb::thread&)>&& condition,
+                                       thread::handle_func_type<void>&&   fn)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
         return this->enqueue<T>(
             pivot,
-            condition,
-            fn,
+            std::move(condition),
+            std::move(fn),
             [](std::exception& e) {
             },
             []() {
             });
     }
 
-    template <typename T> void enqueue(std::weak_ptr<T> pivot, const thread::handle_func_type<void>& fn)
+    template <typename T> void enqueue(std::weak_ptr<T> pivot, thread::handle_func_type<void>&& fn)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
@@ -180,7 +178,7 @@ public:
             [](auto& thread) -> bool {
                 return true;
             },
-            fn,
+            std::move(fn),
             [](std::exception& e) {
             },
             []() {
@@ -188,9 +186,9 @@ public:
     }
 
     template <typename ReturnType, typename T> [[nodiscard]] async::task<ReturnType>
-    dispatch(std::weak_ptr<T>                                           pivot,
-             const std::function<bool(fb::thread&)>&                    condition,
-             const std::function<async::task<ReturnType>(fb::thread&)>& fn)
+    dispatch(std::weak_ptr<T>                                      pivot,
+             std::function<bool(fb::thread&)>&&                    condition,
+             std::function<async::task<ReturnType>(fb::thread&)>&& fn)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
@@ -213,8 +211,8 @@ public:
         auto promise = std::make_shared<async::task_completion_source<ReturnType>>();
         this->enqueue<ReturnType, T>(
             pivot,
-            condition,
-            fn,
+            std::move(condition),
+            std::move(fn),
             [promise](std::exception& e) {
                 promise->set_exception(std::make_exception_ptr(e));
             },
@@ -225,7 +223,7 @@ public:
     }
 
     template <typename ReturnType, typename T> [[nodiscard]] async::task<ReturnType>
-    dispatch(std::weak_ptr<T> pivot, const std::function<async::task<ReturnType>(fb::thread&)>& fn)
+    dispatch(std::weak_ptr<T> pivot, std::function<async::task<ReturnType>(fb::thread&)>&& fn)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
@@ -248,7 +246,7 @@ public:
             [](auto& thread) -> bool {
                 return true;
             },
-            fn,
+            std::move(fn),
             [promise](std::exception& e) {
                 promise->set_exception(std::make_exception_ptr(e));
             },
@@ -258,9 +256,9 @@ public:
         co_return co_await promise->task();
     }
 
-    template <typename T> async::task<void> dispatch(std::weak_ptr<T>                        pivot,
-                                                     const std::function<bool(fb::thread&)>& condition,
-                                                     const thread::handle_func_type<void>&   fn)
+    template <typename T> async::task<void> dispatch(std::weak_ptr<T>                   pivot,
+                                                     std::function<bool(fb::thread&)>&& condition,
+                                                     thread::handle_func_type<void>&&   fn)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
@@ -284,8 +282,8 @@ public:
         auto promise = std::make_shared<async::task_completion_source<void>>();
         this->enqueue<T>(
             pivot,
-            condition,
-            fn,
+            std::move(condition),
+            std::move(fn),
             [promise](std::exception& e) {
                 promise->set_exception(std::make_exception_ptr(e));
             },
@@ -295,7 +293,7 @@ public:
         co_await promise->task();
     }
 
-    template <typename T> async::task<void> dispatch(std::weak_ptr<T> pivot, const thread::handle_func_type<void>& fn)
+    template <typename T> async::task<void> dispatch(std::weak_ptr<T> pivot, thread::handle_func_type<void>&& fn)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
@@ -319,7 +317,7 @@ public:
             [](auto& thread) -> bool {
                 return true;
             },
-            fn,
+            std::move(fn),
             [promise](std::exception& e) {
                 promise->set_exception(std::make_exception_ptr(e));
             },
@@ -338,7 +336,7 @@ public:
         });
     }
 
-    void        settimer(const fb::timer::handle_callback_type& fn, const fb::model::timespan& duration);
+    void        settimer(fb::timer::handle_callback_type&& fn, const fb::model::timespan& duration);
     void        exit();
     fb::thread* least_loaded() const;
 
