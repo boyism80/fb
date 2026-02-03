@@ -6,10 +6,10 @@ using namespace fb::bot;
 
 base_bot::base_bot(fb::async_executor&                                               executor,
                    base_bot_controller&                                              bot_controller,
-                   std::function<async::task<void>(fb::socket<void*>&, fb::stream&)> on_receive,
-                   std::function<async::task<void>(fb::socket<void*>&)>              on_closed,
+                   std::function<async::task<void>(fb::socket<void*>&, fb::stream&)>&& on_receive,
+                   std::function<async::task<void>(fb::socket<void*>&)>&&              on_closed,
                    uint32_t                                                          id) :
-    fb::socket<void*>(executor, on_receive, on_closed),
+    fb::socket<void*>(executor, std::move(on_receive), std::move(on_closed)),
     _executor(executor),
     _bot_controller(bot_controller),
     id(id)

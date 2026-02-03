@@ -84,10 +84,10 @@ protected:
             boost::asio::detached);
     }
 
-    void bind_thread_timer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)> fn,
+    void bind_thread_timer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>&& fn,
                            const std::chrono::steady_clock::duration&                                    duration)
     {
-        this->threads.settimer(fn, duration);
+        this->threads.settimer(std::move(fn), duration);
     }
 
     template <typename HandlerType>
@@ -120,7 +120,7 @@ protected:
             interval);
     }
 
-    void bind_timer(std::function<async::task<void>()> fn, std::chrono::steady_clock::duration interval)
+    void bind_timer(std::function<async::task<void>()>&& fn, std::chrono::steady_clock::duration interval)
     {
         // Use weak_ptr for safe object reference
         auto weak_this = this->weak_from_this();
@@ -131,7 +131,7 @@ protected:
         // Spawn coroutine with improved safety
         boost::asio::co_spawn(
             exec,
-            [weak_this, fn, interval]() -> boost::asio::awaitable<void> {
+            [weak_this, fn = std::move(fn), interval]() -> boost::asio::awaitable<void> {
                 boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
 
                 while (true)

@@ -81,6 +81,21 @@ private:
 
 protected:
     virtual generator<scenario_t> on_generate_scenario() = 0;
+    virtual async::task<void>     on_scenario_started(uint32_t scenario_index);
+    virtual async::task<void>     on_scenario_finished(uint32_t scenario_index);
+    virtual async::task<void>     on_parallel_scenario_started(uint32_t id);
+    virtual async::task<void>     on_parallel_scenario_finished(uint32_t id);
+    async::task<bool>             parallel_scenarios(const std::vector<std::pair<uint32_t, scenario_t>>& scenarios);
+    virtual async::task<void>     on_hook_sequence(game_bot& bot, const game_resp::id& resp);
+    virtual async::task<void>     on_hook_position(game_bot& bot, const game_resp::position& resp);
+    virtual async::task<void>     on_hook_update_external(game_bot& bot, const game_resp::update_external<true>& resp);
+
+    [[nodiscard]] async::task<void> sleep(std::chrono::milliseconds duration);
+    [[nodiscard]] async::task<void> arrange_bots_in_line_formation();
+    [[nodiscard]] async::task<void>
+    arrange_bots_in_grid_formation(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y);
+    [[nodiscard]] async::task<void> form_group();
+    [[nodiscard]] async::task<void> cleanup_group();
 
 public:
     test_state                             get_state() const;
@@ -97,23 +112,6 @@ public:
     virtual async::task<void>              on_finished();
     async::task<bool>                      execute();
     virtual std::string                    name() const = 0;
-
-protected:
-    virtual async::task<void> on_scenario_started(uint32_t scenario_index);
-    virtual async::task<void> on_scenario_finished(uint32_t scenario_index);
-    virtual async::task<void> on_parallel_scenario_started(uint32_t id);
-    virtual async::task<void> on_parallel_scenario_finished(uint32_t id);
-    async::task<bool>         parallel_scenarios(std::vector<std::pair<uint32_t, scenario_t>> scenarios);
-    virtual async::task<void> on_hook_sequence(game_bot& bot, const game_resp::id& response);
-    virtual async::task<void> on_hook_position(game_bot& bot, const game_resp::position& response);
-    virtual async::task<void> on_hook_update_external(game_bot& bot, const game_resp::update_external<true>& response);
-
-    [[nodiscard]] async::task<void> sleep(std::chrono::milliseconds duration);
-    [[nodiscard]] async::task<void> arrange_bots_in_line_formation();
-    [[nodiscard]] async::task<void>
-    arrange_bots_in_grid_formation(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y);
-    [[nodiscard]] async::task<void> form_group();
-    [[nodiscard]] async::task<void> cleanup_group();
 };
 
 } // namespace fb::bot::integration

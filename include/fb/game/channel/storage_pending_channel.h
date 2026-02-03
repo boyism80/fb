@@ -27,7 +27,7 @@ public:
     async::task<void> fetch();
     void              read(std::function<void(const pending_map&)> fn);
     async::task<void> read_async(std::function<async::task<void>(const pending_map&)> fn);
-    void              write(std::function<void(pending_map&)> fn);
+    void              write(const std::function<void(pending_map&)>& fn);
 };
 
 } // namespace fb::game

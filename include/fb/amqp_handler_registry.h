@@ -140,7 +140,7 @@ public:
             {
                 for (auto& [cmd, fn] : this->_handlers.at(route))
                 {
-                    queue.handler(cmd, fn);
+                    queue.handler(cmd, std::move(fn));
                 }
             }
         }

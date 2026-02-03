@@ -217,7 +217,8 @@ async::task<void> bot_integration_test::execute_parallel_scenario(std::shared_pt
     }
 }
 
-async::task<bool> bot_integration_test::parallel_scenarios(std::vector<std::pair<uint32_t, scenario_t>> scenarios)
+async::task<bool>
+bot_integration_test::parallel_scenarios(const std::vector<std::pair<uint32_t, scenario_t>>& scenarios)
 {
     auto context       = std::make_shared<parallel_scenarios_context>();
     context->promise   = std::make_shared<async::task_completion_source<bool>>();
@@ -255,7 +256,7 @@ async::task<bool> bot_integration_test::parallel_scenarios(std::vector<std::pair
     return context->promise->task();
 }
 
-async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot& bot, const game_resp::id& response)
+async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot& bot, const game_resp::id& resp)
 {
     if (this->is_ready() == false)
         co_return;
@@ -269,7 +270,7 @@ async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot& bot,
     co_return;
 }
 
-async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot& bot, const game_resp::position& response)
+async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot& bot, const game_resp::position& resp)
 {
     if (this->is_ready() == false)
         co_return;
@@ -284,7 +285,7 @@ async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot& bot,
 }
 
 async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bot&                      bot,
-                                                                const game_resp::update_external<true>& response)
+                                                                const game_resp::update_external<true>& resp)
 {
     if (bot.inited() == false)
     {

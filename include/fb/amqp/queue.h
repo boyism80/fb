@@ -44,7 +44,7 @@ public:
     void                            invoke_async(const std::vector<uint8_t>& message);
 
     template <typename R>
-    void handler(const std::function<async::task<void>(R&)>& fn)
+    void handler(std::function<async::task<void>(R&)> fn)
     {
         auto cmd = static_cast<uint32_t>(R::FlatBufferProtocolType);
         this->handler(cmd, [this, fn](const uint8_t* ptr) -> async::task<void> {
@@ -53,7 +53,7 @@ public:
         });
     }
 
-    void handler(uint32_t cmd, const handle_func& fn);
+    void handler(uint32_t cmd, handle_func&& fn);
 };
 
 } // namespace fb::amqp

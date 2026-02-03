@@ -63,5 +63,5 @@ async::task<void> bot_container::dispatch(uint32_t id, std::function<async::task
 {
     auto index  = id % this->threads.size();
     auto thread = this->threads[index];
-    co_await thread->dispatch(fn);
+    co_await thread->dispatch(std::move(fn));
 }

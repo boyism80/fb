@@ -85,50 +85,51 @@ public:
     }
 
 public:
-    std::shared_ptr<fb::timer>      settimer(const fb::timer::handle_callback_type& fn,
-                                             const fb::model::timespan&             duration,
-                                             fb::timer::repeat_type                 repeat = fb::timer::repeat_type::repeat);
+    std::shared_ptr<fb::timer>      settimer(fb::timer::handle_callback_type&& fn,
+                                             const fb::model::timespan&        duration,
+                                             fb::timer::repeat_type            repeat = fb::timer::repeat_type::repeat);
     [[nodiscard]] async::task<void> sleep(const fb::model::timespan& duration);
-    void                            enqueue(const handle_func_type<void>& fn,
-                                            const handle_error_type&      error,
-                                            const std::function<void()>&  callback);
+    void enqueue(handle_func_type<void>&& fn, handle_error_type&& error, std::function<void()>&& callback);
 
-    template <typename ReturnType> void enqueue(const handle_func_type<ReturnType>&      fn,
-                                                const handle_error_type&                 error,
-                                                const std::function<void(ReturnType&&)>& callback)
+    template <typename ReturnType> void enqueue(handle_func_type<ReturnType>&&      fn,
+                                                handle_error_type&&                 error,
+                                                std::function<void(ReturnType&&)>&& callback)
     {
-        this->_queue.write([=, this](auto& queue) {
-            queue.push([=, this]() {
-                async::awaitable_then(fn(*this), [&](async::awaitable_result<ReturnType> result) {
-                    try
-                    {
-                        callback(result());
-                    }
-                    catch (std::exception& e)
-                    {
-                        error(e);
-                    }
-                    catch (...)
-                    {
-                        try
-                        {
-                            std::rethrow_exception(std::current_exception());
-                        }
-                        catch (std::exception& e)
-                        {
-                            error(e);
-                        }
-                    }
-                });
+        this->_queue.write([fn = std::move(fn), error = std::move(error), callback = std::move(callback), this](
+                               auto& queue) {
+            queue.push([fn = std::move(fn), error = std::move(error), callback = std::move(callback), this]() {
+                async::awaitable_then(fn(*this),
+                                      [fn = std::move(fn), error = std::move(error), callback = std::move(callback)](
+                                          async::awaitable_result<ReturnType> result) {
+                                          try
+                                          {
+                                              callback(result());
+                                          }
+                                          catch (std::exception& e)
+                                          {
+                                              error(e);
+                                          }
+                                          catch (...)
+                                          {
+                                              try
+                                              {
+                                                  std::rethrow_exception(std::current_exception());
+                                              }
+                                              catch (std::exception& e)
+                                              {
+                                                  error(e);
+                                              }
+                                          }
+                                      });
             });
         });
     }
 
-    template <typename ReturnType> async::task<ReturnType> dispatch(const handle_func_type<ReturnType>& fn)
+    template <typename ReturnType> async::task<ReturnType> dispatch(handle_func_type<ReturnType>&& fn)
     {
         auto promise = std::make_shared<async::task_completion_source<ReturnType>>();
         this->enqueue<ReturnType>(
-            fn,
+            std::move(fn),
             [promise](std::exception& e) {
                 promise->set_exception(std::make_exception_ptr(e));
             },
@@ -138,7 +139,7 @@ public:
         return promise->task();
     }
 
-    [[nodiscard]] async::task<void> dispatch(const handle_func_type<void>& fn);
+    [[nodiscard]] async::task<void> dispatch(handle_func_type<void>&& fn);
     [[nodiscard]] async::task<void> switching();
     size_t                          queue_size() const;
     std::string                     to_string() const;

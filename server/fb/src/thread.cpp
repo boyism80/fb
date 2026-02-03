@@ -92,9 +92,9 @@ void fb::thread::exit()
     this->_exit = true;
 }
 
-std::shared_ptr<fb::timer> fb::thread::settimer(const fb::timer::handle_callback_type& fn,
-                                                const fb::model::timespan&             duration,
-                                                fb::timer::repeat_type                 repeat)
+std::shared_ptr<fb::timer> fb::thread::settimer(fb::timer::handle_callback_type&& fn,
+                                                const fb::model::timespan&        duration,
+                                                fb::timer::repeat_type            repeat)
 {
     if (this->id() != std::this_thread::get_id())
     {
@@ -137,38 +137,39 @@ async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
     return promise->task();
 }
 
-void fb::thread::enqueue(const handle_func_type<void>& fn,
-                         const handle_error_type&      error,
-                         const std::function<void()>&  callback)
+void fb::thread::enqueue(handle_func_type<void>&& fn, handle_error_type&& error, std::function<void()>&& callback)
 {
-    this->_queue.write([=, this](auto& queue) {
-        queue.push([=, this]() {
-            async::awaitable_then(fn(*this), [=](async::awaitable_result<void> result) {
-                try
-                {
-                    callback();
-                }
-                catch (std::exception& e)
-                {
-                    error(e);
-                }
-                catch (...)
-                {
-                    try
-                    {
-                        std::rethrow_exception(std::current_exception());
-                    }
-                    catch (std::exception& e)
-                    {
-                        error(e);
-                    }
-                }
+    this->_queue.write(
+        [fn = std::move(fn), error = std::move(error), callback = std::move(callback), this](auto& queue) {
+            queue.push([fn = std::move(fn), error = std::move(error), callback = std::move(callback), this]() {
+                async::awaitable_then(fn(*this),
+                                      [fn = std::move(fn), error = std::move(error), callback = std::move(callback)](
+                                          async::awaitable_result<void> result) {
+                                          try
+                                          {
+                                              callback();
+                                          }
+                                          catch (std::exception& e)
+                                          {
+                                              error(e);
+                                          }
+                                          catch (...)
+                                          {
+                                              try
+                                              {
+                                                  std::rethrow_exception(std::current_exception());
+                                              }
+                                              catch (std::exception& e)
+                                              {
+                                                  error(e);
+                                              }
+                                          }
+                                      });
             });
         });
-    });
 }
 
-async::task<void> fb::thread::dispatch(const handle_func_type<void>& fn)
+async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn)
 {
     auto promise = std::make_shared<async::task_completion_source<void>>();
     if (this->id() == std::this_thread::get_id())
@@ -192,7 +193,7 @@ async::task<void> fb::thread::dispatch(const handle_func_type<void>& fn)
     else
     {
         this->enqueue(
-            fn,
+            std::move(fn),
             [promise](std::exception& e) {
                 promise->set_exception(std::make_exception_ptr(e));
             },

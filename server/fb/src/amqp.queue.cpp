@@ -119,7 +119,7 @@ void queue::invoke_async(const std::vector<uint8_t>& message)
     }
 }
 
-void queue::handler(uint32_t cmd, const handle_func& fn)
+void queue::handler(uint32_t cmd, handle_func&& fn)
 {
-    this->_handler.insert({cmd, fn});
+    this->_handler.insert({cmd, std::move(fn)});
 }
