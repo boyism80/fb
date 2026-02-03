@@ -323,7 +323,7 @@ struct character::listener_t : public virtual life::listener_t,
 {
 public:
     // clang-format off
-    virtual void              on_message(character& me, std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE)                                                 = 0;
+    virtual void              on_message(character& me, std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE)                                                   = 0;
     virtual void              on_option_changed(character& me, OPTION option, bool enabled)                                                                                  = 0;
     virtual void              on_update_option(character& me)                                                                                                                = 0;
     virtual void              on_update_map(character& ch, const fb::game::map& map)                                                                                         = 0;
@@ -340,7 +340,7 @@ public:
     virtual void              on_show_bulletin(character& ch, const bulletin::article& value, BULLETIN_BUTTON_ENABLE flag)                                                   = 0;
     virtual void              on_show_mail_box(character& ch, const std::vector<mail_box::summary>& mails, MAIL_BUTTON_ENABLE flag)                                          = 0;
     virtual void              on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag)                                                           = 0;
-    virtual void              on_show_bulletin_message(character& ch, std::string_view message, bool success, bool mail)                                                   = 0;
+    virtual void              on_show_bulletin_message(character& ch, std::string_view message, bool success, bool mail)                                                     = 0;
     virtual void              on_show_world_map(character& ch, uint32_t id, uint16_t index)                                                                                  = 0;
     virtual void              on_timer(character& ch, uint32_t time, TIMER_TYPE type)                                                                                        = 0;
     virtual void              on_weather(character& ch, WEATHER_TYPE weather)                                                                                                = 0;
