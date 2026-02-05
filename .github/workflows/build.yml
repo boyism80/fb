@@ -597,6 +597,8 @@ jobs:
         shell: powershell
         run: |
           if (Test-Path "resources\maps\maps.zip") {
+            if (Test-Path "build\maps") { Remove-Item "build\maps" -Recurse -Force }
+            New-Item -ItemType Directory -Force -Path "build\maps" | Out-Null
             Expand-Archive -Path "resources\maps\maps.zip" -DestinationPath "build\maps" -Force
           } else {
             Write-Host "Warning: resources\maps\maps.zip not found"
@@ -606,6 +608,8 @@ jobs:
         shell: powershell
         run: |
           if (Test-Path "server\game\scripts") {
+            if (Test-Path "build\scripts") { Remove-Item "build\scripts" -Recurse -Force }
+            New-Item -ItemType Directory -Force -Path "build\scripts" | Out-Null
             Copy-Item -Path "server\game\scripts\*" -Destination "build\scripts" -Recurse -Force
           } else {
             Write-Host "Warning: server\game\scripts not found"
