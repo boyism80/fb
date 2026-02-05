@@ -36,7 +36,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build fb/data image first - required by fb/build and HTTP servers
       - name: Extract metadata for data
         id: meta-data
         uses: docker/metadata-action@v5
@@ -59,7 +58,6 @@ jobs:
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/data:buildcache,mode=max
           file: server/fb/data/Dockerfile
 
-      # Build fb/build image - depends on fb/data being available in registry
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5

@@ -17,7 +17,7 @@ RUN cmake --build . --config ${BUILD_TYPE} --parallel 32
 FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
 WORKDIR /app
 COPY --from=build /app/bot/build/app ./bot
-COPY --from=build /fb/data/json/server/ /app/json/
+COPY --from=ghcr.io/boyism80/fb/data:latest /fb/data/json/server/ /app/json/
 
 WORKDIR /app
 CMD ["./bot"]

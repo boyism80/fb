@@ -86,8 +86,6 @@ RUN cmake --build . --parallel 32
 RUN make install
 
 RUN rm -rf /app
-WORKDIR /fb/data
-COPY --from=ghcr.io/boyism80/fb/data:latest /fb/data/json/server ./json/server
 WORKDIR /
 RUN ldconfig
 
