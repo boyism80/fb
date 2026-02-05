@@ -21,7 +21,7 @@ WORKDIR /app
 COPY --from=build /app/game/build/app ./game
 COPY --from=build /app/maps/ ./maps/
 COPY server/game/scripts/ ./scripts/
-COPY --from=build /fb/data/json/server/ ./json/
+COPY --from=ghcr.io/boyism80/fb/data:latest /fb/data/json/server/ ./json/
 
 WORKDIR /app
 CMD ["./game"]

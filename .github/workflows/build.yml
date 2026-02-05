@@ -36,6 +36,28 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata for data
+        id: meta-data
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/data
+          flavor: |
+            latest=true
+
+      - name: Build data image
+        uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+          DOCKER_BUILD_SUMMARY: false
+        with:
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta-data.outputs.tags }}
+          labels: ${{ steps.meta-data.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/data:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/data:buildcache,mode=max
+          file: server/fb/data/Dockerfile
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -571,6 +593,42 @@ jobs:
       - name: Build marketplace
         run: dotnet publish server/marketplace/marketplace.csproj -c Release -o build/marketplace
 
+      - name: Extract maps
+        shell: powershell
+        run: |
+          if (Test-Path "resources\maps\maps.zip") {
+            Expand-Archive -Path "resources\maps\maps.zip" -DestinationPath "build\maps" -Force
+          } else {
+            Write-Host "Warning: resources\maps\maps.zip not found"
+          }
+
+      - name: Copy scripts
+        shell: powershell
+        run: |
+          if (Test-Path "server\game\scripts") {
+            Copy-Item -Path "server\game\scripts\*" -Destination "build\scripts" -Recurse -Force
+          } else {
+            Write-Host "Warning: server\game\scripts not found"
+          }
+
+      - name: Copy config files
+        shell: powershell
+        run: |
+          $configs = @(
+            @{source="server\gateway\config\config.dev.json"; dest="build\config.gateway.json"},
+            @{source="server\login\config\config.dev.json"; dest="build\config.login.json"},
+            @{source="server\game\config\config.dev.json"; dest="build\config.game.json"}
+          )
+          
+          foreach ($config in $configs) {
+            if (Test-Path $config.source) {
+              Copy-Item -Path $config.source -Destination $config.dest -Force
+              Write-Host "Copied $($config.source) to $($config.dest)"
+            } else {
+              Write-Host "Warning: $($config.source) not found"
+            }
+          }
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -584,6 +642,11 @@ jobs:
             build/admin-tool
             build/log
             build/marketplace
+            build/maps
+            build/scripts
+            build/config.gateway.json
+            build/config.login.json
+            build/config.game.json
           retention-days: 7
 
       - name: Zip the downloaded artifact
