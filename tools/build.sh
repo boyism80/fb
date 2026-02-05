@@ -10,6 +10,11 @@ pushd ..
 echo "Retrieving external IP..."
 EXTERNAL_IP=$(curl -s https://ifconfig.me)
 
+sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/data:latest -f server/fb/data/Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/data failed"
+    exit $?
+fi
 sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/build:latest --build-arg BUILD_TYPE=$BUILD_TYPE -f server/fb/Dockerfile .
 if [ $? -ne 0 ]; then
     echo "build fb/build failed"
