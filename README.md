@@ -15,26 +15,31 @@ fb is a 2D MMORPG game server written in C++20.
 
 ![Architecture](resources/image/architecture.png)
 
-The server is organized into three layers:
+The server is organized around **worlds**: each world has its own data and services, while some services are shared across all worlds.
 
-### Infrastructure Layer (infra)
-- **MySQL (Global)**: Stores global data shared across all servers (accounts, global configuration)
-- **MySQL (Data)**: Sharded databases for game data (characters, items, etc.)
-- **MySQL (Log)**: Sharded databases dedicated to logging (player actions, system events)
-- **Redis**: Distributed cache layer for hot data, reducing database load
-- **RabbitMQ (Data)**: Message broker for inter-server notifications and events
-- **RabbitMQ (Log)**: Message broker for asynchronous log processing
+### Shared services (world-independent)
+- **Gateway**: The single entry point for all clients. It checks client version, issues encryption keys, and provides a list of available worlds and their login servers. Clients connect to Gateway first, then to the chosen world's Login.
+- **Internal**: Central service that all Gateway, Login, and Game instances communicate with. It handles database operations, synchronizes global resources (e.g., parties, clans), and broadcasts notifications via RabbitMQ.
+- **Marketplace**: Shared service used by all worlds' Game servers for in-game marketplace operations.
 
-### Private Layer (private)
-- **Internal**: Enables communication between the gateway, login, and game servers, and manages database operations. It synchronizes global resources (e.g., parties, clans) and broadcasts notifications via RabbitMQ (Data).
-- **Write-back**: A standalone process that persists cached data from Redis to MySQL (Data/Global). It batches database writes for optimal performance.
-- **Log Scheduler**: Consumes log messages from RabbitMQ (Log) and writes them directly to MySQL (Log) without going through the write-back process.
+### Per-world structure
+Each world is organized into three layers:
 
-### Public Layer (public)
-Publicly accessible services that clients can directly connect to:
-- **Gateway**: The first point of contact for clients. It checks client version, issues encryption keys, and provides a list of available login servers.
-- **Login**: Handles account-related tasks like character creation and password changes, then directs clients to a game server. It communicates with other servers via the internal service.
-- **Game**: Runs one process per zone rather than scaling out. It also uses the internal service to communicate with other game servers.
+**Infrastructure (infra)** — per world:
+- **MySQL (Global)**: Global data for that world (accounts, configuration).
+- **MySQL (Data)**: Sharded databases for game data (characters, items, etc.).
+- **MySQL (Log)**: Sharded databases for logging (player actions, system events).
+- **Redis**: Cache layer for hot data (global + data shards).
+
+**Private** — per world:
+- **Write-back**: Persists cached data from Redis to MySQL (Global/Data) for that world. One instance per world.
+- **Log**: Consumes log messages from the shared RabbitMQ (Log) and writes them to that world's MySQL (Log).
+
+**Public** — per world (clients connect to these after choosing a world):
+- **Login**: Handles account-related tasks (character creation, password changes) and directs clients to a Game server in the same world. Communicates with Internal.
+- **Game**: Game logic and sessions. Multiple processes (containers) per world. Communicates with Internal and Marketplace.
+
+Shared infrastructure used by Internal, Marketplace, Log, etc. (not per-world) includes **Unified** MySQL, Redis, and **RabbitMQ** (Internal / Log).
 
 ## Map division
 
@@ -49,7 +54,7 @@ The game server divides each map into sectors. When an object's position changes
 All game logic for objects on the same map runs on the same logic thread. The I/O thread receives data and posts packets to the appropriate logic thread's queue. The logic thread parses the packet and runs the handler. We assign the logic thread by map ID:
 
 ```cpp
-thread_id = character.map.id % (logic_thread.length+1)
+thread_index = map.id % logic_thread_count
 ```
 
 This ensures objects on the same map are always processed by the same thread, eliminating locks between nearby objects. However, uneven map distribution can overload a single thread, and communication between different maps becomes more complex. You can configure the counts of I/O and logic threads in the config file.
