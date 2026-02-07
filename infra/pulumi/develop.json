@@ -81,51 +81,16 @@
                     }
                 ]
             },
-            "rabbitmq": {
-                "internal": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5672,
-                            "node": 30300
-                        },
-                        "management": {
-                            "cluster": 15672,
-                            "node": 30301
-                        }
-                    },
-                    "replicas": 4
-                },
-                "log": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5673,
-                            "node": 30302
-                        },
-                        "management": {
-                            "cluster": 15673,
-                            "node": 30303
-                        }
-                    },
-                    "replicas": 4
-                }
-            },
             "log": {
                 "port": {
                     "cluster": 80,
                     "node": 30400
-                },
-                "rabbitmq": "world-1"
+                }
             },
             "login": {
                 "port": 30010
             },
             "game": {
-                "marketplace": "world-1",
-                "login": "world-1",
-                "db": "world-1",
-                "redis": "world-1",
-                "rabbitmq": "world-1",
-                "log": "world-1",
                 "containers": {
                     "0": {
                         "port": 30030
@@ -300,51 +265,16 @@
                     }
                 ]
             },
-            "rabbitmq": {
-                "internal": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5674,
-                            "node": 30310
-                        },
-                        "management": {
-                            "cluster": 15674,
-                            "node": 30311
-                        }
-                    },
-                    "replicas": 4
-                },
-                "log": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5675,
-                            "node": 30312
-                        },
-                        "management": {
-                            "cluster": 15675,
-                            "node": 30313
-                        }
-                    },
-                    "replicas": 4
-                }
-            },
             "log": {
                 "port": {
                     "cluster": 80,
                     "node": 30410
-                },
-                "rabbitmq": "world-2"
+                }
             },
             "login": {
                 "port": 30011
             },
             "game": {
-                "marketplace": "world-1",
-                "login": "world-2",
-                "db": "world-2",
-                "redis": "world-2",
-                "rabbitmq": "world-2",
-                "log": "world-2",
                 "containers": {
                     "0": {
                         "port": 30056
@@ -510,51 +440,16 @@
                     }
                 ]
             },
-            "rabbitmq": {
-                "internal": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5676,
-                            "node": 30320
-                        },
-                        "management": {
-                            "cluster": 15676,
-                            "node": 30321
-                        }
-                    },
-                    "replicas": 4
-                },
-                "log": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5677,
-                            "node": 30322
-                        },
-                        "management": {
-                            "cluster": 15677,
-                            "node": 30323
-                        }
-                    },
-                    "replicas": 4
-                }
-            },
             "log": {
                 "port": {
                     "cluster": 80,
                     "node": 30420
-                },
-                "rabbitmq": "world-3"
+                }
             },
             "login": {
                 "port": 30012
             },
             "game": {
-                "marketplace": "world-1",
-                "login": "world-3",
-                "db": "world-3",
-                "redis": "world-3",
-                "rabbitmq": "world-3",
-                "log": "world-3",
                 "containers": {
                     "0": {
                         "port": 30082
@@ -720,51 +615,16 @@
                     }
                 ]
             },
-            "rabbitmq": {
-                "internal": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5678,
-                            "node": 30330
-                        },
-                        "management": {
-                            "cluster": 15678,
-                            "node": 30331
-                        }
-                    },
-                    "replicas": 4
-                },
-                "log": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5679,
-                            "node": 30332
-                        },
-                        "management": {
-                            "cluster": 15679,
-                            "node": 30333
-                        }
-                    },
-                    "replicas": 4
-                }
-            },
             "log": {
                 "port": {
                     "cluster": 80,
                     "node": 30430
-                },
-                "rabbitmq": "world-4"
+                }
             },
             "login": {
                 "port": 30013
             },
             "game": {
-                "marketplace": "world-1",
-                "login": "world-4",
-                "db": "world-4",
-                "redis": "world-4",
-                "rabbitmq": "world-4",
-                "log": "world-4",
                 "containers": {
                     "0": {
                         "port": 30108
@@ -930,51 +790,16 @@
                     }
                 ]
             },
-            "rabbitmq": {
-                "internal": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5680,
-                            "node": 30340
-                        },
-                        "management": {
-                            "cluster": 15680,
-                            "node": 30341
-                        }
-                    },
-                    "replicas": 4
-                },
-                "log": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5681,
-                            "node": 30342
-                        },
-                        "management": {
-                            "cluster": 15681,
-                            "node": 30343
-                        }
-                    },
-                    "replicas": 4
-                }
-            },
             "log": {
                 "port": {
                     "cluster": 80,
                     "node": 30440
-                },
-                "rabbitmq": "world-5"
+                }
             },
             "login": {
                 "port": 30014
             },
             "game": {
-                "marketplace": "world-1",
-                "login": "world-5",
-                "db": "world-5",
-                "redis": "world-5",
-                "rabbitmq": "world-5",
-                "log": "world-5",
                 "containers": {
                     "0": {
                         "port": 30134
@@ -1140,51 +965,16 @@
                     }
                 ]
             },
-            "rabbitmq": {
-                "internal": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5682,
-                            "node": 30350
-                        },
-                        "management": {
-                            "cluster": 15682,
-                            "node": 30351
-                        }
-                    },
-                    "replicas": 4
-                },
-                "log": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5683,
-                            "node": 30352
-                        },
-                        "management": {
-                            "cluster": 15683,
-                            "node": 30353
-                        }
-                    },
-                    "replicas": 4
-                }
-            },
             "log": {
                 "port": {
                     "cluster": 80,
                     "node": 30450
-                },
-                "rabbitmq": "world-6"
+                }
             },
             "login": {
                 "port": 30015
             },
             "game": {
-                "marketplace": "world-1",
-                "login": "world-6",
-                "db": "world-6",
-                "redis": "world-6",
-                "rabbitmq": "world-6",
-                "log": "world-6",
                 "containers": {
                     "0": {
                         "port": 30160
@@ -1350,51 +1140,16 @@
                     }
                 ]
             },
-            "rabbitmq": {
-                "internal": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5684,
-                            "node": 30360
-                        },
-                        "management": {
-                            "cluster": 15684,
-                            "node": 30361
-                        }
-                    },
-                    "replicas": 4
-                },
-                "log": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5685,
-                            "node": 30362
-                        },
-                        "management": {
-                            "cluster": 15685,
-                            "node": 30363
-                        }
-                    },
-                    "replicas": 4
-                }
-            },
             "log": {
                 "port": {
                     "cluster": 80,
                     "node": 30460
-                },
-                "rabbitmq": "world-7"
+                }
             },
             "login": {
                 "port": 30016
             },
             "game": {
-                "marketplace": "world-1",
-                "login": "world-7",
-                "db": "world-7",
-                "redis": "world-7",
-                "rabbitmq": "world-7",
-                "log": "world-7",
                 "containers": {
                     "0": {
                         "port": 30186
@@ -1560,51 +1315,16 @@
                     }
                 ]
             },
-            "rabbitmq": {
-                "internal": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5686,
-                            "node": 30370
-                        },
-                        "management": {
-                            "cluster": 15686,
-                            "node": 30371
-                        }
-                    },
-                    "replicas": 4
-                },
-                "log": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5687,
-                            "node": 30372
-                        },
-                        "management": {
-                            "cluster": 15687,
-                            "node": 30373
-                        }
-                    },
-                    "replicas": 4
-                }
-            },
             "log": {
                 "port": {
                     "cluster": 80,
                     "node": 30470
-                },
-                "rabbitmq": "world-8"
+                }
             },
             "login": {
                 "port": 30017
             },
             "game": {
-                "marketplace": "world-1",
-                "login": "world-8",
-                "db": "world-8",
-                "redis": "world-8",
-                "rabbitmq": "world-8",
-                "log": "world-8",
                 "containers": {
                     "0": {
                         "port": 30212
@@ -1770,51 +1490,16 @@
                     }
                 ]
             },
-            "rabbitmq": {
-                "internal": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5688,
-                            "node": 30380
-                        },
-                        "management": {
-                            "cluster": 15688,
-                            "node": 30381
-                        }
-                    },
-                    "replicas": 4
-                },
-                "log": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5689,
-                            "node": 30382
-                        },
-                        "management": {
-                            "cluster": 15689,
-                            "node": 30383
-                        }
-                    },
-                    "replicas": 4
-                }
-            },
             "log": {
                 "port": {
                     "cluster": 80,
                     "node": 30480
-                },
-                "rabbitmq": "world-9"
+                }
             },
             "login": {
                 "port": 30018
             },
             "game": {
-                "marketplace": "world-1",
-                "login": "world-9",
-                "db": "world-9",
-                "redis": "world-9",
-                "rabbitmq": "world-9",
-                "log": "world-9",
                 "containers": {
                     "0": {
                         "port": 30238
@@ -1980,51 +1665,16 @@
                     }
                 ]
             },
-            "rabbitmq": {
-                "internal": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5690,
-                            "node": 30390
-                        },
-                        "management": {
-                            "cluster": 15690,
-                            "node": 30391
-                        }
-                    },
-                    "replicas": 4
-                },
-                "log": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5691,
-                            "node": 30392
-                        },
-                        "management": {
-                            "cluster": 15691,
-                            "node": 30393
-                        }
-                    },
-                    "replicas": 4
-                }
-            },
             "log": {
                 "port": {
                     "cluster": 80,
                     "node": 30490
-                },
-                "rabbitmq": "world-10"
+                }
             },
             "login": {
                 "port": 30019
             },
             "game": {
-                "marketplace": "world-1",
-                "login": "world-10",
-                "db": "world-10",
-                "redis": "world-10",
-                "rabbitmq": "world-10",
-                "log": "world-10",
                 "containers": {
                     "0": {
                         "port": 30264
@@ -2190,51 +1840,16 @@
                     }
                 ]
             },
-            "rabbitmq": {
-                "internal": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5692,
-                            "node": 30400
-                        },
-                        "management": {
-                            "cluster": 15692,
-                            "node": 30401
-                        }
-                    },
-                    "replicas": 4
-                },
-                "log": {
-                    "port": {
-                        "amqp": {
-                            "cluster": 5693,
-                            "node": 30402
-                        },
-                        "management": {
-                            "cluster": 15693,
-                            "node": 30403
-                        }
-                    },
-                    "replicas": 4
-                }
-            },
             "log": {
                 "port": {
                     "cluster": 80,
                     "node": 30500
-                },
-                "rabbitmq": "world-11"
+                }
             },
             "login": {
                 "port": 30020
             },
             "game": {
-                "marketplace": "world-1",
-                "login": "world-11",
-                "db": "world-11",
-                "redis": "world-11",
-                "rabbitmq": "world-11",
-                "log": "world-11",
                 "containers": {
                     "0": {
                         "port": 30290
@@ -2329,9 +1944,7 @@
     },
     "gateway": {
         "port": 30000,
-        "replicas": 3,
-        "redis": "world-1",
-        "log": "world-1"
+        "replicas": 3
     },
     "marketplace": {
         "replicas": 10,
