@@ -3,6 +3,7 @@
 
 #include <fb/handler.h>
 #include <fb/game/server.h>
+#include <memory>
 
 namespace fb::game::handler::protocol {
 
@@ -18,6 +19,15 @@ public:
     bulletin& operator= (bulletin&&)      = delete;
 
     async::task<bool> handle(fb::socket<character>& session, game_reqs::bulletin& request) override;
+
+private:
+    async::task<void> handle_sections(character* ch);
+    async::task<void> handle_articles(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request);
+    async::task<void> handle_article(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request);
+    async::task<void> handle_write(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request);
+    async::task<void> handle_delete(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request);
+    async::task<void> handle_mail(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request);
+    async::task<void> handle_send_mail(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request);
 };
 
 } // namespace fb::game::handler::protocol

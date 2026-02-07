@@ -26,41 +26,28 @@ async::task<bool> trade::handle(fb::socket<character>& session, game_reqs::trade
     switch (request.action)
     {
     case fb::game::trade::state::REQUEST:
-    {
         me->trade.begin(you->shared_from_this_as<character>());
         break;
-    }
 
     case fb::game::trade::state::UP_ITEM:
-    {
-        auto index = request.parameter.index - 1;
-        me->trade.up_item(index);
+        me->trade.up_item(request.parameter.index - 1);
         break;
-    }
 
     case fb::game::trade::state::ITEM_COUNT:
-    {
         me->trade.count(request.parameter.count);
         break;
-    }
 
     case fb::game::trade::state::UP_MONEY:
-    {
         me->trade.up_money(request.parameter.money);
         break;
-    }
 
     case fb::game::trade::state::CANCEL:
-    {
         me->trade.cancel();
         break;
-    }
 
     case fb::game::trade::state::LOCK:
-    {
         me->trade.lock();
         break;
-    }
     }
 
     co_return true;

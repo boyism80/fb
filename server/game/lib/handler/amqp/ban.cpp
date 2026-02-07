@@ -46,7 +46,15 @@ async::task<void> ban::handle(const internal_resp::Ban& message)
     ch->message(build_ban_message(message.reason, message.expire_date), MESSAGE_TYPE::POPUP);
 
     co_await ch->thread()->sleep(1s);
+
+    // Character may have disconnected during sleep; re-validate before closing socket
+    ch = weak.lock();
+    if (ch == nullptr)
+        co_return;
+
     auto socket_ptr = ch->socket_ptr();
-    if (socket_ptr != nullptr)
-        socket_ptr->close();
+    if (socket_ptr == nullptr)
+        co_return;
+
+    socket_ptr->close();
 }
