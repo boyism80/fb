@@ -377,7 +377,7 @@ async::task<void> server::on_create_group(const internal_resp::GroupDetails& res
                             if (member_ptr == nullptr)
                                 continue;
 
-                            // Send "{}님 그룹 참여" message for other members
+                            // Send group-join notification to other members
                             for (auto& other_member : resp.members)
                             {
                                 if (other_member.name != member_ptr->name())
@@ -387,7 +387,7 @@ async::task<void> server::on_create_group(const internal_resp::GroupDetails& res
                                 }
                             }
 
-                            // Send "그룹에 참여했습니다." message
+                            // Send "joined the group" message to joiner
                             member_ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
                         }
                         co_return;

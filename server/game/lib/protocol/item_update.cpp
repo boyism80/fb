@@ -32,7 +32,7 @@ async::task<void> item_update::serialize(fb::stream_writer<big_endian>& writer) 
 async::task<void> item_update::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->index = reader.read<uint8_t>() - 1; // index + 1이므로 -1
+    this->index = reader.read<uint8_t>() - 1; // Client sends 1-based index
     this->look  = reader.read<uint16_t>();
     this->color = reader.read<uint8_t>();
     this->name  = reader.read<std::string, uint8_t>();

@@ -184,13 +184,13 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         if (this == obj.get())
             continue;
 
-        // 상대 시야에서 내가 사라짐
+        // I left the other object's sight
         if (obj->sight(before) && !obj->sight(*this))
         {
             this->hide(*obj);
         }
 
-        // 내 시야에서 상대방이 사라짐
+        // Other object left my sight
         if (sight(before, obj->_position, this->_map) && !this->sight(*obj))
         {
             obj->hide(*this);
@@ -207,11 +207,11 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
             auto before_sight = obj->sight(before);
             auto after_sight  = obj->sight(*this);
 
-            if (!before_sight && after_sight) // 상대 시야에 내가 추가됨
+            if (!before_sight && after_sight) // I entered the other object's sight
             {
                 this->update_external(*obj, true);
             }
-            else if (refresh && before_sight && after_sight) // 상대 시야에 원래 있었는데 위치 강제이동
+            else if (refresh && before_sight && after_sight) // Force refresh while already in sight
             {
                 this->update_external(*obj, true);
             }
@@ -220,7 +220,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
             }
         }
 
-        // 내 시야에 상대가 추가됨
+        // Other object entered my sight
         if (obj->hidden(*this) == false)
         {
             if (!sight(before, obj->_position, this->_map) && this->sight(*obj))
@@ -391,12 +391,12 @@ bool object::sight(const fb::model::point16_t me, const fb::model::point16_t you
 {
     fb::model::point16_t begin, end;
 
-    if (me.x <= map::HALF_SCREEN_WIDTH) // 최좌측
+    if (me.x <= map::HALF_SCREEN_WIDTH) // Left edge
     {
         begin.x = 0;
         end.x   = map::MAX_SCREEN_WIDTH;
     }
-    else if (me.x >= map->width() - map::HALF_SCREEN_WIDTH) // 최우측
+    else if (me.x >= map->width() - map::HALF_SCREEN_WIDTH) // Right edge
     {
         begin.x = std::max(int32_t(0), int32_t(map->width() - map::MAX_SCREEN_WIDTH - 1));
         end.x   = std::max(int32_t(0), int32_t(map->width() - 1));
@@ -407,12 +407,12 @@ bool object::sight(const fb::model::point16_t me, const fb::model::point16_t you
         end.x   = std::max(int32_t(0), int32_t(me.x + map::HALF_SCREEN_WIDTH + 1));
     }
 
-    if (me.y <= map::HALF_SCREEN_HEIGHT) // 최상단
+    if (me.y <= map::HALF_SCREEN_HEIGHT) // Top edge
     {
         begin.y = 0;
         end.y   = map::MAX_SCREEN_HEIGHT;
     }
-    else if (me.y >= map->height() - map::HALF_SCREEN_HEIGHT) // 최하단
+    else if (me.y >= map->height() - map::HALF_SCREEN_HEIGHT) // Bottom edge
     {
         begin.y = std::max(int32_t(0), int32_t(map->height() - map::MAX_SCREEN_HEIGHT - 1));
         end.y   = std::max(int32_t(0), map->height() - 1);

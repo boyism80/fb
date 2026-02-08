@@ -25,7 +25,7 @@ async::task<void> spell_remove::serialize(fb::stream_writer<big_endian>& writer)
 async::task<void> spell_remove::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->index = reader.read<uint8_t>() - 1; // index + 1이므로 -1
+    this->index = reader.read<uint8_t>() - 1; // Client sends 1-based index
     reader.read<uint8_t>();                   // 0x00
 }
 #endif

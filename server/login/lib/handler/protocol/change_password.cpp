@@ -45,7 +45,7 @@ async::task<bool> change_password::handle(fb::socket<fb::login::session>&       
             request.new_pw.length() > fb::config("pw_size:max").asInt())
             throw newpw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
 
-        // TODO : 너무 쉬운 비밀번호인지 체크
+        // TODO: Check if password is too weak
         if (request.pw == request.new_pw)
             throw newpw_exception(_TEXT(MESSAGE_ACCOUNT_NEW_PW_EQUALIZATION));
 

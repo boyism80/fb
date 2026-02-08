@@ -21,21 +21,16 @@ async::task<bool> dialog::handle(fb::socket<character>& session, game_reqs::dial
     switch (request.interaction)
     {
     case fb::game::dialog::interaction::NORMAL:
-    {
         lua->pushinteger(request.action);
         lua->resume(1);
         break;
-    }
 
     case fb::game::dialog::interaction::INPUT:
-    {
         lua->pushstring(request.message);
         lua->resume(1);
         break;
-    }
 
     case fb::game::dialog::interaction::INPUT_EX:
-    {
         if (request.action == 0x02) // OK button
             lua->pushstring(request.message);
         else
@@ -43,17 +38,13 @@ async::task<bool> dialog::handle(fb::socket<character>& session, game_reqs::dial
 
         lua->resume(1);
         break;
-    }
 
     case fb::game::dialog::interaction::MENU:
-    {
         lua->pushinteger(request.index);
         lua->resume(1);
         break;
-    }
 
     case fb::game::dialog::interaction::LIST:
-    {
         if (request.button == DIALOG_RESULT::NEXT)
             lua->pushinteger(request.index);
         else
@@ -62,26 +53,19 @@ async::task<bool> dialog::handle(fb::socket<character>& session, game_reqs::dial
         lua->pushinteger(static_cast<uint32_t>(request.button));
         lua->resume(2);
         break;
-    }
 
     case fb::game::dialog::interaction::SLOT:
-    {
         lua->pushinteger(request.index);
         lua->resume(1);
         break;
-    }
 
     case fb::game::dialog::interaction::ITEM:
-    {
         lua->pushstring(request.name);
         lua->resume(1);
         break;
-    }
 
     default:
-    {
         break;
-    }
     }
 
     co_return true;

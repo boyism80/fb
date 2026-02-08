@@ -13,8 +13,8 @@ async::task<void> position::serialize(fb::stream_writer<big_endian>& writer) con
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint16_t>(this->ch.x()); // 실제 x 좌표
-    writer.write<uint16_t>(this->ch.y()); // 실제 y 좌표
+    writer.write<uint16_t>(this->ch.x()); // Actual x position
+    writer.write<uint16_t>(this->ch.y()); // Actual y position
 
     auto map = this->ch.map();
     if (map->width() < fb::game::map::MAX_SCREEN_WIDTH)
@@ -26,7 +26,7 @@ async::task<void> position::serialize(fb::stream_writer<big_endian>& writer) con
     else
         writer.write<uint16_t>(fb::game::map::HALF_SCREEN_WIDTH);
 
-    // 스크린에서의 y 좌표
+    // Y position on screen
     if (map->height() < fb::game::map::MAX_SCREEN_HEIGHT)
         writer.write<uint16_t>(this->ch.y() + fb::game::map::HALF_SCREEN_HEIGHT - (map->height() / 2));
     else if (this->ch.y() < fb::game::map::HALF_SCREEN_HEIGHT)

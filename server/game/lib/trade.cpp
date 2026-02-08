@@ -36,45 +36,33 @@ bool trade::begin(std::shared_ptr<fb::game::character> you)
 
     try
     {
+        // Try to trade with yourself
         if (owner->id == you->id)
-        {
-            // 자기 자신과 거래를 하려고 시도하는 경우
             return false;
-        }
 
+        // The owner has refused the trade
         if (owner->option(OPTION::TRADE) == false)
-        {
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_REFUSED_BY_ME));
-        }
 
+        // The partner has refused the trade
         if (you->option(OPTION::TRADE) == false)
-        {
-            // 상대방이 교환 거부중
             throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_REFUSED_BY_PARTNER), you->name()));
-        }
 
+        // The trade is already in progress
         if (this->trading())
-        {
             return false;
-        }
 
+        // The partner is already trading
         if (you->trade.trading())
-        {
-            // 상대방이 이미 교환중
             throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_PARTNER_ALREADY_TRADING), you->name()));
-        }
 
+        // The partner is not in sight
         if (owner->sight(*you) == false)
-        {
-            // 상대방이 시야에서 보이지 않음
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_PARTNER_INVISIBLE));
-        }
 
+        // The distance to the partner is too far
         if (owner->distance_sqrt(*you) > 16)
-        {
-            // 상대방과의 거리가 너무 멈
             throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_PARTNER_TOO_FAR), you->name()));
-        }
 
         this->_you      = you->weak_from_this_as<character>();
         you->trade._you = owner->weak_from_this_as<character>();
@@ -156,22 +144,20 @@ bool trade::up_item(uint8_t index)
 
         if (ENUM_IN(model.attr(), ITEM_ATTRIBUTE::BUNDLE) && item->count() > 1)
         {
-            // 묶음 단위의 아이템 형식 거래 시도
+            // Attempt to trade bundle-type item
             this->_selected = index;
             owner->listener.on_trade_bundle(*owner);
-        }
-        else
-        {
-            // 일반 아이템의 거래 시도
-            item->trade_count(1);
-            auto order = this->add(index);
-            if (order == 0xFF)
-                return false;
-
-            owner->items.update(index);
-            owner->listener.on_trade_item(*owner, *you, order, *this->item(index));
+            return true;
         }
 
+        // Attempt to trade single item
+        item->trade_count(1);
+        auto order = this->add(index);
+        if (order == 0xFF)
+            return false;
+
+        owner->items.update(index);
+        owner->listener.on_trade_item(*owner, *you, order, *this->item(index));
         return true;
     }
     catch (std::exception& e)
@@ -202,8 +188,8 @@ bool trade::up_money(uint32_t money)
     catch (std::exception& e)
     {
         owner->message(e.what(), MESSAGE_TYPE::POPUP);
+        return false;
     }
-
     return false;
 }
 
@@ -454,68 +440,65 @@ bool trade::lock()
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
 
         this->_locked = true;
-        if (you->trade._locked == false) // 상대가 아직 OK 안누름
+        if (you->trade._locked == false) // Peer has not confirmed yet
         {
             owner->listener.on_trade_lock(*owner, *you);
-
             return true;
         }
-        else
+
+        this->exchange(*this, you->trade);
+
+        // Call listener for packet response
+        owner->listener.on_trade_success(*owner, *you);
+
+        // Update state after successful trade
+        owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+        you->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+
+        // Log trade completion
+        auto log_data               = Json::Value();
+        log_data["character1_id"]   = static_cast<Json::Int64>(owner->id);
+        log_data["character1_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
+        log_data["character2_id"]   = static_cast<Json::Int64>(you->id);
+        log_data["character2_name"] = UTF8(you->name(), PLATFORM::WINDOWS);
+        log_data["money1"]          = static_cast<Json::Int64>(this->_money);
+        log_data["money2"]          = static_cast<Json::Int64>(you->trade._money);
+        auto items1                 = std::vector<Json::Value>();
+        for (auto& [index, order] : this->_items)
         {
-            this->exchange(*this, you->trade);
-
-            // Call listener for packet response
-            owner->listener.on_trade_success(*owner, *you);
-
-            // Update state after successful trade
-            owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
-            you->update(UPDATE_STATE_LEVEL::EXP_MONEY);
-
-            // Log trade completion
-            auto log_data               = Json::Value();
-            log_data["character1_id"]   = static_cast<Json::Int64>(owner->id);
-            log_data["character1_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
-            log_data["character2_id"]   = static_cast<Json::Int64>(you->id);
-            log_data["character2_name"] = UTF8(you->name(), PLATFORM::WINDOWS);
-            log_data["money1"]          = static_cast<Json::Int64>(this->_money);
-            log_data["money2"]          = static_cast<Json::Int64>(you->trade._money);
-            auto items1                 = std::vector<Json::Value>();
-            for (auto& [index, order] : this->_items)
+            auto item = owner->items[index];
+            if (item != nullptr)
             {
-                auto item = owner->items[index];
-                if (item != nullptr)
-                {
-                    auto item_data         = Json::Value{};
-                    item_data["item_id"]   = static_cast<Json::Int64>(item->based<fb::model::item>().id);
-                    item_data["item_name"] = UTF8(item->name(), PLATFORM::WINDOWS);
-                    item_data["count"]     = static_cast<Json::Int64>(item->trade_count());
-                    items1.push_back(item_data);
-                }
+                auto item_data         = Json::Value{};
+                item_data["item_id"]   = static_cast<Json::Int64>(item->based<fb::model::item>().id);
+                item_data["item_name"] = UTF8(item->name(), PLATFORM::WINDOWS);
+                item_data["count"]     = static_cast<Json::Int64>(item->trade_count());
+                items1.push_back(item_data);
             }
-            log_data["items1"] = Json::Value(Json::arrayValue);
-            for (auto& item : items1)
-                log_data["items1"].append(item);
-            auto items2 = std::vector<Json::Value>();
-            for (auto& [index, order] : you->trade._items)
-            {
-                auto item = you->items[index];
-                if (item != nullptr)
-                {
-                    auto item_data         = Json::Value{};
-                    item_data["item_id"]   = static_cast<Json::Int64>(item->based<fb::model::item>().id);
-                    item_data["item_name"] = UTF8(item->name(), PLATFORM::WINDOWS);
-                    item_data["count"]     = static_cast<Json::Int64>(item->trade_count());
-                    items2.push_back(item_data);
-                }
-            }
-            log_data["items2"] = Json::Value(Json::arrayValue);
-            for (auto& item : items2)
-                log_data["items2"].append(item);
-            owner->server.log.write("trade_complete", log_data);
-
-            this->end();
-            return true;
         }
+        log_data["items1"] = Json::Value(Json::arrayValue);
+        for (auto& item : items1)
+            log_data["items1"].append(item);
+        auto items2 = std::vector<Json::Value>();
+        for (auto& [index, order] : you->trade._items)
+        {
+            auto item = you->items[index];
+            if (item != nullptr)
+            {
+                auto item_data         = Json::Value{};
+                item_data["item_id"]   = static_cast<Json::Int64>(item->based<fb::model::item>().id);
+                item_data["item_name"] = UTF8(item->name(), PLATFORM::WINDOWS);
+                item_data["count"]     = static_cast<Json::Int64>(item->trade_count());
+                items2.push_back(item_data);
+            }
+        }
+        log_data["items2"] = Json::Value(Json::arrayValue);
+        for (auto& item : items2)
+            log_data["items2"].append(item);
+        owner->server.log.write("trade_complete", log_data);
+
+        this->end();
+        return true;
     }
     catch (std::exception& e)
     {

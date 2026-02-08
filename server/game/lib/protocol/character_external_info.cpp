@@ -33,19 +33,19 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
         writer.write<std::string>("");
     }
 
-    // 클래스 이름
+    // Class name
     const auto& class_name = table::promotion[this->ch.cls()][this->ch.promotion()].name;
-    writer.write<std::string>(class_name);      // 직업
-    writer.write<std::string>(this->ch.name()); // 이름
+    writer.write<std::string>(class_name);      // Job/class
+    writer.write<std::string>(this->ch.name()); // Character name
 
     auto disguised = (this->ch.state() == STATE::DISGUISE);
     writer.write<uint8_t>(disguised);
     writer.write<uint8_t>(static_cast<uint8_t>(this->ch.gender()));
     writer.write<uint8_t>(static_cast<uint8_t>(this->ch.state()));
 
-    auto armor  = this->ch.items.armor();  // 갑옷
-    auto weapon = this->ch.items.weapon(); // 무기
-    auto shield = this->ch.items.shield(); // 방패
+    auto armor  = this->ch.items.armor();  // Armor
+    auto weapon = this->ch.items.weapon(); // Weapon
+    auto shield = this->ch.items.shield(); // Shield
     if (disguised)
     {
         writer.write<uint16_t>(this->ch.disguise().value());
@@ -67,29 +67,29 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
         writer.write<uint8_t>(shield != nullptr ? shield->color() : 0x00);
     }
 
-    // 장비정보
+    // Equipment info
     auto sstream = std::stringstream();
-    auto helmet  = this->ch.items.helmet(); // 투구
+    auto helmet  = this->ch.items.helmet(); // Helmet
     writer.write<uint16_t>(helmet != nullptr ? helmet->look() : 0xFFFF);
     writer.write<uint8_t>(helmet != nullptr ? helmet->color() : 0x00);
 
-    auto ring_l = this->ch.items.ring(EQUIPMENT_POSITION::LEFT); // 왼손
+    auto ring_l = this->ch.items.ring(EQUIPMENT_POSITION::LEFT); // Left ring
     writer.write<uint16_t>(ring_l != nullptr ? ring_l->look() : 0xFFFF);
     writer.write<uint8_t>(ring_l != nullptr ? ring_l->color() : 0x00);
 
-    auto ring_r = this->ch.items.ring(EQUIPMENT_POSITION::RIGHT); // 오른손
+    auto ring_r = this->ch.items.ring(EQUIPMENT_POSITION::RIGHT); // Right ring
     writer.write<uint16_t>(ring_r != nullptr ? ring_r->look() : 0xFFFF);
     writer.write<uint8_t>(ring_r != nullptr ? ring_r->color() : 0x00);
 
-    auto aux_l = this->ch.items.auxiliary(EQUIPMENT_POSITION::LEFT); // 보조1
+    auto aux_l = this->ch.items.auxiliary(EQUIPMENT_POSITION::LEFT); // Auxiliary left
     writer.write<uint16_t>(aux_l != nullptr ? aux_l->look() : 0xFFFF);
     writer.write<uint8_t>(aux_l != nullptr ? aux_l->color() : 0x00);
 
-    auto aux_r = this->ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT); // 보조2
+    auto aux_r = this->ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT); // Auxiliary right
     writer.write<uint16_t>(aux_r != nullptr ? aux_r->look() : 0xFFFF);
     writer.write<uint8_t>(aux_r != nullptr ? aux_r->color() : 0x00);
 
-    // 장비정보 텍스트
+    // Equipment info text (client display)
     sstream << " w:무기  :" << (weapon != nullptr ? weapon->name() : "없음") << std::endl;
     sstream << " a:갑옷  :" << (armor != nullptr ? armor->name() : "없음") << std::endl;
     sstream << " s:방패  :" << (shield != nullptr ? shield->name() : "없음") << std::endl;
@@ -105,7 +105,7 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
     writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
     writer.write<uint32_t>(0x00000000); // unknown
 
-    // 업적
+    // Achievements
     writer.write<uint8_t>((uint8_t)this->ch.achievements.size());
     for (auto& [_, achievement] : this->ch.achievements)
     {

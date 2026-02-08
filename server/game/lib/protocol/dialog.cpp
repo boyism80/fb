@@ -9,9 +9,9 @@ async::task<void> dialog::deserialize(fb::stream_reader<big_endian>& reader)
     this->interaction = static_cast<fb::game::dialog::interaction>(reader.read<uint8_t>());
     switch (static_cast<fb::game::dialog::interaction>(this->interaction))
     {
-    case fb::game::dialog::interaction::NORMAL: // 일반 다이얼로그
+    case fb::game::dialog::interaction::NORMAL: // Normal dialog
     {
-        reader.read(nullptr, 0x07); // 7바이트 무시
+        reader.read(nullptr, 0x07); // Skip 7 bytes
         this->action = reader.read<uint8_t>();
         break;
     }
@@ -26,7 +26,7 @@ async::task<void> dialog::deserialize(fb::stream_reader<big_endian>& reader)
 
     case fb::game::dialog::interaction::INPUT_EX:
     {
-        reader.read(nullptr, 0x07); // 7바이트 무시
+        reader.read(nullptr, 0x07); // Skip 7 bytes
         this->action = reader.read<uint8_t>();
         if (this->action == 0x02) // OK button
         {
@@ -88,7 +88,7 @@ async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
     switch (this->interaction)
     {
     case INTERACTION::NORMAL:        // NORMAL
-        writer.write<uint8_t>(0x00); // 7바이트 패딩
+        writer.write<uint8_t>(0x00); // 7-byte padding
         writer.write<uint8_t>(0x00);
         writer.write<uint8_t>(0x00);
         writer.write<uint8_t>(0x00);
@@ -105,7 +105,7 @@ async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
         break;
 
     case INTERACTION::INPUT_EX:      // INPUT_EX
-        writer.write<uint8_t>(0x00); // 7바이트 패딩
+        writer.write<uint8_t>(0x00); // 7-byte padding
         writer.write<uint8_t>(0x00);
         writer.write<uint8_t>(0x00);
         writer.write<uint8_t>(0x00);

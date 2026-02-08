@@ -129,35 +129,32 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
         }
         co_return result;
     }
-    else
+
+    if (co_await object::map(map, position) == false)
+        co_return false;
+
+    if (old_map != map)
     {
-        if (co_await object::map(map, position) == false)
-            co_return false;
-
-        if (old_map != map)
+        // Log map transfer event
+        auto log_data              = Json::Value();
+        log_data["character_id"]   = static_cast<Json::Int64>(this->id);
+        log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+        log_data["level"]          = this->level();
+        if (old_map != nullptr)
         {
-            // Log map transfer event
-            auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(this->id);
-            log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-            log_data["level"]          = this->level();
-            if (old_map != nullptr)
-            {
-                log_data["old_map"]        = old_map->model.id;
-                log_data["old_position_x"] = old_position.x;
-                log_data["old_position_y"] = old_position.y;
-            }
-            if (map != nullptr)
-            {
-                log_data["new_map"]        = map->model.id;
-                log_data["new_position_x"] = position.x;
-                log_data["new_position_y"] = position.y;
-            }
-            this->server.log.write("map_transfer", log_data);
+            log_data["old_map"]        = old_map->model.id;
+            log_data["old_position_x"] = old_position.x;
+            log_data["old_position_y"] = old_position.y;
         }
-
-        co_return true;
+        if (map != nullptr)
+        {
+            log_data["new_map"]        = map->model.id;
+            log_data["new_position_x"] = position.x;
+            log_data["new_position_y"] = position.y;
+        }
+        this->server.log.write("map_transfer", log_data);
     }
+    co_return true;
 }
 
 uint32_t character::limited_exp(uint32_t exp) const
@@ -177,16 +174,12 @@ uint32_t character::normal_attack_damage(MOB_SIZE size) const
     this->assert_thread();
 
     auto weapon = this->items.weapon();
-    auto model  = weapon != nullptr ? &weapon->based<fb::model::weapon>() : nullptr;
     if (weapon == nullptr)
-    {
         return 1 + std::rand() % 5;
-    }
-    else
-    {
-        auto& range = size == MOB_SIZE::SMALL ? model->damage_small : model->damage_large;
-        return std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
-    }
+
+    auto& model = weapon->based<fb::model::weapon>();
+    auto& range = size == MOB_SIZE::SMALL ? model.damage_small : model.damage_large;
+    return std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
 }
 
 bool character::inited() const
@@ -648,7 +641,7 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
 
     try
     {
-        // 직업이 없는 경우 정확히 5레벨을 찍을 경험치만 얻도록 제한
+        // When class is NONE, cap exp to exactly what is needed for level 5
         if (this->_class == CLASS::NONE)
         {
             auto require = table::ability[CLASS::NONE][5].stacked_exp;
@@ -786,7 +779,7 @@ void character::money(uint32_t value)
     this->server.log.write("money_changed", log_data);
 }
 
-uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
+uint32_t character::money_add(uint32_t value) // Returns remaining value that could not be added
 {
     this->assert_thread();
 
