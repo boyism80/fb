@@ -25,44 +25,64 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
     if (ch->role() == ROLE::USER && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_TALK))
         co_return true;
 
+    if (co_await try_command(ch, weak, request))
+        co_return true;
+
+    // Re-fetch map after switching in try_command; character may have changed map or disconnected
+    map = ch->map();
+    if (map == nullptr)
+        co_return true;
+
+    handle_normal_chat(ch, request, map);
+    co_return true;
+}
+
+async::task<bool> chat::try_command(character* ch, std::weak_ptr<character> weak, game_reqs::chat& request)
+{
     auto lua = fb::lua::new_context();
-    if (lua != nullptr)
-    {
+    if (lua == nullptr)
+        co_return false;
+
 #if defined DEBUG | defined _DEBUG
-        lua->load("scripts/interaction.lua");
-        lua->load("scripts/command.lua");
-        lua->load("scripts/npc.lua");
+    lua->load("scripts/interaction.lua");
+    lua->load("scripts/command.lua");
+    lua->load("scripts/npc.lua");
 #endif
-        lua->func("on_chat");
-        lua->pushobject(ch);
-        lua->pushstring(request.message);
-        lua->pushboolean(request.shout);
-        std::ignore = co_await lua->call(3, false);
-        if (weak.expired())
-        {
-            lua->release();
-            co_return true;
-        }
-        co_await ch->thread()->switching();
+    lua->func("on_chat");
+    lua->pushobject(ch);
+    lua->pushstring(request.message);
+    lua->pushboolean(request.shout);
+    std::ignore = co_await lua->call(3, false);
 
-        auto stop = lua->toboolean(1);
+    if (weak.expired())
+    {
         lua->release();
-
-        if (stop)
-        {
-            auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-            log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
-            log_data["command"]        = UTF8(request.message, PLATFORM::WINDOWS);
-            auto map                   = ch->map();
-            if (map != nullptr)
-            {
-                log_data["map"] = map->model.id;
-            }
-            this->server.log.write("command_execute", log_data);
-            co_return true;
-        }
+        co_return true;
     }
+
+    co_await ch->thread()->switching();
+
+    auto stop = lua->toboolean(1);
+    lua->release();
+
+    if (stop == false)
+        co_return false;
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
+    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+    log_data["command"]        = UTF8(request.message, PLATFORM::WINDOWS);
+    auto map                   = ch->map();
+    if (map != nullptr)
+        log_data["map"] = map->model.id;
+    this->server.log.write("command_execute", log_data);
+    co_return true;
+}
+
+void chat::handle_normal_chat(character* ch, game_reqs::chat& request, const std::shared_ptr<fb::game::map>& map)
+{
+    if (map == nullptr)
+        return;
 
     auto message = fb::model::table::blocked_word.filter(request.message);
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
@@ -75,6 +95,4 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
     log_data["chat_type"]      = request.shout ? "shout" : "normal";
     log_data["map"]            = map->model.id;
     this->server.log.write("chat", log_data);
-
-    co_return true;
 }

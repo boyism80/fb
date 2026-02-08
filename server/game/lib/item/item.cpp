@@ -96,7 +96,7 @@ std::string item::trade_name() const
 
 uint16_t item::fill(uint16_t count)
 {
-    // 추가하고 남은 갯수 리턴
+    // Returns the count that could not be added (overflow)
     auto space    = this->free_space();
     auto addition = std::min(space, count);
 

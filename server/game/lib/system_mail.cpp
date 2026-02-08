@@ -11,11 +11,7 @@ system_mail::system_mail(const fb::protocol::internal::SystemMail& dto) :
     created_date(fb::model::datetime(dto.created_date))
 {
     if (dto.expire_date.has_value() && !dto.expire_date.value().empty())
-    {
-        expire_date = fb::model::datetime(dto.expire_date.value());
-    }
+        this->expire_date = fb::model::datetime(dto.expire_date.value());
     else
-    {
-        expire_date = std::nullopt;
-    }
+        this->expire_date = std::nullopt;
 }

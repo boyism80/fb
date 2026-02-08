@@ -16,74 +16,91 @@ async::task<bool> click::handle(fb::socket<character>& session, game_reqs::click
     if (ch->inited() == false)
         co_return true;
 
-    if (request.oid == 0xFFFFFFFF) // Press F1
+    if (request.oid == 0xFFFFFFFF)
     {
-        if (fb::model::const_value::script::F1_EVENT_SCRIPT == "")
-            co_return true;
-
-        if (fb::model::const_value::script::F1_EVENT_FUNC == "")
-            co_return true;
-
-        auto lua = fb::lua::new_context();
-        if (lua == nullptr)
-            co_return true;
-
-#if defined DEBUG | defined _DEBUG
-        lua->load(fb::model::const_value::script::F1_EVENT_SCRIPT);
-#endif
-        lua->func(fb::model::const_value::script::F1_EVENT_FUNC);
-        lua->pushobject(ch);
-        std::ignore = lua->call(1);
+        co_await handle_f1(ch);
+        co_return true;
     }
 
-    if (request.oid == 0xFFFFFFFE) // Preff F2
+    if (request.oid == 0xFFFFFFFE)
     {
-        if (fb::model::const_value::script::F2_EVENT_SCRIPT == "")
-            co_return true;
-
-        if (fb::model::const_value::script::F2_EVENT_FUNC == "")
-            co_return true;
-
-        auto lua = fb::lua::new_context();
-        if (lua == nullptr)
-            co_return true;
-
-#if defined DEBUG | defined _DEBUG
-        lua->load(fb::model::const_value::script::F2_EVENT_SCRIPT);
-#endif
-        lua->func(fb::model::const_value::script::F2_EVENT_FUNC);
-        lua->pushobject(ch);
-        std::ignore = lua->call(1);
+        co_await handle_f2(ch);
+        co_return true;
     }
 
+    co_await handle_object_click(ch, request);
+    co_return true;
+}
+
+async::task<void> click::handle_f1(character* ch)
+{
+    if (fb::model::const_value::script::F1_EVENT_SCRIPT == "")
+        co_return;
+
+    if (fb::model::const_value::script::F1_EVENT_FUNC == "")
+        co_return;
+
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return;
+
+#if defined DEBUG | defined _DEBUG
+    lua->load(fb::model::const_value::script::F1_EVENT_SCRIPT);
+#endif
+    lua->func(fb::model::const_value::script::F1_EVENT_FUNC);
+    lua->pushobject(ch);
+    std::ignore = lua->call(1);
+}
+
+async::task<void> click::handle_f2(character* ch)
+{
+    if (fb::model::const_value::script::F2_EVENT_SCRIPT == "")
+        co_return;
+
+    if (fb::model::const_value::script::F2_EVENT_FUNC == "")
+        co_return;
+
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return;
+
+#if defined DEBUG | defined _DEBUG
+    lua->load(fb::model::const_value::script::F2_EVENT_SCRIPT);
+#endif
+    lua->func(fb::model::const_value::script::F2_EVENT_FUNC);
+    lua->pushobject(ch);
+    std::ignore = lua->call(1);
+}
+
+async::task<void> click::handle_object_click(character* ch, game_reqs::click& request)
+{
     auto map = ch->map();
+    if (map == nullptr)
+        co_return;
+
     auto you = map->objects[request.oid];
     if (you == nullptr)
-        co_return true;
+        co_return;
 
     switch (you->what())
     {
     case OBJECT_TYPE::CHARACTER:
-    {
         ch->browse_ch(static_cast<character&>(*you));
-    }
-    break;
+        break;
 
     case OBJECT_TYPE::MOB:
-    {
         ch->send(game_resp::message(static_cast<mob&>(*you).name(), MESSAGE_TYPE::STATE));
-    }
-    break;
+        break;
 
     case OBJECT_TYPE::NPC:
     {
         auto& model = static_cast<npc&>(*you).based<fb::model::npc>();
         if (model.script.empty())
-            co_return true;
+            co_return;
 
         auto lua = fb::lua::new_context();
         if (lua == nullptr)
-            co_return true;
+            co_return;
 
 #if defined DEBUG | defined _DEBUG
         lua->load("scripts/npc.lua");
@@ -96,6 +113,4 @@ async::task<bool> click::handle(fb::socket<character>& session, game_reqs::click
     }
     break;
     }
-
-    co_return true;
 }

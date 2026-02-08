@@ -18,6 +18,11 @@ public:
     click& operator= (click&&)      = delete;
 
     async::task<bool> handle(fb::socket<character>& session, game_reqs::click& request) override;
+
+private:
+    async::task<void> handle_f1(character* ch);
+    async::task<void> handle_f2(character* ch);
+    async::task<void> handle_object_click(character* ch, game_reqs::click& request);
 };
 
 } // namespace fb::game::handler::protocol
