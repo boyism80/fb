@@ -1,19 +1,81 @@
+local AMBER_STAR = {
+    { base = '황호박', label = '황호박별입니다.' },
+    { base = '적호박', label = '적호박별입니다.' },
+    { base = '녹호박', label = '녹호박별입니다.' },
+    { base = '청호박', label = '청호박별입니다.' },
+    { base = '회호박', label = '회호박별입니다.' },
+    { base = '갈호박', label = '갈호박별입니다.' },
+    { base = '자호박', label = '자호박별입니다.' },
+}
+
+local function run_amber_star(me, npc)
+    local options = {}
+    for i = 1, 7 do
+        options[i] = AMBER_STAR[i].label
+    end
+    local sel, btn = me:list(npc, '어떤 색깔의 호박별을 만드시겠어요?', options, true)
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if btn == DIALOG_RESULT.PREV then
+        return
+    end
+    if sel == nil or sel < 0 or sel > 6 then
+        return
+    end
+    local p = AMBER_STAR[sel + 1]
+    local gem = p.base .. '보석'
+    local star = p.base .. '별'
+    if not me:has_items(gem, 5) then
+        me:dialog(npc, name_with(gem, '이', '가') .. ' 부족합니다.', false, false)
+        return
+    end
+    me:rmitem(gem, 5, ITEM_DELETE_TYPE.GIVE)
+    me:mkitem(star, 1)
+    me:dialog(npc, name_with(star, '을', '를') .. ' 만들어드렸습니다.', false, true)
+end
+
 function NPC_15(me, npc)
 ::NPC_15_000::
-    local selected = me:list(npc, '안녕하세요. 무엇을 도와드릴까요?', {'물건 사기', '물건 팔기'})
-    if selected == nil then
+    local sel, btn = me:list(npc, '안녕하세요. 무엇을 도와드릴까요?', {'물건 사기', '물건 팔기'}, false)
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if sel == nil then
         return
     end
 
-    if selected == 0 then
+    if sel == 0 then
         if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
             goto NPC_15_000
         end
-    elseif selected == 1 then
+    elseif sel == 1 then
         if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
             goto NPC_15_000
         end
     else
 
+    end
+end
+
+function NPC_16(me, npc)
+::NPC_16_000::
+    local sel, btn = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '물건 사기', '물건 팔기', '호박별만들기' }, false)
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if sel == nil then
+        return
+    end
+    if sel == 0 then
+        if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+            goto NPC_16_000
+        end
+    elseif sel == 1 then
+        if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+            goto NPC_16_000
+        end
+    elseif sel == 2 then
+        run_amber_star(me, npc)
     end
 end

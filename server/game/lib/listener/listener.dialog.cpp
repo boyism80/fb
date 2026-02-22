@@ -4,6 +4,11 @@ using namespace fb::game;
 
 namespace game_resp = fb::protocol::game::response;
 
+void listener_impl::on_dialog(character& me, std::string_view message, bool button_prev, bool button_next, uint32_t oid)
+{
+    me.send(game_resp::dialog(message, button_prev, button_next, oid));
+}
+
 void listener_impl::on_dialog(character&               me,
                               const fb::model::object& object,
                               std::string_view         message,

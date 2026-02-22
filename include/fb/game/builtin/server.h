@@ -10,6 +10,7 @@ struct server
     static int builtin_log(lua_State* L);
     static int builtin_seed(lua_State* L);
     static int builtin_sleep(lua_State* L);
+    static int builtin_now(lua_State* L);
     static int builtin_baram_time(lua_State* L);
     static int builtin_name2mob(lua_State* L);
     static int builtin_name2spell(lua_State* L);
@@ -47,6 +48,7 @@ struct server
     static int builtin_regex(lua_State* L);
     static int builtin_exp_multiplier(lua_State* L);
     static int builtin_drop_rate_multiplier(lua_State* L);
+    static int builtin_gv(lua_State* L);
 };
 
 } // namespace fb::game::builtin

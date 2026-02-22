@@ -34,15 +34,14 @@ DROP TABLE IF EXISTS `achievement`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `achievement` (
   `uid` int unsigned NOT NULL,
-  `model` int unsigned NOT NULL,
-  `text` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  `icon` smallint DEFAULT NULL,
-  `color` smallint DEFAULT NULL,
+  `id` int unsigned NOT NULL,
+  `text` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
+  `icon` smallint NOT NULL DEFAULT 0,
+  `color` smallint NOT NULL DEFAULT 0,
   `deleted` tinyint DEFAULT NULL,
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
-  PRIMARY KEY (`uid`,`model`),
-  KEY `fk.legend.owner_idx` (`model`)
+  PRIMARY KEY (`uid`,`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

@@ -1349,6 +1349,35 @@ void character::update(UPDATE_STATE_LEVEL value)
     this->listener.on_update(*this, value);
 }
 
+void character::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type)
+{
+    life::kill(from, destroy_type);
+
+    this->death_penalty();
+    this->state(STATE::GHOST);
+    this->listener.on_dead(*this, from);
+
+    // Log death event
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["level"]          = this->level();
+    auto map                   = this->map();
+    if (map != nullptr)
+    {
+        log_data["map"]        = map->model.id;
+        log_data["position_x"] = this->position().x;
+        log_data["position_y"] = this->position().y;
+    }
+    if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
+    {
+        auto& killer            = static_cast<character&>(*from);
+        log_data["killer_id"]   = static_cast<Json::Int64>(killer.id);
+        log_data["killer_name"] = UTF8(killer.name(), PLATFORM::WINDOWS);
+    }
+    this->server.log.write("death", log_data);
+}
+
 fb::protocol::internal::Character character::to_protocol() const
 {
     this->assert_thread();

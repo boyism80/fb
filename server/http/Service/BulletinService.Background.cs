@@ -36,10 +36,10 @@ namespace Http.Service
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             // Get world keys: DbContext uses ConnectionStrings:MySql:worlds:{world}:...
-            var worldsSection = _configuration.GetSection("ConnectionStrings:MySql:worlds");
-            var worldKeys = worldsSection.Exists()
-                ? worldsSection.GetChildren().Select(x => x.Key).ToList()
-                : _configuration.GetSection("ConnectionStrings:MySql").GetChildren().Select(x => x.Key).ToList();
+            var worldKeys = _configuration.GetSection("ConnectionStrings:MySql:worlds")
+                .GetChildren()
+                .Select(x => x.Key)
+                .ToList();
 
             while (!stoppingToken.IsCancellationRequested)
             {

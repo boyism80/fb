@@ -1133,37 +1133,27 @@ command_funcs = {
 
     ['업적'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '<ID> <텍스트> [아이콘] [색상] - 업적 추가',
+        ['usage'] = '<텍스트> <아이콘> <색상> - 업적 추가',
         ['command'] = function (me, args)
-            local id, text, icon, color = table.unpack(args)
-            if not id or not text then
-                me:message("사용법: /업적 <ID> <텍스트> [아이콘] [색상]")
+            local text, icon, color = table.unpack(args)
+            if not text or not icon or not color then
+                me:message("사용법: /업적 <텍스트> <아이콘> <색상>")
                 return true
             end
-            
-            id = tonumber(id)
-            if not id or id < 0 then
-                me:message("업적 ID는 0 이상의 숫자여야 합니다.")
+
+            icon = tonumber(icon)
+            if not icon or icon < 0 then
+                me:message("아이콘 ID는 0 이상의 숫자여야 합니다.")
                 return true
             end
-            
-            if icon then
-                icon = tonumber(icon)
-                if not icon or icon < 0 then
-                    me:message("아이콘 ID는 0 이상의 숫자여야 합니다.")
-                    return true
-                end
+
+            color = tonumber(color)
+            if not color or color < 0 then
+                me:message("색상 ID는 0 이상의 숫자여야 합니다.")
+                return true
             end
-            
-            if color then
-                color = tonumber(color)
-                if not color or color < 0 then
-                    me:message("색상 ID는 0 이상의 숫자여야 합니다.")
-                    return true
-                end
-            end
-            
-            me:push_achievement(id, text, icon, color)
+
+            me:push_achievement(text, icon, color)
             return true
         end,
     },
@@ -1173,8 +1163,8 @@ command_funcs = {
         ['usage'] = '- 업적 초기화',
         ['command'] = function (me, args)
             local achievements = me:achievements()
-            for id, achievement in pairs(achievements) do
-                me:erase_achievement(achievement:model():id())
+            for _, achievement in pairs(achievements) do
+                me:erase_achievement(achievement:id())
             end
             return true
         end,
@@ -1266,6 +1256,44 @@ command_funcs = {
         end,
     },
 
+    ['퀘스트설정'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '<ID> <스텝> <진행도> <파라미터> - 퀘스트 설정',
+        ['command'] = function (me, args)
+            local id, step, progress, param = table.unpack(args)
+            if not id then
+                me:message("사용법: /퀘스트설정 <ID> <스텝> <진행도> <파라미터>")
+                return true
+            end
+
+            id = tonumber(id)
+            if not id or id < 0 then
+                me:message("퀘스트 ID는 0 이상의 숫자여야 합니다.")
+                return true
+            end
+            step = tonumber(step)
+            if not step or step < 0 then
+                me:message("스텝은 0 이상의 숫자여야 합니다.")
+                return true
+            end
+            progress = tonumber(progress)
+            if not progress or progress < 0 then
+                me:message("진행도는 0 이상의 숫자여야 합니다.")
+                return true
+            end
+            param = tostring(param)
+            local quest = me:quest(id)
+            if not quest then
+                me:message("해당 퀘스트를 보유하고 있지 않습니다. 퀘스트를 먼저 수락하세요.")
+                return true
+            end
+            quest:step(step)
+            quest:progress(progress)
+            quest:param(param)
+            return true
+        end,
+    },
+
     ['퀘스트제거'] = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<ID> - 퀘스트 제거',
@@ -1283,6 +1311,37 @@ command_funcs = {
             end
 
             me:remove_quest(id)
+            return true
+        end,
+    },
+
+    ['퀘스트진행'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '<ID> <진행도> - 퀘스트 진행도 설정',
+        ['command'] = function (me, args)
+            local id = args[1]
+            local value = args[2]
+            if not id or not value then
+                me:message("사용법: /퀘스트진행 <ID> <진행도>")
+                return true
+            end
+            id = tonumber(id)
+            value = tonumber(value)
+            if not id or id < 0 then
+                me:message("퀘스트 ID는 0 이상의 숫자여야 합니다.")
+                return true
+            end
+            if not value or value < 0 then
+                me:message("진행도는 0 이상의 숫자여야 합니다.")
+                return true
+            end
+            local quest = me:quest(id)
+            if not quest then
+                me:message("해당 퀘스트를 보유하고 있지 않습니다. 퀘스트를 먼저 수락하세요.")
+                return true
+            end
+            quest:progress(value)
+            me:message(string.format("퀘스트 %d 진행도를 %d로 설정했습니다.", id, value))
             return true
         end,
     },

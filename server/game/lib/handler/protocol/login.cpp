@@ -84,16 +84,10 @@ void login::init_quests(const std::vector<fb::protocol::internal::Quest>& respon
 
 void login::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response, fb::game::character& ch)
 {
-    for (auto& achievement : response)
+    for (auto& a : response)
     {
-        if (table::achievement.contains(achievement.model) == false)
-            continue;
-
-        auto ptr = std::make_unique<fb::game::achievement>(table::achievement[achievement.model],
-                                                           achievement.text,
-                                                           achievement.icon,
-                                                           achievement.color);
-        ch.achievements.insert({achievement.model, std::move(ptr)});
+        auto ptr = std::make_unique<fb::game::achievement>(a.model, a.text, a.icon, a.color);
+        ch.achievements.insert({a.model, std::move(ptr)});
     }
 }
 

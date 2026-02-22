@@ -1,27 +1,29 @@
 #ifndef __TRACE_H__
 #define __TRACE_H__
 
-#include <fb/model/model.h>
 #include <fb/lua.h>
+#include <cstdint>
+#include <string>
 
 namespace fb::game {
 
+/**
+ * In-game achievement: (id, text, icon, color). No table/model dependency.
+ * id is passed when pushed via character::push_achievement(id, text, icon, color).
+ */
 class achievement : public lua::luable
 {
 public:
     LUA_PROTOTYPE
 
 public:
-    const fb::model::achievement&    model;
-    const std::optional<std::string> text;
-    const std::optional<uint8_t>     icon;
-    const std::optional<uint16_t>    color;
+    const uint32_t    id;
+    const std::string text;
+    const uint8_t     icon;
+    const uint16_t    color;
 
 public:
-    achievement(const fb::model::achievement&     model,
-                const std::optional<std::string>& text  = std::nullopt,
-                const std::optional<uint8_t>&     icon  = std::nullopt,
-                const std::optional<uint16_t>&    color = std::nullopt);
+    achievement(uint32_t id, std::string text, uint8_t icon, uint16_t color);
     ~achievement() = default;
 };
 

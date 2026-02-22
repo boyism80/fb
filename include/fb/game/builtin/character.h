@@ -15,6 +15,7 @@ struct character
     static int builtin_exp(lua_State* L);
     static int builtin_item(lua_State* L);
     static int builtin_items(lua_State* L);
+    static int builtin_has_items(lua_State* L);
     static int builtin_equipments(lua_State* L);
     static int builtin_item_drop(lua_State* L);
     static int builtin_mkitem(lua_State* L);
@@ -78,7 +79,7 @@ struct character
     static int builtin_quest(lua_State* L);
     static int builtin_start_quest(lua_State* L);
     static int builtin_remove_quest(lua_State* L);
-    static int builtin_can_start_quest(lua_State* L);
+    static int builtin_reward(lua_State* L);
     static int builtin_send_system_mail(lua_State* L);
     static int builtin_storage_entries(lua_State* L);
     static int builtin_receive_storage_reward(lua_State* L);

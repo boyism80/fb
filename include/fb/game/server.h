@@ -23,6 +23,7 @@
 #include <vector>
 #include <memory>
 #include <string_view>
+#include <unordered_map>
 
 REGISTER_RESPONSE(fb::protocol::internal::request::Shutdown, fb::protocol::internal::response::Shutdown)
 REGISTER_RESPONSE(fb::protocol::internal::request::Heartbeat, fb::protocol::internal::response::Heartbeat)
@@ -101,15 +102,16 @@ private:
     std::unordered_map<uint32_t, fb::model::datetime> _scheduled_tasks;
 
 public:
-    fb::log_collector                                       log;
-    system_mail_channel                                     system_mail;
-    storage_pending_channel                                 storage_pending;
-    listener_impl                                           listener;
-    map_container                                           maps;
-    fb::locker<character::container>                        characters;
-    fb::sharded_container<clan_ptr, 16>                     clans;
-    fb::sharded_container<group_ptr, 16>                    groups;
-    fb::sharded_container<map::cache_bytes, 1024, uint64_t> map_update_cache;
+    fb::log_collector                                        log;
+    system_mail_channel                                      system_mail;
+    storage_pending_channel                                  storage_pending;
+    listener_impl                                            listener;
+    map_container                                            maps;
+    fb::locker<character::container>                         characters;
+    fb::sharded_container<clan_ptr, 16>                      clans;
+    fb::sharded_container<group_ptr, 16>                     groups;
+    fb::sharded_container<map::cache_bytes, 1024, uint64_t>  map_update_cache;
+    fb::locker<std::unordered_map<std::string, Json::Value>> globals;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);

@@ -30,14 +30,14 @@ namespace Http.Reepository
         /// </summary>
         /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         /// <param name="uid">The unique identifier of the character.</param>
-        /// <param name="model">The achievement model identifier.</param>
+        /// <param name="id">The achievement identifier.</param>
         /// <returns>The achievement if found; otherwise, null.</returns>
-        public async Task<Achievement> Get(uint world, uint uid, uint model)
+        public async Task<Achievement> Get(uint world, uint uid, uint id)
         {
             return await base.Get(world, new AchievementKey
             {
                 Uid = uid,
-                Model = model
+                Id = id
             });
         }
 
@@ -58,14 +58,14 @@ namespace Http.Reepository
         /// <summary>
         /// Generates the SQL SELECT statement for retrieving a specific achievement.
         /// </summary>
-        /// <param name="key">The achievement key containing user ID and model identifier.</param>
+        /// <param name="key">The achievement key containing user ID and achievement id.</param>
         /// <returns>A SQL SELECT statement for the specific achievement.</returns>
         protected override string OnSelect(AchievementKey key)
         {
             var sql = $"""
                 SELECT * FROM `achievement` WHERE 
                 `uid` = {key.Uid} AND
-                `model` = {key.Model}
+                `id` = {key.Id}
                 LIMIT 1;
                 """;
 
@@ -96,7 +96,7 @@ namespace Http.Reepository
             var sql = $"""
                     INSERT INTO `achievement` (
                         `uid`,
-                        `model`,
+                        `id`,
                         `text`,
                         `icon`,
                         `color`,
@@ -105,7 +105,7 @@ namespace Http.Reepository
                         `updated_date`)
                     VALUES (
                         {value.Uid.Escape()},
-                        {value.Model.Escape()},
+                        {value.Id.Escape()},
                         {value.Text.Escape()},
                         {value.Icon.Escape()},
                         {value.Color.Escape()},
@@ -134,7 +134,7 @@ namespace Http.Reepository
             {
                 return $"""
                         ({achievement.Uid.Escape()},
-                         {achievement.Model.Escape()},
+                         {achievement.Id.Escape()},
                          {achievement.Text.Escape()},
                          {achievement.Icon.Escape()},
                          {achievement.Color.Escape()},
@@ -147,7 +147,7 @@ namespace Http.Reepository
             var sql = $"""
                     INSERT INTO `achievement` (
                         `uid`,
-                        `model`,
+                        `id`,
                         `text`,
                         `icon`,
                         `color`,

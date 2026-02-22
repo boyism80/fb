@@ -2,12 +2,10 @@
 
 using namespace fb::game;
 
-achievement::achievement(const fb::model::achievement&     model,
-                         const std::optional<std::string>& text,
-                         const std::optional<uint8_t>&     icon,
-                         const std::optional<uint16_t>&    color) :
-    model(model),
-    text(text),
-    icon(icon),
-    color(color)
-{ }
+achievement::achievement(uint32_t id, std::string text, uint8_t icon, uint16_t color)
+    : id(id)
+    , text(std::move(text))
+    , icon(icon)
+    , color(color)
+{
+}

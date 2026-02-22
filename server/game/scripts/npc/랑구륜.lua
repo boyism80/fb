@@ -1,20 +1,112 @@
+local function ranggyuryun_palgu(me, npc)
+    local EIGHT_TRIGRAMS = { '건괘', '곤괘', '진괘', '감괘', '리괘', '태괘', '선괘', '간괘' }
+    local btn, sel
+
+    ::NPC_2_POS00000::
+    btn = me:dialog(npc, '어서 오십시요. 저는 옥황상제의 막내딸 랑구륜이랍니다.', true, true)
+    if btn == DIALOG_RESULT.QUIT then return end
+    ::NPC_2_POS00001::
+    btn = me:dialog(npc, '저는 8개의 괘를 팔괘로 바꾸어드립니다.', true, true)
+    if btn == DIALOG_RESULT.QUIT then return end
+    if btn == DIALOG_RESULT.PREV then goto NPC_2_POS00000 end
+    sel = me:list(npc, '8개의 괘를 팔괘로 바꾸시겠어요?', { '네', '아니요, 팔괘가 다 없어요...' })
+    if sel == nil or sel == 0 then return end
+    if sel == 2 then
+        me:dialog(npc, '다음엔 팔괘를 다 모아오세요...', false, false)
+        return
+    end
+    for i = 1, 8 do
+        local name = EIGHT_TRIGRAMS[i]
+        if not me:has_items(name, 1) then
+            if i <= 3 then
+                me:dialog(npc, '가장 기본적인 ' .. name .. '가 없으시네요... 아쉽습니다...', false, false)
+            else
+                me:dialog(npc, name .. '가 없으시네요... 아쉽습니다...', false, false)
+            end
+            return
+        end
+    end
+    btn = me:dialog(npc, '8개의 괘들을 다 가져오셨군요. 팔괘를 만들어 드리겠습니다, 잠시만 기달려주세요.', true, true)
+    if btn == DIALOG_RESULT.QUIT then return end
+    btn = me:dialog(npc, '자 팔괘를 만들어 드렸습니다. 그럼 안녕히가십시요.', true, true)
+    if btn == DIALOG_RESULT.QUIT then return end
+    local materials = {}
+    for i = 1, 8 do
+        materials[EIGHT_TRIGRAMS[i]] = 1
+    end
+    if me:mkitem('팔괘', 1) == nil then
+        me:dialog(npc, '소지품이 가득 차서 팔괘를 받을 수 없습니다.', false, true)
+        return
+    end
+    me:rmitem(materials, ITEM_DELETE_TYPE.GIVE)
+end
+
+local function ranggyuryun_pure_water(me, npc)
+    local ACHIEVEMENT_CLEAR = 23
+    local quest = me:quest(QUEST_CLEAR_SHIELD)
+    local btn, sel
+
+    if quest == nil or (quest:step() ~= 1 and quest:step() ~= 2) then
+        me:dialog(npc, '아, 홍옥의 그 광채...빛깔...맛...언제 생각해도 황홀하네.', false, false)
+        return
+    end
+
+    if quest:step() == 1 then
+        sel = me:list(npc, ' ', { '물을 정화시키는 방법을 아시나요?' })
+        if sel == nil or sel ~= 0 then return end
+        sel = me:list(npc, '물론 알고 있지요. 하지만 그 방법을 배우기 위해서는 대가가 필요하지요.', { '무슨 대가인가요?' })
+        if sel == nil or sel ~= 0 then return end
+        sel = me:list(npc, '신선한 사과를 먹어본지 참 오래 되었는데..가서 홍옥 3개만 가지고 오세요.', { '예. 알겠습니다.', '홍옥!! 차라리 내가 먹고 말지..' })
+        if sel == nil or sel ~= 0 then return end
+        quest:step(2)
+        me:push_achievement(ACHIEVEMENT_CLEAR, '랑구륜의 부탁을 들어주자.', 7, 1)
+        me:dialog(npc, '아참 전 국광보다는 홍옥을 좋아하니 꼭 홍옥으로 3개를 가져오세요.', false, false)
+        return
+    end
+
+    if quest:step() == 2 then
+        local materials = {['홍옥'] = 3}
+        if not me:has_items(materials) then
+            me:dialog(npc, '아직 홍옥 3개를 구하시지 못하신거군요.', false, false)
+            return
+        end
+        btn = me:dialog(npc, '어머 홍옥을 가져오셨군요. 이건 제가 잘 먹을께요.', true, true)
+        if btn == DIALOG_RESULT.QUIT then return end
+        if me:mkitem('정화비서', 1) == nil then
+            me:dialog(npc, '소지품이 가득 차서 정화비서를 받을 수 없습니다.', false, true)
+            return
+        end
+        quest:step(3)
+        me:rmitem(materials, ITEM_DELETE_TYPE.GIVE)
+        me:push_achievement(ACHIEVEMENT_CLEAR, '랑구륜의 부탁을 들어주었다.', 7, 1)
+        ::NPC_2_COS002::
+        btn = me:dialog(npc, '우물우물... 아... 역시 언제 먹어도 홍옥의 맛이 최고야.', true, true)
+        if btn == DIALOG_RESULT.QUIT then return end
+        btn = me:dialog(npc, '정화비서를 가져다 주면 될거에요.', false, false)
+        if btn == DIALOG_RESULT.PREV then goto NPC_2_COS002 end
+    end
+end
+
+local function ranggyuryun_golden_amber(me, npc)
+    local btn = me:dialog(npc, '호박의 정수.. 황금호박별을 가지고 오셨습니까. 이것으로 무기를 만드시렵니까..', true, true)
+    if btn == DIALOG_RESULT.QUIT then return end
+    if not me:has_items('황금호박별', 1) then
+        me:dialog(npc, '황금호박별을 가지고 있지 않으시군요. 아직은 때가 아닌가보군요..', false, false)
+    end
+end
+
 function NPC_2(me, npc)
-    local class = me:class()
-    if class == 0 then
-        me:dialog(npc, '평민은 승급할 수 없습니다.')
+    local sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '팔괘', '순수한물', '황금호박무기만들기' })
+    if sel == nil then return end
+    if sel == 0 then
+        ranggyuryun_palgu(me, npc)
         return
     end
-
-    local promotion = me:promotion()
-    local name = class2name(class, promotion+1)
-    if name == nil then
-        me:dialog(npc, '승급할 수 없습니다.')
+    if sel == 1 then
+        ranggyuryun_pure_water(me, npc)
         return
     end
-
-    me:list(npc, string.format('%s 승급하시겠습니까?', name_with(name, '으로', '로')), {'예', '아니오'})
-    me:promotion(promotion+1)
-
-    broadcast(string.format('%s님이 %s 승급하셨습니다. 축하해주세요.', me:name(), name_with(name, '으로', '로')), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.GLOBAL)
-    me:dialog(npc, string.format('축하합니다. %s 승급하셨습니다.', name_with(name, '으로', '로')))
+    if sel == 2 then
+        ranggyuryun_golden_amber(me, npc)
+    end
 end

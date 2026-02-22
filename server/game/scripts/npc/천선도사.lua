@@ -1,3 +1,33 @@
 function NPC_186(me, npc)
+    local quest = me:quest(QUEST_ALCOHOLIC_DRINK)
+    local btn
 
+    if quest ~= nil and quest:step() == 3 then
+        local item = me:item('청심사주')
+        if item ~= nil and item:count() >= 1 then
+            ::NPC_186_COS001::
+            btn = me:dialog(npc, '허허, 주경원이 청심사주를 만드는것을 자네가 도와주었지? 내 신통력으로 다 보고 있었지.', true, true)
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
+            ::NPC_186_COS002::
+            btn = me:dialog(npc, '정말 오랫만에 보는 술이군! 고맙네. 이 술을 다 마셔버리지 않고 가져다 준 정직한 자네에게 선물을 주고 싶군. 요즘은 자네같은 사람도 드물다네. 내 고대금속조각\'음을 하나 주지. 어딘가에 쓸모가 있을게야..', true, true)
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
+            if btn == DIALOG_RESULT.PREV then
+                goto NPC_186_COS001
+            end
+            if me:mkitem("고대금속조각'음", 1) == nil then
+                me:dialog(npc, '소지품이 가득 차서 ' .. name_with("고대금속조각'음", '을', '를') .. ' 줄 수 없네.', false, true)
+                return
+            end
+            me:rmitem('청심사주', 1, ITEM_DELETE_TYPE.GIVE)
+            quest:step(4)
+            me:push_achievement(40, '청심사주를 천선도사에게 전해주었다.', 7, 20)
+            return
+        end
+    end
+
+    me:dialog(npc, '압록강의 물은 정말 신비롭지...', true, true)
 end

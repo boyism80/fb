@@ -149,9 +149,9 @@ table Group {
 table Achievement {
     user: uint;
     model: uint;
-    text: string?;
-    icon: ubyte?;
-    color: ushort?;
+    text: string;
+    icon: ubyte;
+    color: ushort;
 }
 
 table Clan {

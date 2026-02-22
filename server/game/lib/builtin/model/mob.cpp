@@ -11,6 +11,7 @@ IMPLEMENT_LUA_EXTENSION(fb::model::mob, "fb.model.mob")
 {"size",                builtin::model::mob::builtin_size},
 {"damage",              builtin::model::mob::builtin_damage},
 {"drop",                builtin::model::mob::builtin_drop},
+{"exp",                 builtin::model::mob::builtin_exp},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::model::mob::builtin_speed(lua_State* L)
@@ -91,5 +92,19 @@ int builtin::model::mob::builtin_drop(lua_State* L)
             }
         }
     }
+    return 1;
+}
+
+int builtin::model::mob::builtin_exp(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto mob = lua->touserdata<fb::model::mob>(1);
+    if (mob == nullptr)
+        return 0;
+
+    lua->pushinteger(static_cast<lua_Integer>(mob->exp));
     return 1;
 }

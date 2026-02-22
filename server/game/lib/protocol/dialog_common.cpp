@@ -3,8 +3,20 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+dialog::dialog(std::string_view              message,
+               bool                          button_prev,
+               bool                          button_next,
+               uint32_t                      oid,
+               fb::game::dialog::interaction interaction) :
+    message(std::string(message)),
+    button_prev(button_prev),
+    button_next(button_next),
+    oid(oid),
+    interaction(interaction)
+{ }
+
 dialog::dialog(const fb::model::object&      object,
-               std::string_view               message,
+               std::string_view              message,
                bool                          button_prev,
                bool                          button_next,
                uint32_t                      oid,
@@ -18,7 +30,7 @@ dialog::dialog(const fb::model::object&      object,
 { }
 
 dialog::dialog(const fb::game::object&       object,
-               std::string_view               message,
+               std::string_view              message,
                bool                          button_prev,
                bool                          button_next,
                uint32_t                      oid,
@@ -40,7 +52,20 @@ async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(0x00);                                    // unknown
     writer.write<uint8_t>(static_cast<uint8_t>(this->interaction)); // interaction
     writer.write<uint32_t>(this->oid);
-    this->portrait->serialize(writer);
+    if (this->portrait != nullptr)
+    {
+        this->portrait->serialize(writer);
+    }
+    else
+    {
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x01);
+        writer.write<uint16_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint16_t>(0x00);
+        writer.write<uint8_t>(0x00);
+    }
     writer.write<uint32_t>(0x01);
     writer.write<uint8_t>(this->button_prev);
     writer.write<uint8_t>(this->button_next);

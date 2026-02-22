@@ -132,15 +132,16 @@ public:
                                                                           std::nullopt,
                                                                           std::nullopt,
                                                                           std::nullopt,
+                                                                          ch.armor_color(),
                                                                           std::nullopt,
                                                                           std::nullopt,
-                                                                          std::nullopt,
-                                                                          std::nullopt)})
+                                                                          ch.disguise())})
     {
         if (ch.items.armor() != nullptr)
         {
-            preset.portrait.armor       = ch.items.armor()->based<fb::model::armor>().dress;
-            preset.portrait.armor_color = ch.armor_color();
+            preset.portrait.armor = ch.items.armor()->based<fb::model::armor>().dress;
+            if (preset.portrait.armor_color.has_value() == false)
+                preset.portrait.armor_color = ch.items.armor()->based<fb::model::armor>().color;
         }
 
         if (ch.items.weapon() != nullptr)

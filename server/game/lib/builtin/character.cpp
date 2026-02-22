@@ -2,6 +2,7 @@
 #include <fb/game/builtin/character.h>
 #include <fb/game/server.h>
 #include <string_view>
+#include <unordered_map>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -17,6 +18,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"exp",                    builtin::character::builtin_exp},
 {"item",                   builtin::character::builtin_item},
 {"items",                  builtin::character::builtin_items},
+{"has_items",              builtin::character::builtin_has_items},
 {"equipments",             builtin::character::builtin_equipments},
 {"dropitem",               builtin::character::builtin_item_drop},
 {"mkitem",                 builtin::character::builtin_mkitem},
@@ -79,7 +81,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"quest",                  builtin::character::builtin_quest},
 {"start_quest",            builtin::character::builtin_start_quest},
 {"remove_quest",           builtin::character::builtin_remove_quest},
-{"can_start_quest",        builtin::character::builtin_can_start_quest},
+{"reward",                 builtin::character::builtin_reward},
 {"send_system_mail",       builtin::character::builtin_send_system_mail},
 {"storage_entries",        builtin::character::builtin_storage_entries},
 {"receive_storage_reward", builtin::character::builtin_receive_storage_reward},
@@ -418,12 +420,19 @@ int builtin::character::builtin_items(lua_State* L)
     if (ch == nullptr)
         return 0;
 
+    std::optional<std::string> filter_name;
+    if (lua->argc() >= 2 && lua->is_string(2))
+        filter_name = lua->tostring(2);
+
     auto weak = ch->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         auto buffer = std::vector<std::pair<uint8_t, std::shared_ptr<fb::game::item>>>();
         for (int i = 0; i < CONTAINER_CAPACITY; i++)
         {
             if (ch->items[i] == nullptr)
+                continue;
+
+            if (filter_name.has_value() && ch->items[i]->based<fb::model::item>().name != *filter_name)
                 continue;
 
             buffer.push_back({i, ch->items[i]->shared_from_this_as<fb::game::item>()});
@@ -440,6 +449,69 @@ int builtin::character::builtin_items(lua_State* L)
             return 1;
         });
     });
+}
+
+/**
+ * Returns true if the character has at least the required count of each item.
+ * Accepts either:
+ *   - me:has_items(item_name, count) for a single item, or
+ *   - me:has_items({['name1'] = 1, ['name2'] = 5}) for multiple items.
+ */
+int builtin::character::builtin_has_items(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    ch->assert_thread();
+
+    auto required = std::vector<std::pair<std::string, uint16_t>>();
+
+    if (lua->is_string(2) && lua->is_number(3))
+    {
+        auto name = lua->tostring(2);
+        auto cnt  = static_cast<uint16_t>(lua->tointeger(3));
+        if (!name.empty() && cnt > 0)
+            required.push_back({name, cnt});
+    }
+    else if (lua->is_table(2))
+    {
+        lua->pushnil();
+        while (lua->next(2))
+        {
+            if (lua->is_string(-2) && lua->is_number(-1))
+            {
+                auto name = lua->tostring(-2);
+                auto cnt  = static_cast<uint16_t>(lua->tointeger(-1));
+                if (!name.empty() && cnt > 0)
+                    required.push_back({name, cnt});
+            }
+            lua->pop(1);
+        }
+    }
+
+    if (required.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    for (const auto& [name, min_count] : required)
+    {
+        auto item = ch->items.find(name);
+        if (item == nullptr || item->count() < min_count)
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
+    }
+
+    lua->pushboolean(true);
+    return 1;
 }
 
 int builtin::character::builtin_equipments(lua_State* L)
@@ -517,32 +589,88 @@ int builtin::character::builtin_mkitem(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto name  = lua->tostring(2);
-    auto count = lua->tointeger(3, 1);
     auto store = lua->toboolean(4, true);
-
     if (store == false)
         return builtin::object::builtin_mkitem(L);
 
-    auto weak = ch->weak_from_this_as<fb::game::character>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto model = table::item.name2item(name);
-        auto item  = static_cast<fb::game::item*>(nullptr);
-        auto slot  = static_cast<uint8_t>(0xFF);
+    auto weak        = ch->weak_from_this_as<fb::game::character>();
+    auto id_to_count = std::unordered_map<uint32_t, uint16_t>();
+    auto single_item = !lua->is_table(2);
 
-        if (model != nullptr)
+    if (lua->is_table(2))
+    {
+        lua->pushnil();
+        while (lua->next(2))
         {
-            // Use smart pointer for item creation
-            auto item_shared = model->make(*server, count);
-            item             = item_shared.get();
-            slot             = ch->items.add(item_shared); // Use smart pointer version
+            if (lua->is_string(-2) && lua->is_number(-1))
+            {
+                auto name  = lua->tostring(-2);
+                auto count = static_cast<uint16_t>(lua->tointeger(-1));
+                auto model = table::item.name2item(name);
+                if (model != nullptr && count > 0)
+                    id_to_count[model->id] += count;
+            }
+            lua->pop(1);
         }
+    }
+    else
+    {
+        auto name  = lua->tostring(2);
+        auto count = static_cast<uint16_t>(lua->tointeger(3, 1));
+        if (name.empty())
+        {
+            lua->pushnil();
+            return 1;
+        }
+        auto model = table::item.name2item(name);
+        if (model == nullptr)
+        {
+            lua->pushnil();
+            return 1;
+        }
+        id_to_count[model->id] = count;
+    }
+
+    if (id_to_count.empty())
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        if (ch->items.is_rewardable(id_to_count, 0) == false)
+            return lua->ensure_resume(*server, weak, [=]() {
+                lua->pushnil();
+                return 1;
+            });
+
+        auto items = std::vector<std::shared_ptr<fb::game::item>>();
+        for (auto& [id, count] : id_to_count)
+        {
+            auto& model = table::item[id];
+            auto  item  = model.make(*server, count);
+            if (item != nullptr)
+                items.push_back(std::move(item));
+        }
+        auto slots = ch->items.add(items, true);
 
         return lua->ensure_resume(*server, weak, [=]() {
-            if (model == nullptr || slot == 0xFF)
-                lua->pushnil();
+            if (single_item)
+            {
+                if (slots.empty())
+                    lua->pushnil();
+                else
+                    lua->pushobject(ch->items[slots[0]]);
+            }
             else
-                lua->pushobject(ch->items[slot]);
+            {
+                lua->new_table();
+                for (size_t i = 0; i < slots.size(); i++)
+                {
+                    lua->pushobject(ch->items[slots[i]]);
+                    lua->rawseti(-2, static_cast<int>(i + 1));
+                }
+            }
             return 1;
         });
     });
@@ -558,6 +686,48 @@ int builtin::character::builtin_rmitem(lua_State* L)
     auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
+
+    /* Table form: me:rmitem({['name1'] = count, ['name2'] = count, ...}, optional ITEM_DELETE_TYPE) */
+    if (lua->is_table(2))
+    {
+        auto delete_attr = lua->toenum(3, ITEM_DELETE_TYPE::REMOVED);
+        auto to_remove   = std::vector<std::pair<const fb::model::item*, uint16_t>>();
+        lua->pushnil();
+        while (lua->next(2))
+        {
+            if (lua->is_string(-2) && lua->is_number(-1))
+            {
+                auto name = lua->tostring(-2);
+                auto cnt  = static_cast<uint16_t>(lua->tointeger(-1));
+                auto model = table::item.name2item(name);
+                if (model != nullptr && cnt > 0)
+                    to_remove.push_back({model, cnt});
+            }
+            lua->pop(1);
+        }
+        if (to_remove.empty())
+            return 0;
+
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            try
+            {
+                for (auto& [model, cnt] : to_remove)
+                {
+                    auto index  = ch->items.index(*model);
+                    auto dropped = ch->items.remove(index, cnt, delete_attr);
+                    if (dropped != nullptr)
+                        std::ignore = dropped->destroy();
+                }
+            }
+            catch (...)
+            { }
+
+            return lua->ensure_resume(*server, weak, [=]() {
+                return 0;
+            });
+        });
+    }
 
     auto count       = static_cast<uint8_t>(lua->tointeger(3, 1));
     auto delete_attr = lua->toenum(4, ITEM_DELETE_TYPE::REMOVED);
@@ -1612,55 +1782,25 @@ int builtin::character::builtin_push_achievement(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc   = lua->argc();
     auto server = lua->env<fb::game::server>("server");
     auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
-    auto model = static_cast<const fb::model::achievement*>(nullptr);
-    if (lua->is_number(2))
-    {
-        auto id = lua->tointeger(2);
-        if (!table::achievement.contains(id))
-            return 0;
-
-        model = &table::achievement[id];
-    }
-    else if (lua->is_userdata<fb::game::achievement>(2))
-    {
-        model = (const fb::model::achievement*)(lua->touserdata<fb::game::achievement>(2));
-    }
-    else
-    {
+    if (!lua->is_number(2) || !lua->is_string(3) || !lua->is_number(4) || !lua->is_number(5))
         return 0;
-    }
 
-    auto text = std::optional<std::string>{std::nullopt};
-    if (lua->is_string(3))
-        text = lua->tostring(3);
-
-    auto icon = std::optional<uint8_t>{std::nullopt};
-    if (lua->is_number(4))
-        icon = lua->tointeger(4);
-
-    auto color = std::optional<uint16_t>{std::nullopt};
-    if (lua->is_number(5))
-        color = lua->tointeger(5);
+    auto id    = static_cast<uint32_t>(lua->tointeger(2));
+    auto text  = lua->tostring(3);
+    auto icon  = static_cast<uint8_t>(lua->tointeger(4));
+    auto color = static_cast<uint16_t>(lua->tointeger(5));
 
     auto weak = ch->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto already_has = ch->achievements.contains(model->id);
-        if (!already_has)
-            ch->achievements.insert({model->id, std::make_unique<fb::game::achievement>(*model, text, icon, color)});
-        else
-            ch->achievements[model->id] = std::make_unique<fb::game::achievement>(*model, text, icon, color);
+        ch->achievements[id] = std::make_unique<fb::game::achievement>(id, text, icon, color);
 
         return lua->ensure_resume(*server, weak, [=]() {
-            if (already_has)
-                lua->pushnil();
-            else
-                lua->pushobject(*ch->achievements[model->id]);
+            lua->pushobject(*ch->achievements[id]);
             return 1;
         });
     });
@@ -2897,6 +3037,10 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     {
         model = lua->touserdata<fb::model::object>(2);
     }
+    else if (lua->is_nil(2))
+    {
+        model = nullptr;
+    }
     else
     {
         return 0;
@@ -2910,8 +3054,10 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
         server->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
             if (obj != nullptr)
                 ch->listener.on_dialog(*ch, *obj, message, button_prev, button_next, oid);
-            else
+            else if (model != nullptr)
                 ch->listener.on_dialog(*ch, *model, message, button_prev, button_next, oid);
+            else
+                ch->listener.on_dialog(*ch, message, button_prev, button_next, oid);
 
             if (ch->dialog != nullptr)
                 ch->dialog->release();
@@ -3275,11 +3421,6 @@ int fb::game::builtin::character::builtin_start_quest(lua_State* L)
         return 0;
 
     auto id = lua->tointeger(2);
-    if (table::quest.contains(id) == false)
-    {
-        lua->pushboolean(false);
-        return 1;
-    }
 
     if (ch->quests.start(id) == false)
     {
@@ -3331,32 +3472,31 @@ int fb::game::builtin::character::builtin_remove_quest(lua_State* L)
     }
 }
 
-int fb::game::builtin::character::builtin_can_start_quest(lua_State* L)
+int fb::game::builtin::character::builtin_reward(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<fb::game::character>(1);
+    auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
-    if (lua->argc() < 2)
+    if (lua->is_string(2) == false)
     {
         lua->pushboolean(false);
         return 1;
     }
 
-    auto id = lua->tointeger(2);
-    if (table::quest.contains(id) == false)
+    auto reward_id = lua->tostring(2);
+    if (table::reward.contains(reward_id) == false)
     {
         lua->pushboolean(false);
         return 1;
     }
 
-    auto& attr = table::quest_attribute[id];
-    lua->pushboolean(ch->condition(attr.condition));
+    auto& reward = table::reward[reward_id];
+    lua->pushboolean(ch->reward(reward.dsl));
     return 1;
 }
 

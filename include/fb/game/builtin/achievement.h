@@ -7,8 +7,10 @@ namespace fb::game::builtin {
 
 struct achievement
 {
-    static int builtin_model(lua_State* L);
+    static int builtin_id(lua_State* L);
     static int builtin_text(lua_State* L);
+    static int builtin_icon(lua_State* L);
+    static int builtin_color(lua_State* L);
 };
 
 } // namespace fb::game::builtin

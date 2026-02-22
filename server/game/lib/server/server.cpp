@@ -1,6 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/game/handler.h>
 #include <fb/game/builtin/server.h>
+#include <fb/lua.h>
 #include <fb/log_collector.h>
 #include <fb/encoding.h>
 #include <json/json.h>
@@ -66,10 +67,8 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build<equipment, item>();
     lua::build<weapon, equipment>();
     lua::build<character, life>();
-    lua::build<fb::model::quest, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
-    lua::build<fb::model::achievement, lua::luable>();
     lua::build<fb::model::object, lua::luable>();
     lua::build<fb::model::life, fb::model::object>();
     lua::build<fb::model::mob, fb::model::life>();
@@ -81,6 +80,7 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("log", builtin::server::builtin_log);
     lua::build("seed", builtin::server::builtin_seed);
     lua::build("sleep", builtin::server::builtin_sleep);
+    lua::build("now", builtin::server::builtin_now);
     lua::build("baram_time", builtin::server::builtin_baram_time);
     lua::build("name2mob", builtin::server::builtin_name2mob);
     lua::build("name2spell", builtin::server::builtin_name2spell);
@@ -118,6 +118,7 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("regex", builtin::server::builtin_regex);
     lua::build("exp_multiplier", builtin::server::builtin_exp_multiplier);
     lua::build("drop_rate_multiplier", builtin::server::builtin_drop_rate_multiplier);
+    lua::build("gv", builtin::server::builtin_gv);
 
     for (auto& [_, root] : ist)
     {
@@ -264,6 +265,27 @@ async::task<void> server::on_start()
 
     // Fetch storage pending on server startup
     co_await this->storage_pending.fetch();
+
+    // Run server init script once (gv and other globals) on the least loaded thread
+    auto* init_thread = this->threads.least_loaded();
+    if (init_thread != nullptr)
+    {
+        co_await init_thread->dispatch([this](auto&) -> async::task<void> {
+            auto lua = fb::lua::new_context();
+            if (lua != nullptr)
+            {
+                try
+                {
+                    lua->load("scripts/init.lua");
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::warn("Server init script failed: {}", e.what());
+                }
+            }
+            co_return;
+        });
+    }
 }
 
 bool server::decrypt_policy(uint8_t cmd) const
@@ -512,10 +534,10 @@ async::task<void> server::save(character& ch)
     }
 
     auto achievements = std::vector<internal::Achievement>();
-    for (auto& [model, achievement] : ch.achievements)
+    for (auto& [id, achievement] : ch.achievements)
     {
         achievements.push_back(
-            internal::Achievement{ch.id, model, achievement->text, achievement->icon, achievement->color});
+            internal::Achievement{ch.id, id, achievement->text, achievement->icon, achievement->color});
     }
 
     auto quests = std::vector<internal::Quest>();

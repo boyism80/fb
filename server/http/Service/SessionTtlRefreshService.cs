@@ -7,21 +7,21 @@ namespace Http.Service
     public class SessionTtlRefreshService : BackgroundService
     {
         private readonly SessionService _sessionService;
+        private readonly RedisService _redisService;
         private readonly ILogger<SessionTtlRefreshService> _logger;
-        private readonly IConfiguration _configuration;
         private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(30);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionTtlRefreshService"/> class.
         /// </summary>
         /// <param name="sessionService">The session service for refreshing TTL.</param>
+        /// <param name="redisService">The Redis service for retrieving configured world list.</param>
         /// <param name="logger">The logger for recording refresh operations.</param>
-        /// <param name="configuration">The configuration for retrieving world information.</param>
-        public SessionTtlRefreshService(SessionService sessionService, ILogger<SessionTtlRefreshService> logger, IConfiguration configuration)
+        public SessionTtlRefreshService(SessionService sessionService, RedisService redisService, ILogger<SessionTtlRefreshService> logger)
         {
             _sessionService = sessionService;
+            _redisService = redisService;
             _logger = logger;
-            _configuration = configuration;
         }
 
         /// <summary>
@@ -31,13 +31,7 @@ namespace Http.Service
         /// <returns>A task representing the asynchronous execution of the background service.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // Get all game worlds from configuration
-            var mysqlSection = _configuration.GetSection("ConnectionStrings:MySql");
-            // Config uses key "unified" (not "unified") for world 0; see appsettings and Pulumi
-            var worlds = mysqlSection.GetChildren()
-                .Where(child => uint.TryParse(child.Key, out _) || child.Key == "unified")
-                .Select(child => child.Key == "unified" ? 0u : uint.Parse(child.Key))
-                .ToList();
+            var worlds = _redisService.GetConfiguredWorlds();
 
             while (!stoppingToken.IsCancellationRequested)
             {

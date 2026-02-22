@@ -50,7 +50,9 @@ public class Program
 
             cfg.CreateMap<Http.Model.Achievement, Achievement>()
             .ForMember(x => x.User, x => x.MapFrom(u => u.Uid))
-            .ReverseMap();
+            .ForMember(x => x.Model, x => x.MapFrom(u => u.Id))
+            .ReverseMap()
+            .ForMember(x => x.Id, x => x.MapFrom(u => u.Model));
 
             cfg.CreateMap<Http.Model.Option, Option>()
             .ReverseMap();

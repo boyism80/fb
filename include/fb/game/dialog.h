@@ -28,6 +28,7 @@ enum class interaction : uint8_t
 // clang-format off
 struct listener_t
 {
+    virtual void on_dialog(character& me, std::string_view message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::model::object& object, std::string_view message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::game::object& obj, std::string_view message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD)     = 0;
     virtual void on_dialog(character& me, const fb::model::object& obj, std::string_view message, const std::vector<std::string>& menus, uint32_t seq = 0xFFFFFFFD) = 0;

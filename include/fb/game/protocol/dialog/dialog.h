@@ -40,6 +40,12 @@ public:
 
 public:
 #ifndef BOT
+    dialog(std::string_view              message,
+           bool                          button_prev,
+           bool                          button_next,
+           uint32_t                      oid         = 0xFFFFFFFD,
+           fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+
     dialog(const fb::model::object&      object,
            std::string_view              message,
            bool                          button_prev,
