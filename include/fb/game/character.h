@@ -18,6 +18,7 @@
 #include <fb/game/quest.h>
 #include <fb/game/storage.h>
 #include <fb/game/marketplace.h>
+#include <fb/game/marriage.h>
 #include <set>
 #include <string_view>
 #include <unordered_map>
@@ -77,6 +78,7 @@ private:
     mob_vector_t              _spawned_mobs  = {};
     bool                      _super_hide    = false;
     fb::model::datetime       _last_afk_time;
+    marriage                  _marriage          = {};
     bool                      _options[0x0B + 1] = {
         1,
     };
@@ -251,6 +253,8 @@ public:
     async::task<void>                                  death_penalty();
     bool                                               reward(const std::vector<fb::model::dsl>& reward);
     fb::protocol::internal::Character                  to_protocol() const;
+    const fb::game::marriage&                          marriage() const;
+    void                                               marriage(const fb::game::marriage& value);
     void                                               super_hide(bool enabled);
     bool                                               hidden(ROLE role) const;
     void                                               update_last_afk_time();

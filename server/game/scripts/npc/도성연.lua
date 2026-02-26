@@ -171,12 +171,15 @@ function NPC_108(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
+        if not me:rmitem('인어의거울', 1, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '인어의거울을 가지고 있지 않으시군요.', false, true)
+            return
+        end
         if me:mkitem('봉마의목걸이', 1) == nil then
             me:dialog(npc, '소지품이 가득 차서 봉마의목걸이를 받을 수 없습니다.', false, true)
             return
         end
         quest:step(5)
-        me:rmitem('인어의거울', 1, ITEM_DELETE_TYPE.GIVE)
         me:push_achievement(9, '도삭산 200층 퀘스트 완료', 7, 1)
         me:dialog(npc, '뭐 어쨌든 기념으로 드릴테니.. 잘 쓰시오..\n\n그럼 건강하시오!', true, true)
         return

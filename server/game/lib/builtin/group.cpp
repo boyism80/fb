@@ -105,11 +105,11 @@ int builtin::group::builtin_message(lua_State* L)
     auto type     = lua->toenum(3, MESSAGE_TYPE::STATE);
     auto group_id = group->id();
 
-    static auto fn = [](fb::lua::context*  lua,
-                        fb::game::server*  server,
-                        uint32_t           group_id,
-                        std::string_view   message,
-                        MESSAGE_TYPE       type) -> async::task<void> {
+    static auto fn = [](fb::lua::context* lua,
+                        fb::game::server* server,
+                        uint32_t          group_id,
+                        std::string_view  message,
+                        MESSAGE_TYPE      type) -> async::task<void> {
         try
         {
             co_await server->broadcast_group(group_id, message, type);
@@ -176,7 +176,7 @@ int builtin::group::builtin_toggle(lua_State* L)
     static auto fn = [](fb::lua::context*                    lua,
                         fb::game::server*                    server,
                         std::shared_ptr<fb::game::character> actor_shared,
-                        std::string_view                      target_name) -> async::task<void> {
+                        std::string_view                     target_name) -> async::task<void> {
         try
         {
             if (actor_shared == nullptr)

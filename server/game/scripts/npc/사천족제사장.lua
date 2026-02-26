@@ -88,7 +88,7 @@ function NPC_209(me, npc)
         local give_exp = math.floor(item.exp / exp_multiplier())
         me:exp(me:exp() + give_exp)
 
-        quest:param(tostring(now() + COOLDOWN_SEC))
+        quest:param(tostring(nt + COOLDOWN_SEC))
         quest:progress(quest:progress() + 1)
         quest:step(0)
         local count = quest:progress()

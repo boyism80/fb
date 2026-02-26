@@ -25,9 +25,7 @@ function NPC_121(me, npc)
         return
     end
 
-    local item = me:item('호박')
-    local count = (item ~= nil) and item:count() or 0
-    if count < 10 then
+    if not me:has_items('호박', 10) then
         me:dialog(npc, '아직 호박 열 개를 구하지 못했군.', false, true)
         return
     end
@@ -37,7 +35,10 @@ function NPC_121(me, npc)
         return
     end
 
-    me:rmitem('호박', 10, ITEM_DELETE_TYPE.GIVE)
+    if not me:rmitem('호박', 10, ITEM_DELETE_TYPE.GIVE) then
+        me:dialog(npc, '아직 호박 열 개를 구하지 못했군.', false, true)
+        return
+    end
     if me:mkitem('선장의일기2', 1) == nil then
         me:dialog(npc, '소지품이 가득 차서 선장의일기2를 줄 수 없네.', false, true)
         return

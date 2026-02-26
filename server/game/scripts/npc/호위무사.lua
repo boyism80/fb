@@ -14,11 +14,13 @@ function NPC_229(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
+    local required_table = {}
     for _, name in ipairs(REQUIRED_ITEMS) do
-        if not me:has_items(name, 1) then
-            me:dialog(npc, '자네는 ' .. name_with(name, '이', '가') .. ' 없군..', false, false)
-            return
-        end
+        required_table[name] = 1
+    end
+    if not me:has_items(required_table) then
+        me:dialog(npc, '자네는 재료가 부족하군..', false, false)
+        return
     end
     btn = me:dialog(npc, '재료를 모두 가지고 있군. 그럼 파괴왕의방으로 보내주겠네.', false, true)
     if btn == DIALOG_RESULT.QUIT then

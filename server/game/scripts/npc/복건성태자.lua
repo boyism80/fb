@@ -127,11 +127,14 @@ function bokgeon_find_toys(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
+        if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '아직 재료를 다 모으지 못하셨군요.', false, true)
+            return
+        end
         if me:mkitem('팔과탕', 10) == nil then
             me:dialog(npc, '소지품이 가득 차서 팔과탕을 받을 수 없습니다.', false, true)
             return
         end
-        me:rmitem(materials, ITEM_DELETE_TYPE.GIVE)
         quest:complete()
         me:erase_achievement(37)
         return

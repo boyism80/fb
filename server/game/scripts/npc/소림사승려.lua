@@ -103,7 +103,7 @@ function NPC_176(me, npc)
         return
     end
 
-    if me:item('고구려비단') == nil then
+    if not me:has_items('고구려비단', 1) then
         me:dialog(npc, '아직 고구려비단을 못 사오신것 같군요.', false, true)
         return
     end

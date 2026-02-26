@@ -519,6 +519,27 @@ CREATE TABLE `user` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `marriage`
+--
+
+DROP TABLE IF EXISTS `marriage`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `marriage` (
+  `character_id` int unsigned NOT NULL COMMENT 'Character id (one row per character)',
+  `spouse_id` int unsigned DEFAULT NULL COMMENT 'Character id of spouse; NULL when single',
+  `remarriage_after` datetime DEFAULT NULL COMMENT 'Remarriage allowed after this time (set on divorce)',
+  `divorce_count` int unsigned NOT NULL DEFAULT '0' COMMENT 'Number of divorces (for title/achievement)',
+  `created_date` datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+  `updated_date` datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP) ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`character_id`),
+  KEY `idx_marriage_spouse` (`spouse_id`),
+  CONSTRAINT `fk.marriage.character` FOREIGN KEY (`character_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk.marriage.spouse` FOREIGN KEY (`spouse_id`) REFERENCES `user` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Marriage state per character: spouse_id, remarriage_after, divorce_count';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Dumping routines for database 'fb'
 --
 /*!50003 DROP PROCEDURE IF EXISTS `USP_BULLETIN_ADD` */;

@@ -82,8 +82,7 @@ function NPC_211(me, npc)
 
     if step >= 1 and step <= 5 then
         local t = tiers[step]
-        local horn = me:item(t.item)
-        if horn == nil or horn:count() < t.count then
+        if not me:has_items(t.item, t.count) then
             me:dialog(npc, string.format('아직 %s %d개를 모아오지 못하신 것 같군요?', t.item, t.count), false, true)
             return
         end
@@ -103,8 +102,7 @@ function NPC_211(me, npc)
     end
 
     if step == 6 then
-        local horn = me:item('녹산소괴의뿔')
-        if horn == nil or horn:count() < 30 then
+        if not me:has_items('녹산소괴의뿔', 30) then
             me:dialog(npc, '아직 녹산소괴의뿔 30개를 모아오지 못하신 것 같군요?', false, true)
             return
         end
@@ -146,11 +144,14 @@ function NPC_211(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
+        if not me:rmitem('산소괴왕의뿔', 1, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '산소괴왕의뿔을 가지고 있지 않으시군요.', false, true)
+            return
+        end
         if me:mkitem('흑영패도', 1) == nil then
             me:dialog(npc, '소지품이 가득 차서 흑영패도를 받을 수 없습니다.', false, true)
             return
         end
-        me:rmitem('산소괴왕의뿔', 1, ITEM_DELETE_TYPE.GIVE)
         quest:complete()
         me:push_achievement(ACHIEVEMENT_OXYGEN, '산소소탕 작전을 성공적으로 수행하였다.', 7, 1)
         btn = me:dialog(npc, '정말 감사드립니다. 그 보답으로 이 보검을 드리죠. 황제에게 특별히 하사받은것인데 저에겐 과분한 물건인듯 하군요.', false, true)

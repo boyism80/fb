@@ -85,11 +85,7 @@ function NPC_241(me, npc)
     end
 
     if quest:step() == 1 then
-        local snake = me:item('뱀고기')
-        local good_snake = me:item('좋은뱀고기')
-        local snake_count = (snake ~= nil) and snake:count() or 0
-        local good_count = (good_snake ~= nil) and good_snake:count() or 0
-        if snake_count < 100 or good_count < 5 then
+        if not me:has_items({['뱀고기'] = 100, ['좋은뱀고기'] = 5}) then
             me:dialog(npc, '청심사주를 만들기 위해선 뱀고기 100개와 좋은뱀고기 5개가 필요하네.', false, false)
             return
         end
@@ -146,11 +142,14 @@ function NPC_241(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_241_COS005
         end
+        if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '재료가 모자라군.. 기린의피와 청심초 5뿌리만 있다면 이젠 정말 만들수 있을 것이네.', false, false)
+            return
+        end
         if me:mkitem('청심사주', 2) == nil then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with('청심사주', '을', '를') .. ' 줄 수 없네.', false, true)
             return
         end
-        me:rmitem(materials, ITEM_DELETE_TYPE.GIVE)
         quest:step(3)
         me:push_achievement(40, '청심사주를 천선도사에게 전해주자.', 7, 20)
         return

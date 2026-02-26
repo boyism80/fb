@@ -82,11 +82,14 @@ function NPC_190(me, npc)
         if sel2 >= 0 and sel2 <= 3 then
             local item_name = REWARD_ITEMS[sel2 + 1]
             local job_name = REWARD_JOBS[sel2 + 1]
+            if not me:rmitem(REQUIRED_ITEM, ITEM_DELETE_TYPE.GIVE) then
+                me:dialog(npc, '아직 나무가면이 별로 없네요.. 50개정도만 구해주세요~', false, false)
+                return
+            end
             if me:mkitem(item_name, 1) == nil then
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.', false, false)
                 return
             end
-            me:rmitem(REQUIRED_ITEM, ITEM_DELETE_TYPE.GIVE)
             quest:complete()
             me:push_achievement(ACHIEVEMENT_700, '도삭산 700층 퀘스트 완료', 7, 1)
             btn = me:dialog(npc, item_name .. '는 ' .. job_name .. '분들을 위한 투구입니다.', false, true)

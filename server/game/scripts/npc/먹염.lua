@@ -168,13 +168,16 @@ function NPC_168(me, npc)
         me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', false, false)
         return
     end
+    if not me:rmitem(food_name, 1, ITEM_DELETE_TYPE.GIVE) then
+        me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', false, false)
+        return
+    end
     if row.item ~= nil and row.item_count > 0 then
         if me:mkitem(row.item, row.item_count) == nil then
             me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', false, true)
             return
         end
     end
-    me:rmitem(food_name, 1, ITEM_DELETE_TYPE.GIVE)
     if row.money > 0 then
         me:money(me:money() + row.money)
     end

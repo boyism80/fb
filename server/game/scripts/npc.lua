@@ -50,6 +50,7 @@ QUEST_NAKRANG3 = 226
 QUEST_NAKRANG4 = 227
 QUEST_NAKRANG5 = 228
 QUEST_NAKRANG7 = 229
+QUEST_PROMOTION_3RD = 230
 
 function npc_revive(me, npc, discourteous)
     if me:state() ~= STATE.GHOST then
@@ -1691,4 +1692,223 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
             me:dialog(npc, '아직 너의 정성이 부족하니 다음에 이 곳에 올 때에는 보다 큰 각오를 갖고 나를 찾아오도록 하여라.')
         end
     end
+end
+
+--- Items required per promotion step (0..3). Same for all classes.
+local PROMOTION_ITEMS = {
+    [0] = { { name = '팔괘', count = 1 } },
+    [1] = { { name = '수룡의비늘', count = 1 }, { name = '화룡의비늘', count = 1 } },
+    [2] = { { name = '천성현의증표', count = 1 } },
+    [3] = { { name = '반고의심장', count = 1 } },
+}
+
+--- Minimum base_hp/base_mp per class and promotion step (0..3). Looked up by NPC_PROMOTION together with PROMOTION_ITEMS.
+local PROMOTION_STATS = {
+    [CLASS.WARRIOR] = {
+        [0] = { min_hp = 70000,  min_mp = 0 },
+        [1] = { min_hp = 200000, min_mp = 0 },
+        [2] = { min_hp = 600000, min_mp = 0 },
+        [3] = { min_hp = 1400000, min_mp = 0 },
+    },
+    [CLASS.ROGUE] = {
+        [0] = { min_hp = 65000,  min_mp = 0 },
+        [1] = { min_hp = 220000, min_mp = 0 },
+        [2] = { min_hp = 600000, min_mp = 0 },
+        [3] = { min_hp = 1400000, min_mp = 0 },
+    },
+    [CLASS.MAGE] = {
+        [0] = { min_hp = 30000,  min_mp = 20000 },
+        [1] = { min_hp = 150000, min_mp = 100000 },
+        [2] = { min_hp = 300000, min_mp = 500000 },
+        [3] = { min_hp = 650000, min_mp = 900000 },
+    },
+    [CLASS.POET] = {
+        [0] = { min_hp = 25000,  min_mp = 25000 },
+        [1] = { min_hp = 80000,  min_mp = 70000 },
+        [2] = { min_hp = 250000, min_mp = 250000 },
+        [3] = { min_hp = 600000, min_mp = 750000 },
+    },
+}
+
+--- Exp cost per promotion skill (50M). Used by NPC_PROMOTION_SKILLS.
+local PROMOTION_SKILL_EXP = 50000000
+
+--- Promotion skills by class and tier (1..4). Index 1 = 1차 승급기술, etc. Used by NPC_PROMOTION_SKILLS.
+local PROMOTION_SKILLS = {
+    [CLASS.WARRIOR] = {
+        [1] = { '백호참' },
+        [2] = { '어검술', '진백호령' },
+        [3] = { '초혼비무', '쇄혼비무', '포효검황' },
+        [4] = { '혈겁만파', "극'백호참", '운공체식' },
+    },
+    [CLASS.ROGUE] = {
+        [1] = { '백호검무' },
+        [2] = { '이기어검' },
+        [3] = { '기문방술', '무형검' },
+        [4] = { '분혼경천', '파천검무', '개혈체식' },
+    },
+    [CLASS.MAGE] = {
+        [1] = { '태양의기원' },
+        [2] = { '삼매진화', '호체주술' },
+        [3] = { '마기지체', '지폭지술', '노도성황', '환기' },
+        [4] = { '폭류유성', '현자의기원', '만파지독' },
+    },
+    [CLASS.POET] = {
+        [1] = { '백호의희원' },
+        [2] = { '반탄공', '신령의기원' },
+        [3] = { "백호의희원'첨", '신령지익', '파력무참', '환군마술' },
+        [4] = { "신령의기원'첨", '봉황의기원', '귀염추혼소' },
+    },
+}
+
+--- Returns true if the character has the spell by name.
+local function promotion_has_spell(me, spell_name)
+    for _, spell in pairs(me:spells() or {}) do
+        if spell:model():name() == spell_name then
+            return true
+        end
+    end
+    return false
+end
+
+--- Handles "기술을 배울래요" for 구륜: list 1~4차 승급기술, then spells for selected tier; cost PROMOTION_SKILL_EXP per skill.
+--- Call from 선구륜/부구륜/정구륜/은구륜 when class matches.
+function NPC_PROMOTION_SKILLS(me, npc, class)
+    if me:class() ~= class then
+        me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)
+        return
+    end
+    local tier_sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
+        '1차 승급기술',
+        '2차 승급기술',
+        '3차 승급기술',
+        '4차 승급기술',
+    })
+    if tier_sel == nil then
+        return
+    end
+    local tier = tier_sel + 1
+    if me:promotion() < tier - 1 then
+        me:dialog(npc, string.format('%d차 승급을 한 뒤에 다시 오세요.', tier), false, true)
+        return
+    end
+    local spells = PROMOTION_SKILLS[class] and PROMOTION_SKILLS[class][tier]
+    if not spells or #spells == 0 then
+        me:dialog(npc, '아직 준비 중입니다.', false, true)
+        return
+    end
+    local skill_sel = me:list(npc, '안녕하세요. 어떤 기술을 배울래요?', spells)
+    if skill_sel == nil then
+        return
+    end
+    local spell_name = spells[skill_sel + 1]
+    if not spell_name then
+        return
+    end
+    if me:dialog(npc, name_with(spell_name, '을', '를') .. ' 배우기 위해선 5000만의 경험치가 필요합니다.', false, true) == DIALOG_RESULT.QUIT then
+        return
+    end
+    local exp_now = me:exp()
+    if exp_now < PROMOTION_SKILL_EXP then
+        me:dialog(npc, '경험치가 모자랍니다.', false, true)
+        return
+    end
+    if promotion_has_spell(me, spell_name) then
+        me:dialog(npc, '이미 배운 마법입니다.', false, true)
+        return
+    end
+    me:exp(exp_now - PROMOTION_SKILL_EXP)
+    me:mkspell(spell_name)
+    me:dialog(npc, name_with(spell_name, '을', '를') .. ' 드렸습니다.', false, true)
+end
+
+--- 3차 승급 옷 item name by class and gender. Index: [class][gender].
+local PROMOTION_CLOTHES_ITEMS = {
+    [CLASS.WARRIOR] = { [GENDER.MAN] = '검황의영혼', [GENDER.WOMAN] = '검황의심장' },
+    [CLASS.ROGUE]   = { [GENDER.MAN] = '귀검의영혼', [GENDER.WOMAN] = '귀검의심장' },
+    [CLASS.MAGE]    = { [GENDER.MAN] = '현인의영혼', [GENDER.WOMAN] = '현인의심장' },
+    [CLASS.POET]    = { [GENDER.MAN] = '진인의영혼', [GENDER.WOMAN] = '진인의심장' },
+}
+
+--- Handles "3차승급 옷을 원합니다": requires 3차 승급 (promotion >= 3). Gives one item from PROMOTION_CLOTHES_ITEMS[class][gender].
+--- Call from 선구륜/부구륜/정구륜/은구륜 with class.
+function NPC_PROMOTION_CLOTHES(me, npc, class)
+    if me:class() ~= class then
+        me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)
+        return
+    end
+    if me:promotion() < 3 then
+        me:dialog(npc, '3차 승급을 한 뒤에 다시 오세요.', false, true)
+        return
+    end
+    local items_by_gender = PROMOTION_CLOTHES_ITEMS[class]
+    local item_name = items_by_gender and items_by_gender[me:gender()]
+    if not item_name then
+        me:dialog(npc, '그 옷은 아직 준비 중이에요.', false, true)
+        return
+    end
+    if me:has_items(item_name, 1) then
+        me:dialog(npc, '이미 보유 중이거나 장착 중이라 더 받을 수 없습니다.', false, true)
+        return
+    end
+
+    local equipments = me:equipments()
+    if equipments[EQUIPMENT_PARTS.ARMOR] and equipments[EQUIPMENT_PARTS.ARMOR]:model():name() == item_name then
+        me:dialog(npc, '이미 보유 중이거나 장착 중이라 더 받을 수 없습니다.', false, true)
+        return
+    end
+    
+    if me:mkitem(item_name, 1) == nil then
+        me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.', false, true)
+        return
+    end
+    me:dialog(npc, name_with(item_name, '을', '를') .. ' 드렸습니다.', false, true)
+end
+
+--- Handles a single promotion step (current promotion -> +1). Requirements are read from PROMOTION_ITEMS and PROMOTION_STATS.
+--- Call from 선구륜/부구륜/정구륜/은구륜 with class only; current step is taken from me:promotion().
+function NPC_PROMOTION(me, npc, class)
+    if me:class() ~= class then
+        me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)
+        return
+    end
+    local from_promotion = me:promotion()
+    if from_promotion >= 4 then
+        me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)
+        return
+    end
+    local stats = PROMOTION_STATS[class] and PROMOTION_STATS[class][from_promotion]
+    local items = PROMOTION_ITEMS[from_promotion]
+    if not stats or not items then
+        me:dialog(npc, string.format('아직 %d차 이상 승급은 준비 중입니다.', from_promotion + 2), false, true)
+        return
+    end
+    if me:level() < 99 then
+        me:dialog(npc, '좀더 수련을 쌓고오세요.', false, true)
+        return
+    end
+    if me:base_hp() < stats.min_hp or me:base_mp() < stats.min_mp then
+        me:dialog(npc, '좀더 수련을 쌓고오세요.', false, true)
+        return
+    end
+    if me:dialog(npc, string.format('어서 오세요. 소녀는 %s분들의 수호천녀 %s입니다.', class2name(class, 0), npc:model():name()), false, true) == DIALOG_RESULT.QUIT then
+        return
+    end
+    local next_name = class2name(class, from_promotion + 1)
+    if not next_name then
+        return
+    end
+    local selected, button = me:list(npc, string.format('이토록 강해지시다니, 정말 대단하십니다.\n당신이 지금껏 걸어온 고된 수련의 길에 경의를 표합니다.\n\n지금 %s의 칭호를 받으시겠습니까?', next_name), {'네, 모든 준비가 끝났습니다.', '나중에 다시 오지요.'})
+    if selected ~= 0 then
+        return
+    end
+    for _, it in ipairs(items) do
+        if not me:rmitem(it.name, it.count, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, name_with(it.name, '이', '가') .. ' 없습니다.', false, true)
+            return
+        end
+    end
+    me:promotion(from_promotion + 1)
+    broadcast(string.format('(( [%s]님이 %s 승급하였습니다. 축하합니다! ))', me:name(), name_with(next_name, '으로', '로')), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
+    me:dialog(npc, '승급을 마쳤습니다. 더 높은 경지에 도전하시길 바랍니다.', false, true)
 end

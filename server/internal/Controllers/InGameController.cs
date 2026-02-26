@@ -360,6 +360,18 @@ namespace Internal.Controllers
                 });
             var storagePending = await _storageService.GetPendingForUserAsync(world, uid);
 
+            var marriageData = await _dbContext.Marriage.Get(world, uid) ?? 
+                _dbContext.Marriage.Set(world, new Http.Model.Marriage
+                {
+                    CharacterId = uid,
+                });
+
+            var spouseName = string.Empty;
+            if (marriageData.SpouseId.HasValue)
+                spouseName = await _dbContext.Character.GetName(world, marriageData.SpouseId.Value) ?? string.Empty;
+            var marriageProtocol = _mapper.Map<Protocol.Marriage>(marriageData);
+            marriageProtocol.SpouseName = spouseName ?? string.Empty;
+
             await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(uid)))
             {
                 var sync = await _dbContext.CharacterSync.Get(world, uid) ??
@@ -374,6 +386,7 @@ namespace Internal.Controllers
                 return new Response.Init
                 {
                     Character = _mapper.Map<Protocol.Character>(ch),
+                    Marriage = marriageProtocol,
                     Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
                     Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
                     Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
@@ -435,6 +448,12 @@ namespace Internal.Controllers
 
                 var ch = _mapper.Map<Character>(request.Character);
                 _dbContext.Character.Set(world, ch);
+
+                var marriage = _mapper.Map<Http.Model.Marriage>(request.Marriage);
+                marriage.CharacterId = request.Character.Id;
+                marriage.CreatedDate = DateTime.Now;
+                marriage.UpdatedDate = DateTime.Now;
+                _dbContext.Marriage.Set(world, marriage);
 
                 var items = Override(_mapper.Map<Protocol.Item[], Item[]>(request.Items.ToArray()), await _dbContext.Item.Get(world, request.Character.Id));
                 _dbContext.Item.Set(world, items);

@@ -69,17 +69,20 @@ function NPC_191(me, npc)
             me:dialog(npc, '아직 발톱, 이빨, 뿔을 다 구하지 못한 모양이군..', false, false)
             return
         end
-        if me:mkitem(REWARD_400, 1) == nil then
-            me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_400, '을', '를') .. ' 받을 수 없습니다.', false, false)
-            return
-        end
-        me:rmitem(REQUIRED_ITEMS, ITEM_DELETE_TYPE.GIVE)
-        me:push_achievement(ACHIEVEMENT_400, '도삭산 400층 퀘스트 완료', 7, 1)
-        quest:step(2)
         btn = me:dialog(npc, '오! 세가지 다 구해왔구려. 역시 내가 사람보는 눈은 정확하다니깐. 허허~\n\n그러면 내가 다 가져가겠소.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
+        if not me:rmitem(REQUIRED_ITEMS, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '아직 발톱, 이빨, 뿔을 다 구하지 못한 모양이군..', false, false)
+            return
+        end
+        if me:mkitem(REWARD_400, 1) == nil then
+            me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_400, '을', '를') .. ' 받을 수 없습니다.', false, false)
+            return
+        end
+        me:push_achievement(ACHIEVEMENT_400, '도삭산 400층 퀘스트 완료', 7, 1)
+        quest:step(2)
         btn = me:dialog(npc, '자 여기 내가 주는 선물이오. 도삭산의 비밀에 관련된 것 같은데.. 언젠가 쓸 일이 있을 것이오.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return

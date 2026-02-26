@@ -148,13 +148,16 @@ function NPC_232(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_232_COS008
         end
-        quest:step(4)
-        me:rmitem('보패', 1, ITEM_DELETE_TYPE.GIVE)
+        if not me:rmitem('보패', 1, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '보패를 가지고 있지 않으시군요.', false, true)
+            return
+        end
         if me:mkitem('황비연의머리띠', 1) == nil then
             me:dialog(npc, '소지품이 가득 차서 황비연의머리띠를 줄 수 없습니다.', false, true)
             quest:step(3)
             return
         end
+        quest:step(4)
         me:push_achievement(39, '황비연의머리띠를 관아에 가져가자.', 7, 16)
         return
     end

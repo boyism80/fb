@@ -1464,6 +1464,16 @@ fb::protocol::internal::Character character::to_protocol() const
     return dto;
 }
 
+const fb::game::marriage& character::marriage() const
+{
+    return this->_marriage;
+}
+
+void character::marriage(const fb::game::marriage& value)
+{
+    this->_marriage = value;
+}
+
 void character::browse_ch(const character& ch)
 {
     this->listener.on_browse_character(*this, ch);

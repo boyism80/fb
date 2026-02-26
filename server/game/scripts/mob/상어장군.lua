@@ -27,7 +27,8 @@ function ON_MOB_DIE_1092(me, you)
     end
 
     local anger_end = tonumber(quest:param() or "")
-    if not anger_end or now() < anger_end then
+    local t = now()
+    if not anger_end or t < anger_end then
         return
     end
 

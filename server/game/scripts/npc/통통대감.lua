@@ -32,7 +32,7 @@ function NPC_122(me, npc)
         return
     end
 
-    if me:item('망치') == nil then
+    if not me:has_items('망치', 1) then
         me:dialog(npc, '아직 망치라는 것을 구하지 못한것 같군?', false, true)
         return
     end
@@ -42,11 +42,14 @@ function NPC_122(me, npc)
         return
     end
 
+    if not me:rmitem('망치', 1, ITEM_DELETE_TYPE.GIVE) then
+        me:dialog(npc, '아직 망치라는 것을 구하지 못한것 같군?', false, true)
+        return
+    end
     if me:mkitem('선장의일기3', 1) == nil then
         me:dialog(npc, '소지품이 가득 차서 선장의일기3을 줄 수 없네.', false, true)
         return
     end
-    me:rmitem('망치', 1, ITEM_DELETE_TYPE.GIVE)
     quest:complete()
     lighthouse:step(4)
     me:push_achievement(32, '진백랑의 부탁을 들어주자. [4/6]', 7, 1)

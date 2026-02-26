@@ -98,15 +98,11 @@ function NPC_174(me, npc)
     end
 
     do
-        local has_all = true
+        local give_table = {}
         for _, name in ipairs(diary_names) do
-            local item = me:item(name)
-            if item == nil or item:count() < 1 then
-                has_all = false
-                break
-            end
+            give_table[name] = 1
         end
-        if not has_all then
+        if not me:has_items(give_table) then
             me:dialog(npc, '아직 일기 아홉장과 겉표지를 구하지 못했나보군..', false, false)
             return
         end
@@ -131,6 +127,10 @@ function NPC_174(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_174_COS007
         end
+        if not me:rmitem(give_table, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '아직 일기 아홉장과 겉표지를 구하지 못했나보군..', false, true)
+            return
+        end
         if me:mkitem('선장의일기장', 1) == nil then
             me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', false, true)
             return
@@ -140,11 +140,6 @@ function NPC_174(me, npc)
             me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', false, true)
             return
         end
-        local give_table = {}
-        for _, name in ipairs(diary_names) do
-            give_table[name] = 1
-        end
-        me:rmitem(give_table, ITEM_DELETE_TYPE.GIVE)
         quest:complete()
         me:push_achievement(32, '등대빛의검을 받다!', 6, 1)
         return

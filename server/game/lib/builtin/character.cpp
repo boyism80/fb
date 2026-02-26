@@ -1,6 +1,8 @@
 #include <fb/game/builtin/object.h>
 #include <fb/game/builtin/character.h>
 #include <fb/game/server.h>
+#include <fb/game/marriage.h>
+#include <fb/model/datetime.h>
 #include <string_view>
 #include <unordered_map>
 
@@ -89,8 +91,11 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marketplace_cancel",     builtin::character::builtin_marketplace_cancel},
 {"marketplace_purchase",   builtin::character::builtin_marketplace_purchase},
 {"marketplace_search",     builtin::character::builtin_marketplace_search},
-{"marketplace_get_listings", builtin::character::builtin_marketplace_get_listings},
+{"marketplace_get_listings",     builtin::character::builtin_marketplace_get_listings},
 {"marketplace_pending_listings", builtin::character::builtin_marketplace_pending_listings},
+{"marriage",                     builtin::character::builtin_marriage},
+{"marry",                        builtin::character::builtin_marry},
+{"divorce",                      builtin::character::builtin_divorce},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::character::builtin_uid(lua_State* L)
@@ -500,17 +505,19 @@ int builtin::character::builtin_has_items(lua_State* L)
         return 1;
     }
 
+    auto required_models = std::vector<std::pair<const fb::model::item*, uint16_t>>();
     for (const auto& [name, min_count] : required)
     {
-        auto item = ch->items.find(name);
-        if (item == nullptr || item->count() < min_count)
+        auto model = table::item.name2item(name);
+        if (model == nullptr)
         {
             lua->pushboolean(false);
             return 1;
         }
+        required_models.push_back({model, min_count});
     }
 
-    lua->pushboolean(true);
+    lua->pushboolean(ch->items.has(required_models));
     return 1;
 }
 
@@ -685,9 +692,13 @@ int builtin::character::builtin_rmitem(lua_State* L)
     auto server = lua->env<fb::game::server>("server");
     auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
-        return 0;
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
 
-    /* Table form: me:rmitem({['name1'] = count, ['name2'] = count, ...}, optional ITEM_DELETE_TYPE) */
+    /* Table form: me:rmitem({['name1'] = count, ['name2'] = count, ...}, optional ITEM_DELETE_TYPE). All-or-nothing:
+     * remove only if character has all required counts. Returns success (boolean). */
     if (lua->is_table(2))
     {
         auto delete_attr = lua->toenum(3, ITEM_DELETE_TYPE::REMOVED);
@@ -697,8 +708,8 @@ int builtin::character::builtin_rmitem(lua_State* L)
         {
             if (lua->is_string(-2) && lua->is_number(-1))
             {
-                auto name = lua->tostring(-2);
-                auto cnt  = static_cast<uint16_t>(lua->tointeger(-1));
+                auto name  = lua->tostring(-2);
+                auto cnt   = static_cast<uint16_t>(lua->tointeger(-1));
                 auto model = table::item.name2item(name);
                 if (model != nullptr && cnt > 0)
                     to_remove.push_back({model, cnt});
@@ -706,25 +717,34 @@ int builtin::character::builtin_rmitem(lua_State* L)
             lua->pop(1);
         }
         if (to_remove.empty())
-            return 0;
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
 
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            bool success = false;
             try
             {
-                for (auto& [model, cnt] : to_remove)
+                if (ch->items.has(to_remove))
                 {
-                    auto index  = ch->items.index(*model);
-                    auto dropped = ch->items.remove(index, cnt, delete_attr);
-                    if (dropped != nullptr)
-                        std::ignore = dropped->destroy();
+                    for (const auto& [model, cnt] : to_remove)
+                    {
+                        auto index   = ch->items.index(*model);
+                        auto dropped = ch->items.remove(index, cnt, delete_attr);
+                        if (dropped != nullptr)
+                            std::ignore = dropped->destroy();
+                    }
+                    success = true;
                 }
             }
             catch (...)
             { }
 
             return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
+                lua->pushboolean(success);
+                return 1;
             });
         });
     }
@@ -736,22 +756,34 @@ int builtin::character::builtin_rmitem(lua_State* L)
     {
         auto item = lua->touserdata<fb::game::item>(2);
         if (item == nullptr)
-            return 0;
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
 
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            bool success = false;
             try
             {
-                auto index   = ch->items.index(item->based<fb::model::item>());
-                auto dropped = ch->items.remove(index, count, delete_attr);
-                if (dropped != nullptr)
-                    std::ignore = dropped->destroy();
+                auto found = ch->items.find(item->based<fb::model::item>());
+                if (found != nullptr && found->count() >= count)
+                {
+                    auto dropped =
+                        ch->items.remove(ch->items.index(item->based<fb::model::item>()), count, delete_attr);
+                    if (dropped != nullptr)
+                    {
+                        std::ignore = dropped->destroy();
+                        success     = true;
+                    }
+                }
             }
             catch (...)
             { }
 
             return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
+                lua->pushboolean(success);
+                return 1;
             });
         });
     }
@@ -759,43 +791,64 @@ int builtin::character::builtin_rmitem(lua_State* L)
     {
         auto model = lua->touserdata<fb::model::item>(2);
         if (model == nullptr)
-            return 0;
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
 
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            bool success = false;
             try
             {
-                auto index   = ch->items.index(*model);
-                auto dropped = ch->items.remove(index, count, delete_attr);
-                if (dropped != nullptr)
-                    std::ignore = dropped->destroy();
+                auto found = ch->items.find(*model);
+                if (found != nullptr && found->count() >= count)
+                {
+                    auto index   = ch->items.index(*model);
+                    auto dropped = ch->items.remove(index, count, delete_attr);
+                    if (dropped != nullptr)
+                    {
+                        std::ignore = dropped->destroy();
+                        success     = true;
+                    }
+                }
             }
             catch (...)
             { }
 
             return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
+                lua->pushboolean(success);
+                return 1;
             });
         });
     }
     else if (lua->is_number(2))
     {
         auto raw_index = lua->tointeger(2);
+        auto index     = static_cast<uint8_t>(raw_index) - 1;
 
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            bool success = false;
             try
             {
-                auto index   = static_cast<uint8_t>(raw_index) - 1;
-                auto dropped = ch->items.remove(index, count, delete_attr);
-                if (dropped != nullptr)
-                    std::ignore = dropped->destroy();
+                auto item = ch->items.at(index);
+                if (item != nullptr && item->count() >= count)
+                {
+                    auto dropped = ch->items.remove(index, count, delete_attr);
+                    if (dropped != nullptr)
+                    {
+                        std::ignore = dropped->destroy();
+                        success     = true;
+                    }
+                }
             }
             catch (...)
             { }
 
             return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
+                lua->pushboolean(success);
+                return 1;
             });
         });
     }
@@ -803,34 +856,55 @@ int builtin::character::builtin_rmitem(lua_State* L)
     {
         auto name = lua->tostring(2);
         if (name.empty())
-            return 0;
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
 
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            bool success = false;
             try
             {
                 auto model = table::item.name2item(name);
                 if (model == nullptr)
+                {
                     return lua->ensure_resume(*server, weak, [=]() {
-                        return 0;
+                        lua->pushboolean(false);
+                        return 1;
                     });
+                }
 
-                auto index   = ch->items.index(*model);
-                auto dropped = ch->items.remove(index, count, delete_attr);
-                if (dropped != nullptr)
-                    std::ignore = dropped->destroy();
+                auto found = ch->items.find(name);
+                if (found != nullptr && found->count() >= count)
+                {
+                    auto index   = ch->items.index(*model);
+                    auto dropped = ch->items.remove(index, count, delete_attr);
+                    if (dropped != nullptr)
+                    {
+                        std::ignore = dropped->destroy();
+                        success     = true;
+                    }
+                }
+
+                return lua->ensure_resume(*server, weak, [=]() {
+                    lua->pushboolean(success);
+                    return 1;
+                });
             }
             catch (...)
-            { }
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
+            {
+                return lua->ensure_resume(*server, weak, [=]() {
+                    lua->pushboolean(false);
+                    return 1;
+                });
+            }
         });
     }
     else
     {
-        return 0;
+        lua->pushboolean(false);
+        return 1;
     }
 }
 
@@ -4107,4 +4181,157 @@ int builtin::character::builtin_marketplace_pending_listings(lua_State* L)
             return 1;
         });
     });
+}
+
+int builtin::character::builtin_marriage(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    ch->assert_thread();
+
+    const auto& m           = ch->marriage();
+    bool        married     = m.spouse_id.has_value();
+    bool        can_remarry = !married && (fb::model::datetime() >= m.remarriage_after);
+
+    lua->new_table();
+    lua_pushstring(*lua, "married");
+    lua->pushboolean(married);
+    lua_settable(*lua, -3);
+    lua_pushstring(*lua, "spouse_id");
+    if (m.spouse_id.has_value())
+        lua->pushinteger(static_cast<int64_t>(m.spouse_id.value()));
+    else
+        lua->pushnil();
+    lua_settable(*lua, -3);
+    lua_pushstring(*lua, "spouse_name");
+    lua->pushstring(m.spouse_name);
+    lua_settable(*lua, -3);
+    lua_pushstring(*lua, "divorce_count");
+    lua->pushinteger(static_cast<int64_t>(m.divorce_count));
+    lua_settable(*lua, -3);
+    lua_pushstring(*lua, "can_remarry");
+    lua->pushboolean(can_remarry);
+    lua_settable(*lua, -3);
+    return 1;
+}
+
+int builtin::character::builtin_marry(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto me     = lua->touserdata<fb::game::character>(1);
+    auto target = lua->touserdata<fb::game::character>(2);
+    if (me == nullptr || target == nullptr)
+    {
+        lua->pushstring("invalid character");
+        return 1;
+    }
+
+    me->assert_thread();
+
+    const auto& my_m  = me->marriage();
+    const auto& tar_m = target->marriage();
+
+    if (my_m.spouse_id.has_value())
+    {
+        lua->pushstring("already married");
+        return 1;
+    }
+    if (tar_m.spouse_id.has_value())
+    {
+        lua->pushstring("target already married");
+        return 1;
+    }
+    if (fb::model::datetime() < my_m.remarriage_after)
+    {
+        lua->pushstring("remarriage cooldown");
+        return 1;
+    }
+    if (fb::model::datetime() < tar_m.remarriage_after)
+    {
+        lua->pushstring("target remarriage cooldown");
+        return 1;
+    }
+
+    fb::game::marriage new_me;
+    new_me.spouse_id        = target->id;
+    new_me.spouse_name      = target->name();
+    new_me.remarriage_after = fb::model::datetime();
+    new_me.divorce_count    = my_m.divorce_count;
+
+    fb::game::marriage new_tar;
+    new_tar.spouse_id        = me->id;
+    new_tar.spouse_name      = me->name();
+    new_tar.remarriage_after = fb::model::datetime();
+    new_tar.divorce_count    = tar_m.divorce_count;
+
+    me->marriage(new_me);
+    target->marriage(new_tar);
+
+    lua->pushnil();
+    return 1;
+}
+
+int builtin::character::builtin_divorce(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto me     = lua->touserdata<fb::game::character>(1);
+    if (me == nullptr)
+    {
+        lua->pushstring("invalid character");
+        return 1;
+    }
+
+    me->assert_thread();
+
+    const auto& m = me->marriage();
+    if (!m.spouse_id.has_value())
+    {
+        lua->pushstring("not married");
+        return 1;
+    }
+
+    auto spouse = server->characters.read([id = m.spouse_id.value()](auto& container) {
+        return container.find(id);
+    });
+
+    if (spouse == nullptr)
+    {
+        lua->pushstring("spouse not online");
+        return 1;
+    }
+
+    auto now = fb::model::datetime();
+    now.add_days(7);
+
+    fb::game::marriage new_me;
+    new_me.spouse_id        = std::nullopt;
+    new_me.spouse_name      = "";
+    new_me.remarriage_after = now;
+    new_me.divorce_count    = m.divorce_count + 1;
+
+    fb::game::marriage new_tar;
+    new_tar.spouse_id        = std::nullopt;
+    new_tar.spouse_name      = "";
+    new_tar.remarriage_after = now;
+    new_tar.divorce_count    = spouse->marriage().divorce_count + 1;
+
+    me->marriage(new_me);
+    spouse->marriage(new_tar);
+
+    lua->pushnil();
+    return 1;
 }

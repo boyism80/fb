@@ -40,11 +40,10 @@ function NPC_147(me, npc)
     if sel == nil or sel ~= 0 then
         return
     end
-    for _, name in ipairs(REQUIRED_ITEMS) do
-        if not me:has_items(name, 1) then
-            me:dialog(npc, '자네에겐 ' .. name_with(name, '이', '가') .. ' 없군.', false, false)
-            return
-        end
+    local required_table = { ['현철'] = 1, ['오독산'] = 1 }
+    if not me:has_items(required_table) then
+        me:dialog(npc, '자네에겐 현철과 오독산이 없군.', false, false)
+        return
     end
     btn = me:dialog(npc, '현철과 오독산을 가지고 있군.. 그럼 북천황을 부르겠네', false, true)
     if btn == DIALOG_RESULT.QUIT then

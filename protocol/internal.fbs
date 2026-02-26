@@ -65,6 +65,13 @@ table Character {
     updated_date: string;
 }
 
+table Marriage {
+    spouse_id: uint?;
+    spouse_name: string = "";
+    remarriage_after: string = "";
+    divorce_count: uint = 0;
+}
+
 table Item {
     user: uint;
     index: short;

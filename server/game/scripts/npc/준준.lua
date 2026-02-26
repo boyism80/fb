@@ -46,7 +46,7 @@ function cultural_property_quest(me, npc)
             return
         end
         local item_name = totem_names[totem_sel + 1]
-        if me:item(item_name) == nil then
+        if not me:has_items(item_name, 1) then
             me:dialog(npc, item_name .. '이 없는데?', false, true)
             return
         end

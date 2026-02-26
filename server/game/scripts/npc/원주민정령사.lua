@@ -253,11 +253,14 @@ function NPC_113(me, npc)
         end
 
         local armor_name = armor_names[sel + 1]
+        if not me:rmitem('자연의인장', 1, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '자연의인장을 가지고 있지 않으시군요.', false, true)
+            return
+        end
         if me:mkitem(armor_name, 1) == nil then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(armor_name, '을', '를') .. ' 줄 수 없네.', false, true)
             return
         end
-        me:rmitem('자연의인장', 1, ITEM_DELETE_TYPE.GIVE)
         quest:step(3)
         me:push_achievement(42, '정령의옷을 만들었다!', 7, 16)
         me:dialog(npc, name_with(armor_name, '이', '가') .. ' 완성되었다.. ' .. armor_name .. '에 깃든 정령들이 그대를 수호할 것이다...', true, true)

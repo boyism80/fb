@@ -111,11 +111,14 @@ function NPC_240(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
+        if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.', false, true)
+            return
+        end
         if me:mkitem('삼전신보탕', 1) == nil then
             me:dialog(npc, '소지품이 가득 차서 삼전신보탕을 줄 수 없습니다.', false, true)
             return
         end
-        me:rmitem(materials, ITEM_DELETE_TYPE.GIVE)
         quest:step(2)
         me:push_achievement(36, '삼전보신탕을 만들었다.', 7, 1)
         return

@@ -45,25 +45,18 @@ function NPC_98(me, npc)
         '흑룡의어금니',
         '진룡의어금니'
     }
-
-    local items = {}
-    local not_enough = false
-    for _, required_item in pairs(required_items) do
-        local item = me:item(required_item)
-        if item == nil then
-            not_enough = true
-            break
-        end
-        table.insert(items, item)
+    local required_table = {}
+    for _, name in ipairs(required_items) do
+        required_table[name] = 1
     end
 
-    if not_enough then
+    if not me:has_items(required_table) then
         me:dialog(npc, '아직 어금니가 준비되지 않았는데?', false, true)
         return
     end
 
-    for _, item in pairs(items) do
-        me:rmitem(item, 1, ITEM_DELETE_TYPE.GIVE)
+    for _, required_item in ipairs(required_items) do
+        me:rmitem(required_item, 1, ITEM_DELETE_TYPE.GIVE)
     end
 
     local group = me:group()

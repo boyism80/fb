@@ -291,6 +291,13 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     this->init_system_mail(resp.received_system_mails, *ch);
     this->init_storage(resp, *ch);
     this->init_option(resp.option, *ch);
+    ch->marriage(fb::game::marriage{
+        resp.marriage.spouse_id,
+        resp.marriage.spouse_name,
+        resp.marriage.remarriage_after.empty()
+            ? fb::model::datetime()
+            : fb::model::datetime(resp.marriage.remarriage_after),
+        resp.marriage.divorce_count});
 
     // Restore pending marketplace listings if any
     if (resp.character.pending_listings.has_value() && !resp.character.pending_listings.value().empty())

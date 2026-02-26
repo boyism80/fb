@@ -2,7 +2,7 @@ local ITEM_BONG_BOOK = '봉래산전설'
 
 function NPC_117(me, npc)
     local quest = me:quest(QUEST_BONG_BOOK)
-    local has_book = me:item(ITEM_BONG_BOOK) ~= nil
+    local has_book = me:has_items(ITEM_BONG_BOOK, 1)
 
     if quest == nil then
         local selected = me:list(npc, '내가 책 한권 드릴테니 한번 읽어나 보시게나.', { '예, 주세요.', '아니오, 책이라면 질색이라서..' })

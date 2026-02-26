@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <regex>
 #include <string_view>
+#include <fb/model/datetime.h>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -57,16 +58,56 @@ int builtin::server::builtin_sleep(lua_State* L)
     return lua->yield(0);
 }
 
+/**
+ * @brief      Returns current time as seconds since epoch (for time comparisons and cooldowns).
+ *
+ *             Takes no arguments. Pushes a single integer. Use with 용왕, 상어장군, 사천족제사장
+ *             etc. for logic like now() + delay, now() < end_time.
+ *
+ * @param[in]  L     Lua state.
+ * @return     Number of return values (1 integer).
+ */
 int builtin::server::builtin_now(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
-    auto now   = std::chrono::system_clock::now();
-    auto epoch = now.time_since_epoch();
-    auto sec   = std::chrono::duration_cast<std::chrono::seconds>(epoch).count();
-    lua->pushinteger(static_cast<lua_Integer>(sec));
+    auto now_c = std::chrono::system_clock::now();
+    auto sec_since_epoch = std::chrono::duration_cast<std::chrono::seconds>(now_c.time_since_epoch()).count();
+    lua->pushinteger(static_cast<lua_Integer>(sec_since_epoch));
+    return 1;
+}
+
+/**
+ * @brief      Returns current date/time as a table (server local time) for calendar-style logic.
+ *
+ *             Takes no arguments. Pushes a single table with fields: year, month, day,
+ *             hour, minute, second. Use for 선원/뱃사공 time windows (e.g. datetime().hour, datetime().minute).
+ *
+ * @param[in]  L     Lua state.
+ * @return     Number of return values (1 table).
+ */
+int builtin::server::builtin_datetime(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    const auto dt = fb::model::datetime();
+    lua_createtable(L, 0, 6);
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.year()));
+    lua_setfield(L, -2, "year");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.month()));
+    lua_setfield(L, -2, "month");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.day()));
+    lua_setfield(L, -2, "day");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.hours()));
+    lua_setfield(L, -2, "hour");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.minutes()));
+    lua_setfield(L, -2, "minute");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.seconds()));
+    lua_setfield(L, -2, "second");
     return 1;
 }
 

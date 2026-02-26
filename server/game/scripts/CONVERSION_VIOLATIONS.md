@@ -77,15 +77,15 @@ This document lists violations of `.cursor/rules/athena-to-lua-conversion.mdc` a
 
 ---
 
-## 6. Abuse prevention: Reward before consume
+## 6. Item hand-in: has_items (first check), rmitem return (abuse defense), rmitem then mkitem
 
-**Rule:** Section 3.1 — Order: `has_items` → `mkitem` (if nil, return) → `rmitem` → quest/achievement → success dialogs.
+**Rule:** Section 3.1 — (1) **First check:** Use `has_items` to see if the player has the required items; if not, dialog and return (proceed gate). (2) **Second check (abuse defense):** When removing items, call `rmitem` **before** `mkitem` and **check `rmitem` return value**; if false, do not give the reward and return. (3) **Order:** has_items → (logic/dialogs) → rmitem (check return) → mkitem → quest/achievement → success dialogs.
 
 **Affected:**
 
-- `npc/통통대감.lua` L42–46: `rmitem` then `mkitem` — should be `mkitem` first, then `rmitem`.
-- `npc/진진.lua` L22–23: same — `rmitem` then `mkitem`; swap and use table form for `rmitem`.
-- `npc/보약의달인.lua` L71–78: `rmitem` then messages then `mkitem`; should be `mkitem` first, then `rmitem`, then quest/achievement, then dialogs; remove "주었습니다" messages.
+- `npc/통통대감.lua` L42–46: Keep has_items or equivalent gate; ensure order is `rmitem` then `mkitem`; check `rmitem` return and on failure return without reward.
+- `npc/진진.lua` L22–23: Same — keep proceed gate; `rmitem` then `mkitem`; check `rmitem` return.
+- `npc/보약의달인.lua` L71–78: Keep has_items; order `rmitem` (check return) then `mkitem`; remove "주었습니다" messages.
 
 ---
 
@@ -105,4 +105,4 @@ This document lists violations of `.cursor/rules/athena-to-lua-conversion.mdc` a
 | 3 | No "주었습니다" after GIVE | 3 files |
 | 4 | Label naming NPC_&lt;id&gt;_&lt;label&gt; | 나무꾼, 랑구륜 |
 | 5 | list (sel, btn), 0-based | Several NPCs |
-| 6 | Reward before consume | 통통대감, 진진, 보약의달인 |
+| 6 | has_items (1st) + rmitem return (abuse), rmitem then mkitem | 통통대감, 진진, 보약의달인 |

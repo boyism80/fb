@@ -5,8 +5,7 @@ function NPC_73(me, npc)
     end
 
     ::NPC_73_1::
-    local item = me:item("방송쿠폰");
-    if item == nil then
+    if not me:has_items("방송쿠폰", 1) then
         me:dialog(npc, "방송쿠폰을 가지고 계셔야 방송을 하실 수 있어요.", false, true)
         return;
     end
@@ -20,6 +19,6 @@ function NPC_73(me, npc)
         goto NPC_73_1
     end
 
-    me:rmitem(item, 1, ITEM_DELETE_TYPE.GIVE)
+    me:rmitem("방송쿠폰", 1, ITEM_DELETE_TYPE.GIVE)
     broadcast(string.format("###[%s]>>%s", me:name(), message), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.GLOBAL)
 end

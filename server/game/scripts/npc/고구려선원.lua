@@ -67,8 +67,14 @@ function NPC_169(me, npc)
         return
     end
 
-    me:mkitem("번역된내통문서", 1)
-    me:rmitem("내통문서", 1, ITEM_DELETE_TYPE.GIVE)
+    if not me:rmitem("내통문서", 1, ITEM_DELETE_TYPE.GIVE) then
+        me:dialog(npc, "안녕하신가? 여행이란 참 즐거운 일이지.", false, false)
+        return
+    end
+    if me:mkitem("번역된내통문서", 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 번역된내통문서를 받을 수 없습니다.", false, false)
+        return
+    end
     me:push_achievement(19, "번역된내통문서를 얻다.", 7, 1)
     me:dialog(npc, "하하.. 앞으로 자주 인사하세나.", false, false)
 end

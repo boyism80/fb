@@ -69,17 +69,20 @@ function NPC_76(me, npc)
         me:dialog(npc, '아직 재료를 다 모으지 못하신 것 같군요.. 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', false, true)
         return
     end
-    if me:mkitem('인어반지', 1) == nil then
-        me:dialog(npc, '소지품이 가득 차서 인어반지를 받을 수 없습니다.', false, true)
-        return
-    end
 
     ::NPC_76_COS007::
     btn = me:dialog(npc, '어머, 재료를 벌써 다 모아 오셨군요. 정말 감사드려요.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    me:rmitem(materials, ITEM_DELETE_TYPE.GIVE)
+    if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+        me:dialog(npc, '아직 재료를 다 모으지 못하신 것 같군요.. 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', false, true)
+        return
+    end
+    if me:mkitem('인어반지', 1) == nil then
+        me:dialog(npc, '소지품이 가득 차서 인어반지를 받을 수 없습니다.', false, true)
+        return
+    end
     quest:complete()
     me:push_achievement(ACHIEVEMENT_WATER, '좌선녀의 부탁을 들어주었다.', 7, 1)
     btn = me:dialog(npc, '이 인어반지는 제 성의에요. 예전 인어장군님께 선물을 받은 것인데 공좌님의 성의에 꼭 보답하고 싶어서요.', false, true)

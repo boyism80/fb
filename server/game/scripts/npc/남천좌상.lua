@@ -48,9 +48,7 @@ function NPC_236(me, npc)
 
     if quest:step() == 1 then
         local btn
-        local bone = me:item('후의뼈')
-        local count = (bone ~= nil) and bone:count() or 0
-        if count < BONE_COUNT then
+        if not me:has_items('후의뼈', BONE_COUNT) then
             me:dialog(npc, '후의뼈가 너무 적은것은 아닌가? ' .. BONE_COUNT .. '마리 이상을 잡고 후의뼈 ' .. BONE_COUNT .. '개를 가져와주게.', false, true)
             return
         end
@@ -120,13 +118,16 @@ function NPC_236(me, npc)
             return
         end
 
+        if not me:rmitem('마계천신의뼈', 1, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '마계천신의뼈를 가지고 있지 않으시군요.', false, true)
+            return
+        end
         if me:mkitem('강철투구', 1) == nil then
             me:dialog(npc, '소지품이 가득 차서 강철투구를 받을 수 없습니다.', false, true)
             quest:step(2)
             return
         end
         quest:complete()
-        me:rmitem('마계천신의뼈', 1, ITEM_DELETE_TYPE.GIVE)
         me:push_achievement(38, '후 말살 임무를 완수하였다.', 6, 1)
         return
     end

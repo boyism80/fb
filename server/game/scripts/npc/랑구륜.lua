@@ -15,30 +15,26 @@ local function ranggyuryun_palgu(me, npc)
         me:dialog(npc, '다음엔 팔괘를 다 모아오세요...', false, false)
         return
     end
+    local materials = {}
     for i = 1, 8 do
-        local name = EIGHT_TRIGRAMS[i]
-        if not me:has_items(name, 1) then
-            if i <= 3 then
-                me:dialog(npc, '가장 기본적인 ' .. name .. '가 없으시네요... 아쉽습니다...', false, false)
-            else
-                me:dialog(npc, name .. '가 없으시네요... 아쉽습니다...', false, false)
-            end
-            return
-        end
+        materials[EIGHT_TRIGRAMS[i]] = 1
+    end
+    if not me:has_items(materials) then
+        me:dialog(npc, '아직 8개의 괘를 다 모으지 못하셨군요...', false, false)
+        return
     end
     btn = me:dialog(npc, '8개의 괘들을 다 가져오셨군요. 팔괘를 만들어 드리겠습니다, 잠시만 기달려주세요.', true, true)
     if btn == DIALOG_RESULT.QUIT then return end
     btn = me:dialog(npc, '자 팔괘를 만들어 드렸습니다. 그럼 안녕히가십시요.', true, true)
     if btn == DIALOG_RESULT.QUIT then return end
-    local materials = {}
-    for i = 1, 8 do
-        materials[EIGHT_TRIGRAMS[i]] = 1
+    if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+        me:dialog(npc, '아직 팔괘 재료를 다 모으지 못하셨군요.', false, true)
+        return
     end
     if me:mkitem('팔괘', 1) == nil then
         me:dialog(npc, '소지품이 가득 차서 팔괘를 받을 수 없습니다.', false, true)
         return
     end
-    me:rmitem(materials, ITEM_DELETE_TYPE.GIVE)
 end
 
 local function ranggyuryun_pure_water(me, npc)
@@ -72,12 +68,15 @@ local function ranggyuryun_pure_water(me, npc)
         end
         btn = me:dialog(npc, '어머 홍옥을 가져오셨군요. 이건 제가 잘 먹을께요.', true, true)
         if btn == DIALOG_RESULT.QUIT then return end
+        if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '아직 홍옥 3개를 구하시지 못하신거군요.', false, false)
+            return
+        end
         if me:mkitem('정화비서', 1) == nil then
             me:dialog(npc, '소지품이 가득 차서 정화비서를 받을 수 없습니다.', false, true)
             return
         end
         quest:step(3)
-        me:rmitem(materials, ITEM_DELETE_TYPE.GIVE)
         me:push_achievement(ACHIEVEMENT_CLEAR, '랑구륜의 부탁을 들어주었다.', 7, 1)
         ::NPC_2_COS002::
         btn = me:dialog(npc, '우물우물... 아... 역시 언제 먹어도 홍옥의 맛이 최고야.', true, true)

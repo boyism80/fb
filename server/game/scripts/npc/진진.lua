@@ -6,8 +6,7 @@ function NPC_118(me, npc)
         if lighthouse == nil or lighthouse:completed() or lighthouse:step() ~= 1 then
             goto NPC_118_DEFAULT
         end
-        local item = me:item('초보도시락')
-        if item == nil then
+        if not me:has_items('초보도시락', 1) then
             goto NPC_118_DEFAULT
         end
         local sel, lb = me:list(npc, '잠깐만! 혹시 여유가 있다면 그 도시락을 나에게 주시지 않겠소?', { '네, 그러지요.', '주기 싫은데요.' })
@@ -22,11 +21,14 @@ function NPC_118(me, npc)
             return
         end
         quest = me:quest(QUEST_JINJIN)
+        if not me:rmitem('초보도시락', 1, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '도시락을 가지고 있지 않으시군요.', false, true)
+            return
+        end
         if me:mkitem('선장의일기1', 1) == nil then
             me:dialog(npc, '소지품이 가득 차서 선장의일기1을 줄 수 없네.', false, true)
             return
         end
-        me:rmitem('초보도시락', 1, ITEM_DELETE_TYPE.GIVE)
         quest:complete()
         lighthouse:step(2)
         me:push_achievement(32, '진백랑의 부탁을 들어주자. [2/6]', 7, 1)

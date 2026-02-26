@@ -43,11 +43,14 @@ function NPC_143(me, npc)
         return
     end
     local btn = me:dialog(npc, '정말 감사해요. 정말... 이 은혜는 잊지 못할꺼에요. 이건 약소하지만 제가 드리는 선물입니다.', false, true)
+    if not me:rmitem('공주의반지', 1, ITEM_DELETE_TYPE.GIVE) then
+        me:dialog(npc, '아직 제 반지가 없으신거같은데..', false, true)
+        return
+    end
     if me:mkitem('청옥반지', 1) == nil then
         me:dialog(npc, '소지품이 가득 차서 청옥반지를 받을 수 없습니다.', false, true)
         return
     end
-    me:rmitem('공주의반지', 1, ITEM_DELETE_TYPE.GIVE)
     quest:complete()
     me:push_achievement(3, '잃어버린 공주의 반지를 되찾아 주다.', 7, 1)
 end

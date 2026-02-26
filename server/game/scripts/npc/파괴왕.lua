@@ -10,15 +10,13 @@ function NPC_93(me, npc)
     if sel == nil or sel ~= 0 then
         return
     end
-    for _, name in ipairs(SUMMON_ITEMS) do
-        if not me:has_items(name, 1) then
-            me:dialog(npc, name_with(name, '이', '가') .. ' 없습니다.', false, false)
-            return
-        end
-    end
     local items = {}
     for _, name in ipairs(SUMMON_ITEMS) do
         items[name] = 1
+    end
+    if not me:has_items(items) then
+        me:dialog(npc, '소환에 필요한 재료가 부족합니다.', false, false)
+        return
     end
     me:rmitem(items, ITEM_DELETE_TYPE.GIVE)
     local x, y = npc:position()

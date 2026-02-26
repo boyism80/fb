@@ -66,12 +66,15 @@ function NPC_233(me, npc)
             return
         end
         if sel == 0 then
+            if not me:rmitem('삼전신보탕', 1, ITEM_DELETE_TYPE.GIVE) then
+                me:dialog(npc, '보약은 장안성 푸줏간에 가보시면 될거예요.', false, true)
+                return
+            end
             if me:mkitem('청자다람쥐인형', 1) == nil then
                 me:dialog(npc, '소지품이 가득 차서 청자다람쥐인형을 줄 수 없습니다.', false, true)
                 return
             end
             quest:step(2)
-            me:rmitem('삼전신보탕', 1, ITEM_DELETE_TYPE.GIVE)
             me:push_achievement(36, '아픈 아이의 병을 치료해 주었다.', 7, 1)
             ::NPC_233_COS006::
             btn = me:dialog(npc, '감사합니다... 정말 감사합니다... 이 은혜 언젠가는 꼭 갚겠어요.......', true, true)

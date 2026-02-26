@@ -57,8 +57,15 @@ public class Program
             cfg.CreateMap<Http.Model.Option, Option>()
             .ReverseMap();
 
-            cfg.CreateMap<Http.Model.Bulletin, ArticleSummary>()
-            .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
+            cfg.CreateMap<Http.Model.Marriage, Protocol.Marriage>()
+            .ForMember(x => x.SpouseName, x => x.Ignore())
+            .ForMember(x => x.RemarriageAfter, x => x.MapFrom(u => u.RemarriageAfter.ToString("yyyy-MM-dd HH:mm:ss")));
+
+            cfg.CreateMap<Protocol.Marriage, Http.Model.Marriage>()
+            .ForMember(x => x.CharacterId, x => x.Ignore())
+            .ForMember(x => x.CreatedDate, x => x.Ignore())
+            .ForMember(x => x.UpdatedDate, x => x.Ignore())
+            .ForMember(x => x.RemarriageAfter, x => x.MapFrom(src => string.IsNullOrWhiteSpace(src.RemarriageAfter) ? DateTime.UtcNow : DateTime.Parse(src.RemarriageAfter)));
 
             cfg.CreateMap<Http.Model.Bulletin, Article>()
             .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));

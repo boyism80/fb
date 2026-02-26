@@ -524,6 +524,7 @@ local function run_shark_complete(me, npc)
         return
     end
     local progress = quest:progress()
+    local t = now()
     if progress == 2 then
         local btn
         ::SHARK_COS047::
@@ -538,12 +539,12 @@ local function run_shark_complete(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto SHARK_COS047
         end
-        quest:param(tostring(now() + SHARK_ANGER_SEC))
+        quest:param(tostring(t + SHARK_ANGER_SEC))
         quest:progress(0)
         return
     end
     local anger_end = tonumber(quest:param() or "")
-    if anger_end and now() < anger_end then
+    if anger_end and t < anger_end then
         me:dialog(npc, "아직 내 화가 다 안풀렸으니 다음에 다시 오게!!!", false, true)
         return
     end

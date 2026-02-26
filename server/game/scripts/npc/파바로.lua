@@ -30,14 +30,15 @@ function NPC_187(me, npc)
         return
     end
 
-    local item = me:item(item_name)
-    local count = (item ~= nil) and item:count() or 0
-    if count < GRILL_COST then
+    if not me:has_items(item_name, GRILL_COST) then
         me:dialog(npc, item_name .. '가 부족한 것 같은데?', false, true)
         return
     end
 
-    me:rmitem(item_name, GRILL_COST, ITEM_DELETE_TYPE.GIVE)
+    if not me:rmitem(item_name, GRILL_COST, ITEM_DELETE_TYPE.GIVE) then
+        me:dialog(npc, item_name .. '가 부족한 것 같은데?', false, true)
+        return
+    end
     if me:mkitem('구운' .. item_name, 1) == nil then
         me:dialog(npc, '소지품이 가득 차서 구운 음식을 줄 수 없네.', false, true)
         return

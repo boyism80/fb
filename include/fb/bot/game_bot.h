@@ -345,15 +345,7 @@ public:
     async::task<bool> invite_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
     async::task<bool> leave_group(std::chrono::milliseconds timeout);
     async::task<bool> kick_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
-    async::task<bool> change_clan_role(std::shared_ptr<game_bot> target,
-                                       CLAN_ROLE                 role,
-                                       std::chrono::milliseconds timeout);
 
-    async::task<bool> invite_to_clan(std::shared_ptr<game_bot> invitee, std::chrono::milliseconds timeout);
-    async::task<bool> kick_from_clan(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
-    async::task<bool> leave_clan(std::chrono::milliseconds timeout);
-    async::task<bool> destroy_clan(std::chrono::milliseconds timeout);
-    async::task<bool> change_clan_title(std::string_view title, std::chrono::milliseconds timeout);
     async::task<std::shared_ptr<game_bot>> transfer(const fb::protocol::header& protocol,
                                                     const fb::model::timespan&  timeout = 15s,
                                                     bool                        encrypt = true,

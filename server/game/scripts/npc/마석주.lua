@@ -64,7 +64,6 @@ function NPC_138(me, npc)
             quest = me:quest(QUEST_MOUNTAIN_GOD)
         end
         quest:step(1)
-        me:mkspell(SPELL_MAP)
         me:push_achievement(ACHIEVEMENT_MOUNTAIN_GOD, '산신의보물지도를 찾자', 7, 25)
         me:dialog(npc, '그럼 보물을 찾으시면 저에게도 꼭 보여주셔야 됩니다!', false, true)
         return
@@ -72,8 +71,18 @@ function NPC_138(me, npc)
 
     local step = quest:step()
     if step == 1 then
-        if not me:has_items(ITEM_FABRIC, 1) then
+        if not me:has_items('산신의보물지도', 1) then
             me:dialog(npc, '아직 보물을 찾기 못하신 것 같군요. 801층 이후에는 책장들이 있는 곳이 있는데, 그중 어딘가 한군데에서 제가 보물지도를 본적이 있습니다. 아마 산신들의 귀중품을 숨겨놓은 곳을 표시해둔 것 같은데...', false, false)
+            return
+        end
+        me:dialog(npc, '오오! 보물지도를 구하셨군요! 어서 빨리 보물을 찾아보시지요!', false, true)
+        quest:step(2)
+        return
+    end
+
+    if step == 2 then
+        if not me:has_items(ITEM_FABRIC, 1) then
+            me:dialog(npc, '보물지도를 사용하면 숨겨진 곳이 적혀 있습니다. 그곳으로 가보세요.', false, false)
             return
         end
         local btn = me:dialog(npc, '오오! 이것은 산신의비단이 아닙니까! 이걸 저에게 맡기시면 제가 멋진 옷을 만들어드리겠습니다!', false, true)
@@ -101,12 +110,12 @@ function NPC_138(me, npc)
             goto COS006
         end
         me:rmitem(ITEM_FABRIC, 1, ITEM_DELETE_TYPE.GIVE)
-        quest:step(2)
+        quest:step(3)
         me:push_achievement(ACHIEVEMENT_MOUNTAIN_GOD, '산신의바늘을 구해 마석주에게 가져다주자.', 7, 25)
         return
     end
 
-    if step == 2 then
+    if step == 3 then
         if not me:has_items(ITEM_NEEDLE, 1) then
             me:dialog(npc, '산신의바늘을 아직 구하지 못하신거 같은데요?', false, false)
             return
@@ -162,7 +171,10 @@ function NPC_138(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto COS009
         end
-        me:rmitem(ITEM_NEEDLE, 1, ITEM_DELETE_TYPE.GIVE)
+        if not me:rmitem(ITEM_NEEDLE, 1, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '산신의바늘을 아직 구하지 못하신거 같은데요?', false, false)
+            return
+        end
         if me:mkitem(item_name, 1) == nil then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.', false, false)
             return

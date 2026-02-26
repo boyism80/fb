@@ -74,12 +74,15 @@ function dojaeyoung_nobidocument(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
+    if not me:rmitem('노비문서', 1, ITEM_DELETE_TYPE.GIVE) then
+        me:dialog(npc, '노비문서를 가지고 있지 않으시군요.', false, true)
+        return
+    end
     if me:mkitem('보패', 1) == nil then
         me:dialog(npc, '소지품이 가득 차서 보패를 받을 수 없습니다.', false, true)
         return
     end
     quest:step(3)
-    me:rmitem('노비문서', 1, ITEM_DELETE_TYPE.GIVE)
     me:push_achievement(39, '보패를 가지고 다시 상해주민에게 가보자.', 7, 2)
 end
 
@@ -153,11 +156,7 @@ function dojaeyoung_herb_turnin(me, npc)
     if quest == nil or quest:step() ~= 1 then
         return
     end
-    local leaf = me:item('약초잎사귀')
-    local branch = me:item('약초가지')
-    local leaf_count = (leaf ~= nil) and leaf:count() or 0
-    local branch_count = (branch ~= nil) and branch:count() or 0
-    if leaf_count < 5 or branch_count < 1 then
+    if not me:has_items({['약초잎사귀'] = 5, ['약초가지'] = 1}) then
         me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.', false, true)
         return
     end
@@ -165,13 +164,16 @@ function dojaeyoung_herb_turnin(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    quest:step(2)
-    me:rmitem({['약초가지'] = 1, ['약초잎사귀'] = 5}, ITEM_DELETE_TYPE.GIVE)
+    if not me:rmitem({['약초가지'] = 1, ['약초잎사귀'] = 5}, ITEM_DELETE_TYPE.GIVE) then
+        me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.', false, true)
+        return
+    end
     if me:mkitem('강철의구두', 1) == nil then
         me:dialog(npc, '소지품이 가득 차서 강철의구두를 줄 수 없습니다.', false, true)
         quest:step(1)
         return
     end
+    quest:step(2)
     me:push_achievement(9, '도삭산 100층 퀘스트 완료', 7, 1)
     me:dialog(npc, '약소하지만 보답으로 강철의구두를 드리겠습니다. 도삭산을 돌아다니시면서 조금이라도 도움이 되길 바랍니다. 그럼..', true, true)
 end

@@ -96,11 +96,14 @@ function NPC_77(me, npc)
             me:dialog(npc, '물을 정화하기 위해 숯의정화 3조각만 구해주세요.', false, false)
             return
         end
+        if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '물을 정화하기 위해 숯의정화 3조각만 구해주세요.', false, false)
+            return
+        end
         if me:mkitem('정화의방패', 1) == nil then
             me:dialog(npc, '소지품이 가득 차서 정화의방패를 받을 수 없습니다.', false, true)
             return
         end
-        me:rmitem(materials, ITEM_DELETE_TYPE.GIVE)
         quest:step(5)
         quest:complete()
         me:push_achievement(ACHIEVEMENT_CLEAR, '용궁정화에 성공하였다.', 7, 1)

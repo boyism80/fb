@@ -953,6 +953,64 @@ std::shared_ptr<item> items::find(const fb::model::item& model) const
     return nullptr;
 }
 
+bool items::has(const fb::model::item& model, uint16_t count) const
+{
+    if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
+    {
+        /* BUNDLE stacks in a single slot; at most one slot holds this item. */
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            auto slot_item = this->at(i);
+            if (slot_item == nullptr)
+                continue;
+            if (slot_item->based<fb::model::item>() == model)
+                return slot_item->count() >= count;
+        }
+        return false;
+    }
+    else
+    {
+        /* Non-BUNDLE: multiple slots possible, capacity 1 each; count slots. */
+        uint32_t slot_count = 0;
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            auto slot_item = this->at(i);
+            if (slot_item != nullptr && slot_item->based<fb::model::item>() == model)
+                slot_count++;
+        }
+        return slot_count >= count;
+    }
+}
+
+bool items::has(const std::vector<std::pair<const fb::model::item*, uint16_t>>& required) const
+{
+    if (required.empty())
+        return true;
+
+    std::unordered_map<uint32_t, uint32_t> counts;
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto slot_item = this->at(i);
+        if (slot_item == nullptr)
+            continue;
+        const auto& model = slot_item->based<fb::model::item>();
+        if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
+            counts[model.id] += slot_item->count();
+        else
+            counts[model.id] += 1;
+    }
+
+    for (const auto& [model, min_count] : required)
+    {
+        if (model == nullptr)
+            return false;
+        auto it = counts.find(model->id);
+        if (it == counts.end() || it->second < min_count)
+            return false;
+    }
+    return true;
+}
+
 std::shared_ptr<item> items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
 {
     auto owner = this->_owner.lock();

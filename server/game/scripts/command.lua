@@ -65,6 +65,7 @@ command_funcs = {
             me:mkspell('강제이동(좌)')
             me:mkspell('강제이동(하)')
             me:mkspell('강제이동(우)')
+            me:mkspell('잠복근무')
             me:mkspell('강제이동(상)')
             return true
         end,

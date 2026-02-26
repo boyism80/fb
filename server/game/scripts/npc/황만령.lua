@@ -70,17 +70,20 @@ function NPC_106(me, npc)
             me:dialog(npc, '아직 다 구하지 못한 모양이군.. 도삭산 살쾡이가죽 300개와 도삭산악어비늘 200개를 구해다주면 내 보물을 드리도록 하지.', false, false)
             return
         end
-        if me:mkitem(REWARD_500, 1) == nil then
-            me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_500, '을', '를') .. ' 받을 수 없습니다.', false, false)
-            return
-        end
-        me:rmitem(REQUIRED_ITEMS, ITEM_DELETE_TYPE.GIVE)
-        quest:complete()
-        me:push_achievement(ACHIEVEMENT_500, '도삭산 500층 퀘스트 완료', 7, 1)
         local btn = me:dialog(npc, '오~ 정말 대단하이. 이렇게나 많이. 다친곳은 없나? 그러면 다 가져가겠네.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
+        if not me:rmitem(REQUIRED_ITEMS, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '아직 다 구하지 못한 모양이군.. 도삭산 살쾡이가죽 300개와 도삭산악어비늘 200개를 구해다주면 내 보물을 드리도록 하지.', false, false)
+            return
+        end
+        if me:mkitem(REWARD_500, 1) == nil then
+            me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_500, '을', '를') .. ' 받을 수 없습니다.', false, false)
+            return
+        end
+        quest:complete()
+        me:push_achievement(ACHIEVEMENT_500, '도삭산 500층 퀘스트 완료', 7, 1)
         btn = me:dialog(npc, '자 여기 내가 주는 선물이라네. 도와줘서 고맙네, 항상 좋은 일만 있게나!', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return

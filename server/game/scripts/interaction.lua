@@ -1,3 +1,27 @@
+-- Chat interaction regex patterns (moved from include/fb/model/model.h).
+-- Separate from CONST.REGEX so C++-pushed constants remain unchanged.
+CHAT_REGEX = {
+    SELL = "(?P<name>\\S+)\\s+(?:(?:(?:(?P<count>\\d+)개)|(?P<all>다|전부))\\s+)?(?:판다|팜|팔게)",
+    BUY = "(?P<name>\\S+)\\s+(?:(?:(?:(?P<count>\\d+)개))\\s+)?(?:산다|줘|주세요)",
+    REPAIR = "(((?P<all>전부|모두|다)|(?P<name>\\S+))\\s+?(?:고쳐|수리\\s*해))\\s*줘",
+    DEPOSIT_MONEY = "(?:돈|금전)\\s+(?:(?P<money>\\d+)(?:원|전)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+맡아\\s*(?:줘|놔|주세요)",
+    WITHDRAW_MONEY = "(?:돈|금전)\\s+(?:(?P<money>\\d+)(?:원|전)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+돌려\\s*(?:줘|놔|주세요)",
+    STORE_ITEM = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?맡아\\s*(?:줘|놔|주세요)",
+    RETRIEVE_ITEM = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?돌려\\s*(?:줘|놔|주세요)",
+    SELL_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*(?:파니|파냐|팔고\\s*(?:있니|있냐))",
+    BUY_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*(?:사니|사냐|사고\\s*(?:있니|있냐))",
+    SELL_PRICE = "(?P<name>\\S+)\\s+얼마(?:(?:(?:니|야|임|냐|에\\s*파(?:니|냐)))|(?:파(?:니|냐|)))",
+    BUY_PRICE = "(?P<name>\\S+)\\s+얼마에\\s?사(?:니|냐)",
+    DEPOSITED_MONEY = "(?:돈|금전)\\s*얼마(?:나)?\\s*맡(?:아두)?고\\s*있(?:니|냐)",
+    RENAME_WEAPON = "(?P<weapon>\\S+?)?(?:의|$)?\\s+이름을\\s+(?P<name>\\S+?)?(?:으|$)?로\\s+명명",
+    HOLD_ITEM_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*맡고\\s*(?:있니|있냐)",
+    HOLD_ITEM_COUNT = "(?P<name>\\S+)\\s+(?:몇\\s*개|얼마나)\\s*맡고\\s*있(?:니|냐)",
+    REVIVE = "살려(?:(?P<ok>(?:주세요|주십시오))|(?P<no>(?:줘|내|라|주소)))",
+    APPRECIATE = "(감사합니다|고맙습니다)",
+    JOIN_CASTLE = "참가",
+    BLACK_FLAG = "검정깃발",
+}
+
 function string_split(self, delimiter)
     local result = { }
     local from  = 1
@@ -251,6 +275,11 @@ function on_loot(me)
             me:state(STATE.NORMAL)
             me:unbuff(buff_name)
         end
+    end
+
+    if me:super_hide() then
+        me:super_hide(false)
+        me:state(STATE.NORMAL)
     end
 
     any_action(me)
@@ -890,6 +919,114 @@ function manrihyang_seed_on_move(me)
     end
 end
 
+--- When at the treasure location (quest param "map,x,y"), give 산신의비단 and set param to "got". QUEST_MOUNTAIN_GOD step 2.
+function mountain_treasure_fabric_on_move(me)
+    local quest = me:quest(QUEST_MOUNTAIN_GOD)
+    if quest == nil or quest:step() ~= 2 then
+        return
+    end
+
+    local parts = {}
+    for p in string.gmatch(param, '[^,]+') do
+        table.insert(parts, p)
+    end
+    if #parts ~= 3 then
+        return
+    end
+
+    local map_name = parts[1]
+    local target_x = tonumber(parts[2])
+    local target_y = tonumber(parts[3])
+    if target_x == nil or target_y == nil then
+        return
+    end
+
+    local map = me:map()
+    if map == nil then
+        return
+    end
+    if map:model():name() ~= map_name then
+        return
+    end
+
+    local x, y = me:position()
+    if x ~= target_x or y ~= target_y then
+        return
+    end
+
+    me:rmitem('산신의보물지도', 1)
+    me:mkitem('산신의비단', 1)
+
+    quest:param('got')
+    me:dialog(nil, '산신의비단을 발견했다!', false, true)
+end
+
+--- Chance to find 산신의보물지도 when moving on specific 도삭산 maps (801+). Requires QUEST_MOUNTAIN_GOD started.
+--- From 무브.txt @산신의보물지도: map ids 1287,1291,1303,1313,1327,1330,1336,1344,1347,1351,1357,1360,1366,1374,1377.
+function mountain_treasure_map_on_move(me)
+    local quest = me:quest(QUEST_MOUNTAIN_GOD)
+    if quest == nil then
+        return
+    end
+
+    local map = me:map()
+    if map == nil then
+        return
+    end
+
+    local SANSHIN_TREASURE_MAP_IDS = {
+        [1287] = true, [1291] = true, [1303] = true, [1313] = true,
+        [1327] = true, [1330] = true, [1336] = true, [1344] = true,
+        [1347] = true, [1351] = true, [1357] = true, [1360] = true,
+        [1366] = true, [1374] = true, [1377] = true,
+    }
+    local map_id = map:model():id()
+    if not SANSHIN_TREASURE_MAP_IDS[map_id] then
+        return
+    end
+
+    _G._mountain_treasure_map_move = _G._mountain_treasure_map_move or {}
+    local key = me:uid()
+    local state = _G._mountain_treasure_map_move[key]
+    if state == nil then
+        state = { x = 0, y = 0, check = 0 }
+        _G._mountain_treasure_map_move[key] = state
+    end
+
+    local x, y = me:position()
+
+    if state.check == 0 then
+        state.x = x
+        state.y = y
+        state.check = 1
+        return
+    end
+
+    state.check = 0
+    if x == state.x and y == state.y then
+        return
+    end
+
+    state.x = x
+    state.y = y
+
+    local r = math.random(1, 100)
+    local rate = math.random(1, 100)
+    if r > 3 or rate > 5 then
+        return
+    end
+
+    if me:item('산신의보물지도') ~= nil then
+        return
+    end
+
+    if me:mkitem('산신의보물지도', 1) == nil then
+        return
+    end
+
+    me:dialog(name2item('산신의보물지도'), '산신의보물지도를 발견했다!', true, false)
+end
+
 function on_move(me)
     any_action(me)
 
@@ -902,6 +1039,8 @@ function on_move(me)
         ghost_talisman_on_move(me)
         goddess_dew_on_move(me)
         manrihyang_seed_on_move(me)
+        mountain_treasure_map_on_move(me)
+        mountain_treasure_fabric_on_move(me)
     end
 end
 
@@ -966,9 +1105,54 @@ function on_npc_chat(me, message, shout)
     if #npcs == 0 then
         return false
     end
+
+    -- Gatekeeper NPC name -> { totem name (e.g. "청룡"), totem_key (e.g. "dragon") } for "~참가" chat.
+    local GATEKEEPER_BY_NAME = {
+        ["주작성문지기"] = { "주작", "bird" },
+        ["청룡성문지기"] = { "청룡", "dragon" },
+        ["현무성문지기"] = { "현무", "turtle" },
+        ["백호성문지기"] = { "백호", "tiger" },
+    }
+
+    local function run_gatekeeper_entrance(me, npc, totem_name_kr, totem_key)
+        local clan = me:clan()
+        if not clan then
+            me:dialog(npc, '가입된 문파가 없습니다.')
+            return true
+        end
+        if me:state() == STATE.GHOST then
+            me:dialog(npc, '유령은 참가할 수 없습니다.')
+            return true
+        end
+        local occupant = (_G.clan_castle_occupant or {})[totem_key] or ''
+        local siege_start = _G.clan_siege_start or 0
+        local siege_map = _G.clan_siege_map or ''
+        local clan_name = clan:name()
+        local castle_name = totem_name_kr .. '성'
+        local map_entrance = name2map(totem_name_kr .. '성입구')
+        local map_inner = name2map(totem_name_kr .. '의성')
+        if not map_entrance then
+            me:dialog(npc, '입장할 수 있는 맵이 없습니다.')
+            return true
+        end
+        if clan_name == occupant then
+            if siege_start == 0 and map_inner then
+                me:map(map_inner, math.random(11, 17), math.random(4, 11))
+            else
+                me:map(map_entrance, math.random(49, 57), math.random(145, 148))
+            end
+            return true
+        end
+        if siege_map == castle_name then
+            me:map(map_entrance, math.random(49, 57), math.random(145, 148))
+            return true
+        end
+        me:dialog(npc, string.format('현재 %s 공성이 진행중이지 않습니다.', castle_name))
+        return true
+    end
     
     local regex_handlers = {
-        { pattern = CONST.REGEX.BUY, condition = function(npc)
+        { pattern = CHAT_REGEX.BUY, condition = function(npc)
             local model = npc:model()
             local sell = model:sell()
             return #sell > 0
@@ -980,7 +1164,7 @@ function on_npc_chat(me, message, shout)
             end
             return npc_sell_item(me, npc, name, count)
         end },
-        { pattern = CONST.REGEX.SELL, condition = function(npc)
+        { pattern = CHAT_REGEX.SELL, condition = function(npc)
             local model = npc:model()
             local buy = model:buy()
             return buy ~= nil
@@ -996,7 +1180,7 @@ function on_npc_chat(me, message, shout)
             end
             return npc_buy_item(me, npc, name, count)
         end },
-        { pattern = CONST.REGEX.REPAIR, condition = function(npc)
+        { pattern = CHAT_REGEX.REPAIR, condition = function(npc)
             local model = npc:model()
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.REPAIR) == NPC_INTERACTION.REPAIR
@@ -1009,7 +1193,7 @@ function on_npc_chat(me, message, shout)
                 return false
             end
         end },
-        { pattern = CONST.REGEX.DEPOSIT_MONEY, condition = function(npc)
+        { pattern = CHAT_REGEX.DEPOSIT_MONEY, condition = function(npc)
             local model = npc:model()
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
@@ -1025,7 +1209,7 @@ function on_npc_chat(me, message, shout)
 
             return npc_deposit_money(me, npc, money)
         end },
-        { pattern = CONST.REGEX.WITHDRAW_MONEY, condition = function(npc)
+        { pattern = CHAT_REGEX.WITHDRAW_MONEY, condition = function(npc)
             local model = npc:model()
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
@@ -1041,7 +1225,7 @@ function on_npc_chat(me, message, shout)
 
             return npc_withdraw_money(me, npc, money)
         end },
-        { pattern = CONST.REGEX.STORE_ITEM, condition = function(npc)
+        { pattern = CHAT_REGEX.STORE_ITEM, condition = function(npc)
             local model = npc:model()
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
@@ -1057,7 +1241,7 @@ function on_npc_chat(me, message, shout)
             end
             return npc_store_item(me, npc, name, count)
         end },
-        { pattern = CONST.REGEX.RETRIEVE_ITEM, condition = function(npc)
+        { pattern = CHAT_REGEX.RETRIEVE_ITEM, condition = function(npc)
             local model = npc:model()
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
@@ -1073,21 +1257,21 @@ function on_npc_chat(me, message, shout)
             end
             return npc_retrieve_item(me, npc, name, count)
         end },
-        { pattern = CONST.REGEX.SELL_LIST, condition = function(npc)
+        { pattern = CHAT_REGEX.SELL_LIST, condition = function(npc)
             local model = npc:model()
             local sell = model:sell()
             return #sell > 0
         end, func = function(npc, params)
             return npc_sell_item_list(me, npc)
         end },
-        { pattern = CONST.REGEX.BUY_LIST, condition = function(npc)
+        { pattern = CHAT_REGEX.BUY_LIST, condition = function(npc)
             local model = npc:model()
             local buy = model:buy()
             return buy ~= nil
         end, func = function(npc, params)
             return npc_buy_item_list(me, npc)
         end },
-        { pattern = CONST.REGEX.SELL_PRICE, condition = function(npc)
+        { pattern = CHAT_REGEX.SELL_PRICE, condition = function(npc)
             local model = npc:model()
             local sell = model:sell()
             return #sell > 0
@@ -1095,7 +1279,7 @@ function on_npc_chat(me, message, shout)
             local name = params.name
             return npc_sell_item_price(me, npc, name)
         end },
-        { pattern = CONST.REGEX.BUY_PRICE, condition = function(npc)
+        { pattern = CHAT_REGEX.BUY_PRICE, condition = function(npc)
             local model = npc:model()
             local buy = model:buy()
             return buy ~= nil
@@ -1103,14 +1287,14 @@ function on_npc_chat(me, message, shout)
             local name = params.name
             return npc_buy_item_price(me, npc, name)
         end },
-        { pattern = CONST.REGEX.DEPOSITED_MONEY, condition = function(npc)
+        { pattern = CHAT_REGEX.DEPOSITED_MONEY, condition = function(npc)
             local model = npc:model()
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
         end, func = function(npc, params)
             return npc_deposited_money(me, npc)
         end },
-        { pattern = CONST.REGEX.RENAME_WEAPON, condition = function(npc)
+        { pattern = CHAT_REGEX.RENAME_WEAPON, condition = function(npc)
             local model = npc:model()
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.RENAME) == NPC_INTERACTION.RENAME
@@ -1119,14 +1303,14 @@ function on_npc_chat(me, message, shout)
             local to = params.name
             return npc_rename_weapon(me, npc, from, to)
         end },
-        { pattern = CONST.REGEX.HOLD_ITEM_LIST, condition = function(npc)
+        { pattern = CHAT_REGEX.HOLD_ITEM_LIST, condition = function(npc)
             local model = npc:model()
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
         end, func = function(npc, params)
             return npc_store_item_list(me, npc)
         end },
-        { pattern = CONST.REGEX.HOLD_ITEM_COUNT, condition = function(npc)
+        { pattern = CHAT_REGEX.HOLD_ITEM_COUNT, condition = function(npc)
             local model = npc:model()
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
@@ -1134,7 +1318,7 @@ function on_npc_chat(me, message, shout)
             local name = params.name
             return npc_store_item_count(me, npc, name)
         end },
-        { pattern = CONST.REGEX.REVIVE, condition = function(npc)
+        { pattern = CHAT_REGEX.REVIVE, condition = function(npc)
             local model = npc:model()
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.REVIVE) == NPC_INTERACTION.REVIVE
@@ -1142,12 +1326,49 @@ function on_npc_chat(me, message, shout)
             local discourteous = params.no ~= nil
             return npc_revive(me, npc, discourteous)
         end },
-        { pattern = CONST.REGEX.APPRECIATE, condition = function(npc)
+        { pattern = CHAT_REGEX.APPRECIATE, condition = function(npc)
             local model = npc:model()
             local interaction = model:interaction()
             return (interaction & NPC_INTERACTION.REVIVE) == NPC_INTERACTION.REVIVE
         end, func = function(npc, params)
             return npc_appreciate(me, npc)
+        end },
+        { pattern = CHAT_REGEX.JOIN_CASTLE, condition = function(npc)
+            local name = npc:model():name()
+            return GATEKEEPER_BY_NAME[name] ~= nil
+        end, func = function(npc, params)
+            local name = npc:model():name()
+            local info = GATEKEEPER_BY_NAME[name]
+            return run_gatekeeper_entrance(me, npc, info[1], info[2])
+        end },
+        { pattern = CHAT_REGEX.BLACK_FLAG, condition = function(npc)
+            return npc:model():name() == '장안성대장간'
+        end, func = function(npc, params)
+            if me:dialog(npc, '아니, 내가 검정깃발을 가지고 있다는걸 어떻게 알았나.. 으음...', false, true) == DIALOG_RESULT.QUIT then
+                return true
+            end
+            if me:dialog(npc, '그냥 줄순 없고.. 5000전만 내게. 그럼 검정깃발을 하나 주지.', true, true) == DIALOG_RESULT.QUIT then
+                return true
+            end
+            local selected, button = me:list(npc, '어때? 5000전에 검정깃발 하나 사길 텐가?', { '네, 주십시오.', '안 살래요' })
+            if button == DIALOG_RESULT.QUIT then
+                return true
+            end
+            if selected ~= 0 then
+                return true
+            end
+            local BLACK_FLAG_PRICE = 5000
+            if me:money() < BLACK_FLAG_PRICE then
+                me:dialog(npc, '돈이 모자랍니다.', false, true)
+                return true
+            end
+            if me:mkitem('검정깃발', 1) == nil then
+                me:dialog(npc, '공간이 부족합니다.', false, true)
+                return true
+            end
+            me:money(me:money() - BLACK_FLAG_PRICE)
+            me:dialog(npc, '검정깃발을 받았습니다.', false, true)
+            return true
         end },
     }
 
