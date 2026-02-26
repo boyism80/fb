@@ -3,6 +3,12 @@ local MIN_LEVEL_RABBIT = 30
 local RABBIT_LIVER_ITEM = '토끼의간'
 local REWARD_ITEM = '주홍투구'
 
+local MIN_LEVEL_SHARK_WEAPON = 99
+local SHARK_WEAPON_ITEM_SCROLL = '무기제조법'
+local SHARK_WEAPON_MATERIALS = { { name = '상어의핵', count = 3 }, { name = '불의수정', count = 3 } }
+local SHARK_WEAPON_RESULT = '괴력선창'
+local SHARK_WEAPON_SUCCESS_CHANCE = 60
+
 local function run_rabbit_liver_quest(me, npc)
     local btn
     if me:level() < MIN_LEVEL_RABBIT then
@@ -107,8 +113,109 @@ local function run_rabbit_liver_quest(me, npc)
     end
 end
 
-local function run_shark_weapon_placeholder(me, npc)
-    me:dialog(npc, '상어장군의 무기 관련 일은 아직 준비 중입니다.', false, false)
+local function run_shark_weapon_quest(me, npc)
+    if me:level() < MIN_LEVEL_SHARK_WEAPON then
+        me:dialog(npc, '자네가 아직 이 일을 도우기엔 조금 역부족이라 생각이 되는군.', false, false)
+        return
+    end
+
+    local q = me:quest(QUEST_SHARK_WEAPON)
+    local step = (q and q:step()) or 0
+
+    if step == 0 then
+        if me:dialog(npc, '상어장군이 사용하던 무기의 제작법이 드디어 알려졌다는 소문이 있다네...\n\n그 무기의 제작 방법을 아는 사람이 았다는 것 같더군.', true, true) == DIALOG_RESULT.QUIT then
+            return
+        end
+        if me:dialog(npc, '다시 상어장군용 무기를 만들기 위해서 그 제작방법이 꼭 필요하다네.', true, true) == DIALOG_RESULT.QUIT then
+            return
+        end
+        local sel = me:list(npc, '자네가 좀 알아봐 줄 수 있는가?', { '물론입니다...', '별로 흥미가 안내켜서..' }, false)
+        if sel == nil or sel ~= 0 then
+            return
+        end
+        if not me:start_quest(QUEST_SHARK_WEAPON) then
+            return
+        end
+        q = me:quest(QUEST_SHARK_WEAPON)
+        if q then
+            q:step(1)
+        end
+        me:push_achievement(24, '상어장군의무기 퀘스트를 받다.', 7, 1)
+        if me:dialog(npc, '좋아. 그런데 사실은 나도 누가 알고 있는지는 자세히는 모른다네.', true, true) == DIALOG_RESULT.QUIT then
+            return
+        end
+        me:dialog(npc, '단지 지나가는 말로 아주 추운 지방에서 누군가 알고 있다고 들은 기억이 있어서 말이야..\n\n자세한 건 자네가 직접 찾아봐야 할거야...\n\n그럼 부탁하네.', true, false)
+        return
+    end
+
+    if step >= 1 and step <= 10 then
+        me:dialog(npc, '아주 추운곳에 있다고 들었는데...', true, false)
+        return
+    end
+
+    if step == 11 then
+        if not me:has_items(SHARK_WEAPON_ITEM_SCROLL, 1) then
+            me:dialog(npc, '아직 아무것도 얻어오지 못했나?', false, false)
+            return
+        end
+        if me:dialog(npc, '어디 그럼 한번 볼까.', true, true) == DIALOG_RESULT.QUIT then
+            return
+        end
+        if me:dialog(npc, '으음...으으음....으으으으음.....!!!\n\n아. 이제야 제조법을 알았네.', true, true) == DIALOG_RESULT.QUIT then
+            return
+        end
+        if me:dialog(npc, '이걸 만들기 위해서 상어의핵 3개와 불의수정 3개가 필요하다네.\n\n자네가 재료를 다 모아 온다면 내가 직접 만들어 주도록 하겠네.', true, false) == DIALOG_RESULT.QUIT then
+            return
+        end
+        if not me:rmitem(SHARK_WEAPON_ITEM_SCROLL, 1, ITEM_DELETE_TYPE.GIVE) then
+            return
+        end
+        if q then
+            q:step(12)
+        end
+        me:push_achievement(24, '상어장군 무기의 재료를 구하자.', 7, 1)
+        return
+    end
+
+    if step == 12 then
+        local ok = true
+        for _, m in ipairs(SHARK_WEAPON_MATERIALS) do
+            if not me:has_items(m.name, m.count) then
+                ok = false
+                break
+            end
+        end
+        if not ok then
+            me:dialog(npc, '재료가 부족한 것 같군. 상어의핵 3개와 불의수정 3개를 구해다 주시게.', false, false)
+            return
+        end
+        for _, m in ipairs(SHARK_WEAPON_MATERIALS) do
+            if not me:rmitem(m.name, m.count, ITEM_DELETE_TYPE.GIVE) then
+                return
+            end
+        end
+        if math.random(1, 100) <= SHARK_WEAPON_SUCCESS_CHANCE then
+            if q then
+                q:step(13)
+            end
+            me:mkitem(SHARK_WEAPON_RESULT, 1)
+            me:push_achievement(24, '상어장군 무기를 만들다!', 6, 1)
+            if me:dialog(npc, '오. 드디어 만들었군...', true, true) == DIALOG_RESULT.QUIT then
+                return
+            end
+            if me:dialog(npc, '이것이 바로 괴력선창이라는 것일세.', true, true) == DIALOG_RESULT.QUIT then
+                return
+            end
+            me:dialog(npc, '이걸 자네에게 줄 터이니 부디 유용하게 사용하게나.', true, false)
+        else
+            me:dialog(npc, '이런.. 재료가 그만 모두 뭉개져버렸군..', false, false)
+        end
+        return
+    end
+
+    if step >= 13 then
+        me:dialog(npc, '괴력선창은 유용하게 사용하고 있나?', true, false)
+    end
 end
 
 function NPC_144(me, npc)
@@ -119,6 +226,6 @@ function NPC_144(me, npc)
     if sel == 0 then
         run_rabbit_liver_quest(me, npc)
     else
-        run_shark_weapon_placeholder(me, npc)
+        run_shark_weapon_quest(me, npc)
     end
 end

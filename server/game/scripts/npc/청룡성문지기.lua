@@ -1,5 +1,3 @@
--- Gatekeeper for Cheongryong (Dragon) castle. Implements KONGSUNG behavior:
--- greets, offers entrance; allows warp by clan/siege state (see clan_castle_* globals).
 
 local TOTEM = '청룡'
 local TOTEM_KEY = 'dragon'
@@ -53,9 +51,6 @@ local function run_gatekeeper(me, npc)
     me:dialog(npc, string.format('현재 %s 공성이 진행중이지 않습니다.', castle_name))
 end
 
---- Handles click on Cheongryong castle gatekeeper NPC.
---- @param me table Character that clicked
---- @param npc table Gatekeeper NPC
 function NPC_224(me, npc)
     run_gatekeeper(me, npc)
 end

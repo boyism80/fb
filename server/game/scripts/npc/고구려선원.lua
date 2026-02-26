@@ -1,4 +1,3 @@
--- Goguryeo Seonwon (고구려선원): translates 내통문서 into 번역된내통문서 when Dragon King quest step 10.
 function NPC_169(me, npc)
     local quest = me:quest(QUEST_DRAGON_KING)
     if quest == nil or quest:step() ~= 10 then

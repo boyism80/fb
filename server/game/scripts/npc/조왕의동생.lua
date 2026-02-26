@@ -43,7 +43,6 @@ function NPC_183(me, npc)
         return
     end
 
-    -- in progress: need 화기삼동충초돈유합
     local btn
     if not me:has_items('화기삼동충초돈유합', 1) then
         ::NPC_183_COS005::

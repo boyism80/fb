@@ -1,14 +1,10 @@
--- Minimum level required to buy HP/MP (experience conversion menu).
 local HP_MIN_LEVEL = 90
 
--- Promotion (job level) cap for buying HP: base_hp must be below this value for the current promotion, or the NPC blocks with "promote first".
--- Indexed by profile name then by promotion (0-based: 0 = 1st job, 3 = 4th job).
 local HP_PROMOTION_CAP = {
     warrior = { 80000, 250000, 700000, 1600000 },
     mage    = { 35000, 170000, 550000, 1000000 },
 }
 
--- Map character class to HP tier profile (warrior vs mage).
 local HP_CLASS_PROFILE = {
     [CLASS.WARRIOR] = 'warrior',
     [CLASS.ROGUE]   = 'warrior',
@@ -16,7 +12,6 @@ local HP_CLASS_PROFILE = {
     [CLASS.POET]    = 'mage',
 }
 
--- HP buy tiers per profile: { min_hp, exp, hp }. First tier where base_hp >= min_hp applies.
 local HP_TIERS = {
     warrior = {
         { min_hp = 0,       exp = 10000000,   hp = 50 },
@@ -53,13 +48,11 @@ local HP_TIERS = {
     },
 }
 
--- MP buy: promotion cap only for mage; warrior has no cap. base_mp must be below this for current promotion.
 local MP_PROMOTION_CAP = {
-    warrior = nil,   -- no promotion cap for warrior MP
+    warrior = nil,
     mage    = { 30000, 110000, 550000, 1000000 },
 }
 
--- MP buy tiers per profile: { min_mp, exp, mp }.
 local MP_TIERS = {
     warrior = {
         { min_mp = 0,      exp = 10000000,   mp = 25 },
@@ -95,10 +88,6 @@ local MP_TIERS = {
     },
 }
 
---- Finds the HP tier for the given profile and base_hp.
---- @param profile string 'warrior' or 'mage'
---- @param base_hp number current base HP
---- @return table tier { min_hp, exp, hp }
 local function hp_tier_for(profile, base_hp)
     local tiers = HP_TIERS[profile]
     for i = #tiers, 1, -1 do
@@ -109,7 +98,6 @@ local function hp_tier_for(profile, base_hp)
     return tiers[1]
 end
 
---- Finds the MP tier for the given profile and base_mp.
 local function mp_tier_for(profile, base_mp)
     local tiers = MP_TIERS[profile]
     for i = #tiers, 1, -1 do
@@ -120,13 +108,10 @@ local function mp_tier_for(profile, base_mp)
     return tiers[1]
 end
 
--- Stat (str/dex/int) buy: level 99+, 10M exp per point, cap 130.
 local STAT_MIN_LEVEL = 99
 local STAT_EXP_COST = 10000000
 local STAT_CAP = 130
 
---- Runs the "buy stat" (힘/지력/민첩 올리기) flow. stat_key is 'str', 'dex', or 'int'; stat_name is the display name ('힘', '지력', '민첩성').
---- Returns true to show main menu again, false to exit NPC.
 local function run_buy_stat(me, npc, stat_key, stat_name)
     if me:level() < STAT_MIN_LEVEL then
         if me:dialog(npc, '99레벨 이상만 가능하네.', false, true) == DIALOG_RESULT.QUIT then
@@ -158,7 +143,6 @@ local function run_buy_stat(me, npc, stat_key, stat_name)
     return true
 end
 
---- Runs the initial dialogs before the main menu. Returns true to proceed, false if user quit.
 local function run_init_dialogs(me, npc)
     local button
     ::init_1::
@@ -184,7 +168,6 @@ local function run_init_dialogs(me, npc)
     return true
 end
 
---- Runs the "buy HP" (experience for base HP) flow. Returns true to show main menu again, false to exit NPC.
 local function run_buy_hp(me, npc)
     local button
 
@@ -270,7 +253,6 @@ local function run_buy_hp(me, npc)
     return true
 end
 
---- Runs the "buy MP" (experience for base MP) flow. Returns true to show main menu again, false to exit NPC.
 local function run_buy_mp(me, npc)
     local button
 
@@ -356,7 +338,6 @@ local function run_buy_mp(me, npc)
     return true
 end
 
---- Runs the "change face" (성형) flow. Returns true to show main menu again, false to exit NPC.
 local function run_change_face(me, npc)
     local index, button = me:list(npc, '지금의 모습을 벗어나 새로운 얼굴을 갖기를 원하고 있나?', {'예', '아니오'})
     if index ~= 0 then
@@ -442,7 +423,6 @@ local function run_change_face(me, npc)
     end
 end
 
---- Runs the "change gender" (성전환) flow. Returns true to show main menu again, false to exit NPC.
 local function run_change_gender(me, npc)
     local button
     while true do

@@ -37,7 +37,6 @@ function NPC_143(me, npc)
         return
     end
 
-    -- in progress: need 공주의반지
     if not me:has_items('공주의반지', 1) then
         me:dialog(npc, '아직 제 반지가 없으신거같은데..', false, true)
         return

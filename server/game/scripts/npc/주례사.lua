@@ -1,7 +1,3 @@
----
--- Marriage NPC: propose marriage (with target confirmation) and divorce (with spouse confirmation).
--- Pattern follows 문파대리인.lua. Message text follows athena_script/npc/국내성/주례사.txt.
----
 
 local MARRIAGE_MIN_LEVEL = 21
 
@@ -13,7 +9,6 @@ local function marriage_npc(me, npc)
     end
 
     if selected == 0 then
-        -- Propose marriage
         if m.married then
             me:dialog(npc, '이미 결혼을 하셨습니다.')
             return
@@ -83,7 +78,6 @@ local function marriage_npc(me, npc)
             me:dialog(npc, string.format('%s님이 거절하셨습니다.', found:name()))
         end
     elseif selected == 1 then
-        -- Divorce
         if not m.married then
             me:dialog(npc, '결혼을 한 사람만이 이혼을 할 수 있습니다.')
             return

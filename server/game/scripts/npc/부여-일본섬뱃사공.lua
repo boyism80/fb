@@ -1,5 +1,3 @@
--- Boatman (뱃사공) for 부여-일본 ferry. Disembark: 부여-일본선착장 (31,1) or 일본 동쪽해안가 (1,44).
--- Time: minute 35-59 = departure port (부여); 0-3 = arrival port (일본, arrive at :03); 4-34 = sailing.
 
 function NPC_205(me, npc)
     local t = datetime()

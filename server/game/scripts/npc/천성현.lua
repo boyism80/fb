@@ -1,4 +1,3 @@
---- Quest giver for 3rd promotion: requires 2차 승급, gives 승급의서장. Dialogue flow from NPC portrait/story.
 function NPC_90(me, npc)
     local sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '3차 승급을 원합니다' })
     if sel == nil or sel ~= 0 then

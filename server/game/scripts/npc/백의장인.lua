@@ -1,4 +1,4 @@
-local DRAGON_AWAKEN_RATES = { 20, 8, 2 }  -- success % for grade 0, 1, 2
+local DRAGON_AWAKEN_RATES = { 20, 8, 2 }
 
 local DRAGON_WEAPON_LINES = {
     {

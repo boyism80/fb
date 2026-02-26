@@ -1,5 +1,3 @@
--- Ferry clerk (섬선원) for 부여 → 일본. Board: ticket 부여-일본쾌속승선권, warp to 부여-일본배선실.
--- Ship at pier: odd hour (1,3,...,23) and minute 35-59 (board from 35, depart on the hour). Level 21+ required.
 
 function NPC_204(me, npc)
     local sel, btn = me:list(npc, '무엇을 도와드릴까요?', {

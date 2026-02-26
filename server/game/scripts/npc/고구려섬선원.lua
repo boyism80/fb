@@ -1,5 +1,3 @@
--- Ferry clerk (섬선원) for 고구려 → 고균도. Board: ticket 고구려-고균도승선권, warp to 고구려-고균도배선실.
--- Ship at pier: odd hour (1,3,...,23) and minute 40-59. Level 21+ required.
 
 function NPC_196(me, npc)
     local sel, btn = me:list(npc, '무엇을 도와드릴까요?', {

@@ -7,7 +7,6 @@ function NPC_180(me, npc)
     local quest = me:quest(QUEST_NAMGUN)
 
     if quest == nil then
-        -- $tree_man == 0: first time
         ::NPC_180_COS001::
         local button = me:dialog(npc, '나무를 하러 오셨소? 이 근처는 나무가 많지는 않지만 좋은 나무가 많아서 나무 하기에 제격이지.', false, true)
         if button == DIALOG_RESULT.QUIT then
@@ -45,12 +44,10 @@ function NPC_180(me, npc)
     end
 
     if quest:completed() then
-        -- $tree_man >= 2: sleeping
         me:dialog(npc, 'zzZ...zzZ...', false, true)
         return
     end
 
-    -- $tree_man == 1: can buy second axe for 10000
     local selected, list_button = me:list(npc, '이미 한 번 쇠도끼를 빌려가지 않았소? 이제 별로 남은 수량이 없어서.. 다시 빌리려면 1만전을 내셔야 하오.', {'다시 빌려주세요.', '필요없어요.'}, true)
     if list_button == DIALOG_RESULT.QUIT then
         return

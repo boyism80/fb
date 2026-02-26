@@ -51,6 +51,8 @@ QUEST_NAKRANG4 = 227
 QUEST_NAKRANG5 = 228
 QUEST_NAKRANG7 = 229
 QUEST_PROMOTION_3RD = 230
+QUEST_MUTA = 231
+QUEST_SHARK_WEAPON = 232
 
 function npc_revive(me, npc, discourteous)
     if me:state() ~= STATE.GHOST then
@@ -1782,7 +1784,6 @@ function NPC_PROMOTION_SKILLS(me, npc, class)
         '1차 승급기술',
         '2차 승급기술',
         '3차 승급기술',
-        '4차 승급기술',
     })
     if tier_sel == nil then
         return
@@ -1873,7 +1874,7 @@ function NPC_PROMOTION(me, npc, class)
         return
     end
     local from_promotion = me:promotion()
-    if from_promotion >= 4 then
+    if from_promotion >= 3 then
         me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)
         return
     end

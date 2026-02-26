@@ -1,7 +1,7 @@
 local ITEM_ICE = '얼음'
 local ITEM_ICE_SWORD = '얼음칼'
 local ICE_SWORD_COST = 100
-local ICE_SWORD_SUCCESS_CHANCE = 8  -- out of 10 (80%)
+local ICE_SWORD_SUCCESS_CHANCE = 8
 
 local AMBER_HELMET_COLORS = {
     { list_text = '황호박보석입니다.', color = '황호박' },
@@ -72,8 +72,88 @@ local function run_ice_sword(me, npc)
     return true
 end
 
-local function run_spirit_summon_placeholder(me, npc)
-    me:dialog(npc, '....', false, true)
+local function run_spirit_summon_shark_weapon(me, npc)
+    local q_wr = me:quest(QUEST_WATER_RING)
+    if q_wr == nil or not q_wr:completed() then
+        return
+    end
+    local q = me:quest(QUEST_SHARK_WEAPON)
+    if q == nil then
+        return
+    end
+    local step = q:step()
+    if step == 1 then
+        local sel = me:list(npc, ' ', { '혹시 상어장군...' }, false)
+        if sel == nil or sel ~= 0 then
+            return
+        end
+        sel = me:list(npc, '아 그만 말해도 알겠네..한두명이 말해야 말이지.', { '...' }, false)
+        if sel == nil or sel ~= 0 then
+            return
+        end
+        sel = me:list(npc, '상어장군 이야기 하는 거지?', { '예 그렇습니다.' }, false)
+        if sel == nil or sel ~= 0 then
+            return
+        end
+        sel = me:list(npc, '물론 내가 알고 있기는 한데 말이야 그렇게 쉽게 알려 줄수는 없다네..', { '...' }, false)
+        if sel == nil or sel ~= 0 then
+            return
+        end
+        sel = me:list(npc, '내가 매일같이 쉴 시간도 없이 여기 서 있느냐고 무척이나 몸이 허해져서 말이야.', { '...' }, false)
+        if sel == nil or sel ~= 0 then
+            return
+        end
+        sel = me:list(npc, '보약이라도 한재 지어먹어야 할 것 같아.', { '!!!' }, false)
+        if sel == nil or sel ~= 0 then
+            return
+        end
+        sel = me:list(npc, '그래서 말인데 자네가 용왕님께 지어드렸던 보약의 재료를 가지고 오면 내 방법을 알려주도록 하지.', { '헉..별수없군요...', '차라리 모르고 말지..' }, false)
+        if sel == nil or sel ~= 0 then
+            return
+        end
+        q:step(2)
+        me:push_achievement(24, '한빙장의 부탁을 들어주자.', 7, 1)
+        if me:dialog(npc, '보약의 재료는 나도 모르니까 자네가 직접 가서 물어보고 지어오라고.', true, true) == DIALOG_RESULT.QUIT then
+            return
+        end
+        me:dialog(npc, '아, 그리고 난 산삼도 한뿌리 먹었으면 좋겠으니까 가서 산삼도 한뿌리 가져오시게나.', true, false)
+        return
+    end
+
+    if step == 2 then
+        local items = { '게집게', '게등껍질', '문어다리', '해마꼬리', '산삼' }
+        for _, name in ipairs(items) do
+            if not me:has_items(name, 1) then
+                me:dialog(npc, '보약의 재료를 구하지 못한건가? 용왕님께 지어드렸던 보약의 재료와 산삼 한뿌리 가져오시게나.', false, false)
+                return
+            end
+        end
+        for _, name in ipairs(items) do
+            if not me:rmitem(name, 1, ITEM_DELETE_TYPE.GIVE) then
+                return
+            end
+        end
+        q:step(3)
+        me:push_achievement(24, '한빙장의 부탁을 들어주었다.', 7, 1)
+        if me:dialog(npc, '오. 재료를 다 모아왔군.\n\n그럼 잠시 기다리게나. 내 이걸 먼저 보약으로 만들어 먹고..', true, true) == DIALOG_RESULT.QUIT then
+            return
+        end
+        if me:dialog(npc, '.\n\n..\n\n...', true, true) == DIALOG_RESULT.QUIT then
+            return
+        end
+        if me:dialog(npc, '캬. 몸에 기운이 솟는구만. 솟아.\n\n그럼 받을대로 다 받았으니 슬슬 말해 주기로 하지.', true, true) == DIALOG_RESULT.QUIT then
+            return
+        end
+        if me:dialog(npc, '사실 그 제작방법은 상어장군만이 알고 있다고 하더군.\n\n하지만 상어장군이 죽은 이 마당에...', true, true) == DIALOG_RESULT.QUIT then
+            return
+        end
+        me:dialog(npc, '따라서 그를 저승에서 불러내서 물어봐야 한다네..\n\n그를 저승에서 불러내는 방법은 제단을 담당하고 있는 사람한테 가서 직접 물어보시게나.', true, false)
+        return
+    end
+
+    if step >= 3 then
+        me:dialog(npc, '....', true, false)
+    end
 end
 
 local function run_amber_helmet_craft(me, npc, colors, has_prev)
@@ -129,7 +209,7 @@ function NPC_156(me, npc)
             return
         end
     elseif sel == 1 then
-        run_spirit_summon_placeholder(me, npc)
+        run_spirit_summon_shark_weapon(me, npc)
     elseif sel == 2 then
         local r = run_amber_helmet_craft(me, npc, AMBER_HELMET_COLORS, true)
         if r == DIALOG_RESULT.QUIT then

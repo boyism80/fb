@@ -1,4 +1,3 @@
---- 1st~4th promotion, promotion skills, and 3차승급 옷 (귀검의영혼/귀검의심장) implemented.
 function NPC_3(me, npc)
     local job_name = class2name(me:class(), me:promotion())
     if not job_name then
@@ -13,7 +12,7 @@ function NPC_3(me, npc)
         return
     end
     if sel == 0 then
-        if me:promotion() >= 4 then
+        if me:promotion() >= 3 then
             me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)
         else
             NPC_PROMOTION(me, npc, CLASS.ROGUE)

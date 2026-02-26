@@ -1,5 +1,3 @@
--- Boatman (뱃사공) for 고구려-고균도 ferry. Disembark at pier: 고구려 (14,26) or 고균도 (14,240).
--- Time: minute 40-59 = departure port (고구려); 20-40 = arrival port (고균도); else sailing.
 
 function NPC_197(me, npc)
     local t = datetime()
