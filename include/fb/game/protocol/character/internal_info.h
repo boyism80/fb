@@ -31,8 +31,8 @@ public:
     };
 
     int8_t                        phydef;
-    uint8_t                       dam;
-    uint8_t                       hit;
+    int8_t                        dam;
+    int8_t                        hit;
     std::string                   clan_name;
     std::string                   clan_title;
     std::string                   title;

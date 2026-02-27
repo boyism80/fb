@@ -851,7 +851,7 @@ int builtin::life::builtin_buff_hp(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            obj->stat.buff_hp(value);
+            obj->stat.buff_hp(static_cast<int32_t>(value));
 
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
@@ -933,7 +933,7 @@ int builtin::life::builtin_buff_mp(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            obj->stat.buff_mp(value);
+            obj->stat.buff_mp(static_cast<int32_t>(value));
 
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
@@ -1425,7 +1425,7 @@ int builtin::life::builtin_buff_dam(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            obj->stat.buff_dam(value);
+            obj->stat.buff_dam(static_cast<int8_t>(value));
 
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
@@ -1507,7 +1507,7 @@ int builtin::life::builtin_buff_hit(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            obj->stat.buff_hit(value);
+            obj->stat.buff_hit(static_cast<int8_t>(value));
 
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;

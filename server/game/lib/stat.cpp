@@ -43,25 +43,25 @@ fb::game::stat::stat(stat&& other) :
     _buff_hit(other._buff_hit)
 { }
 
-uint32_t fb::game::stat::buff_hp() const
+int32_t fb::game::stat::buff_hp() const
 {
     this->owner.assert_thread();
     return this->_buff_hp;
 }
 
-void fb::game::stat::buff_hp(uint32_t value)
+void fb::game::stat::buff_hp(int32_t value)
 {
     this->owner.assert_thread();
     this->_buff_hp = value;
 }
 
-uint32_t fb::game::stat::buff_mp() const
+int32_t fb::game::stat::buff_mp() const
 {
     this->owner.assert_thread();
     return this->_buff_mp;
 }
 
-void fb::game::stat::buff_mp(uint32_t value)
+void fb::game::stat::buff_mp(int32_t value)
 {
     this->owner.assert_thread();
     this->_buff_mp = value;
@@ -127,25 +127,25 @@ void fb::game::stat::buff_magdef(int8_t value)
     this->_buff_magdef = value;
 }
 
-uint8_t fb::game::stat::buff_dam() const
+int8_t fb::game::stat::buff_dam() const
 {
     this->owner.assert_thread();
     return this->_buff_dam;
 }
 
-void fb::game::stat::buff_dam(uint8_t value)
+void fb::game::stat::buff_dam(int8_t value)
 {
     this->owner.assert_thread();
     this->_buff_dam = value;
 }
 
-uint8_t fb::game::stat::buff_hit() const
+int8_t fb::game::stat::buff_hit() const
 {
     this->owner.assert_thread();
     return this->_buff_hit;
 }
 
-void fb::game::stat::buff_hit(uint8_t value)
+void fb::game::stat::buff_hit(int8_t value)
 {
     this->owner.assert_thread();
     this->_buff_hit = value;
@@ -241,25 +241,29 @@ uint32_t fb::game::stat::mp_down(uint32_t value, fb::game::object* from)
 uint32_t fb::game::stat::maxhp() const
 {
     this->owner.assert_thread();
-    auto base = this->base_hp();
-    auto buff = this->buff_hp();
-    auto max  = std::numeric_limits<uint32_t>::max();
-    if (max - base < buff)
-        return max;
-
-    return base + buff;
+    auto base = static_cast<int64_t>(this->base_hp());
+    auto buff = static_cast<int64_t>(this->buff_hp());
+    auto sum  = base + buff;
+    if (sum < 1)
+        return 1;
+    constexpr uint64_t max_val = std::numeric_limits<uint32_t>::max();
+    if (sum > static_cast<int64_t>(max_val))
+        return static_cast<uint32_t>(max_val);
+    return static_cast<uint32_t>(sum);
 }
 
 uint32_t fb::game::stat::maxmp() const
 {
     this->owner.assert_thread();
-    auto base = this->base_mp();
-    auto buff = this->buff_mp();
-    auto max  = std::numeric_limits<uint32_t>::max();
-    if (max - base < buff)
-        return max;
-
-    return base + buff;
+    auto base = static_cast<int64_t>(this->base_mp());
+    auto buff = static_cast<int64_t>(this->buff_mp());
+    auto sum  = base + buff;
+    if (sum < 1)
+        return 1;
+    constexpr uint64_t max_val = std::numeric_limits<uint32_t>::max();
+    if (sum > static_cast<int64_t>(max_val))
+        return static_cast<uint32_t>(max_val);
+    return static_cast<uint32_t>(sum);
 }
 
 uint8_t fb::game::stat::str() const
@@ -316,28 +320,22 @@ int8_t fb::game::stat::magdef() const
     return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
 }
 
-uint8_t fb::game::stat::dam() const
+int8_t fb::game::stat::dam() const
 {
     this->owner.assert_thread();
-    auto base = this->base_dam();
-    auto buff = this->buff_dam();
-    auto max  = std::numeric_limits<uint8_t>::max();
-    if (max - base < buff)
-        return max;
-
-    return base + buff;
+    auto base = static_cast<int16_t>(this->base_dam());
+    auto buff = static_cast<int16_t>(this->buff_dam());
+    auto sum  = base + buff;
+    return static_cast<int8_t>(std::max<int16_t>(-128, std::min<int16_t>(127, sum)));
 }
 
-uint8_t fb::game::stat::hit() const
+int8_t fb::game::stat::hit() const
 {
     this->owner.assert_thread();
-    auto base = this->base_hit();
-    auto buff = this->buff_hit();
-    auto max  = std::numeric_limits<uint8_t>::max();
-    if (max - base < buff)
-        return max;
-
-    return base + buff;
+    auto base = static_cast<int16_t>(this->base_hit());
+    auto buff = static_cast<int16_t>(this->buff_hit());
+    auto sum  = base + buff;
+    return static_cast<int8_t>(std::max<int16_t>(-128, std::min<int16_t>(127, sum)));
 }
 
 uint32_t fb::game::stat::regenerative() const
@@ -588,31 +586,27 @@ int8_t character_stat::magdef() const
     return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
 }
 
-uint8_t character_stat::base_dam() const
+int8_t character_stat::dam() const
 {
     this->owner.assert_thread();
-    return this->_dam;
-}
-
-uint8_t character_stat::dam() const
-{
-    this->owner.assert_thread();
-    auto dam        = fb::game::stat::dam();
-    auto additional = (uint32_t)0;
+    auto dam_val = fb::game::stat::dam();
+    int16_t additional = 0;
     for (auto& [_, equipment] : this->owner.items.equipments())
     {
         if (equipment == nullptr)
             continue;
 
-        auto& model  = equipment->based<fb::model::equipment>();
-        additional  += model.damage;
+        auto& model = equipment->based<fb::model::equipment>();
+        additional += static_cast<int16_t>(static_cast<int8_t>(model.damage));
     }
+    int16_t sum = static_cast<int16_t>(dam_val) + additional;
+    return static_cast<int8_t>(std::max<int16_t>(-128, std::min<int16_t>(127, sum)));
+}
 
-    auto limit = std::numeric_limits<uint32_t>::max();
-    if (limit - dam < additional)
-        return limit;
-
-    return dam + additional;
+uint8_t character_stat::base_dam() const
+{
+    this->owner.assert_thread();
+    return static_cast<uint8_t>(this->_dam);
 }
 
 uint8_t character_stat::base_hit() const
@@ -621,31 +615,117 @@ uint8_t character_stat::base_hit() const
     return this->_hit;
 }
 
-uint8_t character_stat::hit() const
+int8_t character_stat::hit() const
 {
     this->owner.assert_thread();
-    auto hit        = fb::game::stat::hit();
-    auto additional = (uint32_t)0;
+    auto hit_val = fb::game::stat::hit();
+    int16_t additional = 0;
     for (auto& [_, equipment] : this->owner.items.equipments())
     {
         if (equipment == nullptr)
             continue;
 
-        auto& model  = equipment->based<fb::model::equipment>();
-        additional  += model.hit;
+        auto& model = equipment->based<fb::model::equipment>();
+        additional += static_cast<int16_t>(static_cast<int8_t>(model.hit));
     }
-
-    auto limit = std::numeric_limits<uint32_t>::max();
-    if (limit - hit < additional)
-        return limit;
-
-    return hit + additional;
+    int16_t sum = static_cast<int16_t>(hit_val) + additional;
+    return static_cast<int8_t>(std::max<int16_t>(-128, std::min<int16_t>(127, sum)));
 }
 
 uint32_t character_stat::base_regenerative() const
 {
     this->owner.assert_thread();
     return this->_regenerative;
+}
+
+uint32_t character_stat::maxhp() const
+{
+    this->owner.assert_thread();
+    int64_t base_flat = static_cast<int64_t>(this->base_hp()) + static_cast<int64_t>(this->buff_hp());
+    float   hp_pct    = 0.0f;
+
+    for (auto& [_, equipment] : this->owner.items.equipments())
+    {
+        if (equipment == nullptr)
+            continue;
+
+        auto& model = equipment->based<fb::model::equipment>();
+        base_flat += model.base_hp;
+        hp_pct += model.hp_percentage;
+    }
+
+    if (base_flat < 1)
+        return 1;
+
+    constexpr int64_t max_val = std::numeric_limits<uint32_t>::max();
+    if (base_flat > max_val)
+        return static_cast<uint32_t>(max_val);
+
+    int64_t pct_bonus = static_cast<int64_t>(static_cast<double>(base_flat) * hp_pct / 100.0);
+    int64_t total     = base_flat + pct_bonus;
+
+    if (total < 1)
+        return 1;
+    if (total > max_val)
+        return static_cast<uint32_t>(max_val);
+
+    return static_cast<uint32_t>(total);
+}
+
+uint32_t character_stat::maxmp() const
+{
+    this->owner.assert_thread();
+    int64_t base_flat = static_cast<int64_t>(this->base_mp()) + static_cast<int64_t>(this->buff_mp());
+    float   mp_pct    = 0.0f;
+
+    for (auto& [_, equipment] : this->owner.items.equipments())
+    {
+        if (equipment == nullptr)
+            continue;
+
+        auto& model = equipment->based<fb::model::equipment>();
+        base_flat += model.base_mp;
+        mp_pct += model.mp_percentage;
+    }
+
+    if (base_flat < 1)
+        return 1;
+
+    constexpr int64_t max_val = std::numeric_limits<uint32_t>::max();
+    if (base_flat > max_val)
+        return static_cast<uint32_t>(max_val);
+
+    int64_t pct_bonus = static_cast<int64_t>(static_cast<double>(base_flat) * mp_pct / 100.0);
+    int64_t total     = base_flat + pct_bonus;
+
+    if (total < 1)
+        return 1;
+    if (total > max_val)
+        return static_cast<uint32_t>(max_val);
+
+    return static_cast<uint32_t>(total);
+}
+
+uint32_t character_stat::regenerative() const
+{
+    this->owner.assert_thread();
+    auto base = fb::game::stat::regenerative();
+    auto additional = uint32_t(0);
+
+    for (auto& [_, equipment] : this->owner.items.equipments())
+    {
+        if (equipment == nullptr)
+            continue;
+
+        auto& model   = equipment->based<fb::model::equipment>();
+        additional += model.healing_cycle;
+    }
+
+    auto max_val = std::numeric_limits<uint32_t>::max();
+    if (max_val - base < additional)
+        return max_val;
+
+    return base + additional;
 }
 
 uint32_t character_stat::damage(uint32_t value, std::shared_ptr<fb::game::object> from, bool critical)

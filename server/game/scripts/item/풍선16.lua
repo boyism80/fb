@@ -1,0 +1,8 @@
+function ON_ACTIVE_572(me, item)
+end
+
+function ON_INACTIVE_572(me, item)
+end
+
+function ON_ATTACK_572(me, item)
+end
