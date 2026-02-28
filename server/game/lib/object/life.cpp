@@ -135,13 +135,13 @@ bool life::active(fb::game::spell& spell, std::string_view message)
     return true;
 }
 
-bool life::active(fb::game::spell& spell, uint32_t fd)
+bool life::active(fb::game::spell& spell, uint32_t oid)
 {
     this->assert_thread();
     if (this->_map == nullptr)
         return false;
 
-    auto to = this->_map->objects[fd];
+    auto to = this->_map->objects[oid];
     if (to == nullptr)
         return false;
 
@@ -177,6 +177,8 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     lua->pushobject(&to);
     lua->pushobject(spell.model);
     std::ignore = lua->call(3);
+
+    to.on_spell_hit(*this, spell);
     return true;
 }
 

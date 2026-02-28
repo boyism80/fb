@@ -589,15 +589,15 @@ int8_t character_stat::magdef() const
 int8_t character_stat::dam() const
 {
     this->owner.assert_thread();
-    auto dam_val = fb::game::stat::dam();
+    auto    dam_val    = fb::game::stat::dam();
     int16_t additional = 0;
     for (auto& [_, equipment] : this->owner.items.equipments())
     {
         if (equipment == nullptr)
             continue;
 
-        auto& model = equipment->based<fb::model::equipment>();
-        additional += static_cast<int16_t>(static_cast<int8_t>(model.damage));
+        auto& model  = equipment->based<fb::model::equipment>();
+        additional  += static_cast<int16_t>(static_cast<int8_t>(model.damage));
     }
     int16_t sum = static_cast<int16_t>(dam_val) + additional;
     return static_cast<int8_t>(std::max<int16_t>(-128, std::min<int16_t>(127, sum)));
@@ -618,15 +618,15 @@ uint8_t character_stat::base_hit() const
 int8_t character_stat::hit() const
 {
     this->owner.assert_thread();
-    auto hit_val = fb::game::stat::hit();
+    auto    hit_val    = fb::game::stat::hit();
     int16_t additional = 0;
     for (auto& [_, equipment] : this->owner.items.equipments())
     {
         if (equipment == nullptr)
             continue;
 
-        auto& model = equipment->based<fb::model::equipment>();
-        additional += static_cast<int16_t>(static_cast<int8_t>(model.hit));
+        auto& model  = equipment->based<fb::model::equipment>();
+        additional  += static_cast<int16_t>(static_cast<int8_t>(model.hit));
     }
     int16_t sum = static_cast<int16_t>(hit_val) + additional;
     return static_cast<int8_t>(std::max<int16_t>(-128, std::min<int16_t>(127, sum)));
@@ -649,9 +649,9 @@ uint32_t character_stat::maxhp() const
         if (equipment == nullptr)
             continue;
 
-        auto& model = equipment->based<fb::model::equipment>();
-        base_flat += model.base_hp;
-        hp_pct += model.hp_percentage;
+        auto& model  = equipment->based<fb::model::equipment>();
+        base_flat   += model.base_hp;
+        hp_pct      += model.hp_percentage;
     }
 
     if (base_flat < 1)
@@ -683,9 +683,9 @@ uint32_t character_stat::maxmp() const
         if (equipment == nullptr)
             continue;
 
-        auto& model = equipment->based<fb::model::equipment>();
-        base_flat += model.base_mp;
-        mp_pct += model.mp_percentage;
+        auto& model  = equipment->based<fb::model::equipment>();
+        base_flat   += model.base_mp;
+        mp_pct      += model.mp_percentage;
     }
 
     if (base_flat < 1)
@@ -709,7 +709,7 @@ uint32_t character_stat::maxmp() const
 uint32_t character_stat::regenerative() const
 {
     this->owner.assert_thread();
-    auto base = fb::game::stat::regenerative();
+    auto base       = fb::game::stat::regenerative();
     auto additional = uint32_t(0);
 
     for (auto& [_, equipment] : this->owner.items.equipments())
@@ -717,8 +717,8 @@ uint32_t character_stat::regenerative() const
         if (equipment == nullptr)
             continue;
 
-        auto& model   = equipment->based<fb::model::equipment>();
-        additional += model.healing_cycle;
+        auto& model  = equipment->based<fb::model::equipment>();
+        additional  += model.healing_cycle;
     }
 
     auto max_val = std::numeric_limits<uint32_t>::max();

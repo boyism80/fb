@@ -449,6 +449,26 @@ void mob::on_die(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
     std::ignore = this->destroy(destroy_type);
 }
 
+void mob::on_spell_hit(fb::game::object& from, fb::game::spell& spell)
+{
+    auto& model = this->based<fb::model::mob>();
+    if (model.on_spell_hit.empty())
+        return;
+
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        return;
+
+#if defined DEBUG | defined _DEBUG
+    lua->load(model.script);
+#endif
+    lua->func(model.on_spell_hit);
+    lua->pushobject(*this);
+    lua->pushobject(&from);
+    lua->pushobject(spell);
+    std::ignore = lua->call(3);
+}
+
 void mob::kill(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
 {
     life::kill(from, destroy_type);

@@ -184,7 +184,7 @@ bool map::movable(const fb::model::point16_t& position, const std::function<bool
 bool map::movable(const object& object, const fb::model::point16_t position) const
 {
     return this->movable(position, [&object](const auto& x) {
-        return !object.hidden(x);
+        return !x.hidden(object);
     });
 }
 

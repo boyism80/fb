@@ -781,11 +781,13 @@ command_funcs = {
                 me:message("No route to secret room (unreachable).", MESSAGE_TYPE.BROWN)
                 return true
             end
+            -- route = [entrance(0), pos1, ..., pos25, secret(26)]
             local route = { 0 }
             for i = 1, #path do route[#route + 1] = path[i] end
+            route[#route + 1] = 26
             for i = 1, #route - 1 do
                 local a = get_sky_maze_slot(route[i])
-                local b = get_sky_maze_slot(route[i + 1] == 25 and 26 or route[i + 1])
+                local b = get_sky_maze_slot(route[i + 1])
                 me:message(a .. " - " .. b, MESSAGE_TYPE.BROWN)
             end
             return true

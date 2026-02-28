@@ -1,2 +1,15 @@
 function ON_MOB_DIE_1434(me, you)
+
+end
+
+function ON_MOB_SPELL_HIT_1434(me, you, spell)
+    me:hp(me:maxhp())
+    if spell:model():name() ~= '백열장' then
+        me:chat('백열장이 아닙니다.')
+        return
+    end
+
+    me:chat('좋아 좋아!')
+    you:chat('좋아 좋아!')
+    you:mp(you:maxmp())
 end
