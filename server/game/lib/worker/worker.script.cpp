@@ -9,22 +9,23 @@ fb::game::script_loader::script_loader(fb::game::server& server) :
 
 fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_ready()
 {
-    auto scripts = std::set<std::string>{};
-    scripts.insert("scripts/spell.lua");
-    scripts.insert("scripts/npc.lua");
-    scripts.insert("scripts/interaction.lua");
-    scripts.insert("scripts/command.lua");
-    scripts.insert("scripts/script.lua");
-    scripts.insert("scripts/init.lua");
-    scripts.insert(fb::model::const_value::script::F1_EVENT_SCRIPT);
-    scripts.insert(fb::model::const_value::script::F2_EVENT_SCRIPT);
+    auto scripts = std::vector<std::string>{};
+    scripts.push_back("scripts/server.lua");
+    scripts.push_back("scripts/spell.lua");
+    scripts.push_back("scripts/npc.lua");
+    scripts.push_back("scripts/interaction.lua");
+    scripts.push_back("scripts/command.lua");
+    scripts.push_back("scripts/script.lua");
+    scripts.push_back("scripts/init.lua");
+    scripts.push_back(fb::model::const_value::script::F1_EVENT_SCRIPT);
+    scripts.push_back(fb::model::const_value::script::F2_EVENT_SCRIPT);
 
     for (auto& [k, v] : table::spell)
     {
         if (v.script.empty())
             continue;
 
-        scripts.insert(v.script);
+        scripts.push_back(v.script);
     }
 
     for (auto& [k, v] : table::item)
@@ -32,7 +33,7 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
         if (v.script.empty())
             continue;
 
-        scripts.insert(v.script);
+        scripts.push_back(v.script);
     }
 
     for (auto& [k, v] : table::npc)
@@ -40,7 +41,7 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
         if (v.script.empty())
             continue;
 
-        scripts.insert(v.script);
+        scripts.push_back(v.script);
     }
 
     auto host = fb::config<uint8_t>("id");
@@ -56,7 +57,7 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
                 continue;
 
             auto params = fb::model::dsl::script(warp.dest.params);
-            scripts.insert(params.path);
+            scripts.push_back(params.path);
         }
     }
 
@@ -65,7 +66,7 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
         if (v.script.empty())
             continue;
 
-        scripts.insert(v.script);
+        scripts.push_back(v.script);
     }
 
     static auto& ist   = fb::lua::context_pool::ist();
@@ -74,10 +75,10 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
     for (auto& [_, root] : ist)
     {
         auto& thread = root->initial_thread();
-        for (auto& script : scripts)
-        {
-            co_yield [&thread, &root, script]() -> async::task<void> {
-                co_await thread.dispatch([&root, script](auto&) -> async::task<void> {
+        co_yield [&thread, &root, scripts]() -> async::task<void> {
+            co_await thread.dispatch([&root, scripts](auto&) -> async::task<void> {
+                for (auto& script : scripts)
+                {
                     try
                     {
                         root->dump(script);
@@ -91,10 +92,10 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
                             fb::console::comment("    - {}", e.what());
                         }
                     }
-                    co_return;
-                });
-            };
-        }
+                }
+                co_return;
+            });
+        };
     }
 }
 

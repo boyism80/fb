@@ -597,6 +597,15 @@ bool root::dump(std::string_view path)
     };
 
     ::lua_dump(*this, callback, params, 1);
+
+    if (lua_pcall(*this, 0, LUA_MULTRET, 0) != LUA_OK)
+    {
+        auto error = lua_tostring(*this, -1);
+        context::pop(1);
+        throw std::runtime_error(error ? error : "lua_pcall failed");
+    }
+    lua_settop(*this, 0);
+
     return true;
 }
 
@@ -618,9 +627,6 @@ context* root::pop(context* parent)
 
         if (this->idle.contains(key) || this->busy.contains(key))
             return nullptr;
-
-        for (auto& [name, _] : this->_bytecodes)
-            ptr->load(name);
 
         this->busy.insert({key, std::move(ptr)});
         return this->busy[key].get();

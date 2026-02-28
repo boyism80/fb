@@ -71,12 +71,12 @@ object_portrait::object_portrait(const object_portrait& right) :
 
 void object_portrait::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    writer.write<uint8_t>(this->look > 0xBFFF ? 0x02 : 0x01);
+    writer.write<uint8_t>(this->look > 0x4000 ? 0x02 : 0x01);
     writer.write<uint8_t>(0x01);
-    writer.write<uint16_t>(this->look);
+    writer.write<uint16_t>(this->look + 0x7FFF);
     writer.write<uint8_t>(this->color);
-    writer.write<uint8_t>(this->look > 0xBFFF ? 0x02 : 0x01);
-    writer.write<uint16_t>(this->look);
+    writer.write<uint8_t>(this->look > 0x4000 ? 0x02 : 0x01);
+    writer.write<uint16_t>(this->look + 0x7FFF);
     writer.write<uint8_t>(this->color);
 }
 

@@ -4,3 +4,6 @@
 
 -- Initial battery stock for 시계장인 (restocked daily at 18:00 by ON_SCHEDULE_2)
 gv("clock_time_item", 10)
+
+sky_maze_shuffle()
+pk_sky_maze_shuffle()

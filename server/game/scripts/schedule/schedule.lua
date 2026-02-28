@@ -10,3 +10,8 @@ end
 function ON_SCHEDULE_2()
     gv("clock_time_item", 10)
 end
+
+function ON_SCHEDULE_3()
+    sky_maze_shuffle()
+    pk_sky_maze_shuffle()
+end

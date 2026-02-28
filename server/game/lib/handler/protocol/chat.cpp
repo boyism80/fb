@@ -45,6 +45,7 @@ async::task<bool> chat::try_command(character* ch, std::weak_ptr<character> weak
 
 #if defined DEBUG | defined _DEBUG
     lua->load("scripts/interaction.lua");
+    lua->load("scripts/server.lua");
     lua->load("scripts/command.lua");
     lua->load("scripts/npc.lua");
 #endif

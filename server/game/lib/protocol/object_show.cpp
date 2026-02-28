@@ -28,7 +28,7 @@ async::task<void> update::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint16_t>(object->x());                              // object x
         writer.write<uint16_t>(object->y());                              // object y
         writer.write<uint32_t>(object->oid());                            // object oid
-        writer.write<uint16_t>(object->look()) + 0x7FFF;                  // npc icon code
+        writer.write<uint16_t>(object->look() + 0x7FFF);                  // npc icon code
         writer.write<uint8_t>(object->color());                           // color
         writer.write<uint8_t>(static_cast<uint8_t>(object->direction())); // side
     }

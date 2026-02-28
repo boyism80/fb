@@ -926,6 +926,7 @@ function mountain_treasure_fabric_on_move(me)
         return
     end
 
+    local param = quest:param()
     local parts = {}
     for p in string.gmatch(param, '[^,]+') do
         table.insert(parts, p)
