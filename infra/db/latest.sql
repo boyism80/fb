@@ -508,6 +508,7 @@ CREATE TABLE `user` (
   `buffs` varchar(512) NOT NULL DEFAULT '[]',
   `title` varchar(32) NOT NULL DEFAULT '',
   `pending_listings` json DEFAULT NULL,
+  `super_hide` tinyint unsigned NOT NULL DEFAULT '0',
   `deleted` tinyint unsigned NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,

@@ -78,7 +78,7 @@ private:
     mob_vector_t              _spawned_mobs  = {};
     bool                      _super_hide    = false;
     fb::model::datetime       _last_afk_time;
-    marriage                  _marriage          = {};
+    fb::game::marriage        _marriage          = {};
     bool                      _options[0x0B + 1] = {
         1,
     };
@@ -128,6 +128,7 @@ public:
         std::optional<uint16_t>                disguise    = std::nullopt;
         NATION                                 nation      = NATION::GOGURYEO;
         CREATURE                               creature    = CREATURE::DRAGON;
+        bool                                   super_hide  = false;
     };
 
 public:

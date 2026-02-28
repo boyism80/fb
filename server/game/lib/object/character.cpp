@@ -28,7 +28,8 @@ character::character(fb::game::server& server, const initial_params& params) :
     _birthday(params.birthday), _look(params.look), _color(params.color), _armor_color(params.armor_color),
     _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
     _class(params.class_type), _promotion(params.promotion), _money(params.money), _disguise(params.disguise),
-    _title(params.title), _nation(params.nation), _creature(params.creature), _last_afk_time(fb::model::datetime())
+    _title(params.title), _nation(params.nation), _creature(params.creature), _last_afk_time(fb::model::datetime()),
+    _super_hide(params.super_hide)
 { }
 
 character::~character()
@@ -98,13 +99,10 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
     }
 
     auto switch_process = (map != nullptr && map->active == false);
+    auto new_map_id     = map != nullptr ? std::make_optional(map->model.id) : std::optional<uint32_t>();
+    auto new_position   = position;
     if (switch_process)
     {
-        // Store map information before on_transfer to avoid use-after-free
-        // on_transfer may cause thread switching and modify character state
-        auto new_map_id   = map != nullptr ? std::make_optional(map->model.id) : std::optional<uint32_t>();
-        auto new_position = position;
-
         auto result = co_await this->listener.on_transfer(*this, *map, position);
         if (result && old_map != map)
         {
@@ -146,11 +144,11 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
             log_data["old_position_x"] = old_position.x;
             log_data["old_position_y"] = old_position.y;
         }
-        if (map != nullptr)
+        if (new_map_id.has_value())
         {
-            log_data["new_map"]        = map->model.id;
-            log_data["new_position_x"] = position.x;
-            log_data["new_position_y"] = position.y;
+            log_data["new_map"]        = new_map_id.value();
+            log_data["new_position_x"] = new_position.x;
+            log_data["new_position_y"] = new_position.y;
         }
         this->server.log.write("map_transfer", log_data);
     }
@@ -1421,6 +1419,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.aux_top_color    = std::nullopt;
     dto.aux_bot_color    = std::nullopt;
     dto.title            = this->_title;
+    dto.super_hide       = this->_super_hide;
 
     for (auto& [_, buff] : this->buffs)
     {

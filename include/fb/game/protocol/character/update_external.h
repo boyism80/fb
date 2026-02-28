@@ -39,7 +39,7 @@ struct preset_serializer
         writer.write<uint8_t>(static_cast<uint8_t>(this->portrait.state));
         if (this->portrait.state == STATE::DISGUISE)
         {
-            writer.write<uint16_t>(this->portrait.disguise.value());
+            writer.write<uint16_t>(this->portrait.disguise.value() + 0x7FFF);
             writer.write<uint8_t>(this->portrait.armor_color.value_or(0x00));
         }
         else
@@ -217,7 +217,7 @@ public:
 
         if (this->disguised)
         {
-            this->look  = reader.read<uint16_t>();
+            this->look  = reader.read<uint16_t>() - 0x7FFF;
             this->color = reader.read<uint8_t>();
         }
         else

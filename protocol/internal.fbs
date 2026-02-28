@@ -63,6 +63,7 @@ table Character {
     pending_listings: string?;
     created_date: string;
     updated_date: string;
+    super_hide: bool = false;
 }
 
 table Marriage {

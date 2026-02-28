@@ -1,4 +1,4 @@
-﻿using StackExchange.Redis;
+using StackExchange.Redis;
 
 namespace Http.Model
 {
@@ -50,5 +50,6 @@ namespace Http.Model
         public List<Buff> Buffs { get; set; } = new List<Buff>();
         public string Title { get; set; } = string.Empty;
         public Dictionary<string, List<Fb.Model.Dsl>> PendingListings { get; set; } = new Dictionary<string, List<Fb.Model.Dsl>>();
+        public bool SuperHide { get; set; }
     }
 }

@@ -69,7 +69,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_TITLE = 76,
     VT_PENDING_LISTINGS = 78,
     VT_CREATED_DATE = 80,
-    VT_UPDATED_DATE = 82
+    VT_UPDATED_DATE = 82,
+    VT_SUPER_HIDE = 84
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -191,6 +192,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *updated_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
   }
+  bool super_hide() const {
+    return GetField<uint8_t>(VT_SUPER_HIDE, 0) != 0;
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -252,6 +256,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(created_date()) &&
            VerifyOffset(verifier, VT_UPDATED_DATE) &&
            verifier.VerifyString(updated_date()) &&
+           VerifyField<uint8_t>(verifier, VT_SUPER_HIDE, 1) &&
            verifier.EndTable();
   }
 };
@@ -380,6 +385,9 @@ struct CharacterBuilder {
   void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
     fbb_.AddOffset(Character::VT_UPDATED_DATE, updated_date);
   }
+  void add_super_hide(bool super_hide) {
+    fbb_.AddElement<uint8_t>(Character::VT_SUPER_HIDE, static_cast<uint8_t>(super_hide), 0);
+  }
   explicit CharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -432,7 +440,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> pending_listings = 0,
     ::flatbuffers::Offset<::flatbuffers::String> created_date = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0,
+    bool super_hide = false) {
   CharacterBuilder builder_(_fbb);
   builder_.add_updated_date(updated_date);
   builder_.add_created_date(created_date);
@@ -465,6 +474,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_id(id);
   builder_.add_color(color);
   builder_.add_look(look);
+  builder_.add_super_hide(super_hide);
   builder_.add_level(level);
   builder_.add_promotion(promotion);
   builder_.add_class_type(class_type);
@@ -518,7 +528,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     const char *title = nullptr,
     const char *pending_listings = nullptr,
     const char *created_date = nullptr,
-    const char *updated_date = nullptr) {
+    const char *updated_date = nullptr,
+    bool super_hide = false) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   auto buffs__ = buffs ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>(*buffs) : 0;
@@ -567,7 +578,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       title__,
       pending_listings__,
       created_date__,
-      updated_date__);
+      updated_date__,
+      super_hide);
 }
 
 inline const fb::protocol::internal::raw::Character *GetCharacter(const void *buf) {

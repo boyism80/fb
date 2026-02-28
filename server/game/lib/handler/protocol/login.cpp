@@ -220,6 +220,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     params.disguise     = resp.character.disguise;
     params.nation       = static_cast<NATION>(resp.character.nation);
     params.creature     = static_cast<CREATURE>(resp.character.creature);
+    params.super_hide   = resp.character.super_hide;
 
     auto ch   = this->server.make<character>(params);
     auto weak = ch->weak_from_this_as<character>();
