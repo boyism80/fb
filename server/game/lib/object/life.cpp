@@ -177,8 +177,6 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     lua->pushobject(&to);
     lua->pushobject(spell.model);
     std::ignore = lua->call(3);
-
-    to.on_spell_hit(*this, spell);
     return true;
 }
 

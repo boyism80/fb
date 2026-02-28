@@ -87,9 +87,6 @@ bool object::hidden(const object& target) const
 void object::on_init()
 { }
 
-void object::on_spell_hit(fb::game::object& from, fb::game::spell& spell)
-{ }
-
 async::task<void> object::destroy(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();

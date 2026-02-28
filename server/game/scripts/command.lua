@@ -703,7 +703,7 @@ command_funcs = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 스크립트 실행',
         ['command'] = function (me, args)
-            me:script("script.lua", "func", 1, "hello", "good")
+            me:script("scripts/script.lua", "func", 1, "hello", "good")
             return true
         end,
     },

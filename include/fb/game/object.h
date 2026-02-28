@@ -77,7 +77,6 @@ public:
     }
 
     virtual void on_init();
-    virtual void on_spell_hit(fb::game::object& from, fb::game::spell& spell);
 
 public:
     // clang-format off

@@ -32,6 +32,7 @@ IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
 {"thread",              builtin::object::builtin_thread},
 {"near",                builtin::object::builtin_near},
 {"hidden",              builtin::object::builtin_hidden},
+{"script",              builtin::object::builtin_script},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::object::builtin_model(lua_State* L)
@@ -907,4 +908,63 @@ int builtin::object::builtin_hidden(lua_State* L)
 
     lua->pushboolean(me->hidden(*you));
     return 1;
+}
+
+int builtin::object::builtin_script(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto obj    = lua->touserdata<fb::game::object>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto file = lua->tostring(2, "scripts/script.lua");
+    auto func = lua->tostring(3, "func");
+
+    if (obj->thread() == server->threads.current())
+    {
+        auto new_lua = fb::lua::new_context(lua);
+        if (new_lua == nullptr)
+            return 0;
+
+        new_lua->load(file);
+        new_lua->func(func);
+        new_lua->pushobject(obj);
+        lua_xmove(L, *new_lua, argc - 3);
+
+        auto n      = 0;
+        std::ignore = new_lua->call(argc - 2, true, &n);
+        switch (new_lua->state())
+        {
+        case LUA_PENDING:
+        case LUA_YIELD:
+            return lua->yield(0);
+
+        case LUA_OK:
+            return n;
+
+        default:
+            return 0;
+        }
+    }
+    else
+    {
+        auto weak = obj->weak_from_this_as<fb::game::object>();
+        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            auto new_lua = fb::lua::new_context(lua);
+            if (new_lua == nullptr)
+                return 0;
+
+            new_lua->load(std::format("scripts/{}", file));
+            new_lua->func(func);
+            new_lua->pushobject(obj);
+            lua_xmove(L, *new_lua, argc - 3);
+            std::ignore = new_lua->call(argc - 2);
+            return 0;
+        });
+    }
 }

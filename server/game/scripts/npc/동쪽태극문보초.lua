@@ -73,7 +73,7 @@ function NPC_268(me, npc)
         end
 
         me:dialog(npc, '동료에게 확인을 받겠다.', false, true)
-        if teammate:script('npc/동쪽태극문보초.lua', "confirm_teammate", me:name(), npc) == false then
+        if teammate:script('scripts/npc/동쪽태극문보초.lua', "confirm_teammate", me:name(), npc) == false then
             me:dialog(npc, '동료에게 확인을 받지 못했습니다.', false, true)
             goto NPC_268_POS001
         end

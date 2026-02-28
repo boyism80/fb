@@ -66,7 +66,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"mkspell",                builtin::character::builtin_mkspell},
 {"rmspell",                builtin::character::builtin_rmspell},
 {"world",                  builtin::character::builtin_world},
-{"script",                 builtin::character::builtin_script},
 {"ad",                     builtin::character::builtin_ad},
 {"web",                    builtin::character::builtin_web},
 {"birthday",               builtin::character::builtin_birthday},
@@ -2719,65 +2718,6 @@ int builtin::character::builtin_world(lua_State* L)
 
     lua->pushboolean(false);
     return 1;
-}
-
-int builtin::character::builtin_script(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto ch     = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto file = lua->tostring(2, "script.lua");
-    auto func = lua->tostring(3, "func");
-
-    if (ch->thread() == server->threads.current())
-    {
-        auto new_lua = fb::lua::new_context(lua);
-        if (new_lua == nullptr)
-            return 0;
-
-        new_lua->load(std::format("scripts/{}", file));
-        new_lua->func(func);
-        new_lua->pushobject(ch);
-        lua_xmove(L, *new_lua, argc - 3);
-
-        auto n      = 0;
-        std::ignore = new_lua->call(argc - 2, true, &n);
-        switch (new_lua->state())
-        {
-        case LUA_PENDING:
-        case LUA_YIELD:
-            return lua->yield(0);
-
-        case LUA_OK:
-            return n;
-
-        default:
-            return 0;
-        }
-    }
-    else
-    {
-        auto weak = ch->weak_from_this_as<fb::game::character>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto new_lua = fb::lua::new_context(lua);
-            if (new_lua == nullptr)
-                return 0;
-
-            new_lua->load(std::format("scripts/{}", file));
-            new_lua->func(func);
-            new_lua->pushobject(ch);
-            lua_xmove(L, *new_lua, argc - 3);
-            std::ignore = new_lua->call(argc - 2);
-            return 0;
-        });
-    }
 }
 
 int builtin::character::builtin_ad(lua_State* L)

@@ -79,9 +79,6 @@ private:
     void                            AI(const fb::model::datetime& now);
     void                            on_die(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type);
 
-protected:
-    void on_spell_hit(fb::game::object& from, fb::game::spell& spell) override final;
-
 public:
     bool near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const;
     bool move_step(const fb::model::point16_t& position);

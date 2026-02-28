@@ -59,6 +59,8 @@ struct mob
     static int builtin_damage(lua_State* L);
     static int builtin_drop(lua_State* L);
     static int builtin_exp(lua_State* L);
+    static int builtin_script(lua_State* L);
+    static int builtin_on_spell_hit(lua_State* L);
 };
 
 struct map

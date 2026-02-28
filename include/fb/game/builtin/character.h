@@ -61,7 +61,6 @@ struct character
     static int builtin_mkspell(lua_State* L);
     static int builtin_rmspell(lua_State* L);
     static int builtin_world(lua_State* L);
-    static int builtin_script(lua_State* L);
     static int builtin_ad(lua_State* L);
     static int builtin_web(lua_State* L);
     static int builtin_delay(lua_State* L);
