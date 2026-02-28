@@ -737,7 +737,11 @@ local function shuffle_array(arr, from_idx, to_idx)
     end
 end
 
-function sky_maze_shuffle()
+function sky_maze_shuffle(seed)
+    if seed == nil then
+        seed = now()
+    end
+    math.randomseed(seed)
     local arr = {}
     for i = 0, 26 do
         arr[i] = map_name_to_id(SKY_MAZE_NAMES[i + 1])
@@ -748,7 +752,11 @@ function sky_maze_shuffle()
     end
 end
 
-function pk_sky_maze_shuffle()
+function pk_sky_maze_shuffle(seed)
+    if seed == nil then
+        seed = now()
+    end
+    math.randomseed(seed)
     local arr = {}
     for i = 0, 26 do
         arr[i] = map_name_to_id(PK_SKY_MAZE_NAMES[i + 1])
@@ -892,6 +900,15 @@ function ON_WARP_SKY_MAZE(me)
         return
     end
     
+    -- From grid position 25, any of the 4 warp tiles leads to secret room (slot 26)
+    if my_pos == 25 then
+        local secret = id2map(arr[26])
+        if secret then
+            me:map(secret, 24, 24)
+        end
+        return
+    end
+    
     local next_pos = sky_maze_next(my_pos, side)
     local dest = id2map(arr[next_pos])
     if dest then 
@@ -960,6 +977,15 @@ function ON_WARP_PK_SKY_MAZE(me)
         local m = id2map(PK_SKY_MAZE_FINAL_EXIT_MAP_ID)
         if m then 
             me:map(m, 1, 1) 
+        end
+        return
+    end
+    
+    -- From grid position 25, any of the 4 warp tiles leads to secret room (slot 26)
+    if my_pos == 25 then
+        local secret = id2map(arr[26])
+        if secret then
+            me:map(secret, 24, 24)
         end
         return
     end

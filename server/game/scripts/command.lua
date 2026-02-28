@@ -710,11 +710,19 @@ command_funcs = {
 
     ['천상미궁셔플'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '- 천상미궁/PK천상미궁 워프 셔플 즉시 실행',
+        ['usage'] = '[seed] - 천상미궁/PK천상미궁 워프 셔플 (seed 생략 시 now() 사용)',
         ['command'] = function (me, args)
-            sky_maze_shuffle()
-            pk_sky_maze_shuffle()
-            me:message("천상미궁 / PK천상미궁 워프 셔플 적용되었습니다.", MESSAGE_TYPE.NOTIFY)
+            local seed = args[1]
+            if seed ~= nil then
+                seed = tonumber(seed)
+            end
+            sky_maze_shuffle(seed)
+            pk_sky_maze_shuffle(seed)
+            local msg = "천상미궁 / PK천상미궁 워프 셔플 적용되었습니다."
+            if seed ~= nil then
+                msg = msg .. " (seed=" .. tostring(seed) .. ")"
+            end
+            me:message(msg, MESSAGE_TYPE.NOTIFY)
             return true
         end,
     },
@@ -785,10 +793,20 @@ command_funcs = {
             local route = { 0 }
             for i = 1, #path do route[#route + 1] = path[i] end
             route[#route + 1] = 26
+            local dir_names = { "북", "동", "남", "서" }
             for i = 1, #route - 1 do
                 local a = get_sky_maze_slot(route[i])
                 local b = get_sky_maze_slot(route[i + 1])
-                me:message(a .. " - " .. b, MESSAGE_TYPE.BROWN)
+                local dir_str = ""
+                if route[i] >= 1 and route[i] <= 25 and route[i + 1] >= 1 and route[i + 1] <= 25 then
+                    for side = 0, 3 do
+                        if sky_maze_next(route[i], side) == route[i + 1] then
+                            dir_str = " (" .. dir_names[side + 1] .. ")"
+                            break
+                        end
+                    end
+                end
+                me:message((a or "?") .. dir_str .. " - " .. (b or "?"), MESSAGE_TYPE.BROWN)
             end
             return true
         end,
