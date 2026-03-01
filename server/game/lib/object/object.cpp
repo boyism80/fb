@@ -389,41 +389,59 @@ bool object::sight(const object& object) const
 
 bool object::sight(const fb::model::point16_t me, const fb::model::point16_t you, const map_ptr& map)
 {
+    return map != nullptr && object::sight_area(me, map).contains(you);
+}
+
+fb::model::area<uint16_t> object::sight_area(const fb::model::point16_t& position, const map_ptr& map)
+{
+    if (map == nullptr)
+        return fb::model::area<uint16_t>(0, 0, 0, 0);
+
     fb::model::point16_t begin, end;
 
-    if (me.x <= map::HALF_SCREEN_WIDTH) // Left edge
+    if (position.x <= map::HALF_SCREEN_WIDTH)
     {
         begin.x = 0;
         end.x   = map::MAX_SCREEN_WIDTH;
     }
-    else if (me.x >= map->width() - map::HALF_SCREEN_WIDTH) // Right edge
+    else if (position.x >= map->width() - map::HALF_SCREEN_WIDTH)
     {
         begin.x = std::max(int32_t(0), int32_t(map->width() - map::MAX_SCREEN_WIDTH - 1));
         end.x   = std::max(int32_t(0), int32_t(map->width() - 1));
     }
     else
     {
-        begin.x = std::max(int32_t(0), int32_t(me.x - map::HALF_SCREEN_WIDTH - 1));
-        end.x   = std::max(int32_t(0), int32_t(me.x + map::HALF_SCREEN_WIDTH + 1));
+        begin.x = std::max(int32_t(0), int32_t(position.x - map::HALF_SCREEN_WIDTH - 1));
+        end.x   = std::max(int32_t(0), int32_t(position.x + map::HALF_SCREEN_WIDTH + 1));
     }
 
-    if (me.y <= map::HALF_SCREEN_HEIGHT) // Top edge
+    if (position.y <= map::HALF_SCREEN_HEIGHT)
     {
         begin.y = 0;
         end.y   = map::MAX_SCREEN_HEIGHT;
     }
-    else if (me.y >= map->height() - map::HALF_SCREEN_HEIGHT) // Bottom edge
+    else if (position.y >= map->height() - map::HALF_SCREEN_HEIGHT)
     {
         begin.y = std::max(int32_t(0), int32_t(map->height() - map::MAX_SCREEN_HEIGHT - 1));
         end.y   = std::max(int32_t(0), map->height() - 1);
     }
     else
     {
-        begin.y = std::max(int32_t(0), int32_t(me.y - map::HALF_SCREEN_HEIGHT - 1));
-        end.y   = std::max(int32_t(0), int32_t(me.y + map::HALF_SCREEN_HEIGHT + 1));
+        begin.y = std::max(int32_t(0), int32_t(position.y - map::HALF_SCREEN_HEIGHT - 1));
+        end.y   = std::max(int32_t(0), int32_t(position.y + map::HALF_SCREEN_HEIGHT + 1));
     }
 
-    return begin.x <= you.x && end.x >= you.x && begin.y <= you.y && end.y >= you.y;
+    return fb::model::area<uint16_t>(
+        static_cast<uint16_t>(begin.x),
+        static_cast<uint16_t>(begin.y),
+        static_cast<uint16_t>(end.x) + 1,
+        static_cast<uint16_t>(end.y) + 1);
+}
+
+fb::model::area<uint16_t> object::sight_area() const
+{
+    this->assert_thread();
+    return object::sight_area(this->_position, this->_map);
 }
 
 async::task<bool> object::map(map_ptr map, DESTROY_TYPE destroy_type)

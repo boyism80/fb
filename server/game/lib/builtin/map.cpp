@@ -322,8 +322,9 @@ int builtin::map::builtin_tile(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc = lua->argc();
-    auto map  = lua->touserdata<fb::game::map>(1);
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto map    = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -338,12 +339,8 @@ int builtin::map::builtin_tile(lua_State* L)
         auto value   = lua->tointeger(4);
         tile->object = value;
 
-        auto position = fb::model::point16_t{x, y};
-        for (auto& obj : map->nears(position, OBJECT_TYPE::CHARACTER))
-        {
-            auto ch = std::static_pointer_cast<character>(obj);
-            ch->update_map(*map, position, fb::model::size8_t{1, 1});
-        }
+        const auto area = fb::model::area<uint16_t>(x, y, x + 1, y + 1);
+        server->update_map_cache(map->model.id, area);
         return 0;
     }
     else

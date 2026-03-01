@@ -66,27 +66,10 @@ public:                                                                         
     struct point<T>& forward(fb::model::enum_value::DIRECTION direction, T step = 1);  \
     struct point<T>& backward(fb::model::enum_value::DIRECTION direction, T step = 1); \
     struct point<T>& left(fb::model::enum_value::DIRECTION direction, T step = 1);     \
-    struct point<T>& right(fb::model::enum_value::DIRECTION direction, T step = 1);    \
-                                                                                       \
-    T manhattan_distance(const point<T>& r) const                                      \
-    {                                                                                  \
-        return std::abs(this->x - r.x) + std::abs(this->y - r.y);                      \
-    }                                                                                  \
-                                                                                       \
-    float distance(const point<T>& r) const                                            \
-    {                                                                                  \
-        auto dx = static_cast<float>(this->x - r.x);                                   \
-        auto dy = static_cast<float>(this->y - r.y);                                   \
-        return std::sqrt(dx * dx + dy * dy);                                           \
-    }
+    struct point<T>& right(fb::model::enum_value::DIRECTION direction, T step = 1);
 
-#define DECLARE_SIZE_EXTENSION                        \
-                                                      \
-public:                                               \
-    bool empty() const                                \
-    {                                                 \
-        return this->width == 0 && this->height == 0; \
-    }
+#define DECLARE_SIZE_EXTENSION
+
 
 #define DECLARE_SPELL_INHERIT  : public fb::lua::luable
 

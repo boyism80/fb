@@ -22,6 +22,8 @@
 #include <fb/locker.h>
 #include <vector>
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 #include <string_view>
 #include <unordered_map>
 
@@ -96,10 +98,12 @@ public:
     using ensure_clan_fn     = std::function<async::task<void>(clan_ptr&)>;
 
 private:
-    fb::model::datetime                               _time;
-    double                                            _exp_multiplier;
-    double                                            _drop_rate_multiplier;
-    std::unordered_map<uint32_t, fb::model::datetime> _scheduled_tasks;
+    fb::model::datetime                                     _time;
+    double                                                  _exp_multiplier;
+    double                                                  _drop_rate_multiplier;
+    std::unordered_map<uint32_t, fb::model::datetime>       _scheduled_tasks;
+    fb::sharded_container<map::cache_bytes, 1024, uint64_t> _map_update_cache;
+    mutable std::shared_mutex                               _map_update_cache_mutex;
 
 public:
     fb::log_collector                                        log;
@@ -110,7 +114,6 @@ public:
     fb::locker<character::container>                         characters;
     fb::sharded_container<clan_ptr, 16>                      clans;
     fb::sharded_container<group_ptr, 16>                     groups;
-    fb::sharded_container<map::cache_bytes, 1024, uint64_t>  map_update_cache;
     fb::locker<std::unordered_map<std::string, Json::Value>> globals;
 
 public:
@@ -218,6 +221,9 @@ public:
     void                                       drop_rate_multiplier(double value);
     void                                       initialize_schedules();
     std::unordered_map<uint32_t, fb::model::datetime>& scheduled_tasks();
+    void                                       erase_map_cache(uint32_t map_id, const fb::model::point16_t& point);
+    void                                       send_map_cache(character& ch, const map& map, const fb::model::point16_t& position, const fb::model::size8_t& size, uint16_t crc);
+    void                                       update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area);
     // clang-format on
 };
 

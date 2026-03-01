@@ -69,6 +69,7 @@ public:
 private:
     void        update_sector();
     static bool sight(const fb::model::point16_t me, const fb::model::point16_t you, const map_ptr& map);
+    static fb::model::area<uint16_t> sight_area(const fb::model::point16_t& position, const map_ptr& map);
 
 public:
     template <typename T> const T& based() const
@@ -112,6 +113,7 @@ public:
     map_ptr                                     map() const;
     bool                                        sight(const fb::model::point16_t& position) const;
     bool                                        sight(const fb::game::object& object) const;
+    fb::model::area<uint16_t>                   sight_area() const;
     fb::model::point16_t                        side_position(DIRECTION direction, int step = 1) const;
     fb::model::point16_t                        front_position(int step = 1) const;
     object_ptr                                  side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;

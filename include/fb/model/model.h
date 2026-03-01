@@ -34,6 +34,7 @@
 #include <unordered_map>
 #include <functional>
 #include <mutex>
+#include <cmath>
 #include <model.additional.h>
 #ifdef LUA
 extern "C"
@@ -162,6 +163,19 @@ public:
     {
         return this->x != r.x || this->y != r.y;
     }
+
+public:
+    T manhattan_distance(const point<T>& r) const
+    {
+        return std::abs(this->x - r.x) + std::abs(this->y - r.y);
+    }
+
+    float distance(const point<T>& r) const
+    {
+        auto dx = static_cast<float>(this->x - r.x);
+        auto dy = static_cast<float>(this->y - r.y);
+        return std::sqrt(dx * dx + dy * dy);
+    }
 #ifdef DECLARE_POINT_EXTENSION
 DECLARE_POINT_EXTENSION
 #endif
@@ -191,6 +205,12 @@ public:
     bool operator != (const size<T>& r) const
     {
         return this->width != r.width || this->height != r.height;
+    }
+
+public:
+    bool empty() const
+    {
+        return this->width == 0 && this->height == 0;
     }
 #ifdef DECLARE_SIZE_EXTENSION
 DECLARE_SIZE_EXTENSION
@@ -253,6 +273,22 @@ public:
     bool operator != (const area<T>& r) const
     {
         return this->left != r.left || this->top != r.top || this->right != r.right || this->bottom != r.bottom;
+    }
+
+public:
+    bool empty() const
+    {
+        return this->left >= this->right || this->top >= this->bottom;
+    }
+
+    bool intersects(const area<T>& other) const
+    {
+        return !(this->left >= other.right || this->right <= other.left || this->top >= other.bottom || this->bottom <= other.top);
+    }
+
+    bool contains(const point<T>& p) const
+    {
+        return this->left <= p.x && p.x < this->right && this->top <= p.y && p.y < this->bottom;
     }
 #ifdef DECLARE_AREA_EXTENSION
 DECLARE_AREA_EXTENSION

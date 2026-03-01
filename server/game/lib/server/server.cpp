@@ -31,7 +31,7 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     groups([](const std::shared_ptr<group>& group) -> uint32_t {
         return group->id();
     }),
-    map_update_cache(
+    _map_update_cache(
         [](const map::cache_bytes& cache_bytes) -> uint64_t {
             return cache_bytes.hash;
         },
@@ -825,4 +825,125 @@ void server::initialize_schedules()
 std::unordered_map<uint32_t, fb::model::datetime>& server::scheduled_tasks()
 {
     return this->_scheduled_tasks;
+}
+
+void server::erase_map_cache(uint32_t map_id, const fb::model::point16_t& point)
+{
+    std::unique_lock lock(this->_map_update_cache_mutex);
+
+    std::vector<uint64_t> to_erase;
+    for (auto hash : this->_map_update_cache.keys())
+    {
+        const auto entry_map_id = static_cast<uint32_t>(hash >> 48);
+        if (entry_map_id != map_id)
+            continue;
+
+        const uint16_t pos_x  = (hash >> 32) & 0xFFFF;
+        const uint16_t pos_y  = (hash >> 16) & 0xFFFF;
+        const uint8_t  width  = (hash >> 8) & 0xFF;
+        const uint8_t  height = hash & 0xFF;
+        auto           area   = fb::model::area<uint16_t>(pos_x, pos_y, pos_x + width, pos_y + height);
+        if (area.contains(point))
+            to_erase.push_back(hash);
+    }
+
+    for (uint64_t hash : to_erase)
+    {
+        this->_map_update_cache.erase(hash);
+    }
+}
+
+void server::send_map_cache(character&                  ch,
+                            const map&                  map,
+                            const fb::model::point16_t& position,
+                            const fb::model::size8_t&   size,
+                            uint16_t                    crc)
+{
+    const auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 |
+                      static_cast<uint64_t>(position.y) << 16 | static_cast<uint64_t>(size.width) << 8 |
+                      static_cast<uint64_t>(size.height);
+
+    auto send_cache_bytes = [&ch, crc](const auto& cache_bytes) {
+        if (cache_bytes.crc == crc)
+            return;
+
+        ch.send(fb::stream(cache_bytes.bytes.data(), cache_bytes.bytes.size()));
+    };
+
+    {
+        std::shared_lock lock(this->_map_update_cache_mutex);
+        if (this->_map_update_cache.try_read(hash, send_cache_bytes))
+            return;
+    }
+
+    std::unique_lock lock(this->_map_update_cache_mutex);
+    this->_map_update_cache.write(hash, send_cache_bytes, [&map, &position, &size, hash]() {
+        auto bytes = map::cache_bytes();
+        bytes.hash = hash;
+        bytes.crc  = 0;
+
+        auto writer = fb::stream_writer<big_endian>(bytes.bytes);
+        auto resp   = game_resp::map_update(map, position, size);
+        std::ignore = resp.serialize(writer);
+        bytes.crc   = resp.crc;
+        return bytes;
+    });
+}
+
+void server::update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area)
+{
+    // Phase 1: Invalidate cache entries whose region intersects the area (hold lock only for this).
+    {
+        std::unique_lock lock(this->_map_update_cache_mutex);
+
+        std::vector<uint64_t> to_erase;
+        for (auto hash : _map_update_cache.keys())
+        {
+            const auto entry_map_id = static_cast<uint32_t>(hash >> 48);
+            if (entry_map_id != map_id)
+                continue;
+
+            const uint16_t e_left     = (hash >> 32) & 0xFFFF;
+            const uint16_t e_top      = (hash >> 16) & 0xFFFF;
+            const uint8_t  e_w        = (hash >> 8) & 0xFF;
+            const uint8_t  e_h        = hash & 0xFF;
+            const uint16_t e_right    = static_cast<uint16_t>(e_left + e_w);
+            const uint16_t e_bottom   = static_cast<uint16_t>(e_top + e_h);
+            const auto     entry_rect = fb::model::area<uint16_t>(e_left, e_top, e_right, e_bottom);
+
+            if (entry_rect.intersects(area))
+                to_erase.push_back(hash);
+        }
+
+        for (uint64_t hash : to_erase)
+        {
+            this->_map_update_cache.erase(hash);
+        }
+    }
+
+    // Phase 2: Without holding the cache lock, collect characters whose view overlaps the area and send.
+    auto map_ptr = maps.find(map_id);
+    if (map_ptr == nullptr)
+        return;
+
+    const map& map     = *map_ptr;
+    auto       viewers = std::vector<std::shared_ptr<character>>{};
+    for (const auto& [fd, obj] : map.objects)
+    {
+        if (obj->is(OBJECT_TYPE::CHARACTER) == false)
+            continue;
+
+        if (obj->sight_area().intersects(area))
+            viewers.push_back(std::static_pointer_cast<character>(obj));
+    }
+
+    const uint16_t             w = area.right > area.left ? static_cast<uint16_t>(area.right - area.left) : 0;
+    const uint16_t             h = area.bottom > area.top ? static_cast<uint16_t>(area.bottom - area.top) : 0;
+    const fb::model::point16_t begin(area.left, area.top);
+    const fb::model::size8_t   size(static_cast<uint8_t>(w > 255 ? 255 : w), static_cast<uint8_t>(h > 255 ? 255 : h));
+
+    for (const auto& ch : viewers)
+    {
+        ch->update_map(map, begin, size);
+    }
 }

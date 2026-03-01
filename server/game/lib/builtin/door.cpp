@@ -18,19 +18,19 @@ int builtin::door::builtin_toggle(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc = lua->argc();
-    auto door = lua->touserdata<fb::game::door>(1);
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto door   = lua->touserdata<fb::game::door>(1);
 
     door->toggle();
     lua->pushboolean(door->opened());
 
-    auto server = lua->env<fb::game::server>("server");
-    auto size   = fb::model::size8_t((uint8_t)door->model.pairs.size(), 1);
-    for (auto& obj : door->map.nears(door->pivot, OBJECT_TYPE::CHARACTER))
-    {
-        auto ch = std::static_pointer_cast<character>(obj);
-        ch->update_map(door->map, door->pivot, size);
-    }
+    const auto size = fb::model::size<uint16_t>(door->model.pairs.size(), 1);
+    const auto area = fb::model::area<uint16_t>(door->pivot.x,
+                                                door->pivot.y,
+                                                door->pivot.x + size.width,
+                                                door->pivot.y + size.height);
+    server->update_map_cache(door->map.model.id, area);
     return 1;
 }
 
