@@ -50,7 +50,7 @@ void map_container::load(const fb::model::map& model)
             throw std::runtime_error(std::format("{} ({})", _TEXT(MESSAGE_ASSET_CANNOT_LOAD_MAP_DATA), model.name));
 
         if (load_block(model.id, blocks) == false)
-            throw std::runtime_error(std::format("{} ({})", _TEXT(MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK), model.name));
+            fb::logger::warn("{} ({})", _TEXT(MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK), model.name);
     }
 
     auto map = std::make_shared<fb::game::map>(this->server, model, active, binary.data(), binary.size());
