@@ -31,11 +31,11 @@ function NPC_233(me, npc)
         if btn == DIALOG_RESULT.QUIT or sel ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_SICK_CHILD) then
+        quest = me:start_quest(QUEST_SICK_CHILD)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_SICK_CHILD)
         quest:step(1)
         me:push_achievement(36, '아픈 아이를 위해 보약을 구하자.', 7, 1)
         ::NPC_233_COS003::
@@ -66,11 +66,14 @@ function NPC_233(me, npc)
             return
         end
         if sel == 0 then
-            if not me:rmitem('삼전신보탕', 1, ITEM_DELETE_TYPE.GIVE) then
+            local code = me:exchange(
+                { ['item'] = { ['삼전신보탕'] = 1 } },
+                { ['item'] = { ['청자다람쥐인형'] = 1 } }
+            )
+            if code == EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, '보약은 장안성 푸줏간에 가보시면 될거예요.', false, true)
                 return
-            end
-            if me:mkitem('청자다람쥐인형', 1) == nil then
+            elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 청자다람쥐인형을 줄 수 없습니다.', false, true)
                 return
             end

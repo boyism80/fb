@@ -95,22 +95,21 @@ function NPC_139(me, npc)
     local success_item = line.success_items[grade_sel + 1]
     local rate = SUCCESS_RATES[grade_sel + 1]
 
-    if not me:has_items({ ['은나무가지'] = 1, [check_item] = 1 }) then
-        me:dialog(npc, '자네는 아직 용무기를 각성시킬 준비가 완벽하지 못하군.', false, false)
-        return
-    end
-
-    if not me:rmitem({ ['은나무가지'] = 1, [check_item] = 1 }, ITEM_DELETE_TYPE.GIVE) then
-        me:dialog(npc, '자네는 아직 용무기를 각성시킬 준비가 완벽하지 못하군.', false, false)
-        return
-    end
-
+    local cost = { ['item'] = { ['은나무가지'] = 1, [check_item] = 1 } }
     local roll = math.random(1, 100)
-    if roll <= rate then
+    local reward = (roll <= rate) and { ['item'] = { [success_item] = 1 } } or nil
+    local code = me:exchange(cost, reward)
+    if code == EXCHANGE_RESULT.LACK_COST then
+        me:dialog(npc, '자네는 아직 용무기를 각성시킬 준비가 완벽하지 못하군.', false, false)
+        return
+    end
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 ' .. name_with(success_item, '을', '를') .. ' 받을 수 없군.', false, false)
+        return
+    end
+    if reward ~= nil then
         broadcast(string.format('%s님이 %s 강화에 성공하셨습니다.', me:name(), check_item), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
-        if me:mkitem(success_item, 1) then
-            me:dialog(npc, '축하하네. 하늘이 자네를 ' .. success_item .. '의 주인으로 인정하는군.', false, true)
-        end
+        me:dialog(npc, '축하하네. 하늘이 자네를 ' .. success_item .. '의 주인으로 인정하는군.', false, true)
     else
         broadcast(string.format('%s님이 %s 강화에 실패하셨습니다.', me:name(), check_item), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
         me:dialog(npc, '미안하네. 온도 조절이 실패하여 용무기가 부숴저버렸군.. 너무 낙심하지 말게나.', false, false)

@@ -28,12 +28,17 @@ function NPC_237(me, npc)
     end
 
     local r = REPAIRS[sel + 1]
-    if not me:has_items({ [ITEM_FRUIT_SALAD] = 1, [r.input] = 1 }) then
+    local code = me:exchange(
+        { ['item'] = { [ITEM_FRUIT_SALAD] = 1, [r.input] = 1 } },
+        { ['item'] = { [r.output] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아이고, 더운데 재료도 없고 신경질나게 하지마!', false, false)
         return
     end
-
-    me:rmitem({ [ITEM_FRUIT_SALAD] = 1, [r.input] = 1 }, ITEM_DELETE_TYPE.GIVE)
-    me:mkitem(r.output, 1)
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 수선한 드레스를 받을 수 없어요.', false, false)
+        return
+    end
     me:dialog(npc, '여기 수선이 끝났으니 가지고 가시우... 잘 입으시구랴...', false, true)
 end

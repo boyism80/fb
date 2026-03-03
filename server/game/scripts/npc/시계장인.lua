@@ -23,12 +23,18 @@ local function run_clock_purchase(me, npc)
     if confirm == nil or confirm ~= 0 then
         return
     end
-    if me:money() < CLOCK_PRICE then
+    local code = me:exchange(
+        { ['money'] = CLOCK_PRICE },
+        { ['item'] = { [CLOCK_ITEM_NAME] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아니.. 돈도 없이 내 시계를 살 순 없지.', false, false)
         return
     end
-    me:money(me:money() - CLOCK_PRICE)
-    me:mkitem(CLOCK_ITEM_NAME, 1)
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 시계를 줄 수 없네.', false, false)
+        return
+    end
     me:dialog(npc, '여기 있네. 요긴하게 잘 사용하게나.', false, false)
 end
 
@@ -53,15 +59,18 @@ local function run_battery_purchase(me, npc)
         me:dialog(npc, '지금은 다 떨어졌네.. 다음에 다시 오게나.', false, false)
         return
     end
-    if me:money() < BATTERY_PRICE then
+    local code = me:exchange(
+        { ['money'] = BATTERY_PRICE },
+        { ['item'] = { [BATTERY_ITEM_NAME] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '돈이 부족하구만.. 나의 건전지는 하나당 5000전이라네.', false, false)
         return
     end
-    if me:mkitem(BATTERY_ITEM_NAME, 1) == nil then
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 건전지를 줄 수 없네.', false, false)
         return
     end
-    me:money(me:money() - BATTERY_PRICE)
     gv("clock_time_item", stock - 1)
     me:dialog(npc, '자네 생각보다 운이 좋은걸? 여기 건전기 가져가게나.', false, false)
 end

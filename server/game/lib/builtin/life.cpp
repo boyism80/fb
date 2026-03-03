@@ -200,10 +200,41 @@ int builtin::life::builtin_damage(lua_State* L)
 
     auto value    = (uint32_t)lua->tointeger(2);
     auto from     = lua->touserdata<fb::game::life>(3);
-    auto critical = lua->toboolean(4, false);
-    auto weak     = obj->weak_from_this();
+    bool critical = false;
+    float rate    = 1.0f;
+    bool physical = true;
+    bool fixed    = false;
+
+    if (argc >= 4 && lua_istable(L, 4))
+    {
+        lua_pushstring(L, "critical");
+        lua_rawget(L, 4);
+        if (!lua_isnil(L, -1))
+            critical = lua_toboolean(L, -1) != 0;
+        lua_pop(L, 1);
+
+        lua_pushstring(L, "rate");
+        lua_rawget(L, 4);
+        if (!lua_isnil(L, -1))
+            rate = static_cast<float>(lua_tonumber(L, -1));
+        lua_pop(L, 1);
+
+        lua_pushstring(L, "physical");
+        lua_rawget(L, 4);
+        if (!lua_isnil(L, -1))
+            physical = lua_toboolean(L, -1) != 0;
+        lua_pop(L, 1);
+
+        lua_pushstring(L, "fixed");
+        lua_rawget(L, 4);
+        if (!lua_isnil(L, -1))
+            fixed = lua_toboolean(L, -1) != 0;
+        lua_pop(L, 1);
+    }
+
+    auto weak = obj->weak_from_this();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        obj->stat.damage(value, from, critical);
+        obj->stat.damage(value, from, critical, rate, physical, fixed);
         return lua->ensure_resume(*server, weak, [=]() {
             return 0;
         });

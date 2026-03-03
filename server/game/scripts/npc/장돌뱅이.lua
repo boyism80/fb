@@ -1,8 +1,89 @@
 local ACHIEVEMENT_RABBIT_CATCH = 20
 local ITEM_NEURAEJINDO = '뇌진도'
 
+-- @note Optional: callfunc "지급아이템주인처리" is not implemented; omitted.
+
+---@brief Run "용왕의보물" (QUEST_CIDEQUEST) branch at 장돌뱅이.
+local function run_cidequest_jangdol(me, npc)
+    local q = me:quest(QUEST_CIDEQUEST)
+    if q == nil or q:step() ~= 1 then
+        me:dialog(npc, "지금은 대화할 때가 아닌 것 같군.", false, false)
+        return
+    end
+    local pn = (q and q:progress()) or 0
+    if me:has_items(ITEM_NEURAEJINDO, 1) then
+        me:dialog(npc, "오. 뇌진도를 가지고 왔구만.", false, true)
+        if not me:rmitem(ITEM_NEURAEJINDO, 1, ITEM_DELETE_TYPE.GIVE) then
+            return
+        end
+        me:dialog(npc, "사실 그 보물은 방천화극을 팔고 있던 내 친구가 들고 가는 것을 보았네.\n\n그러니 그 친구에게 찾아가 보시게나.", false, false)
+        q:progress(2)
+        return
+    end
+    if pn == 2 then
+        me:dialog(npc, "그 친구는 부여미궁 어딘가에 있다고 하더군...", false, false)
+        return
+    end
+    -- Need 뇌진도: dialog chain then set param "1"
+    local list_1, b1 = me:list(npc, "음...", { "혹시 용왕님의 보물에 대해 알고 계신가요?" }, false)
+    if b1 == DIALOG_RESULT.QUIT or list_1 == nil then
+        return
+    end
+    if list_1 ~= 0 then
+        return
+    end
+    local list_2, b2 = me:list(npc, "물론 알고 있지.", { "그렇다면 가르쳐 주실 수 있으신지요?" }, false)
+    if b2 == DIALOG_RESULT.QUIT or list_2 == nil or list_2 ~= 0 then
+        return
+    end
+    local list_3, b3 = me:list(npc, "이 사람아. 세상에 공짜가 어디있는가?.", { "..." }, false)
+    if b3 == DIALOG_RESULT.QUIT or list_3 == nil or list_3 ~= 0 then
+        return
+    end
+    local list_4, b4 = me:list(npc, "뇌진도를 가지고 온다면 내 어디 있는지 말해주지.", { "좋습니다.", "뇌진도를 가지고 오겠습니다." }, false)
+    if b4 == DIALOG_RESULT.QUIT or list_4 == nil then
+        return
+    end
+    me:dialog(npc, "기다리고 있겠네.", false, false)
+    q:progress(1)
+end
+
 function NPC_159(me, npc)
-    local btn
+    local main_sel, main_btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", {
+        "물건 사기",
+        "물건 팔기",
+        "별주부전",
+        "용왕의보물",
+        "금은보화",
+    }, false)
+    if main_btn == DIALOG_RESULT.QUIT or main_sel == nil then
+        return
+    end
+    if main_sel == 0 or main_sel == 1 then
+        me:dialog(npc, "준비중입니다.", false, false)
+        return
+    end
+    if main_sel == 3 then
+        run_cidequest_jangdol(me, npc)
+        return
+    end
+    if main_sel == 4 then
+        local code = me:exchange(
+            { ['item'] = { ["금은보화"] = 1 } },
+            { ['money'] = 15000 }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
+            me:dialog(npc, "금은보화를 가지고 있거든 말을 걸어주게나...", false, false)
+            return
+        end
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            me:dialog(npc, "금전을 받을 여유가 없군요.", false, false)
+            return
+        end
+        me:dialog(npc, "이 귀한것을 가지고 있다니... 자, 여기 만오천전을 줄테니 어서 가져가게나.", false, false)
+        return
+    end
+    -- main_sel == 2: 별주부전
     local quest = me:quest(QUEST_RABBIT_LIVER)
     if quest == nil then
         me:dialog(npc, '지금은 이야기를 할 때가 아니군..', false, false)

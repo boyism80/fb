@@ -14,10 +14,10 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
              "Non-compatible flatbuffers version included");
 
 #include "fb.protocol.internal.buff_generated.h"
+#include "fb.protocol.internal.mimicry_generated.h"
 #include "fb.protocol.internal.position_generated.h"
 #include "nullable_ubyte_generated.h"
 #include "nullable_uint_generated.h"
-#include "nullable_ushort_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -50,7 +50,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_EXP = 38,
     VT_MONEY = 40,
     VT_DEPOSITED_MONEY = 42,
-    VT_DISGUISE = 44,
+    VT_MIMICRY = 44,
     VT_HP = 46,
     VT_BASE_HP = 48,
     VT_ADDITIONAL_HP = 50,
@@ -132,8 +132,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t deposited_money() const {
     return GetField<uint32_t>(VT_DEPOSITED_MONEY, 0);
   }
-  const nullable::nullable_ushort *disguise() const {
-    return GetPointer<const nullable::nullable_ushort *>(VT_DISGUISE);
+  const fb::protocol::internal::raw::Mimicry *mimicry() const {
+    return GetPointer<const fb::protocol::internal::raw::Mimicry *>(VT_MIMICRY);
   }
   uint32_t hp() const {
     return GetField<uint32_t>(VT_HP, 0);
@@ -221,8 +221,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_EXP, 4) &&
            VerifyField<uint32_t>(verifier, VT_MONEY, 4) &&
            VerifyField<uint32_t>(verifier, VT_DEPOSITED_MONEY, 4) &&
-           VerifyOffset(verifier, VT_DISGUISE) &&
-           verifier.VerifyTable(disguise()) &&
+           VerifyOffset(verifier, VT_MIMICRY) &&
+           verifier.VerifyTable(mimicry()) &&
            VerifyField<uint32_t>(verifier, VT_HP, 4) &&
            VerifyField<uint32_t>(verifier, VT_BASE_HP, 4) &&
            VerifyField<uint32_t>(verifier, VT_ADDITIONAL_HP, 4) &&
@@ -325,8 +325,8 @@ struct CharacterBuilder {
   void add_deposited_money(uint32_t deposited_money) {
     fbb_.AddElement<uint32_t>(Character::VT_DEPOSITED_MONEY, deposited_money, 0);
   }
-  void add_disguise(::flatbuffers::Offset<nullable::nullable_ushort> disguise) {
-    fbb_.AddOffset(Character::VT_DISGUISE, disguise);
+  void add_mimicry(::flatbuffers::Offset<fb::protocol::internal::raw::Mimicry> mimicry) {
+    fbb_.AddOffset(Character::VT_MIMICRY, mimicry);
   }
   void add_hp(uint32_t hp) {
     fbb_.AddElement<uint32_t>(Character::VT_HP, hp, 0);
@@ -421,7 +421,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     uint32_t exp = 0,
     uint32_t money = 0,
     uint32_t deposited_money = 0,
-    ::flatbuffers::Offset<nullable::nullable_ushort> disguise = 0,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Mimicry> mimicry = 0,
     uint32_t hp = 0,
     uint32_t base_hp = 0,
     uint32_t additional_hp = 0,
@@ -462,7 +462,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_additional_hp(additional_hp);
   builder_.add_base_hp(base_hp);
   builder_.add_hp(hp);
-  builder_.add_disguise(disguise);
+  builder_.add_mimicry(mimicry);
   builder_.add_deposited_money(deposited_money);
   builder_.add_money(money);
   builder_.add_exp(exp);
@@ -509,7 +509,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     uint32_t exp = 0,
     uint32_t money = 0,
     uint32_t deposited_money = 0,
-    ::flatbuffers::Offset<nullable::nullable_ushort> disguise = 0,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Mimicry> mimicry = 0,
     uint32_t hp = 0,
     uint32_t base_hp = 0,
     uint32_t additional_hp = 0,
@@ -559,7 +559,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       exp,
       money,
       deposited_money,
-      disguise,
+      mimicry,
       hp,
       base_hp,
       additional_hp,

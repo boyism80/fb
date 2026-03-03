@@ -40,11 +40,11 @@ function NPC_240(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:start_quest(QUEST_SAMJEONSIN) then
+        quest = me:start_quest(QUEST_SAMJEONSIN)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_SAMJEONSIN)
         quest:step(1)
         me:push_achievement(36, '삼전보신탕 재료를 구하자.', 7, 1)
         return
@@ -111,11 +111,15 @@ function NPC_240(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = materials },
+            { ['item'] = { ['삼전신보탕'] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.', false, true)
             return
         end
-        if me:mkitem('삼전신보탕', 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 삼전신보탕을 줄 수 없습니다.', false, true)
             return
         end

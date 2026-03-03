@@ -1,4 +1,3 @@
--- Central definition of all quest IDs. Use these globals in npc/item/mob/interaction scripts.
 QUEST_NAKRANG_HUNT = 1
 QUEST_KING_JANGAN = 100
 QUEST_KING_BUYEO = 101
@@ -53,6 +52,40 @@ QUEST_NAKRANG7 = 229
 QUEST_PROMOTION_3RD = 230
 QUEST_MUTA = 231
 QUEST_SHARK_WEAPON = 232
+QUEST_BAEK_MONGYEON = 233
+QUEST_ANCIENT_RELIC = 234
+QUEST_JINHWANG = 235
+QUEST_DOJAECHUN = 236
+QUEST_PAMASPIRI = 237
+QUEST_BEGINNER_PATH = 238
+QUEST_BAEKRIHYANG = 239
+QUEST_JANGAJI = 240
+QUEST_CHOOMO = 241
+QUEST_MADONG_APPLY = 242
+QUEST_CIDEQUEST = 243
+QUEST_GMD_SAVED = 244
+QUEST_BLUEEAR = 245
+QUEST_SILENCE = 246
+QUEST_JURY = 247
+QUEST_WOLF_CURSE = 248
+QUEST_MAGIC_BALL = 249
+QUEST_TOLUI_DAY = 250
+QUEST_DETECTIVE = 251
+QUEST_WANDO = 252
+QUEST_JAPAN_LEGEND_WEAPON = 253
+QUEST_SKULL_NECKLACE = 254
+QUEST_SKULL_NECKLACE_1 = 255
+QUEST_SKULL_NECKLACE_2 = 256
+QUEST_SKULL_NECKLACE_3 = 257
+QUEST_SKULL_NECKLACE_4 = 258
+QUEST_SKULL_NECKLACE_5 = 259
+QUEST_SKULL_NECKLACE_6 = 260
+QUEST_SKULL_NECKLACE_7 = 261
+QUEST_SKULL_NECKLACE_8 = 262
+QUEST_SKULL_NECKLACE_9 = 263
+QUEST_HWAHWA = 264
+QUEST_JINGOGYUN = 265
+QUEST_HWAHWA_SMILE = 266
 
 function npc_revive(me, npc, discourteous)
     if me:state() ~= STATE.GHOST then
@@ -107,7 +140,7 @@ function npc_store_item_count(me, npc, name)
 
     local item = me:stored_item(model)
     if item == nil then
-        npc:chat('그런 물건은 맡고 있지 않습니다.') -- MESSAGE_NO_ITEM_DEPOSITED
+        npc:chat('그런 물건은 맡고 있지 않습니다.')
         return true
     end
 
@@ -119,7 +152,7 @@ function npc_store_item_list(me, npc)
     local items = me:stored_item()
     local count = #items
     if count == 0 then
-        npc:chat('맡긴 물건이 없습니다.') -- MESSAGE_NO_ANY_DEPOSITED
+        npc:chat('맡긴 물건이 없습니다.')
         return true
     end
 
@@ -731,11 +764,11 @@ function king_quest_dialog(me, npc, opts)
             return
         end
 
-        if not me:start_quest(opts.quest_id) then
+        quest = me:start_quest(opts.quest_id)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(opts.quest_id)
         quest:step(1)
         quest:param(mob_name)
         quest:progress(0)
@@ -1696,7 +1729,6 @@ function NPC_BASIC_CLASS(me, npc, class, spells)
     end
 end
 
---- Items required per promotion step (0..3). Same for all classes.
 local PROMOTION_ITEMS = {
     [0] = { { name = '팔괘', count = 1 } },
     [1] = { { name = '수룡의비늘', count = 1 }, { name = '화룡의비늘', count = 1 } },
@@ -1704,7 +1736,6 @@ local PROMOTION_ITEMS = {
     [3] = { { name = '반고의심장', count = 1 } },
 }
 
---- Minimum base_hp/base_mp per class and promotion step (0..3). Looked up by NPC_PROMOTION together with PROMOTION_ITEMS.
 local PROMOTION_STATS = {
     [CLASS.WARRIOR] = {
         [0] = { min_hp = 70000,  min_mp = 0 },
@@ -1732,10 +1763,8 @@ local PROMOTION_STATS = {
     },
 }
 
---- Exp cost per promotion skill (50M). Used by NPC_PROMOTION_SKILLS.
 local PROMOTION_SKILL_EXP = 50000000
 
---- Promotion skills by class and tier (1..4). Index 1 = 1차 승급기술, etc. Used by NPC_PROMOTION_SKILLS.
 local PROMOTION_SKILLS = {
     [CLASS.WARRIOR] = {
         [1] = { '백호참' },
@@ -1763,7 +1792,6 @@ local PROMOTION_SKILLS = {
     },
 }
 
---- Returns true if the character has the spell by name.
 local function promotion_has_spell(me, spell_name)
     for _, spell in pairs(me:spells() or {}) do
         if spell:model():name() == spell_name then
@@ -1773,8 +1801,6 @@ local function promotion_has_spell(me, spell_name)
     return false
 end
 
---- Handles "기술을 배울래요" for 구륜: list 1~4차 승급기술, then spells for selected tier; cost PROMOTION_SKILL_EXP per skill.
---- Call from 선구륜/부구륜/정구륜/은구륜 when class matches.
 function NPC_PROMOTION_SKILLS(me, npc, class)
     if me:class() ~= class then
         me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)
@@ -1823,7 +1849,6 @@ function NPC_PROMOTION_SKILLS(me, npc, class)
     me:dialog(npc, name_with(spell_name, '을', '를') .. ' 드렸습니다.', false, true)
 end
 
---- 3차 승급 옷 item name by class and gender. Index: [class][gender].
 local PROMOTION_CLOTHES_ITEMS = {
     [CLASS.WARRIOR] = { [GENDER.MAN] = '검황의영혼', [GENDER.WOMAN] = '검황의심장' },
     [CLASS.ROGUE]   = { [GENDER.MAN] = '귀검의영혼', [GENDER.WOMAN] = '귀검의심장' },
@@ -1831,8 +1856,6 @@ local PROMOTION_CLOTHES_ITEMS = {
     [CLASS.POET]    = { [GENDER.MAN] = '진인의영혼', [GENDER.WOMAN] = '진인의심장' },
 }
 
---- Handles "3차승급 옷을 원합니다": requires 3차 승급 (promotion >= 3). Gives one item from PROMOTION_CLOTHES_ITEMS[class][gender].
---- Call from 선구륜/부구륜/정구륜/은구륜 with class.
 function NPC_PROMOTION_CLOTHES(me, npc, class)
     if me:class() ~= class then
         me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)
@@ -1866,8 +1889,6 @@ function NPC_PROMOTION_CLOTHES(me, npc, class)
     me:dialog(npc, name_with(item_name, '을', '를') .. ' 드렸습니다.', false, true)
 end
 
---- Handles a single promotion step (current promotion -> +1). Requirements are read from PROMOTION_ITEMS and PROMOTION_STATS.
---- Call from 선구륜/부구륜/정구륜/은구륜 with class only; current step is taken from me:promotion().
 function NPC_PROMOTION(me, npc, class)
     if me:class() ~= class then
         me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)

@@ -185,7 +185,7 @@ uint32_t fb::game::stat::heal(uint32_t value, fb::game::object* from)
     return this->hp() - before;
 }
 
-uint32_t fb::game::stat::damage(uint32_t value, std::shared_ptr<fb::game::object> from, bool critical)
+uint32_t fb::game::stat::damage(uint32_t value, std::shared_ptr<fb::game::object> from, bool critical, float rate, bool physical, bool fixed)
 {
     this->owner.assert_thread();
     if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
@@ -203,8 +203,15 @@ uint32_t fb::game::stat::damage(uint32_t value, std::shared_ptr<fb::game::object
     if (this->owner.invincible())
         return 0;
 
+    uint32_t final_value = value;
+    if (!fixed && from != nullptr && from->is(OBJECT_TYPE::LIFE))
+    {
+        auto attacker = std::static_pointer_cast<fb::game::life>(from);
+        final_value   = attacker->calculate_damage(value, this->owner, critical, rate, physical);
+    }
+
     auto before = this->hp();
-    this->hp(this->hp() - std::min(value, this->hp()));
+    this->hp(this->hp() - std::min(final_value, this->hp()));
     this->owner.update_hp(before - this->hp(), critical);
     return before - this->hp();
 }
@@ -728,14 +735,14 @@ uint32_t character_stat::regenerative() const
     return base + additional;
 }
 
-uint32_t character_stat::damage(uint32_t value, std::shared_ptr<fb::game::object> from, bool critical)
+uint32_t character_stat::damage(uint32_t value, std::shared_ptr<fb::game::object> from, bool critical, float rate, bool physical, bool fixed)
 {
     this->owner.assert_thread();
 
     if (this->owner.alive() == false)
         return 0;
 
-    auto result = fb::game::stat::damage(value, from, critical);
+    auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed);
     if (from == nullptr)
         return result;
 
@@ -865,11 +872,11 @@ uint32_t mob_stat::base_regenerative() const
     return 0;
 }
 
-uint32_t mob_stat::damage(uint32_t value, std::shared_ptr<object> from, bool critical)
+uint32_t mob_stat::damage(uint32_t value, std::shared_ptr<object> from, bool critical, float rate, bool physical, bool fixed)
 {
     this->owner.assert_thread();
 
-    auto result = fb::game::stat::damage(value, from, critical);
+    auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed);
     if (!this->owner.alive())
     {
         this->owner.kill(from, DESTROY_TYPE::DEAD);

@@ -36,11 +36,13 @@ function main(me, npc)
         goto COS003
     end
 
-    if quest == nil and not me:start_quest(QUEST_NAKRANG_INTRO) then
-        me:dialog(npc, '두루마리를 받을 수 없습니다.')
-        return
+    if quest == nil then
+        quest = me:start_quest(QUEST_NAKRANG_INTRO)
+        if quest == nil then
+            me:dialog(npc, '두루마리를 받을 수 없습니다.')
+            return
+        end
     end
-    quest = me:quest(QUEST_NAKRANG_INTRO)
     quest:complete()
     local item = me:mkitem('낙랑의두루마리1', 1)
     me:dialog(item, '<낙랑의두루마리1>을 얻다!!!', false, false)
@@ -308,12 +310,11 @@ function sample_quest(me, npc)
             return
         end
 
-        if not me:start_quest(QUEST_NAKRANG_HUNT) then
+        quest = me:start_quest(QUEST_NAKRANG_HUNT)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패')
             return
         end
-
-        quest = me:quest(QUEST_NAKRANG_HUNT)
         quest:param('다람쥐')
         me:dialog(npc, '퀘스트를 시작합니다. 다람쥐를 1마리 처치하세요.')
         return

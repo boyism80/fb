@@ -50,11 +50,11 @@ function NPC_231(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_231_COS002
         end
-        if not me:start_quest(QUEST_HWANGBIYEON) then
+        quest = me:start_quest(QUEST_HWANGBIYEON)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_HWANGBIYEON)
         quest:step(1)
         me:push_achievement(39, '황비연을 만나러 상해로 가자.', 7, 2)
         return
@@ -90,10 +90,20 @@ function NPC_231(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
+        local code = me:exchange(
+            { ['item'] = { ['황비연의머리띠'] = 1 } },
+            { ['money'] = 100000 }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
+            me:dialog(npc, '황비연의머리띠를 가져오세요.', false, false)
+            return
+        end
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            me:dialog(npc, '금전을 받을 여유가 없군요.', false, false)
+            return
+        end
         quest:complete()
         me:push_achievement(39, '의적 황비연 임무를 완벽히 수행하였다.', 7, 2)
-        me:rmitem('황비연의머리띠', 1, ITEM_DELETE_TYPE.GIVE)
-        me:money(me:money() + 100000)
         return
     end
 end

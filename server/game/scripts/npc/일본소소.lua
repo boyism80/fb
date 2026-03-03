@@ -45,12 +45,12 @@ function do_hair_style(me, npc)
     local hair_color = me:color()
     
     while true do
-        local preset = {
+        local appearance = {
             ['hair'] = face,
             ['hair_color'] = hair_color,
         }
         local msg = '이 모습으로 바꾸시겠습니까?\n\n비용은 10만전 입니다.'
-        local sel = me:list(preset, msg, {'이 모습을 선택하겠습니다.', '다른 머리모양을 보여주세요.'}, false)
+        local sel = me:list(appearance, msg, {'이 모습을 선택하겠습니다.', '다른 머리모양을 보여주세요.'}, false)
         if sel == nil then
             return
         end

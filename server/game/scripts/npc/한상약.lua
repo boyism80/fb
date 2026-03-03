@@ -39,11 +39,11 @@ function NPC_216(me, npc)
             return
         end
 
-        if not me:start_quest(QUEST_RED_CLAY) then
+        quest = me:start_quest(QUEST_RED_CLAY)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_RED_CLAY)
         quest:progress(0)
 
         me:dialog(npc, '고맙네. 내가 필요로 하는 흙은 이렇게 생겼다네.\n\n고구려에서는 찾아볼 수 없는 것으로, 내가 적심토라 이름 붙혔지.\n냄세도 잘 기억해 두게나.\n\n괴수들이 있는 건처에서 적심토를 찾을 수 있을 것이네. 조심하게나.', false, true)

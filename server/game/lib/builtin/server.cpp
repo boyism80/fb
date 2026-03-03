@@ -69,13 +69,9 @@ int builtin::server::builtin_sleep(lua_State* L)
  */
 int builtin::server::builtin_now(lua_State* L)
 {
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto now_c = std::chrono::system_clock::now();
+    auto now_c           = std::chrono::system_clock::now();
     auto sec_since_epoch = std::chrono::duration_cast<std::chrono::seconds>(now_c.time_since_epoch()).count();
-    lua->pushinteger(static_cast<lua_Integer>(sec_since_epoch));
+    lua_pushinteger(L, static_cast<lua_Integer>(sec_since_epoch));
     return 1;
 }
 
@@ -851,8 +847,8 @@ int builtin::server::builtin_ban(lua_State* L)
 
     static auto fn = [](fb::game::server*              server,
                         fb::lua::context*              lua,
-                        std::string_view              name,
-                        std::string_view              reason,
+                        std::string_view               name,
+                        std::string_view               reason,
                         const std::optional<uint32_t>& days) -> async::task<void> {
         auto   success = false;
         auto   error   = std::string{};
@@ -1011,7 +1007,7 @@ int builtin::server::builtin_exp_multiplier(lua_State* L)
         static auto fn = [](fb::game::server* server, fb::lua::context* lua, double value) -> async::task<void> {
             auto   success = false;
             auto   error   = std::string{};
-            auto world = fb::config<uint32_t>("world");
+            auto   world   = fb::config<uint32_t>("world");
             auto&& resp    = co_await server->http.post("internal",
                                                      "/in-game/set-exp-multiplier",
                                                      internal_reqs::SetExpMultiplier{world, value});
@@ -1063,7 +1059,7 @@ int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
         static auto fn = [](fb::game::server* server, fb::lua::context* lua, double value) -> async::task<void> {
             auto   success = false;
             auto   error   = std::string{};
-            auto world = fb::config<uint32_t>("world");
+            auto   world   = fb::config<uint32_t>("world");
             auto&& resp    = co_await server->http.post("internal",
                                                      "/in-game/set-drop-rate-multiplier",
                                                      internal_reqs::SetDropRateMultiplier{world, value});

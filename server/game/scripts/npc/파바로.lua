@@ -30,16 +30,15 @@ function NPC_187(me, npc)
         return
     end
 
-    if not me:has_items(item_name, GRILL_COST) then
-        me:dialog(npc, item_name .. '가 부족한 것 같은데?', false, true)
+    local code = me:exchange(
+        { ['item'] = { [item_name] = GRILL_COST } },
+        { ['item'] = { ['구운' .. item_name] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
+        me:dialog(npc, name_with(item_name, '이', '가') .. ' 부족한 것 같은데?', false, true)
         return
     end
-
-    if not me:rmitem(item_name, GRILL_COST, ITEM_DELETE_TYPE.GIVE) then
-        me:dialog(npc, item_name .. '가 부족한 것 같은데?', false, true)
-        return
-    end
-    if me:mkitem('구운' .. item_name, 1) == nil then
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 구운 음식을 줄 수 없네.', false, true)
         return
     end

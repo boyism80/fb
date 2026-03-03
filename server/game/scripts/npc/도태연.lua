@@ -39,11 +39,11 @@ function NPC_191(me, npc)
             return
         end
         if quest == nil then
-            if not me:start_quest(QUEST_DOTAEYEON) then
+            quest = me:start_quest(QUEST_DOTAEYEON)
+            if quest == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
                 return
             end
-            quest = me:quest(QUEST_DOTAEYEON)
         end
         quest:step(1)
         me:push_achievement(ACHIEVEMENT_400, '도태연의 부탁을 들어주자!', 7, 1)
@@ -73,11 +73,15 @@ function NPC_191(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:rmitem(REQUIRED_ITEMS, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = REQUIRED_ITEMS },
+            { ['item'] = { [REWARD_400] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 발톱, 이빨, 뿔을 다 구하지 못한 모양이군..', false, false)
             return
         end
-        if me:mkitem(REWARD_400, 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_400, '을', '를') .. ' 받을 수 없습니다.', false, false)
             return
         end

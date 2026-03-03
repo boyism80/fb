@@ -26,9 +26,10 @@ character::character(fb::game::server& server, const initial_params& params) :
     listener(server.listener), id(params.id), _socket(params.socket), _pw(params.pw),
     _created_date(params.created_date), _updated_date(params.updated_date), _name(params.name), _role(params.role),
     _birthday(params.birthday), _look(params.look), _color(params.color), _armor_color(params.armor_color),
-    _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
-    _class(params.class_type), _promotion(params.promotion), _money(params.money), _disguise(params.disguise),
-    _title(params.title), _nation(params.nation), _creature(params.creature), _last_afk_time(fb::model::datetime()),
+    _weapon_color(params.weapon_color), _shield_color(params.shield_color), _experience(params.exp),
+    _gender(params.gender), _state(params.state), _level(params.level), _class(params.class_type),
+    _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry), _title(params.title),
+    _nation(params.nation), _creature(params.creature), _last_afk_time(fb::model::datetime()),
     _super_hide(params.super_hide)
 { }
 
@@ -326,30 +327,55 @@ void character::armor_color(std::optional<uint8_t> value)
     this->update_external(true);
 }
 
-std::optional<uint16_t> character::disguise() const
+std::optional<uint8_t> character::weapon_color() const
 {
     this->assert_thread();
 
-    return this->_disguise;
+    return this->_weapon_color;
 }
 
-void character::disguise(uint16_t value)
+void character::weapon_color(std::optional<uint8_t> value)
 {
     this->assert_thread();
 
-    this->_disguise = value;
-    this->state(STATE::DISGUISE);
+    this->_weapon_color = value;
+    this->update_external(true);
 }
 
-void character::undisguise()
+std::optional<uint8_t> character::shield_color() const
 {
     this->assert_thread();
 
-    this->_disguise = std::nullopt;
-    if (this->state() == STATE::DISGUISE)
-        this->state(STATE::NORMAL);
+    return this->_shield_color;
+}
 
-    this->update(UPDATE_STATE_LEVEL::ALL);
+void character::shield_color(std::optional<uint8_t> value)
+{
+    this->assert_thread();
+
+    this->_shield_color = value;
+    this->update_external(true);
+}
+
+const std::optional<character_appearance>& character::mimicry() const
+{
+    return this->_mimicry;
+}
+
+void character::mimicry(std::optional<character_appearance> value)
+{
+    this->assert_thread();
+
+    if (value.has_value())
+    {
+        if (value->disguise.has_value())
+            this->_state = STATE::DISGUISE;
+        else
+            this->_state = STATE::NORMAL;
+    }
+
+    this->_mimicry = std::move(value);
+    this->update_external(true);
 }
 
 NATION character::nation() const
@@ -1380,40 +1406,58 @@ fb::protocol::internal::Character character::to_protocol() const
 {
     this->assert_thread();
 
-    auto dto             = fb::protocol::internal::Character();
-    dto.id               = this->id;
-    dto.name             = this->_name;
-    dto.pw               = this->_pw;
-    dto.birth            = this->_birthday;
-    dto.created_date     = this->_created_date.to_string();
-    dto.updated_date     = fb::model::datetime().to_string();
-    dto.role             = static_cast<uint8_t>(this->_role);
-    dto.look             = this->_look;
-    dto.color            = this->_color;
-    dto.gender           = static_cast<uint8_t>(this->_gender);
-    dto.nation           = static_cast<uint8_t>(this->_nation);
-    dto.creature         = static_cast<uint8_t>(this->_creature);
-    dto.map              = this->_map != nullptr ? this->_map->model.id : 0;
-    dto.position         = fb::protocol::internal::Position{this->_position.x, this->_position.y};
-    dto.direction        = static_cast<uint8_t>(this->_direction);
-    dto.state            = static_cast<uint8_t>(this->_state);
-    dto.class_type       = static_cast<uint8_t>(this->_class);
-    dto.promotion        = this->_promotion;
-    dto.level            = this->_level;
-    dto.exp              = this->_experience;
-    dto.money            = this->_money;
-    dto.deposited_money  = this->items.deposited();
-    dto.disguise         = this->_disguise;
+    auto dto            = fb::protocol::internal::Character();
+    dto.id              = this->id;
+    dto.name            = this->_name;
+    dto.pw              = this->_pw;
+    dto.birth           = this->_birthday;
+    dto.created_date    = this->_created_date.to_string();
+    dto.updated_date    = fb::model::datetime().to_string();
+    dto.role            = static_cast<uint8_t>(this->_role);
+    dto.look            = this->_look;
+    dto.color           = this->_color;
+    dto.gender          = static_cast<uint8_t>(this->_gender);
+    dto.nation          = static_cast<uint8_t>(this->_nation);
+    dto.creature        = static_cast<uint8_t>(this->_creature);
+    dto.map             = this->_map != nullptr ? this->_map->model.id : 0;
+    dto.position        = fb::protocol::internal::Position{this->_position.x, this->_position.y};
+    dto.direction       = static_cast<uint8_t>(this->_direction);
+    dto.state           = static_cast<uint8_t>(this->_state);
+    dto.class_type      = static_cast<uint8_t>(this->_class);
+    dto.promotion       = this->_promotion;
+    dto.level           = this->_level;
+    dto.exp             = this->_experience;
+    dto.money           = this->_money;
+    dto.deposited_money = this->items.deposited();
+    if (this->_mimicry.has_value())
+    {
+        auto const& p = this->_mimicry.value();
+        dto.mimicry   = fb::protocol::internal::Mimicry(static_cast<uint8_t>(p.gender),
+                                                      static_cast<uint8_t>(p.state),
+                                                      p.hair,
+                                                      p.hair_color,
+                                                      p.weapon,
+                                                      p.weapon_color,
+                                                      p.armor,
+                                                      p.armor_color,
+                                                      p.shield,
+                                                      p.shield_color,
+                                                      p.disguise);
+    }
+    else
+    {
+        dto.mimicry = std::nullopt;
+    }
     dto.hp               = this->stat.hp();
     dto.base_hp          = this->stat.base_hp();
     dto.additional_hp    = 0;
     dto.mp               = this->stat.mp();
     dto.base_mp          = this->stat.base_mp();
     dto.additional_mp    = 0;
-    dto.weapon_color     = std::nullopt;
+    dto.weapon_color     = this->_weapon_color;
     dto.helmet_color     = std::nullopt;
     dto.armor_color      = this->_armor_color;
-    dto.shield_color     = std::nullopt;
+    dto.shield_color     = this->_shield_color;
     dto.ring_left_color  = std::nullopt;
     dto.ring_right_color = std::nullopt;
     dto.aux_top_color    = std::nullopt;

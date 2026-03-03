@@ -148,13 +148,16 @@ function NPC_232(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_232_COS008
         end
-        if not me:rmitem('보패', 1, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = { ['보패'] = 1 } },
+            { ['item'] = { ['황비연의머리띠'] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '보패를 가지고 있지 않으시군요.', false, true)
             return
         end
-        if me:mkitem('황비연의머리띠', 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 황비연의머리띠를 줄 수 없습니다.', false, true)
-            quest:step(3)
             return
         end
         quest:step(4)

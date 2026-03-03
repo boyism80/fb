@@ -12,7 +12,8 @@ function NPC_121(me, npc)
         if selected == nil or selected ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_TUNGTUNG) then
+        local q = me:start_quest(QUEST_TUNGTUNG)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
@@ -35,11 +36,15 @@ function NPC_121(me, npc)
         return
     end
 
-    if not me:rmitem('호박', 10, ITEM_DELETE_TYPE.GIVE) then
+    local code = me:exchange(
+        { ['item'] = { ['호박'] = 10 } },
+        { ['item'] = { ['선장의일기2'] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 호박 열 개를 구하지 못했군.', false, true)
         return
     end
-    if me:mkitem('선장의일기2', 1) == nil then
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 선장의일기2를 줄 수 없네.', false, true)
         return
     end

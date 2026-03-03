@@ -10,10 +10,18 @@
 #include <fb/game/item/ring.h>
 #include <fb/game/item/auxiliary.h>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 #include <map>
 
 namespace fb::game {
+
+enum class exchange_result
+{
+    ok,
+    lack_cost,
+    lack_capacity,
+};
 
 class items : public fb::game::inventory<fb::game::item>
 {
@@ -101,6 +109,7 @@ public:
     item_ptr                      remove(item_ptr item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE, bool detach = true);
     bool                          is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint32_t money = 0) const;
     bool                          is_rewardable(const std::vector<fb::model::dsl>& items) const;
+    exchange_result               exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items, uint32_t cost_money, const std::unordered_map<uint32_t, uint16_t>& reward_items, uint32_t reward_money);
     // clang-format on
 };
 

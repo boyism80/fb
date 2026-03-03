@@ -20,11 +20,11 @@ function cultural_property_quest(me, npc)
         if selected == nil or selected ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_JUNJUN) then
+        quest = me:start_quest(QUEST_JUNJUN)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_JUNJUN)
         quest:progress(0)
         me:dialog(npc, '그럼 부탁하네. 주로 토템들이 도굴당하고 있는데.. 도굴꾼 들은 내가 잡는다쳐도, 아예 어디다 떨구고 잃어버린 것까지 찾아다닐 시간이 없어. \n\n토템들을 좀 찾아다 줬음 좋겠군.', true, true)
         return

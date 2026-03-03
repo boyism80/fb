@@ -27,11 +27,15 @@ local function ranggyuryun_palgu(me, npc)
     if btn == DIALOG_RESULT.QUIT then return end
     btn = me:dialog(npc, '자 팔괘를 만들어 드렸습니다. 그럼 안녕히가십시요.', true, true)
     if btn == DIALOG_RESULT.QUIT then return end
-    if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+    local code = me:exchange(
+        { ['item'] = materials },
+        { ['item'] = { ['팔괘'] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 팔괘 재료를 다 모으지 못하셨군요.', false, true)
         return
     end
-    if me:mkitem('팔괘', 1) == nil then
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 팔괘를 받을 수 없습니다.', false, true)
         return
     end
@@ -68,11 +72,15 @@ local function ranggyuryun_pure_water(me, npc)
         end
         btn = me:dialog(npc, '어머 홍옥을 가져오셨군요. 이건 제가 잘 먹을께요.', true, true)
         if btn == DIALOG_RESULT.QUIT then return end
-        if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = materials },
+            { ['item'] = { ['정화비서'] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 홍옥 3개를 구하시지 못하신거군요.', false, false)
             return
         end
-        if me:mkitem('정화비서', 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 정화비서를 받을 수 없습니다.', false, true)
             return
         end

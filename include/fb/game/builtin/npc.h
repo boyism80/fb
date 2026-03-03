@@ -7,7 +7,7 @@ namespace fb::game::builtin {
 
 struct npc
 {
-    // NPC builtin functions can be added here as needed
+    static int builtin_appearance(lua_State* L);
 };
 
 } // namespace fb::game::builtin

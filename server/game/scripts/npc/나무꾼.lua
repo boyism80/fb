@@ -27,7 +27,8 @@ function NPC_180(me, npc)
         end
 
         if selected == 0 then
-            if not me:start_quest(QUEST_NAMGUN) then
+            local q = me:start_quest(QUEST_NAMGUN)
+            if q == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
                 return
             end

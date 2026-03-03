@@ -40,14 +40,18 @@ local function run_change_item(me, npc)
         return true
     end
 
-    local have = npc_count_item_by_name(me, src.name)
-    if have < src.count then
+    local code = me:exchange(
+        { ['item'] = { [src.name] = src.count } },
+        { ['item'] = { [dest.name] = dest.count } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, string.format('%s %d개를 가져오셔야 바꿔드려요.', src.name, src.count))
         return true
     end
-
-    me:rmitem(src.name, src.count, ITEM_DELETE_TYPE.GIVE)
-    me:mkitem(dest.name, dest.count)
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 받을 수 없어요.', false, false)
+        return true
+    end
     return true
 end
 

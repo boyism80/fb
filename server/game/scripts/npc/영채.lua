@@ -75,15 +75,21 @@ function NPC_189(me, npc)
             end
         end
 
-        me:rmitem('말린지네', 7, ITEM_DELETE_TYPE.GIVE)
+        local cost = { ['말린지네'] = 7 }
         for _, name in ipairs(dress_names) do
-            me:rmitem(name, 1, ITEM_DELETE_TYPE.GIVE)
+            cost[name] = 1
         end
-
         local rand = math.random(1, 4)
         local result_name = '웨딩드레스' .. (rand + 7)
-        local result = me:mkitem(result_name, 1)
-        if result == nil then
+        local code = me:exchange(
+            { ['item'] = cost },
+            { ['item'] = { [result_name] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
+            me:dialog(npc, '재료가 부족한데? 재료를 다 가져와야 수선해줄 수 있어.', false, true)
+            return
+        end
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
             return
         end

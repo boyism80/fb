@@ -40,10 +40,10 @@ function NPC_174(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_174_COS004
         end
-        if not me:start_quest(QUEST_LIGHTHOUSE) then
+        quest = me:start_quest(QUEST_LIGHTHOUSE)
+        if quest == nil then
             return
         end
-        quest = me:quest(QUEST_LIGHTHOUSE)
         quest:step(1)
         me:push_achievement(32, '진백랑의 부탁을 들어주자. [1/6]', 7, 1)
         return
@@ -83,10 +83,10 @@ function NPC_174(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_174_COS004B
         end
-        if not me:start_quest(QUEST_LIGHTHOUSE) then
+        quest = me:start_quest(QUEST_LIGHTHOUSE)
+        if quest == nil then
             return
         end
-        quest = me:quest(QUEST_LIGHTHOUSE)
         quest:step(1)
         me:push_achievement(32, '진백랑의 부탁을 들어주자. [1/6]', 7, 1)
         return
@@ -127,16 +127,15 @@ function NPC_174(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_174_COS007
         end
-        if not me:rmitem(give_table, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = give_table },
+            { ['item'] = { ['선장의일기장'] = 1, ['등대빛의검'] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 일기 아홉장과 겉표지를 구하지 못했나보군..', false, true)
             return
         end
-        if me:mkitem('선장의일기장', 1) == nil then
-            me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', false, true)
-            return
-        end
-        if me:mkitem('등대빛의검', 1) == nil then
-            me:rmitem('선장의일기장', 1, ITEM_DELETE_TYPE.GIVE)
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', false, true)
             return
         end

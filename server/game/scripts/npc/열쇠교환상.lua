@@ -39,12 +39,17 @@ function NPC_214(me, npc)
     end
 
     local ex = EXCHANGES[key_opt + 1]
-    if not me:has_items(ex.key, 1) then
+    local code = me:exchange(
+        { ['item'] = { [ex.key] = 1 } },
+        { ['item'] = { [ex.item] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, name_with(ex.key, '이', '가') .. ' 없지 않은가?!', false, false)
         return
     end
-
-    me:rmitem(ex.key, 1, ITEM_DELETE_TYPE.GIVE)
-    me:mkitem(ex.item, 1)
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 ' .. name_with(ex.item, '을', '를') .. ' 받을 수 없습니다.', false, false)
+        return
+    end
     me:dialog(npc, '오호 ' .. name_with(ex.key, '을', '를') .. ' 정말로 가지고 왔구먼, 내 좋은 ' .. name_with(ex.clothes, '을', '를') .. ' 선물로 줌세나', false, false)
 end

@@ -228,21 +228,21 @@ bool life::calculate_miss(life& you) const
 #endif
 }
 
-uint32_t life::calculate_damage(uint32_t value, const life& life, bool critical) const
+uint32_t life::calculate_damage(uint32_t value, const life& target, bool critical, float rate, bool physical) const
 {
     this->assert_thread();
-    auto n                 = (100 - life.stat.phydef()) / 10;
+    auto def               = physical ? target.stat.phydef() : target.stat.magdef();
+    auto n                 = (100 - def) / 10;
     auto defensive_percent = -125 + (n * (2 * 14.75f - (n - 1) / 2.0f)) / 2.0f;
     auto damage            = value - uint32_t(defensive_percent * (value / 100.0f));
 
-    auto rate = this->damage_rate() / 1000.0f;
-    if (life.direction() == this->direction())
-        rate *= 2;
+    if (physical && target.direction() == this->direction())
+        rate *= 2.0f;
 
     if (critical)
-        rate *= 2;
+        rate *= 2.0f;
 
-    rate /= (life.damage_derate() / 1000.0f);
+    rate /= (target.damage_derate() / 1000.0f);
     return static_cast<uint32_t>(damage * rate);
 }
 

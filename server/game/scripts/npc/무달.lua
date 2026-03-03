@@ -46,17 +46,21 @@ local function do_jungki(me, npc)
     }
     for _, s in ipairs(steps) do
         if step == s.step_in then
-            if not me:has_items(s.item, s.count) then
+            local code = me:exchange(
+                { ['item'] = { [s.item] = s.count } },
+                { ['item'] = { [s.reward] = 1 } }
+            )
+            if code == EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, s.item .. ' 갯수가 부족한 것은 아닌가? 30개가 필요하네.', false, false)
                 return
             end
-            if not me:rmitem(s.item, s.count, ITEM_DELETE_TYPE.GIVE) then
+            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+                me:dialog(npc, '소지품이 가득 차서 ' .. name_with(s.reward, '을', '를') .. ' 받을 수 없네.', false, false)
                 return
             end
             if quest then
                 quest:step(s.step_in + 1)
             end
-            me:mkitem(s.reward, 1)
             me:push_achievement(24, s.legend, 7, 1)
             if s.next_msg then
                 me:dialog(npc, '다 모아왔군 그래. ' .. s.next_msg, true, false)

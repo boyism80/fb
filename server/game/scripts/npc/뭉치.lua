@@ -26,12 +26,18 @@ local function run_amber_star(me, npc)
     local p = AMBER_STAR[sel + 1]
     local gem = p.base .. '보석'
     local star = p.base .. '별'
-    if not me:has_items(gem, 5) then
+    local code = me:exchange(
+        { ['item'] = { [gem] = 5 } },
+        { ['item'] = { [star] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, name_with(gem, '이', '가') .. ' 부족합니다.', false, false)
         return
     end
-    me:rmitem(gem, 5, ITEM_DELETE_TYPE.GIVE)
-    me:mkitem(star, 1)
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 ' .. name_with(star, '을', '를') .. ' 받을 수 없어요.', false, false)
+        return
+    end
     me:dialog(npc, name_with(star, '을', '를') .. ' 만들어드렸습니다.', false, true)
 end
 

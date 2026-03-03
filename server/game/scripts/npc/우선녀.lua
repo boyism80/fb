@@ -29,11 +29,11 @@ function NPC_77(me, npc)
         if sel ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_CLEAR_SHIELD) then
+        quest = me:start_quest(QUEST_CLEAR_SHIELD)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_CLEAR_SHIELD)
         quest:step(1)
         me:push_achievement(ACHIEVEMENT_CLEAR, '용궁정화 퀘스트를 받다.', 7, 1)
         me:dialog(npc, '고마워요.\n\n한시라도 빨리 정화하는 방법을 알아다 주세요.', false, true)
@@ -91,16 +91,15 @@ function NPC_77(me, npc)
     end
 
     if quest:step() == 4 then
-        local materials = {['숯의정화'] = 3}
-        if not me:has_items(materials) then
+        local code = me:exchange(
+            { ['item'] = { ['숯의정화'] = 3 } },
+            { ['item'] = { ['정화의방패'] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '물을 정화하기 위해 숯의정화 3조각만 구해주세요.', false, false)
             return
         end
-        if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
-            me:dialog(npc, '물을 정화하기 위해 숯의정화 3조각만 구해주세요.', false, false)
-            return
-        end
-        if me:mkitem('정화의방패', 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 정화의방패를 받을 수 없습니다.', false, true)
             return
         end

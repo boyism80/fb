@@ -298,9 +298,19 @@ int context::rawgeti(int offset_t, int offset_e)
     return lua_rawgeti(*this, offset_t, offset_e);
 }
 
+int context::rawget(int table_index)
+{
+    return lua_rawget(*this, table_index);
+}
+
 void context::rawseti(int offset_t, int offset_e)
 {
     lua_rawseti(*this, offset_t, offset_e);
+}
+
+void context::settable(int table_index)
+{
+    lua_settable(*this, table_index);
 }
 
 int context::rawlen(int offset_t)

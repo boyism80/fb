@@ -23,11 +23,11 @@ function NPC_175(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_MARTIAL) then
+        quest = me:start_quest(QUEST_MARTIAL)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_MARTIAL)
         quest:step(1)
         me:push_achievement(26, '고구려무도가의 부탁을 들어주자.', 7, 1)
         me:dialog(npc, '고맙소! 자세한것은 모르지만 요즘 만리장성에 승려차림의 무술고수가 보인다는 소문이 있다오. 부탁하오.', false, true)

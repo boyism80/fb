@@ -33,11 +33,11 @@ function NPC_145(me, npc)
             return
         end
         if quest == nil then
-            if not me:start_quest(QUEST_GOOSE_EGG) then
+            quest = me:start_quest(QUEST_GOOSE_EGG)
+            if quest == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
                 return
             end
-            quest = me:quest(QUEST_GOOSE_EGG)
         end
         quest:step(1)
         me:dialog(npc, '헛! 정말입니까? 꼭 좀 부탁드립니다.\n알을 찾아오시면 개당 200전씩 사례하겠습니다.', false, false)
@@ -59,8 +59,17 @@ function NPC_145(me, npc)
         return
     end
 
-    me:rmitem(ITEM_GOOSE_EGG, count, ITEM_DELETE_TYPE.GIVE)
     local pay = MONEY_PER_EGG * count
-    me:money(me:money() + pay)
+    local code = me:exchange(
+        { ['item'] = { [ITEM_GOOSE_EGG] = count } },
+        { ['money'] = pay }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
+        me:dialog(npc, '기러기알 없습니다.', false, false)
+        return
+    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '금전을 더이상 받을 수 없습니다.', false, false)
+        return
+    end
     me:dialog(npc, string.format('기러기알 %d개에 대한 대가로 %d전을 드렸습니다.', count, pay), false, true)
 end

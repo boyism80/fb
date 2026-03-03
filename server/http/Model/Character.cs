@@ -32,7 +32,7 @@ namespace Http.Model
         public uint Exp { get; set; }
         public uint Money { get; set; }
         public uint DepositedMoney { get; set; }
-        public ushort? Disguise { get; set; }
+        public Mimicry Mimicry { get; set; }
         public uint Hp { get; set; }
         public uint BaseHp { get; set; }
         public uint AdditionalHp { get; set; }

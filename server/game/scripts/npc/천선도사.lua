@@ -17,11 +17,15 @@ function NPC_186(me, npc)
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_186_COS001
             end
-            if not me:rmitem('청심사주', 1, ITEM_DELETE_TYPE.GIVE) then
+            local code = me:exchange(
+                { ['item'] = { ['청심사주'] = 1 } },
+                { ['item'] = { ["고대금속조각'음"] = 1 } }
+            )
+            if code == EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, '청심사주를 가지고 있지 않으시군요.', false, true)
                 return
             end
-            if me:mkitem("고대금속조각'음", 1) == nil then
+            if code == EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with("고대금속조각'음", '을', '를') .. ' 줄 수 없네.', false, true)
                 return
             end

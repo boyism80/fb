@@ -31,11 +31,11 @@ function NPC_236(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:start_quest(QUEST_HOO_KILL) then
+        quest = me:start_quest(QUEST_HOO_KILL)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_HOO_KILL)
         quest:step(1)
         me:push_achievement(38, '후 말살 퀘스트를 받다.', 7, 1)
         return
@@ -118,13 +118,16 @@ function NPC_236(me, npc)
             return
         end
 
-        if not me:rmitem('마계천신의뼈', 1, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = { ['마계천신의뼈'] = 1 } },
+            { ['item'] = { ['강철투구'] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '마계천신의뼈를 가지고 있지 않으시군요.', false, true)
             return
         end
-        if me:mkitem('강철투구', 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 강철투구를 받을 수 없습니다.', false, true)
-            quest:step(2)
             return
         end
         quest:complete()

@@ -16,10 +16,10 @@ function NPC_209(me, npc)
 
     local quest = me:quest(QUEST_HOLYTREE)
     if quest == nil then
-        if not me:start_quest(QUEST_HOLYTREE) then
+        quest = me:start_quest(QUEST_HOLYTREE)
+        if quest == nil then
             return
         end
-        quest = me:quest(QUEST_HOLYTREE)
     end
 
     local next_time = tonumber(quest:param() or '') or 0
@@ -75,18 +75,20 @@ function NPC_209(me, npc)
         if confirm ~= 0 then
             return
         end
-        if not me:has_items(item.name, 1) then
-            me:dialog(npc, name_with(item.name, '이', '가') .. ' 없는데요?', false, false)
-            return
-        end
         if me:group() ~= nil then
             me:dialog(npc, '그룹을 하신 상태로는 보상을 받을 수 없습니다.', false, true)
             return
         end
 
-        me:rmitem(item.name, 1, ITEM_DELETE_TYPE.GIVE)
         local give_exp = math.floor(item.exp / exp_multiplier())
-        me:exp(me:exp() + give_exp)
+        local code = me:exchange(
+            { ['item'] = { [item.name] = 1 } },
+            { ['exp'] = give_exp }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
+            me:dialog(npc, name_with(item.name, '이', '가') .. ' 없는데요?', false, false)
+            return
+        end
 
         quest:param(tostring(nt + COOLDOWN_SEC))
         quest:progress(quest:progress() + 1)

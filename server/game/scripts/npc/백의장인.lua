@@ -144,7 +144,7 @@ local function run_amber_weapon_craft(me, npc, colors)
     for _, w in ipairs(WEAPON_NAMES) do
         weapon_opts[#weapon_opts + 1] = color_name .. w .. '입니다.'
     end
-    local weapon_sel, weapon_btn = me:list(npc, '그래.. ' .. color_name .. '별로 어떤 아이템을 만들텐가?', weapon_opts, false)
+    local weapon_sel, weapon_btn = me:list(npc, '그래.. ' .. name_with(color_name .. '별', '으로', '로') .. ' 어떤 아이템을 만들텐가?', weapon_opts, false)
     if weapon_btn == DIALOG_RESULT.PREV then
         return DIALOG_RESULT.PREV
     end
@@ -152,14 +152,20 @@ local function run_amber_weapon_craft(me, npc, colors)
         return DIALOG_RESULT.QUIT
     end
     local star_item = color_name .. '별'
-    if not me:has_items({ [star_item] = 1, ['죽은지네'] = 1 }) then
+    local result_name = color_name .. WEAPON_NAMES[weapon_sel + 1]
+    local code = me:exchange(
+        { ['item'] = { [star_item] = 1, ['죽은지네'] = 1 } },
+        { ['item'] = { [result_name] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '재료를 다시 한번 살펴보게. ' .. color_name .. '별과 죽은지네가 있어야 제작할 수 있다네.', false, false)
         return DIALOG_RESULT.NEXT
     end
-    me:rmitem({ [star_item] = 1, ['죽은지네'] = 1 }, ITEM_DELETE_TYPE.GIVE)
-    local result_name = color_name .. WEAPON_NAMES[weapon_sel + 1]
-    me:mkitem(result_name, 1)
-    me:dialog(npc, color_name .. '별로 ' .. color_name .. WEAPON_NAMES[weapon_sel + 1] .. ' 만들어주었네.', false, false)
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 ' .. name_with(result_name, '을', '를') .. ' 받을 수 없네.', false, false)
+        return DIALOG_RESULT.NEXT
+    end
+    me:dialog(npc, name_with(color_name .. '별', '으로', '로') .. ' ' .. color_name .. WEAPON_NAMES[weapon_sel + 1] .. ' 만들어주었네.', false, false)
     return DIALOG_RESULT.NEXT
 end
 

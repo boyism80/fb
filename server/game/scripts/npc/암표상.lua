@@ -28,18 +28,18 @@ function NPC_53(me, npc)
                 return
             end
 
-            local money = me:money()
-            if money < TICKET_PRICE then
+            local code = me:exchange(
+                { ['money'] = TICKET_PRICE },
+                { ['item'] = { ['부여-일본쾌속승선권'] = 1 } }
+            )
+            if code == EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, '이 사람이! 돈이 없잖아 돈이!', false, true)
                 return
             end
-
-            local item = me:mkitem('부여-일본쾌속승선권', 1)
-            if item == nil then
+            if code == EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
                 return
             end
-            me:money(money - TICKET_PRICE)
             me:dialog(npc, '그럼 일본 잘갔다와~ 나중에 또 보자고..', false, true)
             return
         elseif selected2 == 1 then
@@ -74,18 +74,18 @@ function NPC_53(me, npc)
                     return
                 end
 
-                local money = me:money()
-                if money < TICKET_PRICE then
+                local code = me:exchange(
+                    { ['money'] = TICKET_PRICE },
+                    { ['item'] = { ['노란비서'] = 1, ['부여-일본쾌속승선권'] = 1 } }
+                )
+                if code == EXCHANGE_RESULT.LACK_COST then
                     me:dialog(npc, '이 사람이! 돈이 없잖아 돈이!', false, true)
                     return
                 end
-
-                local ok = me:mkitem({ ['노란비서'] = 1, ['부여-일본쾌속승선권'] = 1 })
-                if not ok then
+                if code == EXCHANGE_RESULT.LACK_CAPACITY then
                     me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
                     return
                 end
-                me:money(money - TICKET_PRICE)
                 me:dialog(npc, '그럼 일본 잘갔다와~ 나중에 또 보자고..', false, true)
                 return
             elseif selected3 == 1 then

@@ -36,10 +36,10 @@ function NPC_241(me, npc)
         if sel ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_ALCOHOLIC_DRINK) then
+        quest = me:start_quest(QUEST_ALCOHOLIC_DRINK)
+        if quest == nil then
             return
         end
-        quest = me:quest(QUEST_ALCOHOLIC_DRINK)
         quest:step(1)
         me:push_achievement(40, '청심사주의 재료를 구하자.[1/2]', 7, 20)
         me:dialog(npc, '아아! 고맙네 고마워. 재료를 구해주면 내가 만든 술을 한병 주겠네.\n\n내가 만들려는 것은 그냥 뱀술이 아니고, \'청심사주\'라는 것이지. 보통 뱀술도 몸에 좋다고 하지만, 청심사주에 비할바는 아니야. 뱀고기 100개와 좋은뱀고기 5개를 농축하여 만든다네.', true, true)
@@ -142,11 +142,15 @@ function NPC_241(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_241_COS005
         end
-        if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = materials },
+            { ['item'] = { ['청심사주'] = 2 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '재료가 모자라군.. 기린의피와 청심초 5뿌리만 있다면 이젠 정말 만들수 있을 것이네.', false, false)
             return
         end
-        if me:mkitem('청심사주', 2) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with('청심사주', '을', '를') .. ' 줄 수 없네.', false, true)
             return
         end

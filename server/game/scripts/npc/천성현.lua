@@ -53,8 +53,8 @@ function NPC_90(me, npc)
             me:dialog(npc, '소지품이 가득 차서 증표를 받을 수 없습니다.', false, true)
             return
         end
-        if me:start_quest(QUEST_PROMOTION_3RD) then
-            quest = me:quest(QUEST_PROMOTION_3RD)
+        quest = me:start_quest(QUEST_PROMOTION_3RD)
+        if quest then
             quest:step(1)
         end
 
@@ -123,11 +123,15 @@ function NPC_90(me, npc)
             return
         end
         
-        if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = materials },
+            { ['item'] = { ['천성현의증표'] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '암흑왕의봉인을 찾지 못하셨군요.', false, true)
             return
         end
-        if me:mkitem('천성현의증표', 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 증표를 받을 수 없습니다.', false, true)
             return
         end

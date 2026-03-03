@@ -66,11 +66,15 @@ function NPC_169(me, npc)
         return
     end
 
-    if not me:rmitem("내통문서", 1, ITEM_DELETE_TYPE.GIVE) then
+    local code = me:exchange(
+        { ['item'] = { ["내통문서"] = 1 } },
+        { ['item'] = { ["번역된내통문서"] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "안녕하신가? 여행이란 참 즐거운 일이지.", false, false)
         return
     end
-    if me:mkitem("번역된내통문서", 1) == nil then
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 번역된내통문서를 받을 수 없습니다.", false, false)
         return
     end

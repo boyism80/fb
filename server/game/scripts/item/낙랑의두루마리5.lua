@@ -45,10 +45,12 @@ function ON_ACTIVE_5(me, item)
         if btn == DIALOG_RESULT.PREV then
             goto ON_ACTIVE_5_0001
         end
-        if quest == nil and not me:start_quest(QUEST_NAKRANG5) then
-            return
+        if quest == nil then
+            quest = me:start_quest(QUEST_NAKRANG5)
+            if quest == nil then
+                return
+            end
         end
-        quest = me:quest(QUEST_NAKRANG5)
         quest:step(1)
         set_param(quest, 0, 0)
         return

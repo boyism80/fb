@@ -68,13 +68,13 @@ void listener_impl::on_dialog(character&                      me,
 }
 
 void listener_impl::on_dialog(character&                            me,
-                              std::unique_ptr<fb::game::portrait>&& portrait,
+                              std::unique_ptr<fb::game::appearance>&& appearance,
                               std::string_view                      message,
                               const std::vector<std::string>&       menus,
                               bool                                  button_prev,
                               uint32_t                              oid)
 {
-    me.send(game_resp::dialog_list(std::move(portrait), menus, message, button_prev, oid));
+    me.send(game_resp::dialog_list(std::move(appearance), menus, message, button_prev, oid));
 }
 
 void listener_impl::on_dialog(character&                  me,

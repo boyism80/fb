@@ -17,12 +17,12 @@ class dialog_item : public fb::protocol::header
 public:
     static constexpr uint8_t header = 0x2F;
 #ifndef BOT
-    using portrait_ptr = std::unique_ptr<fb::game::portrait>;
+    using appearance_ptr = std::unique_ptr<fb::game::appearance>;
 #endif
 
 public:
 #ifndef BOT
-    const portrait_ptr                  portrait;
+    const appearance_ptr                appearance;
     const fb::game::dialog::item_pairs& items;
     const std::string                   message;
     const uint16_t                      pursuit;
@@ -51,17 +51,17 @@ public:
 #ifndef BOT
     dialog_item(const fb::model::object&            obj,
                 const fb::game::dialog::item_pairs& items,
-                std::string_view                      message,
-                uint32_t                             oid         = 0xFFFFFFFD,
-                uint16_t                             pursuit     = 0xFFFF,
-                fb::game::dialog::interaction        interaction = fb::game::dialog::interaction::ITEM);
+                std::string_view                    message,
+                uint32_t                            oid         = 0xFFFFFFFD,
+                uint16_t                            pursuit     = 0xFFFF,
+                fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::ITEM);
 
     dialog_item(const fb::game::object&             object,
                 const fb::game::dialog::item_pairs& items,
-                std::string_view                      message,
-                uint32_t                             oid         = 0xFFFFFFFD,
-                uint16_t                             pursuit     = 0xFFFF,
-                fb::game::dialog::interaction        interaction = fb::game::dialog::interaction::ITEM);
+                std::string_view                    message,
+                uint32_t                            oid         = 0xFFFFFFFD,
+                uint16_t                            pursuit     = 0xFFFF,
+                fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::ITEM);
 #else
     dialog_item() = default;
 #endif

@@ -185,15 +185,18 @@ function TELEPORT_LOOKUP(me, map, x, y, direction)
     return x, y, new_direction
 end
 
+RELATIVE_BUFF_GROUPS = {
+    {'혼마술', '저주', '귀염추혼소'},
+    {'무장', '자동무장', '시약무장'},
+    {'보호', '자동보호', '시약보호'},
+    {'투명', '자동투명'},
+    {'금수', '경수', '맹수', '야수', '의태시약'},
+    {'용의제일주', '용의제이주', '용의제삼주', '용의제사주', '용의제오주', '용의제육주', '용의제칠주', '용의제팔주', '용의제구주'},
+    {'용의제일노', '용의제이노', '용의제삼노', '용의제사노', '용의제오노', '용의제육노', '용의제칠노', '용의제팔노', '용의제구노'}
+}
+
 function relative_buff_name(buff_name)
-    local values = {
-        {'혼마술', '저주', '귀염추혼소'},
-        {'무장', '자동무장'},
-        {'보호', '자동보호'},
-        {'투명', '자동투명'}
-    }
-    
-    for _, names in pairs(values) do
+    for _, names in pairs(RELATIVE_BUFF_GROUPS) do
         for _, name in pairs(names) do
             if buff_name == name then
                 return names
@@ -498,7 +501,7 @@ function attack_cast(me, you, spell, opts)
     
     local pk      = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
     local damaged = false
-    local rate    = me:skill_damage_rate() / 1000.0
+    local skill_rate = me:skill_damage_rate() / 1000.0
     
     for _, obj in pairs(you) do
         if effect then
@@ -509,7 +512,7 @@ function attack_cast(me, you, spell, opts)
         end
         
         if ((obj:is(OBJECT_TYPE.CHARACTER) and pk) or obj:is(OBJECT_TYPE.MOB)) then
-            obj:damage(math.floor(damage * rate), me)
+            obj:damage(damage, me, { critical = false, rate = skill_rate })
             damaged = true
         end
     end
@@ -567,10 +570,9 @@ function spell_damage(me, you, spell, opts)
     end
     
     if execute_mob_spell_hit(me, you, spell) then
-        local rate = me:skill_damage_rate() / 1000.0
-        you:damage(math.floor(damage * rate), me)
+        you:damage(damage, me, { critical = false, rate = me:skill_damage_rate() / 1000.0, physical = false })
     end
-    
+
     return true
 end
 
@@ -587,7 +589,7 @@ function spell_damage_near(me, spell, opts)
     me:mp_down(mp)
     me:sound(sound)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
-    local rate = me:skill_damage_rate() / 1000.0
+    local skill_rate = me:skill_damage_rate() / 1000.0
     for _, you in pairs(near(me, OBJECT_TYPE.LIFE)) do
         if effect then you:effect(effect) end
         if you:is(OBJECT_TYPE.CHARACTER) then
@@ -595,7 +597,7 @@ function spell_damage_near(me, spell, opts)
         end
         
         if execute_mob_spell_hit(me, you, spell) then
-            you:damage(math.floor(damage * rate), me)
+            you:damage(damage, me, { critical = false, rate = skill_rate, physical = false })
         end
     end
     return true
@@ -614,7 +616,7 @@ function spell_damage_near_target(me, you, spell, opts)
     me:mp_down(mp)
     me:sound(sound)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
-    local rate = me:skill_damage_rate() / 1000.0
+    local skill_rate = me:skill_damage_rate() / 1000.0
     local targets = near(you, OBJECT_TYPE.LIFE)
     table.insert(targets, you)
     for _, target in pairs(targets) do
@@ -627,7 +629,7 @@ function spell_damage_near_target(me, you, spell, opts)
         end
         
         if execute_mob_spell_hit(me, target, spell) then
-            target:damage(math.floor(damage * rate), me)
+            target:damage(damage, me, { critical = false, rate = skill_rate, physical = false })
         end
         ::CONTINUE_SPELL_DAMAGE_NEAR_TARGET::
     end
@@ -659,7 +661,7 @@ function spell_damage_area(me, you, spell, opts)
         you = { you }
     end
 
-    local rate = me:skill_damage_rate() / 1000.0
+    local skill_rate = me:skill_damage_rate() / 1000.0
     for _, obj in pairs(you) do
         if obj:is(OBJECT_TYPE.CHARACTER) then
             obj:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
@@ -670,10 +672,10 @@ function spell_damage_area(me, you, spell, opts)
         end
         
         if execute_mob_spell_hit(me, obj, spell) then
-            obj:damage(math.floor(damage * rate), me)
+            obj:damage(damage, me, { critical = false, rate = skill_rate, physical = false })
         end
     end
-    
+
     me:sound(sound)
     if effect.me then me:effect(effect.me) end
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
@@ -833,7 +835,7 @@ function spell_disguise(me, mobs, name, spell, opts)
     
     if buff_cast(me, me, spell, { mp = mp, sound = sound, effect = effect }) then
         me:buff(spell, buff_time)
-        me:disguise(look)
+        me:mimic({ disguise = look })
         return true
     end
     

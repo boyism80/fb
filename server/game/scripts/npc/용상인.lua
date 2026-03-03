@@ -155,11 +155,6 @@ local function run_appraise_dragon_scale(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if not me:has_items(ITEM_DRAGON_SCALE, 1) then
-        me:dialog(npc, '아니! 이보게.. 나한테 거짓말을 해도 되는가? ' .. name_with(ITEM_DRAGON_SCALE, '이', '가') .. ' 없지 않은가. 썩 물러 가게!!!', false, false)
-        return
-    end
-
     btn = me:dialog(npc, '오오!! 내 잠시 책을 보면서 확인하고 오겠네 잠시만 기다리게나.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
@@ -167,14 +162,30 @@ local function run_appraise_dragon_scale(me, npc)
 
     local r = math.random(1, 100)
     local s = math.random(1, 100)
-    me:rmitem(ITEM_DRAGON_SCALE, 1, ITEM_DELETE_TYPE.GIVE)
-
+    local reward = nil
     if r <= 30 and s <= 30 then
-        me:mkitem(ITEM_SURYONG_SCALE, 1)
-        me:dialog(npc, '이것은!! 수룡의비늘이구려.. 주기 싫지만 어쩔수 없지..', false, false)
+        reward = { ['item'] = { [ITEM_SURYONG_SCALE] = 1 } }
     elseif r >= 70 and s >= 70 then
-        me:mkitem(ITEM_HWARYONG_SCALE, 1)
-        me:dialog(npc, '이것은!! 화룡의비늘이구려.. 주기 싫지만 어쩔수 없지..', false, false)
+        reward = { ['item'] = { [ITEM_HWARYONG_SCALE] = 1 } }
+    end
+    local code = me:exchange(
+        { ['item'] = { [ITEM_DRAGON_SCALE] = 1 } },
+        reward
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
+        me:dialog(npc, '아니! 이보게.. 나한테 거짓말을 해도 되는가? ' .. name_with(ITEM_DRAGON_SCALE, '이', '가') .. ' 없지 않은가. 썩 물러 가게!!!', false, false)
+        return
+    end
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 비늘을 받을 수 없군.', false, false)
+        return
+    end
+    if reward ~= nil then
+        if r <= 30 and s <= 30 then
+            me:dialog(npc, '이것은!! 수룡의비늘이구려.. 주기 싫지만 어쩔수 없지..', false, false)
+        else
+            me:dialog(npc, '이것은!! 화룡의비늘이구려.. 주기 싫지만 어쩔수 없지..', false, false)
+        end
     else
         me:dialog(npc, '에잉.. 이런 이건 그냥 비늘이 아니라 개 털뭉치가 이렇게 뭉쳐서 보인거잖나!!!', false, false)
     end

@@ -40,11 +40,11 @@ function NPC_190(me, npc)
         if sel ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_HATAEHYUN) then
+        quest = me:start_quest(QUEST_HATAEHYUN)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_HATAEHYUN)
         quest:step(1)
         me:push_achievement(ACHIEVEMENT_700, '하태현의 부탁을 들어주자!', 7, 1)
         me:dialog(npc, '그럼 전 ' .. me:name() .. '님만 기다리고 있을께요. 적어도 50개는 모아다 주셔야해요~ 그래야 종류별로. 부탁드릴께요.', false, true)
@@ -82,11 +82,15 @@ function NPC_190(me, npc)
         if sel2 >= 0 and sel2 <= 3 then
             local item_name = REWARD_ITEMS[sel2 + 1]
             local job_name = REWARD_JOBS[sel2 + 1]
-            if not me:rmitem(REQUIRED_ITEM, ITEM_DELETE_TYPE.GIVE) then
+            local code = me:exchange(
+                { ['item'] = REQUIRED_ITEM },
+                { ['item'] = { [item_name] = 1 } }
+            )
+            if code == EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, '아직 나무가면이 별로 없네요.. 50개정도만 구해주세요~', false, false)
                 return
             end
-            if me:mkitem(item_name, 1) == nil then
+            if code == EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.', false, false)
                 return
             end

@@ -38,11 +38,11 @@ function NPC_181(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:start_quest(QUEST_GHOST) then
+        local quest = me:start_quest(QUEST_GHOST)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_GHOST)
         quest:step(1)
         quest:progress(0)
         if me:mkitem('귀신퇴치부적', 5) == nil then

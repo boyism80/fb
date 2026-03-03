@@ -74,11 +74,15 @@ function NPC_106(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:rmitem(REQUIRED_ITEMS, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = REQUIRED_ITEMS },
+            { ['item'] = { [REWARD_500] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 다 구하지 못한 모양이군.. 도삭산 살쾡이가죽 300개와 도삭산악어비늘 200개를 구해다주면 내 보물을 드리도록 하지.', false, false)
             return
         end
-        if me:mkitem(REWARD_500, 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_500, '을', '를') .. ' 받을 수 없습니다.', false, false)
             return
         end

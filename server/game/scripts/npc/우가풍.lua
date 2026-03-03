@@ -38,11 +38,11 @@ function NPC_193(me, npc)
         if sel ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_WOOGAPUNG) then
+        quest = me:start_quest(QUEST_WOOGAPUNG)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_WOOGAPUNG)
         quest:step(1)
         me:push_achievement(ACHIEVEMENT_600, '우가풍의 부탁을 들어주자!', 7, 1)
         ::NPC_193_5::
@@ -68,15 +68,15 @@ function NPC_193(me, npc)
 
     local step = quest:step()
     if step == 1 then
-        if not me:has_items(REQUIRED_ITEM) then
-            me:dialog(npc, '아직 찾으시지 못하신것 같군. 문비는 무슈후슈들이 나오는 곳을 지나면 다른 녀석들과 함께 무리로 살고 있지. 호롱불을 훔쳐간 녀석은 뭔가 좀 특이했네. 겉보기엔 분간이 잘 안되지만 문비 소굴을 다니다 보면 분명 만날수 있을거야.', false, false)
-            return
-        end
-        if not me:rmitem(REQUIRED_ITEM, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = REQUIRED_ITEM },
+            { ['item'] = { [REWARD_600] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 찾으시지 못하신것 같군. 문비는 무슈후슈들이 나오는 곳을 지나면 다른 녀석들과 함께 무리로 살고 있지.', false, false)
             return
         end
-        if me:mkitem(REWARD_600, 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_600, '을', '를') .. ' 받을 수 없습니다.', false, false)
             return
         end

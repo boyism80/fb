@@ -4,22 +4,18 @@ function NPC_238(me, npc)
         return
     end
 
-    local items = me:items()
-    local count_by_name = {}
-    if items ~= nil then
-        for _, item in pairs(items) do
-            local name = item:model():name()
-            count_by_name[name] = (count_by_name[name] or 0) + item:count()
-        end
-    end
-
-    if (count_by_name['홍옥'] or 0) < 5 or (count_by_name['국광'] or 0) < 5 or
-       (count_by_name['깨끗한얼음'] or 0) < 10 or (count_by_name['참수박'] or 0) < 2 then
+    local cost = { ['홍옥'] = 5, ['국광'] = 5, ['깨끗한얼음'] = 10, ['참수박'] = 2 }
+    local code = me:exchange(
+        { ['item'] = cost },
+        { ['item'] = { ['과일화채'] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '과일 화채의 재료는 홍옥 5개, 국광 5개, 깨끗한얼음 10개, 참수박 2개가 필요합니다.', false, true)
         return
     end
-
-    me:rmitem({['홍옥'] = 5, ['국광'] = 5, ['깨끗한얼음'] = 10, ['참수박'] = 2}, ITEM_DELETE_TYPE.GIVE)
-    me:mkitem('과일화채', 1)
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 과일화채를 받을 수 없습니다.', false, true)
+        return
+    end
     me:dialog(npc, '정말 시원하고 맛있는 과일화채가 여기 나왔습니다.', false, true)
 end

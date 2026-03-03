@@ -47,10 +47,7 @@ local function run_puffer_general_accept(me, npc)
     if sel2 == nil or sel2 ~= 0 then
         return
     end
-    if not me:start_quest(QUEST_DRAGON_KING) then
-        return
-    end
-    local quest = me:quest(QUEST_DRAGON_KING)
+    local quest = me:start_quest(QUEST_DRAGON_KING)
     if quest == nil then
         return
     end
@@ -420,9 +417,18 @@ local function run_mermaid_turnin(me, npc)
     if quest == nil then
         return
     end
-    me:rmitem(ITEM_MERMAID_DOC_TRANSLATED, 1, ITEM_DELETE_TYPE.GIVE)
+    local code = me:exchange(
+        { ['item'] = { [ITEM_MERMAID_DOC_TRANSLATED] = 1 } },
+        { ['item'] = { [ITEM_MERMAID_STAFF] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
+        me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
+        return
+    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, "소지품이 가득 차서 지팡이를 줄 수 없네.", false, false)
+        return
+    end
     quest:step(11)
-    me:mkitem(ITEM_MERMAID_STAFF, 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "인어장군 생포 임무 완료.", 7, 1)
     me:dialog(npc, "고맙네. 이 지팡이를 받아 주게. 그리고 앞으로도 자주 용궁에 들러 주게.", false, true)
 end
@@ -689,11 +695,20 @@ local function run_jellyfish_complete(me, npc)
     if quest == nil then
         return
     end
-    me:rmitem(ITEM_JELLYFISH_STRATEGY, 1, ITEM_DELETE_TYPE.GIVE)
+    local code = me:exchange(
+        { ['item'] = { [ITEM_JELLYFISH_STRATEGY] = 1 } },
+        { ['item'] = { [ITEM_DRAGON_KING_RING] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
+        me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
+        return
+    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, "소지품이 가득 차서 용왕의반지를 줄 수 없네.", false, false)
+        return
+    end
     quest:step(17)
     quest:progress(0)
     quest:param("")
-    me:mkitem(ITEM_DRAGON_KING_RING, 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "해파리장군 생포 임무 완료.", 7, 1)
 end
 
@@ -886,6 +901,89 @@ local function run_crown_prince_complete(me, npc)
     me:dialog(npc, "언제든지 용궁의 은인으로 반갑게 맞이할 테니 종종 놀러 오게나.", false, true)
 end
 
+-- @note Optional: callfunc "지급아이템주인처리" is not implemented; omitted.
+
+---@brief Run "심판의낫 만들기" (QUEST_CIDEQUEST) branch at 용왕. step 1=started, 2=got 용궁의보물 from 미궁무기장인, 3=hand in 보물+need 수정/크리스탈, 4=done.
+local function run_cidequest_yongwang(me, npc)
+    local q = me:quest(QUEST_CIDEQUEST)
+    if q == nil then
+        -- Offer start
+        local sel, btn = me:list(npc, "이번 반란 사건으로 혼란한 틈을 타서 용궁의 보물이 사라져 버렸다네.\n\n그래서 이번에도 자네의 힘을 빌려야 할 것 같은데... 어떤가. 이번에도 해줄건가?", { "물론 해드려야죠.", "별로 하고싶지 않은데요." }, false)
+        if btn == DIALOG_RESULT.QUIT or sel == nil then
+            return
+        end
+        if sel == 0 then
+            me:dialog(npc, "고맙군. 정말 고마워. \n\n 이번에 들어온 정보에 의하면 그 보물이 용궁 밖에 나타났다는 소리를 들었네.", false, true)
+            me:dialog(npc, "아마 장돌뱅이한테 정보가 들어가지 않았나 생각하는데 잘 알아봐 주게나.", false, false)
+            q = me:start_quest(QUEST_CIDEQUEST)
+            if q == nil then
+                return
+            end
+            if q then
+                q:step(1)
+                q:progress(0)
+            end
+        else
+            me:dialog(npc, "음... 그래. 할 수 없지. 마음이 바뀌거든 다시오게나.", false, false)
+        end
+        return
+    end
+
+    local step = q:step()
+    if step == 1 then
+        me:dialog(npc, "어찌되어 가는가?", false, false)
+        return
+    end
+    if step == 2 then
+        if not me:has_items("용궁의보물", 1) then
+            me:dialog(npc, "어찌되어 가는가?", false, false)
+            return
+        end
+        me:dialog(npc, "오. 정말 보물을 찾아왔군.\n\n정말 다행이야. 다행이고 말고.", false, true)
+        me:dialog(npc, "내가 그 대가로 뭔가 주고 싶은데..\n\n얼마전에 내가 만들던 무기가 있는데 그 무기의 핵심 재료인 수정과 크리스탈이 필요하다네.", false, true)
+        me:dialog(npc, "자네가 수정과 크리스탈을 가지고 온다면 내 무기를 만들어 주도록 하겠네. 꼭 명심해야 할 것은 각각 3개씩 가지고 와야 한다는 거라네.", false, true)
+        me:dialog(npc, "아. 수정과 크리스탈은 호굴 어딘가에서 나온다고 들었네.\n\n가서 수정과 크리스탈을 구해 오시게.", false, false)
+        me:rmitem("용궁의보물", 1, ITEM_DELETE_TYPE.GIVE)
+        q:step(3)
+        return
+    end
+    if step == 3 then
+        if not me:has_items("수정", 3) or not me:has_items("크리스탈", 3) then
+            me:dialog(npc, "수정과 크리스탈 각 세개씩이라네...", false, false)
+            return
+        end
+        me:dialog(npc, "그럼 지금부터 무기를 만들도록 하겠네.", false, true)
+        local reward_item = (math.random(1, 100) <= 7) and "심판의낫" or "똥"
+        local code = me:exchange(
+            { ['item'] = { ["수정"] = 3, ["크리스탈"] = 3 } },
+            { ['item'] = { [reward_item] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
+            me:dialog(npc, "수정과 크리스탈 각 세개씩이라네...", false, false)
+            return
+        elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+            me:dialog(npc, "소지품이 가득 차서 받을 수 없네. 재료를 새로 모아오면 다시 만들어 주겠네.", false, false)
+            return
+        end
+        me:dialog(npc, "심판의 힘이여... 이곳에 와서 머물라... 하앗!", false, true)
+        if reward_item == "심판의낫" then
+            me:dialog(npc, "오오. 결국은 성공하고 말았군...", false, true)
+            me:dialog(npc, "이렇게 강대한 무기를 주는 것에 일말의 불안감이 있기는 하지만..", false, true)
+            me:dialog(npc, "자네라면 이것을 좋은 일에 써주리라고 믿고서 주겠네.", false, false)
+            q:step(4)
+        else
+            me:dialog(npc, "이런. 너무 힘을 준 모양이야... 그만 깨지고 말았군...", false, true)
+            me:dialog(npc, "재료를 새로 모아오면 다시 만들어 주겠네..", false, false)
+        end
+        return
+    end
+    if step == 4 then
+        me:dialog(npc, "잘 지내고 있는가?", false, false)
+        return
+    end
+    me:dialog(npc, "어찌되어 가는가?", false, false)
+end
+
 function NPC_75(me, npc)
     local quest = me:quest(QUEST_DRAGON_KING)
     if quest == nil then
@@ -894,7 +992,17 @@ function NPC_75(me, npc)
     end
 
     if quest:completed() then
-        me:dialog(npc, me:name() .. "이군. 반란을 막아준걸 정말 고맙게 생각하고 있네.", true, false)
+        local sel, btn = me:list(npc, me:name() .. "이군. 반란을 막아준걸 정말 고맙게 생각하고 있네.", { "잘 지내셨습니까?", "심판의낫 만들기" }, false)
+        if btn == DIALOG_RESULT.QUIT or sel == nil then
+            return
+        end
+        if sel == 0 then
+            me:dialog(npc, "자네 덕분에 아주 잘 지내고 있다네. 언제든 놀러 오게나.", false, false)
+            return
+        end
+        if sel == 1 then
+            run_cidequest_yongwang(me, npc)
+        end
         return
     end
 

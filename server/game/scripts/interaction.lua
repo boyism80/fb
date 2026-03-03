@@ -51,31 +51,11 @@ function is_critical(me, you)
     end
 end
 
-function is_back_attack(me, you)
-    local direction1 = me:direction()
-    local direction2 = you:direction()
-
-    if direction1 ~= direction2 then
-        return false
-    end
-
-    local x1, y1 = me:position()
-    local x2, y2 = you:position()
-    if direction1 == DIRECTION.LEFT then
-        return x1 > x2
-    elseif direction1 == DIREECTION_TOP then
-        return y1 > y2
-    elseif direction1 == DIRECTION.RIGHT then
-        return x1 < x2
-    else
-        return y1 < y2
-    end
-end
-
 function damage(me, you, rate, sound)
     if rate == nil then
         rate = 1.0
     end
+    rate = rate * (me:damage_rate() / 1000.0)
 
     local size = MOB_SIZE.SMALL
     if you:is(OBJECT_TYPE.MOB) then
@@ -83,28 +63,15 @@ function damage(me, you, rate, sound)
         size = model:size()
     end
 
-    local damage = me:normal_attack_damage(size)
-    local damage_rate = me:damage_rate() / 1000.0
-    if is_back_attack(me, you) then
-        damage_rate = damage_rate * 2
+    if me:isbuff('투명') then
+        rate = rate * 8
     end
 
     local critical = is_critical()
-    if critical then
-        damage_rate = damage_rate * 2
-    end
-
-    if me:isbuff('투명') then
-        damage_rate = damage_rate * 8
-    end
-
-    damage_rate = damage_rate / (you:damage_derate() / 1000.0)
     if sound ~= nil then
         you:sound(sound)
     end
-    
-    local damage = math.floor(damage * damage_rate * rate)
-    you:damage(damage, me, critical)
+    you:damage(me:normal_attack_damage(size), me, { critical = critical, rate = rate })
 end
 
 function on_attack(me, additional_attack)
@@ -1401,56 +1368,94 @@ function on_login(me)
     local npc = name2npc('낙랑')
     local button = nil
 ::BIRTHDAY_DIALOG_1::
-    button = me:dialog(npc, '대단히 중요하니 끝까지 읽어 주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.', false, true)
+    button = me:dialog(npc, '대단히 중요하니 끝까지 읽어주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.', false, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
 ::BIRTHDAY_DIALOG_2::
-    button = me:dialog(npc, '대충 2차 비밀번호 설정하라고 강경하게 말하는 내용', true, true)
+    button = me:dialog(npc, '이 2차 비밀번호는 한번 결정을 하시면 변경이 불가능 합니다. 이 2차 비밀번호는 자신의 게임 접속 비밀번호를 바꿀 때에만 사용합니다.', true, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
-
     if button == DIALOG_RESULT.PREV then
         goto BIRTHDAY_DIALOG_1
     end
 
 ::BIRTHDAY_DIALOG_3::
-    local birthday = me:input(npc, '2차 비밀번호 설정 뭘로 할래요?', '내 생년월일은,', '입니다.', 6, true)
-    if birthday == DIALOG_RESULT.QUIT then
+    button = me:dialog(npc, '이 2차 비밀번호는 자신의 생년월일로 해주세요. 예를 들면 자신의 생일이 92년 04월 17일이면, 920417으로 입력해주세요. (반드시 6자리)', true, true)
+    if button == DIALOG_RESULT.QUIT then
         return
     end
-
-    if birthday == DIALOG_RESULT.PREV then
+    if button == DIALOG_RESULT.PREV then
         goto BIRTHDAY_DIALOG_2
     end
 
-    if birthday == '' then
-        button = me:dialog(npc, '제대로 입력하세요.', false, true)
-        if button == DIALOG_RESULT.QUIT then
-            return
-        end
+::BIRTHDAY_DIALOG_4::
+    button = me:dialog(npc, '이 2차 비밀번호는 분실하실 이유가 없기 때문에(자신의 생년월일이므로) 이 2차 비밀번호를 모르시는 분은 해당 아이디에 대한 소유권을 박탈합니다.', true, true)
+    if button == DIALOG_RESULT.QUIT then
+        return
+    end
+    if button == DIALOG_RESULT.PREV then
         goto BIRTHDAY_DIALOG_3
     end
 
-    if #birthday ~= 6 then
-        button = me:dialog(npc, '생년월일이 너무 짧습니다.', false, true)
+::BIRTHDAY_DIALOG_5::
+    button = me:dialog(npc, '이 2차 비밀번호를 모르시고 처음의 비밀번호 분실신고를 하셔도 저희는 가르쳐 드릴수가 없습니다. 그 만큼 중요한 것이오니 신중히 그리고 정확히 입력해주세요.', true, true)
+    if button == DIALOG_RESULT.QUIT then
+        return
+    end
+    if button == DIALOG_RESULT.PREV then
+        goto BIRTHDAY_DIALOG_4
+    end
+
+::BIRTHDAY_DIALOG_6::
+    button = me:dialog(npc, '또한 이 두번째 비밀번호(생년월일)를 입력하지 않으시고 다음에 비밀번호 분실신고를 하셔도 저희는 해드릴수가 없으니 반드시 두번째 비번을 입력하시기 바랍니다.', true, true)
+    if button == DIALOG_RESULT.QUIT then
+        return
+    end
+    if button == DIALOG_RESULT.PREV then
+        goto BIRTHDAY_DIALOG_5
+    end
+
+::BIRTHDAY_INPUT::
+    local birthday = me:input(npc, '자신의 생년월일을 입력해 주세요.', '저의 생년월일은', '입니다.', 6, true)
+    if birthday == DIALOG_RESULT.QUIT then
+        goto BIRTHDAY_INPUT
+    end
+    if birthday == DIALOG_RESULT.PREV then
+        goto BIRTHDAY_DIALOG_6
+    end
+
+    ::BIRTHDAY_MUST_SET::
+    if birthday == '' or #birthday ~= 6 then
+        button = me:dialog(npc, '두번째 비밀번호를 정하지 않으면 게임을 할 수 없습니다. 반드시 해주세요.', true, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
-
-        goto BIRTHDAY_DIALOG_3
+        if button == DIALOG_RESULT.PREV then
+            goto BIRTHDAY_INPUT
+        end
+        goto BIRTHDAY_INPUT
     end
 
-    local answer = me:list(npc, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), {'예', '아니오'})
-    if answer == nil then
+    local num = tonumber(birthday)
+    if num == nil or num <= 0 then
+        goto BIRTHDAY_MUST_SET
+    end
+
+    local sel, list_btn = me:list(npc, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), {'예', '아니오'}, true)
+    if list_btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if list_btn == DIALOG_RESULT.PREV or sel == nil then
+        goto BIRTHDAY_INPUT
+    end
+
+    if sel == 0 then
+        me:birthday(birthday)
         return
     end
 
-    if answer == 1 then
-        goto BIRTHDAY_DIALOG_3
-    end
-
-    me:birthday(birthday)
+    goto BIRTHDAY_MUST_SET
 end

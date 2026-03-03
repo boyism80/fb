@@ -34,15 +34,17 @@ function NPC_177(me, npc)
     end
 
     local materials = {[item_tainted] = 1, ['향료'] = 1, ['기름'] = 1}
-    if not me:has_items(materials) then
+    local code = me:exchange(
+        { ['item'] = materials },
+        { ['item'] = { [item_result] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '재료가 부족한 것 같은데?', false, false)
         return
     end
-
-    if me:mkitem(item_result, 1) == nil then
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_result, '을', '를') .. ' 줄 수 없네.', false, true)
         return
     end
-    me:rmitem(materials, ITEM_DELETE_TYPE.GIVE)
     me:dialog(npc, item_tainted .. '에 주술을 거는 데 성공했네... 부디 뜻깊은 일에 사용하게나. 과거 이 섬을 폭염왕의 마수에서 잠시나마 구해 줬던 영웅처럼 말일세...', true, true)
 end

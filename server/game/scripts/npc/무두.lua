@@ -7,7 +7,11 @@ function NPC_158(me, npc)
 
     if index == 0 then
         local q = me:quest(QUEST_SHARK_WEAPON)
-        local step = (q and q:step()) or 0
+        if q == nil then
+            me:dialog(npc, '자네는 아직 알 때가 아니군.', false, false)
+            goto ROUTINE_CHANGE_ARMOR_COLOR_0
+        end
+        local step = q:step()
         if step < 3 then
             me:dialog(npc, '자네는 아직 알 때가 아니군.', false, false)
             goto ROUTINE_CHANGE_ARMOR_COLOR_0
@@ -34,23 +38,27 @@ function NPC_158(me, npc)
         end
         if step == 10 then
             local required_jungki = { ['용궁의정기1'] = 1, ['용궁의정기2'] = 1, ['용궁의정기3'] = 1, ['용궁의정기4'] = 1, ['용궁의정기5'] = 1 }
-            if not me:has_items(required_jungki) then
-                me:dialog(npc, '아직 용궁의정기를 다 모으지 못했나 보군..', false, false)
-                goto ROUTINE_CHANGE_ARMOR_COLOR_0
-            end
             if me:dialog(npc, '용궁의정기를 가져왔군.', true, true) == DIALOG_RESULT.QUIT then
                 return
             end
             if me:dialog(npc, '그럼 어디보자...아수라 마차라 바하라 미다라...하아아압!!!', true, true) == DIALOG_RESULT.QUIT then
                 return
             end
-            if not me:rmitem(required_jungki, ITEM_DELETE_TYPE.GIVE) then
-                return
+            local ex_code = me:exchange(
+                { ['item'] = required_jungki },
+                { ['item'] = { ['무기제조법'] = 1 } }
+            )
+            if ex_code == EXCHANGE_RESULT.LACK_COST then
+                me:dialog(npc, '아직 용궁의정기를 다 모으지 못했나 보군..', false, false)
+                goto ROUTINE_CHANGE_ARMOR_COLOR_0
+            end
+            if ex_code == EXCHANGE_RESULT.LACK_CAPACITY then
+                me:dialog(npc, '소지품이 가득 차서 무기제조법을 받을 수 없네. 자리 좀 비우고 다시 오게.', false, false)
+                goto ROUTINE_CHANGE_ARMOR_COLOR_0
             end
             if q then
                 q:step(11)
             end
-            me:mkitem('무기제조법', 1)
             me:push_achievement(24, '무기제조법을 얻다.', 7, 11)
             me:dialog(npc, '상어장군이 하는 말을 적었으니 이 두루마리를 가져가게.', true, false)
             goto ROUTINE_CHANGE_ARMOR_COLOR_0

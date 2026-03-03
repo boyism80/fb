@@ -47,9 +47,9 @@ function NPC_105(me, npc)
         goto NPC_105_COS002
     end
 
-    if not me:start_quest(QUEST_SAILOR) then
+    quest = me:start_quest(QUEST_SAILOR)
+    if quest == nil then
         return
     end
-        quest = me:quest(QUEST_SAILOR)
     quest:step(1)
 end

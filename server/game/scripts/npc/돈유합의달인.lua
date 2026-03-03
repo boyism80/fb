@@ -84,11 +84,15 @@ function NPC_184(me, npc)
             return
         end
         ::NPC_184_COS008::
-        if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = materials },
+            { ['item'] = { ['화기삼동충초돈유합'] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 재료를 다 구하지 못하셨군요.', false, true)
             return
         end
-        if me:mkitem('화기삼동충초돈유합', 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 화기삼동충초돈유합을 받을 수 없습니다.', false, true)
             return
         end

@@ -1,2 +1,77 @@
+-- @note Trash: 2_이벤트\크리스마스.txt "산타클로스". List: 홍성초 1→빨간양말 1; or 빨간양말 100→산타모자, 200→산타클로스옷.
+
+---@brief NPC 산타클로스: exchange 홍성초 for 빨간양말, or 빨간양말 100/200 for 산타모자/산타클로스옷.
+---@param[in] me  The character.
+---@param[in] npc The NPC entity.
 function NPC_458(me, npc)
+    local sel, btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", { "홍성초를 가져왔어요.", "산타양말" }, false)
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if sel == nil then
+        return
+    end
+
+    if sel == 0 then
+        -- 홍성초 branch
+        local d = me:dialog(npc, "이번 크리스마스 트리를 장식할 홍성초가 부족한데... 어떻게 해야 한담...", false, true)
+        if d == DIALOG_RESULT.QUIT then
+            return
+        end
+        local sub, sub_btn = me:list(npc, "이걸 어떻게 해야 좋을까...", { "홍성초를 가져왔어요.", "힘내세요!" }, false)
+        if sub_btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if sub == 0 then
+            local code = me:exchange(
+                { ['item'] = { ["홍성초"] = 1 } },
+                { ['item'] = { ["빨간양말"] = 1 } }
+            )
+            if code == EXCHANGE_RESULT.LACK_COST then
+                me:dialog(npc, "홍성초가 없는데?", false, false)
+                return
+            end
+            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+                me:dialog(npc, "소지품이 가득 차서 빨간양말을 드리지 못합니다.", false, false)
+                return
+            end
+            me:dialog(npc, "정말 고맙네. 답례로 소소한 선물이네. 메리 크리스마스~", false, false)
+        else
+            me:dialog(npc, "고맙네, 허허. 그나저나 이를 어쩌지...", false, false)
+        end
+        return
+    end
+
+    if sel == 1 then
+        -- 산타양말 branch (빨간양말 100 → 산타모자, 200 → 산타클로스옷)
+        local d = me:dialog(npc, "아니 글쎄... 빨간양말에 선물을 담아 나누어 주어야 하는데, 그만 빨간양말을 잃어버렸지 뭔가! 이걸 어떻게 해야 한담...", false, true)
+        if d == DIALOG_RESULT.QUIT then
+            return
+        end
+        local sub, sub_btn = me:list(npc, "이걸 어떻게 해야 좋을까...", {
+            "빨간양말 100개를 가져왔어요.",
+            "빨간양말 200개를 가져왔어요.",
+        }, false)
+        if sub_btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if sub == nil then
+            return
+        end
+        local need = (sub == 0) and 100 or 200
+        local reward_name = (sub == 0) and "산타모자" or "산타클로스옷"
+        local code = me:exchange(
+            { ['item'] = { ["빨간양말"] = need } },
+            { ['item'] = { [reward_name] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
+            me:dialog(npc, "안그래도 심란한데... 거짓말 말게나!!", false, false)
+            return
+        end
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            me:dialog(npc, "소지품이 가득 차서 " .. reward_name .. "을(를) 드리지 못합니다.", false, false)
+            return
+        end
+        me:dialog(npc, "정말 고맙네, 허허. 답례로 소소한 선물이네. 메리 크리스마스~", false, false)
+    end
 end

@@ -57,11 +57,11 @@ function NPC_138(me, npc)
             return
         end
         if quest == nil then
-            if not me:start_quest(QUEST_MOUNTAIN_GOD) then
+            quest = me:start_quest(QUEST_MOUNTAIN_GOD)
+            if quest == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
                 return
             end
-            quest = me:quest(QUEST_MOUNTAIN_GOD)
         end
         quest:step(1)
         me:push_achievement(ACHIEVEMENT_MOUNTAIN_GOD, '산신의보물지도를 찾자', 7, 25)
@@ -171,11 +171,15 @@ function NPC_138(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto COS009
         end
-        if not me:rmitem(ITEM_NEEDLE, 1, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = { [ITEM_NEEDLE] = 1 } },
+            { ['item'] = { [item_name] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '산신의바늘을 아직 구하지 못하신거 같은데요?', false, false)
             return
         end
-        if me:mkitem(item_name, 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.', false, false)
             return
         end

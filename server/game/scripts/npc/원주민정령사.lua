@@ -1,4 +1,28 @@
 function NPC_113(me, npc)
+    local dq = me:quest(QUEST_DETECTIVE)
+    if dq and not dq:completed() and dq:step() == 12 then
+        local sel, list_btn = me:list(npc, "수사관이 왔는가? 올바른 기운이 느껴지는도다.", {
+            "특별한 옷에 대해 듣고자 합니다.",
+            "문화재 유출에 대해 듣고자 합니다.",
+            "그냥 지나가던 길입니다.",
+        }, false)
+        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            return
+        end
+        if sel == 0 then
+            -- fall through to TOTEM_CLOTHES logic below
+        elseif sel == 1 then
+            local btn = me:dialog(npc, "정령들이 화를 내고 있다. 아, 정령들이 집으로 삼는 토템들이 이 섬을 떠나는구나.", false, true)
+            if btn == DIALOG_RESULT.QUIT then return end
+            dq:step(13)
+            me:dialog(npc, "보름달이 뜨면 정령들이 분노를 이기지 못하고 비명을 내지른다. 아아, 이를 어이해야 좋단 말이더냐.", true, false)
+            return
+        else
+            me:dialog(npc, ".............", false, false)
+            return
+        end
+    end
+
     local totem_names = { '번개의토템', '바람의토템', '대지의토템', '화염의토템' }
     local armor_names = {
         '황혼의갑주', '여명의연갑', '황혼의활복', '여명의도복',
@@ -90,10 +114,10 @@ function NPC_113(me, npc)
             goto NPC_113_COS006
         end
 
-        if not me:start_quest(QUEST_TOTEM_CLOTHES) then
+        quest = me:start_quest(QUEST_TOTEM_CLOTHES)
+        if quest == nil then
             return
         end
-        quest = me:quest(QUEST_TOTEM_CLOTHES)
         quest:step(1)
         me:push_achievement(42, '투명한 이슬을 구하자.', 7, 16)
         return
@@ -253,11 +277,15 @@ function NPC_113(me, npc)
         end
 
         local armor_name = armor_names[sel + 1]
-        if not me:rmitem('자연의인장', 1, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = { ['자연의인장'] = 1 } },
+            { ['item'] = { [armor_name] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '자연의인장을 가지고 있지 않으시군요.', false, true)
             return
         end
-        if me:mkitem(armor_name, 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(armor_name, '을', '를') .. ' 줄 수 없네.', false, true)
             return
         end

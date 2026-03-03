@@ -17,11 +17,16 @@ public class Program
         SqlMapper.AddTypeHandler(typeof(List<Model.Buff>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(Dictionary<string, List<Fb.Model.Dsl>>), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(Http.Model.Mimicry), new JsonTypeHandler());
 
         var config = new MapperConfiguration(cfg =>
         {
+            cfg.CreateMap<Http.Model.Mimicry, Protocol.Mimicry>();
+            cfg.CreateMap<Protocol.Mimicry, Http.Model.Mimicry>();
+
             cfg.CreateMap<Http.Model.Character, Character>()
             .ForMember(x => x.ClassType, x => x.MapFrom(u => u.Class))
+            .ForMember(x => x.Mimicry, x => x.MapFrom(u => u.Mimicry))
             .ForMember(x => x.Buffs, x => x.MapFrom(u => u.Buffs))
             .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
             .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => u.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
@@ -30,6 +35,7 @@ public class Program
             .ForMember(x => x.PendingListings, x => x.MapFrom(u => u.PendingListings == null || u.PendingListings.Count == 0 ? null : JsonConvert.SerializeObject(u.PendingListings)));
 
             cfg.CreateMap<Character, Http.Model.Character>()
+            .ForMember(x => x.Mimicry, x => x.MapFrom(u => u.Mimicry))
             .ForMember(x => x.Buffs, x => x.MapFrom(u => u.Buffs))
             .ForMember(x => x.Class, x => x.MapFrom(u => u.ClassType))
             .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => DateTime.Parse(u.UpdatedDate)))

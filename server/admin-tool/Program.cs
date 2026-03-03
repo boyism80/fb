@@ -11,6 +11,7 @@ Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
 SqlMapper.AddTypeHandler(typeof(List<Http.Model.Buff>), new JsonTypeHandler());
 SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), new JsonTypeHandler());
+SqlMapper.AddTypeHandler(typeof(Http.Model.Mimicry), new JsonTypeHandler());
 
 var builder = WebApplication.CreateBuilder(args);
 

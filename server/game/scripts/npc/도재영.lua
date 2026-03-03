@@ -74,11 +74,15 @@ function dojaeyoung_nobidocument(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if not me:rmitem('노비문서', 1, ITEM_DELETE_TYPE.GIVE) then
+    local code = me:exchange(
+        { ['item'] = { ['노비문서'] = 1 } },
+        { ['item'] = { ['보패'] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '노비문서를 가지고 있지 않으시군요.', false, true)
         return
     end
-    if me:mkitem('보패', 1) == nil then
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 보패를 받을 수 없습니다.', false, true)
         return
     end
@@ -133,11 +137,11 @@ function dojaeyoung_herb_start(me, npc)
     if sel ~= 0 then
         return
     end
-    if not me:start_quest(QUEST_DOJAEYOUNG_HERB) then
+    local quest = me:start_quest(QUEST_DOJAEYOUNG_HERB)
+    if quest == nil then
         me:dialog(npc, '퀘스트 시작 실패', false, true)
         return
     end
-    local quest = me:quest(QUEST_DOJAEYOUNG_HERB)
     quest:step(1)
     me:push_achievement(9, '도재영의 부탁을 들어주자!', 7, 1)
     ::NPC_107_COS004::
@@ -164,13 +168,16 @@ function dojaeyoung_herb_turnin(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if not me:rmitem({['약초가지'] = 1, ['약초잎사귀'] = 5}, ITEM_DELETE_TYPE.GIVE) then
+    local code = me:exchange(
+        { ['item'] = { ['약초가지'] = 1, ['약초잎사귀'] = 5 } },
+        { ['item'] = { ['강철의구두'] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.', false, true)
         return
     end
-    if me:mkitem('강철의구두', 1) == nil then
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 강철의구두를 줄 수 없습니다.', false, true)
-        quest:step(1)
         return
     end
     quest:step(2)

@@ -18,7 +18,8 @@ function NPC_120(me, npc)
             return
         end
 
-        if not me:start_quest(QUEST_TANGTANG) then
+        local q = me:start_quest(QUEST_TANGTANG)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
@@ -41,11 +42,14 @@ function NPC_120(me, npc)
         return
     end
 
-    if not me:rmitem('태존도', 1, ITEM_DELETE_TYPE.GIVE) then
+    local code = me:exchange(
+        { ['item'] = { ['태존도'] = 1 } },
+        { ['item'] = { ['선장의일기4'] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 태존도를 구하지 못한건가?', false, true)
         return
-    end
-    if me:mkitem('선장의일기4', 1) == nil then
+    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 선장의일기4를 줄 수 없네.', false, true)
         return
     end

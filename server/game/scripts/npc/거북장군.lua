@@ -47,10 +47,7 @@ local function run_rabbit_liver_quest(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_RABBIT_LIVER) then
-            return
-        end
-        quest = me:quest(QUEST_RABBIT_LIVER)
+        quest = me:start_quest(QUEST_RABBIT_LIVER)
         if quest == nil then
             return
         end
@@ -89,9 +86,14 @@ local function run_rabbit_liver_quest(me, npc)
     if sel == nil or sel ~= 0 then
         return
     end
+    local code = me:exchange(
+        { ['item'] = { [RABBIT_LIVER_ITEM] = 1 } },
+        { ['item'] = { [REWARD_ITEM] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST or code == EXCHANGE_RESULT.LACK_CAPACITY then
+        return
+    end
     quest:complete()
-    me:rmitem(RABBIT_LIVER_ITEM, 1, ITEM_DELETE_TYPE.GIVE)
-    me:mkitem(REWARD_ITEM, 1)
     me:push_achievement(ACHIEVEMENT_RABBIT_HINT, '거북장군의 부탁을 들어주었다.', 6, 1)
     ::NPC_144_COS009::
     btn = me:dialog(npc, '아아.. 감사합니다. 이것으로 용왕님도 건강을 회복하실 수 있겠군요.', false, true)
@@ -120,9 +122,7 @@ local function run_shark_weapon_quest(me, npc)
     end
 
     local q = me:quest(QUEST_SHARK_WEAPON)
-    local step = (q and q:step()) or 0
-
-    if step == 0 then
+    if q == nil then
         if me:dialog(npc, '상어장군이 사용하던 무기의 제작법이 드디어 알려졌다는 소문이 있다네...\n\n그 무기의 제작 방법을 아는 사람이 았다는 것 같더군.', true, true) == DIALOG_RESULT.QUIT then
             return
         end
@@ -133,10 +133,10 @@ local function run_shark_weapon_quest(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_SHARK_WEAPON) then
+        q = me:start_quest(QUEST_SHARK_WEAPON)
+        if q == nil then
             return
         end
-        q = me:quest(QUEST_SHARK_WEAPON)
         if q then
             q:step(1)
         end
@@ -148,6 +148,7 @@ local function run_shark_weapon_quest(me, npc)
         return
     end
 
+    local step = q:step()
     if step >= 1 and step <= 10 then
         me:dialog(npc, '아주 추운곳에 있다고 들었는데...', true, false)
         return
@@ -189,16 +190,26 @@ local function run_shark_weapon_quest(me, npc)
             me:dialog(npc, '재료가 부족한 것 같군. 상어의핵 3개와 불의수정 3개를 구해다 주시게.', false, false)
             return
         end
+        local cost = { ['item'] = {} }
         for _, m in ipairs(SHARK_WEAPON_MATERIALS) do
-            if not me:rmitem(m.name, m.count, ITEM_DELETE_TYPE.GIVE) then
-                return
-            end
+            cost['item'][m.name] = m.count
         end
+        local reward = nil
         if math.random(1, 100) <= SHARK_WEAPON_SUCCESS_CHANCE then
+            reward = { ['item'] = { [SHARK_WEAPON_RESULT] = 1 } }
+        end
+        local code = me:exchange(cost, reward)
+        if code == EXCHANGE_RESULT.LACK_COST then
+            return
+        end
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            me:dialog(npc, '소지품이 가득 차서 무기를 받을 수 없네.', false, false)
+            return
+        end
+        if reward ~= nil then
             if q then
                 q:step(13)
             end
-            me:mkitem(SHARK_WEAPON_RESULT, 1)
             me:push_achievement(24, '상어장군 무기를 만들다!', 6, 1)
             if me:dialog(npc, '오. 드디어 만들었군...', true, true) == DIALOG_RESULT.QUIT then
                 return

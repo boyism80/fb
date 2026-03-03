@@ -29,7 +29,8 @@ function NPC_183(me, npc)
             me:dialog(npc, '그렇다면 할 수 없군요..', false, true)
             return
         end
-        if not me:start_quest(QUEST_JOWANG) then
+        local q = me:start_quest(QUEST_JOWANG)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
@@ -68,11 +69,15 @@ function NPC_183(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if not me:rmitem('화기삼동충초돈유합', 1, ITEM_DELETE_TYPE.GIVE) then
+    local code = me:exchange(
+        { ['item'] = { ['화기삼동충초돈유합'] = 1 } },
+        { ['item'] = { ['자양강장요리'] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 화기삼동충초돈유합을 구하지 못하셨나보군요.', false, true)
         return
     end
-    if me:mkitem('자양강장요리', 1) == nil then
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 자양강장요리를 받을 수 없습니다.', false, true)
         return
     end

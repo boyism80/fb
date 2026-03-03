@@ -17,5 +17,4 @@ end
 -- 혼마술 버프 해제 효과
 function ON_UNBUFF_4009(me, spell)
     me:buff_phydef(me:buff_phydef() - 50)
-
 end

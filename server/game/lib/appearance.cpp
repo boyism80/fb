@@ -1,20 +1,20 @@
-#include <fb/game/portrait.h>
+#include <fb/game/appearance.h>
 #include <fb/game/server.h>
 
 using namespace fb::game;
 using table = fb::model::table;
 
-character_portrait::character_portrait(GENDER                  gender,
-                                       STATE                   state,
-                                       uint16_t                hair,
-                                       uint8_t                 hair_color,
-                                       std::optional<uint16_t> weapon,
-                                       std::optional<uint8_t>  weapon_color,
-                                       std::optional<uint8_t>  armor,
-                                       std::optional<uint8_t>  armor_color,
-                                       std::optional<uint8_t>  shield,
-                                       std::optional<uint8_t>  shield_color,
-                                       std::optional<uint16_t> disguise) :
+character_appearance::character_appearance(GENDER                  gender,
+                                           STATE                   state,
+                                           uint16_t                hair,
+                                           std::optional<uint8_t>  hair_color,
+                                           std::optional<uint16_t> weapon,
+                                           std::optional<uint8_t>  weapon_color,
+                                           std::optional<uint8_t>  armor,
+                                           std::optional<uint8_t>  armor_color,
+                                           std::optional<uint8_t>  shield,
+                                           std::optional<uint8_t>  shield_color,
+                                           std::optional<uint16_t> disguise) :
     gender(gender),
     state(state),
     hair(hair),
@@ -28,7 +28,7 @@ character_portrait::character_portrait(GENDER                  gender,
     disguise(disguise)
 { }
 
-character_portrait::character_portrait(const character_portrait& right) :
+character_appearance::character_appearance(const character_appearance& right) :
     gender(right.gender),
     state(right.state),
     hair(right.hair),
@@ -42,14 +42,14 @@ character_portrait::character_portrait(const character_portrait& right) :
     disguise(right.disguise)
 { }
 
-void character_portrait::serialize(fb::stream_writer<big_endian>& writer) const
+void character_appearance::serialize(fb::stream_writer<big_endian>& writer) const
 {
     writer.write<uint8_t>(0x01);
     writer.write<uint8_t>(0x00);
     writer.write<uint8_t>(static_cast<uint8_t>(this->gender));
     writer.write<uint8_t>(static_cast<uint8_t>(this->state));
     writer.write<uint16_t>(this->hair);
-    writer.write<uint8_t>(this->hair_color);
+    writer.write<uint8_t>(this->hair_color.value_or(0x00));
     writer.write<uint8_t>(this->armor.value_or(static_cast<uint8_t>(this->gender)));
     writer.write<uint8_t>(this->armor_color.value_or(0x00));
     writer.write<uint16_t>(this->weapon.value_or(0xFFFF));
@@ -59,17 +59,17 @@ void character_portrait::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint32_t>(0x00);
 }
 
-object_portrait::object_portrait(uint16_t look, uint8_t color) :
+object_appearance::object_appearance(uint16_t look, uint8_t color) :
     look(look),
     color(color)
 { }
 
-object_portrait::object_portrait(const object_portrait& right) :
+object_appearance::object_appearance(const object_appearance& right) :
     look(right.look),
     color(right.color)
 { }
 
-void object_portrait::serialize(fb::stream_writer<big_endian>& writer) const
+void object_appearance::serialize(fb::stream_writer<big_endian>& writer) const
 {
     writer.write<uint8_t>(this->look > 0x4000 ? 0x02 : 0x01);
     writer.write<uint8_t>(0x01);
@@ -80,32 +80,32 @@ void object_portrait::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(this->color);
 }
 
-std::unique_ptr<portrait> portrait_factory::create(const fb::model::object& obj)
+std::unique_ptr<appearance> appearance_factory::create(const fb::model::object& obj)
 {
     switch (obj.what())
     {
     case fb::model::enum_value::OBJECT_TYPE::NPC:
     {
         auto& npc_model = static_cast<const fb::model::npc&>(obj);
-        if (npc_model.preset.has_value())
+        if (npc_model.appearance.has_value())
         {
-            auto& preset      = table::preset[npc_model.preset.value()];
-            auto  ptr         = std::make_unique<character_portrait>();
-            ptr->gender       = preset.gender;
-            ptr->state        = preset.state;
-            ptr->hair         = preset.hair;
-            ptr->hair_color   = preset.hair_color;
-            ptr->weapon       = preset.weapon;
-            ptr->weapon_color = preset.weapon_color;
-            ptr->armor        = preset.armor;
-            ptr->armor_color  = preset.armor_color;
-            ptr->shield       = preset.shield;
-            ptr->shield_color = preset.shield_color;
+            auto& app  = table::appearance[npc_model.appearance.value()];
+            auto  ptr  = std::make_unique<character_appearance>();
+            ptr->gender       = app.gender;
+            ptr->state       = app.state;
+            ptr->hair        = app.hair;
+            ptr->hair_color  = app.hair_color;
+            ptr->weapon      = app.weapon;
+            ptr->weapon_color = app.weapon_color;
+            ptr->armor       = app.armor;
+            ptr->armor_color = app.armor_color;
+            ptr->shield      = app.shield;
+            ptr->shield_color = app.shield_color;
             return std::move(ptr);
         }
         else
         {
-            auto ptr   = std::make_unique<object_portrait>();
+            auto ptr   = std::make_unique<object_appearance>();
             ptr->look  = obj.look;
             ptr->color = obj.color;
             return std::move(ptr);
@@ -114,7 +114,7 @@ std::unique_ptr<portrait> portrait_factory::create(const fb::model::object& obj)
 
     default:
     {
-        auto ptr   = std::make_unique<object_portrait>();
+        auto ptr   = std::make_unique<object_appearance>();
         ptr->look  = obj.look;
         ptr->color = obj.color;
         return std::move(ptr);
@@ -122,14 +122,14 @@ std::unique_ptr<portrait> portrait_factory::create(const fb::model::object& obj)
     }
 }
 
-std::unique_ptr<portrait> portrait_factory::create(const fb::game::object& obj)
+std::unique_ptr<appearance> appearance_factory::create(const fb::game::object& obj)
 {
     switch (obj.what())
     {
     case fb::model::enum_value::OBJECT_TYPE::CHARACTER:
     {
-        auto& ch        = static_cast<const fb::game::character&>(obj);
-        auto  ptr       = std::make_unique<character_portrait>();
+        auto& ch  = static_cast<const fb::game::character&>(obj);
+        auto  ptr = std::make_unique<character_appearance>();
         ptr->gender     = ch.gender();
         ptr->state      = ch.state();
         ptr->hair       = ch.look();

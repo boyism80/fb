@@ -58,7 +58,8 @@ function NPC_155(me, npc)
             return
         end
 
-        if not me:start_quest(QUEST_CROCODILE_BLOOD) then
+        local q = me:start_quest(QUEST_CROCODILE_BLOOD)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
@@ -102,8 +103,8 @@ function NPC_155(me, npc)
         end
 
         local items = me:items('악어의피')
+        ::NPC_155_COS011::
         if #items < 3 then
-            ::NPC_155_COS011::
             local button = me:dialog(npc, '아직 악어의피를 다 구하지 못했군. 쉽진 않을걸세. 요즘 변종된 악어가많아 순수한 피를 찾기 힘들게야.', false, true)
             if button == DIALOG_RESULT.QUIT then
                 return
@@ -118,10 +119,17 @@ function NPC_155(me, npc)
                 goto NPC_155_COS011
             end
         else
-            for slot, item in pairs(items) do
-                me:rmitem(slot, 1, ITEM_DELETE_TYPE.GIVE)
+            local code = me:exchange(
+                { ['item'] = { ['악어의피'] = 3 } },
+                { ['item'] = { ['수선도사의머리띠'] = 1 } }
+            )
+            if code == EXCHANGE_RESULT.LACK_COST then
+                goto NPC_155_COS011
             end
-            me:mkitem('수선도사의머리띠', 1)
+            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+                me:dialog(npc, '소지품이 가득 차서 머리띠를 줄 수 없네.', false, true)
+                return
+            end
             me:push_achievement(155, '수선도사의 부탁을 들어주었다.', 6, 8)
             quest:complete()
             

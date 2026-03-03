@@ -21,7 +21,7 @@ dialog::dialog(const fb::model::object&      object,
                bool                          button_next,
                uint32_t                      oid,
                fb::game::dialog::interaction interaction) :
-    portrait(fb::game::portrait_factory::create(object)),
+    appearance(fb::game::appearance_factory::create(object)),
     message(std::string(message)),
     button_prev(button_prev),
     button_next(button_next),
@@ -35,7 +35,7 @@ dialog::dialog(const fb::game::object&       object,
                bool                          button_next,
                uint32_t                      oid,
                fb::game::dialog::interaction interaction) :
-    portrait(fb::game::portrait_factory::create(object)),
+    appearance(fb::game::appearance_factory::create(object)),
     message(std::string(message)),
     button_prev(button_prev),
     button_next(button_next),
@@ -52,9 +52,9 @@ async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(0x00);                                    // unknown
     writer.write<uint8_t>(static_cast<uint8_t>(this->interaction)); // interaction
     writer.write<uint32_t>(this->oid);
-    if (this->portrait != nullptr)
+    if (this->appearance != nullptr)
     {
-        this->portrait->serialize(writer);
+        this->appearance->serialize(writer);
     }
     else
     {

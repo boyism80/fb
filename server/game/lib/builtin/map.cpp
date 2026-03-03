@@ -18,6 +18,7 @@ IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
 {"belows",              builtin::map::builtin_belows},
 {"tile",                builtin::map::builtin_tile},
 {"at",                  builtin::map::builtin_at},
+{"block",               builtin::map::builtin_block},
 {"bulk_update",         builtin::map::builtin_bulk_update},
 END_LUA_EXTENSION; // clang-format on
 
@@ -390,6 +391,39 @@ int builtin::map::builtin_at(lua_State* L)
             return 1;
         });
     });
+}
+
+int builtin::map::builtin_block(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto map    = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto x = (uint16_t)lua->tointeger(2);
+    auto y = (uint16_t)lua->tointeger(3);
+
+    if (argc >= 4)
+    {
+        auto option = lua->toboolean(4);
+        if (map->block(x, y, option))
+        {
+            lua->pushboolean(true);
+        }
+        else
+        {
+            lua->pushboolean(false);
+        }
+        return 1;
+    }
+
+    lua->pushboolean(map->blocked(x, y));
+    return 1;
 }
 
 int builtin::map::builtin_bulk_update(lua_State* L)

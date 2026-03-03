@@ -1,30 +1,30 @@
 function NPC_168(me, npc)
     local food_rewards = {
-        ['바나나다발']       = { item = nil,  item_count = 0,  money = 500 },
-        ['영양반찬']         = { item = nil,  item_count = 0,  money = 5000 },
-        ['영양음료']         = { item = nil,  item_count = 0,  money = 5000 },
-        ['영양통구이']       = { item = nil,  item_count = 0,  money = 0 },
-        ['초보도시락']       = { item = '북천황변신시약',  item_count = 1,  money = 0 },
-        ['기분전환반찬']     = { item = nil,  item_count = 0,  money = 0 },
-        ['기분전환음료']     = { item = nil,  item_count = 0,  money = 30000 },
-        ['기분전환통구이']   = { item = nil,  item_count = 0,  money = 30000 },
-        ['활력충전통구이']   = { item = nil,  item_count = 0,  money = 50000 },
-        ['활력충전반찬']     = { item = nil,  item_count = 0,  money = 0 },
-        ['활력충전음료']     = { item = nil,  item_count = 0,  money = 50000 },
-        ['궁극의도시락']     = { item = '양첨목봉',  item_count = 1,  money = 0 },
-        ['생장촉진통구이']   = { item = '청의태자변신시약',  item_count = 1,  money = 0 },
-        ['생장촉진반찬']     = { item = nil,  item_count = 0,  money = 0 },
-        ['생장촉진음료']     = { item = nil,  item_count = 0,  money = 0 },
-        ['전설의도시락']     = { item = '흑형도',  item_count = 1,  money = 0 },
-        ['생명보존통구이']   = { item = '토깽이변신시약',  item_count = 2,  money = 0 },
-        ['생명보존반찬']     = { item = nil,  item_count = 0,  money = 0 },
-        ['생명보존음료']     = { item = nil,  item_count = 0,  money = 0 },
-        ['환상의도시락']     = { item = '천풍선',  item_count = 1,  money = 0 },
-        ['1차도시락']        = { item = '암흑왕변신시약',  item_count = 1,  money = 0 },
-        ['2차도시락']        = { item = '진명삼지창',  item_count = 1,  money = 0 },
-        ['3차도시락']        = { item = '칠교칠선',  item_count = 1,  money = 0 },
-        ['4차도시락']        = { item = '금마반지',  item_count = 2,  money = 0 },
-        ['비장의도시락']     = { item = '이가닌자의검',  item_count = 1,  money = 0 },
+        ['바나나다발'] = { item = nil,  item_count = 0,  money = 500 },
+        ['영양반찬'] = { item = nil,  item_count = 0,  money = 5000 },
+        ['영양음료'] = { item = nil,  item_count = 0,  money = 5000 },
+        ['영양통구이'] = { item = nil,  item_count = 0,  money = 0 },
+        ['초보도시락'] = { item = '북천황변신시약',  item_count = 1,  money = 0 },
+        ['기분전환반찬'] = { item = nil,  item_count = 0,  money = 0 },
+        ['기분전환음료'] = { item = nil,  item_count = 0,  money = 30000 },
+        ['기분전환통구이'] = { item = nil,  item_count = 0,  money = 30000 },
+        ['활력충전통구이'] = { item = nil,  item_count = 0,  money = 50000 },
+        ['활력충전반찬'] = { item = nil,  item_count = 0,  money = 0 },
+        ['활력충전음료'] = { item = nil,  item_count = 0,  money = 50000 },
+        ['궁극의도시락'] = { item = '양첨목봉',  item_count = 1,  money = 0 },
+        ['생장촉진통구이'] = { item = '청의태자변신시약',  item_count = 1,  money = 0 },
+        ['생장촉진반찬'] = { item = nil,  item_count = 0,  money = 0 },
+        ['생장촉진음료'] = { item = nil,  item_count = 0,  money = 0 },
+        ['전설의도시락'] = { item = '흑형도',  item_count = 1,  money = 0 },
+        ['생명보존통구이'] = { item = '토깽이변신시약',  item_count = 2,  money = 0 },
+        ['생명보존반찬'] = { item = nil,  item_count = 0,  money = 0 },
+        ['생명보존음료'] = { item = nil,  item_count = 0,  money = 0 },
+        ['환상의도시락'] = { item = '천풍선',  item_count = 1,  money = 0 },
+        ['1차도시락'] = { item = '암흑왕변신시약',  item_count = 1,  money = 0 },
+        ['2차도시락'] = { item = '진명삼지창',  item_count = 1,  money = 0 },
+        ['3차도시락'] = { item = '칠교칠선',  item_count = 1,  money = 0 },
+        ['4차도시락'] = { item = '금마반지',  item_count = 2,  money = 0 },
+        ['비장의도시락'] = { item = '이가닌자의검',  item_count = 1,  money = 0 },
     }
     
     local quest = me:quest(QUEST_MEOKYEOM)
@@ -164,22 +164,36 @@ function NPC_168(me, npc)
         return
     end
     
-    if not me:has_items(food_name, 1) then
-        me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', false, false)
-        return
-    end
-    if not me:rmitem(food_name, 1, ITEM_DELETE_TYPE.GIVE) then
-        me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', false, false)
-        return
-    end
-    if row.item ~= nil and row.item_count > 0 then
-        if me:mkitem(row.item, row.item_count) == nil then
-            me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', false, true)
+    local has_reward_item = (row.item ~= nil and row.item_count > 0)
+    local has_reward_money = (row.money ~= nil and row.money > 0)
+
+    if not has_reward_item and not has_reward_money then
+        if not me:has_items(food_name, 1) or not me:rmitem(food_name, 1, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', false, false)
             return
         end
+        me:dialog(npc, '정말 고맙네! 수고했네. 앞으로도 계속 부탁하네.', true, true)
+        return
     end
-    if row.money > 0 then
-        me:money(me:money() + row.money)
+
+    local reward = {}
+    if has_reward_item then
+        reward['item'] = { [row.item] = row.item_count }
+    end
+    if has_reward_money then
+        reward['money'] = row.money
+    end
+
+    local code = me:exchange(
+        { ['item'] = { [food_name] = 1 } },
+        reward
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
+        me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', false, false)
+        return
+    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', false, true)
+        return
     end
     me:dialog(npc, '정말 고맙네! 수고했네. 앞으로도 계속 부탁하네.', true, true)
 end

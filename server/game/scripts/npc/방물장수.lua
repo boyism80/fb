@@ -14,9 +14,13 @@ function NPC_62(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
+        local q = me:start_quest(QUEST_WATER_BOTTLE)
+        if q == nil then
+            me:dialog(npc, '퀘스트를 시작할 수 없습니다.', false, false)
+            return
+        end
         me:dialog(npc, '물병을 빚는데는 시간이 걸립니다. 여기 보관증을 드릴테니 며칠후 오세요.', false, true)
         me:mkitem(VOUCHER_NAME, 1)
-        me:start_quest(QUEST_WATER_BOTTLE)
     end
     
     if quest:completed() then
@@ -29,13 +33,22 @@ function NPC_62(me, npc)
         return
     end
     
-    if me:money() < WATER_BOTTLE_PRICE then
-        me:dialog(npc, '15만전을 구해오세요.', false, false)
+    local code = me:exchange(
+        { ['item'] = { [VOUCHER_NAME] = 1 }, ['money'] = WATER_BOTTLE_PRICE },
+        { ['item'] = { [BOTTLE_NAME] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
+        if not me:has_items(VOUCHER_NAME, 1) then
+            me:dialog(npc, '물병보관증을 가져오세요.', false, false)
+        else
+            me:dialog(npc, '15만전을 구해오세요.', false, false)
+        end
         return
     end
-    
-    me:rmitem(VOUCHER_NAME, 1, ITEM_DELETE_TYPE.GIVE)
-    me:mkitem(BOTTLE_NAME, 1)
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 물병을 받을 수 없습니다.', false, false)
+        return
+    end
     quest:complete()
     me:dialog(npc, '여기있습니다.', false, true)
 end

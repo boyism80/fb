@@ -1,7 +1,7 @@
 -- 금수 캐스팅
 function ON_CAST_2002(me, spell, name)
     local mobs = {
-        ['고양이'] = 32950,
+        ['고양이'] = 183,
         ['새끼돼지'] = name2mob('꼬마돼지'):look(),
         ['돼지'] = name2mob('돼지'):look(),
         ['강아지'] = name2mob('강아지'):look(),
@@ -22,5 +22,5 @@ end
 
 -- 금수 버프 해제 효과
 function ON_UNBUFF_2002(me, spell)
-    me:disguise(nil)
+    me:mimic(nil)
 end

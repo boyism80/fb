@@ -42,10 +42,21 @@ function NPC_239(me, npc)
         rate = 100
     end
 
-    me:rmitem(ITEM_DEAD_CENTIPEDE, count, ITEM_DELETE_TYPE.GIVE)
     local r = math.random(1, 100)
-    if r < rate then
-        me:mkitem(ITEM_DRIED_CENTIPEDE, 1)
+    local reward = (r < rate) and { ['item'] = { [ITEM_DRIED_CENTIPEDE] = 1 } } or nil
+    local code = me:exchange(
+        { ['item'] = { [ITEM_DEAD_CENTIPEDE] = count } },
+        reward
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
+        me:dialog(npc, '지네가 너무 적어서 만들수 없을 것 같네..', false, false)
+        return
+    end
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 말린지네를 받을 수 없네.', false, false)
+        return
+    end
+    if reward ~= nil then
         me:dialog(npc, '이거 쉽지 않구만... 간신히 만들었네... 자주 들리게나...', false, true)
     else
         me:dialog(npc, '이런... 지네가 모두 부숴저버렸군..', false, false)

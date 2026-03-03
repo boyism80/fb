@@ -56,12 +56,24 @@ local function run_ice_sword(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return false
         end
-        me:rmitem(ITEM_ICE, ICE_SWORD_COST, ITEM_DELETE_TYPE.GIVE)
+        local cost = { ['item'] = { [ITEM_ICE] = ICE_SWORD_COST } }
+        local reward = nil
         if math.random(1, 10) <= ICE_SWORD_SUCCESS_CHANCE then
-            me:mkitem(ITEM_ICE_SWORD, 1)
-            me:dialog(npc, '자..받게나..방금 만든 얼음칼일쎄...어떤가? 감사한가? 껄껄껄..그래..잘 가게..', false, false)
-        else
+            reward = { ['item'] = { [ITEM_ICE_SWORD] = 1 } }
+        end
+        local code = me:exchange(cost, reward)
+        if code == EXCHANGE_RESULT.LACK_COST then
+            me:dialog(npc, '얼음칼을 만들기 위해선 얼음 100개가 필요하네.', false, false)
+            return true
+        end
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            me:dialog(npc, '소지품이 가득 차서 얼음칼을 받을 수 없네.', false, false)
+            return true
+        end
+        if reward == nil then
             me:dialog(npc, '이런..제작 도중에 얼음이 모두 부숴저 버렸군.. 미안하네..', false, false)
+        else
+            me:dialog(npc, '자..받게나..방금 만든 얼음칼일쎄...어떤가? 감사한가? 껄껄껄..그래..잘 가게..', false, false)
         end
         return true
     end
@@ -184,8 +196,16 @@ local function run_amber_helmet_craft(me, npc, colors, has_prev)
     if not me:has_items({ [gem_name] = 1, [ITEM_IRON_DUST] = HELMET_IRON_DUST_COUNT }) then
         return me:dialog(npc, '자네 혹시 재료를 모르는 것인가? ' .. gem_name .. '과 쇠가루 2개를 가지고 와야 ' .. helmet_name .. '를 만들어 줄 수 있네.', false, true)
     end
-    me:rmitem({ [gem_name] = 1, [ITEM_IRON_DUST] = HELMET_IRON_DUST_COUNT }, ITEM_DELETE_TYPE.GIVE)
-    me:mkitem(helmet_name, 1)
+    local code = me:exchange(
+        { ['item'] = { [gem_name] = 1, [ITEM_IRON_DUST] = HELMET_IRON_DUST_COUNT } },
+        { ['item'] = { [helmet_name] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
+        return me:dialog(npc, '자네 혹시 재료를 모르는 것인가? ' .. gem_name .. '과 쇠가루 2개를 가지고 와야 ' .. helmet_name .. '를 만들어 줄 수 있네.', false, true)
+    end
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        return me:dialog(npc, '소지품이 가득 차서 ' .. helmet_name .. '를 받을 수 없네.', false, true)
+    end
     return me:dialog(npc, gem_name .. '으로 ' .. helmet_name .. '를 만들어주었네.', false, true)
 end
 

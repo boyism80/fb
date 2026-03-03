@@ -17,12 +17,12 @@ class dialog : public fb::protocol::header
 public:
     static constexpr uint8_t header = 0x30;
 #ifndef BOT
-    using portrait_ptr = std::unique_ptr<fb::game::portrait>;
+    using appearance_ptr = std::unique_ptr<fb::game::appearance>;
 #endif
 
 public:
 #ifndef BOT
-    const portrait_ptr                  portrait;
+    const appearance_ptr                appearance;
     const std::string                   message;
     const bool                          button_prev;
     const bool                          button_next;

@@ -52,7 +52,7 @@ public struct Character : IFlatbufferObject
   public uint Exp { get { int o = __p.__offset(38); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Money { get { int o = __p.__offset(40); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint DepositedMoney { get { int o = __p.__offset(42); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public nullable.nullable_ushort? Disguise { get { int o = __p.__offset(44); return o != 0 ? (nullable.nullable_ushort?)(new nullable.nullable_ushort()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public fb.protocol._internal.raw.Mimicry? Mimicry { get { int o = __p.__offset(44); return o != 0 ? (fb.protocol._internal.raw.Mimicry?)(new fb.protocol._internal.raw.Mimicry()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public uint Hp { get { int o = __p.__offset(46); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint BaseHp { get { int o = __p.__offset(48); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint AdditionalHp { get { int o = __p.__offset(50); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
@@ -120,7 +120,7 @@ public struct Character : IFlatbufferObject
       uint exp = 0,
       uint money = 0,
       uint deposited_money = 0,
-      Offset<nullable.nullable_ushort> disguiseOffset = default(Offset<nullable.nullable_ushort>),
+      Offset<fb.protocol._internal.raw.Mimicry> mimicryOffset = default(Offset<fb.protocol._internal.raw.Mimicry>),
       uint hp = 0,
       uint base_hp = 0,
       uint additional_hp = 0,
@@ -161,7 +161,7 @@ public struct Character : IFlatbufferObject
     Character.AddAdditionalHp(builder, additional_hp);
     Character.AddBaseHp(builder, base_hp);
     Character.AddHp(builder, hp);
-    Character.AddDisguise(builder, disguiseOffset);
+    Character.AddMimicry(builder, mimicryOffset);
     Character.AddDepositedMoney(builder, deposited_money);
     Character.AddMoney(builder, money);
     Character.AddExp(builder, exp);
@@ -207,7 +207,7 @@ public struct Character : IFlatbufferObject
   public static void AddExp(FlatBufferBuilder builder, uint exp) { builder.AddUint(17, exp, 0); }
   public static void AddMoney(FlatBufferBuilder builder, uint money) { builder.AddUint(18, money, 0); }
   public static void AddDepositedMoney(FlatBufferBuilder builder, uint depositedMoney) { builder.AddUint(19, depositedMoney, 0); }
-  public static void AddDisguise(FlatBufferBuilder builder, Offset<nullable.nullable_ushort> disguiseOffset) { builder.AddOffset(20, disguiseOffset.Value, 0); }
+  public static void AddMimicry(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Mimicry> mimicryOffset) { builder.AddOffset(20, mimicryOffset.Value, 0); }
   public static void AddHp(FlatBufferBuilder builder, uint hp) { builder.AddUint(21, hp, 0); }
   public static void AddBaseHp(FlatBufferBuilder builder, uint baseHp) { builder.AddUint(22, baseHp, 0); }
   public static void AddAdditionalHp(FlatBufferBuilder builder, uint additionalHp) { builder.AddUint(23, additionalHp, 0); }
@@ -267,7 +267,7 @@ static public class CharacterVerify
       && verifier.VerifyField(tablePos, 38 /*Exp*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 40 /*Money*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 42 /*DepositedMoney*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyTable(tablePos, 44 /*Disguise*/, nullable.nullable_ushortVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 44 /*Mimicry*/, fb.protocol._internal.raw.MimicryVerify.Verify, false)
       && verifier.VerifyField(tablePos, 46 /*Hp*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 48 /*BaseHp*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 50 /*AdditionalHp*/, 4 /*uint*/, 4, false)

@@ -18,10 +18,12 @@ function ON_ACTIVE_2(me, item)
         if btn == DIALOG_RESULT.PREV then
             goto ON_ACTIVE_2_0000
         end
-        if quest == nil and not me:start_quest(QUEST_NAKRANG2) then
-            return
+        if quest == nil then
+            quest = me:start_quest(QUEST_NAKRANG2)
+            if quest == nil then
+                return
+            end
         end
-        quest = me:quest(QUEST_NAKRANG2)
         quest:step(1)
         quest:progress(0)
         return

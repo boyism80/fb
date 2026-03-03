@@ -24,7 +24,8 @@ function NPC_143(me, npc)
             return
         end
         btn = me:dialog(npc, '정말 고마워요. 그럼 믿고 기다리죠.', false, true)
-        if not me:start_quest(QUEST_PRINCESS_RING) then
+        local q = me:start_quest(QUEST_PRINCESS_RING)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
@@ -42,11 +43,18 @@ function NPC_143(me, npc)
         return
     end
     local btn = me:dialog(npc, '정말 감사해요. 정말... 이 은혜는 잊지 못할꺼에요. 이건 약소하지만 제가 드리는 선물입니다.', false, true)
-    if not me:rmitem('공주의반지', 1, ITEM_DELETE_TYPE.GIVE) then
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    local code = me:exchange(
+        { ['item'] = { ['공주의반지'] = 1 } },
+        { ['item'] = { ['청옥반지'] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 제 반지가 없으신거같은데..', false, true)
         return
     end
-    if me:mkitem('청옥반지', 1) == nil then
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 청옥반지를 받을 수 없습니다.', false, true)
         return
     end

@@ -20,6 +20,7 @@ struct map
     static int builtin_belows(lua_State* L);
     static int builtin_tile(lua_State* L);
     static int builtin_at(lua_State* L);
+    static int builtin_block(lua_State* L);
     static int builtin_bulk_update(lua_State* L);
 };
 

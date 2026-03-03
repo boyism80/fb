@@ -1,4 +1,35 @@
 function NPC_235(me, npc)
+    -- QUEST_PAMASPIRI step 2: give 꿀사탕 and set step 3 (for 피리부는소년 exchange)
+    local quest = me:quest(QUEST_PAMASPIRI)
+    if quest and quest:step() == 2 and not quest:completed() then
+        ::NPC_235_PAMASPIRI_COS01::
+        local sel, btn = me:list(npc, "누구세요? 제게 무슨 하실 말씀이라도...?", { "혹시 사탕 좀 가지고 있니?", "아무 일도 아니란다." }, false)
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if sel == nil or sel == 1 then
+            return
+        end
+
+        ::NPC_235_PAMASPIRI_COS02::
+        local button = me:dialog(npc, "아, 사탕이 필요하세요? 예, 나눠 드릴께요.", true, true)
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.PREV then
+            goto NPC_235_PAMASPIRI_COS01
+        end
+
+        if me:mkitem("꿀사탕", 1) == nil then
+            me:dialog(npc, "소지품이 가득 차서 줄 수 없네요.", false, false)
+            return
+        end
+        quest:step(3)
+        me:push_achievement(48, "파마의 피리를 찾자(꼬마에게 사탕을 주자).", 7, 1)
+        me:dialog(npc, "대신 다음에 시간이 되시면 제 장난감 찾는 일을 좀 도와주셔야 돼요. 아셨죠? 그럼 전 이만...", false, false)
+        return
+    end
+
     local sel = me:list(npc, '제게 하실 말씀이 있으신가요?', {
         '청자다람쥐인형',
         '잃어버린 장난감'
@@ -44,14 +75,24 @@ function bokgeon_sell_doll(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:start_quest(QUEST_SELL_DOLL) then
+        quest = me:start_quest(QUEST_SELL_DOLL)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_SELL_DOLL)
+        local code = me:exchange(
+            { ['item'] = { ['청자다람쥐인형'] = 1 } },
+            { ['money'] = 100000 }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
+            me:dialog(npc, '청자다람쥐인형을 가져오세요.', false, true)
+            return
+        end
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            me:dialog(npc, '금전을 받을 여유가 없군요.', false, true)
+            return
+        end
         quest:complete()
-        me:rmitem('청자다람쥐인형', 1, ITEM_DELETE_TYPE.GIVE)
-        me:money(me:money() + 100000)
         return
     end
     
@@ -99,11 +140,11 @@ function bokgeon_find_toys(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:start_quest(QUEST_FIND_TOYS) then
+        quest = me:start_quest(QUEST_FIND_TOYS)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_FIND_TOYS)
         me:push_achievement(37, '복건성태자의 잃어버린 장난감을 찾아주자.', 7, 1)
         return
     end
@@ -127,11 +168,15 @@ function bokgeon_find_toys(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange(
+            { ['item'] = materials },
+            { ['item'] = { ['팔과탕'] = 10 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 재료를 다 모으지 못하셨군요.', false, true)
             return
         end
-        if me:mkitem('팔과탕', 10) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 팔과탕을 받을 수 없습니다.', false, true)
             return
         end

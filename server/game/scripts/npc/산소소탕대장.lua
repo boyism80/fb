@@ -63,11 +63,11 @@ function NPC_211(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:start_quest(QUEST_OXYGEN) then
+        quest = me:start_quest(QUEST_OXYGEN)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_OXYGEN)
         quest:step(1)
         me:push_achievement(ACHIEVEMENT_OXYGEN, '연청산소의 뿔을 50개 모아가자.', 7, 1)
         return
@@ -82,12 +82,17 @@ function NPC_211(me, npc)
 
     if step >= 1 and step <= 5 then
         local t = tiers[step]
-        if not me:has_items(t.item, t.count) then
+        local code = me:exchange(
+            { ['item'] = { [t.item] = t.count } },
+            { ['money'] = t.money }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, string.format('아직 %s %d개를 모아오지 못하신 것 같군요?', t.item, t.count), false, true)
             return
+        elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+            me:dialog(npc, '소지품이 가득 차서 보상금을 받을 수 없습니다.', false, true)
+            return
         end
-        me:rmitem(t.item, t.count, ITEM_DELETE_TYPE.GIVE)
-        me:money(me:money() + t.money)
         quest:step(step + 1)
         me:push_achievement(ACHIEVEMENT_OXYGEN, t.next_legend, 7, 1)
         btn = me:dialog(npc, string.format('정말 수고하셨습니다. 보상금 여기있습니다. 다음은 %s입니다. %s의뿔 %d개를 모아와 주십시오.', t.next_name, t.next_name, t.next_count), false, true)
@@ -127,8 +132,17 @@ function NPC_211(me, npc)
             end
             return
         end
-        me:rmitem('녹산소괴의뿔', 30, ITEM_DELETE_TYPE.GIVE)
-        me:money(me:money() + 30000)
+        local code2 = me:exchange(
+            { ['item'] = { ['녹산소괴의뿔'] = 30 } },
+            { ['money'] = 30000 }
+        )
+        if code2 == EXCHANGE_RESULT.LACK_COST then
+            me:dialog(npc, '아직 녹산소괴의뿔 30개를 모아오지 못하신 것 같군요?', false, true)
+            return
+        elseif code2 == EXCHANGE_RESULT.LACK_CAPACITY then
+            me:dialog(npc, '소지품이 가득 차서 보상금을 받을 수 없습니다.', false, true)
+            return
+        end
         quest:step(7)
         me:push_achievement(ACHIEVEMENT_OXYGEN, '산소괴왕의 뿔을 구하자.', 7, 1)
         me:dialog(npc, '산소괴왕은 다른 산소들과는 차원이 다릅니다. 더구나 잘 나타나지 않아 찾기가 더 힘들답니다.\n\n산소괴왕의뿔을 가져오시면 귀한 물건을 드리도록 하죠. 부디 조심하시기 바랍니다.', false, true)
@@ -144,11 +158,14 @@ function NPC_211(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:rmitem('산소괴왕의뿔', 1, ITEM_DELETE_TYPE.GIVE) then
+        local code3 = me:exchange(
+            { ['item'] = { ['산소괴왕의뿔'] = 1 } },
+            { ['item'] = { ['흑영패도'] = 1 } }
+        )
+        if code3 == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '산소괴왕의뿔을 가지고 있지 않으시군요.', false, true)
             return
-        end
-        if me:mkitem('흑영패도', 1) == nil then
+        elseif code3 == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 흑영패도를 받을 수 없습니다.', false, true)
             return
         end

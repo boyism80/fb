@@ -50,6 +50,7 @@ struct npc
     static int builtin_buy(lua_State* L);
     static int builtin_buy_price(lua_State* L);
     static int builtin_interaction(lua_State* L);
+    static int builtin_appearance(lua_State* L);
 };
 
 struct mob
@@ -61,6 +62,7 @@ struct mob
     static int builtin_exp(lua_State* L);
     static int builtin_script(lua_State* L);
     static int builtin_on_spell_hit(lua_State* L);
+    static int builtin_appearance(lua_State* L);
 };
 
 struct map

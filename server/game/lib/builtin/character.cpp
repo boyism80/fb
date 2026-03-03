@@ -22,11 +22,14 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"items",                  builtin::character::builtin_items},
 {"has_items",              builtin::character::builtin_has_items},
 {"equipments",             builtin::character::builtin_equipments},
+{"equipment_off",          builtin::character::builtin_equipment_off},
 {"dropitem",               builtin::character::builtin_item_drop},
 {"mkitem",                 builtin::character::builtin_mkitem},
 {"rmitem",                 builtin::character::builtin_rmitem},
+{"exchange",                builtin::character::builtin_exchange},
 {"state",                  builtin::character::builtin_state},
-{"disguise",               builtin::character::builtin_disguise},
+{"mimic",                  builtin::character::builtin_mimic},
+{"appearance",             builtin::character::builtin_appearance},
 {"class",                  builtin::character::builtin_class},
 {"promotion",              builtin::character::builtin_promotion},
 {"level",                  builtin::character::builtin_level},
@@ -65,6 +68,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"armor_color",            builtin::character::builtin_armor_color},
 {"mkspell",                builtin::character::builtin_mkspell},
 {"rmspell",                builtin::character::builtin_rmspell},
+{"spell",                  builtin::character::builtin_spell},
 {"world",                  builtin::character::builtin_world},
 {"ad",                     builtin::character::builtin_ad},
 {"web",                    builtin::character::builtin_web},
@@ -555,6 +559,38 @@ int builtin::character::builtin_equipments(lua_State* L)
     });
 }
 
+int builtin::character::builtin_equipment_off(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto parts = static_cast<fb::model::enum_value::EQUIPMENT_PARTS>(lua->tointeger(2, 0));
+
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto slot = ch->items.inactive(parts);
+        return lua->ensure_resume(*server, weak, [=]() {
+            if (slot == 0xFF)
+            {
+                lua->pushnil();
+                return 1;
+            }
+            auto item = ch->items.at(slot);
+            if (item != nullptr)
+                lua->pushobject(item);
+            else
+                lua->pushnil();
+            return 1;
+        });
+    });
+}
+
 int builtin::character::builtin_item_drop(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -907,6 +943,135 @@ int builtin::character::builtin_rmitem(lua_State* L)
     }
 }
 
+int builtin::character::builtin_exchange(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    if (lua->is_nil(2) == false && lua->is_table(2) == false)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+    if (lua->is_nil(3) == false && lua->is_table(3) == false)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto cost_items   = std::unordered_map<uint32_t, uint16_t>();
+    auto cost_money   = uint32_t{0};
+    auto cost_exp     = uint32_t{0};
+    auto reward_items = std::unordered_map<uint32_t, uint16_t>();
+    auto reward_money = uint32_t{0};
+    auto reward_exp   = uint32_t{0};
+
+    if (lua->is_table(2))
+    {
+        lua->pushstring("item");
+        lua->rawget(2);
+        if (lua->is_table(-1))
+        {
+            lua->pushnil();
+            while (lua->next(-2))
+            {
+                if (lua->is_string(-2) && lua->is_number(-1))
+                {
+                    auto name  = lua->tostring(-2);
+                    auto count = static_cast<uint16_t>(lua->tointeger(-1));
+                    auto model = table::item.name2item(name);
+                    if (model != nullptr && count > 0)
+                        cost_items[model->id] += count;
+                }
+                lua->pop(1);
+            }
+        }
+        lua->pop(1);
+
+        lua->pushstring("money");
+        lua->rawget(2);
+        if (lua->is_number(-1))
+            cost_money = static_cast<uint32_t>(lua->tointeger(-1));
+        lua->pop(1);
+
+        lua->pushstring("exp");
+        lua->rawget(2);
+        if (lua->is_number(-1))
+            cost_exp = static_cast<uint32_t>(lua->tointeger(-1));
+        lua->pop(1);
+    }
+
+    if (lua->is_table(3))
+    {
+        lua->pushstring("item");
+        lua->rawget(3);
+        if (lua->is_table(-1))
+        {
+            lua->pushnil();
+            while (lua->next(-2))
+            {
+                if (lua->is_string(-2) && lua->is_number(-1))
+                {
+                    auto name  = lua->tostring(-2);
+                    auto count = static_cast<uint16_t>(lua->tointeger(-1));
+                    auto model = table::item.name2item(name);
+                    if (model != nullptr && count > 0)
+                        reward_items[model->id] += count;
+                }
+                lua->pop(1);
+            }
+        }
+        lua->pop(1);
+
+        lua->pushstring("money");
+        lua->rawget(3);
+        if (lua->is_number(-1))
+            reward_money = static_cast<uint32_t>(lua->tointeger(-1));
+        lua->pop(1);
+
+        lua->pushstring("exp");
+        lua->rawget(3);
+        if (lua->is_number(-1))
+            reward_exp = static_cast<uint32_t>(lua->tointeger(-1));
+        lua->pop(1);
+    }
+
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        exchange_result result = exchange_result::ok;
+
+        if (cost_exp > 0 && ch->exp() < cost_exp)
+        {
+            result = exchange_result::lack_cost;
+        }
+        else
+        {
+            result = ch->items.exchange(cost_items, cost_money, reward_items, reward_money);
+            if (result == exchange_result::ok)
+            {
+                if (cost_exp > 0)
+                    ch->reduce_exp(cost_exp);
+                if (reward_exp > 0)
+                    ch->add_exp(reward_exp, false, true);
+            }
+        }
+
+        return lua->ensure_resume(*server, weak, [=]() {
+            lua->pushinteger(static_cast<int>(result));
+            return 1;
+        });
+    });
+}
+
 int builtin::character::builtin_state(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -943,7 +1108,7 @@ int builtin::character::builtin_state(lua_State* L)
     }
 }
 
-int builtin::character::builtin_disguise(lua_State* L)
+int builtin::character::builtin_mimic(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -959,39 +1124,272 @@ int builtin::character::builtin_disguise(lua_State* L)
     {
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto disguise = ch->disguise();
+            auto const& opt = ch->mimicry();
             return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(disguise.value());
+                if (!opt.has_value())
+                {
+                    lua->pushnil();
+                    return 1;
+                }
+                auto const& p = opt.value();
+                lua->new_table();
+                if (p.disguise.has_value())
+                {
+                    lua->pushstring("disguise");
+                    lua->pushinteger(static_cast<lua_Integer>(p.disguise.value()));
+                    lua->settable(-3);
+                }
+                lua->pushstring("hair");
+                lua->pushinteger(static_cast<lua_Integer>(p.hair));
+                lua->settable(-3);
+                if (p.hair_color.has_value())
+                {
+                    lua->pushstring("hair_color");
+                    lua->pushinteger(static_cast<lua_Integer>(p.hair_color.value()));
+                    lua->settable(-3);
+                }
+                lua->pushstring("gender");
+                lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(p.gender)));
+                lua->settable(-3);
+                lua->pushstring("state");
+                lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(p.state)));
+                lua->settable(-3);
+                if (p.weapon.has_value())
+                {
+                    lua->pushstring("weapon");
+                    lua->pushinteger(static_cast<lua_Integer>(p.weapon.value()));
+                    lua->settable(-3);
+                }
+                if (p.weapon_color.has_value())
+                {
+                    lua->pushstring("weapon_color");
+                    lua->pushinteger(static_cast<lua_Integer>(p.weapon_color.value()));
+                    lua->settable(-3);
+                }
+                if (p.armor.has_value())
+                {
+                    lua->pushstring("armor");
+                    lua->pushinteger(static_cast<lua_Integer>(p.armor.value()));
+                    lua->settable(-3);
+                }
+                if (p.armor_color.has_value())
+                {
+                    lua->pushstring("armor_color");
+                    lua->pushinteger(static_cast<lua_Integer>(p.armor_color.value()));
+                    lua->settable(-3);
+                }
+                if (p.shield.has_value())
+                {
+                    lua->pushstring("shield");
+                    lua->pushinteger(static_cast<lua_Integer>(p.shield.value()));
+                    lua->settable(-3);
+                }
+                if (p.shield_color.has_value())
+                {
+                    lua->pushstring("shield_color");
+                    lua->pushinteger(static_cast<lua_Integer>(p.shield_color.value()));
+                    lua->settable(-3);
+                }
                 return 1;
             });
         });
     }
-    else if (lua->is_nil(2))
+    else if (argc >= 2)
     {
-        auto weak = ch->weak_from_this_as<fb::game::character>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->undisguise();
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
+        if (lua->is_nil(2))
+        {
+            auto weak = ch->weak_from_this_as<fb::game::character>();
+            return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+                ch->mimicry(std::nullopt);
+                return lua->ensure_resume(*server, weak, [=]() {
+                    return 0;
+                });
             });
-        });
-    }
-    else if (lua->is_number(2))
-    {
-        auto value = lua->tointeger(2);
+        }
+        if (!lua->is_table(2))
+            return 0;
 
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            ch->disguise(value);
+            fb::game::character_appearance appearance;
+            lua->pushstring("disguise");
+            lua->rawget(2);
+            if (lua->is_number(-1))
+                appearance.disguise = static_cast<uint16_t>(lua->tointeger(-1));
+            lua->pop(1);
+
+            lua->pushstring("hair");
+            lua->rawget(2);
+            if (lua->is_number(-1))
+                appearance.hair = static_cast<uint16_t>(lua->tointeger(-1));
+            lua->pop(1);
+
+            lua->pushstring("hair_color");
+            lua->rawget(2);
+            if (lua->is_number(-1))
+                appearance.hair_color = static_cast<uint8_t>(lua->tointeger(-1));
+            lua->pop(1);
+
+            lua->pushstring("gender");
+            lua->rawget(2);
+            if (lua->is_number(-1))
+                appearance.gender = static_cast<GENDER>(lua->tointeger(-1));
+            lua->pop(1);
+
+            lua->pushstring("state");
+            lua->rawget(2);
+            if (lua->is_number(-1))
+                appearance.state = static_cast<STATE>(lua->tointeger(-1));
+            lua->pop(1);
+
+            lua->pushstring("weapon");
+            lua->rawget(2);
+            if (lua->is_number(-1))
+                appearance.weapon = static_cast<uint16_t>(lua->tointeger(-1));
+            lua->pop(1);
+
+            lua->pushstring("weapon_color");
+            lua->rawget(2);
+            if (lua->is_number(-1))
+                appearance.weapon_color = static_cast<uint8_t>(lua->tointeger(-1));
+            lua->pop(1);
+
+            lua->pushstring("armor");
+            lua->rawget(2);
+            if (lua->is_number(-1))
+                appearance.armor = static_cast<uint8_t>(lua->tointeger(-1));
+            lua->pop(1);
+
+            lua->pushstring("armor_color");
+            lua->rawget(2);
+            if (lua->is_number(-1))
+                appearance.armor_color = static_cast<uint8_t>(lua->tointeger(-1));
+            lua->pop(1);
+
+            lua->pushstring("shield");
+            lua->rawget(2);
+            if (lua->is_number(-1))
+                appearance.shield = static_cast<uint8_t>(lua->tointeger(-1));
+            lua->pop(1);
+
+            lua->pushstring("shield_color");
+            lua->rawget(2);
+            if (lua->is_number(-1))
+                appearance.shield_color = static_cast<uint8_t>(lua->tointeger(-1));
+            lua->pop(1);
+
+            ch->mimicry(std::move(appearance));
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });
         });
     }
-    else
-    {
+    return 0;
+}
+
+int builtin::character::builtin_appearance(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
-    }
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || server == nullptr)
+        return 0;
+
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        fb::game::character_appearance p;
+        if (ch->mimicry().has_value())
+            p = ch->mimicry().value();
+        else
+        {
+            p.gender      = ch->gender();
+            p.state       = ch->state();
+            p.hair        = ch->look();
+            p.hair_color  = ch->color();
+            p.disguise    = std::nullopt;
+            p.armor_color = ch->armor_color();
+            if (ch->items.armor() != nullptr)
+            {
+                p.armor = ch->items.armor()->based<fb::model::armor>().dress;
+                if (!p.armor_color.has_value())
+                    p.armor_color = ch->items.armor()->based<fb::model::armor>().color;
+            }
+            if (ch->items.weapon() != nullptr)
+            {
+                p.weapon       = ch->items.weapon()->based<fb::model::weapon>().dress;
+                p.weapon_color = ch->weapon_color().value_or(static_cast<uint8_t>(ch->items.weapon()->color()));
+            }
+            if (ch->items.shield() != nullptr)
+            {
+                p.shield       = ch->items.shield()->based<fb::model::shield>().dress;
+                p.shield_color = ch->shield_color().value_or(ch->items.shield()->color());
+            }
+        }
+        return lua->ensure_resume(*server, weak, [=]() {
+            lua->new_table();
+            if (p.disguise.has_value())
+            {
+                lua->pushstring("disguise");
+                lua->pushinteger(static_cast<lua_Integer>(p.disguise.value()));
+                lua->settable(-3);
+            }
+            lua->pushstring("hair");
+            lua->pushinteger(static_cast<lua_Integer>(p.hair));
+            lua->settable(-3);
+            if (p.hair_color.has_value())
+            {
+                lua->pushstring("hair_color");
+                lua->pushinteger(static_cast<lua_Integer>(p.hair_color.value()));
+                lua->settable(-3);
+            }
+            lua->pushstring("gender");
+            lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(p.gender)));
+            lua->settable(-3);
+            lua->pushstring("state");
+            lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(p.state)));
+            lua->settable(-3);
+            if (p.weapon.has_value())
+            {
+                lua->pushstring("weapon");
+                lua->pushinteger(static_cast<lua_Integer>(p.weapon.value()));
+                lua->settable(-3);
+            }
+            if (p.weapon_color.has_value())
+            {
+                lua->pushstring("weapon_color");
+                lua->pushinteger(static_cast<lua_Integer>(p.weapon_color.value()));
+                lua->settable(-3);
+            }
+            if (p.armor.has_value())
+            {
+                lua->pushstring("armor");
+                lua->pushinteger(static_cast<lua_Integer>(p.armor.value()));
+                lua->settable(-3);
+            }
+            if (p.armor_color.has_value())
+            {
+                lua->pushstring("armor_color");
+                lua->pushinteger(static_cast<lua_Integer>(p.armor_color.value()));
+                lua->settable(-3);
+            }
+            if (p.shield.has_value())
+            {
+                lua->pushstring("shield");
+                lua->pushinteger(static_cast<lua_Integer>(p.shield.value()));
+                lua->settable(-3);
+            }
+            if (p.shield_color.has_value())
+            {
+                lua->pushstring("shield_color");
+                lua->pushinteger(static_cast<lua_Integer>(p.shield_color.value()));
+                lua->settable(-3);
+            }
+            return 1;
+        });
+    });
 }
 
 int builtin::character::builtin_class(lua_State* L)
@@ -2685,10 +3083,44 @@ int builtin::character::builtin_rmspell(lua_State* L)
     }
 }
 
+int builtin::character::builtin_spell(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto name = lua->tostring(2);
+    if (name.empty())
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto model = table::spell.name2spell(name);
+    if (model == nullptr)
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto spell = ch->spells.find(*model);
+    if (spell == nullptr)
+        lua->pushnil();
+    else
+        lua->pushobject(spell);
+
+    return 1;
+}
+
 int builtin::character::builtin_world(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
+
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
@@ -3095,10 +3527,10 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto oid      = uint32_t{0xFFFFFFFD};
-    auto obj      = std::shared_ptr<fb::game::object>(nullptr);
-    auto model    = static_cast<const fb::model::object*>(nullptr);
-    auto portrait = static_cast<fb::game::character_portrait*>(nullptr);
+    auto oid        = uint32_t{0xFFFFFFFD};
+    auto obj        = std::shared_ptr<fb::game::object>(nullptr);
+    auto model      = static_cast<const fb::model::object*>(nullptr);
+    auto appearance = static_cast<fb::game::character_appearance*>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
         obj   = lua->touserdata<fb::game::object>(2);
@@ -3111,46 +3543,46 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     }
     else if (lua->is_table(2))
     {
-        portrait = new fb::game::character_portrait();
+        appearance = new fb::game::character_appearance();
         lua->pushstring("gender");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            portrait->gender = static_cast<GENDER>(lua->tointeger(-1));
+            appearance->gender = static_cast<GENDER>(lua->tointeger(-1));
 
         lua->pushstring("state");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            portrait->state = static_cast<STATE>(lua->tointeger(-1));
+            appearance->state = static_cast<STATE>(lua->tointeger(-1));
 
         lua->pushstring("hair");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            portrait->hair = lua->tointeger(-1);
+            appearance->hair = lua->tointeger(-1);
 
         lua->pushstring("hair_color");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            portrait->hair_color = lua->tointeger(-1);
+            appearance->hair_color = lua->tointeger(-1);
 
         lua->pushstring("weapon");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            portrait->weapon = lua->tointeger(-1);
+            appearance->weapon = lua->tointeger(-1);
 
         lua->pushstring("weapon_color");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            portrait->weapon_color = lua->tointeger(-1);
+            appearance->weapon_color = lua->tointeger(-1);
 
         lua->pushstring("armor");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            portrait->armor = lua->tointeger(-1);
+            appearance->armor = lua->tointeger(-1);
 
         lua->pushstring("armor_color");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            portrait->armor_color = lua->tointeger(-1);
+            appearance->armor_color = lua->tointeger(-1);
 
         lua->pushstring("shield");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            portrait->shield = lua->tointeger(-1);
+            appearance->shield = lua->tointeger(-1);
 
         lua->pushstring("shield_color");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            portrait->shield_color = lua->tointeger(-1);
+            appearance->shield_color = lua->tointeger(-1);
     }
     else
     {
@@ -3170,9 +3602,13 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
 
     std::ignore =
         server->threads.dispatch(ch->weak_from_this_as<fb::game::character>(), [=](auto& thread) -> async::task<void> {
-            if (portrait != nullptr)
-                ch->listener
-                    .on_dialog(*ch, std::unique_ptr<fb::game::portrait>(portrait), message, menus, button_prev, oid);
+            if (appearance != nullptr)
+                ch->listener.on_dialog(*ch,
+                                       std::unique_ptr<fb::game::appearance>(appearance),
+                                       message,
+                                       menus,
+                                       button_prev,
+                                       oid);
             else if (obj != nullptr)
                 ch->listener.on_dialog(*ch, *obj, message, menus, button_prev, oid);
             else
@@ -3438,7 +3874,7 @@ int fb::game::builtin::character::builtin_start_quest(lua_State* L)
 
     if (ch->quests.start(id) == false)
     {
-        lua->pushboolean(false);
+        lua->pushnil();
         return 1;
     }
 

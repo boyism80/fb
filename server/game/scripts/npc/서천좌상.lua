@@ -43,11 +43,11 @@ function NPC_215(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_GREATWALL) then
+        quest = me:start_quest(QUEST_GREATWALL)
+        if quest == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest = me:quest(QUEST_GREATWALL)
         quest:step(1)
         me:push_achievement(21, '만리장성 수리를 부탁받다.', 7, 1)
         me:dialog(npc, '수리에는 꼭 고구려의 벽돌을 써야만 하네. 벽돌은 국내성의 대장간에서 판다고 하더군. 만리장성을 돌아다니다 보면 수리해야 할곳을 찾을수 있을걸세. 10군데 이상 고친다면 적절한 보상을 해주겠네.', true, true)

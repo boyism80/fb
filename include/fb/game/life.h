@@ -52,7 +52,7 @@ public:
     virtual void              action(ACTION action, DURATION duration, uint8_t sound = 0x00);
     virtual uint32_t          normal_attack_damage(MOB_SIZE size) const = 0;
     virtual bool              calculate_critical(life& you) const;
-    virtual uint32_t          calculate_damage(uint32_t damage, const life& you, bool critical) const;
+    virtual uint32_t          calculate_damage(uint32_t damage, const life& you, bool critical, float rate = 1.0f, bool physical = true) const;
     virtual bool              calculate_miss(life& you) const;
     uint32_t                  damage_rate() const;
     void                      damage_rate(uint32_t value);

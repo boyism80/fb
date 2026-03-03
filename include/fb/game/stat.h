@@ -93,7 +93,12 @@ public:
     virtual uint32_t hp() const;
     virtual void     hp(uint32_t value);
     virtual uint32_t heal(uint32_t value, fb::game::object* from = nullptr);
-    virtual uint32_t damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false);
+    virtual uint32_t damage(uint32_t                          value,
+                            std::shared_ptr<fb::game::object> from     = nullptr,
+                            bool                              critical = false,
+                            float                             rate     = 1.0f,
+                            bool                              physical = true,
+                            bool                              fixed    = false);
     virtual uint32_t mp() const;
     virtual void     mp(uint32_t value);
     virtual uint32_t mp_up(uint32_t value, fb::game::object* from = nullptr);
@@ -164,7 +169,10 @@ public:
     virtual uint32_t regenerative() const override;
     uint32_t         damage(uint32_t                          value,
                             std::shared_ptr<fb::game::object> from     = nullptr,
-                            bool                              critical = false) override final;
+                            bool                              critical = false,
+                            float                             rate     = 1.0f,
+                            bool                              physical = true,
+                            bool                              fixed    = false) override final;
 };
 
 class mob_stat : public stat
@@ -191,7 +199,10 @@ public:
     uint32_t base_regenerative() const override final;
     uint32_t damage(uint32_t                          value,
                     std::shared_ptr<fb::game::object> from     = nullptr,
-                    bool                              critical = false) override final;
+                    bool                              critical = false,
+                    float                             rate     = 1.0f,
+                    bool                              physical = true,
+                    bool                              fixed    = false) override final;
 };
 
 } // namespace fb::game

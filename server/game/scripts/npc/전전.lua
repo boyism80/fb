@@ -3,27 +3,20 @@ local function try_craft_weapon(me, npc, materials, price, reward_name)
     for _, m in ipairs(materials) do
         materials_table[m[1]] = m[2]
     end
-    if not me:has_items(materials_table) then
-        me:dialog(npc, '재료가 조금 부족한 것 같은데? 다시 한번 살펴봐.', false, true)
-        return false
-    end
-    local money = me:money()
-    if money < price then
-        me:dialog(npc, '재료가 조금 부족한 것 같은데? 다시 한번 살펴봐.', false, true)
-        return false
-    end
     local btn = me:dialog(npc, '좋아좋아, 여기있네. 조심해서 좋은 일에 잘 쓰시게나.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return false
     end
-    for _, m in ipairs(materials) do
-        if not me:rmitem(m[1], m[2], ITEM_DELETE_TYPE.GIVE) then
-            me:dialog(npc, '재료가 조금 부족한 것 같은데? 다시 한번 살펴봐.', false, true)
-            return false
-        end
+    local cost = { ['item'] = materials_table }
+    if price > 0 then
+        cost['money'] = price
     end
-    me:money(money - price)
-    if me:mkitem(reward_name, 1) == nil then
+    local code = me:exchange(cost, { ['item'] = { [reward_name] = 1 } })
+    if code == EXCHANGE_RESULT.LACK_COST then
+        me:dialog(npc, '재료가 조금 부족한 것 같은데? 다시 한번 살펴봐.', false, true)
+        return false
+    end
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 ' .. name_with(reward_name, '은', '는') .. ' 줄 수 없네.', false, true)
         return false
     end

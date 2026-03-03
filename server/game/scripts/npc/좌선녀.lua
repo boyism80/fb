@@ -40,11 +40,11 @@ function NPC_76(me, npc)
             return
         end
         if quest == nil then
-            if not me:start_quest(QUEST_WATER_RING) then
+            quest = me:start_quest(QUEST_WATER_RING)
+            if quest == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
                 return
             end
-            quest = me:quest(QUEST_WATER_RING)
         end
         quest:step(1)
         me:push_achievement(ACHIEVEMENT_WATER, '좌선녀의 부탁을 들어주자.', 7, 1)
@@ -75,11 +75,14 @@ function NPC_76(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+    local code = me:exchange(
+        { ['item'] = materials },
+        { ['item'] = { ['인어반지'] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 재료를 다 모으지 못하신 것 같군요.. 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', false, true)
         return
-    end
-    if me:mkitem('인어반지', 1) == nil then
+    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 인어반지를 받을 수 없습니다.', false, true)
         return
     end

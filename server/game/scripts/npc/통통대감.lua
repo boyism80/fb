@@ -1,4 +1,30 @@
 function NPC_122(me, npc)
+    local dq = me:quest(QUEST_DETECTIVE)
+    if dq and not dq:completed() and dq:step() == 5 then
+        local sel, list_btn = me:list(npc, "이런! 반갑지 않은 손님이 또 오셨구만!", {
+            "조염에게 준 귀중한 문화재는 어디서 난거죠?",
+            "망치에 대해서 이야기를 좀...",
+            "지금 당장은 아무런 용무가 없습니다.",
+        }, false)
+        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            return
+        end
+        if sel == 0 then
+            local btn = me:dialog(npc, "그건 모조품이라구! 아니, 그럼 내가 진짜를 줬을 줄 알았어? 허참! 어이가 없구만!", false, true)
+            if btn == DIALOG_RESULT.QUIT then return end
+            btn = me:dialog(npc, "그리고 교역허가? 허가를 내줄 공무원들이 맨날 숲에서 낮잠이나 자고 있는데, 무슨 수로 허가를 맡느냔 말이지!", true, true)
+            if btn == DIALOG_RESULT.QUIT then return end
+            if btn == DIALOG_RESULT.PREV then return end
+            dq:step(6)
+            me:dialog(npc, "에이! 진진처럼 게으르고 굼뜨고 못미더운 사람들 같으니라구!", true, false)
+        elseif sel == 1 then
+            me:dialog(npc, "준비중입니다.", false, false)
+        else
+            me:dialog(npc, "그러시군요.", false, false)
+        end
+        return
+    end
+
     local quest = me:quest(QUEST_TONGTONG)
     local lighthouse = me:quest(QUEST_LIGHTHOUSE)
 
@@ -19,7 +45,8 @@ function NPC_122(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_TONGTONG) then
+        local q = me:start_quest(QUEST_TONGTONG)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
@@ -42,11 +69,15 @@ function NPC_122(me, npc)
         return
     end
 
-    if not me:rmitem('망치', 1, ITEM_DELETE_TYPE.GIVE) then
+    local code = me:exchange(
+        { ['item'] = { ['망치'] = 1 } },
+        { ['item'] = { ['선장의일기3'] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 망치라는 것을 구하지 못한것 같군?', false, true)
         return
     end
-    if me:mkitem('선장의일기3', 1) == nil then
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 선장의일기3을 줄 수 없네.', false, true)
         return
     end

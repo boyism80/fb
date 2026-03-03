@@ -19,6 +19,7 @@
 #include <fb/game/storage.h>
 #include <fb/game/marketplace.h>
 #include <fb/game/marriage.h>
+#include <fb/game/appearance.h>
 #include <set>
 #include <string_view>
 #include <unordered_map>
@@ -51,35 +52,37 @@ public:
     struct initial_params;
 
 private:
-    const std::string         _pw;
-    const fb::model::datetime _created_date;
-    const fb::model::datetime _updated_date;
-    const std::string         _name;
-    ROLE                      _role;
-    std::optional<uint32_t>   _birthday;
-    uint16_t                  _look          = 0;
-    uint8_t                   _color         = 0;
-    std::optional<uint8_t>    _armor_color   = 0;
-    uint32_t                  _experience    = 0;
-    NATION                    _nation        = NATION::GOGURYEO;
-    CREATURE                  _creature      = CREATURE::DRAGON;
-    GENDER                    _gender        = GENDER::MAN;
-    STATE                     _state         = STATE::NORMAL;
-    uint8_t                   _level         = 1;
-    CLASS                     _class         = CLASS::NONE;
-    uint8_t                   _promotion     = 0;
-    uint32_t                  _money         = 0;
-    std::optional<uint16_t>   _disguise      = 0;
-    std::string               _title         = "";
-    std::optional<uint32_t>   _group_id      = std::nullopt;
-    std::optional<uint32_t>   _clan_id       = std::nullopt;
-    uint16_t                  _weapon_damage = 0;
-    bool                      _detect        = false;
-    mob_vector_t              _spawned_mobs  = {};
-    bool                      _super_hide    = false;
-    fb::model::datetime       _last_afk_time;
-    fb::game::marriage        _marriage          = {};
-    bool                      _options[0x0B + 1] = {
+    const std::string                   _pw;
+    const fb::model::datetime           _created_date;
+    const fb::model::datetime           _updated_date;
+    const std::string                   _name;
+    ROLE                                _role;
+    std::optional<uint32_t>             _birthday;
+    uint16_t                            _look          = 0;
+    uint8_t                             _color         = 0;
+    std::optional<uint8_t>              _armor_color   = 0;
+    std::optional<uint8_t>              _weapon_color  = std::nullopt;
+    std::optional<uint8_t>              _shield_color  = std::nullopt;
+    uint32_t                            _experience    = 0;
+    NATION                              _nation        = NATION::GOGURYEO;
+    CREATURE                            _creature      = CREATURE::DRAGON;
+    GENDER                              _gender        = GENDER::MAN;
+    STATE                               _state         = STATE::NORMAL;
+    uint8_t                             _level         = 1;
+    CLASS                               _class         = CLASS::NONE;
+    uint8_t                             _promotion     = 0;
+    uint32_t                            _money         = 0;
+    std::optional<character_appearance> _mimicry       = std::nullopt;
+    std::string                         _title         = "";
+    std::optional<uint32_t>             _group_id      = std::nullopt;
+    std::optional<uint32_t>             _clan_id       = std::nullopt;
+    uint16_t                            _weapon_damage = 0;
+    bool                                _detect        = false;
+    mob_vector_t                        _spawned_mobs  = {};
+    bool                                _super_hide    = false;
+    fb::model::datetime                 _last_afk_time;
+    fb::game::marriage                  _marriage          = {};
+    bool                                _options[0x0B + 1] = {
         1,
     };
     std::weak_ptr<fb::socket<character>> _socket;
@@ -124,11 +127,13 @@ public:
         uint32_t                               exp        = 0;
         STATE                                  state      = STATE::NORMAL;
         std::string                            title;
-        std::optional<uint8_t>                 armor_color = std::nullopt;
-        std::optional<uint16_t>                disguise    = std::nullopt;
-        NATION                                 nation      = NATION::GOGURYEO;
-        CREATURE                               creature    = CREATURE::DRAGON;
-        bool                                   super_hide  = false;
+        std::optional<uint8_t>                 armor_color  = std::nullopt;
+        std::optional<uint8_t>                 weapon_color = std::nullopt;
+        std::optional<uint8_t>                 shield_color = std::nullopt;
+        std::optional<character_appearance>    mimicry      = std::nullopt;
+        NATION                                 nation       = NATION::GOGURYEO;
+        CREATURE                               creature     = CREATURE::DRAGON;
+        bool                                   super_hide   = false;
     };
 
 public:
@@ -175,9 +180,12 @@ public:
     void                                               color(uint8_t value);
     std::optional<uint8_t>                             armor_color() const;
     void                                               armor_color(std::optional<uint8_t> value);
-    std::optional<uint16_t>                            disguise() const;
-    void                                               disguise(uint16_t value);
-    void                                               undisguise();
+    std::optional<uint8_t>                             weapon_color() const;
+    void                                               weapon_color(std::optional<uint8_t> value);
+    std::optional<uint8_t>                             shield_color() const;
+    void                                               shield_color(std::optional<uint8_t> value);
+    const std::optional<character_appearance>&         mimicry() const;
+    void                                               mimicry(std::optional<character_appearance> value);
     NATION                                             nation() const;
     bool                                               nation(NATION value);
     CREATURE                                           creature() const;

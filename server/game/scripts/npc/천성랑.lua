@@ -63,16 +63,25 @@ function NPC_96(me, npc)
             if choice == nil or choice ~= 0 then
                 return
             end
-            if not me:rmitem('반고의심장', 1, ITEM_DELETE_TYPE.GIVE) then
+            local weapon_name = PROMOTION_4TH_WEAPON[me:class()]
+            if not weapon_name then
                 return
             end
-            local weapon_name = PROMOTION_4TH_WEAPON[me:class()]
-            if weapon_name and me:mkitem(weapon_name, 1) then
-                if q then
-                    q:complete()
-                end
-                me:dialog(npc, '축하드립니다. 그에 걸맞는 무기를 지급하였습니다.', false, true)
+            local code = me:exchange(
+                { ['item'] = { ['반고의심장'] = 1 } },
+                { ['item'] = { [weapon_name] = 1 } }
+            )
+            if code == EXCHANGE_RESULT.LACK_COST then
+                return
             end
+            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+                me:dialog(npc, '소지품이 가득 차서 무기를 드릴 수 없습니다.', false, true)
+                return
+            end
+            if q then
+                q:complete()
+            end
+            me:dialog(npc, '축하드립니다. 그에 걸맞는 무기를 지급하였습니다.', false, true)
             return
         end
 
@@ -81,7 +90,10 @@ function NPC_96(me, npc)
             me:dialog(npc, err_msg, false, true)
             return
         end
-        if not me:start_quest(QUEST_MUTA) then
+        local q = me:start_quest(QUEST_MUTA)
+        if q == nil then
+            me:dialog(npc, '퀘스트를 시작할 수 없습니다.', false, true)
+            return
         end
         me:dialog(npc, '기본적인 능력은 갖추셨습니다만, 그만한 지위에 오르시려거든 세상을 위한 업적을 세우셔야 합니다.\n\n소문에, 천인(天人)으로 추앙받고 계신 무타님께서 세상에 닥쳐올 재앙에 대항할 인재를 구하신다고 하던데 한 번 찾아가보시는 것이 어떨까요?', true, true)
         return
@@ -97,16 +109,18 @@ function NPC_96(me, npc)
             me:dialog(npc, '이미 해당 무기를 보유하고 계십니다.', false, true)
             return
         end
-        if me:money() < WEAPON_REISSUE_GOLD then
+        local code = me:exchange(
+            { ['money'] = WEAPON_REISSUE_GOLD },
+            { ['item'] = { [weapon_name] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '금전 1천만 전이 필요합니다.', false, true)
             return
         end
-        
-        if me:mkitem(weapon_name, 1) then
-            me:money(me:money() - WEAPON_REISSUE_GOLD)
-            me:dialog(npc, '무기를 지급하였습니다.', false, true)
-        else
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 무기를 드릴 수 없습니다.', false, true)
+            return
         end
+        me:dialog(npc, '무기를 지급하였습니다.', false, true)
     end
 end

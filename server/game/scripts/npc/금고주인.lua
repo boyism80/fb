@@ -100,10 +100,7 @@ local function run_intro_and_accept(me, npc)
         goto NPC_172_COS011
     end
 
-    if not me:start_quest(QUEST_STRONGBOX) then
-        return
-    end
-    local quest = me:quest(QUEST_STRONGBOX)
+    local quest = me:start_quest(QUEST_STRONGBOX)
     if quest == nil then
         return
     end
@@ -113,15 +110,21 @@ local function run_intro_and_accept(me, npc)
 end
 
 local function run_turn_in(me, npc)
-    if me:has_items(ITEM_OLD_ENVELOPE, 1) then
-        me:rmitem(ITEM_OLD_ENVELOPE, 1, ITEM_DELETE_TYPE.GIVE)
+    local code = me:exchange(
+        { ['item'] = { [ITEM_OLD_ENVELOPE] = 1 } },
+        { ['item'] = { [ITEM_BLACK_DAGGER] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.OK then
         local quest = me:quest(QUEST_STRONGBOX)
         if quest then
             quest:complete()
         end
-        me:mkitem(ITEM_BLACK_DAGGER, 1)
         me:push_achievement(ACHIEVEMENT_DONE, '금고주인의 부탁을 들어주었다.', 6, 1)
         me:dialog(npc, '오! 봉투를 가져왔군. 수고했어. 설마했는데 정말 안 열어봤군. 좋았어! 내 아끼던 거지만 상으로 이 흑장단검을 주지. 중국에서 가져온 귀한 칼이야. 그럼 잘 가게!', false, true)
+        return
+    end
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 흑장단검을 받을 수 없습니다. 자리 좀 비우고 다시 오세요.', false, false)
         return
     end
     if me:has_items(ITEM_OLD_LETTER, 1) then
