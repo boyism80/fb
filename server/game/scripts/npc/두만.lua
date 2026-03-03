@@ -99,9 +99,7 @@ function NPC_379(me, npc)
         if quest then
             quest:step(1)
         end
-        if me:push_achievement then
-            me:push_achievement(54, "문화재 유출범을 찾아라.", 7, 16)
-        end
+        me:push_achievement(54, "문화재 유출범을 찾아라.", 7, 16)
         btn = me:dialog(npc, "좋았어! 그럼 이제부터 자네는 임시 수사관이야. 이 명찰을 달고 있으면 섬사람들이 수사에 협조해줄걸세.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -229,9 +227,7 @@ function NPC_379(me, npc)
                 quest:complete()
             end
             me:money(me:money() + 100000)
-            if me:push_achievement then
-                me:push_achievement(54, "명수사관 칭호를 획득!", 7, 16)
-            end
+            me:push_achievement(54, "명수사관 칭호를 획득!", 7, 16)
         else
             me:dialog(npc, "준비중입니다.", false, false)
         end

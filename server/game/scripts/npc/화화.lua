@@ -42,9 +42,7 @@ local function add_smile(me, delta)
     end
     if q then
         q:step((q:step() or 0) + delta)
-        if me:push_achievement then
-            me:push_achievement(55, "화화의 미소를 " .. tostring(q:step()) .. "번 보았다", 7, 1)
-        end
+        me:push_achievement(55, "화화의 미소를 " .. tostring(q:step()) .. "번 보았다", 7, 1)
     end
 end
 

@@ -39,7 +39,7 @@ struct appearance_serializer
         writer.write<uint8_t>(static_cast<uint8_t>(this->appearance.state));
         if (this->appearance.disguise.has_value())
         {
-            writer.write<uint16_t>(this->appearance.disguise.value() + 0x7FFF);
+            writer.write<uint16_t>(this->appearance.disguise.value());
             writer.write<uint8_t>(this->appearance.hair_color.value_or(this->appearance.armor_color.value_or(0x00)));
         }
         else
@@ -221,7 +221,7 @@ public:
 
         if (this->disguised)
         {
-            this->look  = reader.read<uint16_t>() - 0x7FFF;
+            this->look  = reader.read<uint16_t>();
             this->color = reader.read<uint8_t>();
         }
         else

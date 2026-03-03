@@ -71,12 +71,12 @@ object_appearance::object_appearance(const object_appearance& right) :
 
 void object_appearance::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    writer.write<uint8_t>(this->look > 0x4000 ? 0x02 : 0x01);
+    writer.write<uint8_t>(this->look > 0xBFFF ? 0x02 : 0x01);
     writer.write<uint8_t>(0x01);
-    writer.write<uint16_t>(this->look + 0x7FFF);
+    writer.write<uint16_t>(this->look);
     writer.write<uint8_t>(this->color);
-    writer.write<uint8_t>(this->look > 0x4000 ? 0x02 : 0x01);
-    writer.write<uint16_t>(this->look + 0x7FFF);
+    writer.write<uint8_t>(this->look > 0xBFFF ? 0x02 : 0x01);
+    writer.write<uint16_t>(this->look);
     writer.write<uint8_t>(this->color);
 }
 
@@ -89,17 +89,17 @@ std::unique_ptr<appearance> appearance_factory::create(const fb::model::object& 
         auto& npc_model = static_cast<const fb::model::npc&>(obj);
         if (npc_model.appearance.has_value())
         {
-            auto& app  = table::appearance[npc_model.appearance.value()];
-            auto  ptr  = std::make_unique<character_appearance>();
+            auto& app         = table::appearance[npc_model.appearance.value()];
+            auto  ptr         = std::make_unique<character_appearance>();
             ptr->gender       = app.gender;
-            ptr->state       = app.state;
-            ptr->hair        = app.hair;
-            ptr->hair_color  = app.hair_color;
-            ptr->weapon      = app.weapon;
+            ptr->state        = app.state;
+            ptr->hair         = app.hair;
+            ptr->hair_color   = app.hair_color;
+            ptr->weapon       = app.weapon;
             ptr->weapon_color = app.weapon_color;
-            ptr->armor       = app.armor;
-            ptr->armor_color = app.armor_color;
-            ptr->shield      = app.shield;
+            ptr->armor        = app.armor;
+            ptr->armor_color  = app.armor_color;
+            ptr->shield       = app.shield;
             ptr->shield_color = app.shield_color;
             return std::move(ptr);
         }
@@ -128,8 +128,8 @@ std::unique_ptr<appearance> appearance_factory::create(const fb::game::object& o
     {
     case fb::model::enum_value::OBJECT_TYPE::CHARACTER:
     {
-        auto& ch  = static_cast<const fb::game::character&>(obj);
-        auto  ptr = std::make_unique<character_appearance>();
+        auto& ch        = static_cast<const fb::game::character&>(obj);
+        auto  ptr       = std::make_unique<character_appearance>();
         ptr->gender     = ch.gender();
         ptr->state      = ch.state();
         ptr->hair       = ch.look();

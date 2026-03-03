@@ -347,9 +347,7 @@ function NPC_474(me, npc)
         end
         main:step(36)
         me:mkitem("해골목걸이", 1)
-        if me:push_achievement then
-            me:push_achievement(63, "모든 원숭이들의 영웅이 되었다.", 7, 1)
-        end
+        me:push_achievement(63, "모든 원숭이들의 영웅이 되었다.", 7, 1)
         me:dialog(npc, "일전엔 고마웠네.", false, false)
         return
     end

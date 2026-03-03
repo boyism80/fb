@@ -198,12 +198,12 @@ int builtin::life::builtin_damage(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value    = (uint32_t)lua->tointeger(2);
-    auto from     = lua->touserdata<fb::game::life>(3);
-    bool critical = false;
-    float rate    = 1.0f;
-    bool physical = true;
-    bool fixed    = false;
+    auto  value    = (uint32_t)lua->tointeger(2);
+    auto  from     = lua->touserdata<fb::game::life>(3);
+    bool  critical = false;
+    float rate     = 1.0f;
+    bool  physical = true;
+    bool  fixed    = false;
 
     if (argc >= 4 && lua_istable(L, 4))
     {
@@ -426,11 +426,11 @@ int builtin::life::builtin_cast(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    std::shared_ptr<fb::game::life> you;
+    std::shared_ptr<fb::game::object> you;
     if (argc == 2)
-        you = std::static_pointer_cast<fb::game::life>(obj);
-    else if (lua->is_userdata<fb::game::life>(offset))
-        you = std::static_pointer_cast<fb::game::life>(lua->touserdata<fb::game::life>(offset++));
+        you = std::static_pointer_cast<fb::game::object>(obj);
+    else if (lua->is_userdata<fb::game::object>(offset))
+        you = std::static_pointer_cast<fb::game::object>(lua->touserdata<fb::game::object>(offset++));
     else
         you = nullptr;
 
