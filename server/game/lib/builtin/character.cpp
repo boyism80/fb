@@ -29,7 +29,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"exchange",                builtin::character::builtin_exchange},
 {"state",                  builtin::character::builtin_state},
 {"mimic",                  builtin::character::builtin_mimic},
-{"appearance",             builtin::character::builtin_appearance},
 {"class",                  builtin::character::builtin_class},
 {"promotion",              builtin::character::builtin_promotion},
 {"level",                  builtin::character::builtin_level},
@@ -1285,111 +1284,6 @@ int builtin::character::builtin_mimic(lua_State* L)
         });
     }
     return 0;
-}
-
-int builtin::character::builtin_appearance(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto ch     = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr || server == nullptr)
-        return 0;
-
-    auto weak = ch->weak_from_this_as<fb::game::character>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        fb::game::character_appearance p;
-        if (ch->mimicry().has_value())
-            p = ch->mimicry().value();
-        else
-        {
-            p.gender      = ch->gender();
-            p.state       = ch->state();
-            p.hair        = ch->look();
-            p.hair_color  = ch->color();
-            p.disguise    = std::nullopt;
-            p.armor_color = ch->armor_color();
-            if (ch->items.armor() != nullptr)
-            {
-                p.armor = ch->items.armor()->based<fb::model::armor>().dress;
-                if (!p.armor_color.has_value())
-                    p.armor_color = ch->items.armor()->based<fb::model::armor>().color;
-            }
-            if (ch->items.weapon() != nullptr)
-            {
-                p.weapon       = ch->items.weapon()->based<fb::model::weapon>().dress;
-                p.weapon_color = ch->weapon_color().value_or(static_cast<uint8_t>(ch->items.weapon()->color()));
-            }
-            if (ch->items.shield() != nullptr)
-            {
-                p.shield       = ch->items.shield()->based<fb::model::shield>().dress;
-                p.shield_color = ch->shield_color().value_or(ch->items.shield()->color());
-            }
-        }
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->new_table();
-            if (p.disguise.has_value())
-            {
-                lua->pushstring("disguise");
-                lua->pushinteger(static_cast<lua_Integer>(p.disguise.value()));
-                lua->settable(-3);
-            }
-            lua->pushstring("hair");
-            lua->pushinteger(static_cast<lua_Integer>(p.hair));
-            lua->settable(-3);
-            if (p.hair_color.has_value())
-            {
-                lua->pushstring("hair_color");
-                lua->pushinteger(static_cast<lua_Integer>(p.hair_color.value()));
-                lua->settable(-3);
-            }
-            lua->pushstring("gender");
-            lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(p.gender)));
-            lua->settable(-3);
-            lua->pushstring("state");
-            lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(p.state)));
-            lua->settable(-3);
-            if (p.weapon.has_value())
-            {
-                lua->pushstring("weapon");
-                lua->pushinteger(static_cast<lua_Integer>(p.weapon.value()));
-                lua->settable(-3);
-            }
-            if (p.weapon_color.has_value())
-            {
-                lua->pushstring("weapon_color");
-                lua->pushinteger(static_cast<lua_Integer>(p.weapon_color.value()));
-                lua->settable(-3);
-            }
-            if (p.armor.has_value())
-            {
-                lua->pushstring("armor");
-                lua->pushinteger(static_cast<lua_Integer>(p.armor.value()));
-                lua->settable(-3);
-            }
-            if (p.armor_color.has_value())
-            {
-                lua->pushstring("armor_color");
-                lua->pushinteger(static_cast<lua_Integer>(p.armor_color.value()));
-                lua->settable(-3);
-            }
-            if (p.shield.has_value())
-            {
-                lua->pushstring("shield");
-                lua->pushinteger(static_cast<lua_Integer>(p.shield.value()));
-                lua->settable(-3);
-            }
-            if (p.shield_color.has_value())
-            {
-                lua->pushstring("shield_color");
-                lua->pushinteger(static_cast<lua_Integer>(p.shield_color.value()));
-                lua->settable(-3);
-            }
-            return 1;
-        });
-    });
 }
 
 int builtin::character::builtin_class(lua_State* L)

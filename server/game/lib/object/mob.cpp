@@ -602,3 +602,8 @@ void mob::hidden(bool enabled)
 {
     this->_hidden = enabled;
 }
+
+std::shared_ptr<fb::game::appearance> mob::appearance() const
+{
+    return this->based<fb::model::mob>().create_appearance();
+}

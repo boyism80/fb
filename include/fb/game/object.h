@@ -24,6 +24,7 @@ class objects;
 class items;
 class sector;
 class sectors;
+class appearance;
 
 class object : public fb::thread_switchable
 {
@@ -36,8 +37,9 @@ public:
 public:
     LUA_PROTOTYPE
 
-    using map_ptr    = std::shared_ptr<fb::game::map>;
-    using object_ptr = std::shared_ptr<object>;
+    using map_ptr        = std::shared_ptr<fb::game::map>;
+    using object_ptr     = std::shared_ptr<object>;
+    using appearance_ptr = std::shared_ptr<fb::game::appearance>;
 
     friend fb::game::buffs;
     friend fb::game::items;
@@ -136,6 +138,7 @@ public:
     virtual void                                update_position();
     void                                        sound(SOUND sound);
     void                                        effect(uint8_t value);
+    virtual appearance_ptr                      appearance() const = 0;
     // clang-format on
 
 public:

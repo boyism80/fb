@@ -1,6 +1,7 @@
 #include <fb/game/character.h>
 #include <fb/game/server.h>
 #include <fb/model/model.h>
+#include <stdexcept>
 #include <fb/encoding.h>
 #include <json/json.h>
 #include <json/writer.h>
@@ -1854,4 +1855,36 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
 std::shared_ptr<fb::socket<character>> character::socket_ptr() const
 {
     return this->_socket.lock();
+}
+
+std::shared_ptr<fb::game::appearance> character::appearance() const
+{
+    if (this->_mimicry.has_value())
+        return std::make_shared<character_appearance>(this->_mimicry.value());
+
+    auto ptr    = std::make_shared<character_appearance>();
+    ptr->gender = this->_gender;
+    ptr->state = this->_state;
+    ptr->hair  = this->_look;
+    ptr->hair_color = this->_color;
+
+    if (this->items.weapon() != nullptr)
+    {
+        ptr->weapon       = this->items.weapon()->based<fb::model::weapon>().dress;
+        ptr->weapon_color = this->_weapon_color;
+    }
+
+    if (this->items.armor() != nullptr)
+    {
+        ptr->armor       = this->items.armor()->based<fb::model::armor>().dress;
+        ptr->armor_color = this->_armor_color;
+    }
+
+    if (this->items.shield() != nullptr)
+    {
+        ptr->shield       = this->items.shield()->based<fb::model::shield>().dress;
+        ptr->shield_color = this->_shield_color;
+    }
+
+    return ptr;
 }

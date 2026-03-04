@@ -3,6 +3,7 @@
 
 #include <fb/model/model.h>
 #include <fb/stream_writer.h>
+#include <fb/lua.h>
 
 namespace fb::game {
 
@@ -20,6 +21,7 @@ public:
 
 public:
     virtual void serialize(fb::stream_writer<big_endian>& writer) const = 0;
+    virtual void to_lua(fb::lua::context* lua) const                    = 0;
 };
 
 class character_appearance : public appearance
@@ -55,6 +57,7 @@ public:
 
 public:
     void serialize(fb::stream_writer<big_endian>& writer) const override;
+    void to_lua(fb::lua::context* lua) const override;
 };
 
 class object_appearance : public appearance
@@ -71,6 +74,7 @@ public:
 
 public:
     void serialize(fb::stream_writer<big_endian>& writer) const override;
+    void to_lua(fb::lua::context* lua) const override;
 };
 
 class appearance_factory

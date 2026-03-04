@@ -167,6 +167,7 @@ public:
     void                                               update_id() override final;
     bool                                               super_hide() const override final;
     bool                                               hidden(const fb::game::object& target) const override final;
+    std::shared_ptr<fb::game::appearance>              appearance() const override;
     // clang-format on
 
 public:

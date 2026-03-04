@@ -1,6 +1,7 @@
 #include <fb/game/builtin/object.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
+#include <fb/game/appearance.h>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -33,6 +34,7 @@ IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
 {"near",                builtin::object::builtin_near},
 {"hidden",              builtin::object::builtin_hidden},
 {"script",              builtin::object::builtin_script},
+{"appearance",          builtin::object::builtin_appearance},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::object::builtin_model(lua_State* L)
@@ -967,4 +969,18 @@ int builtin::object::builtin_script(lua_State* L)
             return 0;
         });
     }
+}
+
+int builtin::object::builtin_appearance(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto obj = lua->touserdata<fb::game::object>(1);
+    if (obj == nullptr)
+        return 0;
+
+    obj->appearance()->to_lua(lua);
+    return 1;
 }

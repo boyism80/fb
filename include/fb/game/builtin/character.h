@@ -24,7 +24,6 @@ struct character
     static int builtin_exchange(lua_State* L);
     static int builtin_state(lua_State* L);
     static int builtin_mimic(lua_State* L);
-    static int builtin_appearance(lua_State* L);
     static int builtin_class(lua_State* L);
     static int builtin_promotion(lua_State* L);
     static int builtin_level(lua_State* L);

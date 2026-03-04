@@ -1,7 +1,10 @@
 #include <fb/game/appearance.h>
 #include <fb/game/server.h>
+#include <fb/model/model.h>
+#include <stdexcept>
 
 using namespace fb::game;
+using namespace fb::model::enum_value;
 using table = fb::model::table;
 
 character_appearance::character_appearance(GENDER                  gender,
@@ -78,6 +81,82 @@ void object_appearance::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(this->look > 0xBFFF ? 0x02 : 0x01);
     writer.write<uint16_t>(this->look);
     writer.write<uint8_t>(this->color);
+}
+
+void object_appearance::to_lua(fb::lua::context* lua) const
+{
+    lua->new_table();
+    lua->pushstring("state");
+    lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(STATE::DISGUISE)));
+    lua->settable(-3);
+    lua->pushstring("disguise");
+    lua->pushinteger(static_cast<lua_Integer>(this->look));
+    lua->settable(-3);
+    lua->pushstring("hair_color");
+    lua->pushinteger(static_cast<lua_Integer>(this->color));
+    lua->settable(-3);
+}
+
+void character_appearance::to_lua(fb::lua::context* lua) const
+{
+    lua->new_table();
+    if (this->disguise.has_value())
+    {
+        lua->pushstring("disguise");
+        lua->pushinteger(static_cast<lua_Integer>(this->disguise.value()));
+        lua->settable(-3);
+    }
+    lua->pushstring("hair");
+    lua->pushinteger(static_cast<lua_Integer>(this->hair));
+    lua->settable(-3);
+    if (this->hair_color.has_value())
+    {
+        lua->pushstring("hair_color");
+        lua->pushinteger(static_cast<lua_Integer>(this->hair_color.value()));
+        lua->settable(-3);
+    }
+    lua->pushstring("gender");
+    lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(this->gender)));
+    lua->settable(-3);
+    lua->pushstring("state");
+    lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(this->state)));
+    lua->settable(-3);
+    if (this->weapon.has_value())
+    {
+        lua->pushstring("weapon");
+        lua->pushinteger(static_cast<lua_Integer>(this->weapon.value()));
+        lua->settable(-3);
+    }
+    if (this->weapon_color.has_value())
+    {
+        lua->pushstring("weapon_color");
+        lua->pushinteger(static_cast<lua_Integer>(this->weapon_color.value()));
+        lua->settable(-3);
+    }
+    if (this->armor.has_value())
+    {
+        lua->pushstring("armor");
+        lua->pushinteger(static_cast<lua_Integer>(this->armor.value()));
+        lua->settable(-3);
+    }
+    if (this->armor_color.has_value())
+    {
+        lua->pushstring("armor_color");
+        lua->pushinteger(static_cast<lua_Integer>(this->armor_color.value()));
+        lua->settable(-3);
+    }
+    if (this->shield.has_value())
+    {
+        lua->pushstring("shield");
+        lua->pushinteger(static_cast<lua_Integer>(this->shield.value()));
+        lua->settable(-3);
+    }
+    if (this->shield_color.has_value())
+    {
+        lua->pushstring("shield_color");
+        lua->pushinteger(static_cast<lua_Integer>(this->shield_color.value()));
+        lua->settable(-3);
+    }
 }
 
 std::unique_ptr<appearance> appearance_factory::create(const fb::model::object& obj)
@@ -160,4 +239,19 @@ std::unique_ptr<appearance> appearance_factory::create(const fb::game::object& o
         return create(obj.based<fb::model::object>());
     }
     }
+}
+
+std::shared_ptr<fb::game::appearance> fb::model::object::create_appearance() const
+{
+    throw std::runtime_error("create_appearance() not implemented");
+}
+
+std::shared_ptr<fb::game::appearance> fb::model::npc::create_appearance() const
+{
+    return std::make_shared<object_appearance>(this->look, this->color);
+}
+
+std::shared_ptr<fb::game::appearance> fb::model::mob::create_appearance() const
+{
+    return std::make_shared<object_appearance>(this->look, this->color);
 }

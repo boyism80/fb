@@ -41,6 +41,7 @@
     class sector;                     \
     class sectors;                    \
     struct listener;                  \
+    class appearance;                 \
     }
 
 #define DECLARE_AFTER_TYPE             \
@@ -70,27 +71,27 @@ public:                                                                         
 
 #define DECLARE_SIZE_EXTENSION
 
-
 #define DECLARE_SPELL_INHERIT  : public fb::lua::luable
 
 #define DECLARE_ACHIEVEMENT_INHERIT : public fb::lua::luable
 
-#define DECLARE_OBJECT_EXTENSION                                             \
-                                                                             \
-public:                                                                      \
-    LUA_PROTOTYPE                                                            \
-                                                                             \
-public:                                                                      \
-    template <typename T, typename... Args>                                  \
-    std::shared_ptr<T> make(fb::game::server& server, Args&&... args) const; \
-                                                                             \
-protected:                                                                   \
-    uint8_t dialog_look_type() const;                                        \
-                                                                             \
-public:                                                                      \
-    virtual enum_value::OBJECT_TYPE what() const;                            \
-    bool                            operator== (const object&) const;        \
-    bool                            operator!= (const object&) const;
+#define DECLARE_OBJECT_EXTENSION                                                    \
+                                                                                    \
+public:                                                                             \
+    LUA_PROTOTYPE                                                                   \
+                                                                                    \
+public:                                                                             \
+    template <typename T, typename... Args>                                         \
+    std::shared_ptr<T> make(fb::game::server& server, Args&&... args) const;        \
+                                                                                    \
+protected:                                                                          \
+    uint8_t dialog_look_type() const;                                               \
+                                                                                    \
+public:                                                                             \
+    virtual enum_value::OBJECT_TYPE               what() const;                     \
+    virtual std::shared_ptr<fb::game::appearance> create_appearance() const;           \
+    bool                                          operator== (const object&) const; \
+    bool                                          operator!= (const object&) const;
 
 #define DECLARE_LIFE_EXTENSION \
                                \
@@ -240,21 +241,23 @@ public:                                                                         
         return enum_value::ITEM_ATTRIBUTE::AUXILIARY;                                                        \
     }
 
-#define DECLARE_NPC_EXTENSION \
-                              \
-public:                       \
-    LUA_PROTOTYPE             \
-                              \
-public:                       \
-    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::NPC)
+#define DECLARE_NPC_EXTENSION                          \
+                                                       \
+public:                                                \
+    LUA_PROTOTYPE                                      \
+                                                       \
+public:                                                \
+    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::NPC) \
+    std::shared_ptr<fb::game::appearance> create_appearance() const override;
 
-#define DECLARE_MOB_EXTENSION \
-                              \
-public:                       \
-    LUA_PROTOTYPE             \
-                              \
-public:                       \
-    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::MOB)
+#define DECLARE_MOB_EXTENSION                          \
+                                                       \
+public:                                                \
+    LUA_PROTOTYPE                                      \
+                                                       \
+public:                                                \
+    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::MOB) \
+    std::shared_ptr<fb::game::appearance> create_appearance() const override;
 
 #define DECLARE_MOB_CONTAINER_EXTENSION \
                                         \

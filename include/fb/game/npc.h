@@ -2,6 +2,7 @@
 #define __NPC_H__
 
 #include <fb/game/item.h>
+#include <fb/game/appearance.h>
 #include <format>
 #include <optional>
 
@@ -12,7 +13,8 @@ class character;
 class npc : public object
 {
 public:
-    using model_type = fb::model::npc;
+    using model_type     = fb::model::npc;
+    using appearance_ptr = std::shared_ptr<fb::game::appearance>;
 
 public:
     LUA_PROTOTYPE
@@ -26,8 +28,9 @@ public:
     ~npc();
 
 public:
-    void soliloquy();
-    void assert_thread() const override final;
+    void           soliloquy();
+    void           assert_thread() const override final;
+    appearance_ptr appearance() const override;
 };
 
 } // namespace fb::game

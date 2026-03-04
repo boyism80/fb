@@ -33,6 +33,7 @@ struct object
     static int builtin_buffs(lua_State* L);
     static int builtin_hidden(lua_State* L);
     static int builtin_script(lua_State* L);
+    static int builtin_appearance(lua_State* L);
 };
 
 } // namespace fb::game::builtin
