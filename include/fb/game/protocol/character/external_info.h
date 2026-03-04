@@ -36,6 +36,7 @@ public:
 public:
 #ifndef BOT
     const fb::game::character& ch;
+    const fb::game::object&    to;
 #else
     std::string title;
     std::string clan_name;
@@ -76,7 +77,7 @@ public:
 
 public:
 #ifndef BOT
-    external_info(const fb::game::character& ch);
+    external_info(const fb::game::character& ch, const fb::game::object& to);
 #else
     external_info() = default;
 #endif

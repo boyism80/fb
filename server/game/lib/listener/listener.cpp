@@ -18,7 +18,7 @@ void listener_impl::send_update_appearance(object& obj, const fb::model::appeara
                                                              .head_marker = HEAD_MARKER::NONE,
                                                              .name        = obj.name(),
                                                              .appearance  = character_appearance(appearance.gender,
-                                                                                                appearance.state,
+                                                                                                std::optional<STATE>(appearance.state),
                                                                                                 appearance.hair,
                                                                                                 appearance.hair_color,
                                                                                                 appearance.weapon,

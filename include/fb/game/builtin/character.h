@@ -60,6 +60,8 @@ struct character
     static int builtin_base_dam(lua_State* L);
     static int builtin_base_hit(lua_State* L);
     static int builtin_armor_color(lua_State* L);
+    static int builtin_weapon_color(lua_State* L);
+    static int builtin_shield_color(lua_State* L);
     static int builtin_mkspell(lua_State* L);
     static int builtin_rmspell(lua_State* L);
     static int builtin_spell(lua_State* L);

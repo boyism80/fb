@@ -915,7 +915,7 @@ public:
 
 public:
     uint8_t gender = 0;
-    uint8_t state = 0;
+    std::optional<uint8_t> state = std::nullopt;
     uint16_t hair = 0;
     std::optional<uint8_t> hair_color = std::nullopt;
     std::optional<uint16_t> weapon = std::nullopt;
@@ -933,12 +933,12 @@ public:
         : gender(x.gender), state(x.state), hair(x.hair), hair_color(x.hair_color), weapon(x.weapon), weapon_color(x.weapon_color), armor(x.armor), armor_color(x.armor_color), shield(x.shield), shield_color(x.shield_color), disguise(x.disguise)
     { }
 
-    Mimicry(uint8_t gender, uint8_t state, uint16_t hair, const std::optional<uint8_t>& hair_color, const std::optional<uint16_t>& weapon, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& armor, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield, const std::optional<uint8_t>& shield_color, const std::optional<uint16_t>& disguise)
+    Mimicry(uint8_t gender, const std::optional<uint8_t>& state, uint16_t hair, const std::optional<uint8_t>& hair_color, const std::optional<uint16_t>& weapon, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& armor, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield, const std::optional<uint8_t>& shield_color, const std::optional<uint16_t>& disguise)
         : gender(gender), state(state), hair(hair), hair_color(hair_color), weapon(weapon), weapon_color(weapon_color), armor(armor), armor_color(armor_color), shield(shield), shield_color(shield_color), disguise(disguise)
     { }
 
     Mimicry(const fb::protocol::internal::raw::Mimicry& raw)
-        : gender(raw.gender()), state(raw.state()), hair(raw.hair()), hair_color(raw.hair_color() != nullptr ? raw.hair_color()->value() : std::optional<uint8_t>()), weapon(raw.weapon() != nullptr ? raw.weapon()->value() : std::optional<uint16_t>()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), armor(raw.armor() != nullptr ? raw.armor()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield(raw.shield() != nullptr ? raw.shield()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>())
+        : gender(raw.gender()), state(raw.state() != nullptr ? raw.state()->value() : std::optional<uint8_t>()), hair(raw.hair()), hair_color(raw.hair_color() != nullptr ? raw.hair_color()->value() : std::optional<uint8_t>()), weapon(raw.weapon() != nullptr ? raw.weapon()->value() : std::optional<uint16_t>()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), armor(raw.armor() != nullptr ? raw.armor()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield(raw.shield() != nullptr ? raw.shield()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>())
     { }
 
 public:
@@ -6350,7 +6350,7 @@ flatbuffers::Offset<fb::protocol::internal::raw::Mimicry> build<fb::protocol::in
 {
     return fb::protocol::internal::raw::CreateMimicry(builder,
             flatbuffers::build<uint8_t>(builder, value.gender),
-            flatbuffers::build<uint8_t>(builder, value.state),
+            flatbuffers::build<std::optional<uint8_t>>(builder, value.state),
             flatbuffers::build<uint16_t>(builder, value.hair),
             flatbuffers::build<std::optional<uint8_t>>(builder, value.hair_color),
             flatbuffers::build<std::optional<uint16_t>>(builder, value.weapon),

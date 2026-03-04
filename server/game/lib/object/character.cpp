@@ -367,14 +367,6 @@ void character::mimicry(std::optional<character_appearance> value)
 {
     this->assert_thread();
 
-    if (value.has_value())
-    {
-        if (value->disguise.has_value())
-            this->_state = STATE::DISGUISE;
-        else
-            this->_state = STATE::NORMAL;
-    }
-
     this->_mimicry = std::move(value);
     this->update_external(true);
 }
@@ -517,26 +509,25 @@ STATE character::state() const
 {
     this->assert_thread();
 
+    if (this->_mimicry.has_value() && this->_mimicry->disguise.has_value())
+        return STATE::DISGUISE;
     return this->_state;
 }
 
-STATE character::state_to(const fb::game::object& to) const
+STATE character::state_to(const fb::game::object& to, STATE state) const
 {
     this->assert_thread();
 
     if (this == &to)
-        return this->_state;
+        return state;
 
     if (to.is(OBJECT_TYPE::CHARACTER) == false)
-        return this->_state;
+        return state;
 
     const auto& ch = static_cast<const fb::game::character&>(to);
 
-    if (this->_state == STATE::HALF_CLOACK)
+    if (state == STATE::HALF_CLOACK)
     {
-        if (this->role() < ch.role())
-            return STATE::HALF_CLOACK;
-
         if (ch.detect())
             return STATE::HALF_CLOACK;
 
@@ -545,23 +536,30 @@ STATE character::state_to(const fb::game::object& to) const
         if (g1 != std::nullopt && g2 != std::nullopt && g1.value() == g2.value())
             return STATE::HALF_CLOACK;
 
+        if (ch.role() > ROLE::USER && this->role() <= ch.role())
+            return STATE::HALF_CLOACK;
+
         return STATE::CLOACK;
     }
 
-    if (this->_state == STATE::TRANSLUCENCY)
+    if (state == STATE::TRANSLUCENCY)
     {
         return STATE::CLOACK;
     }
 
-    return this->_state;
+    return state;
 }
 
 void character::state(STATE value)
 {
     this->assert_thread();
 
+    if (value == STATE::DISGUISE)
+        return;
+
     auto old_state = this->_state;
     this->_state   = value;
+
     this->update_external(true);
 
     // Log revive event (state change from GHOST to NORMAL)
@@ -1029,7 +1027,7 @@ void character::assert_state(STATE value) const
         {STATE::DISGUISE, _TEXT(MESSAGE_EXCEPTION_DISGUISE)}
     };
 
-    if (this->_state == value)
+    if (this->state() == value)
         throw std::runtime_error(error.at(value));
 }
 
@@ -1432,9 +1430,11 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.deposited_money = this->items.deposited();
     if (this->_mimicry.has_value())
     {
-        auto const& p = this->_mimicry.value();
-        dto.mimicry   = fb::protocol::internal::Mimicry(static_cast<uint8_t>(p.gender),
-                                                      static_cast<uint8_t>(p.state),
+        auto const& p         = this->_mimicry.value();
+        auto        state_opt = p.state.has_value() ? std::optional<uint8_t>(static_cast<uint8_t>(p.state.value()))
+                                                    : std::optional<uint8_t>();
+        dto.mimicry           = fb::protocol::internal::Mimicry(static_cast<uint8_t>(p.gender),
+                                                      state_opt,
                                                       p.hair,
                                                       p.hair_color,
                                                       p.weapon,
@@ -1862,10 +1862,10 @@ std::shared_ptr<fb::game::appearance> character::appearance() const
     if (this->_mimicry.has_value())
         return std::make_shared<character_appearance>(this->_mimicry.value());
 
-    auto ptr    = std::make_shared<character_appearance>();
-    ptr->gender = this->_gender;
-    ptr->state = this->_state;
-    ptr->hair  = this->_look;
+    auto ptr        = std::make_shared<character_appearance>();
+    ptr->gender     = this->_gender;
+    ptr->state      = this->_state;
+    ptr->hair       = this->_look;
     ptr->hair_color = this->_color;
 
     if (this->items.weapon() != nullptr)

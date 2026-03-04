@@ -28,7 +28,7 @@ class character_appearance : public appearance
 {
 public:
     GENDER                  gender       = GENDER::MAN;
-    STATE                   state        = STATE::NORMAL;
+    std::optional<STATE>    state        = std::nullopt;
     uint16_t                hair         = 0;
     std::optional<uint8_t>  hair_color   = std::nullopt;
     std::optional<uint16_t> weapon       = std::nullopt;
@@ -42,7 +42,7 @@ public:
 public:
     character_appearance() = default;
     character_appearance(GENDER                  gender,
-                         STATE                   state,
+                         std::optional<STATE>    state,
                          uint16_t                hair,
                          std::optional<uint8_t>  hair_color,
                          std::optional<uint16_t> weapon,

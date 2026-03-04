@@ -24,7 +24,7 @@ table Position {
 
 table Mimicry {
     gender: ubyte;
-    state: ubyte;
+    state: ubyte?;
     hair: ushort;
     hair_color: ubyte?;
     weapon: ushort?;

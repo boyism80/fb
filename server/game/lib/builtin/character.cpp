@@ -65,6 +65,8 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"base_dam",               builtin::character::builtin_base_dam},
 {"base_hit",               builtin::character::builtin_base_hit},
 {"armor_color",            builtin::character::builtin_armor_color},
+{"weapon_color",           builtin::character::builtin_weapon_color},
+{"shield_color",           builtin::character::builtin_shield_color},
 {"mkspell",                builtin::character::builtin_mkspell},
 {"rmspell",                builtin::character::builtin_rmspell},
 {"spell",                  builtin::character::builtin_spell},
@@ -1150,9 +1152,12 @@ int builtin::character::builtin_mimic(lua_State* L)
                 lua->pushstring("gender");
                 lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(p.gender)));
                 lua->settable(-3);
-                lua->pushstring("state");
-                lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(p.state)));
-                lua->settable(-3);
+                if (p.state.has_value())
+                {
+                    lua->pushstring("state");
+                    lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(p.state.value())));
+                    lua->settable(-3);
+                }
                 if (p.weapon.has_value())
                 {
                     lua->pushstring("weapon");
@@ -1239,6 +1244,8 @@ int builtin::character::builtin_mimic(lua_State* L)
             lua->rawget(2);
             if (lua->is_number(-1))
                 appearance.state = static_cast<STATE>(lua->tointeger(-1));
+            else
+                appearance.state = std::nullopt;
             lua->pop(1);
 
             lua->pushstring("weapon");
@@ -2865,6 +2872,92 @@ int builtin::character::builtin_armor_color(lua_State* L)
         auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
             ch->armor_color(value);
+            return lua->ensure_resume(*server, weak, [=]() {
+                return 0;
+            });
+        });
+    }
+}
+
+int builtin::character::builtin_weapon_color(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            auto result = ch->weapon_color();
+
+            return lua->ensure_resume(*server, weak, [=]() {
+                if (result.has_value())
+                    lua->pushinteger(static_cast<lua_Integer>(result.value()));
+                else
+                    lua->pushnil();
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto value = std::optional<uint8_t>{};
+        if (lua->is_number(2))
+            value = static_cast<uint8_t>(lua->tointeger(2));
+
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            ch->weapon_color(value);
+            return lua->ensure_resume(*server, weak, [=]() {
+                return 0;
+            });
+        });
+    }
+}
+
+int builtin::character::builtin_shield_color(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto ch     = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            auto result = ch->shield_color();
+
+            return lua->ensure_resume(*server, weak, [=]() {
+                if (result.has_value())
+                    lua->pushinteger(static_cast<lua_Integer>(result.value()));
+                else
+                    lua->pushnil();
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto value = std::optional<uint8_t>{};
+        if (lua->is_number(2))
+            value = static_cast<uint8_t>(lua->tointeger(2));
+
+        auto weak = ch->weak_from_this_as<fb::game::character>();
+        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            ch->shield_color(value);
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
             });

@@ -198,7 +198,7 @@ public:
     GENDER                                             gender() const;
     void                                               gender(GENDER value);
     STATE                                              state() const;
-    STATE                                              state_to(const fb::game::object& to) const;
+    STATE                                              state_to(const fb::game::object& to, STATE state) const;
     void                                               state(STATE value);
     CLASS                                              cls() const;
     void                                               cls(CLASS value);

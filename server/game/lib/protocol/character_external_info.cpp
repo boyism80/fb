@@ -7,8 +7,9 @@ using table = fb::model::table;
 using namespace fb::protocol::game::response;
 
 #ifndef BOT
-external_info::external_info(const fb::game::character& ch) :
-    ch(ch)
+external_info::external_info(const fb::game::character& ch, const fb::game::object& to) :
+    ch(ch),
+    to(to)
 { }
 #endif
 
@@ -38,68 +39,34 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
     writer.write<std::string>(class_name);      // Job/class
     writer.write<std::string>(this->ch.name()); // Character name
 
-    fb::game::character_appearance appearance;
-    if (this->ch.mimicry().has_value())
-    {
-        appearance = this->ch.mimicry().value();
-    }
-    else
-    {
-        appearance.gender      = this->ch.gender();
-        appearance.state       = this->ch.state();
-        appearance.hair        = this->ch.look();
-        appearance.hair_color  = this->ch.color();
-        appearance.armor_color = this->ch.armor_color();
-        appearance.disguise    = std::nullopt;
-
-        auto armor  = this->ch.items.armor();
-        auto weapon = this->ch.items.weapon();
-        auto shield = this->ch.items.shield();
-
-        if (armor != nullptr)
-        {
-            appearance.armor = armor->based<fb::model::armor>().dress;
-            if (appearance.armor_color.has_value() == false)
-                appearance.armor_color = armor->based<fb::model::armor>().color;
-        }
-        if (weapon != nullptr)
-        {
-            appearance.weapon       = weapon->based<fb::model::weapon>().dress;
-            appearance.weapon_color = this->ch.weapon_color().value_or(weapon->color());
-        }
-        if (shield != nullptr)
-        {
-            appearance.shield       = shield->based<fb::model::shield>().dress;
-            appearance.shield_color = this->ch.shield_color().value_or(shield->color());
-        }
-    }
-
-    auto disguised = appearance.disguise.has_value();
+    auto appearance   = std::static_pointer_cast<fb::game::character_appearance>(this->ch.appearance());
+    appearance->state = this->ch.state_to(this->to, appearance->state.value_or(this->ch.state()));
+    auto disguised    = appearance->disguise.has_value();
     writer.write<uint8_t>(disguised);
-    writer.write<uint8_t>(static_cast<uint8_t>(appearance.gender));
-    writer.write<uint8_t>(static_cast<uint8_t>(appearance.state));
+    writer.write<uint8_t>(static_cast<uint8_t>(appearance->gender));
+    writer.write<uint8_t>(static_cast<uint8_t>(appearance->state.value_or(this->ch.state())));
 
     auto armor  = this->ch.items.armor();  // Armor
     auto weapon = this->ch.items.weapon(); // Weapon
     auto shield = this->ch.items.shield(); // Shield
     if (disguised)
     {
-        writer.write<uint16_t>(appearance.disguise.value());
-        writer.write<uint8_t>(appearance.hair_color.value_or(appearance.armor_color.value_or(0x00)));
+        writer.write<uint16_t>(appearance->disguise.value());
+        writer.write<uint8_t>(appearance->hair_color.value_or(appearance->armor_color.value_or(0x00)));
     }
     else
     {
-        writer.write<uint16_t>(appearance.hair);
-        writer.write<uint8_t>(appearance.hair_color.value_or(0x00));
+        writer.write<uint16_t>(appearance->hair);
+        writer.write<uint8_t>(appearance->hair_color.value_or(0x00));
 
-        writer.write<uint8_t>(appearance.armor.value_or(static_cast<uint8_t>(appearance.gender)));
-        writer.write<uint8_t>(appearance.armor_color.value_or(0x00));
+        writer.write<uint8_t>(appearance->armor.value_or(static_cast<uint8_t>(appearance->gender)));
+        writer.write<uint8_t>(appearance->armor_color.value_or(0x00));
 
-        writer.write<uint16_t>(appearance.weapon.value_or(0xFFFF));
-        writer.write<uint8_t>(appearance.weapon_color.value_or(0x00));
+        writer.write<uint16_t>(appearance->weapon.value_or(0xFFFF));
+        writer.write<uint8_t>(appearance->weapon_color.value_or(0x00));
 
-        writer.write<uint8_t>(appearance.shield.value_or(0xFF));
-        writer.write<uint8_t>(appearance.shield_color.value_or(0x00));
+        writer.write<uint8_t>(appearance->shield.value_or(0xFF));
+        writer.write<uint8_t>(appearance->shield_color.value_or(0x00));
     }
 
     // Equipment info

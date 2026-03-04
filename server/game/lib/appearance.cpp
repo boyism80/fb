@@ -7,9 +7,9 @@ using namespace fb::game;
 using namespace fb::model::enum_value;
 using table = fb::model::table;
 
-character_appearance::character_appearance(GENDER                  gender,
-                                           STATE                   state,
-                                           uint16_t                hair,
+character_appearance::character_appearance(GENDER                     gender,
+                                           std::optional<STATE>       state,
+                                           uint16_t                  hair,
                                            std::optional<uint8_t>  hair_color,
                                            std::optional<uint16_t> weapon,
                                            std::optional<uint8_t>  weapon_color,
@@ -50,7 +50,7 @@ void character_appearance::serialize(fb::stream_writer<big_endian>& writer) cons
     writer.write<uint8_t>(0x01);
     writer.write<uint8_t>(0x00);
     writer.write<uint8_t>(static_cast<uint8_t>(this->gender));
-    writer.write<uint8_t>(static_cast<uint8_t>(this->state));
+    writer.write<uint8_t>(static_cast<uint8_t>(this->state.value_or(STATE::NORMAL)));
     writer.write<uint16_t>(this->hair);
     writer.write<uint8_t>(this->hair_color.value_or(0x00));
     writer.write<uint8_t>(this->armor.value_or(static_cast<uint8_t>(this->gender)));
@@ -118,9 +118,12 @@ void character_appearance::to_lua(fb::lua::context* lua) const
     lua->pushstring("gender");
     lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(this->gender)));
     lua->settable(-3);
-    lua->pushstring("state");
-    lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(this->state)));
-    lua->settable(-3);
+    if (this->state.has_value())
+    {
+        lua->pushstring("state");
+        lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(this->state.value())));
+        lua->settable(-3);
+    }
     if (this->weapon.has_value())
     {
         lua->pushstring("weapon");

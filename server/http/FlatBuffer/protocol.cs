@@ -9566,7 +9566,7 @@ namespace fb.protocol._internal
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Mimicry;
         public byte Gender { get; set; } = 0;
-        public byte State { get; set; } = 0;
+        public byte? State { get; set; } = null;
         public ushort Hair { get; set; } = 0;
         public byte? HairColor { get; set; } = null;
         public ushort? Weapon { get; set; } = null;
@@ -9583,7 +9583,7 @@ namespace fb.protocol._internal
         public Mimicry(fb.protocol._internal.raw.Mimicry raw)
         {
             Gender = raw.Gender;
-            State = raw.State;
+            State = raw.State != null ? (byte?)raw.State.Value.Value : null;
             Hair = raw.Hair;
             HairColor = raw.HairColor != null ? (byte?)raw.HairColor.Value.Value : null;
             Weapon = raw.Weapon != null ? (ushort?)raw.Weapon.Value.Value : null;

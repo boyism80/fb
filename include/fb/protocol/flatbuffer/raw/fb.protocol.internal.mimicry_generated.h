@@ -42,8 +42,8 @@ struct Mimicry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t gender() const {
     return GetField<uint8_t>(VT_GENDER, 0);
   }
-  uint8_t state() const {
-    return GetField<uint8_t>(VT_STATE, 0);
+  const nullable::nullable_ubyte *state() const {
+    return GetPointer<const nullable::nullable_ubyte *>(VT_STATE);
   }
   uint16_t hair() const {
     return GetField<uint16_t>(VT_HAIR, 0);
@@ -75,7 +75,8 @@ struct Mimicry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_GENDER, 1) &&
-           VerifyField<uint8_t>(verifier, VT_STATE, 1) &&
+           VerifyOffset(verifier, VT_STATE) &&
+           verifier.VerifyTable(state()) &&
            VerifyField<uint16_t>(verifier, VT_HAIR, 2) &&
            VerifyOffset(verifier, VT_HAIR_COLOR) &&
            verifier.VerifyTable(hair_color()) &&
@@ -104,8 +105,8 @@ struct MimicryBuilder {
   void add_gender(uint8_t gender) {
     fbb_.AddElement<uint8_t>(Mimicry::VT_GENDER, gender, 0);
   }
-  void add_state(uint8_t state) {
-    fbb_.AddElement<uint8_t>(Mimicry::VT_STATE, state, 0);
+  void add_state(::flatbuffers::Offset<nullable::nullable_ubyte> state) {
+    fbb_.AddOffset(Mimicry::VT_STATE, state);
   }
   void add_hair(uint16_t hair) {
     fbb_.AddElement<uint16_t>(Mimicry::VT_HAIR, hair, 0);
@@ -148,7 +149,7 @@ struct MimicryBuilder {
 inline ::flatbuffers::Offset<Mimicry> CreateMimicry(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint8_t gender = 0,
-    uint8_t state = 0,
+    ::flatbuffers::Offset<nullable::nullable_ubyte> state = 0,
     uint16_t hair = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> hair_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ushort> weapon = 0,
@@ -167,8 +168,8 @@ inline ::flatbuffers::Offset<Mimicry> CreateMimicry(
   builder_.add_weapon_color(weapon_color);
   builder_.add_weapon(weapon);
   builder_.add_hair_color(hair_color);
-  builder_.add_hair(hair);
   builder_.add_state(state);
+  builder_.add_hair(hair);
   builder_.add_gender(gender);
   return builder_.Finish();
 }

@@ -36,7 +36,7 @@ struct appearance_serializer
         writer.write<uint32_t>(this->oid);
         writer.write<uint8_t>(this->appearance.disguise.has_value());
         writer.write<uint8_t>(static_cast<uint8_t>(this->appearance.gender));
-        writer.write<uint8_t>(static_cast<uint8_t>(this->appearance.state));
+        writer.write<uint8_t>(static_cast<uint8_t>(this->appearance.state.value_or(STATE::NORMAL)));
         if (this->appearance.disguise.has_value())
         {
             writer.write<uint16_t>(this->appearance.disguise.value());
@@ -130,35 +130,40 @@ public:
         if (ch.mimicry().has_value())
         {
             serializer.appearance = ch.mimicry().value();
-            return;
+            if (serializer.appearance.state.has_value() == false)
+                serializer.appearance.state = ch.state();
         }
-
-        serializer.appearance.gender      = ch.gender();
-        serializer.appearance.state       = ch.state();
-        serializer.appearance.hair        = ch.look();
-        serializer.appearance.hair_color  = ch.color();
-        serializer.appearance.armor_color = ch.armor_color();
-        serializer.appearance.disguise    = std::nullopt;
-
-        if (ch.items.armor() != nullptr)
+        else
         {
-            serializer.appearance.armor = ch.items.armor()->based<fb::model::armor>().dress;
-            if (serializer.appearance.armor_color.has_value() == false)
-                serializer.appearance.armor_color = ch.items.armor()->based<fb::model::armor>().color;
+            serializer.appearance.gender      = ch.gender();
+            serializer.appearance.state       = ch.state();
+            serializer.appearance.hair        = ch.look();
+            serializer.appearance.hair_color  = ch.color();
+            serializer.appearance.armor_color = ch.armor_color();
+            serializer.appearance.disguise    = std::nullopt;
+
+            if (ch.items.armor() != nullptr)
+            {
+                serializer.appearance.armor = ch.items.armor()->based<fb::model::armor>().dress;
+                if (serializer.appearance.armor_color.has_value() == false)
+                    serializer.appearance.armor_color = ch.items.armor()->based<fb::model::armor>().color;
+            }
+
+            if (ch.items.weapon() != nullptr)
+            {
+                serializer.appearance.weapon = ch.items.weapon()->based<fb::model::weapon>().dress;
+                serializer.appearance.weapon_color =
+                    ch.weapon_color().value_or(static_cast<uint8_t>(ch.items.weapon()->color()));
+            }
+
+            if (ch.items.shield() != nullptr)
+            {
+                serializer.appearance.shield       = ch.items.shield()->based<fb::model::shield>().dress;
+                serializer.appearance.shield_color = ch.shield_color().value_or(ch.items.shield()->color());
+            }
         }
 
-        if (ch.items.weapon() != nullptr)
-        {
-            serializer.appearance.weapon = ch.items.weapon()->based<fb::model::weapon>().dress;
-            serializer.appearance.weapon_color =
-                ch.weapon_color().value_or(static_cast<uint8_t>(ch.items.weapon()->color()));
-        }
-
-        if (ch.items.shield() != nullptr)
-        {
-            serializer.appearance.shield       = ch.items.shield()->based<fb::model::shield>().dress;
-            serializer.appearance.shield_color = ch.shield_color().value_or(ch.items.shield()->color());
-        }
+        serializer.appearance.state = ch.state_to(to, serializer.appearance.state.value_or(ch.state()));
     }
     update_external(const appearance_serializer<Detailed>& serializer) :
         serializer(serializer)

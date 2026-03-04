@@ -876,6 +876,44 @@ command_funcs = {
                 return true
             end,
         },
+
+        ['무기염색'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '<색상ID> - 무기 염색',
+            ['command'] = function (me, args)
+                local value = table.unpack(args)
+                if not value then
+                    me:message("사용법: /무기염색 <색상ID>")
+                    return true
+                end
+                value = tonumber(value)
+                if not value or value < 0 then
+                    me:message("색상 ID는 0 이상의 숫자여야 합니다.")
+                    return true
+                end
+                me:weapon_color(value)
+                return true
+            end,
+        },
+
+        ['방패염색'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '<색상ID> - 방패 염색',
+            ['command'] = function (me, args)
+                local value = table.unpack(args)
+                if not value then
+                    me:message("사용법: /방패염색 <색상ID>")
+                    return true
+                end
+                value = tonumber(value)
+                if not value or value < 0 then
+                    me:message("색상 ID는 0 이상의 숫자여야 합니다.")
+                    return true
+                end
+                me:shield_color(value)
+                return true
+            end,
+        },
         
         ['맵타일'] = {
             ['privilege'] = ROLE.ADMIN,

@@ -207,7 +207,7 @@ void listener_impl::on_update_position(character& ch)
 
 void listener_impl::on_browse_character(character& ch, const character& target)
 {
-    ch.send(game_resp::external_info(target));
+    ch.send(game_resp::external_info(target, ch));
 }
 
 void listener_impl::on_item_tooltip(character& ch, const item& item, uint16_t position)

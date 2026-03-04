@@ -21,7 +21,7 @@ public struct Mimicry : IFlatbufferObject
   public Mimicry __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public byte Gender { get { int o = __p.__offset(4); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public byte State { get { int o = __p.__offset(6); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public nullable.nullable_ubyte? State { get { int o = __p.__offset(6); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public ushort Hair { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public nullable.nullable_ubyte? HairColor { get { int o = __p.__offset(10); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public nullable.nullable_ushort? Weapon { get { int o = __p.__offset(12); return o != 0 ? (nullable.nullable_ushort?)(new nullable.nullable_ushort()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
@@ -34,7 +34,7 @@ public struct Mimicry : IFlatbufferObject
 
   public static Offset<fb.protocol._internal.raw.Mimicry> CreateMimicry(FlatBufferBuilder builder,
       byte gender = 0,
-      byte state = 0,
+      Offset<nullable.nullable_ubyte> stateOffset = default(Offset<nullable.nullable_ubyte>),
       ushort hair = 0,
       Offset<nullable.nullable_ubyte> hair_colorOffset = default(Offset<nullable.nullable_ubyte>),
       Offset<nullable.nullable_ushort> weaponOffset = default(Offset<nullable.nullable_ushort>),
@@ -53,15 +53,15 @@ public struct Mimicry : IFlatbufferObject
     Mimicry.AddWeaponColor(builder, weapon_colorOffset);
     Mimicry.AddWeapon(builder, weaponOffset);
     Mimicry.AddHairColor(builder, hair_colorOffset);
+    Mimicry.AddState(builder, stateOffset);
     Mimicry.AddHair(builder, hair);
-    Mimicry.AddState(builder, state);
     Mimicry.AddGender(builder, gender);
     return Mimicry.EndMimicry(builder);
   }
 
   public static void StartMimicry(FlatBufferBuilder builder) { builder.StartTable(11); }
   public static void AddGender(FlatBufferBuilder builder, byte gender) { builder.AddByte(0, gender, 0); }
-  public static void AddState(FlatBufferBuilder builder, byte state) { builder.AddByte(1, state, 0); }
+  public static void AddState(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> stateOffset) { builder.AddOffset(1, stateOffset.Value, 0); }
   public static void AddHair(FlatBufferBuilder builder, ushort hair) { builder.AddUshort(2, hair, 0); }
   public static void AddHairColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> hairColorOffset) { builder.AddOffset(3, hairColorOffset.Value, 0); }
   public static void AddWeapon(FlatBufferBuilder builder, Offset<nullable.nullable_ushort> weaponOffset) { builder.AddOffset(4, weaponOffset.Value, 0); }
@@ -86,7 +86,7 @@ static public class MimicryVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Gender*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 6 /*State*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyTable(tablePos, 6 /*State*/, nullable.nullable_ubyteVerify.Verify, false)
       && verifier.VerifyField(tablePos, 8 /*Hair*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTable(tablePos, 10 /*HairColor*/, nullable.nullable_ubyteVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 12 /*Weapon*/, nullable.nullable_ushortVerify.Verify, false)
